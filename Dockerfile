@@ -11,3 +11,5 @@ COPY pyproject.toml /app/
 WORKDIR /app
 
 RUN pip install .
+
+CMD ["python", "/app/src/dritimeseriesprocessor/module.py" ]
