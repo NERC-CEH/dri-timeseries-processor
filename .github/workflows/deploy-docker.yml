@@ -1,0 +1,65 @@
+name: Deploy the Docker Image to ECR
+
+on:
+  workflow_call:
+    secrets:
+      AWS_REGION:
+        required: true
+      AWS_ROLE_ARN:
+        required: true
+    
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check file existence
+        id: check_file
+        run: |
+          if [ -f "Dockerfile" ]; then
+            file_exists="true"
+          else
+            file_exists="false"
+          fi
+
+          echo "file_exists=${file_exists}" >> $GITHUB_OUTPUT
+      - name: Configure AWS credentials
+        if: steps.check_file.outputs.file_exists == 'true'
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Login to Amazon ECR
+        if: steps.check_file.outputs.file_exists == 'true'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+      - name: Build with docker
+        if: steps.check_file.outputs.file_exists == 'true'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_NAME: ${{ github.event.repository.name }}
+          IMAGE_TAG: latest
+        run: |
+          IMAGE_TAG=v$(python -c "import mypackage; print(mypackage.__version__)")
+          FULL_IMAGE=${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+          echo "FULL_IMAGE: ${FULL_IMAGE}"
+          docker build -t $FULL_IMAGE .
+          docker push $FULL_IMAGE
+
+

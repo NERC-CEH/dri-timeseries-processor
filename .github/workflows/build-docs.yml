@@ -1,0 +1,35 @@
+# Simple workflow for deploying static content to GitHub Pages
+name: Documentation Building
+
+on: [workflow_call]
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  
+jobs:
+  # Single deploy job since we're just deploying
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        # This is the version of the action for setting up Python, not the Python version.
+        uses: actions/setup-python@v5
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '3.12'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+          cache: 'pip'
+      - name: Install Dependencies
+        run: |
+            pip install --upgrade pip
+            pip install .[docs]
+      - name: Build Docs
+        run: |
+          pushd docs
+          make html
