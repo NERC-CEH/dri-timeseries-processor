@@ -2,6 +2,7 @@
 
 from time import sleep
 
+
 def add_int(x: int, y: int) -> int:
     """Adds two integers together
 
@@ -14,6 +15,7 @@ def add_int(x: int, y: int) -> int:
     """
 
     return x + y
+
 
 if __name__ == "__main__":
     print("START")
