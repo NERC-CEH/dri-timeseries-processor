@@ -56,7 +56,7 @@ jobs:
           IMAGE_NAME: ${{ github.event.repository.name }}
           IMAGE_TAG: latest
         run: |
-          IMAGE_TAG=v$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
+          IMAGE_TAG=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
           FULL_IMAGE=${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
           echo "FULL_IMAGE: ${FULL_IMAGE}"
           docker build -t $FULL_IMAGE .
