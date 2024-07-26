@@ -255,9 +255,9 @@ class Correction(BaseModel):
     SITE_ID: str
     VARIABLE: str
     START_DATETIME: datetime
-    END_DATETIME: datetime
+    END_DATETIME: Optional[datetime] = None
     METHOD_ID: str = Field(..., validate_default=True)
-    CORRECTION_FACTOR: float
+    CORRECTION_FACTOR: Optional[float] = None
     DESCRIPTION: str
 
     @field_validator('METHOD_ID')
@@ -266,6 +266,15 @@ class Correction(BaseModel):
         valid_methods = get_valid_method_ids()
         if v not in valid_methods:
             raise ValueError(f'Invalid METHOD_ID: {v}. Must be one of {valid_methods}')
+        return v
+
+    @field_validator('END_DATETIME')
+    @classmethod
+    def end_datetime_must_be_after_start(cls, v: Optional[datetime], info):
+        if v is not None:
+            start_datetime = info.data.get('START_DATETIME')
+            if start_datetime and v < start_datetime:
+                raise ValueError('END_DATETIME must be after START_DATETIME')
         return v
 
     @model_validator(mode='after')
