@@ -22,7 +22,7 @@ jobs:
     - name: Build venv
       run: |
         python -m venv .venv
-        . ./,venv/bin/activate
+        . ./,.venv/bin/activate
         echo "PATH=$PATH" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
