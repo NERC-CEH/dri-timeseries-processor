@@ -34,7 +34,7 @@ jobs:
         echo "VERSION: ${version}"
         echo $version > /tmp/package-version.txt
     - name: Zip environment
-      run: tar -cvf /tmp/python-environment.tar ./.venv
+      run: tar -czf /tmp/python-environment.tar.gz ./.venv
     - name: Upload package version as artifact
       uses: actions/upload-artifact@v4
       with:
@@ -44,6 +44,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: python-environment
-        path: /tmp/python-environment.tar
+        path: /tmp/python-environment.tar.gz
         retention-days: 1
       

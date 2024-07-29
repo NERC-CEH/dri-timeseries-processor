@@ -24,8 +24,9 @@ jobs:
         path: /tmp
     - name: Unpack environment
       run: |
+        ls -la /tmp/python-environment.tar.gz
         mkdir .venv
-        tar -xvzf /tmp/python-environment.tar -C ./.venv
+        tar -xzf /tmp/python-environment.tar.gz -C ./.venv
     - name: Check python
       run: |
         . ./.venv/bin/activate
