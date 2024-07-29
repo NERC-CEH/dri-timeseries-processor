@@ -15,7 +15,7 @@ jobs:
         run: |
           python -m venv .venv
           echo "VIRTUAL_ENV=./.venv" >> $GITHUB_ENV
-          echo "PATH=./.venv/bin/:$PATH" >> $GITHUB_ENV
+          echo "PATH=./.venv/bin:$PATH" >> $GITHUB_ENV
       - name: Install Codebase
         run: |
           which python

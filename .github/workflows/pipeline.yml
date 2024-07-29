@@ -9,9 +9,13 @@ permissions:
   actions: read
 
 jobs:
+  build-environment:
+    uses: ./.github/workflows/build-environment.yml
   test-python:
+    needs: [build-environment]
     uses: ./.github/workflows/test-python.yml
   test-docker:
+    needs: [build-environment]
     uses: ./.github/workflows/build-docker.yml
     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
   test-docs:

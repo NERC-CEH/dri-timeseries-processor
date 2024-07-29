@@ -1,0 +1,44 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python Install and Tests
+
+on: [workflow_call]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Build venv
+      run: |
+        python -m venv .venv
+        echo "VIRTUAL_ENV=./.venv" >> $GITHUB_ENV
+        echo "PATH=./.venv/bin:$PATH" >> $GITHUB_ENV
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install .[lint,test]
+    - name: Write package version
+      run: |
+        version=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
+        echo "VERSION: ${version}"
+        echo $version > /tmp/package-version.txt
+    - name: Upload package version as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-version
+        path: /tmp/package-version.txt
+    - name: Upload environment as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-env
+        path: ./.venv
+      

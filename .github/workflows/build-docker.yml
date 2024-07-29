@@ -27,17 +27,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install .
+      - name: Download package version
+        uses: actions/download-artifact@v4
+        with:
+          name: package-version
+          path: /tmp
       - name: Build image name
         if: steps.check_file.outputs.file_exists == 'true'
         id: build-docker-image
         env:
           IMAGE_NAME: ${{ github.event.repository.name }}
         run: |
-          IMAGE_TAG=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
+          IMAGE_TAG=$(cat /tmp/package-version.txt)
           IMAGE_NAME=${IMAGE_NAME}:${IMAGE_TAG}
           echo "IMAGE_NAME=${IMAGE_NAME}" > /tmp/image-name.txt
           echo "IMAGE_NAME: ${IMAGE_NAME}"
