@@ -21,13 +21,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: python-environment
-        path: ./.venv
+        path: /tmp
+    - name: Unpack environment
+      run: |
+        unzip /tmp/python-environment.tar -o .venv/
     - name: Check python
       run: |
-        whoami
         . ./.venv/bin/activate
-        ls -la .venv
-        ls -la .venv/bin
         which python
     - name: Lint with ruff
       run: |
