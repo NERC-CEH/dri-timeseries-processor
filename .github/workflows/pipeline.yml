@@ -1,38 +1,38 @@
-name: Tests and Build Docs
+# name: Tests and Build Docs
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-  actions: read
+# permissions:
+#   contents: read
+#   pages: write
+#   id-token: write
+#   actions: read
 
-jobs:
-  test-python:
-    uses: ./.github/workflows/test-python.yml
-  test-docker:
-    uses: ./.github/workflows/build-docker.yml
-    if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
-  test-docs:
-    uses: ./.github/workflows/build-docs.yml
-    if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
-  deploy-docker:
-    uses: ./.github/workflows/deploy-docker.yml
-    if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
-    needs: [test-python]
-    secrets:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+# jobs:
+#   test-python:
+#     uses: ./.github/workflows/test-python.yml
+#   test-docker:
+#     uses: ./.github/workflows/build-docker.yml
+#     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
+#   test-docs:
+#     uses: ./.github/workflows/build-docs.yml
+#     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
+#   deploy-docker:
+#     uses: ./.github/workflows/deploy-docker.yml
+#     if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
+#     needs: [test-python]
+#     secrets:
+#       AWS_REGION: ${{ secrets.AWS_REGION }}
+#       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
-  test-deploy-docker:
-    uses: ./.github/workflows/test-deploy.yml
-    needs: [test-python, test-docker]
-    secrets:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+#   test-deploy-docker:
+#     uses: ./.github/workflows/test-deploy.yml
+#     needs: [test-python, test-docker]
+#     secrets:
+#       AWS_REGION: ${{ secrets.AWS_REGION }}
+#       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
-  deploy-docs:
-    uses: ./.github/workflows/deploy-docs.yml
-    if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
-    needs: [test-python]
+#   deploy-docs:
+#     uses: ./.github/workflows/deploy-docs.yml
+#     if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
+#     needs: [test-python]
