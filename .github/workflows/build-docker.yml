@@ -45,7 +45,7 @@ jobs:
       - name: Run Docker Image
         run: docker run --name test-container -d ${{ steps.build-docker-image.outputs.FULL_IMAGE}}
       - name: Check container is running
-        run: docker ps -a
+        run: sleep 5 && docker ps -a
       - name: Check if container has exited already
         run: |
           status=$(docker ps -a | grep "Exited")
