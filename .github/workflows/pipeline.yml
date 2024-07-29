@@ -27,6 +27,10 @@ jobs:
   test-deploy-docker:
     uses: ./.github/workflows/test-deploy.yml
     needs: [test-python, test-docker]
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+
   deploy-docs:
     uses: ./.github/workflows/deploy-docs.yml
     if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
