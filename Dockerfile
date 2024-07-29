@@ -23,4 +23,4 @@ COPY --chown=python:python tests/ /app/tests
 USER python
 ENV PATH="/app/.venv/bin:$PATH"
 ENV VIRTUAL_ENV="/app/.venv"
-CMD ["python", "-m", "dritimeseriesprocessor"]
+CMD ["python", "-m", "timeseriesprocessor"]
