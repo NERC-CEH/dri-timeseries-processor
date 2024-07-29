@@ -24,9 +24,8 @@ jobs:
         path: ./.venv
     - name: Activate environment
       run: |
-        ls -la .
-        echo "VIRTUAL_ENV=${{ github.workspace }}/.venv" >> $GITHUB_ENV
-        echo "PATH=${{ github.workspace }}/.venv/bin:$PATH" >> $GITHUB_ENV
+        . ./.venv/bin/activate
+        echo "PATH=$PATH" >> $GITHUB_ENV
     - name: Check python
       run: which python
     - name: Lint with ruff
