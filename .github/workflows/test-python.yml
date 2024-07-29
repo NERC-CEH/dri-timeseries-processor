@@ -26,6 +26,7 @@ jobs:
       run: |
         . ./.venv/bin/activate
         echo "PATH=$PATH" >> $GITHUB_ENV
+        which python
     - name: Check python
       run: which python
     - name: Lint with ruff

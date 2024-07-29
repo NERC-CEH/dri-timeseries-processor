@@ -24,11 +24,12 @@ jobs:
         python -m venv .venv
         . ./.venv/bin/activate
         echo "PATH=$PATH" >> $GITHUB_ENV
+        which python
     - name: Install dependencies
       run: |
         which python
         python -m pip install --upgrade pip
-        pip install .[lint,test]
+        python -m pip install .[lint,test]
     - name: Write package version
       run: |
         version=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
