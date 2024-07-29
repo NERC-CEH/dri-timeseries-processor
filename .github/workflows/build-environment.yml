@@ -22,8 +22,8 @@ jobs:
     - name: Build venv
       run: |
         python -m venv .venv
-        echo "VIRTUAL_ENV=${{ github.workspace }}/.venv" >> $GITHUB_ENV
-        echo "PATH=${{ github.workspace }}/.venv/bin:$PATH" >> $GITHUB_ENV
+        . ./venv/bin/activate
+        echo "PATH=$PATH" >> $GITHUB_ENV
     - name: Install dependencies
       run: |
         which python
