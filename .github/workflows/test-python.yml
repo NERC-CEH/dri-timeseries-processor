@@ -24,6 +24,7 @@ jobs:
         path: ./.venv
     - name: Check python
       run: |
+        whoami
         . ./.venv/bin/activate
         ls -la .venv
         which python
