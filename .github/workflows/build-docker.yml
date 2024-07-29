@@ -21,25 +21,26 @@ jobs:
           else
             file_exists="false"
           fi
-
           echo "file_exists=${file_exists}" >> $GITHUB_OUTPUT
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Download package version
-        uses: actions/download-artifact@v4
-        with:
-          name: package-version
-          path: /tmp
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .
+      - name: Get package version
+        run: |
+          version=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
+          echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
       - name: Build image name
         if: steps.check_file.outputs.file_exists == 'true'
         id: build-docker-image
         env:
           IMAGE_NAME: ${{ github.event.repository.name }}
         run: |
-          IMAGE_TAG=$(cat /tmp/package-version.txt)
-          IMAGE_NAME=${IMAGE_NAME}:${IMAGE_TAG}
+          IMAGE_NAME=${IMAGE_NAME}:${PACKAGE_VERSION}
           echo "IMAGE_NAME=${IMAGE_NAME}" > /tmp/image-name.txt
           echo "IMAGE_NAME: ${IMAGE_NAME}"
           docker build -t $IMAGE_NAME .
