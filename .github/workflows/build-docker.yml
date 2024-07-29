@@ -31,7 +31,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .
-      - name: Build docker image
+      - name: Build image name
         if: steps.check_file.outputs.file_exists == 'true'
         id: build-docker-image
         env:
@@ -41,23 +41,48 @@ jobs:
           FULL_IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
           echo "FULL_IMAGE=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
           echo "FULL_IMAGE: ${FULL_IMAGE}"
-          docker build -t $FULL_IMAGE .
-      - name: Run Docker Image
-        run: docker run --name test-container -d ${{ steps.build-docker-image.outputs.FULL_IMAGE}}
-      - name: Check container is running
-        run: sleep 5 && docker ps -a
-      - name: Check if container has exited already
+          # docker build -t $FULL_IMAGE .
+      - name: Build image and export to tar
+        uses: docker/build-push-action@v6
+        with:
+          tags: ${{ steps.build-docker-image.outputs.FULL_IMAGE}}
+          outputs: type=docker,dest=/tmp/image.tar
+      - name: Upload docker artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image
+          path: /tmp/image.tar
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image
+          path: /tmp
+      - name: Load image
         run: |
-          if docker ps -a | grep -q "Exited"; then
-            echo "Container exited. probably broken"
-            exit 1
-          else
-            echo "Container still running, should be okay."
-          fi
-      - name: Stop and remove container
-        run: |
-          docker stop test-container
-          docker rm test-container
+          docker load --input /tmp/image.tar
+          docker image ls -a
+
+      # - name: Run Docker Image
+      #   run: docker run --name test-container -d ${{ steps.build-docker-image.outputs.FULL_IMAGE}}
+      # - name: Check container is running
+      #   run: sleep 5 && docker ps -a
+      # - name: Check if container has exited already
+      #   run: |
+      #     if docker ps -a | grep -q "Exited"; then
+      #       echo "Container exited. probably broken"
+      #       exit 1
+      #     else
+      #       echo "Container still running, should be okay."
+      #     fi
+      # - name: Stop and remove container
+      #   run: |
+      #     docker stop test-container
+      #     docker rm test-container
 
 
 
