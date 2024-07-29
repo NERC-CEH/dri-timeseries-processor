@@ -23,7 +23,10 @@ jobs:
         name: python-environment
         path: ./.venv
     - name: Check python
-      run: which python
+      run: |
+        . ./.venv/bin/activate
+        ls -la .venv
+        which python
     - name: Lint with ruff
       run: |
         . ./.venv/bin/activate
