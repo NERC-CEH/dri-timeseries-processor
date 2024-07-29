@@ -1,0 +1,25 @@
+name: Deploy the Docker Image to ECR
+
+on:
+  workflow_call:
+    secrets:
+      AWS_REGION:
+        required: true
+      AWS_ROLE_ARN:
+        required: true
+    
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download docker image
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: ./.github.com/workflows/test-docker.yml
+          workflow_conclusion: success
+          name: image
+          path: /tmp
