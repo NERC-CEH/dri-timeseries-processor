@@ -76,7 +76,7 @@ jobs:
           echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
 
       - name: Run Docker Image
-        run: docker run --name test-container -d ${{env.IMAGE_NAME}}
+        run: docker run --name test-container -d $IMAGE_NAME
       - name: Check container is running
         run: sleep 5 && docker ps -a
       - name: Check if container has exited already
