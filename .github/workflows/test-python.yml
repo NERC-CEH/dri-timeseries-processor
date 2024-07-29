@@ -26,7 +26,9 @@ jobs:
       run: |
         ls -la /tmp/python-environment.tar.gz
         mkdir .venv
-        tar -xzf /tmp/python-environment.tar.gz -C ./.venv
+        tar -xzf /tmp/python-environment.tar.gz -C ./.venv/
+        ls -la .
+        ls -la ./venv
     - name: Check python
       run: |
         . ./.venv/bin/activate
