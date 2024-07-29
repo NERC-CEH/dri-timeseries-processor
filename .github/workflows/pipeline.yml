@@ -10,25 +10,25 @@ permissions:
 
 jobs:
   build-environment:
-    uses: ./.github/workflows/build-environment.yml
+    uses: ./.github/workflows/components/build-environment.yml
   test-python:
     needs: [build-environment]
-    uses: ./.github/workflows/test-python.yml
+    uses: ./.github/workflows/components/test-python.yml
   test-docker:
     needs: [build-environment]
-    uses: ./.github/workflows/build-docker.yml
+    uses: ./.github/workflows/components/build-docker.yml
     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
   test-docs:
-    uses: ./.github/workflows/build-docs.yml
+    uses: ./.github/workflows/components/build-docs.yml
     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
   deploy-docker:
-    uses: ./.github/workflows/deploy-docker.yml
+    uses: ./.github/workflows/components/deploy-docker.yml
     if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
     needs: [test-python, test-docker]
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
   deploy-docs:
-    uses: ./.github/workflows/deploy-docs.yml
+    uses: ./.github/workflows/components/deploy-docs.yml
     if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
     needs: [test-python, test-docs]
