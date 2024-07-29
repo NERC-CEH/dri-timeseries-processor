@@ -48,9 +48,7 @@ jobs:
         run: sleep 5 && docker ps -a
       - name: Check if container has exited already
         run: |
-          status=$(docker ps -a | grep "Exited")
-
-          if [ $status -eq 1 ]; then
+          if docker ps -a | grep -q "Exited"; then
             echo "Container exited. probably broken"
             exit 1
           else
