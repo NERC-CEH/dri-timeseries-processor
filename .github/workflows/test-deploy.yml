@@ -20,6 +20,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         with:
           workflow: ./.github.com/workflows/test-docker.yml
+          github_token: ${{secrets.GITHUB_TOKEN}}
           workflow_conclusion: success
           name: image
           path: /tmp
