@@ -47,7 +47,15 @@ jobs:
       - name: Check container is running
         run: docker ps -a
       - name: Check if container has exited already
-        run: docker ps -a | grep "Exited" && exit 1
+        run: |
+          status=$(docker ps -a | grep "Exited")
+
+          if [ $status -eq 1 ]; then
+            echo "Container exited. probably broken"
+            exit 1
+          else
+            echo "Container still running, should be okay."
+          fi
       - name: Stop and remove container
         run: |
           docker stop test-container
