@@ -24,11 +24,12 @@ jobs:
         python -m venv .venv
         . ./.venv/bin/activate
         echo "PATH=$PATH" >> $GITHUB_ENV
-        echo "VIRTUAL_ENV=./.venv" >> $GITHUB_ENV
+        echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
         which python
     - name: Install dependencies
       run: |
         which python
+        which python3
         python -m pip install --upgrade pip
         python -m pip install .[lint,test]
     - name: Write package version
