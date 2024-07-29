@@ -38,11 +38,11 @@ jobs:
           IMAGE_NAME: ${{ github.event.repository.name }}
         run: |
           IMAGE_TAG=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
-          FULL_IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
-          echo "FULL_IMAGE=${FULL_IMAGE}" > /tmp/image-name.txt
-          echo "FULL_IMAGE: ${FULL_IMAGE}"
-          docker build -t $FULL_IMAGE .
-          docker save --output /tmp/image.tar $FULL_IMAGE
+          IMAGE_NAME=${IMAGE_NAME}:${IMAGE_TAG}
+          echo "IMAGE_NAME=${IMAGE_NAME}" > /tmp/image-name.txt
+          echo "IMAGE_NAME: ${IMAGE_NAME}"
+          docker build -t $IMAGE_NAME .
+          docker save --output /tmp/image.tar $IMAGE_NAME
       - name: Upload docker image as artifact
         uses: actions/upload-artifact@v4
         with:
