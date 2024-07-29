@@ -12,23 +12,30 @@ from dritimeseriesprocessor.configuration import app_config
 
 logger = logging.getLogger(__name__)
 
-# endpoint_url config required if running locally
+
+# localstack endpoint_url config required if running locally
 if "ingestion_environment" not in os.environ:
-    S3_CLIENT = boto3.client("s3", endpoint_url=app_config.endpoint_url)
+    s3_client = boto3.client(
+        "s3",
+        endpoint_url=app_config.endpoint_url,
+        region_name=app_config.AWS_DEFAULT_REGION
+    )
 else:
-    S3_CLIENT = boto3.client("s3")
+    s3_client = boto3.client("s3", region_name=app_config.AWS_DEFAULT_REGION)
 
 
-def get_parquet_by_dates(bucket_name: str, start_date: date, end_date: date) -> pl.DataFrame:
-    """Reads Parquet files from an S3 bucket for a given date range and combines them into a single Polars DataFrame.
+def get_parquet_by_dates(bucket_name: str, filter_config: dict) -> pl.DataFrame:
+    """Reads Parquet files from an S3 bucket.
+    
+    Dataframes read by site and by start/end date. Returned dataframes
+    combined into one.
 
     Args:
         bucket_name (str): The name of the S3 bucket.
-        start_date (date): The start date of date range.
-        end_date (date): The end date of date range.
+        filter_config (dict): Filter parameters
 
     Returns:
-        pl.DataFrame: A Polars DataFrame containing the combined data from the Parquet files.
+        pl.DataFrame: A Polars DataFrame.
     """
     # Generate list of dates in range
     if start_date > end_date:
@@ -72,3 +79,8 @@ def get_parquet_object(bucket_name: str, s3_key: str) -> pl.DataFrame:
     except (RuntimeError, ClientError) as e:
         logger.error(f"Failed to get {s3_key} from {bucket_name}")
         raise e
+
+def build_parquet_file_key():
+    """Build based on location, selecting only certain columns.
+    
+    Enter dict of station name and start/end time. Same for certain fields"""

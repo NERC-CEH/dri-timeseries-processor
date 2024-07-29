@@ -20,22 +20,23 @@ import config
 logger = logging.getLogger(__name__)
 
 # Expected config values for validation
-local_config_parameters = [
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
+shared_config_parameters = [
     "AWS_DEFAULT_REGION",
-    "ddb_table_name",
-    "endpoint_url",
-    "level_m1_bucket",
     "level_0_bucket",
-    "queue_url",
+    "level_1_bucket",
 ]
 
-kubernetes_config_parameters = local_config_parameters + ["ingestion_environment"]
+local_config_parameters = shared_config_parameters + [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "endpoint_url",
+]
+
+kubernetes_config_parameters = shared_config_parameters + ["time_series_environment"]
 
 
 class Configuration:
-    """Configuartion for the ingestion app.
+    """Configuartion for the time series processing app.
 
     Check config file for missing or empty parameters and
     creates attributes for each one.
@@ -43,7 +44,7 @@ class Configuration:
 
     def __init__(self):
         # Populate class attributes
-        if "ingestion_environment" not in os.environ:
+        if "time_series_environment" not in os.environ:
             logger.info("Loading local config")
 
             # Load config, raise error if not formatted correctly
@@ -68,8 +69,8 @@ class Configuration:
             os.environ["AWS_SECRET_ACCESS_KEY"] = cfg["AWS_SECRET_ACCESS_KEY"]
             os.environ["AWS_DEFAULT_REGION"] = cfg["AWS_DEFAULT_REGION"]
 
-        elif os.environ["ingestion_environment"] in ["staging", "production"]:
-            logger.info(f"Loading {os.environ['ingestion_environment']} config")
+        elif os.environ["time_series_environment"] in ["staging", "production"]:
+            logger.info(f"Loading {os.environ['time_series_environment']} config")
             for item in kubernetes_config_parameters:
                 if item in os.environ:
                     setattr(Configuration, item, os.environ[item])
@@ -78,7 +79,7 @@ class Configuration:
 
         else:
             raise ValueError(
-                """ingestion_environment config must be \
+                """time_series_environment config must be \
                 either 'staging' or 'production'"""
             )
 
