@@ -20,7 +20,7 @@ jobs:
       - name: Download docker image
         uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: test-docker.yml
+          workflow: ./.github/workflows/test-docker.yml
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow_conclusion: success
           name: image
