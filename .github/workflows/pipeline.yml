@@ -25,7 +25,7 @@ jobs:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
   test-deploy-docker:
-    uses: ./.github/workflows/deploy-deploy.yml
+    uses: ./.github/workflows/test-deploy.yml
     needs: [test-python, test-docker]
   deploy-docs:
     uses: ./.github/workflows/deploy-docs.yml
