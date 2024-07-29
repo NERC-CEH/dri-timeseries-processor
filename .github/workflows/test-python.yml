@@ -22,16 +22,17 @@ jobs:
       with:
         name: python-environment
         path: ./.venv
-    - name: Activate environment
-      run: |
-        . ./.venv/bin/activate
-        echo "PATH=$PATH" >> $GITHUB_ENV
-        which python
     - name: Check python
       run: which python
     - name: Lint with ruff
-      run: ruff check
+      run: |
+        . ./.venv/bin/activate
+        ruff check
     - name: Check format with ruff
-      run: ruff format --check
+      run: |
+      . ./.venv/bin/activate
+      ruff format --check
     - name: Test with pytest
-      run: pytest
+      run: |
+      . ./.venv/bin/activate
+      pytest
