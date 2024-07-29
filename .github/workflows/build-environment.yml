@@ -26,7 +26,7 @@ jobs:
       run: |
         . ./.venv/bin/activate
         python -m pip install --upgrade pip
-        python -m pip install .[lint,test]
+        python -m pip install .[dev]
     - name: Write package version
       run: |
         . ./.venv/bin/activate

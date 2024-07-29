@@ -24,11 +24,16 @@ jobs:
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
           cache: 'pip'
-      - name: Install Dependencies
+      - name: Download python environment
+        uses: actions/download-artifact@v4
+        with:
+          name: python-environment
+          path: /tmp
+      - name: Unpack environment
         run: |
-            pip install --upgrade pip
-            pip install .[docs]
+          tar -xzf /tmp/python-environment.tar.gz -C ./
       - name: Build Docs
         run: |
-          pushd docs
+          . .venv/bin/activate
+          cd docs
           make html
