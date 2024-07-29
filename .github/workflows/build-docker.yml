@@ -33,12 +33,25 @@ jobs:
           pip install .
       - name: Build docker image
         if: steps.check_file.outputs.file_exists == 'true'
+        id: build-docker-image
         env:
           IMAGE_NAME: ${{ github.event.repository.name }}
         run: |
           IMAGE_TAG=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
           FULL_IMAGE=${IMAGE_NAME}:${IMAGE_TAG}
+          echo "FULL_IMAGE=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
           echo "FULL_IMAGE: ${FULL_IMAGE}"
           docker build -t $FULL_IMAGE .
+      - name: Run Docker Image
+        run: docker run --name test-container -d ${{ steps.build-docker-image.outputs.FULL_IMAGE}}
+      - name: Check container is running
+        run: docker ps -a
+      - name: Check if container has exited already
+        run: docker ps -a | grep "Exited" && exit 1
+      - name: Stop and remove container
+        run: |
+          docker stop test-container
+          docker rm test-container
+
 
 
