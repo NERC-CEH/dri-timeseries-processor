@@ -11,7 +11,7 @@ on:
         description: "Name of the docker image to build"
         required: false
         type: string
-        default: ${{ inputs.package_name }}
+        default: ${{ github.event.repository.name }}
     
 permissions:
   contents: read
