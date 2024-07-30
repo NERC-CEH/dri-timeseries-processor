@@ -42,10 +42,10 @@ jobs:
           
   deploy:
     needs: check-pages
-    if: ${{ needs.check-pages.outputs.pages_enabled == 'true' }}
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # if: ${{ needs.check-pages.outputs.pages_enabled == 'true' }}
+    # environment:
+    #   name: github-pages
+    #   url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Setup Pages
