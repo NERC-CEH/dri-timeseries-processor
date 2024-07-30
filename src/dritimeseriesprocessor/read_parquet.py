@@ -38,12 +38,8 @@ def read_parquet_by_config(bucket_name: str, filter_config_path: str) -> pl.Data
     Returns:
         pl.DataFrame: A Polars DataFrame.
     """
-    # Load filter config
-    with open(filter_config_path) as f:
-        filter_config = json.load(f)
-
     # Validate filter config
-    validation.validate_filter_config(filter_config)
+    filter_config = validation.validate_filter_config(filter_config_path)
 
     # Initialise empty Dataframe to load data into
     df = pl.DataFrame()
@@ -87,8 +83,8 @@ def read_parquet_object(bucket_name: str, s3_key: str, columns: list) -> pl.Data
     """Retrieves and loads a parquet object from an S3 bucket.
 
     Args:
-        bucket_name (str): The name of the S3 bucket.
-        s3_key (str): The key (path) of the object within the bucket.
+        bucket_name: The name of the S3 bucket.
+        s3_key: The key (path) of the object within the bucket.
         columns: Columns to filter on.
 
     Returns:
