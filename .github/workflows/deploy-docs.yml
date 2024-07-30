@@ -42,30 +42,25 @@ jobs:
           
   deploy:
     needs: check-pages
-    # if: ${{ needs.check-pages.outputs.pages_enabled == 'true' }}
-    # environment:
-    #   name: github-pages
-    #   url: ${{ steps.deployment.outputs.page_url }}
+    if: ${{ needs.check-pages.outputs.pages_enabled == 'true' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      # - name: Setup Pages
-      #   uses: actions/configure-pages@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
       - name: Download pages artifact
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.pages_artifact_name }}
           path: ./
-      - name: Test artifact location
-        run: |
-          ls -la
-          ls -la *
-          tree
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v3
-      #   with:
-      #     # Upload entire repository
-      #     path: ./
-      # - name: Deploy to GitHub Pages
-      #   id: deployment
-      #   uses: actions/deploy-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: ./
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
