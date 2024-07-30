@@ -15,7 +15,6 @@ jobs:
     uses: NERC-CEH/dri-cicd/.github/workflows/build-docker.yml@main
     with:
       package_name: dritimeseriesprocessor
-      test_image: false
     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
   
   deploy-docker:
