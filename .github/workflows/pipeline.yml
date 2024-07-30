@@ -6,24 +6,34 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 jobs:
   test-python:
     uses: ./.github/workflows/test-python.yml
-  test-docker:
+  build-test-docker:
     uses: ./.github/workflows/build-docker.yml
+    with:
+      package_name: dritimeseriesprocessor
+
     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
-  test-docs:
+  build-docs:
     uses: ./.github/workflows/build-docs.yml
     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
   deploy-docker:
     uses: ./.github/workflows/deploy-docker.yml
+    with:
+      image_artifact_name: ${{ needs.build-test-docker.outputs.image_artifact_name }}
+      image_artifact_file: ${{ needs.build-test-docker.outputs.image_artifact_file }}
+      image_name: ${{ needs.build-test-docker.outputs.image_name }}
     if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
-    needs: [test-python]
+    needs: [test-python, build-test-docker]
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
   deploy-docs:
     uses: ./.github/workflows/deploy-docs.yml
+    with:
+      pages_artifact_name: ${{ needs.build-docs.outputs.pages_artifact_name }}
     if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
-    needs: [test-python]
+    needs: [test-python, build-docs, build-test-docker]
