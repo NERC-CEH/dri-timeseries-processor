@@ -1,20 +1,33 @@
 name: Build the Docker Image
 
-on: [workflow_call]
+on:
+  workflow_call:
+    inputs:
+      package_name:
+        description: "The name of the python package"
+        required: true
+        type: string
+      image_name:
+        description: "Name of the docker image to build"
+        required: false
+        type: string
+        default: ${{ github.event.repository.name }}
     
 permissions:
   contents: read
 
 jobs:
-  build:
+  check_file:
     runs-on: ubuntu-latest
+    outputs:
+      dockerfile_exists: ${{ steps.check-file.outputs.file_exists}}
     steps:
       - name: Clone the repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Check file existence
-        id: check_file
+        id: check-file
         run: |
           if [ -f "Dockerfile" ]; then
             file_exists="true"
@@ -22,6 +35,20 @@ jobs:
             file_exists="false"
           fi
           echo "file_exists=${file_exists}" >> $GITHUB_OUTPUT
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [check_file]
+    outputs:
+      image_name: ${{ steps.build-docker-image.outputs.image_name }}
+      artifact_path: ${{ steps.build-docker-image.outputs.artifact_path }}
+      artifact_name: ${{ steps.build-docker-image.outputs.artifact_name }}
+    if: ${{ needs.check_file.outputs.dockerfile_exists }} == "true"
+    steps:
+      - name: Clone the repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -32,53 +59,49 @@ jobs:
           python -m pip install .
       - name: Get package version
         run: |
-          version=$(python -c "import dritimeseriesprocessor; print(dritimeseriesprocessor.__version__)")
+          version=$(python -c "import ${{ inputs.package_name}}; print(${{ inputs.package_name}}.__version__)")
           echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
       - name: Build image name
-        if: steps.check_file.outputs.file_exists == 'true'
         id: build-docker-image
-        env:
-          IMAGE_NAME: ${{ github.event.repository.name }}
         run: |
-          IMAGE_NAME=${IMAGE_NAME}:${PACKAGE_VERSION}
+          IMAGE_NAME=${{ inputs.image_name }}:${PACKAGE_VERSION}
+          ARTIFACT_PATH=/tmp/image.tar
+          ARTIFACT_NAME=docker-image
+
           echo "IMAGE_NAME=${IMAGE_NAME}" > /tmp/image-name.txt
           echo "IMAGE_NAME: ${IMAGE_NAME}"
           docker build -t $IMAGE_NAME .
           docker save --output /tmp/image.tar $IMAGE_NAME
+
+          echo "image_name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "artifact_path=${ARTIFACT_PATH}" >> $GITHUB_OUTPUT
+          echo "artifact_name=${ARTIFACT_NAME}" >> $GITHUB_OUTPUT
       - name: Upload docker image as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: image
-          path: /tmp/image.tar
-      - name: Upload docker image name as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-name
-          path: /tmp/image-name.txt
+          name: ${{ steps.build-docker-image.outputs.artifact_name}}
+          path: ${{ steps.build-docker-image.outputs.artifact_path}}
 
   test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [check_file, build]
+    env:
+      image_name: ${{ needs.build.outputs.image_name }}
+      artifact_path: ${{ needs.build.outputs.artifact_path }}
+      artifact_name: ${{ needs.build.outputs.artifact_name }}
+    if: ${{ needs.check_file.outputs.dockerfile_exists }} == "true"
     steps:
       - name: Download docker image
         uses: actions/download-artifact@v4
         with:
-          name: image
-          path: /tmp
-      - name: Download docker image name
-        uses: actions/download-artifact@v4
-        with:
-          name: image-name
-          path: /tmp
+          name: ${{ env.artifact_name }}
+          path: ${{ env.artifact_path }}
       - name: Load image
         run: |
-          docker load --input /tmp/image.tar
+          docker load --input ${{ env.artifact_path }}
           docker image ls -a
-          source /tmp/image-name.txt
-          echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
-
       - name: Run Docker Image
-        run: docker run --name test-container -d $IMAGE_NAME
+        run: docker run --name test-container -d ${{ env.image_name }}
       - name: Check container is running
         run: sleep 5 && docker ps -a
       - name: Check if container has exited already
