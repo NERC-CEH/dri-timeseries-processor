@@ -22,7 +22,11 @@ jobs:
     if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
   deploy-docker:
     uses: ./.github/workflows/deploy-docker.yml
-    if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
+    with:
+      image_artifact_name: ${{ needs.build-test-docker.outputs.image_artifact_name }}
+      image_artifact_file: ${{ needs.build-test-docker.outputs.image_artifact_file }}
+      image_name: ${{ needs.build-test-docker.outputs.image_name }}
+    # if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
     needs: [test-python, build-test-docker]
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}

@@ -20,6 +20,9 @@ on:
       image_artifact_file:
         description: "Path of the image arifact."
         value: ${{ jobs.build.outputs.artifact_file }}
+      image_name:
+        description: "Full name of the docker image."
+        value: ${{ jobs.build.outputs.image_name }}
     
 permissions:
   contents: read
