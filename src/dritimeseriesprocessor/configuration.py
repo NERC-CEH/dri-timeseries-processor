@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 shared_config_parameters = [
     "AWS_DEFAULT_REGION",
     "level_0_bucket",
-    "level_1_bucket",
+    "qc_bucket",
+    "filter_config_path"
 ]
 
 local_config_parameters = shared_config_parameters + [

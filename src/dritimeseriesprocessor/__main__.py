@@ -1,17 +1,17 @@
 import logging
-from datetime import date
 
-from dritimeseriesprocessor import parquet_access
+from dritimeseriesprocessor import read_parquet
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.validation import validate_filter_config
 
 logging.basicConfig(level=logging.INFO)
 
+logger = logging.getLogger(__name__)
+
 bucket = app_config.level_0_bucket
-filter_config = {
-    'BUNNY': (date(2024, 1, 1), date(2024, 1, 7)),
-    'BUNNY': (date(2024, 1, 1), date(2024, 1, 7))
-}
+filter_config_path = app_config.filter_config_path
 
-df = parquet_access.get_parquet_by_dates(bucket, filter_config)
+data = read_parquet.read_parquet_by_config(bucket, filter_config_path)
 
-print(df.count())
+logger.info(data.count())
+logger.info(data)

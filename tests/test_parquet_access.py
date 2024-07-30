@@ -7,7 +7,7 @@ import boto3
 import moto
 import polars as pl
 
-from dritimeseriesprocessor.parquet_access import get_parquet_by_dates
+from dritimeseriesprocessor.read_parquet import get_parquet_by_dates
 
 
 @moto.mock_aws
