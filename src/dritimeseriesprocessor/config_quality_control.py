@@ -8,7 +8,7 @@ Import qc_config from this file to have all verified config data in a single
 object.
 """
 
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import (
     BaseModel,
@@ -25,46 +25,67 @@ qc_tests = [
         "test_name": "RANGE",
         "description": "Checks if the value falls within a specified range.",
     },
-    {
-        "test_name": "TEST",
-        "description": "Test test.",
-    },
 ]
 
-# Default min and max values for variables at different intervals
-default_range_thresholds = [
+# Min and max values for variables.
+var_range_thresholds = [
     {
-        "variable_name": "TA",
-        "default": {
-            "min_value": -30.0,
-            "max_value": 55.0,
-        },
+        "variable_id": "TA",
+        "defaults": [
+            {
+                "min_value": -30.0,
+                "max_value": 55.0,
+            },
+        ],
+        "sites": [
+            {
+                "site_id": "BUNNY",
+                "resolutions": ["PT1M", "PT15M", "PT30M"],
+                "min_value": -25.0,
+                "max_value": 50.0,
+            },
+        ],
     },
     {
-        "variable_name": "PRECIP",
-        "resolutions": {
-            "PT1M": {
+        "variable_id": "PRECIP",
+        "defaults": [
+            {
+                "resolutions": ["PT1M"],
                 "min_value": 0.0,
                 "max_value": 10.0,
             },
-            "PT30M": {
+            {
+                "resolutions": ["PT15M"],
+                "min_value": 0.0,
+                "max_value": 60.0,
+            },
+            {
+                "resolutions": ["PT30M"],
                 "min_value": 0.0,
                 "max_value": 100.0,
             },
-        },
+        ],
+        "sites": [
+            {
+                "site_id": "BUNNY",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 90.0,
+            },
+        ],
     },
 ]
 
 # Mapping which variables should run which QC tests
 variable_test_mapping = [
     {
-        "variable_name": "TA",
+        "variable_id": "TA",
         "tests": [
             "RANGE",
         ],
     },
     {
-        "variable_name": "PRECIP",
+        "variable_id": "PRECIP",
         "tests": [
             "RANGE",
         ],
@@ -107,6 +128,8 @@ class RangeThreshold(BaseModel):
         min_value.
     """
 
+    site_id: Optional[str] = None
+    resolutions: Optional[List[str]] = None
     min_value: float
     max_value: float
 
@@ -131,37 +154,15 @@ class RangeThreshold(BaseModel):
             raise ValueError("max_value must be greater than min_value")
         return v
 
-
-class VariableRangeThreshold(BaseModel):
-    """
-    Defines default or resolution-specific range thresholds for a variable.
-
-    Attributes:
-        default (Optional[RangeThreshold]): Default range thresholds for the
-        variable.
-        resolutions (Optional[Dict[str, RangeThreshold]]): Resolution-specific
-        range thresholds.
-
-    Validators:
-        check_resolutions: Validates ISO 8601 duration keys in resolutions.
-        check_mutually_exclusive: Ensures that either default or resolutions is
-        provided, but not both.
-    """
-
-    variable_name: str
-    default: Optional[RangeThreshold] = None
-    resolutions: Optional[Dict[str, RangeThreshold]] = None
-
     @field_validator("resolutions")
-    def check_resolutions(cls, v: Optional[Dict[str, RangeThreshold]]) -> Optional[Dict[str, RangeThreshold]]:
+    def check_resolutions(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         """
-        Validates ISO 8601 duration keys in the resolutions dictionary.
+        Validates ISO 8601 duration keys in the resolutions list.
 
         Args:
-            cls (Type[VariableRangeThreshold]): The class of the model being
+            cls (Type[RangeThreshold]): The class of the model being
             validated.
-            v (Optional[Dict[str, RangeThreshold]]): The resolutions dictionary
-            to validate.
+            v (Optional[Lust[str]]): The resolutions list to validate.
 
         Raises:
             ValueError: If any key in resolutions is not a valid ISO 8601 duration.
@@ -175,28 +176,43 @@ class VariableRangeThreshold(BaseModel):
                     raise ValueError(f"Invalid ISO 8601 duration: {key}")
         return v
 
+
+class VariableRangeThresholds(BaseModel):
+    """
+    Defines the range thresholds for a variable, including default and site-specific thresholds.
+
+    Attributes:
+        variable_id (str): The identifier for the variable.
+        defaults (List[RangeThreshold]): List of default range thresholds for the variable.
+        sites (Optional[List[RangeThreshold]]): List of site-specific range thresholds for the variable.
+
+    Validators:
+        check_site_id_in_sites: Ensures that every RangeThreshold in 'sites' contains a 'site_id'.
+    """
+
+    variable_id: str
+    defaults: List[RangeThreshold]
+    sites: Optional[List[RangeThreshold]] = None
+
     @model_validator(mode="after")
-    def check_mutually_exclusive(
-        cls, values: Dict[str, Optional[RangeThreshold]]
-    ) -> Dict[str, Optional[RangeThreshold]]:
+    def check_site_id_in_sites(cls, values: "VariableRangeThresholds") -> "VariableRangeThresholds":
         """
-        Ensures that either 'default' or 'resolutions' is provided, but not both.
+        Ensures that every RangeThreshold in 'sites' contains a 'site_id'.
 
         Args:
-            cls (Type[VariableRangeThreshold]): The class of the model being
-            validated.
-            values (Dict[str, Optional[RangeThreshold]]): The values of the model.
+            cls (Type[VariableRangeThresholds]): The class of the model being validated.
+            values (VariableRangeThresholds): The instance of the model.
 
         Raises:
-            ValueError: If neither or both 'default' and 'resolutions' are provided.
+            ValueError: If any RangeThreshold in 'sites' does not contain a 'site_id'.
 
         Returns:
-            Dict[str, Optional[RangeThreshold]]: The validated values.
+            VariableRangeThresholds: The validated instance.
         """
-        if values.default is None and values.resolutions is None:
-            raise ValueError("Either 'default' or 'resolutions' must be provided")
-        if values.default is not None and values.resolutions is not None:
-            raise ValueError("Only one of 'default' or 'resolutions' can be " "provided, not both")
+        if values.sites:
+            for site in values.sites:
+                if not site.site_id:
+                    raise ValueError("Each RangeThreshold in 'sites' must contain a 'site_id'")
         return values
 
 
@@ -205,14 +221,14 @@ class VariableTestMapping(BaseModel):
     Maps a variable to its associated QC tests.
 
     Attributes:
-        variable_name (str): The name of the variable.
+        variable_id (str): The name of the variable.
         tests (List[str]): A list of QC test names applicable to the variable.
 
     Validators:
         validate_tests: Ensures that all specified tests are valid QC tests.
     """
 
-    variable_name: str
+    variable_id: str
     tests: List[str]
 
     @field_validator("tests")
@@ -244,8 +260,7 @@ class QCConfig(BaseModel):
 
     Attributes:
         qc_tests (Dict[str, QCTest]): A dictionary of QC tests.
-        default_range_thresholds (Dict[str, VariableRangeThreshold]): Default
-        range thresholds for variables.
+        var_range_thresholds (Dict[str, RangeThreshold]): Range thresholds for variables.
         variable_test_mapping (Dict[str, List[str]]): Mapping of variables to QC
         tests.
 
@@ -255,13 +270,13 @@ class QCConfig(BaseModel):
     """
 
     qc_tests: List[QCTest]
-    default_range_thresholds: List[VariableRangeThreshold]
+    var_range_thresholds: List[VariableRangeThresholds]
     variable_test_mapping: List[VariableTestMapping]
 
 
 # Instantiate the models
 qc_config = QCConfig(
     qc_tests=[QCTest(**qc_test) for qc_test in qc_tests],
-    default_range_thresholds=[VariableRangeThreshold(**range_thresh) for range_thresh in default_range_thresholds],
+    var_range_thresholds=[VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds],
     variable_test_mapping=[VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping],
 )
