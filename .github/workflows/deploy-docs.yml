@@ -56,7 +56,10 @@ jobs:
           name: ${{ inputs.pages_artifact_name }}
           path: ./
       - name: Test artifact location
-        run: ls -la
+        run: |
+          ls -la
+          ls -la *
+          tree
       # - name: Upload artifact
       #   uses: actions/upload-pages-artifact@v3
       #   with:
