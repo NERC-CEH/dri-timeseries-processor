@@ -1,33 +1,29 @@
 """Module for reading parquet data from S3 buckets"""
 
 import datetime
-import json
 import logging
 import os
 
 import boto3
 import polars as pl
 from botocore.exceptions import ClientError
-from dritimeseriesprocessor.configuration import app_config
+
 from dritimeseriesprocessor import validation
+from dritimeseriesprocessor.configuration import app_config
 
 logger = logging.getLogger(__name__)
 
 
 # localstack endpoint_url config required if running locally
 if "ingestion_environment" not in os.environ:
-    s3_client = boto3.client(
-        "s3",
-        endpoint_url=app_config.endpoint_url,
-        region_name=app_config.AWS_DEFAULT_REGION
-    )
+    s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url, region_name=app_config.AWS_DEFAULT_REGION)
 else:
     s3_client = boto3.client("s3", region_name=app_config.AWS_DEFAULT_REGION)
 
 
 def read_parquet_by_config(bucket_name: str, filter_config_path: str) -> pl.DataFrame:
     """Reads Parquet files from an S3 bucket using config.
-    
+
     Dataframes read by type and start/end date. Returned dataframes
     combined into one.
 
@@ -46,14 +42,13 @@ def read_parquet_by_config(bucket_name: str, filter_config_path: str) -> pl.Data
 
     # Extract columns to filter
     columns = None
-    if 'columns' in filter_config:
-        columns = filter_config['columns']
+    if "columns" in filter_config:
+        columns = filter_config["columns"]
 
-    for dataset in filter_config['datasets']:
-        
-        dataset_type = dataset['type']
-        start_date = dataset['range'][0]
-        end_date = dataset['range'][1]
+    for dataset in filter_config["datasets"]:
+        dataset_type = dataset["type"]
+        start_date = dataset["range"][0]
+        end_date = dataset["range"][1]
 
         start_date = datetime.datetime.strptime(start_date, "%Y-%M-%d").date()
         end_date = datetime.datetime.strptime(end_date, "%Y-%M-%d").date()

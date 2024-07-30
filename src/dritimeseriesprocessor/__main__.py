@@ -2,7 +2,6 @@ import logging
 
 from dritimeseriesprocessor import read_parquet
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.validation import validate_filter_config
 
 logging.basicConfig(level=logging.INFO)
 
