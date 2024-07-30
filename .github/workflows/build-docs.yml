@@ -1,7 +1,23 @@
 # Simple workflow for deploying static content to GitHub Pages
 name: Documentation Building
 
-on: [workflow_call]
+on:
+  workflow_call:
+    inputs:
+      pages_artifact_name:
+        description: "Name of pages artifact"
+        required: false
+        type: string
+        default: "pages-artifact"
+      pages_html_dir:
+        description: "Directory of pages html"
+        required: false
+        type: string
+        default: "docs/_build/html"
+    outputs:
+      pages_artifact_name:
+        description: "Name of artifact containing the pages"
+        value: 
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -10,6 +26,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_artifact_name:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,3 +50,8 @@ jobs:
         run: |
           pushd docs
           make html
+      - name: Upload pages directory as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.pages_artifact_name }}
+          path: ${{ inputs.pages_html_dir }}
