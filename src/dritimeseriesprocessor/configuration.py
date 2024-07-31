@@ -47,7 +47,7 @@ class Configuration:
             # Load config, raise error if not formatted correctly
             # including empty parameters
             try:
-                cfg = config.Config(str(Path(Path(__file__).parents[0], "__assets__/env.cfg")))
+                cfg = config.Config(str(Path(Path(__file__).parents[0], "__assets__", "env.cfg")))
             except config.ConfigFormatError as cfe:
                 logger.error(cfe)
                 raise
