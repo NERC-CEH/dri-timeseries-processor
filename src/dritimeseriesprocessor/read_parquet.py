@@ -3,12 +3,12 @@
 import datetime
 import logging
 import os
+from typing import Any, Dict
 
 import boto3
 import polars as pl
 from botocore.exceptions import ClientError
 
-from dritimeseriesprocessor import validation
 from dritimeseriesprocessor.configuration import app_config
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ else:
     s3_client = boto3.client("s3", region_name=app_config.AWS_DEFAULT_REGION)
 
 
-def read_parquet_by_config(bucket_name: str, filter_config_path: str) -> pl.DataFrame:
+def read_parquet_by_config(bucket_name: str, filter_config: Dict[str, Any]) -> pl.DataFrame:
     """Reads Parquet files from an S3 bucket using config.
 
     Dataframes read by type and start/end date. Returned dataframes
@@ -29,26 +29,23 @@ def read_parquet_by_config(bucket_name: str, filter_config_path: str) -> pl.Data
 
     Args:
         bucket_name: The name of the S3 bucket.
-        filter_config: Filter parameters.
+        filter_config: Filter parameters (as json).
 
     Returns:
         pl.DataFrame: A Polars DataFrame.
     """
-    # Validate filter config
-    filter_config = validation.validate_filter_config(filter_config_path)
-
     # Initialise empty Dataframe to load data into
     df = pl.DataFrame()
-
-    # Extract columns to filter
-    columns = None
-    if "columns" in filter_config:
-        columns = filter_config["columns"]
 
     for dataset in filter_config["datasets"]:
         dataset_type = dataset["type"]
         start_date = dataset["range"][0]
         end_date = dataset["range"][1]
+
+        # Extract columns to filter
+        columns = None
+        if "columns" in dataset:
+            columns = dataset["columns"]
 
         start_date = datetime.datetime.strptime(start_date, "%Y-%M-%d").date()
         end_date = datetime.datetime.strptime(end_date, "%Y-%M-%d").date()
@@ -69,7 +66,7 @@ def read_parquet_by_config(bucket_name: str, filter_config_path: str) -> pl.Data
             except (RuntimeError, ClientError):
                 logger.warning(f"Data not found for date: {day}")
             else:
-                df = pl.concat([df, current_df])
+                df = pl.concat([df, current_df], how="diagonal")
 
     return df
 

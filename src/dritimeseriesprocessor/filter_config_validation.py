@@ -8,7 +8,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def validate_filter_config(filter_config_path: str | os.PathLike) -> None:
+def validate(filter_config_path: str | os.PathLike) -> None:
     """Validates the filter config json.
 
     Args:
@@ -40,10 +40,10 @@ def validate_filter_config(filter_config_path: str | os.PathLike) -> None:
             logger.error(f"Type must be one of {valid_types}")
             raise ValueError
 
-    # Columns
-    if "columns" in filter_config and not isinstance(filter_config["columns"], list):
-        logger.error("Columns must be list type.")
-        raise ValueError
+        # Columns
+        if "columns" in dataset and not isinstance(dataset["columns"], list):
+            logger.error("Columns must be list type.")
+            raise ValueError
 
     return filter_config
 
@@ -60,4 +60,4 @@ def validate_date(date_text: str) -> None:
     try:
         datetime.date.fromisoformat(date_text)
     except ValueError:
-        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+        raise ValueError("{date_text}: Incorrect data format, should be YYYY-MM-DD")
