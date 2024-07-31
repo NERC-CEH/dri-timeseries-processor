@@ -14,6 +14,7 @@ Note:
 
 import logging
 import os
+from pathlib import Path
 
 import config
 
@@ -46,7 +47,7 @@ class Configuration:
             # Load config, raise error if not formatted correctly
             # including empty parameters
             try:
-                cfg = config.Config("env.cfg")
+                 cfg = config.Config(str(Path(Path(__file__).parents[2], "env.cfg")))
             except config.ConfigFormatError as cfe:
                 logger.error(cfe)
                 raise
