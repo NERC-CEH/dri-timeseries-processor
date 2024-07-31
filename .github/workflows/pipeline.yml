@@ -15,7 +15,6 @@ jobs:
     uses: NERC-CEH/dri-cicd/.github/workflows/build-docker.yml@main
     with:
       package_name: dritimeseriesprocessor
-    if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
   
   deploy-docker:
     uses: NERC-CEH/dri-cicd/.github/workflows/deploy-docker.yml@main
@@ -31,12 +30,3 @@ jobs:
 
   build-docs:
     uses: NERC-CEH/dri-cicd/.github/workflows/build-docs.yml@main
-    if: ${{ (github.event_name == 'pull_request' && github.head_ref != 'main') || (github.event_name == 'push' && github.ref_name != 'main') }}
-  
-  deploy-docs:
-    uses: NERC-CEH/dri-cicd/.github/workflows/deploy-docs.yml@main
-    with:
-      pages_artifact_name: ${{ needs.build-docs.outputs.pages_artifact_name }}
-    if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
-    needs: [test-python, build-docs, build-test-docker]
-
