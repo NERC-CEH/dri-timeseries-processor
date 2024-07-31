@@ -8,7 +8,7 @@ Import qc_config from this file to have all verified config data in a single
 object.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -274,9 +274,45 @@ class QCConfig(BaseModel):
     variable_test_mapping: List[VariableTestMapping]
 
 
-# Instantiate the models
-qc_config = QCConfig(
-    qc_tests=[QCTest(**qc_test) for qc_test in qc_tests],
-    var_range_thresholds=[VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds],
-    variable_test_mapping=[VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping],
-)
+def get_qc_config(
+    config: str = "all",
+) -> Union[QCConfig, List[Union[QCTest, VariableRangeThresholds, VariableTestMapping]]]:
+    """
+    Retrieve Quality Control (QC) configuration based on the specified config type.
+
+    This function returns different QC configuration objects or lists depending on the
+    input parameter. It uses predefined lists (qc_tests, var_range_thresholds,
+    variable_test_mapping) to create the configuration.
+
+    Args:
+        config (str, optional): The type of configuration to retrieve.
+            Possible values are:
+            - "all": Returns a QCConfig object with all configurations.
+            - "tests": Returns a list of QCTest objects.
+            - "range_thresholds": Returns a list of VariableRangeThresholds objects.
+            - "variable_test_map": Returns a list of VariableTestMapping objects.
+            Defaults to "all".
+
+    Returns:
+        Union[QCConfig, List[Union[QCTest, VariableRangeThresholds, VariableTestMapping]]]:
+            The requested QC configuration.
+
+    Raises:
+        ValueError: If an invalid config type is provided.
+    """
+    if config == "all":
+        qc_config = QCConfig(
+            qc_tests=[QCTest(**qc_test) for qc_test in qc_tests],
+            var_range_thresholds=[VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds],
+            variable_test_mapping=[VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping],
+        )
+    elif config == "tests":
+        qc_config = [QCTest(**qc_test) for qc_test in qc_tests]
+    elif config == "range_thresholds":
+        qc_config = [VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds]
+    elif config == "variable_test_map":
+        qc_config = [VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping]
+    else:
+        raise ValueError("Not a valid config type")
+
+    return qc_config

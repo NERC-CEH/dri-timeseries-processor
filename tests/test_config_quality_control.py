@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from pydantic import ValidationError
 
 from dritimeseriesprocessor.config_quality_control import (
@@ -8,7 +9,8 @@ from dritimeseriesprocessor.config_quality_control import (
     VariableRangeThresholds,
     VariableTestMapping,
     QCConfig,
-    get_valid_qc_tests
+    get_valid_qc_tests,
+    get_qc_config,
 )
 
 class TestGetValidQCTests(unittest.TestCase):
@@ -117,6 +119,114 @@ class TestQCConfig(unittest.TestCase):
                 qc_tests=qc_tests,
                 var_range_thresholds=var_range_thresholds,
                 variable_test_mapping="invalid")
+
+
+class TestGetQCConfig(unittest.TestCase):
+
+    @patch('dritimeseriesprocessor.config_quality_control.qc_tests')
+    @patch('dritimeseriesprocessor.config_quality_control.var_range_thresholds')
+    @patch('dritimeseriesprocessor.config_quality_control.variable_test_mapping')
+    def setUp(self, mock_variable_test_mapping, mock_var_range_thresholds, mock_qc_tests):
+        """Set up the test environment by mocking the global variables used in get_qc_config.
+        This method is called before each test method.
+        """
+        # Mock the global variables used in the function
+        self.mock_qc_tests = [
+            {
+                "test_name": "RANGE",
+                "description": "Checks if the value falls within a specified range.",
+            },
+        ]
+        
+        self.mock_var_range_thresholds = [
+            {
+                "variable_id": "TA",
+                "defaults": [
+                    {
+                        "min_value": -30.0,
+                        "max_value": 55.0,
+                    },
+                ],
+                "sites": [
+                    {
+                        "site_id": "BUNNY",
+                        "resolutions": ["PT1M", "PT15M", "PT30M"],
+                        "min_value": -25.0,
+                        "max_value": 50.0,
+                    },
+                ],
+            },
+        ]
+        
+        self.mock_variable_test_mapping = [
+            {
+                "variable_id": "TA",
+                "tests": [
+                    "RANGE",
+                ],
+            },
+        ]
+
+        mock_qc_tests.__iter__.return_value = self.mock_qc_tests
+        mock_var_range_thresholds.__iter__.return_value = self.mock_var_range_thresholds
+        mock_variable_test_mapping.__iter__.return_value = self.mock_variable_test_mapping
+
+    def test_get_all_config(self):
+        """Test the get_qc_config function with 'all' configuration.
+        Verifies that it returns a QCConfig object with the correct number of items
+        in each attribute.
+        """
+        result = get_qc_config("all")
+        self.assertIsInstance(result, QCConfig)
+        self.assertEqual(len(result.qc_tests), 1)
+        self.assertEqual(len(result.var_range_thresholds), 2)
+        self.assertEqual(len(result.variable_test_mapping), 2)
+
+    def test_get_tests_config(self):
+        """Test the get_qc_config function with 'tests' configuration.
+        Verifies that it returns a list of QCTest objects with the correct content.
+        """
+        result = get_qc_config("tests")
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 1)
+        self.assertIsInstance(result[0], QCTest)
+        self.assertEqual(result[0].test_name, "RANGE")
+
+    def test_get_range_thresholds_config(self):
+        """Test the get_qc_config function with 'range_thresholds' configuration.
+        Verifies that it returns a list of VariableRangeThresholds objects
+        with the correct content.
+        """
+        result = get_qc_config("range_thresholds")
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+        self.assertIsInstance(result[0], VariableRangeThresholds)
+        self.assertEqual(result[0].variable_id, "TA")
+
+    def test_get_variable_test_map_config(self):
+        """Test the get_qc_config function with 'variable_test_map' configuration.
+        Verifies that it returns a list of VariableTestMapping objects
+        with the correct content.
+        """
+        result = get_qc_config("variable_test_map")
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+        self.assertIsInstance(result[0], VariableTestMapping)
+        self.assertEqual(result[0].variable_id, "TA")
+
+    def test_invalid_config_type(self):
+        """Test the get_qc_config function with an invalid configuration type.
+        Verifies that it raises a ValueError.
+        """
+        with self.assertRaises(ValueError):
+            get_qc_config("invalid_type")
+
+    def test_default_config(self):
+        """Test the get_qc_config function with default configuration (no argument).
+        Verifies that it returns a QCConfig object, which is equivalent to 'all' configuration.
+        """
+        result = get_qc_config()
+        self.assertIsInstance(result, QCConfig)
 
 
 if __name__ == '__main__':
