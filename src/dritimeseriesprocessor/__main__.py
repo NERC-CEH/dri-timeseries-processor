@@ -9,9 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 bucket = app_config.level_0_bucket
-filter_config_path = (
-    str(Path(Path(__file__).parents[0], "__assets__", app_config.filter_config_path))
-)
+filter_config_path = str(Path(Path(__file__).parents[0], "__assets__", app_config.filter_config_path))
 
 # Validate filter config
 filter_config = filter_config_validation.validate(filter_config_path)
