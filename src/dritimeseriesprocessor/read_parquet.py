@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 # localstack endpoint_url config required if running locally
-if "ingestion_environment" not in os.environ:
+if "time_series_environment" not in os.environ:
     s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url, region_name=app_config.AWS_DEFAULT_REGION)
 else:
     s3_client = boto3.client("s3", region_name=app_config.AWS_DEFAULT_REGION)
