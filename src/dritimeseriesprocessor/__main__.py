@@ -1,18 +1,21 @@
-"""A simple module entrypoint for running the code. Runs for 10 minutes and then exits."""
+import logging
+from pathlib import Path
 
-from time import sleep
+from dritimeseriesprocessor import filter_config_validation, read_parquet
+from dritimeseriesprocessor.configuration import app_config
 
-print("START")
+logging.basicConfig(level=logging.INFO)
 
-index = 0
+logger = logging.getLogger(__name__)
 
-while True:
-    print(f"index = {index}.")
-    sleep(5)
-    index += 1
+bucket = app_config.level_0_bucket
+filter_config_path = str(Path(Path(__file__).parents[0], "__assets__", app_config.filter_config_path))
 
-    # Break after 10 minutes
-    if index >= 120:
-        break
+# Validate filter config
+filter_config = filter_config_validation.validate(filter_config_path)
 
-print("END")
+# Get data
+data = read_parquet.read_parquet_by_config(bucket, filter_config)
+
+logger.info(data.count())
+logger.info(data)
