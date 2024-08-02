@@ -25,9 +25,13 @@ qc_tests = [
         "test_name": "RANGE",
         "description": "Checks if the value falls within a specified range.",
     },
+    {
+        "test_name": "BATTV",
+        "description": "Checks if battery voltage is too low.",
+    },
 ]
 
-# Min and max values for variables.
+# Range test - Min and max values for variables.
 var_range_thresholds = [
     {
         "variable_id": "TA",
@@ -76,18 +80,25 @@ var_range_thresholds = [
     },
 ]
 
+
+# Battery test - Min acceptable voltage
+battv_voltage_threshold = 10
+
+
 # Mapping which variables should run which QC tests
 variable_test_mapping = [
     {
         "variable_id": "TA",
         "tests": [
             "RANGE",
+            "BATTV",
         ],
     },
     {
         "variable_id": "PRECIP",
         "tests": [
             "RANGE",
+            "BATTV",
         ],
     },
 ]

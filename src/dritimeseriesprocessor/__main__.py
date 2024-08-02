@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from dritimeseriesprocessor import filter_config_validation, read_parquet
+from dritimeseriesprocessor import filter_config_validation, quality_control, read_parquet
 from dritimeseriesprocessor.configuration import app_config
 
 logging.basicConfig(level=logging.INFO)
@@ -16,6 +16,15 @@ filter_config = filter_config_validation.validate(filter_config_path)
 
 # Get data
 data = read_parquet.read_parquet_by_config(bucket, filter_config)
+
+# Preprocessing here
+
+# Quality control
+qcd_data, qcd_flags = quality_control.run_qc(data)
+
+import pdb
+
+pdb.set_trace()
 
 logger.info(data.count())
 logger.info(data)
