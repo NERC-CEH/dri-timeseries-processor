@@ -24,25 +24,25 @@ class TestGetParquetByDates(unittest.TestCase):
                                      CreateBucketConfiguration={"LocationConstraint": "eu-west-2"})
 
         # Add the test parquet files to the test bucket
-        self.s3_client.upload_file(Filename='parquet-data/LEVEL_-1_PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-17.parquet',
+        self.s3_client.upload_file(Filename='parquet-data/PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-17.parquet',
                                    Bucket=self.bucket_name,
-                                   Key='LEVEL_-1_PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-17.parquet')
+                                   Key='PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-17.parquet')
         
-        self.s3_client.upload_file(Filename='parquet-data/LEVEL_-1_PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-18.parquet',
+        self.s3_client.upload_file(Filename='parquet-data/PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-18.parquet',
                                    Bucket=self.bucket_name,
-                                   Key='LEVEL_-1_PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-18.parquet')
+                                   Key='PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-18.parquet')
 
-        self.s3_client.upload_file(Filename='parquet-data/LEVEL_-1_PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-19.parquet',
+        self.s3_client.upload_file(Filename='parquet-data/PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-19.parquet',
                                    Bucket=self.bucket_name,
-                                   Key='LEVEL_-1_PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-19.parquet')
+                                   Key='PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-19.parquet')
         
-        self.s3_client.upload_file(Filename='parquet-data/LEVEL_-1_SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-21.parquet',
+        self.s3_client.upload_file(Filename='parquet-data/SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-21.parquet',
                                    Bucket=self.bucket_name,
-                                   Key='LEVEL_-1_SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-21.parquet')
+                                   Key='SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-21.parquet')
 
-        self.s3_client.upload_file(Filename='parquet-data/LEVEL_-1_SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-22.parquet',
+        self.s3_client.upload_file(Filename='parquet-data/SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-22.parquet',
                                    Bucket=self.bucket_name,
-                                   Key='LEVEL_-1_SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-22.parquet')
+                                   Key='SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-22.parquet')
 
 
     def test_read_parquet_files_one_date_range_one_type(self):
@@ -53,7 +53,7 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-17", "2024-01-18"]
                                 }
                             ]
@@ -78,11 +78,11 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-17", "2024-01-17"]
                                 },
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-19", "2024-01-19"]
                                 }
                             ]
@@ -107,11 +107,11 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-17", "2024-01-17"]
                                 },
                                 {
-                                "type": "LEVEL_-1_SOILMET_1MIN_2024_LOOPED",
+                                "type": "SOILMET_1MIN_2024_LOOPED",
                                 "range": ["2024-01-21", "2024-01-21"]
                                 }
                             ]
@@ -133,7 +133,7 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-17", "2024-01-17"],
                                 "columns": ["time", "SITE_ID", "P_HEATING_STATUS"]
                                 }
@@ -154,12 +154,12 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-17", "2024-01-17"],
                                 "columns": ["time", "SITE_ID", "P_HEATING_STATUS"]
                                 },
                                 {
-                                "type": "LEVEL_-1_SOILMET_1MIN_2024_LOOPED",
+                                "type": "SOILMET_1MIN_2024_LOOPED",
                                 "range": ["2024-01-20", "2024-01-21"],
                                 "columns": ["time", "SITE_ID"]
                                 }
@@ -180,7 +180,7 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_SOILMET_1MIN_2024_LOOPED",
+                                "type": "SOILMET_1MIN_2024_LOOPED",
                                 "range": ["2024-05-18", "2024-06-19"]
                                 }
                             ]
@@ -197,14 +197,14 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_SOILMET_1MIN_2024_LOOPED",
+                                "type": "SOILMET_1MIN_2024_LOOPED",
                                 "range": ["2024-01-11", "2024-01-15"]
                                 }
                             ]
                         }
 
         self.s3_client.put_object(Bucket=self.bucket_name,
-                                  Key='LEVEL_-1_SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-11.parquet',
+                                  Key='SOILMET_1MIN_2024_LOOPED/2024-01/2024-01-11.parquet',
                                   Body=b'corrupted data')
 
         with patch('dritimeseriesprocessor.read_parquet.s3_client', self.s3_client):
@@ -217,7 +217,7 @@ class TestGetParquetByDates(unittest.TestCase):
         filter_config = {
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_SOILMET_1MIN_2024_LOOPED",
+                                "type": "SOILMET_1MIN_2024_LOOPED",
                                 "range": ["2024-05-18", "2024-06-19"]
                                 }
                             ]

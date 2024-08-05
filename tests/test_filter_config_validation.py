@@ -10,7 +10,7 @@ class TestConfigFilterValidation(unittest.TestCase):
         filter_config = """{
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["01/17/2024", "2024-01-18"]
                                 }
                             ]
@@ -25,7 +25,7 @@ class TestConfigFilterValidation(unittest.TestCase):
         filter_config = """{
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-18", "01-18-2024"]
                                 }
                             ]
@@ -40,7 +40,7 @@ class TestConfigFilterValidation(unittest.TestCase):
         filter_config = """{
                             "datasets": [
                                 {
-                                "type": "LEVEL_-1_PRECIP_1MIN_2024_LOOPED",
+                                "type": "PRECIP_1MIN_2024_LOOPED",
                                 "range": ["2024-01-18", "2024-01-15"]
                                 }
                             ]
