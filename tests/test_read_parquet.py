@@ -227,3 +227,17 @@ class TestGetParquetByDates(unittest.TestCase):
             df = read_parquet_by_config(self.empty_bucket_name, filter_config)
 
         self.assertTrue(df.is_empty())
+
+    def test_corrupted_parquet_file(self):
+        """ Test that an error is raised if a corrupted parquet file is found
+        """
+        start_date = date(2024, 1, 1)
+        end_date = date(2024, 1, 11)
+
+        self.s3_client.put_object(Bucket=self.bucket_name,
+                                  Key='2024-01-11.parquet',
+                                  Body=b'corrupted data')
+
+        with patch('dritimeseriesprocessor.parquet_access.S3_CLIENT', self.s3_client):
+            with self.assertRaises(pl.exceptions.ComputeError):
+                get_parquet_by_dates(self.bucket_name, start_date, end_date)
