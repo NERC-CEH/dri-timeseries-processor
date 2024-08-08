@@ -21,7 +21,7 @@ import config
 logger = logging.getLogger(__name__)
 
 # Expected config values for validation
-shared_config_parameters = ["AWS_DEFAULT_REGION", "level_0_bucket"]
+shared_config_parameters = ["AWS_DEFAULT_REGION", "level_0_bucket", "qc_bucket"]
 
 local_config_parameters = shared_config_parameters + [
     "AWS_ACCESS_KEY_ID",

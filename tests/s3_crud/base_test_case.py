@@ -2,7 +2,6 @@ import io
 import unittest
 from datetime import datetime, timedelta
 from unittest.mock import patch
-from pathlib import Path
 
 import boto3
 import polars as pl
