@@ -53,6 +53,15 @@ corrections_data = [
     {
         "SITE_ID": "ALIC1",
         "VARIABLE": "SWOUT",
+        "START_DATETIME": "2024-01-21T00:00:00",
+        "END_DATETIME": "2024-01-22T00:00:00",
+        "CORRECTION_FACTOR": 1000,
+        "DESCRIPTION": "Test correction",
+        "METHOD_ID": "MULTIPLY",
+    },
+    {
+        "SITE_ID": "ALIC1",
+        "VARIABLE": "SWOUT",
         "START_DATETIME": "2016-07-28T15:00:00",
         "END_DATETIME": "2018-12-20T12:30:00",
         "CORRECTION_FACTOR": 1.00644,

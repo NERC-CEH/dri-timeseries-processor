@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 from pydantic import ValidationError
 
-from dritimeseriesprocessor.config_quality_control import (
+from dritimeseriesprocessor.__metadata__.config_quality_control import (
     qc_tests,
     QCTest,
     RangeThreshold,
