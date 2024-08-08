@@ -84,6 +84,8 @@ var_range_thresholds = [
 # Battery test - Min acceptable voltage
 battv_voltage_threshold = 10
 
+# Soilmet scan test - min acceptable number of scans
+soilmet_scan_threshold = 
 
 # Mapping which variables should run which QC tests
 variable_test_mapping = [
