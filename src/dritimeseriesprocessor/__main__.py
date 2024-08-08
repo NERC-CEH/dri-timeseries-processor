@@ -1,21 +1,18 @@
 import logging
-from pathlib import Path
+from datetime import date
 
-from dritimeseriesprocessor import filter_config_validation, read_parquet
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.s3_crud import data_manager
 
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-bucket = app_config.level_0_bucket
-filter_config_path = str(Path(Path(__file__).parents[0], "__assets__", app_config.filter_config_path))
-
-# Validate filter config
-filter_config = filter_config_validation.validate(filter_config_path)
-
 # Get data
-data = read_parquet.read_parquet_by_config(bucket, filter_config)
+data_category = "SOILMET_1MIN"
+start_date = date(2024, 1, 17)
+end_date = date(2024, 1, 21)
+data = data_manager.read_by_date_range(app_config.level_0_bucket, data_category, start_date, end_date, site_ids="BUNNY")
 
 logger.info(data.count())
 logger.info(data)

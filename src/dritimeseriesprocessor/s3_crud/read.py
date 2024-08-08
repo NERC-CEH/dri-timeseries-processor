@@ -1,5 +1,5 @@
-""" Module for reading parquet data from S3 buckets
-"""
+"""Module for reading parquet data from S3 buckets"""
+
 import logging
 import os
 from typing import List, Optional
@@ -22,14 +22,18 @@ else:
 
 
 def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataFrame:
-    """ Uses DuckDb to read parquet files from an S3 bucket using a prepared SQL query.
+    """Uses DuckDb to read parquet files from an S3 bucket using a prepared SQL query.
 
     Args:
         query: SQL query string.
         params: Optional list of parameters for the prepared SQL statement
 
     Returns:
-        DataFrame of query results.
+        A Polars DataFrame of query results.
+
+    Raises:
+        duckdb.HTTPException: If there's any error in finding objects
+        duckdb.InvalidInputException: If corrupt data found in an object
     """
     conn = duckdb.connect()
 
@@ -40,7 +44,7 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
         LOAD httpfs;
         SET s3_region='{os.environ["AWS_DEFAULT_REGION"]}';
         SET s3_access_key_id='{os.environ["AWS_ACCESS_KEY_ID"]}';
-        SET s3_secret_access_key='{os.environ["AWS_SECRET_ACCESS_KEY"]}';            
+        SET s3_secret_access_key='{os.environ["AWS_SECRET_ACCESS_KEY"]}';
     """)
 
     if app_config.time_series_environment == "local":
@@ -53,8 +57,15 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
             SET s3_use_ssl=false;     -- only required for localhost as it doesn't use https
         """)
 
-    df = conn.execute(query, params).pl()
-    return df
+    try:
+        df = conn.execute(query, params).pl()
+        return df
+    except duckdb.HTTPException as e:
+        logger.error(f"Failed to find data from query: {query}")
+        raise e
+    except duckdb.InvalidInputException as e:
+        logger.error(f"Corrupt data found from query: {query}")
+        raise e
 
 
 def read_parquet_by_key(bucket_name: str, s3_key: str) -> pl.DataFrame:
@@ -65,10 +76,12 @@ def read_parquet_by_key(bucket_name: str, s3_key: str) -> pl.DataFrame:
         s3_key: The key (path) of the object within the bucket.
 
     Returns:
-        pl.DataFrame: A Polars DataFrame containing the data from the Parquet file.
+        A Polars DataFrame containing the data from the Parquet file.
 
     Raises:
-        Exception: If there's any error in retrieving or parsing the object.
+        (RuntimeError, ClientError): If there's any error in finding objects
+        pl.exceptions.ComputeError: If corrupt data found in an object
+
     """
     try:
         data = s3_client.get_object(Bucket=bucket_name, Key=s3_key)
