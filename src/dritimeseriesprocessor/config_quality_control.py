@@ -343,3 +343,83 @@ def get_qc_flag(test_names: List[int]) -> int:
             raise KeyError(f'Test name "{name}" not found in valid QC tests.')
 
     return flag
+
+
+class QCTestIDValidator:
+    """Validates that a list of QC tests is valid and non-wasteful
+
+    These methods ensure that the test_id values are unique, bitwise,
+    sequential, and don't skip any valid bits.
+
+    It is desirable to not waste any bits, because maximum bits can grow
+    quite large."""
+
+    @staticmethod
+    def _ids_are_unique(test_list: List[dict]) -> bool:
+        """Checks if IDs are unique
+
+        Args:
+            test_list: A list of dictionaries representing QC tests.
+
+        Returns:
+            bool: A bool result of whether the IDs are unique.
+        """
+
+        test_ids = [test["test_id"] for test in test_list]
+
+        if len(test_ids) == len(set(test_ids)):
+            return True
+
+        return False
+
+    @staticmethod
+    def _ids_are_sequential(test_list: List[dict]) -> bool:
+        """Checks that IDs are sequential and start at number 1.
+
+        Args:
+            test_list: A list of dictionaries representing QC tests.
+
+        Returns:
+            bool: A bool result of whether the IDs are sequential and start at 1.
+        """
+
+        for i, test in enumerate(test_list):
+            if test["test_id"] != 1 << i:
+                return False
+
+        return True
+
+    @staticmethod
+    def _ids_are_bitwise(test_list: List[dict]) -> bool:
+        """Checks that IDs are sequential and start at number 1.
+
+        Args:
+            test_list: A list of dictionaries representing QC tests.
+
+        Returns:
+            bool: A bool result of whether the IDs are bitwise.
+        """
+        for test in test_list:
+            if test["test_id"] == 0 or ((test["test_id"] & (test["test_id"] - 1)) != 0):
+                return False
+
+        return True
+
+    @staticmethod
+    def validate(test_list: List[dict]) -> bool:
+        """Checks that IDs in a list of tests are valid.
+
+        Args:
+            test_list: A list of dictionaries representing QC tests.
+
+        Returns:
+            bool: A bool result of whether the IDs are valid.
+        """
+
+        return all(
+            [
+                QCTestIDValidator._ids_are_unique(test_list),
+                QCTestIDValidator._ids_are_bitwise(test_list),
+                QCTestIDValidator._ids_are_sequential(test_list),
+            ]
+        )
