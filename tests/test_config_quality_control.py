@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 from pydantic import ValidationError
+from parameterized import parameterized
 
 from dritimeseriesprocessor.config_quality_control import (
     qc_tests,
@@ -11,6 +12,7 @@ from dritimeseriesprocessor.config_quality_control import (
     QCConfig,
     get_valid_qc_tests,
     get_qc_config,
+    get_qc_flag
 )
 
 class TestGetValidQCTests(unittest.TestCase):
@@ -227,6 +229,53 @@ class TestGetQCConfig(unittest.TestCase):
         """
         result = get_qc_config()
         self.assertIsInstance(result, QCConfig)
+
+class TestQCFlagging(unittest.TestCase):
+    """Suite for testing the creation of QC flags."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up the test environment by mocking the global variables used in get_qc_config.
+        This method is called before each test method.
+        """
+        # Mock the global variables used in the function
+        mock_qc_tests = [
+            {
+                "test_name": "RANGE",
+                "test_id": 1 << 0
+            },
+            {
+                "test_name": "MIN",
+                "test_id": 1 << 1
+            },
+            {
+                "test_name": "MAX",
+                "test_id": 1 << 2
+            },
+        ]
+
+        cls.patcher = patch("dritimeseriesprocessor.config_quality_control.qc_tests",mock_qc_tests)
+        cls.patcher.start()
+    
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+        
+    @parameterized.expand([
+        ["RANGE", 1],
+        [["MIN"], 2],
+        ["MAX", 4],
+        [["RANGE", "MIN"], 3],
+        [["RANGE", "MAX"], 5],
+        [["MAX", "MIN"], 6],
+        [["RANGE", "MIN", "MAX"], 7],
+    ])
+    def test_correct_flag_returned(self, test_names, expected):
+        """Asserts that the right QC flag is returned for any combination of tests"""
+
+        flag = get_qc_flag(test_names)
+
+        self.assertEqual(flag, expected)
 
 
 if __name__ == '__main__':

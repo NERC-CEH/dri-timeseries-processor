@@ -23,6 +23,7 @@ from dritimeseriesprocessor.utils import validate_iso8601_duration
 qc_tests = [
     {
         "test_name": "RANGE",
+        "test_id": 1 << 0,
         "description": "Checks if the value falls within a specified range.",
     },
 ]
@@ -316,3 +317,29 @@ def get_qc_config(
         raise ValueError("Not a valid config type")
 
     return qc_config
+
+
+def get_qc_flag(test_names: List[int]) -> int:
+    """Returns a unique QC flag given any number of failed tests.
+
+    Args:
+        test_names: A list of test names that have failed.
+    Returns:
+        int: An unique integer identifying the combination of tests that failed.
+    """
+    if not hasattr(test_names, "__iter__") or isinstance(test_names, str):
+        test_names = [test_names]
+
+    flag = 0
+    for name in test_names:
+        test_exists = False
+
+        for test in qc_tests:
+            if test["test_name"] == name:
+                flag |= test["test_id"]
+                test_exists = True
+
+        if not test_exists:
+            raise KeyError(f'Test name "{name}" not found in valid QC tests.')
+
+    return flag
