@@ -82,7 +82,7 @@ var_range_thresholds = [
 
 
 # Battery test - Min acceptable voltage
-battv_threshold = 10
+battery_voltage_threshold = 10
 
 
 # Mapping which variables should run which QC tests
@@ -330,7 +330,7 @@ def get_qc_config(
             qc_tests=[QCTest(**qc_test) for qc_test in qc_tests],
             var_range_thresholds=[VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds],
             variable_test_mapping=[VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping],
-            battv_threshold=ValueTreshold(battv_threshold),
+            battv_threshold=ValueTreshold(threshold=battery_voltage_threshold),
         )
     elif config == "tests":
         qc_config = [QCTest(**qc_test) for qc_test in qc_tests]
@@ -339,7 +339,7 @@ def get_qc_config(
     elif config == "variable_test_map":
         qc_config = [VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping]
     elif config == "battv_threshold":
-        qc_config = ValueTreshold(battv_threshold)
+        qc_config = ValueTreshold(threshold=battery_voltage_threshold)
     else:
         raise ValueError("Not a valid config type")
 
