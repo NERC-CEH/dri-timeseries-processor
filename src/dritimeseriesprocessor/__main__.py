@@ -20,11 +20,7 @@ data = read_parquet.read_parquet_by_config(bucket, filter_config)
 # Preprocessing here
 
 # Quality control
-qcd_data, qcd_flags = quality_control.run_qc(data)
+qcd_data = quality_control.run_qc(data)
 
-import pdb
-
-pdb.set_trace()
-
-logger.info(data.count())
-logger.info(data)
+logger.info(qcd_data.count())
+logger.info(qcd_data)
