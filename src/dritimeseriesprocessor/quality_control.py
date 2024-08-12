@@ -22,23 +22,12 @@ def col_comparison_test(
 
     -----------------
     Args:
-        data - DataFrame:
-            This must have only the columns wanted for flagging
-
-        test_col - Series:
-            The column of data that determines which rows get flagged
-
-        threshold - float:
-            Threshold value
-
-        flag - int:
-            The flag value used
-
-        op - str:
-            What comparison to make, see operator_map.
-
-        flag_na - bool:
-            Comparison tests against NaNs will always result in False.
+        data: This must have only the columns wanted for flagging
+        test_col: The column of data that determines which rows get flagged
+        threshold: Threshold value
+        flag: The flag value used
+        op: What comparison to make, see operator_map.
+        flag_na: Comparison tests against NaNs will always result in False.
             So by default, NaN values will not cause data in data to be
             flagged. Set this to True to change that.
 
@@ -84,8 +73,8 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     and applies a quality control flag to the specified column if it is.
 
     Args:
-        df (pl.DataFrame): The input DataFrame containing the data to be tested.
-        column (str): The name of the column to which the quality control flag will be applied.
+        df: The input DataFrame containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
 
     Returns:
         pl.DataFrame: The DataFrame with the quality control flag applied, or returned as is if
@@ -129,7 +118,7 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
     the configuration specified in the qc_config module.
 
     Args:
-        df (pl.DataFrame): The input DataFrame containing the data to be quality controlled.
+        df: The input DataFrame containing the data to be quality controlled.
 
     Returns:
         pl.DataFrame: The DataFrame with quality control flags applied.
