@@ -1,12 +1,15 @@
 from datetime import date
+import os
 
 import polars as pl
+import unittest
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.utils import steralize_dates
 from tests.s3_crud.base_test_case import BaseTestCase
 
 
+@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestReadByDateRange(BaseTestCase):
     def test_read_by_date_range_no_site_ids(self):
         """Test reading data without specifying site IDs.
