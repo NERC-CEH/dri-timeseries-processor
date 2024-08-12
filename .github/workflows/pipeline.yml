@@ -33,6 +33,9 @@ jobs:
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@no-artifact-pipeline
     with:
       package_name: dritimeseriesprocessor
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
 
   # build-docs:
