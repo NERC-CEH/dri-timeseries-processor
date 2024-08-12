@@ -82,7 +82,7 @@ var_range_thresholds = [
 
 
 # Battery test - Min acceptable voltage
-battv_voltage_threshold = 10
+battv_threshold = 10
 
 
 # Mapping which variables should run which QC tests
@@ -227,6 +227,18 @@ class VariableRangeThresholds(BaseModel):
         return values
 
 
+class ValueTreshold(BaseModel):
+    """
+    Defines a threshold value for a variable.
+
+    Attributes:
+        threshold (float): The threshold value.
+
+    """
+
+    threshold: float
+
+
 class VariableTestMapping(BaseModel):
     """
     Maps a variable to its associated QC tests.
@@ -283,6 +295,7 @@ class QCConfig(BaseModel):
     qc_tests: List[QCTest]
     var_range_thresholds: List[VariableRangeThresholds]
     variable_test_mapping: List[VariableTestMapping]
+    battv_threshold: ValueTreshold
 
 
 def get_qc_config(
@@ -302,10 +315,11 @@ def get_qc_config(
             - "tests": Returns a list of QCTest objects.
             - "range_thresholds": Returns a list of VariableRangeThresholds objects.
             - "variable_test_map": Returns a list of VariableTestMapping objects.
+            - "battv_threshold": Returns battery voltage ValueTreshold object.
             Defaults to "all".
 
     Returns:
-        Union[QCConfig, List[Union[QCTest, VariableRangeThresholds, VariableTestMapping]]]:
+        Union[QCConfig, List[Union[QCTest, VariableRangeThresholds, VariableTestMapping, ValueTreshold]]]:
             The requested QC configuration.
 
     Raises:
@@ -316,6 +330,7 @@ def get_qc_config(
             qc_tests=[QCTest(**qc_test) for qc_test in qc_tests],
             var_range_thresholds=[VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds],
             variable_test_mapping=[VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping],
+            battv_threshold=ValueTreshold(battv_threshold),
         )
     elif config == "tests":
         qc_config = [QCTest(**qc_test) for qc_test in qc_tests]
@@ -323,6 +338,8 @@ def get_qc_config(
         qc_config = [VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds]
     elif config == "variable_test_map":
         qc_config = [VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping]
+    elif config == "battv_threshold":
+        qc_config = ValueTreshold(battv_threshold)
     else:
         raise ValueError("Not a valid config type")
 

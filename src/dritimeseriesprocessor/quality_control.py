@@ -100,7 +100,9 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
         logger.warning("Can not run Battery voltage test. No BATTV data provided")
         return df
 
-    power_flags = col_comparison_test(df.select(column), df["BATTV"], qc_config.battv_voltage_threshold, flag=5, op="<")
+    battv_config = qc_config.get_qc_config("battv_threshold")
+
+    power_flags = col_comparison_test(df.select(column), df["BATTV"], battv_config.battv_threshold, flag=5, op="<")
 
     flag_col_name = f"{column}_QCFLAG"
     power_flags = power_flags.rename({column: flag_col_name})
