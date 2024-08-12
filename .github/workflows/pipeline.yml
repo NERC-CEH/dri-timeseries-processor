@@ -13,7 +13,7 @@ jobs:
 
   build-test-deploy-docker:
     needs: [test-python]
-    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@no-artifact-pipeline
+    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       package_name: dritimeseriesprocessor
     secrets:
