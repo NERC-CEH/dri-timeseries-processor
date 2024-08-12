@@ -86,11 +86,19 @@ def battery_voltage_test(df, column):
 
     power_flags = power_flags.rename({column: f"{column}_QCFLAG"})
 
-    df = df.hstack(power_flags)
+    flag_col_name = f"{column}_QCFLAG"
+    power_flags = power_flags.rename({column: flag_col_name})
 
-    import pdb
+    if flag_col_name in df:
+        # Add flag values onto existing values
+        df = df.with_columns(
+            pl.col(flag_col_name) + power_flags[flag_col_name]
+        )
+    else:
+        # Append new column
+        df = df.hstack(power_flags)
 
-    pdb.set_trace()
+    return df
 
 
 # Map method IDs to function
