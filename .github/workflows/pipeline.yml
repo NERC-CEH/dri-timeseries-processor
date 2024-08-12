@@ -10,23 +10,14 @@ permissions:
 jobs:
   test-python:
     uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
-  
-  build-test-docker:
-    uses: NERC-CEH/dri-cicd/.github/workflows/build-docker.yml@main
+
+  build-test-deploy-docker:
+    needs: [test-python]
+    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       package_name: dritimeseriesprocessor
-  
-  deploy-docker:
-    uses: NERC-CEH/dri-cicd/.github/workflows/deploy-docker.yml@main
-    with:
-      image_artifact_name: ${{ needs.build-test-docker.outputs.image_artifact_name }}
-      image_artifact_file: ${{ needs.build-test-docker.outputs.image_artifact_file }}
-      image_name: ${{ needs.build-test-docker.outputs.image_name }}
-    if: ${{ github.ref_name == 'main' || github.head_ref == 'main'}}
-    needs: [test-python, build-test-docker]
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
-  build-docs:
-    uses: NERC-CEH/dri-cicd/.github/workflows/build-docs.yml@main
+      
