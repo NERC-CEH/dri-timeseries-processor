@@ -34,7 +34,7 @@ def validate(filter_config_path: str | os.PathLike) -> None:
             raise ValueError
 
         # Dataset type
-        valid_types = ["PRECIP_1MIN_2024_LOOPED", "SOILMET_1MIN_2024_LOOPED"]
+        valid_types = ["PRECIP_1MIN_2024_LOOPED", "SOILMET_30MIN_2024_LOOPED"]
 
         if dataset["type"] not in valid_types:
             logger.error(f"Type must be one of {valid_types}")

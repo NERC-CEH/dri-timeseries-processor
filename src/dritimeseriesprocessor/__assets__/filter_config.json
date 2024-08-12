@@ -11,7 +11,7 @@
             "columns": ["time", "SITE_ID", "P_HEATING_STATUS"]
         },
         {
-            "type": "SOILMET_1MIN_2024_LOOPED",
+            "type": "SOILMET_30MIN_2024_LOOPED",
             "range": ["2024-01-20", "2024-01-21"],
             "columns": ["time", "SITE_ID"]
         }
