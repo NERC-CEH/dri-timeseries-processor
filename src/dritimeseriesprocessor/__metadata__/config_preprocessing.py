@@ -27,7 +27,7 @@ correction_methods_data = [
     },
     {
         "METHOD_ID": "LW_CORR",
-        "DESCRIPTION": "Correction for long wave radiation where calibration " "values are incorrect.",
+        "DESCRIPTION": "Correction for long wave radiation where calibration values are incorrect.",
     },
     {
         "METHOD_ID": "MULTIPLY",
@@ -36,7 +36,7 @@ correction_methods_data = [
     },
     {
         "METHOD_ID": "PA_CORR",
-        "DESCRIPTION": "Correction for pressure where adjust has been " "calculated from mean sea level pressure.",
+        "DESCRIPTION": "Correction for pressure where adjust has been calculated from mean sea level pressure.",
     },
     {
         "METHOD_ID": "POWER",
@@ -52,9 +52,9 @@ correction_methods_data = [
 corrections_data = [
     {
         "SITE_ID": "ALIC1",
-        "VARIABLE": "SWOUT",
-        "START_DATETIME": "2024-01-21T00:00:00",
-        "END_DATETIME": "2024-01-22T00:00:00",
+        "VARIABLE": "P_BUCKET_RT",
+        "START_DATETIME": "2024-01-30T13:10:00",
+        "END_DATETIME": "2024-01-30T13:18:00",
         "CORRECTION_FACTOR": 1000,
         "DESCRIPTION": "Test correction",
         "METHOD_ID": "MULTIPLY",
