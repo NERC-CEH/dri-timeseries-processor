@@ -7,7 +7,7 @@ import dritimeseriesprocessor.config_quality_control as qc_config
 logger = logging.getLogger(__name__)
 
 
-def add_qcflag_column(df, flags, col_name):
+def add_qcflag_column(df: pl.DataFrame, flags: pl.DataFrame, col_name: str) -> pl.DataFrame:
     """
     Create QC flag column.
     If a quality control flag column already exists for the specified column, the new
