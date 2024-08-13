@@ -16,13 +16,18 @@ class BaseTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.s3_client = boto3.client("s3", endpoint_url="http://localhost:4566", region_name="eu-west-2")
 
-        # Create a test bucket to store parquet files
+        # Define some bucket names
         cls.bucket_name = "test-bucket"
+        cls.empty_bucket_name = "empty-bucket"
+        
+        # First, clear any hangovers from previous tests that may not have cleared up properly
+        cls.clear_buckets()
+
+        # Create a test bucket to store parquet files
         cls.s3_client.create_bucket(Bucket=cls.bucket_name,
                                     CreateBucketConfiguration={"LocationConstraint": "eu-west-2"})
 
         # Create a test empty bucket
-        cls.empty_bucket_name = "empty-bucket"
         cls.s3_client.create_bucket(Bucket=cls.empty_bucket_name,
                                     CreateBucketConfiguration={"LocationConstraint": "eu-west-2"})
 
@@ -37,19 +42,27 @@ class BaseTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # Clear the buckets from the localstack instance
-        buckets = (cls.bucket_name, cls.empty_bucket_name)
-        for bucket_name in buckets:
-            # Delete all objects in the bucket
-            bucket = cls.s3_client.list_objects(Bucket=bucket_name)
-            if 'Contents' in bucket:
-                for obj in bucket['Contents']:
-                    cls.s3_client.delete_object(Bucket=bucket_name, Key=obj['Key'])
-            # Delete the bucket
-            cls.s3_client.delete_bucket(Bucket=bucket_name)
+        # Clear the buckets
+        cls.clear_buckets()
 
         # Stop the patches
         cls.patch_s3_client.stop()
+
+    @classmethod
+    def clear_buckets(cls):
+        # Clear the buckets from the localstack instance
+        buckets = (cls.bucket_name, cls.empty_bucket_name)
+        for bucket_name in buckets:
+            try:
+                # Delete all objects in the bucket
+                bucket = cls.s3_client.list_objects(Bucket=bucket_name)
+                if 'Contents' in bucket:
+                    for obj in bucket['Contents']:
+                        cls.s3_client.delete_object(Bucket=bucket_name, Key=obj['Key'])
+                # Delete the bucket
+                cls.s3_client.delete_bucket(Bucket=bucket_name)
+            except cls.s3_client.exceptions.NoSuchBucket:
+                pass
 
     @classmethod
     def create_and_upload_test_data(cls):

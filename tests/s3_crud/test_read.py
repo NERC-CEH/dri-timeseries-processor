@@ -1,5 +1,8 @@
+import os
+
 import duckdb
 import polars as pl
+import unittest
 from botocore.exceptions import ClientError
 
 from dritimeseriesprocessor.s3_crud.read import read_parquet_by_key, read_parquet_by_query
@@ -13,6 +16,7 @@ def get_unique_dates(df: pl.DataFrame):
     return unique_dates
 
 
+@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestReadParquetByKey(BaseTestCase):
     def test_read_parquet_by_key_success(self):
         """ Test that a valid key returns the Parquet dataset
@@ -38,6 +42,7 @@ class TestReadParquetByKey(BaseTestCase):
             read_parquet_by_key(self.bucket_name, key)
 
 
+@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestReadParquetByQuery(BaseTestCase):
     def test_read_parquet_by_query_single_key(self):
         """ Test that a valid query on one object key returns the expected results
