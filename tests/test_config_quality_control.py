@@ -9,7 +9,7 @@ from dritimeseriesprocessor.config_quality_control import (
     QCTest,
     RangeThreshold,
     VariableRangeThresholds,
-    ValueTreshold,
+    ValueThreshold,
     VariableTestMapping,
     QCConfig,
     get_valid_qc_tests,
@@ -101,7 +101,7 @@ class TestQCConfig(unittest.TestCase):
         ]
         variable_test_mapping = [VariableTestMapping(variable_id="TA", tests=["RANGE"])]
         qc_config = QCConfig(qc_tests=qc_tests, var_range_thresholds=var_range_thresholds,
-                             variable_test_mapping=variable_test_mapping, battv_threshold=ValueTreshold(threshold=10))
+                             variable_test_mapping=variable_test_mapping, battv_threshold=ValueThreshold(threshold=10))
         self.assertEqual(qc_config.qc_tests, qc_tests)
         self.assertEqual(qc_config.var_range_thresholds, var_range_thresholds)
         self.assertEqual(qc_config.variable_test_mapping, variable_test_mapping)
