@@ -45,6 +45,7 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
         INSTALL httpfs;
         LOAD httpfs;
         SET s3_region='{os.environ["AWS_DEFAULT_REGION"]}';
+        SET s3_endpoint='s3.{os.environ["AWS_DEFAULT_REGION"]}.amazonaws.com';
         SET s3_url_style='path';  -- required to get the endpoint url to build correctly in duckdb
     """)
 
@@ -55,6 +56,7 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
         endpoint_url = remove_protocol_from_url(app_config.endpoint_url)
         conn.execute(f"""
             SET s3_endpoint='{endpoint_url}';
+            SET s3_url_style='path';  -- required to get the endpoint url to build correctly in duckdb
             SET s3_use_ssl=false;     -- only required for localhost as it doesn't use https
             SET s3_access_key_id='{os.environ["AWS_ACCESS_KEY_ID"]}';
             SET s3_secret_access_key='{os.environ["AWS_SECRET_ACCESS_KEY"]}';
