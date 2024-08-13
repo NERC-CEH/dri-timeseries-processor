@@ -21,7 +21,7 @@ class TestReadByDateRange(BaseTestCase):
 
         result = query_by_date_range(
             bucket_name=self.bucket_name,
-            data_category='TEST_CATEGORY',
+            prefix='TEST_CATEGORY',
             start_date=start_date,
             end_date=end_date
         )
@@ -43,7 +43,7 @@ class TestReadByDateRange(BaseTestCase):
 
         result = query_by_date_range(
             bucket_name=self.bucket_name,
-            data_category='TEST_CATEGORY',
+            prefix='TEST_CATEGORY',
             start_date=start_date,
             end_date=end_date,
             site_ids='site1'
@@ -67,7 +67,7 @@ class TestReadByDateRange(BaseTestCase):
         
         result = query_by_date_range(
             bucket_name=self.bucket_name,
-            data_category='TEST_CATEGORY',
+            prefix='TEST_CATEGORY',
             start_date=start_date,
             end_date=end_date,
             columns=cols
