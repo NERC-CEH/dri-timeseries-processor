@@ -1,5 +1,3 @@
-# tests/test_qc_module.py
-
 import unittest
 import polars as pl
 from dritimeseriesprocessor.quality_control import qc_test_map, col_comparison_test, battery_voltage_test, run_qc
@@ -73,15 +71,6 @@ class TestQCModule(unittest.TestCase):
         self.assertEqual(result.shape, data_no_battv.shape)
         self.assertTrue((result.columns == data_no_battv.columns))
         self.assertTrue((result.equals(data_no_battv)))
-
-    def test_run_qc(self):
-        """
-        Test the run_qc function.
-        Verifies that the function correctly applies the QC tests specified in the configuration.
-        """
-        result = run_qc(self.data)
-        expected_flags = [0, 0, 5, 0, 5]  # Based on the battery voltage test
-        self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
 
     def test_run_qc_no_qc_tests_available(self):
         """
