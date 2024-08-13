@@ -7,6 +7,35 @@ import dritimeseriesprocessor.config_quality_control as qc_config
 logger = logging.getLogger(__name__)
 
 
+def add_qcflag_column(df, flags, col_name):
+    """
+    Create QC flag column.
+    If a quality control flag column already exists for the specified column, the new
+    flags are added to the existing ones.
+    If no quality control flag column exists, a new column is appended to the DataFrame.
+
+    -----------------
+    Args:
+        df: Dataframe to add flags to.
+        flags: Flag data
+        col_name: Name of column which was tested
+
+    Returns:
+        Polars DataFrame
+    """
+    flag_col_name = f"{col_name}_QCFLAG"
+    flags = flags.rename({col_name: flag_col_name})
+
+    if flag_col_name in df:
+        # Add flag values onto existing values
+        df = df.with_columns(pl.col(flag_col_name) + flags[flag_col_name])
+    else:
+        # Append new column
+        df = df.hstack(flags)
+
+    return df
+
+
 def col_comparison_test(
     data: pl.DataFrame, test_col: pl.Series, threshold: float, flag: int, op: str = ">", flag_na: bool = False
 ) -> pl.DataFrame:
@@ -78,11 +107,6 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     Returns:
         pl.DataFrame: The DataFrame with the quality control flag applied, or returned as is if
         the 'BATTV' column is not present in the input DataFrame.
-
-    Notes:
-        - If a quality control flag column already exists for the specified column, the new flags
-          are added to the existing ones.
-        - If no quality control flag column exists, a new column is appended to the DataFrame.
     """
     if "BATTV" not in df:
         logger.warning("Can not run Battery voltage test. No BATTV data provided")
@@ -92,17 +116,7 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
     power_flags = col_comparison_test(df.select(column), df["BATTV"], battv_config.threshold, flag=5, op="<")
 
-    flag_col_name = f"{column}_QCFLAG"
-    power_flags = power_flags.rename({column: flag_col_name})
-
-    if flag_col_name in df:
-        # Add flag values onto existing values
-        df = df.with_columns(pl.col(flag_col_name) + power_flags[flag_col_name])
-    else:
-        # Append new column
-        df = df.hstack(power_flags)
-
-    return df
+    return add_qcflag_column(df, power_flags, column)
 
 
 # Map method IDs to function
