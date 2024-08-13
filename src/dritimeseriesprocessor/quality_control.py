@@ -142,6 +142,7 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
                 logger.warning(f"No QC function available for {test}")
                 continue
 
+            logger.info(f"QC test: {test} for variable: {var_test.variable_id}")
             df = test_func(df, var_test.variable_id)
 
     return df
