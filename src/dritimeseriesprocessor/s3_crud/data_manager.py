@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def query_by_date_range(
     bucket_name: str,
-    data_category: str,
+    prefix: str,
     start_date: Union[date, datetime],
     end_date: Union[date, datetime],
     columns: Optional[List[str]] = None,
@@ -26,7 +26,7 @@ def query_by_date_range(
 
     Args:
         bucket_name: The name of the S3 bucket.
-        data_category: The data category to select.
+        prefix: The bucket prefix to search within.
         start_date: The start date of date range.
         end_date: The end date of date range.
         columns: Optional list of columns to select.
@@ -45,7 +45,7 @@ def query_by_date_range(
 
     query = f"""
         SELECT {columns_sql}
-        FROM read_parquet('s3://{bucket_name}/{data_category}/**/*.parquet')
+        FROM read_parquet('s3://{bucket_name}/{prefix}/**/*.parquet')
         WHERE {date_field} >= ?
           AND {date_field} <= ?
           {site_ids_sql}
