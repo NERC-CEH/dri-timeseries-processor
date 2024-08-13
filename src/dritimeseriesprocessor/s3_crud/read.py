@@ -36,22 +36,25 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
         duckdb.InvalidInputException: If corrupt data found in an object
     """
     conn = duckdb.connect()
-
+    logger.info("HELLO")
+    logger.info(f"query: {query}")
+    logger.info(f"Params: {params}")
     # Install httpfs to get support for object storage using the S3 API
     # https://duckdb.org/docs/extensions/httpfs/overview.html
     conn.execute(f"""
         INSTALL httpfs;
         LOAD httpfs;
         SET s3_region='{os.environ["AWS_DEFAULT_REGION"]}';
+        SET s3_url_style='path';  -- required to get the endpoint url to build correctly in duckdb
     """)
 
     if app_config.time_series_environment == "local":
+        logger.info("BLOCK RAN")
         # If running locally with localstack, need to explicitly set the endpoint URL and access key secrets.
         # Note that duckdb doesn't like the endpoint url to have http / https, so have to remove.
         endpoint_url = remove_protocol_from_url(app_config.endpoint_url)
         conn.execute(f"""
             SET s3_endpoint='{endpoint_url}';
-            SET s3_url_style='path';  -- required to get the endpoint url to build correctly in duckdb
             SET s3_use_ssl=false;     -- only required for localhost as it doesn't use https
             SET s3_access_key_id='{os.environ["AWS_ACCESS_KEY_ID"]}';
             SET s3_secret_access_key='{os.environ["AWS_SECRET_ACCESS_KEY"]}';
@@ -59,6 +62,7 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
 
     try:
         df = conn.execute(query, params).pl()
+        logger.info(conn.execute(query, params))
         return df
     except duckdb.HTTPException as e:
         logger.error(f"Failed to find data from query: {query}")

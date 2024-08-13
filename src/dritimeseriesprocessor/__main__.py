@@ -5,9 +5,9 @@ from dritimeseriesprocessor import quality_control
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.s3_crud import data_manager
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("dritimeseriesprocessor")
 
 # Get data
 prefix = "cosmos/PRECIP_1MIN_2024_LOOPED"
