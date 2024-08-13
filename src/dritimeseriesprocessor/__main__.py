@@ -1,22 +1,24 @@
 import logging
-from pathlib import Path
+from datetime import date
 
-from dritimeseriesprocessor import filter_config_validation, read_parquet
+from dritimeseriesprocessor import quality_control
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.s3_crud import data_manager
 
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-bucket = app_config.level_0_bucket
-filter_config_path = str(Path(Path(__file__).parents[0], "__assets__", app_config.filter_config_path))
-
-
-# Validate filter config
-filter_config = filter_config_validation.validate(filter_config_path)
-
 # Get data
-data = read_parquet.read_parquet_by_config(bucket, filter_config)
+prefix = "cosmos/PRECIP_1MIN_2024_LOOPED"
+start_date = date(2024, 1, 30)
+end_date = date(2024, 2, 2)
+data = data_manager.query_by_date_range(app_config.level_0_bucket, prefix, start_date, end_date, site_ids="BUNNY")
 
-logger.info(data.count())
-logger.info(data)
+# Preprocessing here
+
+# Quality control
+qcd_data = quality_control.run_qc(data)
+
+logger.info(qcd_data.count())
+logger.info(qcd_data)

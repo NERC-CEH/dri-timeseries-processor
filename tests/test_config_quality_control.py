@@ -5,9 +5,12 @@ from parameterized import parameterized
 
 from dritimeseriesprocessor.config_quality_control import (
     qc_tests,
+    var_range_thresholds,
+    variable_test_mapping,
     QCTest,
     RangeThreshold,
     VariableRangeThresholds,
+    ValueThreshold,
     VariableTestMapping,
     QCConfig,
     get_valid_qc_tests,
@@ -100,7 +103,8 @@ class TestQCConfig(unittest.TestCase):
             )
         ]
         variable_test_mapping = [VariableTestMapping(variable_id="TA", tests=["RANGE"])]
-        qc_config = QCConfig(qc_tests=qc_tests, var_range_thresholds=var_range_thresholds, variable_test_mapping=variable_test_mapping)
+        qc_config = QCConfig(qc_tests=qc_tests, var_range_thresholds=var_range_thresholds,
+                             variable_test_mapping=variable_test_mapping, battv_threshold=ValueThreshold(threshold=10))
         self.assertEqual(qc_config.qc_tests, qc_tests)
         self.assertEqual(qc_config.var_range_thresholds, var_range_thresholds)
         self.assertEqual(qc_config.variable_test_mapping, variable_test_mapping)
@@ -126,22 +130,22 @@ class TestQCConfig(unittest.TestCase):
 
 class TestGetQCConfig(unittest.TestCase):
 
-    @patch('dritimeseriesprocessor.config_quality_control.qc_tests')
-    @patch('dritimeseriesprocessor.config_quality_control.var_range_thresholds')
-    @patch('dritimeseriesprocessor.config_quality_control.variable_test_mapping')
-    def setUp(self, mock_variable_test_mapping, mock_var_range_thresholds, mock_qc_tests):
+    def setUp(self):
         """Set up the test environment by mocking the global variables used in get_qc_config.
         This method is called before each test method.
         """
-        # Mock the global variables used in the function
-        self.mock_qc_tests = [
+        mock_qc_test = [
             {
                 "test_name": "RANGE",
                 "description": "Checks if the value falls within a specified range.",
             },
         ]
+
+        qc_test_patch = patch('dritimeseriesprocessor.config_quality_control.qc_tests',
+                              mock_qc_test)
+        qc_test_patch.start()
         
-        self.mock_var_range_thresholds = [
+        mock_var_range_threshs = [
             {
                 "variable_id": "TA",
                 "defaults": [
@@ -160,8 +164,11 @@ class TestGetQCConfig(unittest.TestCase):
                 ],
             },
         ]
-        
-        self.mock_variable_test_mapping = [
+        var_range_patch = patch('dritimeseriesprocessor.config_quality_control.var_range_thresholds',
+                                mock_var_range_threshs)
+        var_range_patch.start()
+
+        mock_var_test_map = [
             {
                 "variable_id": "TA",
                 "tests": [
@@ -169,10 +176,10 @@ class TestGetQCConfig(unittest.TestCase):
                 ],
             },
         ]
+        variable_test_map_patch = patch('dritimeseriesprocessor.config_quality_control.variable_test_mapping',
+                                        mock_var_test_map)
+        variable_test_map_patch.start()
 
-        mock_qc_tests.__iter__.return_value = self.mock_qc_tests
-        mock_var_range_thresholds.__iter__.return_value = self.mock_var_range_thresholds
-        mock_variable_test_mapping.__iter__.return_value = self.mock_variable_test_mapping
 
     def test_get_all_config(self):
         """Test the get_qc_config function with 'all' configuration.
@@ -180,10 +187,10 @@ class TestGetQCConfig(unittest.TestCase):
         in each attribute.
         """
         result = get_qc_config("all")
-        self.assertIsInstance(result, QCConfig)
         self.assertEqual(len(result.qc_tests), 1)
-        self.assertEqual(len(result.var_range_thresholds), 2)
-        self.assertEqual(len(result.variable_test_mapping), 2)
+        self.assertEqual(len(result.var_range_thresholds), 1)
+        self.assertEqual(len(result.variable_test_mapping), 1)
+        self.assertIsInstance(result, QCConfig)
 
     def test_get_tests_config(self):
         """Test the get_qc_config function with 'tests' configuration.
@@ -202,7 +209,7 @@ class TestGetQCConfig(unittest.TestCase):
         """
         result = get_qc_config("range_thresholds")
         self.assertIsInstance(result, list)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 1)
         self.assertIsInstance(result[0], VariableRangeThresholds)
         self.assertEqual(result[0].variable_id, "TA")
 
@@ -213,7 +220,7 @@ class TestGetQCConfig(unittest.TestCase):
         """
         result = get_qc_config("variable_test_map")
         self.assertIsInstance(result, list)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result), 1)
         self.assertIsInstance(result[0], VariableTestMapping)
         self.assertEqual(result[0].variable_id, "TA")
 
