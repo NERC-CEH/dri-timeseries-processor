@@ -4,7 +4,6 @@ import polars as pl
 
 import dritimeseriesprocessor.config_quality_control as qc_config
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
