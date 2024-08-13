@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 
+from dritimeseriesprocessor import quality_control
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.preprocessing.preprocessor import preprocess
 from dritimeseriesprocessor.s3_crud import data_manager
@@ -22,7 +23,13 @@ data = data_manager.query_by_date_range(
     columns=["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"],
 )
 
-# Do preprocessing
+# Preprocessing
 preprocessed_data = preprocess(data)
 
 logger.info(preprocessed_data)
+
+# Quality control
+qcd_data = quality_control.run_qc(data)
+
+logger.info(qcd_data.count())
+logger.info(qcd_data)
