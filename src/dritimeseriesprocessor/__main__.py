@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 
+from dritimeseriesprocessor import quality_control
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.s3_crud import data_manager
 
@@ -14,5 +15,10 @@ start_date = date(2024, 1, 30)
 end_date = date(2024, 2, 2)
 data = data_manager.query_by_date_range(app_config.level_0_bucket, prefix, start_date, end_date, site_ids="BUNNY")
 
-logger.info(data.count())
-logger.info(data)
+# Preprocessing here
+
+# Quality control
+qcd_data = quality_control.run_qc(data)
+
+logger.info(qcd_data.count())
+logger.info(qcd_data)
