@@ -20,16 +20,37 @@ from pydantic import (
 from dritimeseriesprocessor.utils import validate_iso8601_duration
 
 # Metadata on the available QC tests
-qc_tests = [
-    {
-        "test_name": "RANGE",
-        "description": "Checks if the value falls within a specified range.",
+qc_tests = {
+    "RANGE": {"description": "Checks if the value falls within a specified range.", "variables": []},
+    "BATTV": {"description": "Checks if battery voltage is too low.", "variables": []},
+    "SCANS": {
+        "description": "Checks if the number of SOILMET scans/samples are too low.",
+        "variables": [
+            "CTS_BARE",
+            "CTS_MOD",
+            "CTS_MOD2",
+            "CTS_SNOW",
+            "G1",
+            "G2",
+            "LWIN",
+            "LWOUT",
+            "PA",
+            "Q",
+            "RH",
+            "SNOWD_DISTANCE_UNC",
+            "STP_TSOIL2",
+            "STP_TSOIL5",
+            "STP_TSOIL10",
+            "STP_TSOIL20",
+            "STP_TSOIL50",
+            "SWIN",
+            "SWOUT",
+            "TA",
+            "WD",
+            "WS",
+        ],
     },
-    {
-        "test_name": "BATTV",
-        "description": "Checks if battery voltage is too low.",
-    },
-]
+}
 
 # Range test - Min and max values for variables.
 var_range_thresholds = [
@@ -82,28 +103,10 @@ var_range_thresholds = [
 
 
 # Battery test - Min acceptable voltage
-battery_voltage_threshold = 10
+battery_voltage_threshold = 10.0
 
 # Soilmet scan test - min acceptable number of scans
-soilmet_scan_threshold = 
-
-# Mapping which variables should run which QC tests
-variable_test_mapping = [
-    {
-        "variable_id": "TA",
-        "tests": [
-            "RANGE",
-            "BATTV",
-        ],
-    },
-    {
-        "variable_id": "PRECIP",
-        "tests": [
-            "RANGE",
-            "BATTV",
-        ],
-    },
-]
+soilmet_scan_threshold = 60.0
 
 
 def get_valid_qc_tests() -> List[str]:
@@ -298,6 +301,7 @@ class QCConfig(BaseModel):
     var_range_thresholds: List[VariableRangeThresholds]
     variable_test_mapping: List[VariableTestMapping]
     battv_threshold: ValueThreshold
+    soilmet_scan_threshold: ValueThreshold
 
 
 def get_qc_config(
@@ -318,6 +322,7 @@ def get_qc_config(
             - "range_thresholds": Returns a list of VariableRangeThresholds objects.
             - "variable_test_map": Returns a list of VariableTestMapping objects.
             - "battv_threshold": Returns battery voltage ValueThreshold object.
+            - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
             Defaults to "all".
 
     Returns:
@@ -331,17 +336,17 @@ def get_qc_config(
         qc_config = QCConfig(
             qc_tests=[QCTest(**qc_test) for qc_test in qc_tests],
             var_range_thresholds=[VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds],
-            variable_test_mapping=[VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping],
             battv_threshold=ValueThreshold(threshold=battery_voltage_threshold),
+            soilmet_scans_threshold=ValueThreshold(threshold=soilmet_scan_threshold),
         )
     elif config == "tests":
         qc_config = [QCTest(**qc_test) for qc_test in qc_tests]
     elif config == "range_thresholds":
         qc_config = [VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds]
-    elif config == "variable_test_map":
-        qc_config = [VariableTestMapping(**var_test_map) for var_test_map in variable_test_mapping]
     elif config == "battv_threshold":
         qc_config = ValueThreshold(threshold=battery_voltage_threshold)
+    elif config == "soilmet_scan_threshold":
+        qc_config = ValueThreshold(threshold=soilmet_scan_threshold)
     else:
         raise ValueError("Not a valid config type")
 
