@@ -58,11 +58,11 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
 
     if app_config.time_series_environment in ["staging", "production"]:
         conn.execute("""
-            CREATE SECRET aws_secret (
-                TYPE S3,
-                PROVIDER CREDENTIAL_CHAIN,
-                CHAIN 'sts',
-            );
+        CREATE SECRET aws_secret (
+            TYPE S3,
+            PROVIDER CREDENTIAL_CHAIN,
+            CHAIN 'sts'
+        );
         """)
     try:
         df = conn.execute(query, params).pl()
