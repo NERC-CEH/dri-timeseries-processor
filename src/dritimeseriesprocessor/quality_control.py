@@ -4,8 +4,36 @@ import polars as pl
 
 import dritimeseriesprocessor.config_quality_control as qc_config
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def add_qcflag_column(df: pl.DataFrame, flags: pl.DataFrame, col_name: str) -> pl.DataFrame:
+    """
+    Create QC flag column.
+    If a quality control flag column already exists for the specified column, the new
+    flags are added to the existing ones.
+    If no quality control flag column exists, a new column is appended to the DataFrame.
+
+    -----------------
+    Args:
+        df: Dataframe to add flags to.
+        flags: Flag data
+        col_name: Name of column which was tested
+
+    Returns:
+        Polars DataFrame
+    """
+    flag_col_name = f"{col_name}_QCFLAG"
+    flags = flags.rename({col_name: flag_col_name})
+
+    if flag_col_name in df:
+        # Add flag values onto existing values
+        df = df.with_columns(pl.col(flag_col_name) + flags[flag_col_name])
+    else:
+        # Append new column
+        df = df.hstack(flags)
+
+    return df
 
 
 def col_comparison_test(
@@ -22,23 +50,12 @@ def col_comparison_test(
 
     -----------------
     Args:
-        data - DataFrame:
-            This must have only the columns wanted for flagging
-
-        test_col - Series:
-            The column of data that determines which rows get flagged
-
-        threshold - float:
-            Threshold value
-
-        flag - int:
-            The flag value used
-
-        op - str:
-            What comparison to make, see operator_map.
-
-        flag_na - bool:
-            Comparison tests against NaNs will always result in False.
+        data: This must have only the columns wanted for flagging
+        test_col: The column of data that determines which rows get flagged
+        threshold: Threshold value
+        flag: The flag value used
+        op: What comparison to make, see operator_map.
+        flag_na: Comparison tests against NaNs will always result in False.
             So by default, NaN values will not cause data in data to be
             flagged. Set this to True to change that.
 
@@ -76,31 +93,57 @@ def col_comparison_test(
     return flagged_data
 
 
-def battery_voltage_test(df, column):
-    """Test the battery voltage level is above threshold"""
+def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+    """
+    Test the battery voltage level is above the threshold.
+
+    This function checks if the battery voltage ('BATTV' column) is below a certain threshold
+    and applies a quality control flag to the specified column if it is.
+
+    Args:
+        df: The input DataFrame containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+
+    Returns:
+        pl.DataFrame: The DataFrame with the quality control flag applied, or returned as is if
+        the 'BATTV' column is not present in the input DataFrame.
+    """
     if "BATTV" not in df:
         logger.warning("Can not run Battery voltage test. No BATTV data provided")
-        return
+        return df
 
-    power_flags = col_comparison_test(df.select(column), df["BATTV"], qc_config.battv_voltage_threshold, flag=5, op="<")
+    battv_config = qc_config.get_qc_config("battv_threshold")
 
-    power_flags = power_flags.rename({column: f"{column}_QCFLAG"})
+    power_flags = col_comparison_test(df.select(column), df["BATTV"], battv_config.threshold, flag=5, op="<")
 
-    df = df.hstack(power_flags)
-
-    import pdb
-
-    pdb.set_trace()
+    return add_qcflag_column(df, power_flags, column)
 
 
 # Map method IDs to function
 qc_test_map = {"BATTV": battery_voltage_test}
 
 
-def run_qc(df):
-    """ """
+def run_qc(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Run data through Quality Control (QC) tests.
+
+    This function applies a series of quality control tests to the input DataFrame based on
+    the configuration specified in the qc_config module.
+
+    Args:
+        df: The input DataFrame containing the data to be quality controlled.
+
+    Returns:
+        pl.DataFrame: The DataFrame with quality control flags applied.
+
+    Notes:
+        - The function uses the variable_test_map and range_thresholds from the qc_config module.
+        - For each variable specified in the variable_test_map, it applies the corresponding tests.
+        - If a variable is not present in the input DataFrame, it is skipped.
+        - If a test function is not available for a specified test, a warning is logged and the test is skipped.
+        - The function modifies the input DataFrame in-place by adding or updating quality control flag columns.
+    """
     var_test_map = qc_config.get_qc_config("variable_test_map")
-    var_ranges = qc_config.get_qc_config("range_thresholds")
 
     for var_test in var_test_map:
         if var_test.variable_id not in df:
@@ -112,4 +155,7 @@ def run_qc(df):
                 logger.warning(f"No QC function available for {test}")
                 continue
 
+            logger.info(f"QC test: {test} for variable: {var_test.variable_id}")
             df = test_func(df, var_test.variable_id)
+
+    return df
