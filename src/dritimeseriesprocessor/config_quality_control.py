@@ -19,11 +19,26 @@ from pydantic import (
 
 from dritimeseriesprocessor.utils import validate_iso8601_duration
 
-# Metadata on the available QC tests
+# Metadata on the QC tests and which variables to run.
 qc_tests = {
-    "RANGE": {"description": "Checks if the value falls within a specified range.", "variables": []},
-    "BATTV": {"description": "Checks if battery voltage is too low.", "variables": []},
+    "RANGE": {
+        "test_name": "Range test",
+        "description": "Checks if the value falls within a specified range.",
+        "variables": [
+            "TA",
+            "PRECIP",
+        ],
+    },
+    "BATTV": {
+        "test_name": "Battery voltage test",
+        "description": "Checks if battery voltage is too low.",
+        "variables": [
+            "TA",
+            "PRECIP",
+        ],
+    },
     "SCANS": {
+        "test_name": "Soilmet scans check",
         "description": "Checks if the number of SOILMET scans/samples are too low.",
         "variables": [
             "CTS_BARE",
@@ -55,7 +70,7 @@ qc_tests = {
 # Range test - Min and max values for variables.
 var_range_thresholds = [
     {
-        "variable_id": "TA",
+        "variable": "TA",
         "defaults": [
             {
                 "min_value": -30.0,
@@ -72,7 +87,7 @@ var_range_thresholds = [
         ],
     },
     {
-        "variable_id": "PRECIP",
+        "variable": "PRECIP",
         "defaults": [
             {
                 "resolutions": ["PT1M"],
@@ -109,26 +124,19 @@ battery_voltage_threshold = 10.0
 soilmet_scan_threshold = 60.0
 
 
-def get_valid_qc_tests() -> List[str]:
-    """
-    Returns a list of valid QC test names.
-
-    Returns:
-        List[str]: A list of strings representing valid QC test names.
-    """
-    return [qc_test["test_name"] for qc_test in qc_tests]
-
-
 class QCTest(BaseModel):
     """
-    Represents a Quality Control test with its description.
+    Info on a QC test including which variables it should run.
 
     Attributes:
-        description (str): A brief description of what the QC test checks.
+        test_name (str): The name of the test
+        description (str): Description of the test
+        variables (List[str]): A list of variables applicable to run the test.
     """
 
     test_name: str
     description: str
+    variables: List[str]
 
 
 class RangeThreshold(BaseModel):
@@ -198,7 +206,7 @@ class VariableRangeThresholds(BaseModel):
     Defines the range thresholds for a variable, including default and site-specific thresholds.
 
     Attributes:
-        variable_id (str): The identifier for the variable.
+        variable (str): The identifier for the variable.
         defaults (List[RangeThreshold]): List of default range thresholds for the variable.
         sites (Optional[List[RangeThreshold]]): List of site-specific range thresholds for the variable.
 
@@ -206,7 +214,7 @@ class VariableRangeThresholds(BaseModel):
         check_site_id_in_sites: Ensures that every RangeThreshold in 'sites' contains a 'site_id'.
     """
 
-    variable_id: str
+    variable: str
     defaults: List[RangeThreshold]
     sites: Optional[List[RangeThreshold]] = None
 
@@ -244,103 +252,31 @@ class ValueThreshold(BaseModel):
     threshold: float
 
 
-class VariableTestMapping(BaseModel):
-    """
-    Maps a variable to its associated QC tests.
-
-    Attributes:
-        variable_id (str): The name of the variable.
-        tests (List[str]): A list of QC test names applicable to the variable.
-
-    Validators:
-        validate_tests: Ensures that all specified tests are valid QC tests.
-    """
-
-    variable_id: str
-    tests: List[str]
-
-    @field_validator("tests")
-    def validate_tests(cls, v: List[str]) -> List[str]:
-        """
-        Validates that all specified tests are valid QC tests.
-
-        Args:
-            cls (Type[VariableTestMapping]): The class of the model being validated.
-            v (List[str]): The list of tests to validate.
-            info (field_validator.Info): Information about the field being validated.
-
-        Raises:
-            ValueError: If any test is not a valid QC test.
-
-        Returns:
-            List[str]: The validated list of tests.
-        """
-        valid_tests = get_valid_qc_tests()
-        for test in v:
-            if test not in valid_tests:
-                raise ValueError(f"Test '{test}' is not a valid QC test")
-        return v
-
-
-class QCConfig(BaseModel):
-    """
-    Configurations for Quality Control.
-
-    Attributes:
-        qc_tests (Dict[str, QCTest]): A dictionary of QC tests.
-        var_range_thresholds (Dict[str, RangeThreshold]): Range thresholds for variables.
-        variable_test_mapping (Dict[str, List[str]]): Mapping of variables to QC
-        tests.
-
-    Instance:
-        qc_config (QCConfig): An instance of QCConfig containing all verified
-        config data.
-    """
-
-    qc_tests: List[QCTest]
-    var_range_thresholds: List[VariableRangeThresholds]
-    variable_test_mapping: List[VariableTestMapping]
-    battv_threshold: ValueThreshold
-    soilmet_scan_threshold: ValueThreshold
-
-
-def get_qc_config(
-    config: str = "all",
-) -> Union[QCConfig, List[Union[QCTest, VariableRangeThresholds, VariableTestMapping]]]:
+def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThresholds]]]:
     """
     Retrieve Quality Control (QC) configuration based on the specified config type.
 
-    This function returns different QC configuration objects or lists depending on the
-    input parameter. It uses predefined lists (qc_tests, var_range_thresholds,
-    variable_test_mapping) to create the configuration.
+    This function returns different QC configuration objects depending on the
+    input parameter.
 
     Args:
-        config (str, optional): The type of configuration to retrieve.
+        config (str): The type of configuration to retrieve.
             Possible values are:
-            - "all": Returns a QCConfig object with all configurations.
-            - "tests": Returns a list of QCTest objects.
+            - "qc_tests": Returns a list of QCTest objects.
             - "range_thresholds": Returns a list of VariableRangeThresholds objects.
-            - "variable_test_map": Returns a list of VariableTestMapping objects.
             - "battv_threshold": Returns battery voltage ValueThreshold object.
             - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
             Defaults to "all".
 
     Returns:
-        Union[QCConfig, List[Union[QCTest, VariableRangeThresholds, VariableTestMapping, ValueThreshold]]]:
+        Union[List[Union[VariableRangeThresholds, QCTest, ValueThreshold]]]:
             The requested QC configuration.
 
     Raises:
         ValueError: If an invalid config type is provided.
     """
-    if config == "all":
-        qc_config = QCConfig(
-            qc_tests=[QCTest(**qc_test) for qc_test in qc_tests],
-            var_range_thresholds=[VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds],
-            battv_threshold=ValueThreshold(threshold=battery_voltage_threshold),
-            soilmet_scans_threshold=ValueThreshold(threshold=soilmet_scan_threshold),
-        )
-    elif config == "tests":
-        qc_config = [QCTest(**qc_test) for qc_test in qc_tests]
+    if config == "qc_tests":
+        qc_config = {test: QCTest(**info) for test, info in qc_tests.items()}
     elif config == "range_thresholds":
         qc_config = [VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds]
     elif config == "battv_threshold":

@@ -1,7 +1,6 @@
 import unittest
 import polars as pl
 from dritimeseriesprocessor.quality_control import qc_test_map, col_comparison_test, battery_voltage_test, run_qc
-from dritimeseriesprocessor.config_quality_control import get_qc_config
 
 
 class TestQCModule(unittest.TestCase):
@@ -21,7 +20,6 @@ class TestQCModule(unittest.TestCase):
         self.test_column = "TA"
         self.threshold = 10.0
         self.flag_value = 5
-        self.qc_config = get_qc_config("all")
 
     def test_col_comparison_test_greater_than(self):
         """
