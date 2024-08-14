@@ -61,7 +61,7 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
             CREATE SECRET aws_secret (
                 TYPE S3,
                 PROVIDER CREDENTIAL_CHAIN,
-                CHAIN 'sts',
+                CHAIN 'sts'
             );
         """)
     try:
