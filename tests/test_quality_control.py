@@ -1,6 +1,14 @@
 import unittest
+from unittest.mock import patch, MagicMock
 import polars as pl
-from dritimeseriesprocessor.quality_control import qc_test_map, col_comparison_test, battery_voltage_test, run_qc
+from polars.testing import assert_frame_equal
+from dritimeseriesprocessor.quality_control import (
+    qc_test_map,
+    col_comparison_test,
+    range_test,
+    battery_voltage_test,
+    run_qc
+)
 
 
 class TestQCModule(unittest.TestCase):
@@ -84,6 +92,119 @@ class TestQCModule(unittest.TestCase):
 
         # Restore the original test map
         qc_test_map.update(original_qc_test_map)
+
+
+class TestRangeTest(unittest.TestCase):
+
+    def setUp(self):
+        """
+        Set up a sample DataFrame for testing.
+        """
+        self.df = pl.DataFrame({
+            "time": ["2023-01-01", "2023-01-02", "2023-01-03"],
+            "SITE_ID": ["SITE1", "SITE1", "SITE2"],
+            "TA": [20, 25, 30]
+        })
+
+    @patch('dritimeseriesprocessor.quality_control.qc_config.get_qc_config')
+    @patch('dritimeseriesprocessor.quality_control.logger')
+    def test_range_test_no_threshold(self, mock_logger, mock_get_qc_config):
+        """
+        Test range_test function when no threshold is provided for the column.
+
+        Expected behavior:
+        - Function should return the original DataFrame
+        - A warning should be logged
+        """
+        mock_get_qc_config.return_value = {}
+        result = range_test(self.df, "TA")
+        assert_frame_equal(result, self.df)
+        mock_logger.warning.assert_called_once()
+
+    @patch('dritimeseriesprocessor.quality_control.qc_config.get_qc_config')
+    @patch('dritimeseriesprocessor.quality_control.logger')
+    def test_range_test_no_default(self, mock_logger, mock_get_qc_config):
+        """
+        Test range_test function when no default values are set for the column.
+
+        Expected behavior:
+        - Function should raise a ValueError
+        - An error should be logged
+        """
+        mock_get_qc_config.return_value = {"TA": MagicMock(defaults=[])}
+        with self.assertRaises(ValueError):
+            range_test(self.df, "TA")
+        mock_logger.error.assert_called_once()
+
+    @patch('dritimeseriesprocessor.quality_control.qc_config.get_qc_config')
+    @patch('dritimeseriesprocessor.quality_control.add_qcflag_column')
+    def test_range_test_default_values(self, mock_add_qcflag, mock_get_qc_config):
+        """
+        Test range_test function using default values for all sites.
+
+        Expected behavior:
+        - QC column should be added to the DataFrame
+        - All values should be within range (QC flag = 0)
+        """
+        mock_get_qc_config.return_value = {
+            "TA": MagicMock(
+                defaults=[MagicMock(resolutions=None, min_value=0, max_value=40)],
+                sites=[]
+            )
+        }
+        mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(pl.lit(0).alias(f"{column}_QCFLAG"))
+
+        result = range_test(self.df, "TA")
+        self.assertIn("TA_QCFLAG", result.columns)
+        self.assertEqual(result["TA_QCFLAG"].to_list(), [0, 0, 0])
+
+    @patch('dritimeseriesprocessor.quality_control.qc_config.get_qc_config')
+    @patch('dritimeseriesprocessor.quality_control.add_qcflag_column')
+    def test_range_test_site_specific(self, mock_add_qcflag, mock_get_qc_config):
+        """
+        Test range_test function using site-specific values.
+
+        Expected behavior:
+        - QC column should be added to the DataFrame
+        - All values should be within range (SITE1 uses site-specific, SITE2 uses default)
+        """
+        mock_get_qc_config.return_value = {
+            "TA": MagicMock(
+                defaults=[MagicMock(resolutions=None, min_value=0, max_value=40)],
+                sites=[MagicMock(site_id="SITE1", resolutions=None, min_value=15, max_value=30)]
+            )
+        }
+        mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(
+            pl.when(flags[column] == 64).then(64).otherwise(0).alias(f"{column}_QCFLAG")
+        )
+
+        result = range_test(self.df, "TA")
+        self.assertIn("TA_QCFLAG", result.columns)
+        self.assertEqual(result["TA_QCFLAG"].to_list(), [0, 0, 0])
+
+    @patch('dritimeseriesprocessor.quality_control.qc_config.get_qc_config')
+    @patch('dritimeseriesprocessor.quality_control.add_qcflag_column')
+    def test_range_test_out_of_range(self, mock_add_qcflag, mock_get_qc_config):
+        """
+        Test range_test function for out-of-range values.
+
+        Expected behavior:
+        - QC column should be added to the DataFrame
+        - Out-of-range values should be flagged (20 and 30 are out of range)
+        """
+        mock_get_qc_config.return_value = {
+            "TA": MagicMock(
+                defaults=[MagicMock(resolutions=None, min_value=22, max_value=28)],
+                sites=[]
+            )
+        }
+        mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(
+            pl.when(flags[column] == 64).then(64).otherwise(0).alias(f"{column}_QCFLAG")
+        )
+
+        result = range_test(self.df, "TA")
+        self.assertIn("TA_QCFLAG", result.columns)
+        self.assertEqual(result["TA_QCFLAG"].to_list(), [64, 0, 64])
 
 
 if __name__ == "__main__":
