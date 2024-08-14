@@ -47,6 +47,7 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
     if app_config.time_series_environment == "local":
         # If running locally with localstack, need to explicitly set the endpoint URL and access key secrets.
         # Note that duckdb doesn't like the endpoint url to have http / https, so have to remove.
+        logger.debug("Configured DuckDB for local environment.")
         endpoint_url = remove_protocol_from_url(app_config.endpoint_url)
         conn.execute(f"""
             SET s3_endpoint='{endpoint_url}';
@@ -57,6 +58,7 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
         """)
 
     if app_config.time_series_environment in ["staging", "production"]:
+        logger.debug("Configured DuckDB for production environment.")
         conn.execute("""
             CREATE SECRET aws_secret (
                 TYPE S3,
