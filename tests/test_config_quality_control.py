@@ -52,8 +52,7 @@ class TestVariableRangeThresholds(unittest.TestCase):
         """Test that a valid VariableRangeThresholds instance is created correctly."""
         defaults = [RangeThreshold(min_value=0.0, max_value=10.0)]
         sites = [RangeThreshold(site_id="SITE1", min_value=0.0, max_value=10.0)]
-        variable_range_thresholds = VariableRangeThresholds(variable="TA", defaults=defaults, sites=sites)
-        self.assertEqual(variable_range_thresholds.variable, "TA")
+        variable_range_thresholds = VariableRangeThresholds(defaults=defaults, sites=sites)
         self.assertEqual(variable_range_thresholds.defaults, defaults)
         self.assertEqual(variable_range_thresholds.sites, sites)
 
@@ -83,9 +82,8 @@ class TestGetQCConfig(unittest.TestCase):
                               mock_qc_test)
         qc_test_patch.start()
         
-        mock_var_range_threshs = [
-            {
-                "variable": "TA",
+        mock_var_range_threshs = {
+            "TA": {
                 "defaults": [
                     {
                         "min_value": -30.0,
@@ -101,7 +99,7 @@ class TestGetQCConfig(unittest.TestCase):
                     },
                 ],
             },
-        ]
+        }
         var_range_patch = patch('dritimeseriesprocessor.config_quality_control.var_range_thresholds',
                                 mock_var_range_threshs)
         var_range_patch.start()
@@ -123,10 +121,9 @@ class TestGetQCConfig(unittest.TestCase):
         with the correct content.
         """
         result = get_qc_config("range_thresholds")
-        self.assertIsInstance(result, list)
+        self.assertIsInstance(result, dict)
         self.assertEqual(len(result), 1)
-        self.assertIsInstance(result[0], VariableRangeThresholds)
-        self.assertEqual(result[0].variable, "TA")
+        self.assertIsInstance(result["TA"], VariableRangeThresholds)
 
     def test_invalid_config_type(self):
         """Test the get_qc_config function with an invalid configuration type.
