@@ -24,4 +24,8 @@ COPY --chown=python:python tests/ /app/tests
 
 USER python
 ENV VIRTUAL_ENV="/app/.venv"
+
+# Unsetting entrypoint from parent image
+ENTRYPOINT []
+
 CMD ["python", "-m", "dritimeseriesprocessor"]
