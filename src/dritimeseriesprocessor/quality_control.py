@@ -143,19 +143,16 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
         - If a test function is not available for a specified test, a warning is logged and the test is skipped.
         - The function modifies the input DataFrame in-place by adding or updating quality control flag columns.
     """
-    var_test_map = qc_config.get_qc_config("variable_test_map")
+    qc_tests = qc_config.get_qc_config("qc_tests")
 
-    for var_test in var_test_map:
-        if var_test.variable_id not in df:
+    for test_id, test_info in qc_tests.items():
+        test_func = qc_test_map.get(test_id)
+        if test_func is None:
+            logger.warning(f"No QC function available for {test_info.test_name}")
             continue
 
-        for test in var_test.tests:
-            test_func = qc_test_map.get(test)
-            if test_func is None:
-                logger.warning(f"No QC function available for {test}")
-                continue
-
-            logger.info(f"QC test: {test} for variable: {var_test.variable_id}")
-            df = test_func(df, var_test.variable_id)
+        for variable in test_info.variables:
+            logger.info(f"QC test: {test_info.test_name} for variable: {variable}")
+            df = test_func(df, variable)
 
     return df
