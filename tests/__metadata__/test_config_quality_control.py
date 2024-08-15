@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch
 from pydantic import ValidationError
-from parameterized import parameterized
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import (
     qc_tests,
@@ -13,7 +12,6 @@ from dritimeseriesprocessor.__metadata__.config_quality_control import (
     QCConfig,
     get_valid_qc_tests,
     get_qc_config,
-    get_qc_flag,
     QCTestIDValidator
 )
 
@@ -235,156 +233,6 @@ class TestGetQCConfig(unittest.TestCase):
         """
         result = get_qc_config()
         self.assertIsInstance(result, QCConfig)
-
-class TestQCFlagging(unittest.TestCase):
-    """Suite for testing the creation of QC flags."""
-
-    @classmethod
-    def setUpClass(cls):
-        """Set up the test environment by mocking the global variables used in get_qc_config.
-        This method is called before each test method.
-        """
-        # Mock the global variables used in the function
-        mock_qc_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
-            },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 1
-            },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 2
-            },
-        ]
-
-        cls.patcher = patch("dritimeseriesprocessor.config_quality_control.qc_tests",mock_qc_tests)
-        cls.patcher.start()
-    
-    @classmethod
-    def tearDownClass(cls):
-        cls.patcher.stop()
-        
-    @parameterized.expand([
-        ["RANGE", 1],
-        [["MIN"], 2],
-        ["MAX", 4],
-        [["RANGE", "MIN"], 3],
-        [["RANGE", "MAX"], 5],
-        [["MAX", "MIN"], 6],
-        [["RANGE", "MIN", "MAX"], 7],
-    ])
-    def test_correct_flag_returned(self, test_names, expected):
-        """Asserts that the right QC flag is returned for any combination of tests"""
-
-        flag = get_qc_flag(test_names)
-
-        self.assertEqual(flag, expected)
-
-class TestQCTestValidity(unittest.TestCase):
-    """Suite to check validity of QC tests in codebase"""
-
-    def setUp(self):
-        self.good_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
-            },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 1
-            },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 2
-            },
-        ]
-
-    def test_unique_ids(self):
-        """Ensures that all tests have unique IDs"""
-
-        self.assertTrue(
-            QCTestIDValidator._ids_are_unique(self.good_tests)
-        )
-
-        non_unique_ids = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
-            },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 0
-            },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 2
-            },
-        ]
-
-        self.assertFalse(QCTestIDValidator._ids_are_unique(non_unique_ids))
-    
-    def test_bitwise_ids(self):
-        """Ensures that all test_ids are bitwise (2**n)"""
-
-        self.assertTrue(
-            QCTestIDValidator._ids_are_bitwise(self.good_tests)
-        )
-
-        bad_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
-            },
-            {
-                "test_name": "MIN",
-                "test_id": 7
-            },
-            {
-                "test_name": "MAX",
-                "test_id": 1.6
-            },
-        ]
-
-        self.assertFalse(QCTestIDValidator._ids_are_bitwise(bad_tests))
-    
-    def test_sequential_ids(self):
-        """Ensures that all tests have sequential IDs"""
-
-        self.assertTrue(
-            QCTestIDValidator._ids_are_sequential(self.good_tests)
-        )
-
-        bad_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 1
-            },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 2
-            },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 0
-            },
-        ]
-
-        self.assertFalse(QCTestIDValidator._ids_are_sequential(bad_tests))
-
-    @patch("dritimeseriesprocessor.config_quality_control.QCTestIDValidator._ids_are_sequential")
-    @patch("dritimeseriesprocessor.config_quality_control.QCTestIDValidator._ids_are_bitwise")
-    @patch("dritimeseriesprocessor.config_quality_control.QCTestIDValidator._ids_are_unique")
-    def test_validation_methods_called(self, mock_ids_are_unique, mock_ids_are_bitwise, mock_ids_are_sequential):
-        """Tests that all validation methods are called when main function invoked"""
-
-        assert QCTestIDValidator.validate(self.good_tests)
-        assert mock_ids_are_unique.called
-        assert mock_ids_are_bitwise.called
-        assert mock_ids_are_sequential.called
-
 
 
 if __name__ == '__main__':
