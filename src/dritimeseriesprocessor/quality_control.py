@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 
 import polars as pl
 
-import dritimeseriesprocessor.config_quality_control as qc_config
+import dritimeseriesprocessor.__metadata__.config_quality_control as qc_config
 
 logger = logging.getLogger(__name__)
 

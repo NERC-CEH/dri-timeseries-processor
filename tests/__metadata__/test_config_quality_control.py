@@ -2,9 +2,8 @@ import unittest
 from unittest.mock import patch
 from pydantic import ValidationError
 
-from dritimeseriesprocessor.config_quality_control import (
+from dritimeseriesprocessor.__metadata__.config_quality_control import (
     qc_tests,
-    var_range_thresholds,
     QCTest,
     RangeThreshold,
     VariableRangeThresholds,
@@ -78,7 +77,7 @@ class TestGetQCConfig(unittest.TestCase):
             },
         }
 
-        qc_test_patch = patch('dritimeseriesprocessor.config_quality_control.qc_tests',
+        qc_test_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.qc_tests',
                               mock_qc_test)
         qc_test_patch.start()
         
@@ -100,10 +99,9 @@ class TestGetQCConfig(unittest.TestCase):
                 ],
             },
         }
-        var_range_patch = patch('dritimeseriesprocessor.config_quality_control.var_range_thresholds',
+        var_range_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.var_range_thresholds',
                                 mock_var_range_threshs)
         var_range_patch.start()
-
 
     def test_get_tests_config(self):
         """Test the get_qc_config function with 'qc_tests' configuration.

@@ -9,6 +9,7 @@ from dritimeseriesprocessor.quality_control import (
     battery_voltage_test,
     run_qc
 )
+from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 
 
 class TestQCModule(unittest.TestCase):
