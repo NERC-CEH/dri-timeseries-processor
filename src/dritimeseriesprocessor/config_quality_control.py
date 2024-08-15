@@ -114,7 +114,8 @@ var_range_thresholds = {
     },
 }
 
-
+# Threshold values could be moved to a structure like the range
+# thresholds if complexity increases
 # Battery test - Min acceptable voltage
 battery_voltage_threshold = 10.0
 

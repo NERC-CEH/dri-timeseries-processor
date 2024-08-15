@@ -115,7 +115,8 @@ class TestRunQC(unittest.TestCase):
         self.threshold = 10.0
         self.flag_value = 5
 
-    def test_run_qc_no_qc_tests_available(self):
+    @patch('dritimeseriesprocessor.quality_control.logger')
+    def test_run_qc_no_qc_tests_available(self, mock_logger):
         """
         Test the run_qc function when no QC tests are available for a variable.
         Verifies that the function skips QC tests and logs a warning.
@@ -132,7 +133,7 @@ class TestRunQC(unittest.TestCase):
         qc_test_map.update(original_qc_test_map)
 
 
-class TestScan(unittest.TestCase):
+class TestScanTest(unittest.TestCase):
     def setUp(self):
         self.data = pl.DataFrame({
             "SCANS": [120.0, 140.0, 20.0, 60.1],
@@ -144,11 +145,29 @@ class TestScan(unittest.TestCase):
         self.threshold = 60.0
         self.flag_value = 5
 
+
     def test_soilmet_scans_test(self):
         result = soilmet_scans_test(self.data, self.test_column)
         expected_flags = [0, 0, 5, 0]
         self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
 
+    @patch('dritimeseriesprocessor.quality_control.logger')
+    def test_soilmet_scans_test_no_scans_column(self, mock_logger):
+        """
+        Test the soilmet_scans_test function when 'SCANS' column is missing.
+        Verifies that the function returns the DataFrame unchanged.
+        """
+        data_no_scans = self.data.drop(["SCANS"])
+
+        result = soilmet_scans_test(data_no_scans, self.test_column)
+
+        # Compare the result with the original DataFrame without 'SCANS'
+        self.assertEqual(result.shape, data_no_scans.shape)
+        self.assertTrue((result.columns == data_no_scans.columns))
+        self.assertTrue((result.equals(data_no_scans)))
+
+        # Check logger call
+        mock_logger.warning.assert_called_with('Can not run soilmet scans test. No SCANS column in data.')
 
 class TestRangeTest(unittest.TestCase):
 
