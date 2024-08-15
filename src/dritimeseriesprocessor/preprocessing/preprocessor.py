@@ -1,5 +1,5 @@
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 
 import polars as pl
 
@@ -31,7 +31,7 @@ def preprocess(df: pl.DataFrame) -> pl.DataFrame:
 
         # Ensure the end datetime is set; default to the current time if not provided
         if correction_config.END_DATETIME is None:
-            correction_config.END_DATETIME = datetime.now(UTC)
+            correction_config.END_DATETIME = datetime.now()
 
         # Create a mask to filter rows based on SITE_ID and the time range
         mask = (
