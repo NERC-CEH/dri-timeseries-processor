@@ -1,7 +1,7 @@
 import unittest
 import polars as pl
 from dritimeseriesprocessor.quality_control import qc_test_map, col_comparison_test, battery_voltage_test, run_qc
-from dritimeseriesprocessor.config_quality_control import get_qc_config
+from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 
 
 class TestQCModule(unittest.TestCase):
