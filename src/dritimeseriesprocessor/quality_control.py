@@ -107,6 +107,8 @@ def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     Returns:
         pl.DataFrame: The DataFrame with the quality control flag applied.
     """
+    # Place holder. We need to pass in the data resolution. As is, this means this test will
+    # only work for 30min data.
     resolution = "PT30M"
 
     range_thresholds = qc_config.get_qc_config("range_thresholds")
