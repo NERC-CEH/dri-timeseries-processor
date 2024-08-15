@@ -68,9 +68,8 @@ qc_tests = {
 }
 
 # Range test - Min and max values for variables.
-var_range_thresholds = [
-    {
-        "variable": "TA",
+var_range_thresholds = {
+    "TA": {
         "defaults": [
             {
                 "min_value": -30.0,
@@ -86,8 +85,7 @@ var_range_thresholds = [
             },
         ],
     },
-    {
-        "variable": "PRECIP",
+    "PRECIP": {
         "defaults": [
             {
                 "resolutions": ["PT1M"],
@@ -114,7 +112,7 @@ var_range_thresholds = [
             },
         ],
     },
-]
+}
 
 
 # Battery test - Min acceptable voltage
@@ -214,7 +212,6 @@ class VariableRangeThresholds(BaseModel):
         check_site_id_in_sites: Ensures that every RangeThreshold in 'sites' contains a 'site_id'.
     """
 
-    variable: str
     defaults: List[RangeThreshold]
     sites: Optional[List[RangeThreshold]] = None
 
@@ -278,7 +275,7 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
     if config == "qc_tests":
         qc_config = {test: QCTest(**info) for test, info in qc_tests.items()}
     elif config == "range_thresholds":
-        qc_config = [VariableRangeThresholds(**thresh_dict) for thresh_dict in var_range_thresholds]
+        qc_config = {var: VariableRangeThresholds(**thresh_dict) for var, thresh_dict in var_range_thresholds.items()}
     elif config == "battv_threshold":
         qc_config = ValueThreshold(threshold=battery_voltage_threshold)
     elif config == "soilmet_scan_threshold":

@@ -93,6 +93,82 @@ def col_comparison_test(
     return flagged_data
 
 
+def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+    """
+    Test values falls between min and max range.
+
+    This function checks if the given column has values within the expected range
+    and applies a quality control flag to the specified column if it is.
+
+    Args:
+        df: The input DataFrame containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+
+    Returns:
+        pl.DataFrame: The DataFrame with the quality control flag applied.
+    """
+    resolution = "PT30M"
+
+    range_thresholds = qc_config.get_qc_config("range_thresholds")
+    range_threshold = range_thresholds.get(column)
+    if range_threshold is None:
+        logger.warning(f"Can not run range test. No {column} data provided")
+        return df
+
+    default_min_val = None
+    default_max_val = None
+    # Establish defaults
+    for range_thresh in range_threshold.defaults:
+        if range_thresh.resolutions is None:
+            # Default regardless of resolution
+            default_min_val = range_thresh.min_value
+            default_max_val = range_thresh.max_value
+
+        elif resolution in range_thresh.resolutions:
+            # Defaults found for specific resolution
+            default_min_val = range_thresh.min_value
+            default_max_val = range_thresh.max_value
+            break
+
+    if default_min_val is None:
+        msg = f"No default min/max values set for {column} range test"
+        logger.error(msg)
+        raise ValueError(msg)
+
+    # Perform range checks per site, as they can have different min/max thresholds
+    sites = df.unique(subset="SITE_ID").select("SITE_ID").to_series().to_list()
+
+    site_dfs = []
+    for site in sites:
+        # Check for site specific min/max values
+        for range_thresh in range_threshold.sites:
+            if range_thresh.site_id == site and (
+                range_thresh.resolutions is None or resolution in range_thresh.resolutions
+            ):
+                min_val = range_thresh.min_value
+                max_val = range_thresh.max_value
+                break
+        else:
+            min_val = default_min_val
+            max_val = default_max_val
+
+        site_df = df.filter(pl.col("SITE_ID") == site).select("time", "SITE_ID", column)
+
+        # Find values that are out of range
+        too_low = site_df.select(column) < min_val
+        too_high = site_df.select(column) > max_val
+        out_of_range = too_low.to_series() | too_high.to_series()
+
+        flags = out_of_range.cast(pl.Int32).replace(1, 64).to_frame()
+        site_df = add_qcflag_column(site_df, flags, column)
+        site_dfs.append(site_df)
+
+    all_site_dfs = pl.concat(site_dfs)
+    all_site_dfs = all_site_dfs.drop(column)
+
+    return df.join(all_site_dfs, on=("time", "SITE_ID"), how="left")
+
+
 def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     """
     Test the battery voltage level is above the threshold.
@@ -149,7 +225,7 @@ def soilmet_scans_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
 
 # Map method IDs to function
-qc_test_map = {"BATTV": battery_voltage_test, "SCANS": soilmet_scans_test}
+qc_test_map = {"BATTV": battery_voltage_test, "RANGE": range_test, "SCANS": soilmet_scans_test}
 
 
 def run_qc(df: pl.DataFrame) -> pl.DataFrame:
