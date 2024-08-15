@@ -101,7 +101,6 @@ class TestGetQCConfig(unittest.TestCase):
                                 mock_var_range_threshs)
         var_range_patch.start()
 
-
     def test_get_tests_config(self):
         """Test the get_qc_config function with 'qc_tests' configuration.
         Verifies that it returns a dictionary of QCTest objects with the correct content.

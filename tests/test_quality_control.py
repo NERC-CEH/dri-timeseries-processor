@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import polars as pl
+from polars.testing import assert_frame_equal
+
 from dritimeseriesprocessor.quality_control import (
     qc_test_map,
     col_comparison_test,
@@ -9,8 +11,6 @@ from dritimeseriesprocessor.quality_control import (
     soilmet_scans_test,
     run_qc
 )
-
-from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 
 
