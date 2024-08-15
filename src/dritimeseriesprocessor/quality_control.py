@@ -118,16 +118,16 @@ def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     default_min_val = None
     default_max_val = None
     # Establish defaults
-    for range_thresh in range_threshold.defaults:
-        if range_thresh.resolutions is None:
+    for range_thres_def in range_threshold.defaults:
+        if range_thres_def.resolutions is None:
             # Default regardless of resolution
-            default_min_val = range_thresh.min_value
-            default_max_val = range_thresh.max_value
+            default_min_val = range_thres_def.min_value
+            default_max_val = range_thres_def.max_value
 
-        elif resolution in range_thresh.resolutions:
+        elif resolution in range_thres_def.resolutions:
             # Defaults found for specific resolution
-            default_min_val = range_thresh.min_value
-            default_max_val = range_thresh.max_value
+            default_min_val = range_thres_def.min_value
+            default_max_val = range_thres_def.max_value
             break
 
     if default_min_val is None:
@@ -141,12 +141,12 @@ def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     site_dfs = []
     for site in sites:
         # Check for site specific min/max values
-        for range_thresh in range_threshold.sites:
-            if range_thresh.site_id == site and (
-                range_thresh.resolutions is None or resolution in range_thresh.resolutions
+        for range_thres_site in range_threshold.sites:
+            if range_thres_site.site_id == site and (
+                range_thres_site.resolutions is None or resolution in range_thres_site.resolutions
             ):
-                min_val = range_thresh.min_value
-                max_val = range_thresh.max_value
+                min_val = range_thres_site.min_value
+                max_val = range_thres_site.max_value
                 break
         else:
             min_val = default_min_val
