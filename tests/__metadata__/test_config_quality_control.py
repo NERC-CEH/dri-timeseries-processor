@@ -4,8 +4,6 @@ from pydantic import ValidationError
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import (
     qc_tests,
-    var_range_thresholds,
-    variable_test_mapping,
     QCTest,
     RangeThreshold,
     VariableRangeThresholds,
@@ -138,7 +136,7 @@ class TestGetQCConfig(unittest.TestCase):
             },
         ]
 
-        qc_test_patch = patch('dritimeseriesprocessor.config_quality_control.qc_tests',
+        qc_test_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.qc_tests',
                               mock_qc_test)
         qc_test_patch.start()
         
@@ -161,7 +159,7 @@ class TestGetQCConfig(unittest.TestCase):
                 ],
             },
         ]
-        var_range_patch = patch('dritimeseriesprocessor.config_quality_control.var_range_thresholds',
+        var_range_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.var_range_thresholds',
                                 mock_var_range_threshs)
         var_range_patch.start()
 
@@ -173,7 +171,7 @@ class TestGetQCConfig(unittest.TestCase):
                 ],
             },
         ]
-        variable_test_map_patch = patch('dritimeseriesprocessor.config_quality_control.variable_test_mapping',
+        variable_test_map_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.variable_test_mapping',
                                         mock_var_test_map)
         variable_test_map_patch.start()
 

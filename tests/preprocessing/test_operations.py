@@ -1,55 +1,47 @@
 import unittest
-from datetime import datetime
+from unittest.mock import Mock
 
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.__metadata__.config_preprocessing import Correction
-from dritimeseriesprocessor.preprocessing.operations import _when_then_wrapper, multiply
+from dritimeseriesprocessor.preprocessing.operations import _when_then_wrapper, add, multiply
 
 
-class TestMultiply(unittest.TestCase):
+def create_test_data():
+    return pl.DataFrame({
+        "SITE_ID": ["site1", "site2", "site3"],
+        "value": [10., 20., 30.]
+    })
+
+
+class TestAdd(unittest.TestCase):
     def setUp(self):
-        self.df = pl.DataFrame({
-            "SITE_ID": ["site1", "site1", "site2", "site3"],
-            "time": [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13)
-            ],
-            "value": [10, 20, 30, 40]
+        self.df = create_test_data()
+        self.correction_config = Mock(
+            VARIABLE="value",
+            CORRECTION_FACTOR=100.,
+            METHOD_ID="ADD",
+        )
+
+    def test_add_simple(self):
+        """ Test that the add function works across the full DataFrame
+        """
+        result = add(self.df, self.correction_config)
+        expected = pl.DataFrame({
+            "SITE_ID": ["site1", "site2", "site3"],
+            "value": [110., 120., 130.]
         })
 
-        self.correction_config = Correction(
-            VARIABLE="value",
-            CORRECTION_FACTOR=2.0,
-            SITE_ID="site1",
-            START_DATETIME=datetime(2023, 8, 10),
-            END_DATETIME=datetime(2023, 8, 12),
-            METHOD_ID="MULTIPLY",
-            DESCRIPTION="Testing"
-        )
+        assert_frame_equal(result, expected)
 
-    def test_multiply_within_time_range(self):
-        """ Test multiplication within the specified time range.
+    def test_add_mask(self):
+        """ Test that the add function works with a mask clause
         """
-        mask = (
-            (pl.col("SITE_ID") == self.correction_config.SITE_ID) &
-            (pl.col("time") >= self.correction_config.START_DATETIME) &
-            (pl.col("time") <= self.correction_config.END_DATETIME)
-        )
-
-        result = multiply(self.df, mask, self.correction_config)
+        mask = pl.col("SITE_ID").eq("site1")
+        result = add(self.df, self.correction_config, mask)
         expected = pl.DataFrame({
-            "SITE_ID": ["site1", "site1", "site2", "site3"],
-            "time": [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13)
-            ],
-            "value": [20, 40, 30, 40]
+            "SITE_ID": ["site1", "site2", "site3"],
+            "value": [110., 20., 30.]
         })
 
         assert_frame_equal(result, expected)
@@ -58,13 +50,49 @@ class TestMultiply(unittest.TestCase):
         """ Test when no rows match the condition
         """
         self.correction_config.SITE_ID = "site4"
-        mask = (
-            (pl.col("SITE_ID") == self.correction_config.SITE_ID) &
-            (pl.col("time") >= self.correction_config.START_DATETIME) &
-            (pl.col("time") <= self.correction_config.END_DATETIME)
+        mask = pl.col("SITE_ID").eq(self.correction_config.SITE_ID)
+        result = add(self.df, self.correction_config, mask)
+        assert_frame_equal(result, self.df)
+
+
+class TestMultiply(unittest.TestCase):
+    def setUp(self):
+        self.df = create_test_data()
+        self.correction_config = Mock(
+            VARIABLE="value",
+            CORRECTION_FACTOR=2.0,
+            METHOD_ID="MULTIPLY",
         )
 
-        result = multiply(self.df, mask, self.correction_config)
+    def test_multiply_simple(self):
+        """ Test that the multiply function works across the full DataFrame
+        """
+        result = multiply(self.df, self.correction_config)
+        expected = pl.DataFrame({
+            "SITE_ID": ["site1", "site2", "site3"],
+            "value": [20., 40., 60.]
+        })
+
+        assert_frame_equal(result, expected)
+
+    def test_multiply_mask(self):
+        """ Test that the multiply function works with a mask clause
+        """
+        mask = pl.col("SITE_ID").eq("site2")
+        result = multiply(self.df, self.correction_config, mask)
+        expected = pl.DataFrame({
+            "SITE_ID": ["site1", "site2", "site3"],
+            "value": [10., 40., 30.]
+        })
+
+        assert_frame_equal(result, expected)
+
+    def test_no_matching_rows(self):
+        """ Test when no rows match the condition
+        """
+        self.correction_config.SITE_ID = "site4"
+        mask = pl.col("SITE_ID").eq(self.correction_config.SITE_ID)
+        result = multiply(self.df, self.correction_config, mask)
         assert_frame_equal(result, self.df)
 
 
@@ -79,7 +107,7 @@ class TestWhenThenWrapper(unittest.TestCase):
         """ Test basic when-then-otherwise logic returns expected correction to column.
         """
         when = pl.col("SITE_ID").eq("site1")
-        then = pl.col("value") * 2
+        then = pl.col("value").mul(2)
         otherwise = pl.col("value")
 
         result = _when_then_wrapper(self.df, when, then, otherwise)
@@ -94,8 +122,8 @@ class TestWhenThenWrapper(unittest.TestCase):
         """ Test basic when-then-otherwise logic, but with an expression in the otherwise.
         """
         when = pl.col("SITE_ID").eq("site1")
-        then = pl.col("value") * 2
-        otherwise = pl.col("value") * 10
+        then = pl.col("value").mul(2)
+        otherwise = pl.col("value").mul(10)
 
         result = _when_then_wrapper(self.df, when, then, otherwise)
         expected = pl.DataFrame({
@@ -109,7 +137,7 @@ class TestWhenThenWrapper(unittest.TestCase):
         """ Test that the dataframe is not altered when no condition is met.
         """
         when = pl.col("SITE_ID").eq("site4")
-        then = pl.col("value") * 2
+        then = pl.col("value").mul(2)
         otherwise = pl.col("value")
 
         result = _when_then_wrapper(self.df, when, then, otherwise)
@@ -121,7 +149,7 @@ class TestWhenThenWrapper(unittest.TestCase):
         """ Test when condition that applies to all rows.
         """
         when = pl.col("SITE_ID").is_in(["site1", "site2", "site3"])
-        then = pl.col("value") * 2
+        then = pl.col("value").mul(2)
         otherwise = pl.col("value")
 
         result = _when_then_wrapper(self.df, when, then, otherwise)
@@ -138,7 +166,7 @@ class TestWhenThenWrapper(unittest.TestCase):
 
         def _dummy():
             # Multiply value by 10, cast to string and append to the site ID
-            return (pl.col("value") * 10).cast(str) + pl.col("SITE_ID")
+            return (pl.col("value").mul(10)).cast(str) + pl.col("SITE_ID")
 
         when = pl.col("SITE_ID").is_in(["site1", "site2", "site3"])
         then = _dummy()

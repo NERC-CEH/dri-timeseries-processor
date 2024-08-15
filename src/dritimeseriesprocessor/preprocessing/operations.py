@@ -7,13 +7,14 @@ from dritimeseriesprocessor.__metadata__.config_preprocessing import Correction
 logger = logging.getLogger(__name__)
 
 
-def multiply(df: pl.DataFrame, mask: pl.expr, config: Correction) -> pl.DataFrame:
+def multiply(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies a multiplication correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
-        mask: The condition to apply for the correction.
         config: A configuration object containing the correction parameters.
+        mask: The condition to apply for the correction. Default is an expression that defaults to True
+              so that expression happens on full DataFrame.
 
     Returns:
         The DataFrame with the applied correction.
@@ -26,13 +27,14 @@ def multiply(df: pl.DataFrame, mask: pl.expr, config: Correction) -> pl.DataFram
     return corrected
 
 
-def add(df: pl.DataFrame, mask: pl.Expr, config: Correction) -> pl.DataFrame:
+def add(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies an addition correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
-        mask: The condition to apply for the correction.
         config: A configuration object containing the correction parameters.
+        mask: The condition to apply for the correction. Default is an expression that defaults to True
+              so that expression happens on full DataFrame.
 
     Returns:
         The DataFrame with the applied correction.
