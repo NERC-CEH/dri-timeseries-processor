@@ -11,6 +11,7 @@ from dritimeseriesprocessor.quality_control import (
 )
 
 from polars.testing import assert_frame_equal
+from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 
 
 class TestColComparison(unittest.TestCase):

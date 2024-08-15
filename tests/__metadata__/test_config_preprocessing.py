@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 from pydantic import ValidationError
 
-from dritimeseriesprocessor.config_preprocessing import (
+from dritimeseriesprocessor.__metadata__.config_preprocessing import (
     get_valid_method_ids,
     CorrectionMethod,
     Correction,

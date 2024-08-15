@@ -16,7 +16,7 @@ def query_by_date_range(
     bucket_name: str,
     prefix: str,
     start_date: Union[date, datetime],
-    end_date: Union[date, datetime],
+    end_date: Union[date, datetime, None],
     columns: Optional[List[str]] = None,
     site_ids: Optional[Union[str, List[str]]] = None,
     date_field: str = "time",
