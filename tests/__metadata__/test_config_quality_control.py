@@ -3,15 +3,9 @@ from unittest.mock import patch
 from pydantic import ValidationError
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import (
-    qc_tests,
-<<<<<<< HEAD:tests/test_config_quality_control.py
-    var_range_thresholds,
-=======
->>>>>>> main:tests/__metadata__/test_config_quality_control.py
     QCTest,
     RangeThreshold,
     VariableRangeThresholds,
-    ValueThreshold,
     get_qc_config,
 )
 
@@ -102,42 +96,11 @@ class TestGetQCConfig(unittest.TestCase):
                     },
                 ],
             },
-<<<<<<< HEAD:tests/test_config_quality_control.py
         }
-        var_range_patch = patch('dritimeseriesprocessor.config_quality_control.var_range_thresholds',
-                                mock_var_range_threshs)
-        var_range_patch.start()
-
-=======
-        ]
         var_range_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.var_range_thresholds',
                                 mock_var_range_threshs)
         var_range_patch.start()
 
-        mock_var_test_map = [
-            {
-                "variable_id": "TA",
-                "tests": [
-                    "RANGE",
-                ],
-            },
-        ]
-        variable_test_map_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.variable_test_mapping',
-                                        mock_var_test_map)
-        variable_test_map_patch.start()
-
-
-    def test_get_all_config(self):
-        """Test the get_qc_config function with 'all' configuration.
-        Verifies that it returns a QCConfig object with the correct number of items
-        in each attribute.
-        """
-        result = get_qc_config("all")
-        self.assertEqual(len(result.qc_tests), 1)
-        self.assertEqual(len(result.var_range_thresholds), 1)
-        self.assertEqual(len(result.variable_test_mapping), 1)
-        self.assertIsInstance(result, QCConfig)
->>>>>>> main:tests/__metadata__/test_config_quality_control.py
 
     def test_get_tests_config(self):
         """Test the get_qc_config function with 'qc_tests' configuration.
