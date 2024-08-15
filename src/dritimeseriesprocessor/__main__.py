@@ -26,10 +26,11 @@ data = data_manager.query_by_date_range(
 # Preprocessing
 preprocessed_data = preprocess(data)
 
+logger.info(preprocessed_data.count())
 logger.info(preprocessed_data)
 
 # Quality control
-qcd_data = quality_control.run_qc(data)
+qcd_data = quality_control.run_qc(preprocessed_data)
 
 logger.info(qcd_data.count())
 logger.info(qcd_data)
