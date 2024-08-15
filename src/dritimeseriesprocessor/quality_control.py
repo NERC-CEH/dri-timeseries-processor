@@ -164,32 +164,6 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
     return df
 
 
-def get_qc_flag(test_names: List[int]) -> int:
-    """Returns a unique QC flag given any number of failed tests.
-
-    Args:
-        test_names: A list of test names that have failed.
-    Returns:
-        int: An unique integer identifying the combination of tests that failed.
-    """
-    if not hasattr(test_names, "__iter__") or isinstance(test_names, str):
-        test_names = [test_names]
-
-    flag = 0
-    for name in test_names:
-        test_exists = False
-
-        for test in qc_config.qc_tests:
-            if test["test_name"] == name:
-                flag |= test["test_id"]
-                test_exists = True
-
-        if not test_exists:
-            raise KeyError(f'Test name "{name}" not found in valid QC tests.')
-
-    return flag
-
-
 def get_failed_qc_check_ids_from_flag(flag: int) -> List[int]:
     """Returns the indexes of failed tests from a QC flag
 

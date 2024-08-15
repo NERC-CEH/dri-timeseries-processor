@@ -5,7 +5,6 @@ from dritimeseriesprocessor.quality_control import (
     col_comparison_test,
     battery_voltage_test,
     run_qc,
-    get_qc_flag,
     QCTestIDValidator,
     get_failed_qc_check_ids_from_flag
 )
@@ -133,21 +132,6 @@ class TestQCFlagging(unittest.TestCase):
     def tearDownClass(cls):
         cls.patcher.stop()
         
-    @parameterized.expand([
-        ["RANGE", 1],
-        [["MIN"], 2],
-        ["MAX", 4],
-        [["RANGE", "MIN"], 3],
-        [["RANGE", "MAX"], 5],
-        [["MAX", "MIN"], 6],
-        [["RANGE", "MIN", "MAX"], 7],
-    ])
-    def test_correct_flag_returned(self, test_names, expected):
-        """Asserts that the right QC flag is returned for any combination of tests"""
-
-        flag = get_qc_flag(test_names)
-
-        self.assertEqual(flag, expected)
     @parameterized.expand([
         [0, []],
         [1, [1]],
