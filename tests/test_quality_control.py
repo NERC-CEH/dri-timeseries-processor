@@ -1,7 +1,20 @@
 import unittest
 import polars as pl
-from dritimeseriesprocessor.quality_control import qc_test_map, col_comparison_test, battery_voltage_test, run_qc, get_qc_flag, QCTestIDValidator
-from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config, qc_tests, _qc_test_ids
+from dritimeseriesprocessor.quality_control import (
+    qc_test_map,
+    col_comparison_test,
+    battery_voltage_test,
+    run_qc,
+    get_qc_flag,
+    QCTestIDValidator,
+    get_failed_qc_check_ids_from_flag
+)
+from dritimeseriesprocessor.__metadata__.config_quality_control import (
+    get_qc_config,
+    qc_tests,
+    _qc_test_ids
+)
+
 from parameterized import parameterized
 from unittest.mock import patch
 
@@ -135,6 +148,23 @@ class TestQCFlagging(unittest.TestCase):
         flag = get_qc_flag(test_names)
 
         self.assertEqual(flag, expected)
+    @parameterized.expand([
+        [0, []],
+        [1, [1]],
+        [2, [2]],
+        [4, [4]],
+        [3, [1, 2]],
+        [5, [1, 4]],
+        [6, [2, 4]],
+        [7, [1, 2, 4]]
+    ])
+    def test_flag_is_reversible(self, flag, expected):
+        """Checks that flags can be reversed into QC check IDs"""
+
+        result = get_failed_qc_check_ids_from_flag(flag)
+
+        self.assertListEqual(result, expected)
+
 
 class TestQCTestValidity(unittest.TestCase):
     """Suite to check validity of QC tests in codebase"""

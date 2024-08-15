@@ -190,6 +190,17 @@ def get_qc_flag(test_names: List[int]) -> int:
     return flag
 
 
+def get_failed_qc_check_ids_from_flag(flag: int) -> List[int]:
+    """Returns the indexes of failed tests from a QC flag
+
+    Args: The flag to calculate from.
+
+    Returns: A list of indexes to failed QC checks.
+    """
+
+    return [1 << i for i, x in enumerate(reversed(bin(flag)[2:])) if x == "1"]
+
+
 class QCTestIDValidator:
     """Validates that a list of QC tests is valid and non-wasteful
 

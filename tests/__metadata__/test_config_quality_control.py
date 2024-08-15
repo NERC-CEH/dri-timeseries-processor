@@ -12,7 +12,6 @@ from dritimeseriesprocessor.__metadata__.config_quality_control import (
     QCConfig,
     get_valid_qc_tests,
     get_qc_config,
-    QCTestIDValidator
 )
 
 class TestGetValidQCTests(unittest.TestCase):
