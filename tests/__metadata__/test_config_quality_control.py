@@ -70,6 +70,7 @@ class TestGetQCConfig(unittest.TestCase):
         mock_qc_test = {
             "RANGE": {
                 "test_name": "Range test",
+                "id": 1 << 0,
                 "description": "Checks if the value falls within a specified range.",
                 "variables": ["TA", "PRECIP"]
             },
