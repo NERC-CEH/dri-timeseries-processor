@@ -2,28 +2,29 @@ import unittest
 from unittest.mock import patch, MagicMock
 import polars as pl
 from polars.testing import assert_frame_equal
+
 from dritimeseriesprocessor.quality_control import (
     qc_test_map,
     col_comparison_test,
-    range_test,
     battery_voltage_test,
     run_qc,
     get_failed_qc_check_ids_from_flag,
-    QCTestIDValidator
+    QCTestIDValidator,
+    range_test,
+    soilmet_scans_test
 )
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config, qc_tests
 
 from parameterized import parameterized
 from unittest.mock import patch
 
-class TestQCModule(unittest.TestCase):
+class TestColComparison(unittest.TestCase):
     """
-    Unit tests for the QC module functions.
+    Unit tests for the col_comparison function.
     """
-
     def setUp(self):
         """
-        Set up the initial data for testing. 
+        Set up the initial data for testing.
         This method is run before each test.
         """
         self.data = pl.DataFrame({
@@ -60,6 +61,24 @@ class TestQCModule(unittest.TestCase):
         with self.assertRaises(ValueError):
             col_comparison_test(self.data, self.data["BATTV"], self.threshold, self.flag_value, op="invalid_op")
 
+
+class TestBatteryVoltage(unittest.TestCase):
+    """
+    Unit tests for the battery voltage function.
+    """
+    def setUp(self):
+        """
+        Set up the initial data for testing. 
+        This method is run before each test.
+        """
+        self.data = pl.DataFrame({
+            "BATTV": [12.0, 11.5, 9.8, 10.2, 9.5],
+            "TA": [20.0, 21.5, 22.1, 19.8, 18.0],
+        })
+        self.test_column = "TA"
+        self.threshold = 10.0
+        self.flag_value = 5
+
     def test_battery_voltage_test(self):
         """
         Test the battery_voltage_test function.
@@ -84,7 +103,26 @@ class TestQCModule(unittest.TestCase):
         self.assertTrue((result.columns == data_no_battv.columns))
         self.assertTrue((result.equals(data_no_battv)))
 
-    def test_run_qc_no_qc_tests_available(self):
+
+class TestRunQC(unittest.TestCase):
+    """
+    Unit tests for the run_qc function.
+    """
+    def setUp(self):
+        """
+        Set up the initial data for testing.
+        This method is run before each test.
+        """
+        self.data = pl.DataFrame({
+            "BATTV": [12.0, 11.5, 9.8, 10.2, 9.5],
+            "TA": [20.0, 21.5, 22.1, 19.8, 18.0],
+        })
+        self.test_column = "TA"
+        self.threshold = 10.0
+        self.flag_value = 5
+
+    @patch('dritimeseriesprocessor.quality_control.logger')
+    def test_run_qc_no_qc_tests_available(self, mock_logger):
         """
         Test the run_qc function when no QC tests are available for a variable.
         Verifies that the function skips QC tests and logs a warning.
@@ -93,6 +131,7 @@ class TestQCModule(unittest.TestCase):
         qc_test_map.clear()  # Clear all available QC tests
 
         result = run_qc(self.data)
+
         # Ensure no new columns were added due to lack of available tests
         self.assertNotIn(f"{self.test_column}_QCFLAG", result.columns)
 
@@ -291,6 +330,42 @@ class TestQCTestsAreValid(unittest.TestCase):
             msg=f"{invalid_msg} Some tests are not unique."
             )
 
+
+class TestScanTest(unittest.TestCase):
+    def setUp(self):
+        self.data = pl.DataFrame({
+            "SCANS": [120.0, 140.0, 20.0, 60.1],
+            "COL1": [1.0, 2.0, 3.0, 4.0],
+            "COL2": [5.0, 6.0, 7.0, 8.0],
+            "COL3": [9.0, 10.0, 11.0, 12.0]
+        })
+        self.test_column = "COL2"
+        self.threshold = 60.0
+        self.flag_value = 5
+
+
+    def test_soilmet_scans_test(self):
+        result = soilmet_scans_test(self.data, self.test_column)
+        expected_flags = [0, 0, 5, 0]
+        self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
+
+    @patch('dritimeseriesprocessor.quality_control.logger')
+    def test_soilmet_scans_test_no_scans_column(self, mock_logger):
+        """
+        Test the soilmet_scans_test function when 'SCANS' column is missing.
+        Verifies that the function returns the DataFrame unchanged.
+        """
+        data_no_scans = self.data.drop(["SCANS"])
+
+        result = soilmet_scans_test(data_no_scans, self.test_column)
+
+        # Compare the result with the original DataFrame without 'SCANS'
+        self.assertEqual(result.shape, data_no_scans.shape)
+        self.assertTrue((result.columns == data_no_scans.columns))
+        self.assertTrue((result.equals(data_no_scans)))
+
+        # Check logger call
+        mock_logger.warning.assert_called_with('Can not run soilmet scans test. No SCANS column in data.')
 
 class TestRangeTest(unittest.TestCase):
 

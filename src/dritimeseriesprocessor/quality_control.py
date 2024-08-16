@@ -234,21 +234,45 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     if "BATTV" not in df:
         logger.warning("Can not run Battery voltage test. No BATTV data provided")
         return df
+    else:
+        battv_config = qc_config.get_qc_config("battv_threshold")
 
-    battv_config = qc_config.get_qc_config("battv_threshold")
+        flags = col_comparison_test(df.select(column), df["BATTV"], battv_config.threshold, flag=qc_config.qc_tests["BATTV"]["id"], op="<")
 
-    power_flags = col_comparison_test(
-        df.select(column), df["BATTV"], battv_config.threshold, flag=qc_config.qc_tests["BATTV"]["id"], op="<"
-    )
+        return add_qcflag_column(df, flags, column)
 
-    return add_qcflag_column(df, power_flags, column)
+
+def soilmet_scans_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+    """
+    Test the soilmet scans value is above the threshold.
+
+    This function checks if the soilmet scans value ('SCANS' column)
+    is below a certain threshold and applies a quality control flag to
+    the appropriate columns if it is.
+
+    Args:
+        df: The input DataFrame containing the data to be tested.
+        column: The name of the column to which the quality
+                control flag will be applied.
+
+    Returns:
+        pl.DataFrame: The DataFrame with the quality control flag
+        applied, or returned as is if the 'BATTV' column is not
+        present in the input DataFrame.
+    """
+    if "SCANS" not in df:
+        logger.warning("Can not run soilmet scans test. No SCANS column in data.")
+        return df
+    else:
+        soilmet_scan_config = qc_config.get_qc_config("soilmet_scan_threshold")
+
+        flags = col_comparison_test(df.select(column), df["SCANS"], soilmet_scan_config.threshold, flag=5, op="<")
+
+        return add_qcflag_column(df, flags, column)
 
 
 # Map method IDs to function
-qc_test_map = {
-    "BATTV": battery_voltage_test,
-    "RANGE": range_test,
-}
+qc_test_map = {"BATTV": battery_voltage_test, "RANGE": range_test, "SCANS": soilmet_scans_test}
 
 
 def run_qc(df: pl.DataFrame) -> pl.DataFrame:
@@ -274,14 +298,18 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
     qc_tests = qc_config.get_qc_config("qc_tests")
 
     for test_id, test_info in qc_tests.items():
-        test_func = qc_test_map.get(test_id)
-        if test_func is None:
+        if test_id in qc_test_map:
+            test_func = qc_test_map.get(test_id)
+        else:
             logger.warning(f"No QC function available for {test_info.test_name}")
             continue
 
         for variable in test_info.variables:
-            logger.info(f"QC test: {test_info.test_name} for variable: {variable}")
-            df = test_func(df, variable)
+            if variable in df.columns:
+                logger.info(f"QC TEST: {test_info.test_name} for variable: {variable}")
+                df = test_func(df, variable)
+            else:
+                logger.warning(f"{variable} doesnt exist in dataframe.")
 
     return df
 

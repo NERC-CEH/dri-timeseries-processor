@@ -50,6 +50,35 @@ qc_tests = {
             "PRECIP",
         ],
     },
+    "SCANS": {
+        "test_name": "Soilmet scans check",
+        "description": "Checks if the number of SOILMET scans/samples are too low.",
+        "id": 1 << 2,
+        "variables": [
+            "CTS_BARE",
+            "CTS_MOD",
+            "CTS_MOD2",
+            "CTS_SNOW",
+            "G1",
+            "G2",
+            "LWIN",
+            "LWOUT",
+            "PA",
+            "Q",
+            "RH",
+            "SNOWD_DISTANCE_UNC",
+            "STP_TSOIL2",
+            "STP_TSOIL5",
+            "STP_TSOIL10",
+            "STP_TSOIL20",
+            "STP_TSOIL50",
+            "SWIN",
+            "SWOUT",
+            "TA",
+            "WD",
+            "WS",
+        ],
+    },
 }
 # endregion
 
@@ -379,8 +408,14 @@ var_range_thresholds = {
 # endregion
 
 # region --- Individual thresholds
+# Values could be moved to a structure like the range
+# thresholds if complexity increases
+
 # Battery test - Min acceptable voltage
 battery_voltage_threshold = 10
+
+# Soilmet scan test - min acceptable number of scans
+soilmet_scan_threshold = 60.0
 # endregion
 
 
@@ -524,6 +559,7 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
             - "qc_tests": Returns a list of QCTest objects.
             - "range_thresholds": Returns a list of VariableRangeThresholds objects.
             - "battv_threshold": Returns battery voltage ValueThreshold object.
+            - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
 
     Returns:
         Union[List[Union[VariableRangeThresholds, QCTest, ValueThreshold]]]:
@@ -538,6 +574,8 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
         qc_config = {var: VariableRangeThresholds(**thresh_dict) for var, thresh_dict in var_range_thresholds.items()}
     elif config == "battv_threshold":
         qc_config = ValueThreshold(threshold=battery_voltage_threshold)
+    elif config == "soilmet_scan_threshold":
+        qc_config = ValueThreshold(threshold=soilmet_scan_threshold)
     else:
         raise ValueError("Not a valid config type")
 
