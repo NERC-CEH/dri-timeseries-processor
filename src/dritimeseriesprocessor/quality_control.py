@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional, Tuple
 
 import polars as pl
 
@@ -94,6 +94,128 @@ def col_comparison_test(
     return flagged_data
 
 
+def get_default_range_vals(
+    range_threshold: qc_config.VariableRangeThresholds, resolution: str
+) -> Tuple[Optional[float], Optional[float]]:
+    """
+    Get the default minimum and maximum values for a given resolution.
+
+    This function searches through the default range thresholds and returns
+    the min and max values based on the provided resolution. If no specific
+    resolution is found, it returns the general default values.
+
+    Parameters:
+        range_threshold: The threshold object containing default values.
+        resolution: The resolution for which the default range values are needed.
+
+    Returns:
+        Tuple[Optional[float], Optional[float]]: A tuple containing the minimum and maximum values.
+                                                 Returns (None, None) if no values are found.
+    """
+    min_val = None
+    max_val = None
+    # Establish defaults
+    for range_thres_def in range_threshold.defaults:
+        if range_thres_def.resolutions is None:
+            # Default regardless of resolution
+            min_val = range_thres_def.min_value
+            max_val = range_thres_def.max_value
+
+        elif resolution in range_thres_def.resolutions:
+            # Defaults found for specific resolution
+            min_val = range_thres_def.min_value
+            max_val = range_thres_def.max_value
+            break
+
+    return min_val, max_val
+
+
+def get_site_range_vals(
+    range_threshold: qc_config.VariableRangeThresholds, site: str, resolution: str
+) -> Tuple[Optional[float], Optional[float]]:
+    """
+    Get the site-specific minimum and maximum values for a given resolution.
+
+    This function searches through the site-specific range thresholds and returns
+    the min and max values for a given site and resolution. If no specific
+    values are found, it returns (None, None).
+
+    Parameters:
+        range_threshold: The threshold object containing site-specific values.
+        site: The site identifier for which range values are needed.
+        resolution: The resolution for which the site-specific range values are needed.
+
+    Returns:
+        Tuple[Optional[float], Optional[float]]: A tuple containing the minimum and maximum values for the site.
+                                                 Returns (None, None) if no values are found.
+    """
+    min_val = None
+    max_val = None
+    for range_thres_site in range_threshold.sites:
+        if range_thres_site.site_id == site and (
+            range_thres_site.resolutions is None or resolution in range_thres_site.resolutions
+        ):
+            min_val = range_thres_site.min_value
+            max_val = range_thres_site.max_value
+            break
+
+    return min_val, max_val
+
+
+def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+    """
+    Test values falls between min and max range.
+
+    This function checks if the given column has values within the expected range
+    and applies a quality control flag to the specified column if it is.
+
+    Args:
+        df: The input DataFrame containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+
+    Returns:
+        pl.DataFrame: The DataFrame with the quality control flag applied.
+    """
+    # Place holder. We need to pass in the data resolution. As is, this means this test will
+    # only work for 30min data.
+    resolution = "PT30M"
+
+    range_thresholds = qc_config.get_qc_config("range_thresholds")
+    range_threshold = range_thresholds.get(column)
+    if range_threshold is None:
+        logger.warning(f"Can not run range test. No {column} data provided")
+        return df
+
+    default_min_val, default_max_val = get_default_range_vals(range_threshold, resolution)
+
+    if default_min_val is None:
+        msg = f"No default min/max values set for {column} range test"
+        logger.error(msg)
+        raise ValueError(msg)
+
+    # Add flag column, initially with all 0's
+    flag_col_name = f"{column}_QCFLAG"
+    df = df.with_columns(pl.lit(0).alias(flag_col_name))
+
+    # Perform range checks per site, as they can have different min/max thresholds
+    sites = df.unique(subset="SITE_ID").select("SITE_ID").to_series().to_list()
+    for site in sites:
+        # Check for site specific min/max values
+        min_val, max_val = get_site_range_vals(range_threshold, site, resolution)
+        if min_val is None:
+            min_val = default_min_val
+            max_val = default_max_val
+
+        df = df.with_columns(
+            pl.when(pl.col("SITE_ID").eq(site) & (pl.col(column).lt(min_val) | pl.col(column).gt(max_val)))
+            .then(64)
+            .otherwise(pl.col(flag_col_name))
+            .alias(flag_col_name)
+        )
+
+    return df
+
+
 def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     """
     Test the battery voltage level is above the threshold.
@@ -123,7 +245,10 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
 
 # Map method IDs to function
-qc_test_map = {"BATTV": battery_voltage_test}
+qc_test_map = {
+    "BATTV": battery_voltage_test,
+    "RANGE": range_test,
+}
 
 
 def run_qc(df: pl.DataFrame) -> pl.DataFrame:
@@ -146,20 +271,17 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
         - If a test function is not available for a specified test, a warning is logged and the test is skipped.
         - The function modifies the input DataFrame in-place by adding or updating quality control flag columns.
     """
-    var_test_map = qc_config.get_qc_config("variable_test_map")
+    qc_tests = qc_config.get_qc_config("qc_tests")
 
-    for var_test in var_test_map:
-        if var_test.variable_id not in df:
+    for test_id, test_info in qc_tests.items():
+        test_func = qc_test_map.get(test_id)
+        if test_func is None:
+            logger.warning(f"No QC function available for {test_info.test_name}")
             continue
 
-        for test in var_test.tests:
-            test_func = qc_test_map.get(test)
-            if test_func is None:
-                logger.warning(f"No QC function available for {test}")
-                continue
-
-            logger.info(f"QC test: {test} for variable: {var_test.variable_id}")
-            df = test_func(df, var_test.variable_id)
+        for variable in test_info.variables:
+            logger.info(f"QC test: {test_info.test_name} for variable: {variable}")
+            df = test_func(df, variable)
 
     return df
 
