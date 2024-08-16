@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import polars as pl
 
@@ -238,7 +238,7 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     battv_config = qc_config.get_qc_config("battv_threshold")
 
     power_flags = col_comparison_test(
-        df.select(column), df["BATTV"], battv_config.threshold, flag=qc_config._qc_test_ids["BATTV"], op="<"
+        df.select(column), df["BATTV"], battv_config.threshold, flag=qc_config.qc_tests["BATTV"]["id"], op="<"
     )
 
     return add_qcflag_column(df, power_flags, column)
@@ -307,17 +307,31 @@ class QCTestIDValidator:
     quite large."""
 
     @staticmethod
-    def _ids_are_unique(test_list: List[dict]) -> bool:
+    def _check_id_type(id_value: int) -> None:
+        """Checks the type of the test ID and raises a TypeError if
+        not an integer.
+
+        Args:
+            id_value: A numberic value of the test ID.
+        Raises:
+            TypeError: Raises if type is not int.
+        """
+
+        if not isinstance(id_value, int):
+            raise TypeError(f'A bitwise ID must be an integer, received "{type(id_value)}"')
+
+    @staticmethod
+    def _ids_are_unique(test_dict: Dict[str, dict]) -> bool:
         """Checks if IDs are unique
 
         Args:
-            test_list: A list of dictionaries representing QC tests.
+            test_dict: A dictionary of dictionaries representing QC tests.
 
         Returns:
             bool: A bool result of whether the IDs are unique.
         """
 
-        test_ids = [test["test_id"] for test in test_list]
+        test_ids = [item["id"] for item in test_dict.values()]
 
         if len(test_ids) == len(set(test_ids)):
             return True
@@ -325,61 +339,66 @@ class QCTestIDValidator:
         return False
 
     @staticmethod
-    def _ids_are_sequential(test_list: List[dict]) -> bool:
+    def _ids_are_sequential(test_dict: Dict[str, dict]) -> bool:
         """Checks that IDs are sequential and start at number 1.
 
         Args:
-            test_list: A list of dictionaries representing QC tests.
+            test_dict: A dictionary of dictionaries representing QC tests.
 
         Returns:
             bool: A bool result of whether the IDs are sequential and start at 1.
         """
+        for i, test in enumerate(test_dict.values()):
+            QCTestIDValidator._check_id_type(test["id"])
 
-        for i, test in enumerate(test_list):
-            if test["test_id"] != 1 << i:
+            if test["id"] != 1 << i:
                 return False
 
         return True
 
     @staticmethod
-    def _ids_are_bitwise(test_list: List[dict]) -> bool:
+    def _ids_are_bitwise(test_dict: Dict[str, dict]) -> bool:
         """Checks that all test IDs are bitwise.
 
         Args:
-            test_list: A list of dictionaries representing QC tests.
+            test_dict: A dictionary of dictionaries representing QC tests.
 
         Returns:
             bool: A bool result of whether the IDs are bitwise.
         """
-        for test in test_list:
-            if test["test_id"] == 0 or ((test["test_id"] & (test["test_id"] - 1)) != 0):
+
+        for test in test_dict.values():
+            QCTestIDValidator._check_id_type(test["id"])
+
+            if test["id"] == 0 or ((test["id"] & (test["id"] - 1)) != 0):
                 return False
 
         return True
 
     @staticmethod
-    def _ids_are_all_present(test_list: List[dict]) -> bool:
+    def _ids_are_all_present(test_dict: Dict[str, dict]) -> bool:
         """Checks that all tests have  a "test_id" attribute
 
         Args:
-            test_list: A list of dictionaries representing QC tests.
+            test_dict: A dictionary of dictionaries representing QC tests.
 
         Returns:
             bool: A bool result of whether all tests have test IDs.
         """
 
-        for test in test_list:
-            if "test_id" not in test:
+        for test in test_dict.values():
+            if "id" not in test:
                 return False
+            QCTestIDValidator._check_id_type(test["id"])
 
         return True
 
     @staticmethod
-    def validate(test_list: List[dict]) -> bool:
+    def validate(test_dict: Dict[str, dict]) -> bool:
         """Checks that IDs in a list of tests are valid.
 
         Args:
-            test_list: A list of dictionaries representing QC tests.
+            test_dict: A dictionary of dictionaries representing QC tests.
 
         Returns:
             bool: A bool result of whether the IDs are valid.
@@ -391,7 +410,7 @@ class QCTestIDValidator:
             QCTestIDValidator._ids_are_sequential,
             QCTestIDValidator._ids_are_all_present,
         ]:
-            if not check(test_list):
+            if not check(test_dict):
                 return False
 
         return True

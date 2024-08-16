@@ -7,9 +7,11 @@ from dritimeseriesprocessor.quality_control import (
     col_comparison_test,
     range_test,
     battery_voltage_test,
-    run_qc
+    run_qc,
+    get_failed_qc_check_ids_from_flag,
+    QCTestIDValidator
 )
-from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
+from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config, qc_tests
 
 from parameterized import parameterized
 from unittest.mock import patch
@@ -63,7 +65,7 @@ class TestQCModule(unittest.TestCase):
         Test the battery_voltage_test function.
         Verifies that the function correctly applies QC flags based on the battery voltage.
         """
-        battv_flag = _qc_test_ids["BATTV"]
+        battv_flag = qc_tests["BATTV"]["id"]
         result = battery_voltage_test(self.data, self.test_column)
         expected_flags = [0, 0, battv_flag, 0, battv_flag]  # Expected flag results based on the battery voltage
         self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
@@ -106,20 +108,17 @@ class TestQCFlagging(unittest.TestCase):
         This method is called before each test method.
         """
         # Mock the global variables used in the function
-        mock_qc_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
+        mock_qc_tests = {
+            "RANGE": {
+                "id": 1 << 0
             },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 1
+            "MIN": {
+                "id": 1 << 1
             },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 2
-            },
-        ]
+            "MAX": {
+                "id": 1 << 2
+            }
+        }
 
         cls.patcher = patch("dritimeseriesprocessor.__metadata__.config_quality_control.qc_tests",mock_qc_tests)
         cls.patcher.start()
@@ -147,24 +146,21 @@ class TestQCFlagging(unittest.TestCase):
         self.assertListEqual(result, expected)
 
 
-class TestQCTestValidity(unittest.TestCase):
+class TestQCTestValidator(unittest.TestCase):
     """Suite to check validity of QC tests in codebase"""
 
     def setUp(self):
-        self.good_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
+        self.good_tests = {
+            "RANGE": {
+                "id": 1 << 0
             },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 1
+            "MIN": {
+                "id": 1 << 1
             },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 2
-            },
-        ]
+            "MAX": {
+                "id": 1 << 2
+            }
+        }
 
     def test_unique_ids(self):
         """Ensures that all tests have unique IDs"""
@@ -173,20 +169,17 @@ class TestQCTestValidity(unittest.TestCase):
             QCTestIDValidator._ids_are_unique(self.good_tests)
         )
 
-        non_unique_ids = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
+        non_unique_ids = {
+            "RANGE": {
+                "id": 1 << 0
             },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 0
+            "MIN": {
+                "id": 1 << 0
             },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 2
-            },
-        ]
+            "MAX": {
+                "id": 1 << 2
+            }
+        }
 
         self.assertFalse(QCTestIDValidator._ids_are_unique(non_unique_ids))
     
@@ -197,22 +190,34 @@ class TestQCTestValidity(unittest.TestCase):
             QCTestIDValidator._ids_are_bitwise(self.good_tests)
         )
 
-        bad_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
+        bad_tests_int = {
+            "RANGE": {
+                "id": 1 << 0
             },
-            {
-                "test_name": "MIN",
-                "test_id": 7
+            "MIN": {
+                "id": 3
             },
-            {
-                "test_name": "MAX",
-                "test_id": 1.6
-            },
-        ]
+            "MAX": {
+                "id": 1 << 1
+            }
+        }
 
-        self.assertFalse(QCTestIDValidator._ids_are_bitwise(bad_tests))
+        bad_tests_float = {
+            "RANGE": {
+                "id": 1 << 0
+            },
+            "MIN": {
+                "id": 1 << 1
+            },
+            "MAX": {
+                "id": 1.5
+            }
+        }
+
+        self.assertFalse(QCTestIDValidator._ids_are_bitwise(bad_tests_int))
+
+        with self.assertRaises(TypeError):
+            QCTestIDValidator._ids_are_bitwise(bad_tests_float)
     
     def test_sequential_ids(self):
         """Ensures that all tests have sequential IDs"""
@@ -221,39 +226,33 @@ class TestQCTestValidity(unittest.TestCase):
             QCTestIDValidator._ids_are_sequential(self.good_tests)
         )
 
-        bad_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 1
+        bad_tests = {
+            "RANGE": {
+                "id": 1 << 1
             },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 2
+            "MIN": {
+                "id": 1 << 0
             },
-            {
-                "test_name": "MAX",
-                "test_id": 1 << 0
-            },
-        ]
+            "MAX": {
+                "id": 1 << 2
+            }
+        }
 
         self.assertFalse(QCTestIDValidator._ids_are_sequential(bad_tests))
 
     def test_missing_test_id_returns_false(self):
         """Tests that a KeyError is raised if there is no test ID for a given test"""
         
-        bad_tests = [
-            {
-                "test_name": "RANGE",
-                "test_id": 1 << 0
+        bad_tests = {
+            "RANGE": {
+                "id": 1 << 0
             },
-            {
-                "test_name": "MIN",
-                "test_id": 1 << 1
+            "MIN": {
+                "id": 1 << 1
             },
-            {
-                "test_name": "MAX",
-            },
-        ]
+            "MAX": {
+            }
+        }
 
         self.assertTrue(QCTestIDValidator._ids_are_all_present(self.good_tests))
         self.assertFalse(QCTestIDValidator._ids_are_all_present(bad_tests))
@@ -271,6 +270,27 @@ class TestQCTestValidity(unittest.TestCase):
         assert mock_ids_are_bitwise.called
         assert mock_ids_are_sequential.called
         assert mock_checks_have_ids.called
+
+class TestQCTestsAreValid(unittest.TestCase):
+
+    def test_check_validity(self):
+        """Runs the QCTestIDValidator"""
+
+        invalid_msg = "QC tests in config are invalid."
+
+        self.assertTrue(QCTestIDValidator._ids_are_all_present(qc_tests),
+            msg=f"{invalid_msg} Some tests don't have IDs."
+            )
+        self.assertTrue(QCTestIDValidator._ids_are_bitwise(qc_tests),
+            msg=f"{invalid_msg} Some tests are not bitwise."
+            )
+        self.assertTrue(QCTestIDValidator._ids_are_sequential(qc_tests),
+            msg=f"{invalid_msg} Tests are not sequential."
+            )
+        self.assertTrue(QCTestIDValidator._ids_are_unique(qc_tests),
+            msg=f"{invalid_msg} Some tests are not unique."
+            )
+
 
 class TestRangeTest(unittest.TestCase):
 
