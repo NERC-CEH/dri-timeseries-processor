@@ -341,12 +341,12 @@ class TestScanTest(unittest.TestCase):
         })
         self.test_column = "COL2"
         self.threshold = 60.0
-        self.flag_value = 5
+        self.flag_value = qc_tests["SCANS"]["id"]
 
 
     def test_soilmet_scans_test(self):
         result = soilmet_scans_test(self.data, self.test_column)
-        expected_flags = [0, 0, 5, 0]
+        expected_flags = [0, 0, self.flag_value, 0]
         self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
 
     @patch('dritimeseriesprocessor.quality_control.logger')
