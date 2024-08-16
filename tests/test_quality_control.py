@@ -140,7 +140,8 @@ class TestQCFlagging(unittest.TestCase):
         [3, [1, 2]],
         [5, [1, 4]],
         [6, [2, 4]],
-        [7, [1, 2, 4]]
+        [7, [1, 2, 4]],
+        [64, [64]]
     ])
     def test_flag_is_reversible(self, flag, expected):
         """Checks that flags can be reversed into QC check IDs"""

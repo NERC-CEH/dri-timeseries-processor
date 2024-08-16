@@ -236,22 +236,22 @@ class QCTestIDValidator:
         return True
 
     @staticmethod
-    def _ids_are_all_present(test_list: List[dict]) ->  bool:
+    def _ids_are_all_present(test_list: List[dict]) -> bool:
         """Checks that all tests have  a "test_id" attribute
-        
+
         Args:
             test_list: A list of dictionaries representing QC tests.
-        
+
         Returns:
             bool: A bool result of whether all tests have test IDs.
         """
 
         for test in test_list:
             if "test_id" not in test:
-                return  False
-        
+                return False
+
         return True
-        
+
     @staticmethod
     def validate(test_list: List[dict]) -> bool:
         """Checks that IDs in a list of tests are valid.
@@ -267,10 +267,9 @@ class QCTestIDValidator:
             QCTestIDValidator._ids_are_unique,
             QCTestIDValidator._ids_are_bitwise,
             QCTestIDValidator._ids_are_sequential,
-            QCTestIDValidator._ids_are_all_present
+            QCTestIDValidator._ids_are_all_present,
         ]:
-            if check(test_list) == False:
+            if not check(test_list):
                 return False
-        
-        return True
 
+        return True
