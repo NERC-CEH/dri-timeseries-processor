@@ -77,7 +77,6 @@ class TestGetQCConfig(unittest.TestCase):
 
         qc_test_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.qc_tests',
                               mock_qc_test)
-        qc_test_patch.start()
         
         mock_var_range_threshs = {
             "TA": {
@@ -99,7 +98,13 @@ class TestGetQCConfig(unittest.TestCase):
         }
         var_range_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.var_range_thresholds',
                                 mock_var_range_threshs)
-        var_range_patch.start()
+        
+        self.patches = [var_range_patch, qc_test_patch]
+
+        [p.start() for p in self.patches]
+
+    def tearDown(self):
+        [p.stop() for p in self.patches]
 
     def test_get_tests_config(self):
         """Test the get_qc_config function with 'qc_tests' configuration.
