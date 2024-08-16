@@ -557,7 +557,6 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
             - "range_thresholds": Returns a list of VariableRangeThresholds objects.
             - "battv_threshold": Returns battery voltage ValueThreshold object.
             - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
-            Defaults to "all".
 
     Returns:
         Union[List[Union[VariableRangeThresholds, QCTest, ValueThreshold]]]:
