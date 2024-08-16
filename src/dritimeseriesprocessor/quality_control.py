@@ -208,7 +208,7 @@ def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
         df = df.with_columns(
             pl.when(pl.col("SITE_ID").eq(site) & (pl.col(column).lt(min_val) | pl.col(column).gt(max_val)))
-            .then(64)
+            .then(qc_config.qc_tests["RANGE"]["id"])
             .otherwise(pl.col(flag_col_name))
             .alias(flag_col_name)
         )

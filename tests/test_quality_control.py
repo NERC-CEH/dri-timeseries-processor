@@ -390,6 +390,8 @@ class TestRangeTest(unittest.TestCase):
         - QC column should be added to the DataFrame
         - Out-of-range values should be flagged (20 and 30 are out of range)
         """
+        qc_flag = qc_tests["RANGE"]["id"]
+
         mock_get_qc_config.return_value = {
             "TA": MagicMock(
                 defaults=[MagicMock(resolutions=None, min_value=22, max_value=28)],
@@ -397,12 +399,12 @@ class TestRangeTest(unittest.TestCase):
             )
         }
         mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(
-            pl.when(flags[column] == 64).then(64).otherwise(0).alias(f"{column}_QCFLAG")
+            pl.when(flags[column] == qc_flag).then(qc_flag).otherwise(0).alias(f"{column}_QCFLAG")
         )
 
         result = range_test(self.df, "TA")
         self.assertIn("TA_QCFLAG", result.columns)
-        self.assertEqual(result["TA_QCFLAG"].to_list(), [64, 0, 64])
+        self.assertEqual(result["TA_QCFLAG"].to_list(), [qc_flag, 0, qc_flag])
 
 
 if __name__ == "__main__":
