@@ -221,7 +221,7 @@ class QCTestIDValidator:
 
     @staticmethod
     def _ids_are_bitwise(test_list: List[dict]) -> bool:
-        """Checks that IDs are sequential and start at number 1.
+        """Checks that all test IDs are bitwise.
 
         Args:
             test_list: A list of dictionaries representing QC tests.
@@ -236,6 +236,23 @@ class QCTestIDValidator:
         return True
 
     @staticmethod
+    def _ids_are_all_present(test_list: List[dict]) ->  bool:
+        """Checks that all tests have  a "test_id" attribute
+        
+        Args:
+            test_list: A list of dictionaries representing QC tests.
+        
+        Returns:
+            bool: A bool result of whether all tests have test IDs.
+        """
+
+        for test in test_list:
+            if "test_id" not in test:
+                return  False
+        
+        return True
+        
+    @staticmethod
     def validate(test_list: List[dict]) -> bool:
         """Checks that IDs in a list of tests are valid.
 
@@ -246,10 +263,14 @@ class QCTestIDValidator:
             bool: A bool result of whether the IDs are valid.
         """
 
-        return all(
-            [
-                QCTestIDValidator._ids_are_unique(test_list),
-                QCTestIDValidator._ids_are_bitwise(test_list),
-                QCTestIDValidator._ids_are_sequential(test_list),
-            ]
-        )
+        for check in [
+            QCTestIDValidator._ids_are_unique,
+            QCTestIDValidator._ids_are_bitwise,
+            QCTestIDValidator._ids_are_sequential,
+            QCTestIDValidator._ids_are_all_present
+        ]:
+            if check(test_list) == False:
+                return False
+        
+        return True
+

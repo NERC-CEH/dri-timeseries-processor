@@ -241,16 +241,39 @@ class TestQCTestValidity(unittest.TestCase):
 
         self.assertFalse(QCTestIDValidator._ids_are_sequential(bad_tests))
 
+    def test_missing_test_id_returns_false(self):
+        """Tests that a KeyError is raised if there is no test ID for a given test"""
+        
+        bad_tests = [
+            {
+                "test_name": "RANGE",
+                "test_id": 1 << 0
+            },
+            {
+                "test_name": "MIN",
+                "test_id": 1 << 1
+            },
+            {
+                "test_name": "MAX",
+            },
+        ]
+
+        self.assertTrue(QCTestIDValidator._ids_are_all_present(self.good_tests))
+        self.assertFalse(QCTestIDValidator._ids_are_all_present(bad_tests))
+
+
     @patch("dritimeseriesprocessor.quality_control.QCTestIDValidator._ids_are_sequential")
     @patch("dritimeseriesprocessor.quality_control.QCTestIDValidator._ids_are_bitwise")
     @patch("dritimeseriesprocessor.quality_control.QCTestIDValidator._ids_are_unique")
-    def test_validation_methods_called(self, mock_ids_are_unique, mock_ids_are_bitwise, mock_ids_are_sequential):
+    @patch("dritimeseriesprocessor.quality_control.QCTestIDValidator._ids_are_all_present")
+    def test_validation_methods_called(self, mock_checks_have_ids, mock_ids_are_unique, mock_ids_are_bitwise, mock_ids_are_sequential):
         """Tests that all validation methods are called when main function invoked"""
 
         assert QCTestIDValidator.validate(self.good_tests)
         assert mock_ids_are_unique.called
         assert mock_ids_are_bitwise.called
         assert mock_ids_are_sequential.called
+        assert mock_checks_have_ids.called
 
 if __name__ == "__main__":
     unittest.main()
