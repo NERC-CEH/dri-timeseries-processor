@@ -162,6 +162,7 @@ class TestRangeQC(unittest.TestCase):
         - QC column should be added to the DataFrame
         - All values should be within range (SITE1 uses site-specific, SITE2 uses default)
         """
+        qc_flag = qc_tests["RANGE"]["id"]
         mock_get_qc_config.return_value = {
             "TA": MagicMock(
                 defaults=[MagicMock(resolutions=None, min_value=0, max_value=40)],
@@ -169,7 +170,7 @@ class TestRangeQC(unittest.TestCase):
             )
         }
         mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(
-            pl.when(flags[column] == 64).then(64).otherwise(0).alias(f"{column}_QCFLAG")
+            pl.when(flags[column] == qc_flag).then(qc_flag).otherwise(0).alias(f"{column}_QCFLAG")
         )
 
         result = range_qc(self.df, "TA")
