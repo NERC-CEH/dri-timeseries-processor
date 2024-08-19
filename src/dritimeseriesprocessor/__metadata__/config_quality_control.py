@@ -24,6 +24,7 @@ qc_tests = {
     "RANGE": {
         "test_name": "Range test",
         "description": "Checks if the value falls within a specified range.",
+        "id": 1 << 0,
         "variables": [
             "CTS_MOD",
             "CTS_MOD2",
@@ -43,6 +44,7 @@ qc_tests = {
     "BATTV": {
         "test_name": "Battery voltage test",
         "description": "Checks if battery voltage is too low.",
+        "id": 1 << 1,
         "variables": [
             "TA",
             "PRECIP",
@@ -51,6 +53,7 @@ qc_tests = {
     "SCANS": {
         "test_name": "Soilmet scans check",
         "description": "Checks if the number of SOILMET scans/samples are too low.",
+        "id": 1 << 2,
         "variables": [
             "CTS_BARE",
             "CTS_MOD",
