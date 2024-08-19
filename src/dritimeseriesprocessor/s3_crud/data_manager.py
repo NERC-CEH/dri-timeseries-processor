@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 
 import polars as pl
 
-from dritimeseriesprocessor.s3_crud.read import read_parquet_by_query
+from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.utils import steralize_dates, steralize_site_ids
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,9 @@ def query_by_date_range(
     Returns:
         A Polars DataFrame containing the combined data from the Parquet files.
     """
+
+    reader = DuckDbParquetReader()
+
     start_date, end_date = steralize_dates(start_date, end_date)
     site_ids = steralize_site_ids(site_ids)
 
@@ -52,5 +55,5 @@ def query_by_date_range(
     """
     params = [start_date, end_date, *site_ids]
 
-    df = read_parquet_by_query(query, params)
+    df = reader.read(query, params)
     return df

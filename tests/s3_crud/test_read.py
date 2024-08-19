@@ -5,7 +5,7 @@ import polars as pl
 import unittest
 from botocore.exceptions import ClientError
 
-from dritimeseriesprocessor.s3_crud.read import read_parquet_by_key, read_parquet_by_query
+from dritimeseriesprocessor.s3_crud.read import Boto3ParquetReader, DuckDbParquetReader
 from tests.s3_crud.base_test_case import BaseTestCase
 
 
@@ -18,11 +18,14 @@ def get_unique_dates(df: pl.DataFrame):
 
 @unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestReadParquetByKey(BaseTestCase):
+    def setUp(self):
+        self.reader = Boto3ParquetReader(self.s3_client)
+
     def test_read_parquet_by_key_success(self):
         """ Test that a valid key returns the Parquet dataset
         """
         key = "TEST_CATEGORY/2024-01/2024-01-01.parquet"
-        result = read_parquet_by_key(self.bucket_name, key)
+        result = self.reader.read(self.bucket_name, key)
 
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(get_unique_dates(result)['time'].to_list()), ['2024-01-01'])
@@ -32,24 +35,27 @@ class TestReadParquetByKey(BaseTestCase):
         """
         key = "non_existent_key.parquet"
         with self.assertRaises(ClientError):
-            read_parquet_by_key(self.bucket_name, key)
+            self.reader.read(self.bucket_name, key)
 
     def test_read_parquet_by_key_corrupt_error(self):
         """ Test that an error is raised if a corrupted parquet file is found
         """
         key = "corrupted.parquet"
         with self.assertRaises(pl.exceptions.ComputeError):
-            read_parquet_by_key(self.bucket_name, key)
+            self.reader.read(self.bucket_name, key)
 
 
 @unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestReadParquetByQuery(BaseTestCase):
+    def setUp(self):
+        self.reader = DuckDbParquetReader()
+
     def test_read_parquet_by_query_single_key(self):
         """ Test that a valid query on one object key returns the expected results
         """
         key = "TEST_CATEGORY/2024-01/2024-01-01.parquet"
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}')"
-        result = read_parquet_by_query(query)
+        result = self.reader.read(query)
 
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(get_unique_dates(result)['time'].to_list()), ['2024-01-01'])
@@ -61,7 +67,7 @@ class TestReadParquetByQuery(BaseTestCase):
                 "TEST_CATEGORY/2024-01/2024-01-02.parquet")
         keys_str = [f's3://{self.bucket_name}/{key}' for key in keys]
         query = f"SELECT * FROM read_parquet({keys_str})"
-        result = read_parquet_by_query(query)
+        result = self.reader.read(query)
 
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(get_unique_dates(result)['time'].to_list()), ['2024-01-01', '2024-01-02'])
@@ -70,7 +76,7 @@ class TestReadParquetByQuery(BaseTestCase):
         """ Test that a valid query using glob style key matching returns the expected results
         """
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/TEST_CATEGORY/**/*.parquet')"
-        result = read_parquet_by_query(query)
+        result = self.reader.read(query)
 
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(get_unique_dates(result)['time'].to_list()),
@@ -83,7 +89,7 @@ class TestReadParquetByQuery(BaseTestCase):
         key = "TEST_CATEGORY/2024-01/2024-01-01.parquet"
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}') WHERE SITE_ID = ?"
         params = ['site1']
-        result = read_parquet_by_query(query, params)
+        result = self.reader.read(query, params)
         result_site_ids = result['SITE_ID'].unique().to_list()
 
         self.assertIsInstance(result, pl.DataFrame)
@@ -97,7 +103,7 @@ class TestReadParquetByQuery(BaseTestCase):
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}')"
 
         with self.assertRaises(duckdb.HTTPException):
-            read_parquet_by_query(query)
+            self.reader.read(query)
 
     def test_read_parquet_by_query_corrupt_error(self):
         """ Test that an error is raised if a corrupted parquet file is found
@@ -106,4 +112,23 @@ class TestReadParquetByQuery(BaseTestCase):
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}')"
 
         with self.assertRaises(duckdb.InvalidInputException):
-            read_parquet_by_query(query)
+            self.reader.read(query)
+
+@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
+class TestBoto3ParquetReader(BaseTestCase):
+
+    def test_s3_client_type(self):
+        """Returns an object if s3_client is of type `boto3.client.s3`, otherwise
+        raises an error"""
+
+        # Happy path
+        reader = Boto3ParquetReader(self.s3_client)
+
+        # Bad path
+        
+        with self.assertRaises(TypeError):
+            Boto3ParquetReader("not an s3 client")
+
+        
+if __name__ == "__main__":
+    unittest.main()
