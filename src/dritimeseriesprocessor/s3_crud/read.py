@@ -96,7 +96,7 @@ class DuckDbParquetReader(ParquetReaderInterface):
             LOAD httpfs;
         """)
 
-        if app_config.time_series_environment == "local":
+        if app_config.environment == "local":
             # If running locally with localstack, need to explicitly set the endpoint URL and access key secrets.
             # Note that duckdb doesn't like the endpoint url to have http / https, so have to remove.
             logger.debug("Configured DuckDB for local environment.")
@@ -109,7 +109,7 @@ class DuckDbParquetReader(ParquetReaderInterface):
                 SET s3_secret_access_key='{os.environ["AWS_SECRET_ACCESS_KEY"]}';
             """)
 
-        if app_config.time_series_environment in ["staging", "production"]:
+        if app_config.environment in ["staging", "production"]:
             logger.debug("Configured DuckDB for production environment.")
             conn.execute("""
                 CREATE SECRET aws_secret (
@@ -118,7 +118,7 @@ class DuckDbParquetReader(ParquetReaderInterface):
                     CHAIN 'sts'
                 );
             """)
-        if app_config.time_series_environment == "staging-fake":
+        if app_config.environment == "staging-fake":
             logger.debug("Configured DuckDB for fake staging.")
 
         try:

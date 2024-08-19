@@ -29,7 +29,7 @@ local_config_parameters = shared_config_parameters + [
     "endpoint_url",
 ]
 
-kubernetes_config_parameters = shared_config_parameters + ["time_series_environment"]
+kubernetes_config_parameters = shared_config_parameters + ["environment"]
 
 
 class Configuration:
@@ -41,9 +41,9 @@ class Configuration:
 
     def __init__(self):
         # Populate class attributes
-        if "time_series_environment" not in os.environ:
+        if "environment" not in os.environ:
             logger.info("Loading local config")
-            setattr(Configuration, "time_series_environment", "local")
+            setattr(Configuration, "environment", "local")
 
             # Load config, raise error if not formatted correctly
             # including empty parameters
@@ -67,8 +67,8 @@ class Configuration:
             os.environ["AWS_SECRET_ACCESS_KEY"] = cfg["AWS_SECRET_ACCESS_KEY"]
             os.environ["AWS_DEFAULT_REGION"] = cfg["AWS_DEFAULT_REGION"]
 
-        elif os.environ["time_series_environment"] in ["staging", "production", "staging-fake"]:
-            logger.info(f"Loading {os.environ['time_series_environment']} config")
+        elif os.environ["environment"] in ["staging", "production", "staging-fake"]:
+            logger.info(f"Loading {os.environ['environment']} config")
             for item in kubernetes_config_parameters:
                 if item in os.environ:
                     setattr(Configuration, item, os.environ[item])
@@ -76,7 +76,7 @@ class Configuration:
                     raise KeyError(f"{item}: doesn't exist in the manifest.")
         else:
             raise ValueError(
-                """time_series_environment config must be \
+                """environment config must be \
                 either 'staging' or 'production'"""
             )
 
