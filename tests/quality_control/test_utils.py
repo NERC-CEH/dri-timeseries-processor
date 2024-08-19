@@ -2,11 +2,14 @@ import unittest
 import polars as pl
 
 from dritimeseriesprocessor.quality_control.utils import (
+    add_qcflag_column,
     col_comparison_test,
     get_failed_qc_check_ids_from_flag,
     QCTestIDValidator,
 )
 from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
+
+from polars.testing import assert_frame_equal
 
 from parameterized import parameterized
 from unittest.mock import patch
@@ -246,6 +249,54 @@ class TestQCTestsAreValid(unittest.TestCase):
         self.assertTrue(QCTestIDValidator._ids_are_unique(qc_tests),
             msg=f"{invalid_msg} Some tests are not unique."
             )
+
+
+class TestAddQCFlagColumn(unittest.TestCase):
+    """Test the add_qcflag_column function."""
+    def setUp(self):
+        """Set up the initial data for testing."""
+        self.qc_flag = 1 << 5
+        self.data = pl.DataFrame({
+            "BATTV": [12.0, 11.5, 9.8, 10.2, 9.5],
+            "TA": [20.0, 21.5, 22.1, 19.8, 18.0],
+            "TA_QCFLAG": [0, 1, 3, 4, 0]
+        })
+
+        self.first_flag = pl.DataFrame({
+            "BATTV": [0, 0, self.qc_flag, 0, self.qc_flag]
+        })
+
+        self.additional_flag = pl.DataFrame({
+            "TA": [0, 0, self.qc_flag, 0 ,self.qc_flag]
+        })
+
+
+    def test_add_qcflag_column_first_flag(self):
+        """Column failing QC checks for the first time."""
+        expected = pl.DataFrame({
+            "BATTV": [12.0, 11.5, 9.8, 10.2, 9.5],
+            "TA": [20.0, 21.5, 22.1, 19.8, 18.0],
+            "TA_QCFLAG": [0, 1, 3, 4, 0],
+            "BATTV_QCFLAG": [0, 0, 32, 0, 32]
+        })
+
+        result = add_qcflag_column(self.data, self.first_flag, "BATTV")
+
+        assert_frame_equal(result, expected)
+
+    def test_add_qcflag_column_additional_flag(self):
+        """Column failing QC checks a second time."""
+        expected = pl.DataFrame({
+            "BATTV": [12.0, 11.5, 9.8, 10.2, 9.5],
+            "TA": [20.0, 21.5, 22.1, 19.8, 18.0],
+            "TA_QCFLAG": [0, 1, 35, 4, 32],
+        })
+
+        result = add_qcflag_column(self.data, self.additional_flag, "TA")
+
+        assert_frame_equal(result, expected)
+
+
 
 if __name__ == "__main__":
     unittest.main()
