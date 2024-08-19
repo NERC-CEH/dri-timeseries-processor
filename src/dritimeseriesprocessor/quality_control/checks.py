@@ -12,7 +12,7 @@ from dritimeseriesprocessor.quality_control.utils import (
 logger = logging.getLogger(__name__)
 
 
-def battery_voltage_check(df: pl.DataFrame, column: str) -> pl.DataFrame:
+def battery_voltage_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
     """Check that the battery voltage level is above the threshold.
 
     This function checks if the battery voltage ('BATTV' column) is below a certain threshold
@@ -21,18 +21,18 @@ def battery_voltage_check(df: pl.DataFrame, column: str) -> pl.DataFrame:
     Args:
         df: The input DataFrame containing the data to be tested.
         column: The name of the column to which the quality control flag will be applied.
+        flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
         The DataFrame with the quality control flag applied.
     """
     battv_config = get_qc_config("battv_threshold")
-    flag_value = 5  # TODO: Get this value from somewhere
-    df = column_threshold_check(df, "BATTV", column, battv_config.threshold, "<", flag_value)
+    df = column_threshold_check(df, "BATTV", column, battv_config.threshold, "<", flag_id)
 
     return df
 
 
-def range_check(df: pl.DataFrame, column: str) -> pl.DataFrame:
+def range_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
     """Check values falls between min and max range, applying a quality control flag if outside of range.
 
     Min and max range values are defined per site, per variable and per time resolution.
@@ -40,6 +40,7 @@ def range_check(df: pl.DataFrame, column: str) -> pl.DataFrame:
     Args:
         df: The input DataFrame containing the data to be tested.
         column: The name of the column to which the quality control flag will be applied.
+        flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
          The DataFrame with the quality control flag applied.
@@ -55,7 +56,7 @@ def range_check(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
         df = df.with_columns(
             pl.when(pl.col("SITE_ID").eq(site) & (pl.col(column).lt(min_val) | pl.col(column).gt(max_val)))
-            .then(pl.col(qc_column).add(64))  # TODO: Get this value from somewhere
+            .then(pl.col(qc_column).add(flag_id))
             .otherwise(pl.col(qc_column))
             .alias(qc_column)
         )
@@ -63,19 +64,19 @@ def range_check(df: pl.DataFrame, column: str) -> pl.DataFrame:
     return df
 
 
-def soilmet_scans_check(df: pl.DataFrame, column: str) -> pl.DataFrame:
+def soilmet_scans_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
     """Check the soilmet scans value is above an acceptable threshold.
 
     Args:
         df: The input DataFrame containing the data to be tested.
         column: The name of the column to which the quality control flag will be applied.
+        flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
         The DataFrame with the quality control flag applied.
     """
     soilmet_scan_config = get_qc_config("soilmet_scan_threshold")
-    flag_value = 5  # TODO: Get this value from somewhere
-    df = column_threshold_check(df, "SCANS", column, soilmet_scan_config.threshold, "<", flag_value)
+    df = column_threshold_check(df, "SCANS", column, soilmet_scan_config.threshold, "<", flag_id)
 
     return df
 

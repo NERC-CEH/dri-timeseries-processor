@@ -18,7 +18,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
             "value": [1., 2., 3., 4., 5.],
         })
 
-        self.flag_value = 5
+        self.flag_value = 1
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_battery_voltage_below_threshold(self, mock_get_qc_config):
@@ -26,7 +26,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.battv_threshold_config
 
-        result = battery_voltage_check(self.data, "value")
+        result = battery_voltage_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
             pl.Series([0, 0, self.flag_value, 0, self.flag_value])
             .alias("value_QCFLAG")
@@ -39,7 +39,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=0.5)
 
-        result = battery_voltage_check(self.data, "value")
+        result = battery_voltage_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
             pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
@@ -52,7 +52,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=100.)
 
-        result = battery_voltage_check(self.data, "value")
+        result = battery_voltage_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
             pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
             .alias("value_QCFLAG")
@@ -69,7 +69,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
             .alias("BATTV")
         )
 
-        result = battery_voltage_check(new_data, "value")
+        result = battery_voltage_check(new_data, "value", self.flag_value)
         expected = new_data.with_columns(
             pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
@@ -82,7 +82,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.battv_threshold_config
         with self.assertRaises(UserWarning):
-            battery_voltage_check(self.data.drop(["BATTV"]), "value")
+            battery_voltage_check(self.data.drop(["BATTV"]), "value", self.flag_value)
 
 
 class TestRangeCheck(unittest.TestCase):
@@ -124,7 +124,7 @@ class TestRangeCheck(unittest.TestCase):
             )
         }
 
-        self.flag_value = 64
+        self.flag_value = 1
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_range_check_default_and_site_specific(self, mock_get_qc_config):
@@ -133,7 +133,7 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
 
-        result = range_check(self.data, "value1")
+        result = range_check(self.data, "value1", self.flag_value)
 
         expected = self.data.with_columns(
             pl.Series([self.flag_value, 0, 0, 0, self.flag_value, self.flag_value,
@@ -149,7 +149,7 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
 
-        result = range_check(self.data, "value2")
+        result = range_check(self.data, "value2", self.flag_value)
 
         expected = self.data.with_columns(
             pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0,
@@ -165,7 +165,7 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
         with self.assertRaises(UserWarning):
-            range_check(self.data, "value3")
+            range_check(self.data, "value3", self.flag_value)
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_range_qc_no_default(self, mock_get_qc_config):
@@ -177,7 +177,7 @@ class TestRangeCheck(unittest.TestCase):
         mock_get_qc_config.return_value = range_thresholds
 
         with self.assertRaises(ValueError):
-            range_check(self.data, "value1")
+            range_check(self.data, "value1", self.flag_value)
 
 
 class TestSoilmetScansCheck(unittest.TestCase):
@@ -191,7 +191,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
             "value": [1., 2., 3., 4., 5.],
         })
 
-        self.flag_value = 5
+        self.flag_value = 1
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_scans_below_threshold(self, mock_get_qc_config):
@@ -199,7 +199,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
 
-        result = soilmet_scans_check(self.data, "value")
+        result = soilmet_scans_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
             pl.Series([self.flag_value, 0, 0, 0, self.flag_value])
             .alias("value_QCFLAG")
@@ -212,7 +212,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=1)
 
-        result = soilmet_scans_check(self.data, "value")
+        result = soilmet_scans_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
             pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
@@ -225,7 +225,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=1000.)
 
-        result = soilmet_scans_check(self.data, "value")
+        result = soilmet_scans_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
             pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
             .alias("value_QCFLAG")
@@ -242,7 +242,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
             .alias("SCANS")
         )
 
-        result = soilmet_scans_check(new_data, "value")
+        result = soilmet_scans_check(new_data, "value", self.flag_value)
         expected = new_data.with_columns(
             pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
@@ -255,6 +255,4 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
         with self.assertRaises(UserWarning):
-            battery_voltage_check(self.data.drop(["SCANS"]), "value")
-
-
+            battery_voltage_check(self.data.drop(["SCANS"]), "value", self.flag_value)

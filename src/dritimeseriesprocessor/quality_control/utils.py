@@ -9,7 +9,7 @@ def column_threshold_check(
     qc_column: str,
     threshold: float,
     operator: str,
-    flag_value: int,
+    flag_id: int,
     flag_na: bool = False,
 ) -> pl.DataFrame:
     """Generic function for flagging one column of data, based on a threshold check of a different column
@@ -24,7 +24,7 @@ def column_threshold_check(
         qc_column: The column that should be flagged
         threshold: Threshold value
         operator: What comparison to make
-        flag_value: The flag value used
+        flag_id: The ID of the quality control flag that should be applied to data that fail this check.
         flag_na: Comparison tests against NaNs will always result in False. By default, NaN values will not cause
             data in data to be flagged. Set this to True to change that.
 
@@ -58,10 +58,7 @@ def column_threshold_check(
     # Apply the flags based on comparing requested column to the threshold
     df, flag_column = initialise_qc_column(df, qc_column)
     df = df.with_columns(
-        pl.when(operator_expr)
-        .then(pl.col(flag_column).add(flag_value))
-        .otherwise(pl.col(flag_column))
-        .alias(flag_column)
+        pl.when(operator_expr).then(pl.col(flag_column).add(flag_id)).otherwise(pl.col(flag_column)).alias(flag_column)
     )
 
     return df
