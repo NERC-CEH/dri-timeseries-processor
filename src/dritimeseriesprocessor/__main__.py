@@ -1,9 +1,9 @@
 import logging
 from datetime import date
 
-from dritimeseriesprocessor import quality_control
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.preprocessing.preprocessor import preprocess
+from dritimeseriesprocessor.quality_control.quality_control import run_qc
 from dritimeseriesprocessor.s3_crud import data_manager
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,7 +24,7 @@ logger.info(preprocessed_data.count())
 logger.info(preprocessed_data)
 
 # Quality control
-qcd_data = quality_control.run_qc(preprocessed_data)
+qcd_data = run_qc(preprocessed_data)
 
 logger.info(qcd_data.count())
 logger.info(qcd_data)

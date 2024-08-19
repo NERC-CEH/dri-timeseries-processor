@@ -1,3 +1,5 @@
+"""Quality control helper functions."""
+
 import logging
 from typing import Dict, List, Optional, Tuple
 
@@ -6,35 +8,6 @@ import polars as pl
 import dritimeseriesprocessor.__metadata__.config_quality_control as qc_config
 
 logger = logging.getLogger(__name__)
-
-
-def add_qcflag_column(df: pl.DataFrame, flags: pl.DataFrame, col_name: str) -> pl.DataFrame:
-    """
-    Create QC flag column.
-    If a quality control flag column already exists for the specified column, the new
-    flags are added to the existing ones.
-    If no quality control flag column exists, a new column is appended to the DataFrame.
-
-    -----------------
-    Args:
-        df: Dataframe to add flags to.
-        flags: Flag data
-        col_name: Name of column which was tested
-
-    Returns:
-        Polars DataFrame
-    """
-    flag_col_name = f"{col_name}_QCFLAG"
-    flags = flags.rename({col_name: flag_col_name})
-
-    if flag_col_name in df:
-        # Add flag values onto existing values
-        df = df.with_columns(pl.col(flag_col_name) + flags[flag_col_name])
-    else:
-        # Append new column
-        df = df.hstack(flags)
-
-    return df
 
 
 def col_comparison_test(
@@ -49,7 +22,6 @@ def col_comparison_test(
     threshold), then all columns (variables) given in data would get the low
     battery flag.
 
-    -----------------
     Args:
         data: This must have only the columns wanted for flagging
         test_col: The column of data that determines which rows get flagged
@@ -61,7 +33,7 @@ def col_comparison_test(
             flagged. Set this to True to change that.
 
     Returns:
-        Polars DataFrame with flags applied across all columns.
+        DataFrame with flags applied across all columns.
     """
 
     # Define the operation map for polars
@@ -104,16 +76,18 @@ def get_default_range_vals(
     the min and max values based on the provided resolution. If no specific
     resolution is found, it returns the general default values.
 
-    Parameters:
+    Args:
         range_threshold: The threshold object containing default values.
         resolution: The resolution for which the default range values are needed.
 
     Returns:
-        Tuple[Optional[float], Optional[float]]: A tuple containing the minimum and maximum values.
-                                                 Returns (None, None) if no values are found.
+        Tuple[Optional[float], Optional[float]]:
+        A tuple containing the minimum and maximum values. Returns
+        (None, None) if no values are found.
     """
     min_val = None
     max_val = None
+
     # Establish defaults
     for range_thres_def in range_threshold.defaults:
         if range_thres_def.resolutions is None:
@@ -140,184 +114,56 @@ def get_site_range_vals(
     the min and max values for a given site and resolution. If no specific
     values are found, it returns (None, None).
 
-    Parameters:
+    Args:
         range_threshold: The threshold object containing site-specific values.
         site: The site identifier for which range values are needed.
         resolution: The resolution for which the site-specific range values are needed.
 
     Returns:
-        Tuple[Optional[float], Optional[float]]: A tuple containing the minimum and maximum values for the site.
-                                                 Returns (None, None) if no values are found.
+        Tuple[Optional[float], Optional[float]]:
+        A tuple containing the minimum and maximum values for the site. Returns
+        (None, None) if no values are found.
     """
     min_val = None
     max_val = None
-    for range_thres_site in range_threshold.sites:
-        if range_thres_site.site_id == site and (
-            range_thres_site.resolutions is None or resolution in range_thres_site.resolutions
-        ):
-            min_val = range_thres_site.min_value
-            max_val = range_thres_site.max_value
-            break
+
+    if range_threshold.sites is not None:
+        for range_thres_site in range_threshold.sites:
+            if range_thres_site.site_id == site and (
+                range_thres_site.resolutions is None or resolution in range_thres_site.resolutions
+            ):
+                min_val = range_thres_site.min_value
+                max_val = range_thres_site.max_value
+                break
 
     return min_val, max_val
 
 
-def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+def add_qcflag_column(df: pl.DataFrame, flags: pl.DataFrame, col_name: str) -> pl.DataFrame:
     """
-    Test values falls between min and max range.
+    Create QC flag column.
 
-    This function checks if the given column has values within the expected range
-    and applies a quality control flag to the specified column if it is.
+    If a quality control flag column already exists for the specified column, the new
+    flags are added to the existing ones. If no quality control flag column
+    exists, a new column is appended to the DataFrame.
 
     Args:
-        df: The input DataFrame containing the data to be tested.
-        column: The name of the column to which the quality control flag will be applied.
+        df: Dataframe to add flags to.
+        flags: Flag data.
+        col_name: Name of column which was tested.
 
     Returns:
-        pl.DataFrame: The DataFrame with the quality control flag applied.
+        DataFrame with qc flag column.
     """
-    # Place holder. We need to pass in the data resolution. As is, this means this test will
-    # only work for 30min data.
-    resolution = "PT30M"
+    flag_col_name = f"{col_name}_QCFLAG"
+    flags = flags.rename({col_name: flag_col_name})
 
-    range_thresholds = qc_config.get_qc_config("range_thresholds")
-    range_threshold = range_thresholds.get(column)
-    if range_threshold is None:
-        logger.warning(f"Can not run range test. No {column} data provided")
-        return df
-
-    default_min_val, default_max_val = get_default_range_vals(range_threshold, resolution)
-
-    if default_min_val is None:
-        msg = f"No default min/max values set for {column} range test"
-        logger.error(msg)
-        raise ValueError(msg)
-
-    # Add flag column, initially with all 0's
-    flag_col_name = f"{column}_QCFLAG"
-    df = df.with_columns(pl.lit(0).alias(flag_col_name))
-
-    # Perform range checks per site, as they can have different min/max thresholds
-    sites = df.unique(subset="SITE_ID").select("SITE_ID").to_series().to_list()
-    for site in sites:
-        # Check for site specific min/max values
-        min_val, max_val = get_site_range_vals(range_threshold, site, resolution)
-        if min_val is None:
-            min_val = default_min_val
-            max_val = default_max_val
-
-        df = df.with_columns(
-            pl.when(pl.col("SITE_ID").eq(site) & (pl.col(column).lt(min_val) | pl.col(column).gt(max_val)))
-            .then(qc_config.qc_tests["RANGE"]["id"])
-            .otherwise(pl.col(flag_col_name))
-            .alias(flag_col_name)
-        )
-
-    return df
-
-
-def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
-    """
-    Test the battery voltage level is above the threshold.
-
-    This function checks if the battery voltage ('BATTV' column) is below a certain threshold
-    and applies a quality control flag to the specified column if it is.
-
-    Args:
-        df: The input DataFrame containing the data to be tested.
-        column: The name of the column to which the quality control flag will be applied.
-
-    Returns:
-        pl.DataFrame: The DataFrame with the quality control flag applied, or returned as is if
-        the 'BATTV' column is not present in the input DataFrame.
-    """
-    if "BATTV" not in df:
-        logger.warning("Can not run Battery voltage test. No BATTV data provided")
-        return df
+    if flag_col_name in df:
+        # Add flag values onto existing values
+        df = df.with_columns(pl.col(flag_col_name) + flags[flag_col_name])
     else:
-        battv_config = qc_config.get_qc_config("battv_threshold")
-
-        flags = col_comparison_test(
-            df.select(column), df["BATTV"], battv_config.threshold, flag=qc_config.qc_tests["BATTV"]["id"], op="<"
-        )
-
-        return add_qcflag_column(df, flags, column)
-
-
-def soilmet_scans_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
-    """
-    Test the soilmet scans value is above the threshold.
-
-    This function checks if the soilmet scans value ('SCANS' column)
-    is below a certain threshold and applies a quality control flag to
-    the appropriate columns if it is.
-
-    Args:
-        df: The input DataFrame containing the data to be tested.
-        column: The name of the column to which the quality
-                control flag will be applied.
-
-    Returns:
-        pl.DataFrame: The DataFrame with the quality control flag
-        applied, or returned as is if the 'BATTV' column is not
-        present in the input DataFrame.
-    """
-    if "SCANS" not in df:
-        logger.warning("Can not run soilmet scans test. No SCANS column in data.")
-        return df
-    else:
-        soilmet_scan_config = qc_config.get_qc_config("soilmet_scan_threshold")
-
-        flags = col_comparison_test(
-            df.select(column),
-            df["SCANS"],
-            soilmet_scan_config.threshold,
-            flag=qc_config.qc_tests["SCANS"]["id"],
-            op="<",
-        )
-
-        return add_qcflag_column(df, flags, column)
-
-
-# Map method IDs to function
-qc_test_map = {"BATTV": battery_voltage_test, "RANGE": range_test, "SCANS": soilmet_scans_test}
-
-
-def run_qc(df: pl.DataFrame) -> pl.DataFrame:
-    """
-    Run data through Quality Control (QC) tests.
-
-    This function applies a series of quality control tests to the input DataFrame based on
-    the configuration specified in the qc_config module.
-
-    Args:
-        df: The input DataFrame containing the data to be quality controlled.
-
-    Returns:
-        pl.DataFrame: The DataFrame with quality control flags applied.
-
-    Notes:
-        - The function uses the variable_test_map and range_thresholds from the qc_config module.
-        - For each variable specified in the variable_test_map, it applies the corresponding tests.
-        - If a variable is not present in the input DataFrame, it is skipped.
-        - If a test function is not available for a specified test, a warning is logged and the test is skipped.
-        - The function modifies the input DataFrame in-place by adding or updating quality control flag columns.
-    """
-    qc_tests = qc_config.get_qc_config("qc_tests")
-
-    for test_id, test_info in qc_tests.items():
-        if test_id in qc_test_map:
-            test_func = qc_test_map.get(test_id)
-        else:
-            logger.warning(f"No QC function available for {test_info.test_name}")
-            continue
-
-        for variable in test_info.variables:
-            if variable in df.columns:
-                logger.info(f"QC TEST: {test_info.test_name} for variable: {variable}")
-                df = test_func(df, variable)
-            else:
-                logger.warning(f"{variable} doesnt exist in dataframe.")
+        # Append new column
+        df = df.hstack(flags)
 
     return df
 
