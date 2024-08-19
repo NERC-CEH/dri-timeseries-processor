@@ -82,6 +82,7 @@ qc_tests = {
     "ERROR_CODES": {
         "test_name": "Error codes qc check",
         "description": "Check for specific error codes",
+        "id": 1 << 3,
         "variables": [
             "WS",
             "COV_TS_UY",
@@ -100,9 +101,9 @@ qc_tests = {
             "COV_UX_UY",
             "LWIN",
             "PROFILE_SOILEC15",
-            "PROFILE_VWC15"
-        ]
-    }
+            "PROFILE_VWC15",
+        ],
+    },
 }
 # endregion
 
