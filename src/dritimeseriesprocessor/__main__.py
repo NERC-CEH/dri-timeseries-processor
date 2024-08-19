@@ -1,9 +1,11 @@
 import logging
 from datetime import date
 
-from dritimeseriesprocessor import quality_control
+import polars as pl
+
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.preprocessing.preprocessor import preprocess
+from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
+from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,13 +26,14 @@ data = data_manager.query_by_date_range(
 )
 
 # Preprocessing
-preprocessed_data = preprocess(data)
-
-logger.info(preprocessed_data.count())
-logger.info(preprocessed_data)
+preprocessed_data = run_preprocess(data)
 
 # Quality control
-qcd_data = quality_control.run_qc(preprocessed_data)
 
-logger.info(qcd_data.count())
+# dummy some BATTV data
+preprocessed_data = preprocessed_data.with_columns(
+    pl.Series(i for i in range(0, len(preprocessed_data))).alias("BATTV")
+)
+qcd_data = run_quality_control(preprocessed_data)
+
 logger.info(qcd_data)

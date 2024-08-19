@@ -4,12 +4,12 @@ from datetime import datetime
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
-from dritimeseriesprocessor.preprocessing.operations import preprocessing_operations
+from dritimeseriesprocessor.preprocessing.operations import preprocessing_corrections
 
 logger = logging.getLogger(__name__)
 
 
-def preprocess(df: pl.DataFrame) -> pl.DataFrame:
+def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
     """Preprocesses the DataFrame by applying a series of corrections based on predefined configurations.
 
     Args:
@@ -20,7 +20,8 @@ def preprocess(df: pl.DataFrame) -> pl.DataFrame:
     """
     for correction_config in preprocessing_config.corrections:
         # Check if the correction method is implemented
-        if correction_config.METHOD_ID not in preprocessing_operations:
+        correction_fn = preprocessing_corrections.get(correction_config.METHOD_ID)
+        if not correction_fn:
             logger.warning(f"Unimplemented method: {correction_config.METHOD_ID}")
             continue
 
@@ -41,6 +42,6 @@ def preprocess(df: pl.DataFrame) -> pl.DataFrame:
         )
 
         # Apply the specified correction function to the DataFrame
-        df = preprocessing_operations[correction_config.METHOD_ID](df, correction_config, mask)
+        df = correction_fn(df, correction_config, mask)
 
     return df
