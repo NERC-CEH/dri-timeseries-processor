@@ -76,7 +76,7 @@ For 3 tests called "A", "B", "C" the outcomes of the tests are:
 | C failed  | 0 | 0  | 1 |  4|
 | A+B failed  | 1 | 1  | 0 |  3|
 | A+C failed  | 1 | 0  | 1 |  5|
-| B+C failed  | 0 | 1  | 0 |  6|
+| B+C failed  | 0 | 1  | 1 |  6|
 | A+B+C failed  | 1 | 1  | 1 |  7|
 
 In this scheme, any combination of failed tests will always have a unique identifier that can be stored in decimal, binary, or string format. We are likely to store the test QC_FLAG as a 64bit integer in the final database, this gives us 64 potential tests before we need to implement QC check versioning.
