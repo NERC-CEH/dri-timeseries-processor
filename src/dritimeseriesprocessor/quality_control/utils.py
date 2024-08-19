@@ -12,6 +12,26 @@ def column_threshold_check(
     flag_value: int,
     flag_na: bool = False,
 ) -> pl.DataFrame:
+    """Generic function for flagging one column of data, based on a threshold check of a different column
+
+    For example, we could look at the battery voltage column (the "check_column"), compare it to a threshold
+    using the given operator (e.g. which rows are < threshold), then the "qc_column" for any rows that are True for
+    this check are flagged
+
+    Args:
+        df: This must have only the columns wanted for flagging
+        check_column: The column of data that is being checked against the threshold
+        qc_column: The column that should be flagged
+        threshold: Threshold value
+        operator: What comparison to make
+        flag_value: The flag value used
+        flag_na: Comparison tests against NaNs will always result in False. By default, NaN values will not cause
+            data in data to be flagged. Set this to True to change that.
+
+    Returns:
+        DataFrame with flags applied to qc_column.
+    """
+
     operator_map = {
         ">": pl.col(check_column).gt(threshold),
         ">=": pl.col(check_column).ge(threshold),
