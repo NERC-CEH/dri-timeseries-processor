@@ -546,7 +546,7 @@ class ValueThreshold(BaseModel):
     threshold: float
 
 
-def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThresholds]]]:
+def get_qc_config(config: str) -> Union[dict, ValueThreshold]:
     """
     Retrieve Quality Control (QC) configuration based on the specified config type.
 
@@ -562,7 +562,6 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
             - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
 
     Returns:
-        Union[List[Union[VariableRangeThresholds, QCTest, ValueThreshold]]]:
             The requested QC configuration.
 
     Raises:
