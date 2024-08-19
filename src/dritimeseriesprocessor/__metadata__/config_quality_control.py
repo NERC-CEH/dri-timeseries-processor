@@ -19,19 +19,32 @@ from pydantic import (
 
 from dritimeseriesprocessor.utils import validate_iso8601_duration
 
-# Metadata on the QC tests and which variables to run.
+# region --- Metadata on the QC tests and which variables to run.
 qc_tests = {
     "RANGE": {
         "test_name": "Range test",
         "description": "Checks if the value falls within a specified range.",
+        "id": 1 << 0,
         "variables": [
-            "TA",
+            "CTS_MOD",
+            "CTS_MOD2",
+            "CTS_SNOW",
+            "G1",
+            "G2",
+            "LWIN",
+            "LWOUT",
+            "PA",
             "PRECIP",
+            "PRECIP_RAINE",
+            "SWIN",
+            "SWOUT",
+            "TA",
         ],
     },
     "BATTV": {
         "test_name": "Battery voltage test",
         "description": "Checks if battery voltage is too low.",
+        "id": 1 << 1,
         "variables": [
             "TA",
             "PRECIP",
@@ -40,6 +53,7 @@ qc_tests = {
     "SCANS": {
         "test_name": "Soilmet scans check",
         "description": "Checks if the number of SOILMET scans/samples are too low.",
+        "id": 1 << 2,
         "variables": [
             "CTS_BARE",
             "CTS_MOD",
@@ -90,22 +104,195 @@ qc_tests = {
         ]
     }
 }
+# endregion
 
-# Range test - Min and max values for variables.
+# region --- Range test - Min and max values for variables.
 var_range_thresholds = {
-    "TA": {
+    "CTS_MOD": {
         "defaults": [
             {
-                "min_value": -30.0,
-                "max_value": 55.0,
+                "min_value": 100.0,
+                "max_value": 1400.0,
             },
         ],
         "sites": [
             {
+                "site_id": "WADDN",
+                "resolutions": ["PT30M"],
+                "min_value": 50.0,
+                "max_value": 1400.0,
+            },
+            {
+                "site_id": "SOURH",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1500.0,
+            },
+            {
+                "site_id": "MORLY",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1500.0,
+            },
+            {
+                "site_id": "STIPS",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "ROTHD",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "PLYNL",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "MOORH",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "EASTB",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "GLENS",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "SYDLG",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
                 "site_id": "BUNNY",
-                "resolutions": ["PT1M", "PT15M", "PT30M"],
-                "min_value": -25.0,
-                "max_value": 50.0,
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "BALRD",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+            {
+                "site_id": "EUSTN",
+                "resolutions": ["PT30M"],
+                "min_value": 100.0,
+                "max_value": 1600.0,
+            },
+        ],
+    },
+    "CTS_MOD2": {
+        "defaults": [
+            {
+                "min_value": 10.0,
+                "max_value": 1000.0,
+            },
+        ],
+        "sites": [
+            {
+                "site_id": "HOLLN",
+                "resolutions": ["PT30M"],
+                "min_value": 10.0,
+                "max_value": 1200.0,
+            },
+            {
+                "site_id": "WADDN",
+                "resolutions": ["PT30M"],
+                "min_value": 10.0,
+                "max_value": 1400.0,
+            },
+            {
+                "site_id": "HENFS",
+                "resolutions": ["PT30M"],
+                "min_value": 10.0,
+                "max_value": 1400.0,
+            },
+            {
+                "site_id": "SHEEP",
+                "resolutions": ["PT30M"],
+                "min_value": 10.0,
+                "max_value": 1400.0,
+            },
+            {
+                "site_id": "COCLP",
+                "resolutions": ["PT30M"],
+                "min_value": 10.0,
+                "max_value": 1400.0,
+            },
+            {
+                "site_id": "CHIMN",
+                "resolutions": ["PT30M"],
+                "min_value": 10.0,
+                "max_value": 1400.0,
+            },
+            {
+                "site_id": "STIPS",
+                "resolutions": ["PT30M"],
+                "min_value": 10.0,
+                "max_value": 1600.0,
+            },
+        ],
+    },
+    "CTS_SNOW": {
+        "defaults": [
+            {
+                "min_value": 0.0,
+                "max_value": 1000.0,
+            },
+        ],
+    },
+    "G1": {
+        "defaults": [
+            {
+                "min_value": -350.0,
+                "max_value": 350.0,
+            },
+        ],
+    },
+    "G2": {
+        "defaults": [
+            {
+                "min_value": -350.0,
+                "max_value": 350.0,
+            },
+        ],
+    },
+    "LWIN": {
+        "defaults": [
+            {
+                "min_value": 150.0,
+                "max_value": 700.0,
+            },
+        ],
+    },
+    "LWOUT": {
+        "defaults": [
+            {
+                "min_value": 150.0,
+                "max_value": 700.0,
+            },
+        ],
+    },
+    "PA": {
+        "defaults": [
+            {
+                "min_value": 800.0,
+                "max_value": 1200.0,
             },
         ],
     },
@@ -129,22 +316,131 @@ var_range_thresholds = {
         ],
         "sites": [
             {
-                "site_id": "BUNNY",
+                "site_id": "FINCH",
                 "resolutions": ["PT30M"],
                 "min_value": 0.0,
-                "max_value": 90.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "HLACY",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "SYDLG",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "MOREM",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "ELMST",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "FIVET",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "COCHN",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "HYBRY",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "WRTTL",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 20.0,
+            },
+            {
+                "site_id": "RDMER",
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 50.0,
+            },
+        ],
+    },
+    "PRECIP_RAINE": {
+        "defaults": [
+            {
+                "resolutions": ["PT1M"],
+                "min_value": 0.0,
+                "max_value": 10.0,
+            },
+            {
+                "resolutions": ["PT15M"],
+                "min_value": 0.0,
+                "max_value": 60.0,
+            },
+            {
+                "resolutions": ["PT30M"],
+                "min_value": 0.0,
+                "max_value": 100.0,
+            },
+        ],
+    },
+    "SWIN": {
+        "defaults": [
+            {
+                "min_value": -10.0,
+                "max_value": 1200.0,
+            },
+        ],
+    },
+    "SWOUT": {
+        "defaults": [
+            {
+                "min_value": -10.0,
+                "max_value": 1200.0,
+            },
+        ],
+    },
+    "TA": {
+        "defaults": [
+            {
+                "min_value": -30.0,
+                "max_value": 55.0,
+            },
+        ],
+        "sites": [
+            {
+                "site_id": "BUNNY",
+                "resolutions": ["PT1M", "PT15M", "PT30M"],
+                "min_value": -25.0,
+                "max_value": 50.0,
             },
         ],
     },
 }
+# endregion
 
-# Threshold values could be moved to a structure like the range
+# region --- Individual thresholds
+# Values could be moved to a structure like the range
 # thresholds if complexity increases
+
 # Battery test - Min acceptable voltage
-battery_voltage_threshold = 10.0
+battery_voltage_threshold = 10
 
 # Soilmet scan test - min acceptable number of scans
 soilmet_scan_threshold = 60.0
+# endregion
 
 
 class QCTest(BaseModel):
@@ -288,7 +584,6 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
             - "range_thresholds": Returns a list of VariableRangeThresholds objects.
             - "battv_threshold": Returns battery voltage ValueThreshold object.
             - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
-            Defaults to "all".
 
     Returns:
         Union[List[Union[VariableRangeThresholds, QCTest, ValueThreshold]]]:
