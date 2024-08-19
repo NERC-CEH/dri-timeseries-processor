@@ -325,7 +325,8 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
 def get_failed_qc_check_ids_from_flag(flag: int) -> List[int]:
     """Returns the indexes of failed tests from a QC flag
 
-    Args: The flag to calculate from.
+    Args:
+        flag: The flag to calculate from.
 
     Returns: A list of indexes to failed QC checks.
     """
@@ -340,7 +341,10 @@ class QCTestIDValidator:
     sequential, and don't skip any valid bits.
 
     It is desirable to not waste any bits, because maximum bits can grow
-    quite large."""
+    quite large.
+
+    These validation methods are currently only used in `pytest` to ensure
+    that the QC check IDs are valid before changes are integrated."""
 
     @staticmethod
     def _check_id_type(id_value: int) -> None:
