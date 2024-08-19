@@ -66,6 +66,9 @@ def read_parquet_by_query(query: str, params: Optional[List] = None) -> pl.DataF
                 CHAIN 'sts'
             );
         """)
+    if app_config.time_series_environment == "staging-fake":
+        logger.debug("Configured DuckDB for fake staging.")
+
     try:
         df = conn.execute(query, params).pl()
         logger.info(conn.execute(query, params))

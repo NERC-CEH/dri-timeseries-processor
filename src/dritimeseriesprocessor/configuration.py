@@ -67,14 +67,13 @@ class Configuration:
             os.environ["AWS_SECRET_ACCESS_KEY"] = cfg["AWS_SECRET_ACCESS_KEY"]
             os.environ["AWS_DEFAULT_REGION"] = cfg["AWS_DEFAULT_REGION"]
 
-        elif os.environ["time_series_environment"] in ["staging", "production"]:
+        elif os.environ["time_series_environment"] in ["staging", "production", "staging-fake"]:
             logger.info(f"Loading {os.environ['time_series_environment']} config")
             for item in kubernetes_config_parameters:
                 if item in os.environ:
                     setattr(Configuration, item, os.environ[item])
                 else:
                     raise KeyError(f"{item}: doesn't exist in the manifest.")
-
         else:
             raise ValueError(
                 """time_series_environment config must be \
