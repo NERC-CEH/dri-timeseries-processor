@@ -9,6 +9,7 @@ from dritimeseriesprocessor.quality_control.checks import (
     soilmet_scans_qc,
 )
 
+from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
 
 class TestBatteryVoltageQC(unittest.TestCase):
     """Unit tests for the battery voltage function."""
@@ -30,8 +31,9 @@ class TestBatteryVoltageQC(unittest.TestCase):
         Test the battery_voltage_qc function.
         Verifies that the function correctly applies QC flags based on the battery voltage.
         """
+        battv_flag = qc_tests["BATTV"]["id"]
         result = battery_voltage_qc(self.data, self.test_column)
-        expected_flags = [0, 0, 5, 0, 5]
+        expected_flags = [0, 0, battv_flag, 0, battv_flag]
         self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
 
     def test_battery_voltage_qc_no_battv_column(self):
@@ -60,11 +62,11 @@ class TestScanQC(unittest.TestCase):
         })
         self.test_column = "COL2"
         self.threshold = 60.0
-        self.flag_value = 5
+        self.flag_value = qc_tests["SCANS"]["id"]
 
     def test_soilmet_scans_qc(self):
         result = soilmet_scans_qc(self.data, self.test_column)
-        expected_flags = [0, 0, 5, 0]
+        expected_flags = [0, 0, self.flag_value, 0]
         self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
 
     @patch('dritimeseriesprocessor.quality_control.checks.logger')
@@ -184,6 +186,7 @@ class TestRangeQC(unittest.TestCase):
         - QC column should be added to the DataFrame
         - Out-of-range values should be flagged (20 and 30 are out of range)
         """
+        qc_flag = qc_tests["RANGE"]["id"]
         mock_get_qc_config.return_value = {
             "TA": MagicMock(
                 defaults=[MagicMock(resolutions=None, min_value=22, max_value=28)],
@@ -191,12 +194,12 @@ class TestRangeQC(unittest.TestCase):
             )
         }
         mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(
-            pl.when(flags[column] == 64).then(64).otherwise(0).alias(f"{column}_QCFLAG")
+            pl.when(flags[column] == qc_flag).then(qc_flag).otherwise(0).alias(f"{column}_QCFLAG")
         )
 
         result = range_qc(self.df, "TA")
         self.assertIn("TA_QCFLAG", result.columns)
-        self.assertEqual(result["TA_QCFLAG"].to_list(), [64, 0, 64])
+        self.assertEqual(result["TA_QCFLAG"].to_list(), [qc_flag, 0, qc_flag])
 
 
 if __name__ == "__main__":

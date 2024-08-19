@@ -57,7 +57,7 @@ def range_qc(df: pl.DataFrame, column: str, resolution: str = "PT30M") -> pl.Dat
 
         df = df.with_columns(
             pl.when(pl.col("SITE_ID").eq(site) & (pl.col(column).lt(min_val) | pl.col(column).gt(max_val)))
-            .then(64)
+            .then(qc_config.qc_tests["RANGE"]["id"])
             .otherwise(pl.col(flag_col_name))
             .alias(flag_col_name)
         )
@@ -87,8 +87,9 @@ def battery_voltage_qc(df: pl.DataFrame, column: str) -> pl.DataFrame:
     else:
         battv_config = qc_config.get_qc_config("battv_threshold")
 
-        flags = qc_utils.col_comparison_test(df.select(column), df["BATTV"], battv_config.threshold, flag=5, op="<")
-
+        flags = qc_utils.col_comparison_test(
+            df.select(column), df["BATTV"], battv_config.threshold, flag=qc_config.qc_tests["BATTV"]["id"], op="<"
+        )
         return qc_utils.add_qcflag_column(df, flags, column)
 
 
@@ -118,7 +119,11 @@ def soilmet_scans_qc(df: pl.DataFrame, column: str) -> pl.DataFrame:
         soilmet_scan_config = qc_config.get_qc_config("soilmet_scan_threshold")
 
         flags = qc_utils.col_comparison_test(
-            df.select(column), df["SCANS"], soilmet_scan_config.threshold, flag=5, op="<"
+            df.select(column),
+            df["SCANS"],
+            soilmet_scan_config.threshold,
+            flag=qc_config.qc_tests["SCANS"]["id"],
+            op="<",
         )
 
         return qc_utils.add_qcflag_column(df, flags, column)
