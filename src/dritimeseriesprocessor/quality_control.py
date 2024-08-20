@@ -8,6 +8,20 @@ import dritimeseriesprocessor.__metadata__.config_quality_control as qc_config
 logger = logging.getLogger(__name__)
 
 
+def create_flag_column_name(col_name: str) -> str:
+    """
+    Create QC flag column name for given column.
+
+    -----------------
+    Args:
+        col_name: Name of original column
+
+    Returns:
+        string
+    """
+    return f"{col_name}_QCFLAG"
+
+
 def add_qcflag_column(df: pl.DataFrame, flags: pl.DataFrame, col_name: str) -> pl.DataFrame:
     """
     Create QC flag column.
@@ -24,7 +38,7 @@ def add_qcflag_column(df: pl.DataFrame, flags: pl.DataFrame, col_name: str) -> p
     Returns:
         Polars DataFrame
     """
-    flag_col_name = f"{col_name}_QCFLAG"
+    flag_col_name = create_flag_column_name(col_name)
     flags = flags.rename({col_name: flag_col_name})
 
     if flag_col_name in df:
@@ -35,6 +49,94 @@ def add_qcflag_column(df: pl.DataFrame, flags: pl.DataFrame, col_name: str) -> p
         df = df.hstack(flags)
 
     return df
+
+
+def get_range_thresholds(
+    range_config: qc_config.VariableThresholds,
+    resolution: str,
+    site_id: str,
+) -> Tuple[Optional[float], Optional[float]]:
+    """
+    Get the default minimum and maximum values for a given resolution.
+
+    This function searches through the default range thresholds and returns
+    the min and max values based on the provided resolution. If no specific
+    resolution is found, it returns the general default values.
+
+    Parameters:
+        range_config: The threshold object containing default values.
+        resolution: The resolution for which the default range values are needed.
+        site_id: Site identifier.
+
+    Returns:
+        Tuple[Optional[float], Optional[float]]: A tuple containing the minimum and maximum values.
+                                                 Returns (None, None) if no values are found.
+    """
+    # Check for site specific min/max values
+    for range_thres_site in range_config.sites:
+        if range_thres_site.site_id == site_id and (
+            resolution in range_thres_site.resolutions or len(range_thres_site.resolutions) == 0
+        ):
+            return range_thres_site.min_value, range_thres_site.max_value
+
+    # No site specific values found, get min/max defaults
+    min_val = None
+    max_val = None
+    for range_thres_def in range_config.defaults:
+        if not range_thres_def.resolutions:
+            # Default regardless of resolution
+            min_val = range_thres_def.min_value
+            max_val = range_thres_def.max_value
+
+        elif resolution in range_thres_def.resolutions:
+            # Defaults found for specific resolution
+            min_val = range_thres_def.min_value
+            max_val = range_thres_def.max_value
+            break
+
+    return min_val, max_val
+
+
+def get_spike_threshold(
+    spike_config: qc_config.VariableThresholds,
+    resolution: str,
+    site_id: str,
+) -> Tuple[Optional[float], Optional[float]]:
+    """
+    Get the default spike threshold value for a given resolution.
+
+    This function searches through the default spike thresholds and returns
+    the threshold value based on the provided resolution. If no specific
+    resolution is found, it returns the general default value.
+
+    Parameters:
+        spike_config: The config object containing default values.
+        resolution: The resolution for which the default spike values are needed.
+        site_id: Site identifier.
+
+    Returns:
+        Optional[float]: Returns None if no values are found.
+    """
+    # Check for site specific spike threshold
+    for spike_thres_site in spike_config.sites:
+        if spike_thres_site.site_id == site_id and (
+            resolution in spike_thres_site.resolutions or len(spike_thres_site.resolutions == 0)
+        ):
+            return spike_thres_site.threshold
+
+    # No site specific threshold found, get default
+    threshold = None
+    for spike_thres_def in spike_config.defaults:
+        if not spike_thres_def.resolutions:
+            # Default regardless of resolution
+            threshold = spike_thres_def.threshold
+
+        elif resolution in spike_thres_def.resolutions:
+            # Defaults found for specific resolution
+            threshold = spike_thres_def.threshold
+            break
+
+    return threshold
 
 
 def col_comparison_test(
@@ -94,75 +196,7 @@ def col_comparison_test(
     return flagged_data
 
 
-def get_default_range_vals(
-    range_threshold: qc_config.VariableRangeThresholds, resolution: str
-) -> Tuple[Optional[float], Optional[float]]:
-    """
-    Get the default minimum and maximum values for a given resolution.
-
-    This function searches through the default range thresholds and returns
-    the min and max values based on the provided resolution. If no specific
-    resolution is found, it returns the general default values.
-
-    Parameters:
-        range_threshold: The threshold object containing default values.
-        resolution: The resolution for which the default range values are needed.
-
-    Returns:
-        Tuple[Optional[float], Optional[float]]: A tuple containing the minimum and maximum values.
-                                                 Returns (None, None) if no values are found.
-    """
-    min_val = None
-    max_val = None
-    # Establish defaults
-    for range_thres_def in range_threshold.defaults:
-        if range_thres_def.resolutions is None:
-            # Default regardless of resolution
-            min_val = range_thres_def.min_value
-            max_val = range_thres_def.max_value
-
-        elif resolution in range_thres_def.resolutions:
-            # Defaults found for specific resolution
-            min_val = range_thres_def.min_value
-            max_val = range_thres_def.max_value
-            break
-
-    return min_val, max_val
-
-
-def get_site_range_vals(
-    range_threshold: qc_config.VariableRangeThresholds, site: str, resolution: str
-) -> Tuple[Optional[float], Optional[float]]:
-    """
-    Get the site-specific minimum and maximum values for a given resolution.
-
-    This function searches through the site-specific range thresholds and returns
-    the min and max values for a given site and resolution. If no specific
-    values are found, it returns (None, None).
-
-    Parameters:
-        range_threshold: The threshold object containing site-specific values.
-        site: The site identifier for which range values are needed.
-        resolution: The resolution for which the site-specific range values are needed.
-
-    Returns:
-        Tuple[Optional[float], Optional[float]]: A tuple containing the minimum and maximum values for the site.
-                                                 Returns (None, None) if no values are found.
-    """
-    min_val = None
-    max_val = None
-    for range_thres_site in range_threshold.sites:
-        if range_thres_site.site_id == site and (
-            range_thres_site.resolutions is None or resolution in range_thres_site.resolutions
-        ):
-            min_val = range_thres_site.min_value
-            max_val = range_thres_site.max_value
-            break
-
-    return min_val, max_val
-
-
-def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+def range_test(df: pl.DataFrame, var_col_name: str, flag_col_name: str, site_id: str) -> pl.DataFrame:
     """
     Test values falls between min and max range.
 
@@ -171,7 +205,9 @@ def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
     Args:
         df: The input DataFrame containing the data to be tested.
-        column: The name of the column to which the quality control flag will be applied.
+        var_col_name: The name of the column to which the quality control will be applied.
+        flag_col_name: The name of the column to which the quality control flags will be added.
+        site_id: Site identifier
 
     Returns:
         pl.DataFrame: The DataFrame with the quality control flag applied.
@@ -180,43 +216,29 @@ def range_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     # only work for 30min data.
     resolution = "PT30M"
 
-    range_thresholds = qc_config.get_qc_config("range_thresholds")
-    range_threshold = range_thresholds.get(column)
-    if range_threshold is None:
-        logger.warning(f"Can not run range test. No {column} data provided")
+    range_configs = qc_config.get_qc_config("range_thresholds")
+    range_config = range_configs.get(var_col_name)
+    if range_config is None:
+        logger.warning(f"Can not run range test. No {var_col_name} data provided")
         return df
 
-    default_min_val, default_max_val = get_default_range_vals(range_threshold, resolution)
-
-    if default_min_val is None:
-        msg = f"No default min/max values set for {column} range test"
+    min_val, max_val = get_range_thresholds(range_config, resolution, site_id)
+    if min_val is None:
+        msg = f"No default min/max values set for {var_col_name} range test"
         logger.error(msg)
         raise ValueError(msg)
 
-    # Add flag column, initially with all 0's
-    flag_col_name = f"{column}_QCFLAG"
-    df = df.with_columns(pl.lit(0).alias(flag_col_name))
-
-    # Perform range checks per site, as they can have different min/max thresholds
-    sites = df.unique(subset="SITE_ID").select("SITE_ID").to_series().to_list()
-    for site in sites:
-        # Check for site specific min/max values
-        min_val, max_val = get_site_range_vals(range_threshold, site, resolution)
-        if min_val is None:
-            min_val = default_min_val
-            max_val = default_max_val
-
-        df = df.with_columns(
-            pl.when(pl.col("SITE_ID").eq(site) & (pl.col(column).lt(min_val) | pl.col(column).gt(max_val)))
-            .then(64)
-            .otherwise(pl.col(flag_col_name))
-            .alias(flag_col_name)
-        )
+    df = df.with_columns(
+        pl.when(pl.col(var_col_name).lt(min_val) | pl.col(var_col_name).gt(max_val))
+        .then(pl.col(flag_col_name) + 64)
+        .otherwise(pl.col(flag_col_name))
+        .alias(flag_col_name)
+    )
 
     return df
 
 
-def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+def battery_voltage_test(df: pl.DataFrame, var_col_name: str, flag_col_name: str, site_id: str) -> pl.DataFrame:
     """
     Test the battery voltage level is above the threshold.
 
@@ -225,7 +247,9 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
     Args:
         df: The input DataFrame containing the data to be tested.
-        column: The name of the column to which the quality control flag will be applied.
+        var_col_name: The name of the column to which the quality control will be applied.
+        flag_col_name: The name of the column to which the quality control flags will be added.
+        site_id: Site identifier
 
     Returns:
         pl.DataFrame: The DataFrame with the quality control flag applied, or returned as is if
@@ -237,12 +261,12 @@ def battery_voltage_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     else:
         battv_config = qc_config.get_qc_config("battv_threshold")
 
-        flags = col_comparison_test(df.select(column), df["BATTV"], battv_config.threshold, flag=5, op="<")
+        flags = col_comparison_test(df.select(var_col_name), df["BATTV"], battv_config.threshold, flag=5, op="<")
 
-        return add_qcflag_column(df, flags, column)
+        return add_qcflag_column(df, flags, var_col_name)
 
 
-def soilmet_scans_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
+def soilmet_scans_test(df: pl.DataFrame, var_col_name: str, flag_col_name: str, site_id: str) -> pl.DataFrame:
     """
     Test the soilmet scans value is above the threshold.
 
@@ -252,8 +276,9 @@ def soilmet_scans_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
 
     Args:
         df: The input DataFrame containing the data to be tested.
-        column: The name of the column to which the quality
-                control flag will be applied.
+        var_col_name: The name of the column to which the quality control will be applied.
+        flag_col_name: The name of the column to which the quality control flags will be added.
+        site_id: Site identifier
 
     Returns:
         pl.DataFrame: The DataFrame with the quality control flag
@@ -266,13 +291,79 @@ def soilmet_scans_test(df: pl.DataFrame, column: str) -> pl.DataFrame:
     else:
         soilmet_scan_config = qc_config.get_qc_config("soilmet_scan_threshold")
 
-        flags = col_comparison_test(df.select(column), df["SCANS"], soilmet_scan_config.threshold, flag=5, op="<")
+        flags = col_comparison_test(df.select(var_col_name), df["SCANS"], soilmet_scan_config.threshold, flag=5, op="<")
 
-        return add_qcflag_column(df, flags, column)
+        return add_qcflag_column(df, flags, var_col_name)
+
+
+def spike_test(df: pl.DataFrame, var_col_name: str, flag_col_name: str, site_id: str) -> pl.DataFrame:
+    """
+    Assess the total difference between a value and its neighbours and
+    remove any skew in the size of the differences with each neighbour.
+
+    Args:
+        df: The input DataFrame containing the data to be tested.
+        var_col_name: The name of the column to which the quality control will be applied.
+        flag_col_name: The name of the column to which the quality control flags will be added.
+        site_id: Site identifier
+
+    Returns:
+        pl.DataFrame: The DataFrame with the quality control flag applied.
+    """
+    # Place holder. We need to pass in the data resolution. As is, this means this test will
+    # only work for 30min data.
+    resolution = "PT30M"
+
+    spike_configs = qc_config.get_qc_config("spike_thresholds")
+    spike_config = spike_configs.get(var_col_name)
+    if spike_config is None:
+        logger.warning(f"Can not run spike test. No {var_col_name} data provided")
+        return df
+
+    thres = get_spike_threshold(spike_config, resolution, site_id)
+    if thres is None:
+        msg = f"No default threshold set for {var_col_name} spike test"
+        logger.error(msg)
+        raise ValueError(msg)
+
+    # Make a new dataframe for doing data shifting
+    tst_spikes = df.clone()
+
+    # Difference between value and previous value
+    tst_spikes = tst_spikes.with_columns(pl.col(var_col_name).shift(1).alias("prev_val"))
+    tst_spikes = tst_spikes.with_columns((pl.col(var_col_name) - pl.col("prev_val")).alias("diff_prev"))
+
+    # Difference between next value and value
+    tst_spikes = tst_spikes.with_columns(pl.col(var_col_name).shift(-1).alias("next_val"))
+    tst_spikes = tst_spikes.with_columns((pl.col("next_val") - pl.col(var_col_name)).alias("diff_next"))
+
+    # Calculate overall combined difference, absolute value
+    tst_spikes = tst_spikes.with_columns((pl.col("diff_prev") - pl.col("diff_next")).abs().alias("d"))
+
+    # Calulate the absolute skew in differences each side of the data
+    # value.
+    tst_spikes = tst_spikes.with_columns((pl.col("diff_prev").abs() - pl.col("diff_next").abs()).abs().alias("skew"))
+
+    # Calculate the total difference minus the skew
+    tst_spikes = tst_spikes.with_columns((pl.col("d") - pl.col("skew")).alias("d_no_skew"))
+
+    # As we have summed the differences, we should double the threshold
+    spikes = tst_spikes["d_no_skew"] > (thres * 2.0)
+
+    df = df.with_columns(
+        pl.when(spikes).then(pl.col(flag_col_name) + 512).otherwise(pl.col(flag_col_name)).alias(flag_col_name)
+    )
+
+    return df
 
 
 # Map method IDs to function
-qc_test_map = {"BATTV": battery_voltage_test, "RANGE": range_test, "SCANS": soilmet_scans_test}
+qc_test_map = {
+    "BATTV": battery_voltage_test,
+    "RANGE": range_test,
+    "SCANS": soilmet_scans_test,
+    "SPIKE": spike_test,
+}
 
 
 def run_qc(df: pl.DataFrame) -> pl.DataFrame:
@@ -306,9 +397,32 @@ def run_qc(df: pl.DataFrame) -> pl.DataFrame:
 
         for variable in test_info.variables:
             if variable in df.columns:
-                logger.info(f"QC TEST: {test_info.test_name} for variable: {variable}")
-                df = test_func(df, variable)
+                logger.info(f"QC TEST: {test_info.test_name}. Running for: {variable}")
             else:
-                logger.warning(f"{variable} doesnt exist in dataframe.")
+                logger.warning(f"QC TEST: {test_info.test_name}. {variable} doesnt exist in dataframe.")
+                continue
+
+            flag_col_name = create_flag_column_name(variable)
+            if flag_col_name not in df:
+                # Add flag column, initially with all 0's
+                df = df.with_columns(pl.lit(0).alias(flag_col_name))
+
+            site_ids = df.get_column("SITE_ID").unique()
+            site_dfs = []
+            for site_id in site_ids:
+                site_df = df.filter(pl.col("SITE_ID") == site_id).select("time", "SITE_ID", variable, flag_col_name)
+                # Run the QC test
+                site_dfs.append(test_func(site_df, variable, flag_col_name, site_id))
+
+            all_site_flags = pl.concat(site_dfs).drop(variable)
+
+            # Replace previous QCFLAG column with new data.
+            # Perform a join on 'time' and 'SITE_ID' to make sure data are saved in
+            # correct rows.
+            df = df.join(all_site_flags, on=["time", "SITE_ID"], how="left", suffix="_new")
+            # Drop the extra original column
+            df = df.drop(f"{flag_col_name}")
+            # Rename
+            df = df.rename({f"{flag_col_name}_new": flag_col_name})
 
     return df
