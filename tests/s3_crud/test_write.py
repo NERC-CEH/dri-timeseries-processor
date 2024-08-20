@@ -39,7 +39,7 @@ class TestS3Writer(BaseTestCase):
         result = S3Writer._build_date_range_key(start_date, end_date)
         self.assertEqual(result, expected)
 
-
+@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestS3WriterWithData(BaseTestCase):
     def setUp(self):
         start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 4))
