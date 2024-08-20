@@ -460,44 +460,20 @@ class QCTest(BaseModel):
     variables: List[str]
 
 
-class RangeThreshold(BaseModel):
+class Threshold(BaseModel):
     """
-    Defines the range of acceptable values for a variable.
+    Generic threshold base class
 
     Attributes:
-        min_value (float): The minimum acceptable value.
-        max_value (float): The maximum acceptable value.
+        site_id (str): Site identifier.
+        resolutions (list): List of ISO 8601 durations.
 
     Validators:
-        check_max_greater_than_min: Ensures that max_value is greater than
-        min_value.
+        check_resolutions: Ensure all string are valid ISO 8601 durations.
     """
 
-    site_id: Optional[str] = None
-    resolutions: Optional[List[str]] = None
-    min_value: float
-    max_value: float
-
-    @field_validator("max_value")
-    def check_max_greater_than_min(cls, v: float, info: ValidationInfo) -> float:
-        """
-        Validates that the max_value is greater than min_value.
-
-        Args:
-            cls (Type[RangeThreshold]): The class of the model being validated.
-            v (float): The value of max_value to validate.
-            info (field_validator.Info): Information about the field being
-            validated.
-
-        Raises:
-            ValueError: If max_value is not greater than min_value.
-
-        Returns:
-            float: The validated max_value.
-        """
-        if "min_value" in info.data and v < info.data["min_value"]:
-            raise ValueError("max_value must be greater than min_value")
-        return v
+    site_id: Optional[str] = []
+    resolutions: Optional[List[str]] = []
 
     @field_validator("resolutions")
     def check_resolutions(cls, v: Optional[List[str]]) -> Optional[List[str]]:
@@ -522,7 +498,56 @@ class RangeThreshold(BaseModel):
         return v
 
 
-class VariableRangeThresholds(BaseModel):
+class RangeThreshold(Threshold):
+    """
+    Defines the range of acceptable values for a variable.
+
+    Attributes:
+        min_value (float): The minimum acceptable value.
+        max_value (float): The maximum acceptable value.
+
+    Validators:
+        check_max_greater_than_min: Ensures that max_value is greater than
+        min_value.
+    """
+
+    min_value: float
+    max_value: float
+
+    @field_validator("max_value")
+    def check_max_greater_than_min(cls, v: float, info: ValidationInfo) -> float:
+        """
+        Validates that the max_value is greater than min_value.
+
+        Args:
+            cls (Type[RangeThreshold]): The class of the model being validated.
+            v (float): The value of max_value to validate.
+            info (field_validator.Info): Information about the field being
+            validated.
+
+        Raises:
+            ValueError: If max_value is not greater than min_value.
+
+        Returns:
+            float: The validated max_value.
+        """
+        if "min_value" in info.data and v < info.data["min_value"]:
+            raise ValueError("max_value must be greater than min_value")
+        return v
+
+
+class SpikeThreshold(Threshold):
+    """
+    Defines the range of acceptable values for a variable.
+
+    Attributes:
+        threshold (float): The minimum acceptable value to constitue a spike.
+    """
+
+    threshold: float
+
+
+class VariableThresholds(BaseModel):
     """
     Defines the range thresholds for a variable, including default and site-specific thresholds.
 
@@ -535,28 +560,28 @@ class VariableRangeThresholds(BaseModel):
         check_site_id_in_sites: Ensures that every RangeThreshold in 'sites' contains a 'site_id'.
     """
 
-    defaults: List[RangeThreshold]
-    sites: Optional[List[RangeThreshold]] = None
+    defaults: List[Threshold]
+    sites: Optional[List[Threshold]] = []
 
     @model_validator(mode="after")
-    def check_site_id_in_sites(cls, values: "VariableRangeThresholds") -> "VariableRangeThresholds":
+    def check_site_id_in_sites(cls, values: "VariableThresholds") -> "VariableThresholds":
         """
-        Ensures that every RangeThreshold in 'sites' contains a 'site_id'.
+        Ensures that every Threshold in 'sites' contains a 'site_id'.
 
         Args:
-            cls (Type[VariableRangeThresholds]): The class of the model being validated.
-            values (VariableRangeThresholds): The instance of the model.
+            cls (Type[VariableThresholds]): The class of the model being validated.
+            values (VariableThresholds): The instance of the model.
 
         Raises:
-            ValueError: If any RangeThreshold in 'sites' does not contain a 'site_id'.
+            ValueError: If any Threshold in 'sites' does not contain a 'site_id'.
 
         Returns:
-            VariableRangeThresholds: The validated instance.
+            VariableThresholds: The validated instance.
         """
         if values.sites:
             for site in values.sites:
                 if not site.site_id:
-                    raise ValueError("Each RangeThreshold in 'sites' must contain a 'site_id'")
+                    raise ValueError("Each Threshold in 'sites' must contain a 'site_id'")
         return values
 
 
@@ -572,7 +597,7 @@ class ValueThreshold(BaseModel):
     threshold: float
 
 
-def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThresholds]]]:
+def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableThresholds]]]:
     """
     Retrieve Quality Control (QC) configuration based on the specified config type.
 
@@ -583,12 +608,13 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
         config (str): The type of configuration to retrieve.
             Possible values are:
             - "qc_tests": Returns a list of QCTest objects.
-            - "range_thresholds": Returns a list of VariableRangeThresholds objects.
+            - "range_thresholds": Returns a list of VariableThresholds objects.
+            - "spike_thresholds": Returns a list of VariableThresholds objects.
             - "battv_threshold": Returns battery voltage ValueThreshold object.
             - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
 
     Returns:
-        Union[List[Union[VariableRangeThresholds, QCTest, ValueThreshold]]]:
+        Union[List[Union[VariableThresholds, QCTest, ValueThreshold]]]:
             The requested QC configuration.
 
     Raises:
@@ -597,7 +623,21 @@ def get_qc_config(config: str) -> Union[List[Union[QCTest, VariableRangeThreshol
     if config == "qc_tests":
         qc_config = {test: QCTest(**info) for test, info in qc_tests.items()}
     elif config == "range_thresholds":
-        qc_config = {var: VariableRangeThresholds(**thresh_dict) for var, thresh_dict in var_range_thresholds.items()}
+        qc_config = {
+            var: VariableThresholds(
+                defaults=[RangeThreshold(**i) for i in thresh_dict["defaults"]],
+                sites=[RangeThreshold(**i) for i in thresh_dict.get("sites", [])],
+            )
+            for var, thresh_dict in var_range_thresholds.items()
+        }
+    elif config == "spike_thresholds":
+        qc_config = {
+            var: VariableThresholds(
+                defaults=[SpikeThreshold(**i) for i in thresh_dict["defaults"]],
+                sites=[SpikeThreshold(**i) for i in thresh_dict.get("sites", [])],
+            )
+            for var, thresh_dict in var_spike_thresholds.items()
+        }
     elif config == "battv_threshold":
         qc_config = ValueThreshold(threshold=battery_voltage_threshold)
     elif config == "soilmet_scan_threshold":
