@@ -4,7 +4,8 @@ from unittest.mock import patch, Mock
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.quality_control.checks import (battery_voltage_check, range_check, soilmet_scans_check)
+from dritimeseriesprocessor.quality_control.checks import (battery_voltage_check, error_codes_check, range_check,
+                                                           soilmet_scans_check)
 
 
 class TestBatteryVoltageCheck(unittest.TestCase):
@@ -256,3 +257,26 @@ class TestSoilmetScansCheck(unittest.TestCase):
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
         with self.assertRaises(UserWarning):
             battery_voltage_check(self.data.drop(["SCANS"]), "value", self.flag_value)
+
+
+class TestErrorCodesCheck(unittest.TestCase):
+    """Test error_codes_qc function."""
+
+    def setUp(self):
+        """Set up a sample DataFrame for testing."""
+        self.data = pl.DataFrame({
+            "value": [12.0, 8999, 9.8, 10.2, 7999],
+        })
+
+        self.flag_value = 1
+
+
+    def test_error_code_qc(self):
+        """Test flag correctly raised if values equal the set error codes.
+        """
+        expected = self.data.with_columns(
+            pl.Series([0, 1, 0, 0, 1])
+            .alias("value_QCFLAG")
+        )
+        result = error_codes_check(self.data, "value", self.flag_value)
+        assert_frame_equal(expected, result)

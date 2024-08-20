@@ -81,4 +81,27 @@ def soilmet_scans_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataF
     return df
 
 
-QC_CHECKS = {"BATTV": battery_voltage_check, "RANGE": range_check, "SCANS": soilmet_scans_check}
+def error_codes_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
+    """Add QC flag for expected error codes.
+
+    Args:
+        df: The input DataFrame
+        column: The name of the column to which the quality control flag will be applied.
+        flag_id: The ID of the quality control flag that should be applied to data that fail this check.
+
+    Returns:
+        The DataFrame with the quality control flag applied.
+    """
+    error_codes = [7999, 8999]  # TODO: Get these values from somewhere
+    for error_code in error_codes:
+        df = column_threshold_check(df, column, column, error_code, "==", flag_id)
+
+    return df
+
+
+QC_CHECKS = {
+    "BATTV": battery_voltage_check,
+    "RANGE": range_check,
+    "SCANS": soilmet_scans_check,
+    "ERROR_CODES": error_codes_check,
+}

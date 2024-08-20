@@ -79,6 +79,31 @@ qc_tests = {
             "WS",
         ],
     },
+    "ERROR_CODES": {
+        "test_name": "Error codes qc check",
+        "description": "Check for specific error codes",
+        "id": 1 << 3,
+        "variables": [
+            "WS",
+            "COV_TS_UY",
+            "CTS_MOD",
+            "G2",
+            "HS",
+            "LWOUT",
+            "RHO_A_MEAN",
+            "SWOUT",
+            "TDT4_TSOIL",
+            "TDT4_VWC",
+            "TDT5_SOILEC",
+            "TDT7_VWC",
+            "TDT8_VWC",
+            "TDT9_SOILEC",
+            "COV_UX_UY",
+            "LWIN",
+            "PROFILE_SOILEC15",
+            "PROFILE_VWC15",
+        ],
+    },
 }
 # endregion
 
