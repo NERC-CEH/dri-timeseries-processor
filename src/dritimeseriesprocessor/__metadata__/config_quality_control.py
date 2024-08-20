@@ -76,6 +76,14 @@ qc_tests = {
             "WS",
         ],
     },
+    "SPIKE": {
+        "test_name": "Spike test",
+        "description": "Checks for individual spikes in data that exceed a threshold.",
+        "variables": [
+            "PA",
+            "TA",
+        ],
+    },
 }
 # endregion
 
@@ -398,6 +406,27 @@ var_range_thresholds = {
                 "resolutions": ["PT1M", "PT15M", "PT30M"],
                 "min_value": -25.0,
                 "max_value": 50.0,
+            },
+        ],
+    },
+}
+# endregion
+
+# region --- Spike test - Spike thresholds for variables
+var_spike_thresholds = {
+    "TA": {
+        "defaults": [
+            {
+                "resolutions": ["PT30M"],
+                "threshold": 10.0,
+            },
+        ],
+    },
+    "PA": {
+        "defaults": [
+            {
+                "resolutions": ["PT30M"],
+                "threshold": 20.0,
             },
         ],
     },
