@@ -100,15 +100,18 @@ def get_site_range_values(site_id: str, variable: str, resolution: str) -> tuple
     )
 
     # Get the site specific values for the given site and resolution, defaulting to default values if not found
-    range_values = next(
-        (
-            range_thresh
-            for range_thresh in range_threshold.sites
-            if range_thresh.site_id == site_id
-            and (range_thresh.resolutions is None or resolution in range_thresh.resolutions)
-        ),
-        default_range_values,
-    )
+    if range_threshold.sites:
+        range_values = next(
+            (
+                range_thresh
+                for range_thresh in range_threshold.sites
+                if range_thresh.site_id == site_id
+                and (range_thresh.resolutions is None or resolution in range_thresh.resolutions)
+            ),
+            default_range_values,
+        )
+    else:
+        range_values = default_range_values
 
     if range_values is None:
         raise ValueError(f"No min/max values set for {variable} range test")

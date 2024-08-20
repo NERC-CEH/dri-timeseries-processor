@@ -131,6 +131,17 @@ class TestGetSiteRangeValues(unittest.TestCase):
                         resolutions=None
                     )
                 ]
+            ),
+
+            "value3": Mock(
+                defaults=[
+                    Mock(
+                        min_value=99,
+                        max_value=999,
+                        resolutions=None
+                    )
+                ],
+                sites=None
             )
         }
 
@@ -200,6 +211,16 @@ class TestGetSiteRangeValues(unittest.TestCase):
         mock_get_qc_config.return_value = self.range_thresholds
         with self.assertRaises(ValueError):
             get_site_range_values("site1", "value", "PT30M")
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_no_sites_in_config(self, mock_get_qc_config):
+        """ Test that default values returned if no site specific thresholds in the config
+        """
+        mock_get_qc_config.return_value = self.range_thresholds
+
+        result = get_site_range_values("site1", "value3", "PT30M")
+        expected = (99, 999)
+        self.assertEqual(result, expected)
 
 
 class TestInitialiseQcColumn(unittest.TestCase):
