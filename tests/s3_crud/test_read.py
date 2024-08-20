@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 
 from dritimeseriesprocessor.s3_crud.read import Boto3ParquetReader, DuckDbParquetReader
 from tests.s3_crud.base_test_case import BaseTestCase
-
+import moto
 
 def get_unique_dates(df: pl.DataFrame):
     # Convert datetime to string date for easy assertion
