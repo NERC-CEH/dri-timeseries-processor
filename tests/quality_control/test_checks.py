@@ -7,6 +7,7 @@ from dritimeseriesprocessor.quality_control.checks import (
     battery_voltage_qc,
     range_qc,
     soilmet_scans_qc,
+    error_codes_qc
 )
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
@@ -201,6 +202,34 @@ class TestRangeQC(unittest.TestCase):
         result = range_qc(self.df, "TA")
         self.assertIn("TA_QCFLAG", result.columns)
         self.assertEqual(result["TA_QCFLAG"].to_list(), [qc_flag, 0, qc_flag])
+
+
+class TestErrorCodesQC(unittest.TestCase):
+    """Test error_codes_qc function."""
+    def setUp(self):
+        """Set up a sample DataFrame for testing."""
+        self.data = pl.DataFrame({
+            "BATTV": [12.0, 8999, 9.8, 10.2, 7999]
+        })
+
+    @patch('dritimeseriesprocessor.quality_control.checks.qc_config')
+    def test_error_code_qc(self, mock_qc_config):
+        """Test flag correctly raised fo error codes."""
+        mock_qc_tests = {
+            "ERROR_CODES": {
+                "id": 1 << 3
+                }
+            }
+        mock_qc_config.qc_tests = mock_qc_tests
+        
+        expected = pl.DataFrame({
+            "BATTV": [12.0, 8999, 9.8, 10.2, 7999],
+            "BATTV_QCFLAG": [0, 8, 0, 0, 8]
+        })
+
+        result = error_codes_qc(self.data, "BATTV")
+
+        assert_frame_equal(expected, result)
 
 
 if __name__ == "__main__":

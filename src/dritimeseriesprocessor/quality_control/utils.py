@@ -58,7 +58,7 @@ def col_comparison_test(
         flag_col = flag_col | test_col.is_null()
 
     # Cast the flag column to integers and replace True (1) with the flag value
-    flag_col = flag_col.cast(pl.Int32).replace(1, flag)
+    flag_col = flag_col.cast(pl.Int64).replace(1, flag)
 
     # Apply the same flags to all columns in the given data
     flagged_data = data.with_columns([flag_col.alias(col) for col in data.columns])
