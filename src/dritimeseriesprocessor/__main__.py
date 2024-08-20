@@ -30,10 +30,15 @@ preprocessed_data = run_preprocess(data)
 
 # Quality control
 
-# dummy some BATTV data
+# dummy some data that will force some qc checks to run
 preprocessed_data = preprocessed_data.with_columns(
-    pl.Series(i for i in range(0, len(preprocessed_data))).alias("BATTV")
+    [
+        pl.Series([0 if ((i // 20) % 2 == 0) else 100 for i in range(len(preprocessed_data))]).alias("BATTV"),
+        pl.Series(i * 2 for i in range(len(preprocessed_data))).alias("PRECIP"),
+    ]
 )
 qcd_data = run_quality_control(preprocessed_data)
 
-logger.info(qcd_data)
+# show first 100 rows to show how qc flags have been applied
+with pl.Config(tbl_rows=100):
+    logger.info(qcd_data.limit(100))

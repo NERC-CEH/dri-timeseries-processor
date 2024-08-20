@@ -452,11 +452,13 @@ class QCTest(BaseModel):
         test_name (str): The name of the test
         description (str): Description of the test
         variables (List[str]): A list of variables applicable to run the test.
+        id (int): Flag ID value used to flag rows that fail the test
     """
 
     test_name: str
     description: str
     variables: List[str]
+    id: int
 
 
 class RangeThreshold(BaseModel):

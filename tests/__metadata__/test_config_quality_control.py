@@ -14,10 +14,11 @@ class TestQCTest(unittest.TestCase):
     def test_valid_qc_test(self):
         """Test that a valid QCTest instance is created correctly."""
         qc_test = QCTest(test_name="Range test", description="Checks if the value falls within a specified range.",
-                         variables=["TA", "PRECIP"])
+                         variables=["TA", "PRECIP"], id=1)
         self.assertEqual(qc_test.test_name, "Range test")
         self.assertEqual(qc_test.description, "Checks if the value falls within a specified range.")
         self.assertEqual(qc_test.variables, ["TA", "PRECIP"])
+        self.assertEqual(qc_test.id, 1)
 
 
 class TestRangeThreshold(unittest.TestCase):
