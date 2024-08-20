@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ParquetReaderInterface(ABC):
-    """Interfacee for defining parquet reading objects"""
+    """Interface for defining parquet reading objects"""
 
     @abstractmethod
     def read() -> pl.DataFrame:
