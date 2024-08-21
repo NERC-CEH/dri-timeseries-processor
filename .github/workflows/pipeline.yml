@@ -12,7 +12,7 @@ jobs:
   test-python:
     uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@add-localstack
     with:
-      use_localstack: true
+      use_localstack: false
 
   build-test-deploy-docker:
     needs: [test-python]
