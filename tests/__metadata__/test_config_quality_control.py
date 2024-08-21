@@ -133,7 +133,3 @@ class TestGetQCConfig(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             get_qc_config("invalid_type")
-
-
-if __name__ == '__main__':
-    unittest.main()

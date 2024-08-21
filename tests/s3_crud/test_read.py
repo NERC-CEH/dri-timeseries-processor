@@ -124,7 +124,3 @@ class TestBoto3ParquetReader(BaseTestCase):
         
         with self.assertRaises(TypeError):
             Boto3ParquetReader("not an s3 client")
-
-        
-if __name__ == "__main__":
-    unittest.main()

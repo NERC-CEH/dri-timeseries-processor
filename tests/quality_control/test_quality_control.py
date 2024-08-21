@@ -38,6 +38,3 @@ class TestRunQC(unittest.TestCase):
 
         # Restore the original test map
         qc_test_map.update(original_qc_test_map)
-
-if __name__ == "__main__":
-    unittest.main()

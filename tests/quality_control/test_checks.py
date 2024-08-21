@@ -201,7 +201,3 @@ class TestRangeQC(unittest.TestCase):
         result = range_qc(self.df, "TA")
         self.assertIn("TA_QCFLAG", result.columns)
         self.assertEqual(result["TA_QCFLAG"].to_list(), [qc_flag, 0, qc_flag])
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -99,6 +99,3 @@ class TestS3WriterWithData(BaseTestCase):
         )
 
         polars.testing.assert_frame_equal(result, self.data)
-
-if __name__ == "__main__":
-    unittest.main()
