@@ -10,9 +10,9 @@ permissions:
 jobs:
 
   test-python:
-    uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@add-localstack
+    uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
     with:
-      use_localstack: false
+      use_localstack: true
 
   build-test-deploy-docker:
     needs: [test-python]
