@@ -5,7 +5,7 @@ import polars as pl
 import unittest
 from botocore.exceptions import ClientError
 
-from dritimeseriesprocessor.s3_crud.read import Boto3ParquetReader, DuckDbParquetReader
+from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from tests.s3_crud.base_test_case import BaseTestCase
 import moto
 
@@ -14,33 +14,6 @@ def get_unique_dates(df: pl.DataFrame):
     df = df.with_columns(pl.col('time').dt.strftime('%Y-%m-%d'))
     unique_dates = df.select('time').unique()
     return unique_dates
-
-class TestReadParquetByKey(BaseTestCase):
-    def setUp(self):
-        self.reader = Boto3ParquetReader(self.s3_client)
-
-    def test_read_parquet_by_key_success(self):
-        """ Test that a valid key returns the Parquet dataset
-        """
-        key = "TEST_CATEGORY/2024-01/2024-01-01.parquet"
-        result = self.reader.read(self.bucket_name, key)
-
-        self.assertIsInstance(result, pl.DataFrame)
-        self.assertEqual(sorted(get_unique_dates(result)['time'].to_list()), ['2024-01-01'])
-
-    def test_read_parquet_by_key_invalid_key_error(self):
-        """ Test that an invalid key raises error
-        """
-        key = "non_existent_key.parquet"
-        with self.assertRaises(ClientError):
-            self.reader.read(self.bucket_name, key)
-
-    def test_read_parquet_by_key_corrupt_error(self):
-        """ Test that an error is raised if a corrupted parquet file is found
-        """
-        key = "corrupted.parquet"
-        with self.assertRaises(pl.exceptions.ComputeError):
-            self.reader.read(self.bucket_name, key)
 
 class TestReadParquetByQuery(BaseTestCase):
     def setUp(self):
@@ -109,18 +82,3 @@ class TestReadParquetByQuery(BaseTestCase):
 
         with self.assertRaises(duckdb.InvalidInputException):
             self.reader.read(query)
-
-
-class TestBoto3ParquetReader(BaseTestCase):
-
-    def test_s3_client_type(self):
-        """Returns an object if s3_client is of type `boto3.client.s3`, otherwise
-        raises an error"""
-
-        # Happy path
-        reader = Boto3ParquetReader(self.s3_client)
-
-        # Bad path
-        
-        with self.assertRaises(TypeError):
-            Boto3ParquetReader("not an s3 client")

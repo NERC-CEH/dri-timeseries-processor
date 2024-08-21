@@ -7,9 +7,6 @@ from typing import List, Optional
 
 import duckdb
 import polars as pl
-from botocore.client import BaseClient
-from botocore.exceptions import ClientError
-from mypy_boto3_s3.client import S3Client
 
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.utils import remove_protocol_from_url
@@ -23,51 +20,6 @@ class ParquetReaderInterface(ABC):
     @abstractmethod
     def read() -> pl.DataFrame:
         """Abstract method for read operations"""
-
-
-class Boto3ParquetReader(ParquetReaderInterface):
-    """Boto3 implementation of the parquet reader"""
-
-    s3_client: S3Client
-    """Handle to the the s3 client used to read data"""
-
-    def __init__(self, s3_client: S3Client):
-        """Initializes the object
-
-        Args:
-            s3_client: The s3 client used to retrieve data from
-        """
-
-        if not isinstance(s3_client, BaseClient):
-            raise TypeError(f"`s3_client` must be a `S3Client` not `{type(s3_client)}`")
-
-        self.s3_client = s3_client
-
-    def read(self, bucket_name: str, s3_key: str) -> pl.DataFrame:
-        """Retrieves and loads a parquet object from an S3 bucket.
-
-        Args:
-            bucket_name: The name of the S3 bucket.
-            s3_key: The key (path) of the object within the bucket.
-
-        Returns:
-            A Polars DataFrame containing the data from the Parquet file.
-
-        Raises:
-            (RuntimeError, ClientError): If there's any error in finding objects
-            pl.exceptions.ComputeError: If corrupt data found in an object
-
-        """
-        try:
-            data = self.s3_client.get_object(Bucket=bucket_name, Key=s3_key)
-            contents = data["Body"].read()
-            return pl.read_parquet(contents)
-        except (RuntimeError, ClientError) as e:
-            logger.error(f"Failed to get {s3_key} from {bucket_name}")
-            raise e
-        except pl.exceptions.ComputeError as e:
-            logger.error(f"Corrupt data found in {s3_key} from {bucket_name}")
-            raise e
 
 
 class DuckDbParquetReader(ParquetReaderInterface):
