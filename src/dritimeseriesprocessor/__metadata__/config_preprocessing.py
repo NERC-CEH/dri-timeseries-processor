@@ -157,3 +157,5 @@ with open(Path(__file__).parent / "config_files" / "corrections.json", "r") as f
     corrections_data = content["data"]
 
     preprocessing_config = PreprocessingConfig(correction_methods=correction_methods_data, corrections=corrections_data)
+
+    del content
