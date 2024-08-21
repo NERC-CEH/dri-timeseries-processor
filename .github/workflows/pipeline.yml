@@ -8,8 +8,17 @@ permissions:
 
 
 jobs:
+
   test-python:
-    uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.2
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+      - name: Run Pytest
+        uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
 
   build-test-deploy-docker:
     needs: [test-python]

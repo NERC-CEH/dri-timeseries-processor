@@ -15,8 +15,6 @@ def get_unique_dates(df: pl.DataFrame):
     unique_dates = df.select('time').unique()
     return unique_dates
 
-
-@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestReadParquetByKey(BaseTestCase):
     def setUp(self):
         self.reader = Boto3ParquetReader(self.s3_client)
