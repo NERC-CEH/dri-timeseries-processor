@@ -5,7 +5,7 @@ import pytest
 from parameterized import parameterized
 from tests.s3_crud.base_test_case import BaseTestCase
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.s3_crud.read import Boto3ParquetReader
+from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.utils import steralize_dates
 import os
@@ -88,14 +88,13 @@ class TestS3WriterWithData(BaseTestCase):
 
         writer.write(
             bucket_name=self.empty_bucket_name,
-            key="test_path",
+            key="test_path.parquet",
             body=self.data)
 
-        reader = Boto3ParquetReader(self.s3_client)
+        reader = DuckDbParquetReader()
 
         result = reader.read(
-            bucket_name=self.empty_bucket_name,
-            s3_key="test_path"
+            query = f"SELECT * FROM read_parquet('s3://{self.empty_bucket_name}/test_path.parquet');"
         )
 
         polars.testing.assert_frame_equal(result, self.data)
