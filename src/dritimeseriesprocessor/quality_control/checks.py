@@ -127,3 +127,30 @@ def soilmet_scans_qc(df: pl.DataFrame, column: str) -> pl.DataFrame:
         )
 
         return qc_utils.add_qcflag_column(df, flags, column)
+
+
+def error_codes_qc(df: pl.DataFrame, column: str) -> pl.DataFrame:
+    """Add QC flag for expected error codes.
+
+    Args:
+        df: The input DataFrame
+        column: The name of the column to which the quality
+                control flag will be applied.
+
+    Returns:
+        The DataFrame with the quality control flag applied.
+    """
+    error_codes = [7999, 8999]
+
+    for error_code in error_codes:
+        flags = qc_utils.col_comparison_test(
+            df.select(column),
+            df[column],
+            error_code,
+            flag=qc_config.qc_tests["ERROR_CODES"]["id"],
+            op="==",
+        )
+
+        df = qc_utils.add_qcflag_column(df, flags, column)
+
+    return df
