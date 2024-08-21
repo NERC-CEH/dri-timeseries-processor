@@ -42,8 +42,6 @@ class TestReadParquetByKey(BaseTestCase):
         with self.assertRaises(pl.exceptions.ComputeError):
             self.reader.read(self.bucket_name, key)
 
-
-@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
 class TestReadParquetByQuery(BaseTestCase):
     def setUp(self):
         self.reader = DuckDbParquetReader()
@@ -112,7 +110,7 @@ class TestReadParquetByQuery(BaseTestCase):
         with self.assertRaises(duckdb.InvalidInputException):
             self.reader.read(query)
 
-@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
+
 class TestBoto3ParquetReader(BaseTestCase):
 
     def test_s3_client_type(self):

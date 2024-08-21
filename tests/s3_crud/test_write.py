@@ -14,7 +14,7 @@ from io import BytesIO
 import moto
 import polars.testing
 
-@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
+
 class TestS3Writer(BaseTestCase):
     def test_s3_client_type(self):
         """Returns an object if s3_client is of type `boto3.client.s3`, otherwise
@@ -39,7 +39,7 @@ class TestS3Writer(BaseTestCase):
         result = S3Writer._build_date_range_key(start_date, end_date)
         self.assertEqual(result, expected)
 
-@unittest.skipIf(os.getenv('GITHUB_ACTIONS'), "Skipping test on GitHub CI")
+
 class TestS3WriterWithData(BaseTestCase):
     def setUp(self):
         start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 4))
