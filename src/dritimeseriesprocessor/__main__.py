@@ -42,6 +42,6 @@ logger.info(qcd_data)
 writer = S3Writer(s3_client)
 writer.write(
     bucket_name=app_config.qc_bucket,
-    key=f"cosmos/30min/{writer._build_key(start_date, end_date)}.parquet",
+    key=f"cosmos/30min/{writer._build_date_range_key(start_date, end_date)}.parquet",
     body=qcd_data,
 )
