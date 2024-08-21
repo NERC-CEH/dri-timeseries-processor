@@ -203,7 +203,7 @@ class TestRangeQC(unittest.TestCase):
         self.assertIn("TA_QCFLAG", result.columns)
         self.assertEqual(result["TA_QCFLAG"].to_list(), [qc_flag, 0, qc_flag])
 
-
+        
 class TestErrorCodesQC(unittest.TestCase):
     """Test error_codes_qc function."""
     def setUp(self):
@@ -230,7 +230,3 @@ class TestErrorCodesQC(unittest.TestCase):
         result = error_codes_qc(self.data, "BATTV")
 
         assert_frame_equal(expected, result)
-
-
-if __name__ == "__main__":
-    unittest.main()

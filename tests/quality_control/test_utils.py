@@ -295,8 +295,3 @@ class TestAddQCFlagColumn(unittest.TestCase):
         result = add_qcflag_column(self.data, self.additional_flag, "TA")
 
         assert_frame_equal(result, expected)
-
-
-
-if __name__ == "__main__":
-    unittest.main()
