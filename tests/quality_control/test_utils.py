@@ -2,11 +2,13 @@ import unittest
 from unittest.mock import Mock, patch
 
 import polars as pl
+from parameterized import parameterized
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
-from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_site_range_values,
-                                                          initialise_qc_column, QCTestIDValidator)
+from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_failed_qc_check_ids_from_flag,
+                                                          get_site_range_values, initialise_qc_column,
+                                                          QCTestIDValidator)
 
 
 class TestColumnThresholdCheck(unittest.TestCase):
@@ -250,6 +252,51 @@ class TestInitialiseQcColumn(unittest.TestCase):
         df = pl.DataFrame({})
         with self.assertRaises(UserWarning):
             initialise_qc_column(df, "new_column")
+
+
+class TestQCFlagging(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Set up the test environment by mocking the global variables used in get_qc_config.
+        This method is called before each test method.
+        """
+        # Mock the global variables used in the function
+        mock_qc_tests = {
+            "RANGE": {
+                "id": 1 << 0
+            },
+            "MIN": {
+                "id": 1 << 1
+            },
+            "MAX": {
+                "id": 1 << 2
+            }
+        }
+
+        cls.patcher = patch("dritimeseriesprocessor.__metadata__.config_quality_control.qc_tests", mock_qc_tests)
+        cls.patcher.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+
+    @parameterized.expand([
+        [0, []],
+        [1, [1]],
+        [2, [2]],
+        [4, [4]],
+        [3, [1, 2]],
+        [5, [1, 4]],
+        [6, [2, 4]],
+        [7, [1, 2, 4]],
+        [64, [64]]
+    ])
+    def test_flag_is_reversible(self, flag, expected):
+        """Checks that flags can be reversed into QC check IDs"""
+
+        result = get_failed_qc_check_ids_from_flag(flag)
+
+        self.assertListEqual(result, expected)
 
 
 class TestQCTestValidator(unittest.TestCase):
