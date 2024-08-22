@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.preprocessing.operations import add, multiply
+from dritimeseriesprocessor.preprocessing.operations import add, multiply, power
 
 
 def create_test_data():
@@ -95,3 +95,42 @@ class TestMultiply(unittest.TestCase):
         result = multiply(self.df, self.correction_config, mask)
         assert_frame_equal(result, self.df)
 
+class TestPower(unittest.TestCase):
+    def setUp(self):
+        self.df = create_test_data()
+        self.correction_config = Mock(
+            VARIABLE="value",
+            CORRECTION_FACTOR=2.0,
+            METHOD_ID="POWER",
+        )
+
+    def test_power_simple(self):
+        """ Test that the power function works across the full DataFrame
+        """
+        result = power(self.df, self.correction_config)
+        expected = pl.DataFrame({
+            "SITE_ID": ["site1", "site2", "site3"],
+            "value": [100., 400., 900.]
+        })
+
+        assert_frame_equal(result, expected)
+
+    def test_power_mask(self):
+        """ Test that the power function works with a mask clause
+        """
+        mask = pl.col("SITE_ID").eq("site2")
+        result = power(self.df, self.correction_config, mask)
+        expected = pl.DataFrame({
+            "SITE_ID": ["site1", "site2", "site3"],
+            "value": [10., 400., 30.]
+        })
+
+        assert_frame_equal(result, expected)
+
+    def test_no_matching_rows(self):
+        """ Test when no rows match the condition
+        """
+        self.correction_config.SITE_ID = "site4"
+        mask = pl.col("SITE_ID").eq(self.correction_config.SITE_ID)
+        result = power(self.df, self.correction_config, mask)
+        assert_frame_equal(result, self.df)
