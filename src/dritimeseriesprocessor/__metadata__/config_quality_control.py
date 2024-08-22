@@ -151,6 +151,43 @@ class ValueThreshold(BaseModel):
     threshold: float
 
 
+class SpikeThreshold(BaseModel):
+    """
+    Defines the range of acceptable values for a variable.
+
+    Attributes:
+        threshold (float): The minimum acceptable value to constitute a spike.
+    """
+
+    site_id: Optional[str] = None
+    resolutions: Optional[List[str]] = None
+    threshold: float
+
+
+class VariableSpikeThresholds(BaseModel):
+    """Defines the spike thresholds for a variable, including default and site-specific thresholds.
+
+    Attributes:
+        variable (str): The identifier for the variable.
+        defaults (List[RangeThreshold]): List of default range thresholds for the variable.
+        sites (Optional[List[RangeThreshold]]): List of site-specific range thresholds for the variable.
+
+    Validators:
+        check_site_id_in_sites: Ensures that every SpikeThreshold in 'sites' contains a 'site_id'.
+    """
+
+    defaults: List[SpikeThreshold]
+    sites: Optional[List[SpikeThreshold]] = None
+
+    @model_validator(mode="after")
+    def check_site_id_in_sites(cls, values: "VariableSpikeThresholds") -> "VariableSpikeThresholds":
+        if values.sites:
+            for site in values.sites:
+                if not site.site_id:
+                    raise ValueError("Each SpikeThreshold in 'sites' must contain a 'site_id'")
+        return values
+
+
 def get_qc_config(config: str) -> Union[dict, ValueThreshold]:
     """
     Retrieve Quality Control (QC) configuration based on the specified config type.
@@ -165,6 +202,7 @@ def get_qc_config(config: str) -> Union[dict, ValueThreshold]:
             - "range_thresholds": Returns a list of VariableRangeThresholds objects.
             - "battv_threshold": Returns battery voltage ValueThreshold object.
             - "soilmet_scan_threshold": Returns soilmet scan ValueThreshold value.
+            - "spike_thresholds": Returns a list of VariableThresholds objects.
 
     Returns:
             The requested QC configuration.
@@ -180,6 +218,8 @@ def get_qc_config(config: str) -> Union[dict, ValueThreshold]:
         qc_config = ValueThreshold(threshold=battery_voltage_threshold)
     elif config == "soilmet_scan_threshold":
         qc_config = ValueThreshold(threshold=soilmet_scan_threshold)
+    elif config == "spike_thresholds":
+        qc_config = {var: VariableSpikeThresholds(**thresh_dict) for var, thresh_dict in var_spike_thresholds.items()}
     else:
         raise ValueError("Not a valid config type")
 
@@ -194,5 +234,6 @@ with open(Path(__file__).parent / "config_files" / "quality_control.json", "r") 
     var_range_thresholds = content["var_range_thresholds"]
     battery_voltage_threshold = content["battery_voltage_threshold"]
     soilmet_scan_threshold = content["soilmet_scan_threshold"]
+    var_spike_thresholds = content["var_spike_thresholds"]
 
     del content

@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from dritimeseriesprocessor.__metadata__.config_quality_control import (
     QCTest,
     RangeThreshold,
-    VariableThresholds,
+    VariableRangeThresholds,
     get_qc_config,
 )
 
@@ -46,12 +46,12 @@ class TestRangeThreshold(unittest.TestCase):
             RangeThreshold(min_value=0.0, max_value=10.0, resolutions=["INVALID"])
 
 
-class TestVariableThresholds(unittest.TestCase):
+class TestVariableRangeThresholds(unittest.TestCase):
     def test_valid_variable_range_thresholds(self):
-        """Test that a valid VariableThresholds instance is created correctly."""
+        """Test that a valid VariableRangeThresholds instance is created correctly."""
         defaults = [RangeThreshold(min_value=0.0, max_value=10.0)]
         sites = [RangeThreshold(site_id="SITE1", min_value=0.0, max_value=10.0)]
-        variable_range_thresholds = VariableThresholds(defaults=defaults, sites=sites)
+        variable_range_thresholds = VariableRangeThresholds(defaults=defaults, sites=sites)
         self.assertEqual(variable_range_thresholds.defaults, defaults)
         self.assertEqual(variable_range_thresholds.sites, sites)
 
@@ -60,7 +60,7 @@ class TestVariableThresholds(unittest.TestCase):
         defaults = [RangeThreshold(min_value=0.0, max_value=10.0)]
         sites = [RangeThreshold(min_value=0.0, max_value=10.0)]
         with self.assertRaises(ValidationError):
-            VariableThresholds(variable="TA", defaults=defaults, sites=sites)
+            VariableRangeThresholds(variable="TA", defaults=defaults, sites=sites)
 
 
 class TestGetQCConfig(unittest.TestCase):
@@ -121,13 +121,13 @@ class TestGetQCConfig(unittest.TestCase):
 
     def test_get_range_thresholds_config(self):
         """Test the get_qc_config function with 'range_thresholds' configuration.
-        Verifies that it returns a list of VariableThresholds objects
+        Verifies that it returns a list of VariableRangeThresholds objects
         with the correct content.
         """
         result = get_qc_config("range_thresholds")
         self.assertIsInstance(result, dict)
         self.assertEqual(len(result), 1)
-        self.assertIsInstance(result["TA"], VariableThresholds)
+        self.assertIsInstance(result["TA"], VariableRangeThresholds)
 
     def test_invalid_config_type(self):
         """Test the get_qc_config function with an invalid configuration type.

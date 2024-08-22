@@ -82,6 +82,15 @@
                 "PROFILE_SOILEC15",
                 "PROFILE_VWC15"
             ]
+        },
+        "SPIKE": {
+            "test_name": "Spike test",
+            "description": "Checks for individual spikes in data that exceed a threshold.",
+            "id": 16,
+            "variables": [
+                "PA",
+                "TA"
+            ]
         }
     },
     "var_range_thresholds": {
@@ -478,6 +487,24 @@
                     ],
                     "min_value": -25.0,
                     "max_value": 50.0
+                }
+            ]
+        }
+    },
+    "var_spike_thresholds": {
+        "TA": {
+            "defaults": [
+                {
+                    "resolutions": ["PT30M"],
+                    "threshold": 10.0
+                }
+            ]
+        },
+        "PA": {
+            "defaults": [
+                {
+                    "resolutions": ["PT30M"],
+                    "threshold": 20.0
                 }
             ]
         }
