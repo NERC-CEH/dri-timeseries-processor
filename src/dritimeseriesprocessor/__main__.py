@@ -11,7 +11,7 @@ from dritimeseriesprocessor.quality_control.quality_controller import run_qualit
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger("dritimeseriesprocessor")
 
@@ -43,6 +43,8 @@ preprocessed_data = preprocessed_data.with_columns(
     [
         pl.Series([0 if ((i // 20) % 2 == 0) else 100 for i in range(len(preprocessed_data))]).alias("BATTV"),
         pl.Series(i * 2 for i in range(len(preprocessed_data))).alias("PRECIP"),
+        pl.Series([5 if (i != 5) else 50 for i in range(len(preprocessed_data))]).alias("TA"),
+        pl.Series(i for i in range(len(preprocessed_data))).alias("SCANS"),
     ]
 )
 qcd_data = run_quality_control(preprocessed_data)
