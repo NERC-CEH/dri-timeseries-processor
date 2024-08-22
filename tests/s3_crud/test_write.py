@@ -1,18 +1,16 @@
-import unittest
+from datetime import date
+from io import BytesIO
 from unittest.mock import patch
 
-import pytest
+import moto
+import polars.testing
 from parameterized import parameterized
+
 from tests.s3_crud.base_test_case import BaseTestCase
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.utils import steralize_dates
-import os
-from datetime import date
-from io import BytesIO
-import moto
-import polars.testing
 
 
 class TestS3Writer(BaseTestCase):

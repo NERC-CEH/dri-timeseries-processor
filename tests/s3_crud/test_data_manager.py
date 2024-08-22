@@ -1,8 +1,6 @@
 from datetime import date
-import os
 
 import polars as pl
-import unittest
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.utils import steralize_dates
