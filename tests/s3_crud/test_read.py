@@ -1,13 +1,9 @@
-import os
-
 import duckdb
 import polars as pl
-import unittest
-from botocore.exceptions import ClientError
 
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from tests.s3_crud.base_test_case import BaseTestCase
-import moto
+
 
 def get_unique_dates(df: pl.DataFrame):
     # Convert datetime to string date for easy assertion

@@ -5,12 +5,12 @@ from unittest.mock import Mock, patch
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.preprocessing.preprocessor import preprocess
+from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 
 
 class TestPreprocess(unittest.TestCase):
     def setUp(self):
-        self.df = pl.DataFrame({
+        self.data = pl.DataFrame({
             "SITE_ID": ["site1", "site2", "site1", "site2", "site1", "site2"],
             "time": [
                 datetime(2023, 8, 10),
@@ -33,11 +33,11 @@ class TestPreprocess(unittest.TestCase):
         mock_preprocessing_config.corrections = [correction_config]
 
         with self.assertLogs("dritimeseriesprocessor.preprocessing.preprocessor", level="WARNING") as logs:
-            result = preprocess(self.df)
+            result = run_preprocess(self.data)
             print(logs.output[0])
             self.assertIn("Unimplemented method: unknown_method", logs.output[0])
 
-        assert_frame_equal(result, self.df)
+        assert_frame_equal(result, self.data)
 
     @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
     def test_preprocess_variable_not_in_df(self, mock_preprocessing_config):
@@ -50,10 +50,10 @@ class TestPreprocess(unittest.TestCase):
         mock_preprocessing_config.corrections = [correction_config]
 
         with self.assertLogs("dritimeseriesprocessor.preprocessing.preprocessor", level="WARNING") as logs:
-            result = preprocess(self.df)
+            result = run_preprocess(self.data)
             self.assertIn("Variable not in DataFrame: non_existent_column", logs.output[0])
 
-        assert_frame_equal(result, self.df)
+        assert_frame_equal(result, self.data)
 
     @patch('dritimeseriesprocessor.preprocessing.preprocessor.datetime')
     @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
@@ -73,7 +73,7 @@ class TestPreprocess(unittest.TestCase):
         mock_preprocessing_config.corrections = [correction_config]
         mock_datetime.now.return_value = dummy_now
 
-        result = preprocess(self.df)
+        result = run_preprocess(self.data)
 
         # Check the end date has been set to "now"
         self.assertEqual(correction_config.END_DATETIME, dummy_now)

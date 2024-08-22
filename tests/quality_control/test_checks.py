@@ -1,232 +1,282 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, Mock
+
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.quality_control.checks import (
-    battery_voltage_qc,
-    range_qc,
-    soilmet_scans_qc,
-    error_codes_qc
-)
+from dritimeseriesprocessor.quality_control.checks import (battery_voltage_check, error_codes_check, range_check,
+                                                           soilmet_scans_check)
 
-from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
 
-class TestBatteryVoltageQC(unittest.TestCase):
-    """Unit tests for the battery voltage function."""
+class TestBatteryVoltageCheck(unittest.TestCase):
     def setUp(self):
-        """
-        Set up the initial data for testing. 
-        This method is run before each test.
-        """
+        self.battv_threshold_config = Mock(
+            threshold=10.
+        )
+
         self.data = pl.DataFrame({
-            "BATTV": [12.0, 11.5, 9.8, 10.2, 9.5],
-            "TA": [20.0, 21.5, 22.1, 19.8, 18.0],
+            "BATTV": [12., 11., 9., 13., 8.],
+            "value": [1., 2., 3., 4., 5.],
         })
-        self.test_column = "TA"
-        self.threshold = 10.0
-        self.flag_value = 5
 
-    def test_battery_voltage_qc(self):
+        self.flag_value = 1
+
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_battery_voltage_below_threshold(self, mock_get_qc_config):
+        """ Test that correct flags applied to values that match where BATTV is below threshold
         """
-        Test the battery_voltage_qc function.
-        Verifies that the function correctly applies QC flags based on the battery voltage.
+        mock_get_qc_config.return_value = self.battv_threshold_config
+
+        result = battery_voltage_check(self.data, "value", self.flag_value)
+        expected = self.data.with_columns(
+            pl.Series([0, 0, self.flag_value, 0, self.flag_value])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_battery_voltage_none_below_threshold(self, mock_get_qc_config):
+        """ Test that no flags applied because battery voltage all above threshold
         """
-        battv_flag = qc_tests["BATTV"]["id"]
-        result = battery_voltage_qc(self.data, self.test_column)
-        expected_flags = [0, 0, battv_flag, 0, battv_flag]
-        self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
+        mock_get_qc_config.return_value = Mock(threshold=0.5)
 
-    def test_battery_voltage_qc_no_battv_column(self):
+        result = battery_voltage_check(self.data, "value", self.flag_value)
+        expected = self.data.with_columns(
+            pl.Series([0, 0, 0, 0, 0])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_battery_voltage_all_below_threshold(self, mock_get_qc_config):
+        """ Test that flags applied to all values because battery voltage all below threshold
         """
-        Test the battery_voltage_qc function when 'BATTV' column is missing.
-        Verifies that the function returns the DataFrame unchanged.
+        mock_get_qc_config.return_value = Mock(threshold=100.)
+
+        result = battery_voltage_check(self.data, "value", self.flag_value)
+        expected = self.data.with_columns(
+            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_battery_voltage_all_at_threshold(self, mock_get_qc_config):
+        """ Test that no flags applied because battery voltage exactly at threshold
         """
-        data_no_battv = self.data.drop(["BATTV"])
+        mock_get_qc_config.return_value = self.battv_threshold_config
+        new_data = self.data.with_columns(
+            pl.Series([10., 10., 10., 10., 10.])
+            .alias("BATTV")
+        )
 
-        result = battery_voltage_qc(data_no_battv, self.test_column)
+        result = battery_voltage_check(new_data, "value", self.flag_value)
+        expected = new_data.with_columns(
+            pl.Series([0, 0, 0, 0, 0])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
 
-        # Compare the result with the original DataFrame without 'BATTV'
-        self.assertEqual(result.shape, data_no_battv.shape)
-        self.assertTrue((result.columns == data_no_battv.columns))
-        self.assertTrue((result.equals(data_no_battv)))
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_no_battv_column(self, mock_get_qc_config):
+        """ Test terror raised when 'BATTV' column is missing.
+        """
+        mock_get_qc_config.return_value = self.battv_threshold_config
+        with self.assertRaises(UserWarning):
+            battery_voltage_check(self.data.drop(["BATTV"]), "value", self.flag_value)
 
 
-class TestScanQC(unittest.TestCase):
-    """Unit tests for the soilmet_scans function."""
+class TestRangeCheck(unittest.TestCase):
     def setUp(self):
         self.data = pl.DataFrame({
-            "SCANS": [120.0, 140.0, 20.0, 60.1],
-            "COL1": [1.0, 2.0, 3.0, 4.0],
-            "COL2": [5.0, 6.0, 7.0, 8.0],
-            "COL3": [9.0, 10.0, 11.0, 12.0]
-        })
-        self.test_column = "COL2"
-        self.threshold = 60.0
-        self.flag_value = qc_tests["SCANS"]["id"]
-
-    def test_soilmet_scans_qc(self):
-        result = soilmet_scans_qc(self.data, self.test_column)
-        expected_flags = [0, 0, self.flag_value, 0]
-        self.assertEqual(result[f"{self.test_column}_QCFLAG"].to_list(), expected_flags)
-
-    @patch('dritimeseriesprocessor.quality_control.checks.logger')
-    def test_soilmet_scans_qc_no_scans_column(self, mock_logger):
-        """
-        Test the soilmet_scans_qc function when 'SCANS' column is missing.
-        Verifies that the function returns the DataFrame unchanged.
-        """
-        data_no_scans = self.data.drop(["SCANS"])
-
-        result = soilmet_scans_qc(data_no_scans, self.test_column)
-
-        # Compare the result with the original DataFrame without 'SCANS'
-        self.assertEqual(result.shape, data_no_scans.shape)
-        self.assertTrue((result.columns == data_no_scans.columns))
-        self.assertTrue((result.equals(data_no_scans)))
-
-        # Check logger call
-        mock_logger.warning.assert_called_with('Can not run soilmet scans test. No SCANS column in data.')
-
-
-class TestRangeQC(unittest.TestCase):
-    """Unit tests for the range function."""
-    def setUp(self):
-        """
-        Set up a sample DataFrame for testing.
-        """
-        self.df = pl.DataFrame({
-            "time": ["2023-01-01", "2023-01-02", "2023-01-03"],
-            "SITE_ID": ["SITE1", "SITE1", "SITE2"],
-            "TA": [20, 25, 30]
+            'SITE_ID': ['site1'] * 6 + ['site2'] * 6,
+            'value1': list(range(6)) * 2,
+            'value2': list(range(6, 12)) * 2
         })
 
-    @patch('dritimeseriesprocessor.quality_control.quality_control.qc_config.get_qc_config')
-    @patch('dritimeseriesprocessor.quality_control.checks.logger')
-    def test_range_qc_no_threshold(self, mock_logger, mock_get_qc_config):
-        """
-        Test range_qc function when no threshold is provided for the column.
+        self.range_thresholds = {
+            "value1": Mock(
+                defaults=[
+                    Mock(
+                        min_value=4,
+                        max_value=7,
+                        resolutions=["PT30M"]
+                    )
+                ],
+                sites=[
+                    Mock(
+                        site_id="site1",
+                        min_value=1,
+                        max_value=3,
+                        resolutions=["PT30M"]
+                    )
+                ]
+            ),
 
-        Expected behavior:
-        - Function should return the original DataFrame
-        - A warning should be logged
-        """
-        mock_get_qc_config.return_value = {}
-        result = range_qc(self.df, "TA")
-        assert_frame_equal(result, self.df)
-        mock_logger.warning.assert_called_once()
+            "value2": Mock(
+                defaults=[
+                    Mock(
+                        min_value=10,
+                        max_value=13,
+                        resolutions=None
+                    )
+                ],
+                sites=[]
+            )
+        }
 
-    @patch('dritimeseriesprocessor.quality_control.quality_control.qc_config.get_qc_config')
-    @patch('dritimeseriesprocessor.quality_control.checks.logger')
-    def test_range_qc_no_default(self, mock_logger, mock_get_qc_config):
-        """
-        Test range_qc function when no default values are set for the column.
+        self.flag_value = 1
 
-        Expected behavior:
-        - Function should raise a ValueError
-        - An error should be logged
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_range_check_default_and_site_specific(self, mock_get_qc_config):
+        """ Test that the range check returns expected results when 1 site has site specific range thresholds,
+        and one site has to use default range thresholds.
         """
-        mock_get_qc_config.return_value = {"TA": MagicMock(defaults=[])}
+        mock_get_qc_config.return_value = self.range_thresholds
+
+        result = range_check(self.data, "value1", self.flag_value)
+
+        expected = self.data.with_columns(
+            pl.Series([self.flag_value, 0, 0, 0, self.flag_value, self.flag_value,
+                              self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
+            .alias("value1_QCFLAG")
+        )
+
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_range_check_default_only(self, mock_get_qc_config):
+        """ Test that the range check returns expected results when all sites use defaults
+        """
+        mock_get_qc_config.return_value = self.range_thresholds
+
+        result = range_check(self.data, "value2", self.flag_value)
+
+        expected = self.data.with_columns(
+            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0,
+                       self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
+            .alias("value2_QCFLAG")
+        )
+
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_range_qc_no_threshold(self, mock_get_qc_config):
+        """ Test error raised when no threshold is provided.
+        """
+        mock_get_qc_config.return_value = self.range_thresholds
+        with self.assertRaises(UserWarning):
+            range_check(self.data, "value3", self.flag_value)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_range_qc_no_default(self, mock_get_qc_config):
+        """ Test error raised when no default is provided for values with no site specific thresholds.
+        """
+        range_thresholds = self.range_thresholds.copy()
+        range_thresholds["value1"].defaults = []
+
+        mock_get_qc_config.return_value = range_thresholds
+
         with self.assertRaises(ValueError):
-            range_qc(self.df, "TA")
-        mock_logger.error.assert_called_once()
+            range_check(self.data, "value1", self.flag_value)
 
-    @patch('dritimeseriesprocessor.quality_control.quality_control.qc_config.get_qc_config')
-    @patch('dritimeseriesprocessor.quality_control.utils.add_qcflag_column')
-    def test_range_qc_default_values(self, mock_add_qcflag, mock_get_qc_config):
-        """
-        Test range_qc function using default values for all sites.
 
-        Expected behavior:
-        - QC column should be added to the DataFrame
-        - All values should be within range (QC flag = 0)
-        """
-        mock_get_qc_config.return_value = {
-            "TA": MagicMock(
-                defaults=[MagicMock(resolutions=None, min_value=0, max_value=40)],
-                sites=[]
-            )
-        }
-        mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(pl.lit(0).alias(f"{column}_QCFLAG"))
-
-        result = range_qc(self.df, "TA")
-        self.assertIn("TA_QCFLAG", result.columns)
-        self.assertEqual(result["TA_QCFLAG"].to_list(), [0, 0, 0])
-
-    @patch('dritimeseriesprocessor.quality_control.quality_control.qc_config.get_qc_config')
-    @patch('dritimeseriesprocessor.quality_control.utils.add_qcflag_column')
-    def test_range_qc_site_specific(self, mock_add_qcflag, mock_get_qc_config):
-        """
-        Test range_qc function using site-specific values.
-
-        Expected behavior:
-        - QC column should be added to the DataFrame
-        - All values should be within range (SITE1 uses site-specific, SITE2 uses default)
-        """
-        qc_flag = qc_tests["RANGE"]["id"]
-        mock_get_qc_config.return_value = {
-            "TA": MagicMock(
-                defaults=[MagicMock(resolutions=None, min_value=0, max_value=40)],
-                sites=[MagicMock(site_id="SITE1", resolutions=None, min_value=15, max_value=30)]
-            )
-        }
-        mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(
-            pl.when(flags[column] == qc_flag).then(qc_flag).otherwise(0).alias(f"{column}_QCFLAG")
+class TestSoilmetScansCheck(unittest.TestCase):
+    def setUp(self):
+        self.soilmet_scans_threshold_config = Mock(
+            threshold=60.
         )
 
-        result = range_qc(self.df, "TA")
-        self.assertIn("TA_QCFLAG", result.columns)
-        self.assertEqual(result["TA_QCFLAG"].to_list(), [0, 0, 0])
+        self.data = pl.DataFrame({
+            "SCANS": [20, 61, 100, 200, 59],
+            "value": [1., 2., 3., 4., 5.],
+        })
 
-    @patch('dritimeseriesprocessor.quality_control.quality_control.qc_config.get_qc_config')
-    @patch('dritimeseriesprocessor.quality_control.utils.add_qcflag_column')
-    def test_range_qc_out_of_range(self, mock_add_qcflag, mock_get_qc_config):
-        """
-        Test range_qc function for out-of-range values.
+        self.flag_value = 1
 
-        Expected behavior:
-        - QC column should be added to the DataFrame
-        - Out-of-range values should be flagged (20 and 30 are out of range)
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_scans_below_threshold(self, mock_get_qc_config):
+        """ Test that correct flags applied to values that match where SCANS is below threshold
         """
-        qc_flag = qc_tests["RANGE"]["id"]
-        mock_get_qc_config.return_value = {
-            "TA": MagicMock(
-                defaults=[MagicMock(resolutions=None, min_value=22, max_value=28)],
-                sites=[]
-            )
-        }
-        mock_add_qcflag.side_effect = lambda df, flags, column: df.with_columns(
-            pl.when(flags[column] == qc_flag).then(qc_flag).otherwise(0).alias(f"{column}_QCFLAG")
+        mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
+
+        result = soilmet_scans_check(self.data, "value", self.flag_value)
+        expected = self.data.with_columns(
+            pl.Series([self.flag_value, 0, 0, 0, self.flag_value])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_scans_none_below_threshold(self, mock_get_qc_config):
+        """ Test that no flags applied because SCANS all above threshold
+        """
+        mock_get_qc_config.return_value = Mock(threshold=1)
+
+        result = soilmet_scans_check(self.data, "value", self.flag_value)
+        expected = self.data.with_columns(
+            pl.Series([0, 0, 0, 0, 0])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_scans_all_below_threshold(self, mock_get_qc_config):
+        """ Test that flags applied to all values because SCANS all below threshold
+        """
+        mock_get_qc_config.return_value = Mock(threshold=1000.)
+
+        result = soilmet_scans_check(self.data, "value", self.flag_value)
+        expected = self.data.with_columns(
+            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_scans_all_at_threshold(self, mock_get_qc_config):
+        """ Test that no flags applied because SCANS exactly at threshold
+        """
+        mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
+        new_data = self.data.with_columns(
+            pl.Series([60., 60., 60., 60., 60.])
+            .alias("SCANS")
         )
 
-        result = range_qc(self.df, "TA")
-        self.assertIn("TA_QCFLAG", result.columns)
-        self.assertEqual(result["TA_QCFLAG"].to_list(), [qc_flag, 0, qc_flag])
+        result = soilmet_scans_check(new_data, "value", self.flag_value)
+        expected = new_data.with_columns(
+            pl.Series([0, 0, 0, 0, 0])
+            .alias("value_QCFLAG")
+        )
+        assert_frame_equal(result, expected)
 
-        
-class TestErrorCodesQC(unittest.TestCase):
+    @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
+    def test_no_scans_column(self, mock_get_qc_config):
+        """ Test error raised when 'SCANS' column is missing.
+        """
+        mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
+        with self.assertRaises(UserWarning):
+            battery_voltage_check(self.data.drop(["SCANS"]), "value", self.flag_value)
+
+
+class TestErrorCodesCheck(unittest.TestCase):
     """Test error_codes_qc function."""
+
     def setUp(self):
         """Set up a sample DataFrame for testing."""
         self.data = pl.DataFrame({
-            "BATTV": [12.0, 8999, 9.8, 10.2, 7999]
+            "value": [12.0, 8999, 9.8, 10.2, 7999],
         })
 
-    @patch('dritimeseriesprocessor.quality_control.checks.qc_config')
-    def test_error_code_qc(self, mock_qc_config):
-        """Test flag correctly raised fo error codes."""
-        mock_qc_tests = {
-            "ERROR_CODES": {
-                "id": 1 << 3
-                }
-            }
-        mock_qc_config.qc_tests = mock_qc_tests
-        
-        expected = pl.DataFrame({
-            "BATTV": [12.0, 8999, 9.8, 10.2, 7999],
-            "BATTV_QCFLAG": [0, 8, 0, 0, 8]
-        })
+        self.flag_value = 1
 
-        result = error_codes_qc(self.data, "BATTV")
 
+    def test_error_code_qc(self):
+        """Test flag correctly raised if values equal the set error codes.
+        """
+        expected = self.data.with_columns(
+            pl.Series([0, 1, 0, 0, 1])
+            .alias("value_QCFLAG")
+        )
+        result = error_codes_check(self.data, "value", self.flag_value)
         assert_frame_equal(expected, result)

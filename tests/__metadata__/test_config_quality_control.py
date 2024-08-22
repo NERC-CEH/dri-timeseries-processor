@@ -9,14 +9,16 @@ from dritimeseriesprocessor.__metadata__.config_quality_control import (
     get_qc_config,
 )
 
+
 class TestQCTest(unittest.TestCase):
     def test_valid_qc_test(self):
         """Test that a valid QCTest instance is created correctly."""
         qc_test = QCTest(test_name="Range test", description="Checks if the value falls within a specified range.",
-                         variables=["TA", "PRECIP"])
+                         variables=["TA", "PRECIP"], id=1)
         self.assertEqual(qc_test.test_name, "Range test")
         self.assertEqual(qc_test.description, "Checks if the value falls within a specified range.")
         self.assertEqual(qc_test.variables, ["TA", "PRECIP"])
+        self.assertEqual(qc_test.id, 1)
 
 
 class TestRangeThreshold(unittest.TestCase):
@@ -78,7 +80,7 @@ class TestGetQCConfig(unittest.TestCase):
 
         qc_test_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.qc_tests',
                               mock_qc_test)
-        
+
         mock_var_range_threshs = {
             "TA": {
                 "defaults": [
@@ -99,7 +101,7 @@ class TestGetQCConfig(unittest.TestCase):
         }
         var_range_patch = patch('dritimeseriesprocessor.__metadata__.config_quality_control.var_range_thresholds',
                                 mock_var_range_threshs)
-        
+
         self.patches = [var_range_patch, qc_test_patch]
 
         [p.start() for p in self.patches]
