@@ -11,7 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 # Map method IDs to function
-qc_test_map = {"BATTV": qc_checks.battery_voltage_qc, "RANGE": qc_checks.range_qc, "SCANS": qc_checks.soilmet_scans_qc}
+qc_test_map = {
+    "BATTV": qc_checks.battery_voltage_qc,
+    "RANGE": qc_checks.range_qc,
+    "SCANS": qc_checks.soilmet_scans_qc,
+    "ERROR_CODES": qc_checks.error_codes_qc,
+}
 
 
 def run_qc(df: pl.DataFrame) -> pl.DataFrame:
