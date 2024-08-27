@@ -49,4 +49,25 @@ def add(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> p
     return corrected
 
 
-preprocessing_corrections = {"MULTIPLY": multiply, "ADD": add}
+def power(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
+    """Applies a power correction to a specific column in the DataFrame based on a condition.
+
+    Args:
+        df: The input DataFrame.
+        config: A configuration object containing the correction parameters.
+        mask: The condition to apply for the correction. Default is an expression that defaults to True
+              so that expression happens on full DataFrame.
+
+    Returns:
+        The DataFrame with the applied correction.
+    """
+
+    def _power() -> pl.Expr:
+        return pl.col(config.VARIABLE).pow(config.CORRECTION_FACTOR)
+
+    corrected = df.with_columns(pl.when(mask).then(_power()).otherwise(pl.col(config.VARIABLE)))
+
+    return corrected
+
+
+preprocessing_corrections = {"MULTIPLY": multiply, "ADD": add, "POWER": power}
