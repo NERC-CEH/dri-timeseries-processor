@@ -6,14 +6,15 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 
-logging.basicConfig(level=logging.INFO)
+setup_logging()
 
-logger = logging.getLogger("dritimeseriesprocessor")
+logger = logging.getLogger(__name__)
 
 # Get S3 Client
 if "environment" not in os.environ:

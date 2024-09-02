@@ -151,10 +151,7 @@ def spike_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
         spikes = tst_spikes.get_column("d_no_skew").gt(spike_threshold * 2.0)
 
         df = df.with_columns(
-            pl.when(spikes)
-            .then(pl.col(qc_column).add(flag_id))
-            .otherwise(pl.col(qc_column))
-            .alias(qc_column)
+            pl.when(spikes).then(pl.col(qc_column).add(flag_id)).otherwise(pl.col(qc_column)).alias(qc_column)
         )
 
     return df
