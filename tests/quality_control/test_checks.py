@@ -370,7 +370,36 @@ class TestSpikeCheck(unittest.TestCase):
         assert_frame_equal(result, expected)
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
-    def test_range_qc_no_threshold(self, mock_get_qc_config):
+    def test_overriding_flags_first_and_last(self, mock_get_qc_config):
+        """The first and last value always "pass" the check, even if the value is actually a spike.
+         We want to make sure that the flag from a previously flagged spike value is not removed when that value
+         becomes first or last in the array
+         """
+        mock_get_qc_config.return_value = self.spike_thresholds
+
+        self.data = self.data.with_columns(
+            pl.Series([1., 20., 3., 4., 50., 6.])
+            .alias("value1")
+        )
+        result1 = spike_check(self.data, "value1", self.flag_value)
+        expected1 = result1.with_columns(
+            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
+            .alias("value1_QCFLAG")
+        )
+
+        # Slice the data so the flagged values are first and last place in the array
+        new_data = result1.slice(1, 4)
+        result2 = spike_check(new_data, "value1", self.flag_value)
+        expected2 = new_data.with_columns(
+            pl.Series([self.flag_value, 0, 0, self.flag_value])  # The flags should be maintained
+            .alias("value1_QCFLAG")
+        )
+
+        assert_frame_equal(result1, expected1)
+        assert_frame_equal(result2, expected2)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_spike_qc_no_threshold(self, mock_get_qc_config):
         """ Test error raised when no threshold is provided.
         """
         mock_get_qc_config.return_value = self.spike_thresholds
@@ -378,7 +407,7 @@ class TestSpikeCheck(unittest.TestCase):
             spike_check(self.data, "value3", self.flag_value)
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
-    def test_range_qc_no_default(self, mock_get_qc_config):
+    def test_spike_qc_no_default(self, mock_get_qc_config):
         """ Test error raised when no default is provided for values with no site specific thresholds.
         """
         spike_thresholds = self.spike_thresholds.copy()
