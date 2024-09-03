@@ -69,6 +69,52 @@ def column_threshold_check(
     return df
 
 
+def get_site_spike_threshold(site_id: str, variable: str, resolution: str) -> float:
+    """Get the site-specific spike threshold values for a given site, column and resolution.
+
+    Args:
+        site_id: Site ID for which spike threshold is needed
+        variable: The variable name for which spike threshold is needed
+        resolution: The temporal resolution for which spike threshold is needed
+
+    Returns:
+        Spike threshold
+    """
+    spike_thresholds = get_qc_config("spike_thresholds")
+    spike_threshold = spike_thresholds.get(variable)
+    if spike_threshold is None:
+        raise UserWarning(f"No {variable} spike thresholds provided.")
+
+    # Get the default values for the given resolution
+    default_spike_threshold_value = next(
+        (
+            spike_thresh
+            for spike_thresh in spike_threshold.defaults
+            if spike_thresh.resolutions is None or resolution in spike_thresh.resolutions
+        ),
+        None,
+    )
+
+    # Get the site specific values for the given site and resolution, defaulting to default values if not found
+    if spike_threshold.sites:
+        spike_threshold_value = next(
+            (
+                spike_thresh
+                for spike_thresh in spike_threshold.sites
+                if spike_thresh.site_id == site_id
+                and (spike_thresh.resolutions is None or resolution in spike_thresh.resolutions)
+            ),
+            default_spike_threshold_value,
+        )
+    else:
+        spike_threshold_value = default_spike_threshold_value
+
+    if spike_threshold_value is None:
+        raise ValueError(f"No spike threshold set for {variable} spike test")
+
+    return spike_threshold_value.threshold
+
+
 def get_site_range_values(site_id: str, variable: str, resolution: str) -> tuple[float, float]:
     """Get the site-specific minimum and maximum values for range check for a given site, column and resolution.
 

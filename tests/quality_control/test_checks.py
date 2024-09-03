@@ -5,7 +5,7 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.quality_control.checks import (battery_voltage_check, error_codes_check, range_check,
-                                                           soilmet_scans_check)
+                                                           soilmet_scans_check, spike_check)
 
 
 class TestBatteryVoltageCheck(unittest.TestCase):
@@ -280,3 +280,139 @@ class TestErrorCodesCheck(unittest.TestCase):
         )
         result = error_codes_check(self.data, "value", self.flag_value)
         assert_frame_equal(expected, result)
+
+
+class TestSpikeCheck(unittest.TestCase):
+    def setUp(self):
+        self.data = pl.DataFrame({
+            'SITE_ID': ['site1'] * 6,
+            'value1': [1., 2., 3., 4., 5., 6.],
+            'value2': [100., 105., 110., 115., 120., 125.],
+        })
+
+        self.spike_thresholds = {
+            "value1": Mock(
+                defaults=[
+                    Mock(
+                        threshold=10.,
+                        resolutions=["PT30M"]
+                    )
+                ],
+                sites=[]
+            ),
+            "value2": Mock(
+                defaults=[
+                    Mock(
+                        threshold=20.,
+                        resolutions=["PT30M"]
+                    )
+                ],
+                sites=[]
+            ),
+        }
+
+        self.flag_value = 1
+
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_basic_spike(self, mock_get_qc_config):
+        """ Test that the spike check returns expected results for a simple spike in the data
+        """
+        mock_get_qc_config.return_value = self.spike_thresholds
+
+        self.data = self.data.with_columns(
+            pl.Series([1., 2., 3., 40., 5., 6.])
+            .alias("value1")
+        )
+
+        result = spike_check(self.data, "value1", self.flag_value)
+
+        expected = self.data.with_columns(
+            pl.Series([0, 0, 0, self.flag_value, 0, 0])
+            .alias("value1_QCFLAG")
+        )
+
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_no_spike(self, mock_get_qc_config):
+        """ Test that no flags are added for data with no spike
+        """
+        mock_get_qc_config.return_value = self.spike_thresholds
+
+        result = spike_check(self.data, "value1", self.flag_value)
+
+        expected = self.data.with_columns(
+            pl.Series([0, 0, 0, 0, 0, 0])
+            .alias("value1_QCFLAG")
+        )
+
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_large_spike(self, mock_get_qc_config):
+        """ Large spikes can cause the values around the spike to be flagged, if method not working correctly.
+        Check this is not the case here.
+        """
+        mock_get_qc_config.return_value = self.spike_thresholds
+        self.data = self.data.with_columns(
+            pl.Series([1., 9999., 3., 4., 999999999., 6.])
+            .alias("value1")
+        )
+
+        result = spike_check(self.data, "value1", self.flag_value)
+
+        expected = self.data.with_columns(
+            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
+            .alias("value1_QCFLAG")
+        )
+
+        assert_frame_equal(result, expected)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_overriding_flags_first_and_last(self, mock_get_qc_config):
+        """The first and last value always "pass" the check, even if the value is actually a spike.
+         We want to make sure that the flag from a previously flagged spike value is not removed when that value
+         becomes first or last in the array
+         """
+        mock_get_qc_config.return_value = self.spike_thresholds
+
+        self.data = self.data.with_columns(
+            pl.Series([1., 20., 3., 4., 50., 6.])
+            .alias("value1")
+        )
+        result1 = spike_check(self.data, "value1", self.flag_value)
+        expected1 = result1.with_columns(
+            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
+            .alias("value1_QCFLAG")
+        )
+
+        # Slice the data so the flagged values are first and last place in the array
+        new_data = result1.slice(1, 4)
+        result2 = spike_check(new_data, "value1", self.flag_value)
+        expected2 = new_data.with_columns(
+            pl.Series([self.flag_value, 0, 0, self.flag_value])  # The flags should be maintained
+            .alias("value1_QCFLAG")
+        )
+
+        assert_frame_equal(result1, expected1)
+        assert_frame_equal(result2, expected2)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_spike_qc_no_threshold(self, mock_get_qc_config):
+        """ Test error raised when no threshold is provided.
+        """
+        mock_get_qc_config.return_value = self.spike_thresholds
+        with self.assertRaises(UserWarning):
+            spike_check(self.data, "value3", self.flag_value)
+
+    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
+    def test_spike_qc_no_default(self, mock_get_qc_config):
+        """ Test error raised when no default is provided for values with no site specific thresholds.
+        """
+        spike_thresholds = self.spike_thresholds.copy()
+        spike_thresholds["value1"].defaults = []
+        mock_get_qc_config.return_value = spike_thresholds
+
+        with self.assertRaises(ValueError):
+            spike_check(self.data, "value1", self.flag_value)
