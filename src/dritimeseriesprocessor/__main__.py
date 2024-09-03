@@ -35,8 +35,12 @@ data = data_manager.query_by_date_range(
     columns=["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"],
 )
 
+logger.info(f"Retrieved data from s3: {data.shape}")
+
 # Preprocessing
 preprocessed_data = run_preprocess(data)
+
+logger.info(f"Ran preprocessor successfully, shape: {preprocessed_data.shape}")
 
 # Quality control
 # dummy some data that will force some qc checks to run
@@ -48,6 +52,9 @@ preprocessed_data = preprocessed_data.with_columns(
         pl.Series(i for i in range(len(preprocessed_data))).alias("SCANS"),
     ]
 )
+
+logger.info(f"Added dummy data to preprocessed data, shape: {preprocessed_data.shape}")
+
 qcd_data = run_quality_control(preprocessed_data)
 
 # show first 100 rows to show how qc flags have been applied
