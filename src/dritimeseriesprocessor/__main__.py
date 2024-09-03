@@ -40,7 +40,7 @@ logger.info(f"Retrieved data from s3: {data.shape}")
 # Preprocessing
 preprocessed_data = run_preprocess(data)
 
-logger.info(f"Ran preprocessor sucessfully, shape: {preprocessed_data.shape}")
+logger.info(f"Ran preprocessor successfully, shape: {preprocessed_data.shape}")
 
 # Quality control
 # dummy some data that will force some qc checks to run
