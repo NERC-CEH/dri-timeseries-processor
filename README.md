@@ -94,3 +94,57 @@ Do nothing! When a test is deprecated, that ID is "retired" and cannot be reused
 If you want to create a new test with a clashing name, you can add a "_DEPRECATED" suffix to the deprecated test name.
 
 Make sure to also remove the test from the `qc_test_map` in [quality_config.py](./src/dritimeseriesprocessor/quality_control.py)
+
+# Making Gaps in the Parquet Data
+
+To test the QC behaviour when there is missing data, and to test the infilling processes, the test data has been duplicated and had sections of data removed. This located at [./parquet-data/cosmos-with-gaps](./parquet-data/cosmos-with-gaps) and is only done for PRECIP_1MIN_2024_LOOPED for now.
+
+## Script to Make the Gaps
+
+There is a script at [./parquet-data/make-gaps-dataset.sh](./parquet-data/make-gaps-dataset.sh) which is used to create the dataset with an option to purge it completely and rebuild. Is has been run already and the files committed, but is useful for rebuilding the files if needed. It has an element of random removal to it, so the parquet files will always be different.
+
+## Types of Gap Creation
+
+The gaps were generated using file removal and `duckdb` manipulation and should be relatively repeatable:
+
+### File Removal
+
+To create a full day gap some files were deleted:
+
+* 2024-01/2024-01-18.parquet
+* 2024-02/2024-02-03.parquet
+
+### Gaps That Cross Into a New Day
+
+A gap was created from 2024-01-30 23:00 -> 2024-01-31 00:59 inclusive. Because `parquet` is immutable, the rows outside of the excluded times were copied into a new file, then overwriting the original with the new file:
+
+```sql
+-- Run from inside of duckdb
+COPY (
+    SELECT *
+    FROM READ_PARQUET('2024-01-30.parquet')
+    WHERE strftime('%H:%M', "time") < '23:00'
+) TO '2024-01-30.parquet.new' (FORMAT PARQUET);
+```
+
+```shell
+# Run from command line terminal
+mv 2024-01-30.parquet.new 2024-01-30.parquet
+```
+
+### Random Selection
+
+For more random gaps, `duckdb` allows for a random sample size to be selected.
+
+```SQL
+-- Run from inside of duckdb
+COPY (
+    SELECT * FROM READ_PARQUET('2024-01-30.parquet') TABLESAMPLE reservoir(90%)
+) TO '2024-01-30.parquet.new' (FORMAT PARQUET);
+```
+
+Then the file may be overwritten
+```shell
+# Run from command line terminal
+mv 2024-01-30.parquet.new 2024-01-30.parquet
+```
