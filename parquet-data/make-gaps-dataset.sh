@@ -82,6 +82,6 @@ mv "${target}.new" $target
 
 echo "Cleared 2024-01-31 before 01:00"
 
-for file in ./**/*.parquet; do
-    rm_rand_percent_of_rows $file 10
-done
+# for file in ./**/*.parquet; do
+#     rm_rand_percent_of_rows $file 10
+# done
