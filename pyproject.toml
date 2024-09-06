@@ -47,7 +47,7 @@ include = ["dritimeseriesprocessor*"]
 "*" = ["*.*"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=dritimeseriesprocessor"
+addopts = "--cov=dritimeseriesprocessor --cov=databuilder"
 markers = ["slow: Marks slow tests"]
 
 filterwarnings = [
