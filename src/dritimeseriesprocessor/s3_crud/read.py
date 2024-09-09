@@ -43,11 +43,9 @@ class DuckDbParquetReader(ParquetReaderInterface):
         # Install httpfs to get support for object storage using the S3 API
         # https://duckdb.org/docs/extensions/httpfs/overview.html
         # Create secret for S3 authentication
-        # FW-242 http_keep_alive - forces a new connection for each query
         conn.execute("""
             INSTALL httpfs;
             LOAD httpfs;
-            SET http_keep_alive = false;
         """)
 
         if app_config.environment == "local":
