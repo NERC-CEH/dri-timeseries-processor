@@ -43,9 +43,11 @@ class DuckDbParquetReader(ParquetReaderInterface):
         # Install httpfs to get support for object storage using the S3 API
         # https://duckdb.org/docs/extensions/httpfs/overview.html
         # Create secret for S3 authentication
+        # force_download - fixes the "missing magic bytes at end of file" error by forcing upfront download of the file before processing
         conn.execute("""
             INSTALL httpfs;
             LOAD httpfs;
+            SET force_download = true;
         """)
 
         if app_config.environment == "local":
