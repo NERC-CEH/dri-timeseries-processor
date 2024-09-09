@@ -20,8 +20,6 @@ def set_random_cells_to_null(target: os.PathLike, percent: int, exclude: List[st
         exclude: A list of columns to exclude.
     """
 
-    temp_file = f"{target}.new"
-
     with duckdb.connect() as con:
         # Fetch column names for the table
         columns = con.execute(f"DESCRIBE SELECT * FROM READ_PARQUET('{target}');").fetchall()
@@ -38,44 +36,40 @@ def set_random_cells_to_null(target: os.PathLike, percent: int, exclude: List[st
 
         modified_data = con.execute(query).fetchdf()
 
-    modified_data.to_parquet(f"{target}.new")
-
-    os.rename(temp_file, target)
+    modified_data.to_parquet(target)
 
 
 def clear_percentage_of_rows(target: os.PathLike, percent: int) -> None:
-    temp_file = f"{target}.new"
-
     with duckdb.connect() as con:
         query = f"SELECT * FROM READ_PARQUET('{target}') TABLESAMPLE reservoir({100 - percent}%);"
 
         modified_data = con.execute(query).fetchdf()
 
-    modified_data.to_parquet(f"{target}.new")
-
-    with duckdb.connect() as con:
-        print(con.execute(f"SELECT * FROM READ_PARQUET('{target}');").fetchdf())
-        print(con.execute(f"SELECT * FROM READ_PARQUET('{temp_file}');").fetchdf())
+    modified_data.to_parquet(target)
 
 
-def clear_rows_by_time(target: os.PathLike, date_time: datetime, operator: Operators, time_fmt: str = "%H:%M") -> None:
-    """Clears all rows relative to a given date or time.
+def filter_by_time(target: os.PathLike, date_time: datetime, operator: Operators, time_fmt: str = "%H:%M") -> None:
+    """Selects rows relative to a given date or time.
 
     The time format is '%H:%M' by default and expects the Operators enum
     to specify the operation.
 
     Args:
         target: The target parquet file
-        date_time: The datetime object specifying the clearing point
-        operator: The comparison operation to apply (>, >=, <, <=, ==)
-        time_fmt: The datetime format to clear with.
+        date_time: The datetime object specifying the selection point
+        operator: The comparison operation to apply [>, >=, <, <=, ==]
+            ">" overwrites the parquet file with only values AFTER the
+            specified time
+        time_fmt: The datetime format.
     """
 
     query = f"SELECT * FROM READ_PARQUET('{target}')"
-    query += f" WHERE strftime('{time_fmt}', \"{datetime}\") {operator} {date_time.strftime(time_fmt)}"
+    query += f" WHERE strftime('{time_fmt}', \"time\") {operator} '{date_time.strftime(time_fmt)}'"
 
     with duckdb.connect() as con:
-        con.execute(query)
+        modified = con.execute(query).fetchdf()
+
+    modified.to_parquet(f"{target}")
 
 
 def _create_directory(dst: os.PathLike, purge: bool = False) -> None:
@@ -114,6 +108,19 @@ def _copy_files(dst: os.PathLike, src: Optional[os.PathLike] = None) -> None:
         src = Path(src)
 
     shutil.copytree(src, dst, dirs_exist_ok=True)
+
+
+def initialse_directory(dst: os.PathLike, src: Optional[os.PathLike] = None, purge: bool = False) -> None:
+    """Initializes a directory and populates it with Parquet files
+
+    Args:
+        dst: The destination directory.
+        src: The source directory, defaults to the data directory
+        urge: Purges files if the directory already exists
+    """
+
+    _create_directory(dst, purge)
+    _copy_files(dst, src)
 
 
 def main() -> None:

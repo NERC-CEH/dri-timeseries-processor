@@ -15,6 +15,7 @@ dependencies = [
     "pydantic>=2.8.2",
     "isodate",
     "duckdb",
+    "pandas",
 ]
 name = "dritimeseriesprocessor"
 dynamic = ["version"]
@@ -47,7 +48,7 @@ include = ["dritimeseriesprocessor*"]
 "*" = ["*.*"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=dritimeseriesprocessor --cov=databuilder"
+addopts = "--cov=dritimeseriesprocessor --cov=databuilder --cov-report=term-missing"
 markers = ["slow: Marks slow tests"]
 
 filterwarnings = [
