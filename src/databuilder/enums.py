@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class Operators(StrEnum):
+class Operator(StrEnum):
     """List of valid operators"""
 
     GREATER_THAN = ">"

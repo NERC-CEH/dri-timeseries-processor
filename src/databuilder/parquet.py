@@ -1,75 +1,129 @@
+import datetime
 import os
 import shutil
-from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
 import duckdb
+import numpy as np
+import pandas as pd
 
-from databuilder.enums import Operators
-
-
-def set_random_cells_to_null(target: os.PathLike, percent: int, exclude: List[str]) -> None:
-    """Sets random cells to NULL based of a percentage probability
-
-    The randomness is set on each column separately. It does not clear full rows.
-
-    Args:
-        target: Path to the target parquet file.
-        percent: The percentage of rows to change for each variable
-        exclude: A list of columns to exclude.
-    """
-
-    with duckdb.connect() as con:
-        # Fetch column names for the table
-        columns = con.execute(f"DESCRIBE SELECT * FROM READ_PARQUET('{target}');").fetchall()
-
-        # # Construct the SQL query
-        query = "SELECT "
-        query += ", ".join(
-            [
-                f"CASE WHEN RANDOM() < 0.2 THEN NULL ELSE {col[0]} END AS {col[0]}" if col[0] not in exclude else col[0]
-                for col in columns
-            ]
-        )
-        query += f" FROM read_parquet('{target}')"
-
-        modified_data = con.execute(query).fetchdf()
-
-    modified_data.to_parquet(target)
+from databuilder.enums import Operator
 
 
-def clear_percentage_of_rows(target: os.PathLike, percent: int) -> None:
-    with duckdb.connect() as con:
-        query = f"SELECT * FROM READ_PARQUET('{target}') TABLESAMPLE reservoir({100 - percent}%);"
+class ParquetBuilder:
+    """Builder class for manipulating a parquet file"""
 
-        modified_data = con.execute(query).fetchdf()
+    @property
+    def target(self) -> Path:
+        """The target parquet file"""
+        return self._target
 
-    modified_data.to_parquet(target)
+    @target.setter
+    def target(self, path: os.PathLike | str) -> None:
+        """Sets the target parameter"""
 
+        if not isinstance(path, Path):
+            path = Path(path)
 
-def filter_by_time(target: os.PathLike, date_time: datetime, operator: Operators, time_fmt: str = "%H:%M") -> None:
-    """Selects rows relative to a given date or time.
+        if not path.exists():
+            raise FileNotFoundError(f"Parquet file: '{path}' does not exist")
 
-    The time format is '%H:%M' by default and expects the Operators enum
-    to specify the operation.
+        self._target = path
 
-    Args:
-        target: The target parquet file
-        date_time: The datetime object specifying the selection point
-        operator: The comparison operation to apply [>, >=, <, <=, ==]
-            ">" overwrites the parquet file with only values AFTER the
-            specified time
-        time_fmt: The datetime format.
-    """
+    _output: os.PathLike
+    """The output destination, defaults to the target"""
 
-    query = f"SELECT * FROM READ_PARQUET('{target}')"
-    query += f" WHERE strftime('{time_fmt}', \"time\") {operator} '{date_time.strftime(time_fmt)}'"
+    _dataframe: Optional[pd.DataFrame] = None
+    """The internal dataframe that work is done on"""
 
-    with duckdb.connect() as con:
-        modified = con.execute(query).fetchdf()
+    def __init__(self, target: os.PathLike | str, output: Optional[os.PathLike | str] = None):
+        """Initializes the instance
 
-    modified.to_parquet(f"{target}")
+        Args:
+            target: The target parquet file
+            output: The output file, defaults to the target
+        """
+
+        self.target = target
+
+        if output:
+            if not isinstance(output, Path):
+                output = Path(output)
+            self._output = output
+        else:
+            self._output = self.target
+
+        self._load_data()
+
+    def _load_data(self) -> None:
+        """Loads the data into a dataframe
+
+        Args:
+            src: The source file.
+        """
+        query = f"SELECT * FROM READ_PARQUET('{self.target}')"
+        with duckdb.connect() as con:
+            self._dataframe = con.execute(query).fetch_df()
+
+    def reset(self) -> None:
+        """Resets the builder"""
+
+        self._dataframe = None
+
+    def set_random_cells_to_null(self, percent: int | float, exclude: Optional[List[str]] = None) -> None:
+        """Sets random cells to NULL based of a percentage probability
+
+        The randomness is set on each column separately. It does not clear full rows.
+
+        Args:
+            percent: The percentage of rows to change for each variable
+            exclude: A list of columns to exclude.
+        """
+
+        if not isinstance(percent, (int, float)):
+            percent = float(percent)
+
+        if percent < 0 or percent > 100:
+            raise ValueError(f"'percent' must be from 0 - 100, not {percent}")
+        target_columns = [col for col in self._dataframe.columns if col not in exclude]
+
+        for col in target_columns:
+            self._dataframe.loc[self._dataframe.sample(frac=percent / 100).index, col] = np.nan
+
+    def clear_percentage_of_rows(self, percent: int | float) -> None:
+        """Removes a given percentage of rows randomly
+
+        Args:
+            percent: The percentage of rows to remove from 0 - 100
+        """
+
+        if not isinstance(percent, (int, float)):
+            percent = float(percent)
+
+        if percent < 0 or percent > 100:
+            raise ValueError(f"'percent' must be from 0 - 100, not {percent}")
+
+        self._dataframe = self._dataframe.drop(self._dataframe.sample(frac=percent / 100).index)
+
+    def filter_by_time(self, time: datetime.time, operator: Operator, datetime_col: str = "time") -> None:
+        """Selects rows relative to a given date or time.
+
+        Args:
+            time: The datetime object specifying the selection point
+            operator: The comparison operation to apply [>, >=, <, <=, ==]
+                ">" overwrites the parquet file with only values AFTER the
+                specified time
+            datetime_col: The column name where the datetime is found
+        """
+
+        if not isinstance(operator, Operator):
+            raise TypeError(f"'operator' must be an Operator, not {type(operator)}")
+
+        if not isinstance(time, datetime.time):
+            raise TypeError(f"'time' must be a datetime.time, not {type(time)}")
+
+        self._dataframe = self._dataframe.query(f"{datetime_col}.dt.time {operator} @pd.Timestamp('{time}').time()")
 
 
 def _create_directory(dst: os.PathLike, purge: bool = False) -> None:
@@ -121,14 +175,3 @@ def initialse_directory(dst: os.PathLike, src: Optional[os.PathLike] = None, pur
 
     _create_directory(dst, purge)
     _copy_files(dst, src)
-
-
-def main() -> None:
-    table = Path(__file__).parent / "cosmos-with-gaps" / "PRECIP_1MIN_2024_LOOPED" / "2024-01" / "2024-01-30.parquet"
-    excluded_columns = ["time", "SITE_ID", "RECORD"]
-    set_random_cells_to_null(table, 0, excluded_columns)
-    clear_percentage_of_rows(table, 90)
-
-
-if __name__ == "__main__":
-    main()
