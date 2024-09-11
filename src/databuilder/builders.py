@@ -2,14 +2,12 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
 from databuilder.enums import Operator
-
-# TODO: Implement builder prefabs / director
 
 
 class BaseBuilder(ABC):
@@ -21,16 +19,36 @@ class BaseBuilder(ABC):
         return self._target
 
     @target.setter
-    def target(self, path: os.PathLike | str) -> None:
-        """Sets the target parameter"""
+    def target(self, path: Tuple[os.PathLike | str] | os.PathLike | str) -> None:
+        """Sets the target parameter
 
-        if not isinstance(path, Path):
-            path = Path(path)
+        Args:
+            path: Path to set the target to. If a single value is given, the target
+            will be set and the _output set to the same value. If a tuple of two elements
+            is given, the target will be set as the same element, and the _output the
+            second"""
 
-        if not path.exists():
+        output = None
+
+        if isinstance(path, tuple):
+            target, output = path
+        else:
+            target = path
+
+        if not isinstance(target, Path):
+            target = Path(target)
+
+        if not target.exists():
             raise FileNotFoundError(f"Parquet file: '{path}' does not exist")
 
-        self._target = path
+        if not output:
+            self._output = target
+        else:
+            if not isinstance(output, Path):
+                output = Path(output)
+            self._output = output
+
+        self._target = target
         self._load_data()
 
     _output: os.PathLike
@@ -47,14 +65,7 @@ class BaseBuilder(ABC):
             output: The output file, defaults to the target
         """
 
-        self.target = target
-
-        if output:
-            if not isinstance(output, Path):
-                output = Path(output)
-            self._output = output
-        else:
-            self._output = self.target
+        self.target = (target, output)
 
     @abstractmethod
     def _load_data(self) -> None:
