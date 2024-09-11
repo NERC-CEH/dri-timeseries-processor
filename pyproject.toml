@@ -42,7 +42,7 @@ version = { attr = "dritimeseriesprocessor.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["dritimeseriesprocessor*"]
+include = ["dritimeseriesprocessor*", "databuilder"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
