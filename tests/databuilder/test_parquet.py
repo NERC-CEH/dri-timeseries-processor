@@ -1,4 +1,6 @@
 import unittest
+from unittest import mock
+from unittest.mock import patch
 from pathlib import Path
 from databuilder.builders import ParquetBuilder
 from databuilder import utils
@@ -319,3 +321,97 @@ class TestBuilderWriting(DataCase):
             builder.write_output()
 
 
+class TestBuilderInvocationMethod(DataCase):
+
+    def setUp(self):
+        self.dest = TemporaryDirectory()
+        self.test_data = Path(self.dest.name) / "out-data"
+        utils.initialse_directory(self.test_data)
+        
+        self.target = self.test_data / "PRECIP_1MIN_2024_LOOPED"/"2024-01/2024-01-30.parquet"
+        self.builder = ParquetBuilder(self.target)
+
+    def tearDown(self):
+        self.dest.cleanup()
+
+    @parameterized.expand([
+        [10, None, None, None],
+        [None, 30, None, None],
+        [10, 45, datetime.time(11), None],
+        [None, None, None, datetime.time(9,32)],
+        [15.5, 79, datetime.time(18, 42), datetime.time(9,32)]
+        ])
+    @patch('databuilder.builders.ParquetBuilder.filter_by_time')
+    @patch('databuilder.builders.ParquetBuilder.set_random_cells_to_null')
+    @patch('databuilder.builders.ParquetBuilder.clear_percentage_of_rows')
+    def test_build_methods_called(self, p_row, p_cell, b_time, a_time, row_mock, cell_mock, time_mock):
+        """Tests that the build methods are called"""
+        builder = ParquetBuilder(self.target)
+
+        builder.build_all(p_row, p_cell, b_time, a_time)
+
+        if p_row:
+            row_mock.assert_called_once_with(p_row)
+        else:
+            row_mock.assert_not_called()
+        
+        if p_cell:
+            cell_mock.assert_called_once_with(p_cell, exclude=None)
+        else:
+            cell_mock.assert_not_called()
+        
+        if not b_time and not a_time:
+            time_mock.assert_not_called()
+        elif b_time and a_time:
+            time_mock.assert_has_calls(
+                [
+                    mock.call(b_time, Operator.GREATER_THAN_EQUAL),
+                    mock.call(a_time, Operator.LESS_THAN_EQUAL)
+                ]
+            ) 
+        elif b_time:
+            time_mock.assert_called_with(b_time, Operator.GREATER_THAN_EQUAL)
+        elif a_time:
+            time_mock.assert_called_with(a_time, Operator.LESS_THAN_EQUAL)
+
+    @parameterized.expand([
+        [10, None, None, None],
+        [None, 30, None, None],
+        [10, 45, datetime.time(11), None],
+        [None, None, None, datetime.time(9,32)],
+        [15.5, 79, datetime.time(18, 42), datetime.time(9,32)]
+        ])
+    @patch('databuilder.builders.ParquetBuilder.filter_by_time')
+    @patch('databuilder.builders.ParquetBuilder.set_random_cells_to_null')
+    @patch('databuilder.builders.ParquetBuilder.clear_percentage_of_rows')
+    def test_build_methods_called_protected_columns(self, p_row, p_cell, b_time, a_time, row_mock, cell_mock, time_mock):
+        """Tests that the build methods are called"""
+        protected_columns = ["time", "SITE_ID"]
+
+        builder = ParquetBuilder(self.target)
+
+        builder.build_all(p_row, p_cell, b_time, a_time, protected_columns=protected_columns)
+
+        if p_row:
+            row_mock.assert_called_once_with(p_row)
+        else:
+            row_mock.assert_not_called()
+        
+        if p_cell:
+            cell_mock.assert_called_once_with(p_cell, exclude=protected_columns)
+        else:
+            cell_mock.assert_not_called()
+        
+        if not b_time and not a_time:
+            time_mock.assert_not_called()
+        elif b_time and a_time:
+            time_mock.assert_has_calls(
+                [
+                    mock.call(b_time, Operator.GREATER_THAN_EQUAL),
+                    mock.call(a_time, Operator.LESS_THAN_EQUAL)
+                ]
+            ) 
+        elif b_time:
+            time_mock.assert_called_with(b_time, Operator.GREATER_THAN_EQUAL)
+        elif a_time:
+            time_mock.assert_called_with(a_time, Operator.LESS_THAN_EQUAL)

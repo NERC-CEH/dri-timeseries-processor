@@ -142,9 +142,28 @@ class BaseBuilder(ABC):
         cell_removal_percent: Optional[int | float] = None,
         clear_before_time: Optional[datetime.time] = None,
         clear_after_time: Optional[datetime.time] = None,
+        protected_columns: Optional[List[str]] = None,
     ) -> None:
-        """Builds using all methods using the provided values"""
-        pass
+        """Builds using all methods using the provided values
+
+        Args:
+            row_removal_percent: Percentage of rows to remove.
+            cell_removal_percent: Percentage of cells to remove
+            clear_before_time: Clears cells before the given time '>=' remains
+            clear_after_time: Clears cells after the given time '<=' remains
+            protected_columns: Columns to protect from nulling."""
+
+        if row_removal_percent:
+            self.clear_percentage_of_rows(row_removal_percent)
+
+        if cell_removal_percent:
+            self.set_random_cells_to_null(cell_removal_percent, exclude=protected_columns)
+
+        if clear_before_time:
+            self.filter_by_time(clear_before_time, Operator.GREATER_THAN_EQUAL)
+
+        if clear_after_time:
+            self.filter_by_time(clear_after_time, Operator.LESS_THAN_EQUAL)
 
 
 class ParquetBuilder(BaseBuilder):
