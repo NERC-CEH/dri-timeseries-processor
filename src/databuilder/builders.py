@@ -1,16 +1,16 @@
 import datetime
 import os
-import shutil
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional
 
-import duckdb
 import numpy as np
 import pandas as pd
-from abc import ABC, abstractmethod
+
 from databuilder.enums import Operator
 
 # TODO: Implement builder prefabs / director
+
 
 class BaseBuilder(ABC):
     """Base builder class for manipulating a dataframe"""
@@ -125,13 +125,13 @@ class BaseBuilder(ABC):
         self._dataframe = self._dataframe.query(f"{datetime_col}.dt.time {operator} @pd.Timestamp('{time}').time()")
 
     @abstractmethod
-    def write_output(self, new_dir_ok: bool=False) -> None:
+    def write_output(self, new_dir_ok: bool = False) -> None:
         """Writes the result from the builder
-        
+
         Args:
             new_dir_ok: Allows creation in non-existing directory if True,
             raises an exception if False
-            
+
         Raises:
             NotADirectoryError: If directory not exists and `new_dir_ok`=False
         """
@@ -146,6 +146,7 @@ class BaseBuilder(ABC):
         """Builds using all methods using the provided values"""
         pass
 
+
 class ParquetBuilder(BaseBuilder):
     """Concrete implementation of the BaseBuilder class for manipulating
     a parquet file"""
@@ -157,71 +158,26 @@ class ParquetBuilder(BaseBuilder):
             src: The source file.
         """
         self._dataframe = pd.read_parquet(self.target)
-    
-    def write_output(self, new_dir_ok: bool=False) -> None:
+
+    def write_output(self, new_dir_ok: bool = False) -> None:
         """Writes the result from the builder
-        
+
         Args:
             new_dir_ok: Allows creation in non-existing directory if True,
             raises an exception if False
-            
+
         Raises:
             NotADirectoryError: If directory not exists and `new_dir_ok`=False
         """
 
         if not self._output.parent.exists():
             if not new_dir_ok:
-                raise NotADirectoryError(f"Can't write parquet, output directory doesn't exist and the `new_dir_ok` flag is False: '{self._output}'")
+                raise NotADirectoryError(
+                    (
+                        "Can't write parquet, output directory doesn't exist and",
+                        f"the `new_dir_ok` flag is False: '{self._output}'",
+                    )
+                )
             os.makedirs(self._output.parent)
-        
+
         self._dataframe.to_parquet(self._output)
-
-def _create_directory(dst: os.PathLike, purge: bool = False) -> None:
-    """Creates a directory with an option to clear the contents
-
-    Args:
-        dst: The directory path
-        purge: Purges files if the directory already exists
-    """
-
-    if not isinstance(dst, Path):
-        dst = Path(dst)
-
-    if dst.exists() and purge:
-        shutil.rmtree(dst)
-
-    if not dst.exists():
-        os.makedirs(dst)
-
-
-def _copy_files(dst: os.PathLike, src: Optional[os.PathLike] = None) -> None:
-    """Copies files from a directory
-
-    Args:
-        dst: The destination directory.
-        src: The source directory, defaults to the data directory
-    """
-
-    if not isinstance(dst, Path):
-        dst = Path(dst)
-
-    if not src:
-        src = Path(__file__).parents[2] / "parquet-data" / "cosmos"
-
-    if not isinstance(src, Path):
-        src = Path(src)
-
-    shutil.copytree(src, dst, dirs_exist_ok=True)
-
-
-def initialse_directory(dst: os.PathLike, src: Optional[os.PathLike] = None, purge: bool = False) -> None:
-    """Initializes a directory and populates it with Parquet files
-
-    Args:
-        dst: The destination directory.
-        src: The source directory, defaults to the data directory
-        urge: Purges files if the directory already exists
-    """
-
-    _create_directory(dst, purge)
-    _copy_files(dst, src)
