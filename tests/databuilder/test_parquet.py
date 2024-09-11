@@ -332,3 +332,73 @@ class TestPercentageCellRemoval(DataCase):
         for col in cols:
             size_after = self.builder._dataframe[col].isna().sum()
             self.assertGreaterEqual(size_after, expected)
+
+class TestBuilderWriting(DataCase):
+
+    def setUp(self):
+        self.dest = TemporaryDirectory()
+        self.test_data = Path(self.dest.name) / "out-data"
+        parquet.initialse_directory(self.test_data)
+        
+        self.target = self.test_data / "PRECIP_1MIN_2024_LOOPED"/"2024-01/2024-01-30.parquet"
+        self.output = self.test_data / "new-file.parquet"
+        self.output_new_dir = self.test_data / "a" / "new" / "file.parquet"
+        self.builder = parquet.ParquetBuilder(self.target)
+
+    def tearDown(self):
+        self.dest.cleanup()
+
+    def test_output_written(self):
+        """Tests that the builder output is written to file"""
+
+        builder = self.builder
+        original_df = builder._dataframe.copy()
+
+        builder.clear_percentage_of_rows(50)
+
+        builder.write_output()
+
+        output_df = pd.read_parquet(builder._output)
+
+        self.assertFalse(original_df.equals(output_df))
+
+    def test_output_written_different_from_target_dir_exists(self):
+        """Tests that output is written to an existing directory but different filename"""
+        output = self.output
+        builder = parquet.ParquetBuilder(self.target, output)
+
+        self.assertFalse(output.exists(), "Output file should not exist at test start.")
+        builder.write_output()
+        self.assertTrue(output.exists())
+
+        new_df = pd.read_parquet(output)
+
+        self.assertTrue(builder._dataframe.equals(new_df))
+
+    def test_output_written_to_non_existing_directory_ok(self):
+        """Tests that output writes suceessfully to non-existing directory
+        if the `new_dir_ok` fkag is set as True"""
+        output = self.output_new_dir
+        builder = parquet.ParquetBuilder(self.target, output)
+
+        self.assertFalse(output.exists(), "Output file should not exist at test start.")
+        self.assertFalse(output.parent.is_dir(), "Output directory should not exist")
+
+        builder.write_output(new_dir_ok=True)
+        self.assertTrue(output.exists())
+
+        new_df = pd.read_parquet(output)
+
+        self.assertTrue(builder._dataframe.equals(new_df))
+    
+    def test_output_written_to_non_existing_directory_error(self):
+        """Tests error is raised if output directory doesn't exist
+        and if the `new_dir_ok` fkag is set as False"""
+
+        output = self.output_new_dir
+        builder = parquet.ParquetBuilder(self.target, output)
+
+        with self.assertRaises(NotADirectoryError):
+            builder.write_output()
+
+

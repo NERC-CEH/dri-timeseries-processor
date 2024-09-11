@@ -7,12 +7,13 @@ from typing import List, Optional
 import duckdb
 import numpy as np
 import pandas as pd
-
+from abc import ABC, abstractmethod
 from databuilder.enums import Operator
 
+# TODO: Implement builder prefabs / director
 
-class ParquetBuilder:
-    """Builder class for manipulating a parquet file"""
+class BaseBuilder(ABC):
+    """Base builder class for manipulating a dataframe"""
 
     @property
     def target(self) -> Path:
@@ -56,15 +57,13 @@ class ParquetBuilder:
 
         self._load_data()
 
+    @abstractmethod
     def _load_data(self) -> None:
         """Loads the data into a dataframe
 
         Args:
             src: The source file.
         """
-        query = f"SELECT * FROM READ_PARQUET('{self.target}')"
-        with duckdb.connect() as con:
-            self._dataframe = con.execute(query).fetch_df()
 
     def reset(self) -> None:
         """Resets the builder"""
@@ -125,6 +124,57 @@ class ParquetBuilder:
 
         self._dataframe = self._dataframe.query(f"{datetime_col}.dt.time {operator} @pd.Timestamp('{time}').time()")
 
+    @abstractmethod
+    def write_output(self, new_dir_ok: bool=False) -> None:
+        """Writes the result from the builder
+        
+        Args:
+            new_dir_ok: Allows creation in non-existing directory if True,
+            raises an exception if False
+            
+        Raises:
+            NotADirectoryError: If directory not exists and `new_dir_ok`=False
+        """
+
+    def build_all(
+        self,
+        row_removal_percent: Optional[int | float] = None,
+        cell_removal_percent: Optional[int | float] = None,
+        clear_before_time: Optional[datetime.time] = None,
+        clear_after_time: Optional[datetime.time] = None,
+    ) -> None:
+        """Builds using all methods using the provided values"""
+        pass
+
+class ParquetBuilder(BaseBuilder):
+    """Concrete implementation of the BaseBuilder class for manipulating
+    a parquet file"""
+
+    def _load_data(self) -> None:
+        """Loads the data into a dataframe
+
+        Args:
+            src: The source file.
+        """
+        self._dataframe = pd.read_parquet(self.target)
+    
+    def write_output(self, new_dir_ok: bool=False) -> None:
+        """Writes the result from the builder
+        
+        Args:
+            new_dir_ok: Allows creation in non-existing directory if True,
+            raises an exception if False
+            
+        Raises:
+            NotADirectoryError: If directory not exists and `new_dir_ok`=False
+        """
+
+        if not self._output.parent.exists():
+            if not new_dir_ok:
+                raise NotADirectoryError(f"Can't write parquet, output directory doesn't exist and the `new_dir_ok` flag is False: '{self._output}'")
+            os.makedirs(self._output.parent)
+        
+        self._dataframe.to_parquet(self._output)
 
 def _create_directory(dst: os.PathLike, purge: bool = False) -> None:
     """Creates a directory with an option to clear the contents
