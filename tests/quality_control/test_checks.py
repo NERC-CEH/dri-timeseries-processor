@@ -29,7 +29,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
 
         result = battery_voltage_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([0, 0, self.flag_value, 0, self.flag_value])
+            pl.Series([0, 0, self.flag_value, 0, self.flag_value], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -42,7 +42,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
 
         result = battery_voltage_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
+            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -55,7 +55,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
 
         result = battery_voltage_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
+            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -72,7 +72,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
 
         result = battery_voltage_check(new_data, "value", self.flag_value)
         expected = new_data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
+            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -138,7 +138,7 @@ class TestRangeCheck(unittest.TestCase):
 
         expected = self.data.with_columns(
             pl.Series([self.flag_value, 0, 0, 0, self.flag_value, self.flag_value,
-                              self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
+                              self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0], dtype=pl.UInt8)
             .alias("value1_QCFLAG")
         )
 
@@ -154,7 +154,7 @@ class TestRangeCheck(unittest.TestCase):
 
         expected = self.data.with_columns(
             pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0,
-                       self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
+                       self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0], dtype=pl.UInt8)
             .alias("value2_QCFLAG")
         )
 
@@ -202,7 +202,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
 
         result = soilmet_scans_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([self.flag_value, 0, 0, 0, self.flag_value])
+            pl.Series([self.flag_value, 0, 0, 0, self.flag_value], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -215,7 +215,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
 
         result = soilmet_scans_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
+            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -228,7 +228,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
 
         result = soilmet_scans_check(self.data, "value", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
+            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -245,7 +245,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
 
         result = soilmet_scans_check(new_data, "value", self.flag_value)
         expected = new_data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
+            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -275,7 +275,7 @@ class TestErrorCodesCheck(unittest.TestCase):
         """Test flag correctly raised if values equal the set error codes.
         """
         expected = self.data.with_columns(
-            pl.Series([0, 1, 0, 0, 1])
+            pl.Series([0, 1, 0, 0, 1], dtype=pl.UInt8)
             .alias("value_QCFLAG")
         )
         result = error_codes_check(self.data, "value", self.flag_value)
@@ -328,7 +328,7 @@ class TestSpikeCheck(unittest.TestCase):
         result = spike_check(self.data, "value1", self.flag_value)
 
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, self.flag_value, 0, 0])
+            pl.Series([0, 0, 0, self.flag_value, 0, 0], dtype=pl.UInt8)
             .alias("value1_QCFLAG")
         )
 
@@ -343,7 +343,7 @@ class TestSpikeCheck(unittest.TestCase):
         result = spike_check(self.data, "value1", self.flag_value)
 
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0, 0])
+            pl.Series([0, 0, 0, 0, 0, 0], dtype=pl.UInt8)
             .alias("value1_QCFLAG")
         )
 
@@ -363,7 +363,7 @@ class TestSpikeCheck(unittest.TestCase):
         result = spike_check(self.data, "value1", self.flag_value)
 
         expected = self.data.with_columns(
-            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
+            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0], dtype=pl.UInt8)
             .alias("value1_QCFLAG")
         )
 
@@ -383,7 +383,7 @@ class TestSpikeCheck(unittest.TestCase):
         )
         result1 = spike_check(self.data, "value1", self.flag_value)
         expected1 = result1.with_columns(
-            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
+            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0], dtype=pl.UInt8)
             .alias("value1_QCFLAG")
         )
 
@@ -391,7 +391,7 @@ class TestSpikeCheck(unittest.TestCase):
         new_data = result1.slice(1, 4)
         result2 = spike_check(new_data, "value1", self.flag_value)
         expected2 = new_data.with_columns(
-            pl.Series([self.flag_value, 0, 0, self.flag_value])  # The flags should be maintained
+            pl.Series([self.flag_value, 0, 0, self.flag_value], dtype=pl.UInt8)  # The flags should be maintained
             .alias("value1_QCFLAG")
         )
 

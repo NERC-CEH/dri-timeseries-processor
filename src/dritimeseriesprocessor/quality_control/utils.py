@@ -181,7 +181,7 @@ def initialise_qc_column(df: pl.DataFrame, column: str) -> tuple[pl.DataFrame, s
     qc_column = f"{column}_QCFLAG"
     if qc_column not in df.columns:
         df = df.with_columns(
-            pl.lit(0, dtype=pl.Int64).alias(qc_column)  # TODO: Get this 0 value from somewhere
+            pl.lit(0, dtype=pl.UInt8).alias(qc_column)  # TODO: Get this 0 value from somewhere
         )
     return df, qc_column
 
