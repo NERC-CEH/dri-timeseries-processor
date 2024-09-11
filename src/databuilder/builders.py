@@ -31,6 +31,7 @@ class BaseBuilder(ABC):
             raise FileNotFoundError(f"Parquet file: '{path}' does not exist")
 
         self._target = path
+        self._load_data()
 
     _output: os.PathLike
     """The output destination, defaults to the target"""
@@ -54,8 +55,6 @@ class BaseBuilder(ABC):
             self._output = output
         else:
             self._output = self.target
-
-        self._load_data()
 
     @abstractmethod
     def _load_data(self) -> None:
@@ -85,7 +84,11 @@ class BaseBuilder(ABC):
 
         if percent < 0 or percent > 100:
             raise ValueError(f"'percent' must be from 0 - 100, not {percent}")
-        target_columns = [col for col in self._dataframe.columns if col not in exclude]
+
+        target_columns = self._dataframe.columns
+
+        if exclude:
+            target_columns = [col for col in target_columns if col not in exclude]
 
         for col in target_columns:
             self._dataframe.loc[self._dataframe.sample(frac=percent / 100).index, col] = np.nan
