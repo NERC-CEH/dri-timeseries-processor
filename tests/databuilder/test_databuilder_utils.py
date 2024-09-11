@@ -9,8 +9,12 @@ class DataCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        try:
+            os.getenv("GITHUB_ACTIONS")
+            cls.data_dir = Path(os.getcwd()) / "parquet-data"
+        except KeyError:
+            cls.data_dir = Path(__file__).parents[2] / "parquet-data"
 
-        cls.data_dir = Path(__file__).parents[2] / "parquet-data"
         cls.cosmos_data = cls.data_dir / "cosmos"
         cls.cosmos_precip = cls.cosmos_data / "PRECIP_1MIN_2024_LOOPED"
         cls.cosmos_soilmet = cls.cosmos_data / "SOILMET_30MIN_2024_LOOPED"
