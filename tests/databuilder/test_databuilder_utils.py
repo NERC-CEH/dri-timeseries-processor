@@ -9,10 +9,9 @@ class DataCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        try:
-            os.getenv("GITHUB_ACTIONS")
+        if os.getenv("GITHUB_ACTIONS"):
             cls.data_dir = Path(os.getcwd()) / "parquet-data"
-        except KeyError:
+        else:
             cls.data_dir = Path(__file__).parents[2] / "parquet-data"
 
         cls.cosmos_data = cls.data_dir / "cosmos"
