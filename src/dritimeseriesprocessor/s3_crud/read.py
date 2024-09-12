@@ -7,6 +7,7 @@ from typing import List, Optional
 
 import duckdb
 import polars as pl
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.utils import remove_protocol_from_url
@@ -18,13 +19,19 @@ class ParquetReaderInterface(ABC):
     """Interface for defining parquet reading objects"""
 
     @abstractmethod
-    def read() -> pl.DataFrame:
+    def read(self, *args, **kwargs) -> pl.DataFrame:
         """Abstract method for read operations"""
 
 
 class DuckDbParquetReader(ParquetReaderInterface):
     """DuckDB implementation of the parquet reader"""
 
+    @retry(
+        retry=retry_if_exception_type(duckdb.InvalidInputException),
+        wait=wait_fixed(2),
+        stop=stop_after_attempt(3),
+        reraise=True,
+    )
     def read(self, query: str, params: Optional[List] = None) -> pl.DataFrame:
         """Uses DuckDb to read parquet files from an S3 bucket using a prepared SQL query.
 
