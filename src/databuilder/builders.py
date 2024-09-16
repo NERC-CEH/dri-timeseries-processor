@@ -69,11 +69,7 @@ class BaseBuilder(ABC):
 
     @abstractmethod
     def _load_data(self) -> None:
-        """Loads the data into a dataframe
-
-        Args:
-            src: The source file.
-        """
+        """Loads the data into a dataframe"""
 
     def reset(self) -> None:
         """Resets the builder"""
