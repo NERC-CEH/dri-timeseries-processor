@@ -98,7 +98,10 @@ class BaseBuilder(ABC):
             target_columns = [col for col in target_columns if col not in exclude]
 
         for col in target_columns:
-            self._dataframe.loc[self._dataframe.sample(frac=percent / 100).index, col] = np.nan
+            non_nan_indexes = self._dataframe[self._dataframe[col].notnull()]
+
+            nan_indexes = non_nan_indexes.sample(frac=percent / 100).index
+            self._dataframe.loc[nan_indexes, col] = np.nan
 
     def clear_percentage_of_rows(self, percent: int | float) -> None:
         """Removes a given percentage of rows randomly

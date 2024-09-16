@@ -242,14 +242,16 @@ class TestPercentageCellRemoval(DataCase):
         
         cols = [col for col in self.builder._dataframe.columns if col not in self.excluded_columns]
         
-        size_before = self.builder._dataframe.shape[0]
-        self.assertNotEqual(size_before, 0)
+        n_rows = self.builder._dataframe.shape[0]
+        self.assertNotEqual(n_rows, 0)
 
-        expected = size_before * (percent/100)
+        n_nan = [self.builder._dataframe[col].isna().sum() for col in cols]
 
         self.builder.set_random_cells_to_null(percent, exclude=self.excluded_columns)
 
-        for col in cols:
+        for col, nan_before in zip(cols, n_nan):
+            expected = (n_rows - nan_before) * (percent/100)
+
             size_after = self.builder._dataframe[col].isna().sum()
             self.assertGreaterEqual(size_after, expected)
 
