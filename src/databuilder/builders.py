@@ -2,7 +2,7 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -19,53 +19,70 @@ class BaseBuilder(ABC):
         return self._target
 
     @target.setter
-    def target(self, path: Tuple[os.PathLike | str] | os.PathLike | str) -> None:
+    def target(self, path: os.PathLike) -> None:
         """Sets the target parameter
 
         Args:
-            path: Path to set the target to. If a single value is given, the target
-            will be set and the _output set to the same value. If a tuple of two elements
-            is given, the target will be set as the same element, and the _output the
-            second"""
+            path: Path to set the target file
+        """
 
-        output = None
+        if not isinstance(path, Path):
+            path = Path(path)
 
-        if isinstance(path, tuple):
-            target, output = path
-        else:
-            target = path
-
-        if not isinstance(target, Path):
-            target = Path(target)
-
-        if not target.exists():
+        if not path.exists():
             raise FileNotFoundError(f"Parquet file: '{path}' does not exist")
 
-        if not output:
-            self._output = target
-        else:
-            if not isinstance(output, Path):
-                output = Path(output)
-            self._output = output
-
-        self._target = target
+        self._target = path
         self._load_data()
 
-    _output: os.PathLike
-    """The output destination, defaults to the target"""
+    @target.deleter
+    def target(self) -> None:
+        """Deleter for target"""
 
-    _dataframe: Optional[pd.DataFrame] = None
+        delattr(self, "_target")
+
+    @property
+    def output(self) -> os.PathLike:
+        """Getter for the output property"""
+
+        return self._output
+
+    @output.setter
+    def output(self, path: os.PathLike) -> None:
+        """Setter for the output property
+
+        Args:
+            path: Path to the output destination
+        """
+
+        if not isinstance(path, Path):
+            path = Path(path)
+
+        self._output = path
+
+    @output.deleter
+    def output(self) -> None:
+        """Deleter for output"""
+
+        delattr(self, "_output")
+
+    _dataframe: pd.DataFrame
     """The internal dataframe that work is done on"""
 
-    def __init__(self, target: os.PathLike | str, output: Optional[os.PathLike | str] = None):
+    def __init__(self, target: os.PathLike, output: Optional[os.PathLike] = None):
         """Initializes the instance
 
         Args:
             target: The target parquet file
-            output: The output file, defaults to the target
+            output: The output file destination. Defaults to 'target'
         """
 
-        self.target = (target, output)
+        self.target = target
+
+        if output:
+            self.output = output
+        else:
+            self.output = target
 
     @abstractmethod
     def _load_data(self) -> None:
@@ -74,7 +91,9 @@ class BaseBuilder(ABC):
     def reset(self) -> None:
         """Resets the builder"""
 
-        self._dataframe = None
+        delattr(self, "_dataframe")
+        delattr(self, "target")
+        delattr(self, "output")
 
     def set_random_cells_to_null(self, percent: int | float, exclude: Optional[List[str]] = None) -> None:
         """Sets random cells to NULL based of a percentage probability

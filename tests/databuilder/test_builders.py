@@ -71,7 +71,9 @@ class TestParquetBuilderMethods(DataCase):
 
         builder.reset()
 
-        self.assertIsNone(builder._dataframe)
+        self.assertFalse(hasattr(builder, "_dataframe"))
+        self.assertFalse(hasattr(builder, "target"))
+        self.assertFalse(hasattr(builder, "output"))
 
 class TestTimeClearing(DataCase):
 

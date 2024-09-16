@@ -35,6 +35,7 @@ builder.write_output()
 # Emulating high level of cell corruption
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-01" / "2024-01-18.parquet"
+builder.output = builder.target
 builder.build_all(cell_removal_percent=90, protected_columns=protected_cols)
 builder.write_output()
 
@@ -42,6 +43,7 @@ builder.write_output()
 # No data before 17:00
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-01" / "2024-01-19.parquet"
+builder.output = builder.target
 builder.build_all(clear_before_time=time(hour=17))
 builder.write_output()
 
@@ -50,16 +52,19 @@ builder.write_output()
 # Also a gap that crosses midnight into a new month 22:00 - 04:23
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-01" / "2024-01-30.parquet"
+builder.output = builder.target
 builder.build_all(clear_after_time=time(hour=23))
 builder.write_output()
 
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-01" / "2024-01-31.parquet"
+builder.output = builder.target
 builder.build_all(clear_before_time=time(hour=1), clear_after_time=time(hour=22))
 builder.write_output()
 
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-02" / "2024-02-01.parquet"
+builder.output = builder.target
 builder.build_all(clear_before_time=time(hour=4, minute=23))
 builder.write_output()
 
@@ -68,11 +73,13 @@ os.remove(COSMOS_GAP_PRECIP_DIR / "2024-02" / "2024-02-02.parquet")
 
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-02" / "2024-02-03.parquet"
+builder.output = builder.target
 builder.build_all(row_removal_percent=40, cell_removal_percent=60, protected_columns=protected_cols)
 builder.write_output()
 
 # Making very little and gappy data
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-02" / "2024-02-04.parquet"
+builder.output = builder.target
 builder.build_all(row_removal_percent=70, cell_removal_percent=60, protected_columns=protected_cols)
 builder.write_output()
