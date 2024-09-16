@@ -7,6 +7,7 @@ from typing import List, Optional
 
 import duckdb
 import polars as pl
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.utils import remove_protocol_from_url
@@ -18,13 +19,19 @@ class ParquetReaderInterface(ABC):
     """Interface for defining parquet reading objects"""
 
     @abstractmethod
-    def read() -> pl.DataFrame:
+    def read(self, *args, **kwargs) -> pl.DataFrame:
         """Abstract method for read operations"""
 
 
 class DuckDbParquetReader(ParquetReaderInterface):
     """DuckDB implementation of the parquet reader"""
 
+    @retry(
+        retry=retry_if_exception_type(duckdb.InvalidInputException),
+        wait=wait_fixed(2),
+        stop=stop_after_attempt(3),
+        reraise=True,
+    )
     def read(self, query: str, params: Optional[List] = None) -> pl.DataFrame:
         """Uses DuckDb to read parquet files from an S3 bucket using a prepared SQL query.
 
@@ -43,14 +50,12 @@ class DuckDbParquetReader(ParquetReaderInterface):
         # Install httpfs to get support for object storage using the S3 API
         # https://duckdb.org/docs/extensions/httpfs/overview.html
         # Create secret for S3 authentication
-        # FW-242 these options may or may not help, but will slow things down
-        # FW-242 force_download - downloads entire file regardless of query
-        # FW-242 http_keep_alive - forces a new connection for each query
+        # force_download - fixes the "missing magic bytes at end of file" error
+        #                  by forcing upfront download of the file before processing
         conn.execute("""
             INSTALL httpfs;
             LOAD httpfs;
             SET force_download = true;
-            SET http_keep_alive = false;
         """)
 
         if app_config.environment == "local":

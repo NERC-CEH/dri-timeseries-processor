@@ -19,7 +19,7 @@ class WriterInterface(ABC):
     """Interface for defining parquet writing objects"""
 
     @abstractmethod
-    def write() -> None:
+    def write(self, *args, **kwargs) -> None:
         """Abstract method for read operations"""
 
 

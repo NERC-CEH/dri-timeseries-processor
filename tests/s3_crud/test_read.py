@@ -78,3 +78,16 @@ class TestReadParquetByQuery(BaseTestCase):
 
         with self.assertRaises(duckdb.InvalidInputException):
             self.reader.read(query)
+
+    def test_read_parquet_retry(self):
+        """ Test that the retry decorator works as expected
+        """
+        key = "corrupted.parquet"
+        query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}')"
+
+        with self.assertRaises(duckdb.InvalidInputException):
+            self.reader.read(query)
+
+        stats = self.reader.read.statistics
+        self.assertEqual(stats['attempt_number'], 3)  # Should have tried 3 times
+        self.assertEqual(stats['idle_for'], 4)  # Should have waited 2 seconds between each try

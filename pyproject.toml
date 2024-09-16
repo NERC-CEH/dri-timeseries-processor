@@ -15,7 +15,11 @@ dependencies = [
     "pydantic>=2.8.2",
     "isodate",
     "duckdb",
+<<<<<<< HEAD
     "pandas",
+=======
+    "tenacity",
+>>>>>>> main
 ]
 name = "dritimeseriesprocessor"
 dynamic = ["version"]
