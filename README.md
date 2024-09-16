@@ -111,7 +111,7 @@ The gaps were generated using file removal and `duckdb` manipulation and should 
 
 There is a package called `databuilder` that comes with some utilities for copying the original data and a `ParquetBuilder` class that handles data manipulation. The `ParquetBuilder` is constructed as a [builder pattern](https://refactoring.guru/design-patterns/builder/python/example) and is designed to be extendible to handle different data sources.
 
-The builder base class `BaseBuilder` works by reading the data into a dataframe convential dataframe manipulation in `pandas`. This makes it data source agnostic and delegates reading and writing to concrete implementations such as the `ParquetBuilder`. Currently there is one building function that runs all manipulation methods based on the inputs given.
+The code works by reading the data into a dataframe and then performing convential dataframe manipulation in `pandas`. This makes it data source agnostic and delegates reading and writing to concrete implementations of different data sources. Currently there is one building function that runs all manipulation methods based on the inputs given.
 
 How to use it:
 
