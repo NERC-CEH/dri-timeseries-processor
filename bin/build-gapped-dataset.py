@@ -42,7 +42,7 @@ builder.write_output()
 # No data before 17:00
 builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "2024-01" / "2024-01-19.parquet"
-builder.build_all(clear_after_time=time(hour=17))
+builder.build_all(clear_before_time=time(hour=17))
 builder.write_output()
 
 
