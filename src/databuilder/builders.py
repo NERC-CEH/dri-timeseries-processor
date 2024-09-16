@@ -79,7 +79,8 @@ class BaseBuilder(ABC):
     def set_random_cells_to_null(self, percent: int | float, exclude: Optional[List[str]] = None) -> None:
         """Sets random cells to NULL based of a percentage probability
 
-        The randomness is set on each column separately. It does not clear full rows.
+        The randomness is set on each column separately. It does not clear full rows. This only targets
+        a percentage on non-null cells, already null cells are ignored
 
         Args:
             percent: The percentage of rows to change for each variable
