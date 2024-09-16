@@ -90,7 +90,7 @@ class TestInitialization(DataCase):
 
         output = Path(self.dest.name) / "out-data"
 
-        utils.initialse_directory(output)
+        utils.initialise_directory(output)
 
         self.assertTrue(copy_files.called)
         self.assertTrue(create_directory.called)

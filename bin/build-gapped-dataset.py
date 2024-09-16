@@ -3,7 +3,7 @@ Because it uses randomness, the results are not repeatable.
 """
 
 from databuilder.builders import ParquetBuilder
-from databuilder.utils import initialse_directory
+from databuilder.utils import initialise_directory
 from pathlib import Path
 from datetime import time
 import os
@@ -21,7 +21,7 @@ COSMOS_GAP_DIR = DATA_DIR / "cosmos-with-gaps"
 
 # Creating the directory and copying files
 
-initialse_directory(COSMOS_GAP_DIR / "PRECIP_1MIN_2024_LOOPED", COSMOS_DIR / "PRECIP_1MIN_2024_LOOPED", purge=True)
+initialise_directory(COSMOS_GAP_DIR / "PRECIP_1MIN_2024_LOOPED", COSMOS_DIR / "PRECIP_1MIN_2024_LOOPED", purge=True)
 
 # Removing data
 

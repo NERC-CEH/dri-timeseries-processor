@@ -44,7 +44,7 @@ def _copy_files(dst: os.PathLike, src: Optional[os.PathLike] = None) -> None:
     shutil.copytree(src, dst, dirs_exist_ok=True)
 
 
-def initialse_directory(dst: os.PathLike, src: Optional[os.PathLike] = None, purge: bool = False) -> None:
+def initialise_directory(dst: os.PathLike, src: Optional[os.PathLike] = None, purge: bool = False) -> None:
     """Initializes a directory and populates it with Parquet files
 
     Args:

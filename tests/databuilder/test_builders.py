@@ -25,7 +25,7 @@ class TestParquetBuilderMethods(DataCase):
     def setUp(self):
         self.dest = TemporaryDirectory()
         self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialse_directory(self.test_data)
+        utils.initialise_directory(self.test_data)
         
         self.target = Path(f"{self.test_data}/PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-30.parquet")
         
@@ -78,7 +78,7 @@ class TestTimeClearing(DataCase):
     def setUp(self):
         self.dest = TemporaryDirectory()
         self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialse_directory(self.test_data)
+        utils.initialise_directory(self.test_data)
         
         self.target = f"{self.test_data}/PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-30.parquet"
         
@@ -184,7 +184,7 @@ class TestPercentageRowRemoval(DataCase):
     def setUp(self):
         self.dest = TemporaryDirectory()
         self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialse_directory(self.test_data)
+        utils.initialise_directory(self.test_data)
         
         self.target = f"{self.test_data}/PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-31.parquet"
         
@@ -220,7 +220,7 @@ class TestPercentageCellRemoval(DataCase):
     def setUp(self):
         self.dest = TemporaryDirectory()
         self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialse_directory(self.test_data)
+        utils.initialise_directory(self.test_data)
         
         self.target = f"{self.test_data}/PRECIP_1MIN_2024_LOOPED/2024-01/2024-01-30.parquet"
         
@@ -258,7 +258,7 @@ class TestBuilderWriting(DataCase):
     def setUp(self):
         self.dest = TemporaryDirectory()
         self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialse_directory(self.test_data)
+        utils.initialise_directory(self.test_data)
         
         self.target = self.test_data / "PRECIP_1MIN_2024_LOOPED"/"2024-01/2024-01-30.parquet"
         self.output = self.test_data / "new-file.parquet"
@@ -327,7 +327,7 @@ class TestBuilderInvocationMethod(DataCase):
     def setUp(self):
         self.dest = TemporaryDirectory()
         self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialse_directory(self.test_data)
+        utils.initialise_directory(self.test_data)
         
         self.target = self.test_data / "PRECIP_1MIN_2024_LOOPED"/"2024-01/2024-01-30.parquet"
         self.builder = ParquetBuilder(self.target)
