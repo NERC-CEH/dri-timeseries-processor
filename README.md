@@ -153,7 +153,8 @@ from databuilder.builders import ParquetBuilder
 from datetime import time
 
 # Initialize the builder
-builder = ParquetBuilder(Path("mydata-1.parquet"))
+target = Path("mydata-1.parquet")
+builder = ParquetBuilder(target, output=target)
 
 builder.build_all(row_removal_percent=30)
 builder.write_output()
@@ -171,12 +172,13 @@ builder.write_output()
 If you need the output file to be different to the target:
 
 ```python
-# If you don't want to overwrite the file you can
-# reset the builder with a tuple
+# If you don't want to overwrite the file you can set the
+# output to a different file
 ...
 
 builder.reset()
-builder.target = (Path("mydata-3.parquet"), Path("mydata-3-test.parquet"))
+builder.target = Path("mydata-3.parquet")
+builder.output = Path("mydata-3-test.parquet"))
 
 # This sets the target to "mydata-3.parquet" and the output
 # to "mydata-3-test.parquet
