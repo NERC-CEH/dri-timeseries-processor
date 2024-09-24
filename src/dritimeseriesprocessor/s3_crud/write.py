@@ -11,6 +11,7 @@ from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
 from dritimeseriesprocessor.utils import steralize_dates
+from dritimeseriesprocessor.metrics_exporter import metrics
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,7 @@ class S3Writer(WriterInterface):
 
         return buffer
 
+    @metrics.track_s3_write_time()
     def write(self, bucket_name: str, key: str, body: bytes) -> None:
         """Uploads an object to an S3 bucket.
 

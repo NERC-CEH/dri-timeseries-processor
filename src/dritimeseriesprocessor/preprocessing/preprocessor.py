@@ -5,10 +5,12 @@ import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.preprocessing.operations import preprocessing_corrections
+from dritimeseriesprocessor.metrics_exporter import metrics
 
 logger = logging.getLogger(__name__)
 
 
+@metrics.track_preprocessing_time()
 def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
     """Preprocesses the DataFrame by applying a series of corrections based on predefined configurations.
 

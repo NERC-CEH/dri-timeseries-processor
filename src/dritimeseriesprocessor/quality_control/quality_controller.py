@@ -4,10 +4,12 @@ import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
+from dritimeseriesprocessor.metrics_exporter import metrics
 
 logger = logging.getLogger(__name__)
 
 
+@metrics.track_qc_time()
 def run_quality_control(df: pl.DataFrame) -> pl.DataFrame:
     """Run data through Quality Control (QC) checks.
 
