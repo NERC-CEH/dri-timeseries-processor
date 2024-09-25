@@ -1,0 +1,76 @@
+{
+    "infill_methods": {
+        "INTERP_LINEAR": {
+            "name": "Linear interpolation",
+            "description": "Linear interpolation. Creates straight line through the gap",
+            "requirements": {
+                "window": 1
+            }
+        },
+        "INTERP_POLY2": {
+            "name": "Polynomial interpolation, order 2",
+            "description": "Polynomial interpolation, order 2. Creates an order 2 polynomial (quadratric) curved line through the gap",
+            "requirements": {
+                "window": 4
+            }
+        }
+    },
+    "variables": {
+        "PA": {
+            "default": {
+                "methods": [
+                    {
+                        "method_id": "INTERP_LINEAR",
+                        "priority": 1,
+                        "constraints": {
+                            "max_gap_size": 10
+                        }
+                    }
+                ]
+
+            },
+            "PT30M": {
+                "methods": [
+                    {
+                        "method_id": "INTERP_POLY2",
+                        "priority": 1,
+                        "constraints": {
+                            "max_gap_size": 10
+                        }
+                    },
+                    {
+                        "method_id": "INTERP_LINEAR",
+                        "priority": 2,
+                        "constraints": {
+                            "max_gap_size": 10
+                        }
+                    }
+                ]
+            }
+        },
+        "TA": {
+            "default": {
+                "methods": [
+                    {
+                        "method_id": "INTERP_LINEAR",
+                        "priority": 1,
+                        "constraints": {
+                            "max_gap_size": 6
+                        }
+                    }
+                ]
+            },
+            "PT30M": {
+                "methods": [
+                    {
+                        "method_id": "INTERP_LINEAR",
+                        "priority": 1,
+                        "constraints": {
+                            "max_gap_size": 6
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
