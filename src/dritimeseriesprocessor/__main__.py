@@ -61,8 +61,11 @@ try:
     qcd_data = run_quality_control(preprocessed_data)
 
     # Calculate the number of flags added
-    flags_count = qcd_data.select(pl.col("^flag_.*$")).sum().sum()
-    metrics.increment_flags(flags_count)
+    qcflag_columns = [col for col in qcd_data.columns if col.endswith('_QCFLAG')]
+    flags_count = len(qcflag_columns)
+    
+    logger.info(f"Number of QC flag columns: {flags_count}")
+    metrics.increment_flags(flags_count)    
 
     # show first 100 rows to show how qc flags have been applied
     with pl.Config(tbl_rows=100):
@@ -79,7 +82,14 @@ try:
     metrics.record_successful_run()
     logger.info("Processing completed successfully")
 
+    # Write all metrics at the end of successful processing
+    metrics.write_metrics()
+
 except Exception as e:
     metrics.record_failed_run()
     logger.exception(f"An error occurred during processing: {str(e)}")
+    
+    # Write all metrics even if an exception occurs
+    metrics.write_metrics()
+    
     raise
