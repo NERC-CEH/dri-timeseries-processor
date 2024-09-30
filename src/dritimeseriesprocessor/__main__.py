@@ -7,11 +7,11 @@ import polars as pl
 
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.logger import setup_logging
+from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.metrics_exporter import metrics
 
 metrics.setup_metrics()
 setup_logging()
@@ -61,11 +61,11 @@ try:
     qcd_data = run_quality_control(preprocessed_data)
 
     # Calculate the number of flags added
-    qcflag_columns = [col for col in qcd_data.columns if col.endswith('_QCFLAG')]
+    qcflag_columns = [col for col in qcd_data.columns if col.endswith("_QCFLAG")]
     flags_count = len(qcflag_columns)
-    
+
     logger.info(f"Number of QC flag columns: {flags_count}")
-    metrics.increment_flags(flags_count)    
+    metrics.increment_flags(flags_count)
 
     # show first 100 rows to show how qc flags have been applied
     with pl.Config(tbl_rows=100):
@@ -88,8 +88,8 @@ try:
 except Exception as e:
     metrics.record_failed_run()
     logger.exception(f"An error occurred during processing: {str(e)}")
-    
+
     # Write all metrics even if an exception occurs
     metrics.write_metrics()
-    
+
     raise

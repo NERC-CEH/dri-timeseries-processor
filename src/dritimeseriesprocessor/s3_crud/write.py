@@ -10,8 +10,8 @@ from botocore.client import BaseClient
 from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
-from dritimeseriesprocessor.utils import steralize_dates
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.utils import steralize_dates
 
 logger = logging.getLogger(__name__)
 

@@ -3,8 +3,8 @@ import logging
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
-from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
 
 logger = logging.getLogger(__name__)
 
