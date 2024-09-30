@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 class Metrics:
     def __init__(self, metrics_dir_path: Optional[str] = None) -> None:
-        """
-        Initialize the Metrics class.
+        """Initialize the Metrics class.
 
-        :param metrics_dir_path: Optional. The directory path where metric files will be written.
-                                 If not provided, defaults to a 'metrics' directory in the current working directory.
+        Args:
+        metrics_dir_path (str, optional): The directory path where metric files will be written.
+        If not provided, defaults to a 'metrics' directory in the current working directory.
         """
         self.registry = CollectorRegistry()
 
@@ -101,9 +101,4 @@ class Metrics:
         self.failed_runs.inc()
 
 
-# Create an instance of the Metrics class
-# metrics = Metrics()
-
-# To use a custom metrics directory path, initialize as follows:
-# metrics = Metrics(metrics_dir_path='/path/to/custom/metrics/directory')
 metrics = Metrics(metrics_dir_path="/tmp/metrics")
