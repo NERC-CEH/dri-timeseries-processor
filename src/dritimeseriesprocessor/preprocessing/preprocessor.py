@@ -27,7 +27,9 @@ def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
 
         # Check if the target variable exists in the DataFrame
         if correction_config.VARIABLE not in df:
-            logger.warning(f"Variable not in DataFrame: {correction_config.VARIABLE}")
+            logger.warning(
+                f"Variable {correction_config.VARIABLE} not in DataFrame for method {correction_config.METHOD_ID}"
+            )
             continue
 
         # Ensure the end datetime is set; default to the current time if not provided
