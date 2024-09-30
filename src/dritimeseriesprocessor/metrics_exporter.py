@@ -39,11 +39,12 @@ class Metrics:
         self.set_metrics_dir_path(metrics_dir_path)
 
     def set_metrics_dir_path(self, metrics_dir_path: Optional[str] = None) -> None:
-        """
-        Set or update the metrics directory path.
+        """Set or update the metrics directory path.
 
-        :param metrics_dir_path: Optional. The directory path where metric files will be written.
-                                 If not provided, defaults to a 'metrics' directory in the current working directory.
+        Args:
+        metrics_dir_path (str, optional): The directory path where metric files
+            will be written. If not provided, defaults to a 'metrics' directory
+            in the current working directory.
         """
         if metrics_dir_path is None:
             self.metrics_dir = os.path.join(os.getcwd(), "metrics")
