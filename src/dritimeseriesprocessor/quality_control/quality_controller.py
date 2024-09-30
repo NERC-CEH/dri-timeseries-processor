@@ -33,7 +33,7 @@ def run_quality_control(df: pl.DataFrame) -> pl.DataFrame:
 
         for variable in check_config.variables:
             if variable not in df:
-                logger.warning(f"Variable not in DataFrame: {variable}")
+                logger.warning(f"Variable {variable} not in DataFrame for method {check_id}")
                 continue
 
             df = check_func(df, variable, check_config.id)

@@ -46,7 +46,7 @@ class TestRunQualityControl(unittest.TestCase):
 
         with self.assertLogs("dritimeseriesprocessor.quality_control.quality_controller", level="WARNING") as logs:
             result = run_quality_control(self.data)
-            self.assertIn("Variable not in DataFrame: non_existent_column", logs.output[0])
+            self.assertIn("Variable non_existent_column not in DataFrame for method RANGE", logs.output[0])
 
         assert_frame_equal(result, self.data)
 
