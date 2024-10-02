@@ -6,6 +6,7 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
@@ -26,8 +27,8 @@ try:
         s3_client = boto3.client("s3")
 
     # Get data
-    prefix = "cosmos/PRECIP_1MIN_2024_LOOPED"
-    start_date = date(2024, 2, 13)
+    prefix = "cosmos-with-gaps/PRECIP_1MIN_2024_LOOPED"
+    start_date = date(2024, 2, 4)
     end_date = None
     data = data_manager.query_by_date_range(
         app_config.level_0_bucket,
@@ -37,6 +38,8 @@ try:
         site_ids="ALIC1",
         columns=["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"],
     )
+
+    data = data.rename({"P_LOADCELL_TEMP": "TA"})
 
     logger.info(f"Retrieved data from s3: {data.shape}")
 
@@ -51,7 +54,6 @@ try:
         [
             pl.Series([0 if ((i // 20) % 2 == 0) else 100 for i in range(len(preprocessed_data))]).alias("BATTV"),
             pl.Series(i * 2 for i in range(len(preprocessed_data))).alias("PRECIP"),
-            pl.Series([5 if (i != 5) else 50 for i in range(len(preprocessed_data))]).alias("TA"),
             pl.Series(i for i in range(len(preprocessed_data))).alias("SCANS"),
         ]
     )
@@ -71,12 +73,19 @@ try:
     with pl.Config(tbl_rows=100):
         logger.info(qcd_data.limit(100))
 
+    # Infilling
+    infld_data = run_infilling(qcd_data)
+
+    # show first 100 rows to show how infill flags have been applied
+    with pl.Config(tbl_rows=100):
+        logger.info(infld_data.limit(100))
+
     # Writing output
     writer = S3Writer(s3_client)
     writer.write(
         bucket_name=app_config.qc_bucket,
         key=f"cosmos/30min/{writer._build_date_range_key(start_date, end_date)}.parquet",
-        body=qcd_data,
+        body=infld_data,
     )
 
     metrics.record_successful_run()

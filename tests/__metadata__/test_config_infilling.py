@@ -58,6 +58,7 @@ class TestMethod(unittest.TestCase):
 
 
 class TestVariableResolutionMethods(unittest.TestCase):
+    @patch('dritimeseriesprocessor.__metadata__.config_infilling.infill_methods', mock_infill_methods)
     def test_variable_resolution_methods_valid(self) -> None:
         """Test the VariableResolutionMethods class with valid methods."""
         methods: List[Dict[str, Any]] = [
@@ -101,8 +102,3 @@ class TestGetInfillConfig(unittest.TestCase):
         """Test get_infill_config with invalid config type."""
         with self.assertRaises(ValueError, msg="Not a valid config type"):
             get_infill_config("invalid_type")
-
-
-# Run the tests
-if __name__ == "__main__":
-    unittest.main()
