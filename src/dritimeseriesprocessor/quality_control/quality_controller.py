@@ -3,11 +3,13 @@ import logging
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
+from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
 
 logger = logging.getLogger(__name__)
 
 
+@metrics.track_qc_time()
 def run_quality_control(df: pl.DataFrame) -> pl.DataFrame:
     """Run data through Quality Control (QC) checks.
 
@@ -31,7 +33,7 @@ def run_quality_control(df: pl.DataFrame) -> pl.DataFrame:
 
         for variable in check_config.variables:
             if variable not in df:
-                logger.warning(f"Variable not in DataFrame: {variable}")
+                logger.warning(f"Variable {variable} not in DataFrame for method {check_id}")
                 continue
 
             df = check_func(df, variable, check_config.id)

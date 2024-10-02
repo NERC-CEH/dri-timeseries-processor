@@ -4,11 +4,13 @@ from datetime import datetime
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
+from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.operations import preprocessing_corrections
 
 logger = logging.getLogger(__name__)
 
 
+@metrics.track_preprocessing_time()
 def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
     """Preprocesses the DataFrame by applying a series of corrections based on predefined configurations.
 
@@ -27,7 +29,9 @@ def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
 
         # Check if the target variable exists in the DataFrame
         if correction_config.VARIABLE not in df:
-            logger.warning(f"Variable not in DataFrame: {correction_config.VARIABLE}")
+            logger.warning(
+                f"Variable {correction_config.VARIABLE} not in DataFrame for method {correction_config.METHOD_ID}"
+            )
             continue
 
         # Ensure the end datetime is set; default to the current time if not provided
