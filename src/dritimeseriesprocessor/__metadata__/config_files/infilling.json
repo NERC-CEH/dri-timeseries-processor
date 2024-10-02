@@ -39,7 +39,7 @@
                 "methods": [
                     {
                         "method_id": "INTERP_LINEAR",
-                        "priority": 2,
+                        "priority": 1,
                         "constraints": {
                             "max_gap_size": 6
                         }
