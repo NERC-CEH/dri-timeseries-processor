@@ -85,8 +85,8 @@ class S3Writer(WriterInterface):
         self.s3_client.put_object(Bucket=bucket_name, Key=key, Body=body)
 
     @staticmethod
-    def _build_date_range_key(start_date: date, end_date: date) -> str:
-        """Builds an S3 key based on a date range
+    def _build_date_range_partition_key(start_date: date, end_date: date) -> str:
+        """Builds a partitioned S3 key based on a date range
 
         Args:
             start_date: The start of the range
@@ -98,7 +98,10 @@ class S3Writer(WriterInterface):
         """
 
         start_date, end_date = steralize_dates(start_date, end_date)
-
         date_format = r"%Y-%m-%d"
 
-        return f"{start_date.strftime(date_format)}<=>{end_date.strftime(date_format)}"
+        start_date = start_date.strftime(date_format)
+        end_date = end_date.strftime(date_format)
+        
+
+        return f"start_date={start_date}/end_date={end_date}/{start_date}<=>{end_date}"

@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
+from dateutil.relativedelta import relativedelta
 
 import isodate
 
@@ -94,3 +95,28 @@ def steralize_site_ids(site_ids: Optional[Union[str, List[str]]] = None) -> List
         site_ids = [site_ids]
 
     return site_ids
+
+def month_list(start_date, end_date):
+    months = set()
+
+    while start_date < end_date:
+        months.add(start_date.strftime('%m'))
+        start_date += relativedelta(months=1)
+    
+    # Add month from end date
+    months.add(end_date.strftime('%m'))
+
+    return tuple(months)
+
+
+def year_list(start_date, end_date):
+    years = set()
+
+    while start_date < end_date:
+        years.add(start_date.strftime('%Y'))
+        start_date += relativedelta(years=1)
+    
+    # add year from end_date
+    years.add(end_date.strftime('%Y'))
+            
+    return tuple(years)

@@ -56,6 +56,8 @@ class DuckDbParquetReader(ParquetReaderInterface):
             INSTALL httpfs;
             LOAD httpfs;
             SET force_download = true;
+            SET enable_profiling = query_tree;
+            SET profiling_output = 'profile.json';
         """)
 
         if app_config.environment == "local":
@@ -86,6 +88,8 @@ class DuckDbParquetReader(ParquetReaderInterface):
         try:
             df = conn.execute(query, params).pl()
             logger.info(conn.execute(query, params))
+            results = conn.fetchall()
+            print(results[0][1])
             return df
         except duckdb.HTTPException as e:
             logger.error(f"Failed to find data from query: {query}")
