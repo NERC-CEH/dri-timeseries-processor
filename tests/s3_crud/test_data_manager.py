@@ -1,6 +1,7 @@
 from datetime import date
 
 import polars as pl
+import unittest
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.utils import steralize_dates
@@ -77,3 +78,6 @@ class TestReadByDateRange(BaseTestCase):
         self.assertEqual(sorted(result_site_ids), expected_site_ids)
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
         self.assertEqual(result.columns, cols)
+
+if __name__ == "__main__":
+    unittest.main()
