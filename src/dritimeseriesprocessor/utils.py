@@ -1,5 +1,4 @@
 from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
@@ -42,7 +41,7 @@ def remove_protocol_from_url(url: str) -> str:
 
 
 def steralize_dates(
-    start_date: Union[date, datetime], end_date: Optional[Union[date, datetime]] = None, convert_to_datetime: Optional[bool] = True
+    start_date: Union[date, datetime], end_date: Optional[Union[date, datetime]] = None
 ) -> Tuple[Union[date, datetime], datetime]:
     """
     Configures and validates start and end dates.
@@ -50,7 +49,6 @@ def steralize_dates(
     Args:
         start_date: The start date.
         end_date: The end date. If None, defaults to start_date.
-        convert_to_datetime: Convert date object to datetime object. Defaults to True.
 
     Returns:
         A tuple containing the start date and the end date.
@@ -67,13 +65,12 @@ def steralize_dates(
         raise UserWarning(f"Start date must come before end date: {start_date} > {end_date}")
 
     # If start_date is of type date, convert it to datetime with time at start of the day
-    if convert_to_datetime:
-        if isinstance(start_date, date) and not isinstance(start_date, datetime):
-            start_date = datetime.combine(start_date, datetime.min.time())
+    if isinstance(start_date, date) and not isinstance(start_date, datetime):
+        start_date = datetime.combine(start_date, datetime.min.time())
 
-        # If end_date is of type date, convert it to datetime to include the entire day
-        if isinstance(end_date, date) and not isinstance(end_date, datetime):
-            end_date = datetime.combine(end_date, datetime.max.time())
+    # If end_date is of type date, convert it to datetime to include the entire day
+    if isinstance(end_date, date) and not isinstance(end_date, datetime):
+        end_date = datetime.combine(end_date, datetime.max.time())
 
     return start_date, end_date
 
@@ -97,23 +94,3 @@ def steralize_site_ids(site_ids: Optional[Union[str, List[str]]] = None) -> List
         site_ids = [site_ids]
 
     return site_ids
-
-
-def month_list(start_date, end_date):
-    months = set()
-
-    while start_date <= end_date:
-        months.add(start_date.strftime('%m'))
-        start_date += relativedelta(months=1)
-
-    return tuple(months)
-
-
-def year_list(start_date, end_date):
-    years = set()
-
-    while start_date <= end_date:
-        years.add(start_date.strftime('%Y'))
-        start_date += relativedelta(years=1)
-            
-    return tuple(years)

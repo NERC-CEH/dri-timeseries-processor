@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 import polars as pl
 
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader, ParquetReaderInterface
-from dritimeseriesprocessor.utils import steralize_dates, steralize_site_ids, month_list, year_list
+from dritimeseriesprocessor.utils import steralize_dates, steralize_site_ids
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,7 @@ def query_by_date_range(
     end_date: Union[date, datetime, None],
     columns: Optional[List[str]] = None,
     site_ids: Optional[Union[str, List[str]]] = None,
+    date_field: str = "time",
     site_id_field: str = "SITE_ID",
     reader: ParquetReaderInterface = DuckDbParquetReader(),
 ) -> pl.DataFrame:
@@ -31,20 +32,15 @@ def query_by_date_range(
         end_date: The end date of date range.
         columns: Optional list of columns to select.
         site_ids: Optional list of site IDs (or single site ID) to select.
+        date_field: The name of the field that we query date on. Defaults to time.
         site_id_field: The name of the field that we query site ID on. Defaults to SITE_ID.
         reader: The object to use for reading the data. Assumed to be a DuckDbParquetReader by default.
     Returns:
         A Polars DataFrame containing the combined data from the Parquet files.
     """
 
-    start_date, end_date = steralize_dates(start_date, end_date, convert_to_datetime=False)
+    start_date, end_date = steralize_dates(start_date, end_date)
     site_ids = steralize_site_ids(site_ids)
-
-    # Create year, month WHERE clause based start and end dates
-    #year = year_list(start_date, end_date)
-    #month = month_list(start_date, end_date)
-    year = '2024'
-    month= '02'
 
     columns_sql = ", ".join(columns) if columns else "*"
     site_ids_sql = f"AND {site_id_field} IN ({','.join(['?'] * len(site_ids))})" if site_ids else ""
@@ -52,13 +48,12 @@ def query_by_date_range(
     query = f"""
         SELECT {columns_sql}
         FROM read_parquet('s3://{bucket_name}/{prefix}/*/*/*.parquet', hive_partitioning=false)
-        WHERE year = {year}
-          AND month = {month}
+        WHERE {date_field} >= ?
+          AND {date_field} <= ?
           {site_ids_sql}
     """
-    print(query)
-    params = [*site_ids]
+    params = [start_date, end_date, *site_ids]
 
     df = reader.read(query, params)
-    print(df)
+
     return df
