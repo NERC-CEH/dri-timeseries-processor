@@ -27,7 +27,7 @@ try:
         s3_client = boto3.client("s3")
 
     # Get data
-    prefix = "cosmos-with-gaps/PRECIP_1MIN_2024_LOOPED"
+    prefix = "cosmos-with-gaps/message_type=PRECIP_1MIN_2024_LOOPED"
     start_date = date(2024, 2, 4)
     end_date = None
     data = data_manager.query_by_date_range(
