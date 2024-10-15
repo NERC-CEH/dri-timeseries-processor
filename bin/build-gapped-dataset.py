@@ -21,11 +21,11 @@ COSMOS_GAP_DIR = DATA_DIR / "cosmos-with-gaps"
 
 # Creating the directory and copying files
 
-initialise_directory(COSMOS_GAP_DIR / "message_type=PRECIP_1MIN_2024_LOOPED", COSMOS_DIR / "message_type=PRECIP_1MIN_2024_LOOPED", purge=True)
+initialise_directory(COSMOS_GAP_DIR / "dataset=PRECIP_1MIN_2024_LOOPED", COSMOS_DIR / "dataset=PRECIP_1MIN_2024_LOOPED", purge=True)
 
 # Removing data
 
-COSMOS_GAP_PRECIP_DIR = COSMOS_GAP_DIR / "message_type=PRECIP_1MIN_2024_LOOPED"
+COSMOS_GAP_PRECIP_DIR = COSMOS_GAP_DIR / "dataset=PRECIP_1MIN_2024_LOOPED"
 
 # Rows and cells removed
 builder = ParquetBuilder(COSMOS_GAP_PRECIP_DIR / "year=2024" / "month=01" / "2024-01-17.parquet")
