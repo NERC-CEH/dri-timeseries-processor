@@ -47,12 +47,14 @@ def query_by_date_range(
 
     query = f"""
         SELECT {columns_sql}
-        FROM read_parquet('s3://{bucket_name}/{prefix}/**/*.parquet')
-        WHERE {date_field} >= ?
-          AND {date_field} <= ?
-          {site_ids_sql}
+        FROM read_parquet('s3://{bucket_name}/{prefix}/*/*.parquet',
+        hive_partitioning=true, hive_types = {{date: DATE}})
+        WHERE date BETWEEN ? AND ?
+        {site_ids_sql}
     """
+
     params = [start_date, end_date, *site_ids]
 
     df = reader.read(query, params)
+
     return df
