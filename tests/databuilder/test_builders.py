@@ -27,7 +27,7 @@ class TestParquetBuilderMethods(DataCase):
         self.test_data = Path(self.dest.name) / "out-data"
         utils.initialise_directory(self.test_data)
         
-        self.target = Path(f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/year=2024/month=01/2024-01-30.parquet")
+        self.target = Path(f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/date=2024-01-30/2024-01-30.parquet")
         
     def testDown(self):
 
@@ -82,7 +82,7 @@ class TestTimeClearing(DataCase):
         self.test_data = Path(self.dest.name) / "out-data"
         utils.initialise_directory(self.test_data)
         
-        self.target = f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/year=2024/month=01/2024-01-30.parquet"
+        self.target = f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/date=2024-01-30/2024-01-30.parquet"
         
         self.builder = ParquetBuilder(self.target)
 
@@ -188,7 +188,7 @@ class TestPercentageRowRemoval(DataCase):
         self.test_data = Path(self.dest.name) / "out-data"
         utils.initialise_directory(self.test_data)
         
-        self.target = f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/year=2024/month=01/2024-01-30.parquet"
+        self.target = f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/date=2024-01-30/2024-01-30.parquet"
         
         self.builder = ParquetBuilder(self.target)
 
@@ -224,7 +224,7 @@ class TestPercentageCellRemoval(DataCase):
         self.test_data = Path(self.dest.name) / "out-data"
         utils.initialise_directory(self.test_data)
         
-        self.target = f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/year=2024/month=01/2024-01-30.parquet"
+        self.target = f"{self.test_data}/dataset=PRECIP_1MIN_2024_LOOPED/date=2024-01-30/2024-01-30.parquet"
         
         self.builder = ParquetBuilder(self.target)
         self.excluded_columns = ["time", "SITE_ID", "RECORD"]
@@ -264,7 +264,7 @@ class TestBuilderWriting(DataCase):
         self.test_data = Path(self.dest.name) / "out-data"
         utils.initialise_directory(self.test_data)
 
-        self.target = self.test_data / "dataset=PRECIP_1MIN_2024_LOOPED"/"year=2024/month=01/2024-01-30.parquet"
+        self.target = self.test_data / "dataset=PRECIP_1MIN_2024_LOOPED" / "date=2024-01-30/2024-01-30.parquet"
         self.output = self.test_data / "new-file.parquet"
         self.output_new_dir = self.test_data / "a" / "new" / "file.parquet"
         self.builder = ParquetBuilder(self.target)
@@ -333,7 +333,7 @@ class TestBuilderInvocationMethod(DataCase):
         self.test_data = Path(self.dest.name) / "out-data"
         utils.initialise_directory(self.test_data)
         
-        self.target = self.test_data / "dataset=PRECIP_1MIN_2024_LOOPED"/"year=2024/month=01/2024-01-30.parquet"
+        self.target = self.test_data / "dataset=PRECIP_1MIN_2024_LOOPED" / "date=2024-01-30/2024-01-30.parquet"
         self.builder = ParquetBuilder(self.target)
 
     def tearDown(self):

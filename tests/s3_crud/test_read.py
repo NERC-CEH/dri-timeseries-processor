@@ -18,7 +18,7 @@ class TestReadParquetByQuery(BaseTestCase):
     def test_read_parquet_by_query_single_key(self):
         """ Test that a valid query on one object key returns the expected results
         """
-        key = "TEST_CATEGORY/TEST_YEAR/TEST_MONTH/2024-01-01.parquet"
+        key = "TEST_CATEGORY/date=2024-01-01/2024-01-01.parquet"
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}')"
         result = self.reader.read(query)
 
@@ -28,8 +28,8 @@ class TestReadParquetByQuery(BaseTestCase):
     def test_read_parquet_by_query_multiple_keys(self):
         """ Test that a valid query on multiple object keys returns the expected results
         """
-        keys = ("TEST_CATEGORY/TEST_YEAR/TEST_MONTH/2024-01-01.parquet",
-                "TEST_CATEGORY/TEST_YEAR/TEST_MONTH/2024-01-02.parquet")
+        keys = ("TEST_CATEGORY/date=2024-01-01/2024-01-01.parquet",
+                "TEST_CATEGORY/date=2024-01-02/2024-01-02.parquet")
         keys_str = [f's3://{self.bucket_name}/{key}' for key in keys]
         query = f"SELECT * FROM read_parquet({keys_str})"
         result = self.reader.read(query)
@@ -40,7 +40,7 @@ class TestReadParquetByQuery(BaseTestCase):
     def test_read_parquet_by_query_glob_keys(self):
         """ Test that a valid query using glob style key matching returns the expected results
         """
-        query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/TEST_CATEGORY/*/*/*.parquet')"
+        query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/TEST_CATEGORY/*/*.parquet')"
         result = self.reader.read(query)
 
         self.assertIsInstance(result, pl.DataFrame)
@@ -51,7 +51,7 @@ class TestReadParquetByQuery(BaseTestCase):
     def test_read_parquet_by_query_with_single_param(self):
         """ Test that a valid query including a parameterized WHERE clause returns the expected results
         """
-        key = "TEST_CATEGORY/TEST_YEAR/TEST_MONTH/2024-01-01.parquet"
+        key = "TEST_CATEGORY/date=2024-01-01/2024-01-01.parquet"
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}') WHERE SITE_ID = ?"
         params = ['site1']
         result = self.reader.read(query, params)

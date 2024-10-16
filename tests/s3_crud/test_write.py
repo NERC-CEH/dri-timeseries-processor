@@ -27,14 +27,14 @@ class TestS3Writer(BaseTestCase):
             S3Writer("not an s3 client")
 
     @parameterized.expand([
-        [date(2024, 2, 22), date(2024, 3, 1), "2024-02-22<=>2024-03-01"],
-        [date(2001, 12, 9), date(4025, 3, 1), "2001-12-09<=>4025-03-01"],
-        [date(1, 2, 6), date(2024, 3, 27), "1-02-06<=>2024-03-27"],
+        [date(2024, 2, 22), date(2024, 3, 1), "start_date=2024-02-22/end_date=2024-03-01/2024-02-22<=>2024-03-01"],
+        [date(2001, 12, 9), date(4025, 3, 1), "start_date=2001-12-09/end_date=4025-03-01/2001-12-09<=>4025-03-01"],
+        [date(1, 2, 6), date(2024, 3, 27), "start_date=1-02-06/end_date=2024-03-27/1-02-06<=>2024-03-27"],
     ])
     def test_date_range_key_builder(self, start_date, end_date, expected):
         """Tests that the _build_date_range_key method returns correctly"""
         
-        result = S3Writer._build_date_range_key(start_date, end_date)
+        result = S3Writer._build_date_range_partition_key(start_date, end_date)
         self.assertEqual(result, expected)
 
 
