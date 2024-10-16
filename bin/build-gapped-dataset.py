@@ -19,14 +19,16 @@ DATA_DIR = HERE.parent / "parquet-data"
 COSMOS_DIR = DATA_DIR / "cosmos"
 COSMOS_GAP_DIR = DATA_DIR / "cosmos-with-gaps"
 
-# Creating the directory and copying files
-
+# Creating the directories and copying files
 initialise_directory(COSMOS_GAP_DIR / "dataset=PRECIP_1MIN_2024_LOOPED", COSMOS_DIR / "dataset=PRECIP_1MIN_2024_LOOPED", purge=True)
+initialise_directory(COSMOS_GAP_DIR / "dataset=SOILMET_30MIN_2024_LOOPED", COSMOS_DIR / "dataset=SOILMET_30MIN_2024_LOOPED", purge=True)
 
-# Removing data
+
+##### PRECIPITATION #####
 
 COSMOS_GAP_PRECIP_DIR = COSMOS_GAP_DIR / "dataset=PRECIP_1MIN_2024_LOOPED"
 
+# Removing data
 # Rows and cells removed
 builder = ParquetBuilder(COSMOS_GAP_PRECIP_DIR / "date=2024-01-17" / "2024-01-17.parquet")
 builder.build_all(row_removal_percent=30, cell_removal_percent=5, protected_columns=protected_cols)
@@ -82,4 +84,44 @@ builder.reset()
 builder.target = COSMOS_GAP_PRECIP_DIR / "date=2024-02-04" / "2024-02-04.parquet"
 builder.output = builder.target
 builder.build_all(row_removal_percent=70, cell_removal_percent=60, protected_columns=protected_cols)
+builder.write_output()
+
+##### SOILMET ####
+COSMOS_GAP_SOILMET_DIR = COSMOS_GAP_DIR / "dataset=SOILMET_30MIN_2024_LOOPED"
+
+# Remove a full day
+os.remove(COSMOS_GAP_SOILMET_DIR / "date=2024-02-25" / "2024-02-25.parquet")
+
+# Making very little and gappy data
+builder.reset()
+builder.target = COSMOS_GAP_SOILMET_DIR / "date=2024-02-24" / "2024-02-24.parquet"
+builder.output = builder.target
+builder.build_all(row_removal_percent=70, cell_removal_percent=60, protected_columns=protected_cols)
+builder.write_output()
+
+# Midnight crossing gap
+builder.reset()
+builder.target = COSMOS_GAP_SOILMET_DIR / "date=2024-02-26" / "2024-02-26.parquet"
+builder.output = builder.target
+builder.build_all(clear_after_time=time(hour=20))
+builder.write_output()
+
+builder.reset()
+builder.target = COSMOS_GAP_SOILMET_DIR / "date=2024-02-27" / "2024-02-27.parquet"
+builder.output = builder.target
+builder.build_all(clear_before_time=time(hour=2))
+builder.write_output()
+
+# High corruption
+builder.reset()
+builder.target = COSMOS_GAP_SOILMET_DIR / "date=2024-02-28" / "2024-02-28.parquet"
+builder.output = builder.target
+builder.build_all(cell_removal_percent=75, protected_columns=protected_cols)
+builder.write_output()
+
+# Rows and cells removed
+builder.reset()
+builder.target = COSMOS_GAP_SOILMET_DIR / "date=2024-02-29" / "2024-02-29.parquet"
+builder.output = builder.target
+builder.build_all(row_removal_percent=30, cell_removal_percent=10, protected_columns=protected_cols)
 builder.write_output()
