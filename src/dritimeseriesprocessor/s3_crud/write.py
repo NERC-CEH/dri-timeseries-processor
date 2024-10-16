@@ -102,6 +102,5 @@ class S3Writer(WriterInterface):
 
         start_date = start_date.strftime(date_format)
         end_date = end_date.strftime(date_format)
-        
 
         return f"start_date={start_date}/end_date={end_date}/{start_date}<=>{end_date}"

@@ -5,10 +5,9 @@ from datetime import date, datetime
 from typing import List, Optional, Union
 
 import polars as pl
-import time
 
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader, ParquetReaderInterface
-from dritimeseriesprocessor.utils import steralize_dates, steralize_site_ids, month_list, year_list
+from dritimeseriesprocessor.utils import steralize_dates, steralize_site_ids
 
 logger = logging.getLogger(__name__)
 
@@ -46,31 +45,16 @@ def query_by_date_range(
     columns_sql = ", ".join(columns) if columns else "*"
     site_ids_sql = f"AND {site_id_field} IN ({','.join(['?'] * len(site_ids))})" if site_ids else ""
 
-    print(start_date)
-    print(end_date)
-    years = year_list(start_date, end_date)
-    months = month_list(start_date, end_date)
-    print(years)
-    print(months)
-
     query = f"""
-        EXPLAIN ANALYZE
         SELECT {columns_sql}
-        FROM read_parquet('s3://{bucket_name}/{prefix}/*/*.parquet', hive_partitioning=true, hive_types = {{date: DATE}})
+        FROM read_parquet('s3://{bucket_name}/{prefix}/*/*.parquet',
+        hive_partitioning=true, hive_types = {{date: DATE}})
         WHERE date BETWEEN ? AND ?
         {site_ids_sql}
     """
-    print(query)
+
     params = [start_date, end_date, *site_ids]
 
-    times = []
-    #for i in range(0,10):
-    #    start = time.time()
     df = reader.read(query, params)
-    #    end = time.time()
-    #    times.append(end-start)
-    
-    print(sum(times)/ 10)
 
-    print(df)
     return df

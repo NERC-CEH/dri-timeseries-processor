@@ -51,13 +51,12 @@ class DuckDbParquetReader(ParquetReaderInterface):
         # https://duckdb.org/docs/extensions/httpfs/overview.html
         # Create secret for S3 authentication
         # force_download - fixes the "missing magic bytes at end of file" error
-        #                  by forcing upfront download of the file before processing
+        # by forcing upfront download of the file before processing
         conn.execute("""
             INSTALL httpfs;
             LOAD httpfs;
             SET force_download = true;
             SET enable_profiling = query_tree;
-            SET profiling_output = 'profile.json';
         """)
 
         if app_config.environment == "local":
@@ -88,8 +87,6 @@ class DuckDbParquetReader(ParquetReaderInterface):
         try:
             df = conn.execute(query, params).pl()
             logger.info(conn.execute(query, params))
-            results = conn.fetchall()
-            print(results[0][1])
             return df
         except duckdb.HTTPException as e:
             logger.error(f"Failed to find data from query: {query}")
