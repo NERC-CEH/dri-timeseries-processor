@@ -87,7 +87,6 @@ builder.build_all(row_removal_percent=70, cell_removal_percent=60, protected_col
 builder.write_output()
 
 ##### SOILMET ####
-
 COSMOS_GAP_SOILMET_DIR = COSMOS_GAP_DIR / "dataset=SOILMET_30MIN_2024_LOOPED"
 
 # Remove a full day
