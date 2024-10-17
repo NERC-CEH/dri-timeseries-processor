@@ -75,7 +75,7 @@ class Metrics:
 
         for name, metric in metrics.items():
             try:
-                file_path = os.path.join(self.metrics_dir, f"{name}.txt")
+                file_path = os.path.join(self.metrics_dir, f"{name}.prom")
                 registry = CollectorRegistry()
                 registry.register(metric)
                 write_to_textfile(file_path, registry)
