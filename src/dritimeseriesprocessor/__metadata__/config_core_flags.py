@@ -10,12 +10,12 @@ validated with Pydantic.
 import json
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class CoreFlag(BaseModel):
     """
-    Info on a cor flag
+    Info on a core flag
 
     Attributes:
         name (str): The name of the flag
@@ -28,6 +28,25 @@ class CoreFlag(BaseModel):
     description: str
     symbol: str
     id: int
+
+    @field_validator("id")
+    def check_id(cls, v: float) -> float:
+        """
+        Validates that the id is a multiple of 2 (or is 1)
+
+        Args:
+            cls (Type[CoreFlag]): The class of the model being validated.
+            v (float): The value of id to validate.
+
+        Raises:
+            ValueError: If id is not even
+
+        Returns:
+            float: The validated id.
+        """
+        if v != 1 and v % 2 != 0:
+            raise ValueError("id must be 1 or an even number")
+        return v
 
 
 # Instantiate the models
