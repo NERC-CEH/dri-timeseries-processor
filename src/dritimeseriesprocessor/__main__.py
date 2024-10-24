@@ -27,9 +27,9 @@ try:
         s3_client = boto3.client("s3")
 
     # Get data
-    prefix = "cosmos-with-gaps/PRECIP_1MIN_2024_LOOPED"
-    start_date = date(2024, 2, 4)
-    end_date = None
+    prefix = "cosmos/dataset=PRECIP_1MIN_2024_LOOPED"
+    start_date = date(2024, 3, 28)
+    end_date = date(2024, 3, 29)
     data = data_manager.query_by_date_range(
         app_config.level_0_bucket,
         prefix,
@@ -84,7 +84,8 @@ try:
     writer = S3Writer(s3_client)
     writer.write(
         bucket_name=app_config.qc_bucket,
-        key=f"cosmos/30min/{writer._build_date_range_key(start_date, end_date)}.parquet",
+        key=f"""cosmos/dataset=PRECIP_1MIN_2024_LOOPED/
+            {writer._build_date_range_partition_key(start_date, end_date)}.parquet""",
         body=infld_data,
     )
 

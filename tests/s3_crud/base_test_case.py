@@ -87,7 +87,10 @@ class BaseTestCase(unittest.TestCase):
             parquet_buffer.seek(0)
 
             # Upload Parquet file to S3 bucket with date-stamped filename
-            file_key = f"TEST_CATEGORY/{current_date.strftime('%Y-%m')}/{current_date.strftime('%Y-%m-%d')}.parquet"
+            file_key = f"TEST_CATEGORY/date={current_date.strftime('%Y-%m-%d')}/{current_date.strftime('%Y-%m-%d')}.parquet"
             cls.s3_client.put_object(Bucket=cls.bucket_name, Key=file_key, Body=parquet_buffer.getvalue())
 
             current_date += timedelta(days=1)
+
+if __name__ == "__main__":
+    unittest.main()
