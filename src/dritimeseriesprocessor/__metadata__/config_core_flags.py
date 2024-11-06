@@ -30,13 +30,13 @@ class CoreFlag(BaseModel):
     id: int
 
     @field_validator("id")
-    def check_id(cls, v: float) -> float:
+    def check_id(cls, v: int) -> int:
         """
         Validates that the id is a power of 2
 
         Args:
             cls (Type[CoreFlag]): The class of the model being validated.
-            v (float): The value of id to validate.
+            v (integer): The value of id to validate.
 
         Raises:
             ValueError: If id is not even
@@ -44,6 +44,8 @@ class CoreFlag(BaseModel):
         Returns:
             float: The validated id.
         """
+        if not isinstance(v, int):
+            raise ValueError("id must be an integer")
         # Use bit manipulation &, to determine power of 2.
         # Power of 2 is always 1 followed by 0's e.g. 8 == 1000
         # Minus 1 of power of 2 is 0 followed by 1's, e.g. 7 == 0111
