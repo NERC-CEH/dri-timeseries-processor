@@ -6,6 +6,7 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.flagging import initialise_core_flags
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
@@ -13,6 +14,8 @@ from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
+from time_series import TimeSeries
+from time_series.period import Period
 
 metrics.setup_metrics()
 setup_logging()
@@ -42,6 +45,16 @@ try:
     data = data.rename({"P_LOADCELL_TEMP": "TA"})
 
     logger.info(f"Retrieved data from s3: {data.shape}")
+
+    # Initilise TimeSeries object.
+    resolution = Period.of_minutes(1)
+    periodicity = Period.of_minutes(1)
+    ts = TimeSeries.from_polars(data, "time", resolution, periodicity, supp_col_names=["SITE_ID"])
+
+    # Initialise core flags
+    ts = initialise_core_flags(ts)
+
+    data = ts.df
 
     # Preprocessing
     preprocessed_data = run_preprocess(data)
