@@ -55,6 +55,7 @@ try:
     ts = initialise_core_flags(ts)
 
     data = ts.df
+    data = data.with_columns(pl.col("time").dt.convert_time_zone("UTC").dt.replace_time_zone(None))
 
     # Preprocessing
     preprocessed_data = run_preprocess(data)
