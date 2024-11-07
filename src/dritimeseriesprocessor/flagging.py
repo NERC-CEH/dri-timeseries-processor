@@ -20,5 +20,5 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
         The TimeSeries with the flag columns added
     """
     for data_col in ts.data_col_names:
-        ts.add_supp_column(f"{data_col}_flag", core_flag_config["unchecked"].id)
+        ts.add_supp_column(f"{data_col}_FLAG", core_flag_config["unchecked"].id)
     return ts
