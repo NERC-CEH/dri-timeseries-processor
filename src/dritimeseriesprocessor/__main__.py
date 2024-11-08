@@ -92,14 +92,18 @@ try:
     metrics.record_successful_run()
     logger.info("Processing completed successfully")
 
-    # Write all metrics at the end of successful processing
-    metrics.write_metrics()
+    # Push all metrics at the end of successful processing
+    metrics.export_metrics_to_pushgateway(
+            url="pushgateway.monitoring.svc:9091", job="timeseries-processor", registry=metrics.registry
+        )
 
 except Exception as e:
     metrics.record_failed_run()
     logger.exception(f"An error occurred during processing: {str(e)}")
 
-    # Write all metrics even if an exception occurs
-    metrics.write_metrics()
+    # Push all metrics even if an exception occurs
+    metrics.export_metrics_to_pushgateway(
+            url="pushgateway.monitoring.svc:9091", job="timeseries-processor", registry=metrics.registry
+        )
 
     raise
