@@ -35,7 +35,7 @@ try:
         prefix,
         start_date,
         end_date,
-        site_ids="ALIC1",
+        site_ids="BUNNY",
         columns=["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"],
     )
 
