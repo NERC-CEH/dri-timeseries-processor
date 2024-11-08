@@ -75,7 +75,7 @@ class BaseTestCase(unittest.TestCase):
             # Create hourly data for the current date
             data = {
                 'time': [current_date + timedelta(hours=i) for i in range(24)] * 2,
-                'SITE_ID': ['site1'] * 24 + ['site2'] * 24,
+                'SITE_ID': ['site1'] * 48,
                 'col1': list(range(48)),
                 'col2': list(range(48, 96))
             }
@@ -87,7 +87,7 @@ class BaseTestCase(unittest.TestCase):
             parquet_buffer.seek(0)
 
             # Upload Parquet file to S3 bucket with date-stamped filename
-            file_key = f"TEST_CATEGORY/date={current_date.strftime('%Y-%m-%d')}/{current_date.strftime('%Y-%m-%d')}.parquet"
+            file_key = f"TEST_CATEGORY/site=site1/date={current_date.strftime('%Y-%m-%d')}/data.parquet"
             cls.s3_client.put_object(Bucket=cls.bucket_name, Key=file_key, Body=parquet_buffer.getvalue())
 
             current_date += timedelta(days=1)

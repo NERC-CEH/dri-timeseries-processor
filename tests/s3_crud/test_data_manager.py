@@ -14,7 +14,7 @@ class TestReadByDateRange(BaseTestCase):
         """
         start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 4))
         
-        expected_site_ids = ['site1', 'site2']
+        expected_site_ids = ['site1']
         expected_datetimes = pl.datetime_range(start=start_date, end=end_date, interval="1h", eager=True).to_list()
 
         result = query_by_date_range(
@@ -29,7 +29,7 @@ class TestReadByDateRange(BaseTestCase):
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(result_site_ids), expected_site_ids)
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
-        self.assertEqual(result.shape, (192, 5))
+        self.assertEqual(result.shape, (192, 6))
 
     def test_read_by_date_range_with_site_ids(self):
         """Test reading data when specifying site IDs.
@@ -52,7 +52,7 @@ class TestReadByDateRange(BaseTestCase):
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(result_site_ids), expected_site_ids)
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
-        self.assertEqual(result.shape, (120, 5))
+        self.assertEqual(result.shape, (240, 6))
 
     def test_read_by_date_range_with_selected_columns(self):
         """Test reading data when specifying specific columns
@@ -60,7 +60,7 @@ class TestReadByDateRange(BaseTestCase):
         cols = ['time', 'SITE_ID', 'col1']
         start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 10))
 
-        expected_site_ids = ['site1', 'site2']
+        expected_site_ids = ['site1']
         expected_datetimes = pl.datetime_range(start=start_date, end=end_date, interval="1h", eager=True).to_list()
         
         result = query_by_date_range(

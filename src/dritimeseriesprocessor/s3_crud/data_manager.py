@@ -47,8 +47,7 @@ def query_by_date_range(
 
     query = f"""
         SELECT {columns_sql}
-        FROM read_parquet('s3://{bucket_name}/{prefix}/*/*.parquet',
-        hive_partitioning=true, hive_types = {{date: DATE}})
+        FROM read_parquet('s3://{bucket_name}/{prefix}/site=*/date=*/data.parquet')
         WHERE date BETWEEN ? AND ?
         {site_ids_sql}
     """
