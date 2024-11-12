@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+
 from datetime import datetime
 import polars as pl
 
@@ -18,6 +19,7 @@ mock_core_flag_config = {
 
 
 class TestInitialiseCoreFlags(unittest.TestCase):
+
     def test_initialise_core_flags(self):
         """Test that initialise_core_flags adds flag columns correctly.
         """

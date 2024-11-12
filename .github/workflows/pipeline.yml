@@ -16,6 +16,7 @@ jobs:
   test-python:
     uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
     with:
+      coverage_threshold: 90
       localstack_profile_name: localstack
 
   build-test-deploy-docker:

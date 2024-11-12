@@ -1,0 +1,13 @@
+# Adding this to test Push Gateway locally
+# my global config
+global:
+  scrape_interval:     15s
+  evaluation_interval: 30s
+  # scrape_timeout is set to the global default (10s).
+
+scrape_configs:
+- job_name: timeseries-processor
+  scrape_interval: 5s
+  honor_labels: true
+  static_configs:
+  - targets: ['localhost:9091']
