@@ -1,8 +1,6 @@
 """Module for exporting prometheus metrics."""
 
 import logging
-import os
-from typing import Optional
 
 from prometheus_client import CollectorRegistry, Counter, Histogram, push_to_gateway
 
@@ -15,7 +13,7 @@ logger = logging.getLogger(__name__)
 class Metrics:
     def __init__(self) -> None:
         """Initialize the Metrics"""
-        
+
         # Histograms
         self.preprocessing_time = Histogram("preprocessing_time", "Time spent on preprocessing")
         self.qc_time = Histogram("qc_time", "Time spent on quality control")
@@ -38,14 +36,12 @@ class Metrics:
         self.registry.register(self.successful_runs)
         self.registry.register(self.failed_runs)
 
-
     def export_metrics_to_pushgateway(self, url: str, job: str, registry: CollectorRegistry) -> None:
         """Export metrics to the prometheus pushgateway.
 
         Args:
             url: URL for pushgateway
             job: The job name
-            instance: Pushgateway instance
             registry: An instance of the collector registry
         """
         push_to_gateway(gateway=url, job=job, registry=registry)
