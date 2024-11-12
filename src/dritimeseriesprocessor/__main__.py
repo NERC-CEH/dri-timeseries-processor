@@ -108,8 +108,8 @@ try:
 
     # Push all metrics at the end of successful processing
     metrics.export_metrics_to_pushgateway(
-            url="pushgateway.monitoring.svc:9091", job="timeseries-processor", registry=metrics.registry
-        )
+        url="pushgateway.monitoring.svc:9091", job="timeseries-processor", registry=metrics.registry
+    )
 
 except Exception as e:
     metrics.record_failed_run()
@@ -117,7 +117,7 @@ except Exception as e:
 
     # Push all metrics even if an exception occurs
     metrics.export_metrics_to_pushgateway(
-            url="pushgateway.monitoring.svc:9091", job="timeseries-processor", registry=metrics.registry
-        )
+        url="pushgateway.monitoring.svc:9091", job="timeseries-processor", registry=metrics.registry
+    )
 
     raise

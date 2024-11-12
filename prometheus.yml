@@ -1,3 +1,4 @@
+# Adding this to test Push Gateway locally
 # my global config
 global:
   scrape_interval:     15s
