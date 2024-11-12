@@ -30,9 +30,9 @@ try:
         s3_client = boto3.client("s3")
 
     # Get data
-    prefix = "cosmos/dataset=PRECIP_1MIN_2024_LOOPED"
-    start_date = date(2024, 3, 28)
-    end_date = date(2024, 3, 29)
+    prefix = "cosmos-with-gaps/dataset=PRECIP_1MIN_2024_LOOPED"
+    start_date = date(2024, 2, 3)
+    end_date = date(2024, 2, 4)
     data = data_manager.query_by_date_range(
         app_config.level_0_bucket,
         prefix,
@@ -46,10 +46,21 @@ try:
 
     logger.info(f"Retrieved data from s3: {data.shape}")
 
+    # Dummy some data that will force some qc checks to run
+    data = data.with_columns(
+        [
+            pl.Series([0 if ((i // 20) % 2 == 0) else 100 for i in range(len(data))]).alias("BATTV"),
+            pl.Series(i * 2 for i in range(len(data))).alias("PRECIP"),
+            pl.Series(i for i in range(len(data))).alias("SCANS"),
+        ]
+    )
+
+    logger.info(f"Added dummy data, shape: {data.shape}")
+
     # Initilise TimeSeries object.
     resolution = Period.of_minutes(1)
     periodicity = Period.of_minutes(1)
-    ts = TimeSeries.from_polars(data, "time", resolution, periodicity, supp_col_names=["SITE_ID"])
+    ts = TimeSeries.from_polars(data, "time", resolution, periodicity, supp_col_names=["SITE_ID", "BATTV", "SCANS"])
 
     # Initialise core flags
     ts = initialise_core_flags(ts)
@@ -63,17 +74,6 @@ try:
     logger.info(f"Ran preprocessor successfully, shape: {preprocessed_data.shape}")
 
     # Quality control
-    # dummy some data that will force some qc checks to run
-    preprocessed_data = preprocessed_data.with_columns(
-        [
-            pl.Series([0 if ((i // 20) % 2 == 0) else 100 for i in range(len(preprocessed_data))]).alias("BATTV"),
-            pl.Series(i * 2 for i in range(len(preprocessed_data))).alias("PRECIP"),
-            pl.Series(i for i in range(len(preprocessed_data))).alias("SCANS"),
-        ]
-    )
-
-    logger.info(f"Added dummy data to preprocessed data, shape: {preprocessed_data.shape}")
-
     qcd_data = run_quality_control(preprocessed_data)
 
     # Calculate the number of flags added
