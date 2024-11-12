@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from datetime import datetime
 import polars as pl
 
@@ -10,9 +10,7 @@ class TestInitialiseCoreFlags(unittest.TestCase):
     def setUp(self):
         """Set up a mock core_flag_config for testing."""
         self.mock_core_flag_config = {
-            "unchecked": {
-                "id": 1  # Mock value for the 'unchecked' flag
-            }
+            "unchecked": Mock(id=1)  # Mock value for the 'unchecked' flag
         }
 
     def test_initialise_core_flags(self):
