@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 
 from datetime import datetime
 import polars as pl
+import numpy as np
 
 from time_series import TimeSeries
 from dritimeseriesprocessor.flagging import (
@@ -105,7 +106,7 @@ class TestAddMissingFlag(unittest.TestCase):
     def setUp(self):
         """Set up a sample DataFrame for testing."""
         self.df = pl.DataFrame({
-            "data": [10, None, 30, None, 50],
+            "data": [10., None, np.nan, float("nan"), 50.],
             "flag": [0, 0, 0, 0, 0]  # Initial flag values
         })
 
@@ -120,8 +121,8 @@ class TestAddMissingFlag(unittest.TestCase):
 
             # Expected result
             expected_df = pl.DataFrame({
-                "data": [10, None, 30, None, 50],
-                "flag": [0, 2, 0, 2, 0]  # Flags updated for missing values
+                "data": [10., None, np.nan, float("nan"), 50.],
+                "flag": [0, 2, 2, 2, 0]  # Flags updated for missing values
             })
 
             # Check if the result matches the expected DataFrame
