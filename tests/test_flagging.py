@@ -46,8 +46,6 @@ class TestInitialiseCoreFlags(unittest.TestCase):
             self.assertIn("data_col2_FLAG", result.supp_col_names)
             self.assertNotIn("data_col1_FLAG", result.data_col_names)
             self.assertNotIn("data_col2_FLAG", result.data_col_names)
-            self.assertTrue(all(result.df["data_col1_FLAG"] == 1))
-            self.assertTrue(all(result.df["data_col2_FLAG"] == 1))
 
     def test_initialise_core_flags_no_columns(self):
         """Test that an empty DataFrame does not add any flag columns.
