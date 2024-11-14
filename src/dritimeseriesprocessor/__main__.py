@@ -31,8 +31,8 @@ try:
 
     # Get data
     prefix = "cosmos/dataset=PRECIP_1MIN_2024_LOOPED"
-    start_date = date(2024, 2, 3)
-    end_date = date(2024, 2, 4)
+    start_date = date(2024, 3, 28)
+    end_date = date(2024, 3, 29)
     data = data_manager.query_by_date_range(
         app_config.level_0_bucket,
         prefix,
