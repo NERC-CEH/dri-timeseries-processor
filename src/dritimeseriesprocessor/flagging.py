@@ -22,12 +22,12 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     Returns:
         The TimeSeries with the flag columns added
     """
-    for data_col_name in ts.data_col_names:
+    for data_col_name in ts.data_columns:
         flag_col_name = f"{data_col_name}_FLAG"
-        ts.add_supp_column(flag_col_name, 0)
 
-        ts._df = add_unchecked_flag(ts.df, flag_col_name)
-        ts._df = add_missing_flag(ts.df, data_col_name, flag_col_name)
+        ts.init_supplementary_column(flag_col_name, 0)
+        ts.df = add_unchecked_flag(ts.df, flag_col_name)
+        ts.df = add_missing_flag(ts.df, data_col_name, flag_col_name)
 
     return ts
 
