@@ -1,6 +1,7 @@
 """Module for exporting prometheus metrics."""
 
 import logging
+import os
 
 from prometheus_client import CollectorRegistry, Counter, Histogram, push_to_gateway
 
@@ -35,6 +36,17 @@ class Metrics:
         self.registry.register(self.flags_added)
         self.registry.register(self.successful_runs)
         self.registry.register(self.failed_runs)
+
+    def get_pushgateway_url(self) -> str:
+        """Gets the Pushgateway URL based on environment settings.
+
+        Returns:
+            str: The Pushgateway URL, either for local or k8s environment.
+        """
+        pushgateway_url = "pushgateway.monitoring.svc:9091"
+        if "environment" not in os.environ:
+            pushgateway_url = "localhost:9091"
+        return pushgateway_url
 
     def export_metrics_to_pushgateway(self, url: str, job: str, registry: CollectorRegistry) -> None:
         """Export metrics to the prometheus pushgateway.
