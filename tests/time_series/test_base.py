@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Optional, Union
 
 import polars as pl
@@ -9,6 +9,9 @@ from polars.testing import assert_series_equal, assert_frame_equal
 
 from time_series.base import TimeSeries
 from time_series.period import Period
+
+
+TZ_UTC = timezone.utc
 
 
 def init_timeseries(
@@ -1189,23 +1192,30 @@ class TestRemoveMissingColumns(unittest.TestCase):
 
 
 class TestSelectColumns(unittest.TestCase):
-    times = [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)]
+    times = [datetime(2024, 1, 1, tzinfo=TZ_UTC),
+             datetime(2024, 1, 2, tzinfo=TZ_UTC),
+             datetime(2024, 1, 3, tzinfo=TZ_UTC)]
     values = {"col1": [1, 2, 3], "col2": [4, 5, 6], "col3": [7, 8, 9]}
+    metadata = {
+        "col1": {"key1": "1", "key2": "10", "key3": "100"},
+        "col2": {"key1": "2", "key2": "20", "key3": "200"},
+        "col3": {"key1": "3", "key2": "30", "key3": "300"},
+    }
 
     def test_select_single_column(self):
         """Test selecting a single of column."""
         ts = init_timeseries(self.times, self.values)
-        expected_df = pl.DataFrame({"time": self.times} | {"col1": [1, 2, 3]})
+        expected_df = pl.DataFrame({"time": self.times} | {"col1": self.values["col1"]})
 
-        ts.select_columns(["col1"])
+        ts = ts.select_columns(["col1"])
         assert_frame_equal(ts.df, expected_df)
 
     def test_select_multiple_columns(self):
         """Test selecting a single of column."""
         ts = init_timeseries(self.times, self.values)
-        expected_df = pl.DataFrame({"time": self.times} | {"col1": [1, 2, 3], "col2": [4, 5, 6]})
+        expected_df = pl.DataFrame({"time": self.times} | {"col1": self.values["col1"], "col2": self.values["col2"]})
 
-        ts.select_columns(["col1", "col2"])
+        ts = ts.select_columns(["col1", "col2"])
         assert_frame_equal(ts.df, expected_df)
 
     def test_select_no_columns_raises_error(self):
@@ -1225,6 +1235,45 @@ class TestSelectColumns(unittest.TestCase):
         ts = init_timeseries(self.times, self.values)
         with self.assertRaises(pl.exceptions.ColumnNotFoundError):
             ts.select_columns(["col1", "col2", "nonexistent_column"])
+
+    def test_select_column_doesnt_mutate_original_ts(self):
+        """When selecting a column, the original ts should be unchanged"""
+        ts = init_timeseries(self.times, self.values)
+        original_df = ts.df
+
+        col1_ts = ts.select_columns(["col1"])
+        expected_df = pl.DataFrame({"time": self.times} | {"col1": self.values["col1"]})
+        assert_frame_equal(col1_ts.df, expected_df)
+        assert_frame_equal(ts.df, original_df)
+
+        col2_ts = ts.select_columns(["col2"])
+        expected_df = pl.DataFrame({"time": self.times} | {"col2": self.values["col2"]})
+        assert_frame_equal(col2_ts.df, expected_df)
+        assert_frame_equal(ts.df, original_df)
+
+    def test_select_column_trims_metadata(self):
+        """When selecting a column, the original ts metadata should be unchanged"""
+        ts = init_timeseries(self.times, self.values, metadata=self.metadata)
+
+        col1_ts = ts.select_columns(["col1"])
+        expected_metadata = {"col1": self.metadata["col1"]}
+        self.assertEqual(col1_ts.metadata(), expected_metadata)
+        # Ensure original ts metadata unchanged
+        self.assertEqual(ts.metadata(), self.metadata)
+
+    def test_select_column_trims_supplementary_columns(self):
+        """When selecting a column, the original ts supplementary columns should be unchanged"""
+        ts = init_timeseries(self.times, self.values, supplementary_columns=["col2"])
+
+        col1_ts = ts.select_columns(["col1"])
+        self.assertEqual(col1_ts.columns, ["col1"])
+        self.assertEqual(col1_ts.supplementary_columns, [])
+        self.assertEqual(col1_ts.data_columns, ["col1"])
+
+        # Ensure original ts supplementary columns unchanged
+        self.assertEqual(ts.columns, ["col1", "col2", "col3"])
+        self.assertEqual(ts.supplementary_columns, ["col2"])
+        self.assertEqual(ts.data_columns, ["col1", "col3"])
 
 
 class TestMetadata(unittest.TestCase):
@@ -1285,6 +1334,7 @@ class TestMetadata(unittest.TestCase):
             "col3": {"key1": "3", "nonexistent_key": None},
         }
         self.assertEqual(result, expected)
+
 
 class TestGetMetadata(unittest.TestCase):
     times = [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)]
@@ -1411,7 +1461,9 @@ class TestRemoveMetadata(unittest.TestCase):
 
 
 class TestGetattr(unittest.TestCase):
-    times = [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)]
+    times = [datetime(2024, 1, 1, tzinfo=TZ_UTC),
+             datetime(2024, 1, 2, tzinfo=TZ_UTC),
+             datetime(2024, 1, 3, tzinfo=TZ_UTC)]
     values = {"col1": [1, 2, 3], "col2": [4, 5, 6], "col3": [7, 8, 9]}
     metadata = {
         "col1": {"key1": "1", "key2": "10", "key3": "100"},
@@ -1452,8 +1504,11 @@ class TestGetattr(unittest.TestCase):
         with self.assertRaises(AttributeError):
             result = ts.col1.key0
 
+
 class TestGetItem(unittest.TestCase):
-    times = [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)]
+    times = [datetime(2024, 1, 1, tzinfo=TZ_UTC),
+             datetime(2024, 1, 2, tzinfo=TZ_UTC),
+             datetime(2024, 1, 3, tzinfo=TZ_UTC)]
     values = {"col1": [1, 2, 3], "col2": [4, 5, 6], "col3": [7, 8, 9]}
     metadata = {
         "col1": {"key1": "1", "key2": "10", "key3": "100"},

@@ -83,16 +83,17 @@ class TimeSeries:
         else:
             time_zone = default_time_zone
 
+        # Set _df directly, otherwise the df setter considers the time column is mutated due to time zone added
         self._df = self.df.with_columns(pl.col(self.time_name).dt.replace_time_zone(time_zone))
         self._time_zone = time_zone
 
     def select_time(self) -> pl.Series:
         """Return just the data series of the primary datetime field."""
-        return self._df[self.time_name]
+        return self.df[self.time_name]
 
     def sort_time(self) -> None:
         """Sort the TimeSeries DataFrame by the time column."""
-        self._df = self.df.sort(self.time_name)
+        self.df = self.df.sort(self.time_name)
 
     @property
     def resolution(self) -> Period:
@@ -294,15 +295,33 @@ class TimeSeries:
         """
         return sorted([col for col in self.df.columns if col != self.time_name])
 
-    def select_columns(self, columns: list[str]) -> None:
-        """Update the TimeSeries instance to include only the specified columns.
+    def select_columns(self, columns: list[str]) -> "TimeSeries":
+        """Filter TimeSeries instance to include only the specified columns.
 
         Args:
             columns: A list of column names to retain in the updated TimeSeries.
+
+        Returns:
+            New TimeSeries instance with only selected columns.
         """
         if not columns:
             raise ValueError("No columns specified.")
-        self.df = self._df.select([self.time_name] + columns)
+
+        new_df = self.df.select([self.time_name] + columns)
+        new_supplementary_columns = [col for col in self.supplementary_columns if col in columns]
+        new_metadata = {col: self._get_metadata(col) for col in columns}
+
+        ts = TimeSeries(
+            new_df,
+            self.time_name,
+            self.resolution,
+            self.periodicity,
+            self.time_zone,
+            new_supplementary_columns,
+            new_metadata,
+        )
+
+        return ts
 
     def init_supplementary_column(self, column: str, data: Optional[Union[int, float, str, Iterable]] = None) -> None:
         """Initialises a supplementary column, adding it to the TimeSeries DataFrame.
@@ -327,7 +346,7 @@ class TimeSeries:
         else:
             data = pl.Series(column, data)
 
-        self.df = self._df.with_columns(data.alias(column))
+        self.df = self.df.with_columns(data.alias(column))
         self.set_supplementary_columns(column)
 
     def set_supplementary_columns(self, columns: Union[str, list]) -> None:
@@ -492,8 +511,7 @@ class TimeSeries:
             elif name in self.columns:
                 # If the attribute name matches a column in the DataFrame (excluding the time column), select that
                 #  column and return the TimeSeries instance.
-                self.select_columns([name])
-                return self
+                return self.select_columns([name])
             elif name not in self.columns and len(self.columns) == 1:
                 # If the attribute name does not match a column, it assumes this is a Metadata key. In this case,
                 #   the TimeSeries can only contain one data column. Check for metadata for that column.
@@ -535,20 +553,19 @@ class TimeSeries:
             return self.select_time()
         if isinstance(key, str):
             key = [key]
-        self.select_columns(key)
-        return self
+        return self.select_columns(key)
 
     def __len__(self) -> int:
         """Get the number of rows in the time series."""
-        return self._df.height
+        return self.df.height
 
     def __iter__(self) -> Iterator:
         """Return an iterator over the rows of the DataFrame."""
-        return self._df.iter_rows()
+        return self.df.iter_rows()
 
     def __str__(self) -> str:
         """Return the string representation of the TimeSeries class."""
-        return self._df.__str__()
+        return self.df.__str__()
 
     def __dir__(self) -> list[str]:
         """Return a list of attributes associated with the TimeSeries class.
