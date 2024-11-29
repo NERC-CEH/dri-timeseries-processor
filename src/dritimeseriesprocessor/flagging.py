@@ -5,6 +5,7 @@ import logging
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
+from dritimeseriesprocessor.quality_control.utils import qc_flag_column_name
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
@@ -48,21 +49,32 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     return ts
 
 
-def add_flag_columns(df: pl.DataFrame, flag_col_names: list) -> pl.DataFrame:
-    """
-    Add flag columns to dataframe for each given column, initialising as 0.
+def quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
+    """Remove 'unchecked' flag and add 'removed' flag where data has been removed
 
     Args:
-        df: The dataframe to update
-        flag_col_name: Name of flag column
+        ts: The input TimeSeries object.
 
     Returns:
-        Updated dataframe
+        The TimeSeries with the flag columns added
     """
-    for flag_col_name in flag_col_names:
-        if flag_col_name not in df.columns:
-            df = df.with_columns(pl.lit(0).alias(flag_col_name))
-    return df
+    flag_col_dict = {}
+    for data_col_name in ts.data_columns:
+        core_flag_col_name = core_flag_column_name(data_col_name)
+        qc_flag_col_name = qc_flag_column_name(data_col_name)
+
+        if qc_flag_col_name not in ts.df.columns:
+            continue
+        else:
+            flag_col_dict[data_col_name] = {
+                "core_flag_col": core_flag_col_name,
+                "qc_flag_col": qc_flag_col_name,
+            }
+
+    ts.df = remove_unchecked_flag(ts.df, flag_col_dict)
+    ts.df = add_removed_flag(ts.df, flag_col_dict)
+
+    return ts
 
 
 def add_unchecked_flag(df: pl.DataFrame, flag_col_names: list) -> pl.DataFrame:
@@ -80,6 +92,32 @@ def add_unchecked_flag(df: pl.DataFrame, flag_col_names: list) -> pl.DataFrame:
 
     for flag_col_name in flag_col_names:
         df = df.with_columns((pl.col(flag_col_name) + flag_val).alias(flag_col_name))
+    return df
+
+
+def remove_unchecked_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
+    """
+    Add "unchecked" flag to all values in flag column.
+
+    NOTE. This is currently very crude and assumes the unchhecked flag has already
+    been added to all values.
+
+    Args:
+        df: The dataframe to update
+        flag_col_dict: Dictionary of names of the data column with core and qc flag column names.
+
+    Returns:
+        Updated dataframe
+    """
+    flag_val = core_flag_config["unchecked"].id
+
+    for flag_cols in flag_col_dict.values():
+        df = df.with_columns(
+            pl.when(pl.col(flag_cols["qc_flag_col"]).is_not_null())
+            .then(pl.col(flag_cols["core_flag_col"]) - flag_val)
+            .otherwise(pl.col(flag_cols["core_flag_col"]))
+            .alias(flag_cols["core_flag_col"])
+        )
     return df
 
 
@@ -102,5 +140,32 @@ def add_missing_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
             .then(pl.col(flag_col_name) + flag_val)
             .otherwise(pl.col(flag_col_name))
             .alias(flag_col_name)
+        )
+    return df
+
+
+def add_removed_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
+    """
+    Add a flag for values that have been removed by QC.
+    Note, the value must be None (like) AND have a QC flag value > 0.
+
+    Args:
+        df: The Polars DataFrame to check and update.
+        flag_col_dict: Dictionary of names of the data column with core and qc flag column names.
+
+    Returns:
+        A DataFrame with the flag column updated for removed values in the specified data column.
+    """
+    flag_val = core_flag_config["removed"].id
+
+    for data_col_name, flag_cols in flag_col_dict.items():
+        df = df.with_columns(
+            pl.when(
+                (pl.col(data_col_name).is_null() | pl.col(data_col_name).is_nan())
+                & (pl.col(flag_cols["qc_flag_col"]) > 0)
+            )
+            .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
+            .otherwise(pl.col(flag_cols["core_flag_col"]))
+            .alias(flag_cols["core_flag_col"])
         )
     return df
