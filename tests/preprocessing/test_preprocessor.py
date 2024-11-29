@@ -22,6 +22,9 @@ class TestPreprocess(unittest.TestCase):
             ],
             "value": [10., 20., 30., 40., 50., 60.]
         })
+        self.data = self.data.with_columns(
+            pl.col("time").dt.replace_time_zone("UTC")
+        )
 
     @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
     def test_preprocess_unimplemented_method(self, mock_preprocessing_config):
@@ -91,6 +94,9 @@ class TestPreprocess(unittest.TestCase):
             ],
             "value": [10., 20., 40., 40., 60., 60.]
         })
+        expected = expected.with_columns(
+            pl.col("time").dt.replace_time_zone("UTC")
+        )
 
         assert_frame_equal(result, expected)
 

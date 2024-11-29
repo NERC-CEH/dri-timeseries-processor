@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 import polars as pl
+import pytz
 
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.metrics_exporter import metrics
@@ -41,8 +42,8 @@ def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
         # Create a mask to filter rows based on SITE_ID and the time range
         mask = (
             (pl.col("SITE_ID") == correction_config.SITE_ID)
-            & (pl.col("time") >= correction_config.START_DATETIME)
-            & (pl.col("time") <= correction_config.END_DATETIME)
+            & (pl.col("time") >= correction_config.START_DATETIME.replace(tzinfo=pytz.UTC))
+            & (pl.col("time") <= correction_config.END_DATETIME.replace(tzinfo=pytz.UTC))
         )
 
         # Apply the specified correction function to the DataFrame
