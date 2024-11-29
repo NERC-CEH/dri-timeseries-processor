@@ -4,6 +4,7 @@ from typing import Dict, List
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
+from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,7 @@ def column_threshold_check(
     df: pl.DataFrame,
     check_column: str,
     qc_column: str,
+    flag_column: str,
     threshold: float,
     operator: str,
     flag_id: int,
@@ -27,6 +29,7 @@ def column_threshold_check(
         df: This must have only the columns wanted for flagging
         check_column: The column of data that is being checked against the threshold
         qc_column: The column that should be flagged
+        flag_column: The column to which flag value should be added
         threshold: Threshold value
         operator: What comparison to make
         flag_id: The ID of the quality control flag that should be applied to data that fail this check.
@@ -52,6 +55,9 @@ def column_threshold_check(
     if qc_column not in df:
         raise UserWarning(f"Can not run column threshold check. No {qc_column} data provided")
 
+    if flag_column not in df:
+        raise UserWarning(f"Can not run column threshold check. No {flag_column} flag column in dataframe")
+
     if operator not in operator_map:
         raise ValueError(f"{operator} is an invalid operator, use: {', '.join(operator_map.keys())}")
 
@@ -61,7 +67,6 @@ def column_threshold_check(
         operator_expr = operator_expr | pl.col(check_column).is_null()
 
     # Apply the flags based on comparing requested column to the threshold
-    df, flag_column = initialise_qc_column(df, qc_column)
     df = df.with_columns(
         pl.when(operator_expr).then(pl.col(flag_column).add(flag_id)).otherwise(pl.col(flag_column)).alias(flag_column)
     )
@@ -165,25 +170,28 @@ def get_site_range_values(site_id: str, variable: str, resolution: str) -> tuple
     return range_values.min_value, range_values.max_value
 
 
-def initialise_qc_column(df: pl.DataFrame, column: str) -> tuple[pl.DataFrame, str]:
+def qc_flag_column_name(column: str) -> str:
+    """Return column name of QC flag column for a given variable column."""
+    return f"{column}_QCFLAG"
+
+
+def initialise_qc_column(ts: TimeSeries, qc_flag_column: str) -> tuple[TimeSeries, str]:
     """Initialise a QC flag column in the DataFrame if it doesn't already exist.
 
     Args:
-        df: The DataFrame to operate on.
-        column: The name of the column for which the QC flag column should be checked/created.
+        ts: The TimeSeries to operate on.
+        qc_flag_column: The name of the QC flag column that should be checked/created.
 
     Returns:
         A tuple containing the updated DataFrame and the name of the QC flag column.
     """
-    if df.is_empty():
-        raise UserWarning("Cannot initialise QC column on empty DataFrame")
-
-    qc_column = f"{column}_QCFLAG"
-    if qc_column not in df.columns:
-        df = df.with_columns(
-            pl.lit(0, dtype=pl.UInt64).alias(qc_column)  # TODO: Get this 0 value from somewhere
+    if qc_flag_column not in ts.df.columns:
+        ts.df = ts.df.with_columns(
+            pl.lit(0, dtype=pl.UInt64).alias(qc_flag_column)  # TODO: Get this 0 value from somewhere
         )
-    return df, qc_column
+        ts.set_supplementary_columns(qc_flag_column)
+
+    return ts
 
 
 def get_failed_qc_check_ids_from_flag(flag: int) -> List[int]:

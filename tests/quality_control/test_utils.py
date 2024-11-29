@@ -2,9 +2,11 @@ import unittest
 from unittest.mock import Mock, patch
 
 import polars as pl
+from datetime import datetime
 from parameterized import parameterized
 from polars.testing import assert_frame_equal
 
+from time_series import TimeSeries
 from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
 from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_failed_qc_check_ids_from_flag,
                                                           get_site_range_values, initialise_qc_column,
@@ -16,84 +18,92 @@ class TestColumnThresholdCheck(unittest.TestCase):
         self.data = pl.DataFrame({
             "value_a": [5., 10., 20., 30.],
             "value_b": [1.0, 1.1, 1.2, 1.3],
-            "value_c": [None, 50., 100., None]
+            "value_c": [None, 50., 100., None],
+            "value_b_QCFLAG": [0, 0, 0, 0],
+            "value_c_QCFLAG": [0, 0, 0, 0],
         })
 
     def test_greater_than(self):
         """ Test the column threshold check function with '>' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", 10, ">", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 0, 1, 1], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, ">", 1)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 0, 1, 1]))
         assert_frame_equal(result, expected)
 
     def test_greater_than_or_equal(self):
         """ Test the column threshold check function with '>=' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", 10, ">=", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 1, 1], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, ">=", 1)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 1, 1]))
         assert_frame_equal(result, expected)
 
     def test_less_than(self):
         """ Test the column threshold check function with '<' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", 10, "<", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 0, 0, 0], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "<", 1)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 0, 0, 0]))
         assert_frame_equal(result, expected)
 
     def test_less_than_or_equal(self):
         """ Test the column threshold check function with '<=' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", 10, "<=", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 1, 0, 0], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "<=", 1)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 1, 0, 0]))
         assert_frame_equal(result, expected)
         
     def test_equal(self):
         """ Test the column threshold check function with '==' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", 10, "==", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 0, 0], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "==", 1)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 0, 0]))
         assert_frame_equal(result, expected)
         
     def test_not_equal(self):
         """ Test the column threshold check function with '!=' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", 10, "!=", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 0, 1, 1], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "!=", 1)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 0, 1, 1]))
         assert_frame_equal(result, expected)
 
     def test_flag_na_when_true(self):
         """ Test that setting flag_na to True means that any NULL values in the check column are treated as failing
         the QC check (so qc flag set in result)
         """
-        result = column_threshold_check(self.data, "value_c", "value_b", 10, ">", 1, flag_na=True)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 1, 1, 1], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_c", "value_b", "value_b_QCFLAG", 10, ">", 1, flag_na=True)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 1, 1, 1]))
         assert_frame_equal(result, expected)
 
     def test_flag_na_when_false(self):
         """ Test that setting flag_na to False means that any NULL values in the check column are ignored in
         the QC check (so qc flag not set in result)
         """
-        result = column_threshold_check(self.data, "value_c", "value_b", 10, ">", 1, flag_na=False)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 1, 0], dtype=pl.UInt64))
+        result = column_threshold_check(self.data, "value_c", "value_b", "value_b_QCFLAG", 10, ">", 1, flag_na=False)
+        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 1, 0]))
         assert_frame_equal(result, expected)
 
     def test_missing_check_column(self):
         """ Test that a missing check column raises error
         """
         with self.assertRaises(UserWarning):
-            column_threshold_check(self.data, "missing_check_column", "value_b", 10, ">", 1)
+            column_threshold_check(self.data, "missing_check_column", "value_b", "value_b_QCFLAG", 10, ">", 1)
 
     def test_missing_qc_column(self):
         """ Test that a missing qc column raises error
         """
         with self.assertRaises(UserWarning):
-            column_threshold_check(self.data, "value_a", "missing_qc_column", 10, ">", 1)
+            column_threshold_check(self.data, "value_a", "missing_qc_column", "value_b_QCFLAG", 10, ">", 1)
+
+    def test_missing_flag_column(self):
+        """ Test that a missing qc column raises error
+        """
+        with self.assertRaises(UserWarning):
+            column_threshold_check(self.data, "value_a", "value_b", "missing_QCFLAG", 10, ">", 1)
 
     def test_invalid_operator(self):
         """ Test that invalid operator raises error
         """
         with self.assertRaises(ValueError):
-            column_threshold_check(self.data, "value_a", "value_b", 10, ">>", 1)
+            column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, ">>", 1)
 
 
 class TestGetSiteRangeValues(unittest.TestCase):
@@ -227,31 +237,49 @@ class TestGetSiteRangeValues(unittest.TestCase):
 
 class TestInitialiseQcColumn(unittest.TestCase):
     def test_qc_column_not_exists(self):
-        df = pl.DataFrame({"value": [1, 2, 3, 4]})
-        result, qc_column = initialise_qc_column(df, "value")
-
-        expected = pl.DataFrame({
+        df = pl.DataFrame({
             "value": [1, 2, 3, 4],
-            "value_QCFLAG": [0, 0, 0, 0]
-        }, schema={"value": pl.Int64, "value_QCFLAG": pl.UInt64})
+            "time": [
+                datetime(2021, 4, 1),
+                datetime(2021, 4, 2),
+                datetime(2021, 4, 3),
+                datetime(2021, 4, 4),
+            ]
+        })
+        ts = TimeSeries(df, "time")
 
-        assert_frame_equal(result, expected)
-        self.assertEqual(qc_column, "value_QCFLAG")
+        result = initialise_qc_column(ts, "value_QCFLAG")
+
+        expected_df = pl.DataFrame({
+            "value": [1, 2, 3, 4],
+            "time": [
+                datetime(2021, 4, 1),
+                datetime(2021, 4, 2),
+                datetime(2021, 4, 3),
+                datetime(2021, 4, 4),
+            ],
+            "value_QCFLAG": [0, 0, 0, 0],
+        }).with_columns(pl.col('value_QCFLAG').cast(pl.UInt64))
+        expected = TimeSeries(expected_df, "time")
+
+        assert_frame_equal(result.df, expected.df)
 
     def test_qc_column_already_exists(self):
         df = pl.DataFrame({
             "value": [1, 2, 3, 4],
-            "value_QCFLAG": [1, 1, 1, 1]
-        }, schema={"value": pl.Int64, "value_QCFLAG": pl.UInt64})
-        result, qc_column = initialise_qc_column(df, "value")
+            "value_QCFLAG": [1, 1, 1, 1],
+            "time": [
+                datetime(2021, 4, 1),
+                datetime(2021, 4, 2),
+                datetime(2021, 4, 3),
+                datetime(2021, 4, 4),
+            ]
+        })
+        ts = TimeSeries(df, "time")
 
-        assert_frame_equal(result, df)
-        self.assertEqual(qc_column, "value_QCFLAG")
+        result = initialise_qc_column(ts, "value_QCFLAG")
 
-    def test_empty_dataframe(self):
-        df = pl.DataFrame({})
-        with self.assertRaises(UserWarning):
-            initialise_qc_column(df, "new_column")
+        assert_frame_equal(result.df, ts.df)
 
 
 class TestQCFlagging(unittest.TestCase):
