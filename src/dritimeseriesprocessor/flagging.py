@@ -10,6 +10,18 @@ from time_series import TimeSeries
 logger = logging.getLogger(__name__)
 
 
+def core_flag_column_name(column: str) -> str:
+    """Return flag column name for given data column name.
+
+    Args:
+        col_name: Data column name
+
+    Returns:
+        Flag column name
+    """
+    return f"{column}_FLAG"
+
+
 def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     """Add core flag column to each data column in Timeseries object, using the
     data column name and flag name for new column name.
@@ -24,7 +36,7 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     """
     flag_col_dict = {}
     for data_col_name in ts.data_columns:
-        flag_col_name = f"{data_col_name}_FLAG"
+        flag_col_name = core_flag_column_name(data_col_name)
         flag_col_dict[data_col_name] = flag_col_name
         ts.init_supplementary_column(flag_col_name, 0)
 
