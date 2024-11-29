@@ -10,11 +10,13 @@ from time_series import TimeSeries
 from dritimeseriesprocessor.flagging import (
     core_flag_column_name,
     initialise_core_flags,
+    preprocess_core_flags,
     quality_control_core_flags,
     add_unchecked_flag,
     remove_unchecked_flag,
     add_missing_flag,
-    add_removed_flag
+    add_removed_flag,
+    add_corrected_flag,
 )
 
 
@@ -22,6 +24,7 @@ mock_core_flag_config = {
     "unchecked": MagicMock(id=1),
     "missing": MagicMock(id=2),
     "removed": MagicMock(id=4),
+    "corrected": MagicMock(id=8),
 }
 
 
@@ -69,6 +72,40 @@ class TestInitialiseCoreFlags(unittest.TestCase):
 
             # Ensure no flag columns are added
             self.assertEqual(result.df.columns, ["time"])
+
+
+class TestPreprocessCoreFlags(unittest.TestCase):
+    """Unit tests for the preprocess_core_flags function."""
+
+    @patch('dritimeseriesprocessor.flagging.core_flag_column_name')
+    @patch('dritimeseriesprocessor.preprocessing.preprocessor.prpr_flag_column_name')
+    def test_preprocess_core_flags(self, mock_prpr_flag_column_name, mock_core_flag_column_name):
+        """
+        Test that preprocess_core_flags correctly processes the TimeSeries object.
+        """
+        mock_prpr_flag_column_name.return_value = "data_PRPRFLAG"
+        mock_core_flag_column_name.return_value = "data_FLAG"
+
+        df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, 3],
+            "data_PRPRFLAG": ["MULT", None, "ADD"],
+            "data_FLAG": [0, 0, 0],
+        })
+        ts = TimeSeries(df, "time", supplementary_columns=["data_PRPRFLAG", "data_FLAG"])
+
+        expected_df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, 3],
+            "data_PRPRFLAG": ["MULT", None, "ADD"],
+            "data_FLAG": [8, 0, 8],
+        })
+        expected = TimeSeries(expected_df, "time", supplementary_columns=["data_FLAG"])
+
+        with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
+                        mock_core_flag_config, clear=True):
+            result = preprocess_core_flags(ts)
+            assert_frame_equal(result.df, expected.df)
 
 
 class TestQualityControlCoreFlags(unittest.TestCase):
@@ -293,3 +330,57 @@ class TestAddRemovedFlag(unittest.TestCase):
 
         # Check if the result matches the original DataFrame
         assert_frame_equal(result, df_no_removed_values)
+
+
+class TestAddCorrectedFlag(unittest.TestCase):
+    """Unit tests for the add_corrected_flag function."""
+
+    def setUp(self):
+        """Set up a sample DataFrame for testing."""
+        self.df = pl.DataFrame({
+            "data1": [1, 2, 3],
+            "core_flag1": [0, 0, 0],
+            "prpr_flag1": [1, None, 1],
+            "data2": [10, 20, 30],
+            "core_flag2": [0, 0, 0],
+            "prpr_flag2": [None, 1, None],
+        })
+        self.flag_col_dict = {
+            "data1": {"core_flag_col": "core_flag1", "prpr_flag_col": "prpr_flag1"},
+            "data2": {"core_flag_col": "core_flag2", "prpr_flag_col": "prpr_flag2"},
+        }
+
+    def test_add_corrected_flag(self):
+        """Test that add_corrected_flag correctly updates the flag columns."""
+        with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
+                        mock_core_flag_config, clear=True):
+            # Call the function
+            result = add_corrected_flag(self.df, self.flag_col_dict)
+
+            # Expected result
+            expected_df = pl.DataFrame({
+                "data1": [1, 2, 3],
+                "core_flag1": [8, 0, 8],
+                "prpr_flag1": [1, None, 1],
+                "data2": [10, 20, 30],
+                "core_flag2": [0, 8, 0],
+                "prpr_flag2": [None, 1, None],
+            })
+
+            # Check if the result matches the expected DataFrame
+            assert_frame_equal(result, expected_df)
+
+    def test_no_corrected_values(self):
+        """Test behavior when there are no corrected values in the DataFrame."""
+        df_no_corrected_values = pl.DataFrame({
+            "data1": [1, 2, 3],
+            "core_flag1": [0, 0, 0],
+            "prpr_flag1": [None, None, None],
+            "data2": [10, 20, 30],
+            "core_flag2": [0, 0, 0],
+            "prpr_flag2": [None, None, None],
+        })
+        result = add_corrected_flag(df_no_corrected_values, self.flag_col_dict)
+
+        # Check if the result matches the original DataFrame
+        assert_frame_equal(result, df_no_corrected_values)
