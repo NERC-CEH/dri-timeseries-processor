@@ -6,7 +6,7 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.flagging import initialise_core_flags
+from dritimeseriesprocessor.flagging import initialise_core_flags, quality_control_core_flags
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
@@ -49,32 +49,35 @@ try:
     # Dummy some data that will force some qc checks to run
     data = data.with_columns(
         [
-            pl.Series([0 if ((i // 20) % 2 == 0) else 100 for i in range(len(data))]).alias("BATTV"),
+            pl.Series([12 for i in range(len(data))]).alias("BATTV"),
             pl.Series(i * 2 for i in range(len(data))).alias("PRECIP"),
             pl.Series(i for i in range(len(data))).alias("SCANS"),
         ]
     )
+
+    # Add a missing value
+    data[2, "TA"] = None
 
     logger.info(f"Added dummy data, shape: {data.shape}")
 
     # Initilise TimeSeries object.
     resolution = Period.of_minutes(1)
     periodicity = Period.of_minutes(1)
-    ts = TimeSeries.from_polars(data, "time", resolution, periodicity, supp_col_names=["SITE_ID", "BATTV", "SCANS"])
+    ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
     # Initialise core flags
     ts = initialise_core_flags(ts)
 
-    data = ts.df
-    data = data.with_columns(pl.col("time").dt.convert_time_zone("UTC").dt.replace_time_zone(None))
-
     # Preprocessing
-    preprocessed_data = run_preprocess(data)
+    ts.df = run_preprocess(ts.df)
 
-    logger.info(f"Ran preprocessor successfully, shape: {preprocessed_data.shape}")
+    logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
 
     # Quality control
-    qcd_data = run_quality_control(preprocessed_data)
+    ts = run_quality_control(ts, remove=True)
+    ts = quality_control_core_flags(ts)
+
+    qcd_data = ts.df
 
     # Calculate the number of flags added
     qcflag_columns = [col for col in qcd_data.columns if col.endswith("_QCFLAG")]
