@@ -7,7 +7,7 @@ from polars.testing import assert_frame_equal
 import numpy as np
 
 from time_series import TimeSeries
-from dritimeseriesprocessor.flagging import (
+from dritimeseriesprocessor.flagging.flagger import (
     core_flag_column_name,
     initialise_core_flags,
     quality_control_core_flags,
@@ -74,7 +74,7 @@ class TestInitialiseCoreFlags(unittest.TestCase):
 class TestQualityControlCoreFlags(unittest.TestCase):
     """Unit tests for the quality_control_core_flags function.
     """
-    @patch('dritimeseriesprocessor.flagging.core_flag_column_name')
+    @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
     @patch('dritimeseriesprocessor.quality_control.utils.qc_flag_column_name')
     def test_quality_control_core_flags(self, mock_qc_flag_column_name, mock_core_flag_column_name):
         """
