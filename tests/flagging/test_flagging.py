@@ -10,7 +10,7 @@ from time_series import TimeSeries
 from dritimeseriesprocessor.flagging.flagger import (
     core_flag_column_name,
     initialise_core_flags,
-    quality_control_core_flags,
+    update_quality_control_core_flags,
     add_unchecked_flag,
     remove_unchecked_flag,
     add_missing_flag,
@@ -72,36 +72,36 @@ class TestInitialiseCoreFlags(unittest.TestCase):
 
 
 class TestQualityControlCoreFlags(unittest.TestCase):
-    """Unit tests for the quality_control_core_flags function.
+    """Unit tests for the update_quality_control_core_flags function.
     """
     @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
     @patch('dritimeseriesprocessor.quality_control.utils.qc_flag_column_name')
-    def test_quality_control_core_flags(self, mock_qc_flag_column_name, mock_core_flag_column_name):
+    def test_update_quality_control_core_flags(self, mock_qc_flag_column_name, mock_core_flag_column_name):
         """
-        Test that quality_control_core_flags correctly processes the TimeSeries object.
+        Test that update_quality_control_core_flags correctly processes the TimeSeries object.
         """
         mock_qc_flag_column_name.return_value = "data_QCFLAG"
         mock_core_flag_column_name.return_value = "data_FLAG"
 
         df = pl.DataFrame({
-                "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
-                "data": [1, None, None],
-                "data_QCFLAG": [0, 2, 3],
-                "data_FLAG": [1, 1, 1],
+                "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3), datetime(2024, 1, 4)],
+                "data": [1, 2, None, None],
+                "data_QCFLAG": [0, 2, 3, 0],
+                "data_FLAG": [1, 1, 1, 1],
             })
         ts = TimeSeries(df, "time", supplementary_columns=["data_QCFLAG", "data_FLAG"])
 
         expected_df = pl.DataFrame({
-                "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
-                "data": [1, None, None],
-                "data_QCFLAG": [0, 2, 3],
-                "data_FLAG": [0, 4, 4],
+                "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3), datetime(2024, 1, 4)],
+                "data": [1, 2, None, None],
+                "data_QCFLAG": [0, 2, 3, 0],
+                "data_FLAG": [0, 0, 4, 0], # Only values both removed (None) and with QC flag should get "removed" flag
             })
         expected = TimeSeries(expected_df, "time", supplementary_columns=["data_QCFLAG", "data_FLAG"])
 
         with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
                         mock_core_flag_config, clear=True):
-            result = quality_control_core_flags(ts)
+            result = update_quality_control_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
 
 
@@ -148,12 +148,12 @@ class TestRemoveUncheckedFlag(unittest.TestCase):
     def setUp(self):
         """Set up a sample DataFrame for testing."""
         self.df = pl.DataFrame({
-            "data1": [1, 2, 3],
-            "core_flag1": [1, 5, 1],
-            "qc_flag1": [0, 1, 0],
-            "data2": [10, 20, 30],
-            "core_flag2": [1, 1, 3],
-            "qc_flag2": [1, 0, 1],
+            "data1": [1, 2, 3, 4],
+            "core_flag1": [1, 5, 1, 1],
+            "qc_flag1": [0, 1, 0, None],
+            "data2": [10, 20, 30, 40],
+            "core_flag2": [1, 1, 3, 1],
+            "qc_flag2": [1, 0, 1, None],
         })
         self.flag_col_dict = {
             "data1": {"core_flag_col": "core_flag1", "qc_flag_col": "qc_flag1"},
@@ -169,12 +169,12 @@ class TestRemoveUncheckedFlag(unittest.TestCase):
 
             # Expected result
             expected_df = pl.DataFrame({
-                "data1": [1, 2, 3],
-                "core_flag1": [0, 4, 0],
-                "qc_flag1": [0, 1, 0],
-                "data2": [10, 20, 30],
-                "core_flag2": [0, 0, 2],
-                "qc_flag2": [1, 0, 1],
+                "data1": [1, 2, 3, 4],
+                "core_flag1": [0, 4, 0, 1],
+                "qc_flag1": [0, 1, 0, None],
+                "data2": [10, 20, 30, 40],
+                "core_flag2": [0, 0, 2, 1],
+                "qc_flag2": [1, 0, 1, None],
             })
 
             # Check if the result matches the expected DataFrame

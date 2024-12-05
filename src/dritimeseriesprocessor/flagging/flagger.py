@@ -15,7 +15,7 @@ def core_flag_column_name(column: str) -> str:
     """Return flag column name for given data column name.
 
     Args:
-        col_name: Data column name
+        column: Data column name
 
     Returns:
         Flag column name
@@ -49,7 +49,7 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     return ts
 
 
-def quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
+def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
     """Remove 'unchecked' flag and add 'removed' flag where data has been removed
 
     Args:
@@ -83,7 +83,7 @@ def add_unchecked_flag(df: pl.DataFrame, flag_col_names: list) -> pl.DataFrame:
 
     Args:
         df: The dataframe to update
-        flag_col_name: Name of flag column
+        flag_col_names: Name of flag column
 
     Returns:
         Updated dataframe
@@ -97,7 +97,7 @@ def add_unchecked_flag(df: pl.DataFrame, flag_col_names: list) -> pl.DataFrame:
 
 def remove_unchecked_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
     """
-    Add "unchecked" flag to all values in flag column.
+    Remove "unchecked" flag for all values in df with a QC flag column.
 
     NOTE. This is currently very crude and assumes the unchhecked flag has already
     been added to all values.

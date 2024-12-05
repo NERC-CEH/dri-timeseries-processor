@@ -6,7 +6,7 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.flagging.flagger import initialise_core_flags, quality_control_core_flags
+from dritimeseriesprocessor.flagging.flagger import initialise_core_flags, update_quality_control_core_flags
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
@@ -75,7 +75,7 @@ try:
 
     # Quality control
     ts = run_quality_control(ts, remove=True)
-    ts = quality_control_core_flags(ts)
+    ts = update_quality_control_core_flags(ts)
 
     qcd_data = ts.df
 
