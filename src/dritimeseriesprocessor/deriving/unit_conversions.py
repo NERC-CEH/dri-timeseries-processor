@@ -1,5 +1,7 @@
+# TODO: update these to be Calculations?
+
 def hpa_to_kpa(data):
-    """ Convert data from hectopascals (hPa) to kilopascals (kPa)
+    """Convert data from hectopascals (hPa) to kilopascals (kPa)
 
     Args:
         data: Data with hPa units to convert
@@ -11,7 +13,7 @@ def hpa_to_kpa(data):
 
 
 def watts_to_megajoules(data, period):
-    """ Convert data from Watts (W) to Megajoules (MJ) per time period
+    """Convert data from Watts (W) to Megajoules (MJ) per time period
 
     1 Watt = 1 Joule per second
     1 Megajoule = 1,000,000 Joules
