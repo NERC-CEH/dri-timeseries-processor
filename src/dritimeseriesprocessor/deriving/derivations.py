@@ -16,7 +16,7 @@ class PotentialEvapotranspiration30Min(Calculation):
         rh: Union[str, pl.Expr],
         ws: Union[str, pl.Expr],
         pa: Union[str, pl.Expr],
-        column_name=None,
+        column_name: str = None,
     ):
         """Calculate potential evaporation from measured variables at 30min time resolution.
 
@@ -54,7 +54,7 @@ class PotentialEvapotranspiration30Min(Calculation):
         self._delta = VapourPressureCurveSlope(self._ta)
 
     @property
-    def default_column_name(self):
+    def default_column_name(self) -> str:
         return "pet"
 
     def expr(self) -> pl.Expr:
@@ -87,7 +87,7 @@ class PotentialEvapotranspiration30Min(Calculation):
 
 
 class SaturationVapourPressure(Calculation):
-    def __init__(self, ta: Union[str, pl.Expr], column_name=None):
+    def __init__(self, ta: Union[str, pl.Expr], column_name: str = None):
         """Calculate saturation vapour pressure from air temperature.
 
         Steps taken from FAO-56 method (eq11) https://www.fao.org/4/x0490e/x0490e07.htm#calculation%20procedures
@@ -102,7 +102,7 @@ class SaturationVapourPressure(Calculation):
         self._ta = self._columns_to_expressions(ta)
 
     @property
-    def default_column_name(self):
+    def default_column_name(self) -> str:
         return "es"
 
     def expr(self) -> pl.Expr:
@@ -111,7 +111,7 @@ class SaturationVapourPressure(Calculation):
 
 
 class PsychrometricConstant(Calculation):
-    def __init__(self, pa: Union[str, pl.Expr], ta: Union[str, pl.Expr], column_name=None):
+    def __init__(self, pa: Union[str, pl.Expr], ta: Union[str, pl.Expr], column_name: str = None):
         """Calculate psychrometric constant.
 
         Steps taken from FAO-56 method (eq8) https://www.fao.org/4/x0490e/x0490e07.htm#psychrometric%20constant%20(g)
@@ -130,18 +130,18 @@ class PsychrometricConstant(Calculation):
         self._lv = LatentHeatOfVaporization(self._ta)
 
     @property
-    def default_column_name(self):
+    def default_column_name(self) -> str:
         return "gamma"
 
     def expr(self) -> pl.Expr:
-        cp = 1.013 * 10e-3  # Specific heat at constant pressure
+        cp = 1.013e-3  # Specific heat at constant pressure
         e = 0.622  # Ratio molecular weight of water vapour/dry air
         gamma = (cp * self._pa) / (e * self._lv.expr())
         return gamma
 
 
 class VapourPressureCurveSlope(Calculation):
-    def __init__(self, ta: Union[str, pl.Expr], column_name=None):
+    def __init__(self, ta: Union[str, pl.Expr], column_name: str = None):
         """Calculate slope of vapour pressure curve from measured variables.
 
         Steps taken from FAO-56 method (eq13) https://www.fao.org/4/x0490e/x0490e07.htm#calculation%20procedures
@@ -159,7 +159,7 @@ class VapourPressureCurveSlope(Calculation):
         self._es = SaturationVapourPressure(self._ta)
 
     @property
-    def default_column_name(self):
+    def default_column_name(self) -> str:
         return "delta"
 
     def expr(self) -> pl.Expr:
@@ -168,7 +168,7 @@ class VapourPressureCurveSlope(Calculation):
 
 
 class ActualVapourPressureFao56Eq54(Calculation):
-    def __init__(self, rh: Union[str, pl.Expr], ta: Union[str, pl.Expr], column_name=None):
+    def __init__(self, rh: Union[str, pl.Expr], ta: Union[str, pl.Expr], column_name: str = None):
         """Calculate Actual vapour pressure from relative humidity.
 
         Steps taken from FAO-56 1-hour method (eq54) https://www.fao.org/4/x0490e/x0490e08.htm
@@ -187,7 +187,7 @@ class ActualVapourPressureFao56Eq54(Calculation):
         self._es = SaturationVapourPressure(self._ta)
 
     @property
-    def default_column_name(self):
+    def default_column_name(self) -> str:
         return "ea"
 
     def expr(self) -> pl.Expr:
@@ -196,7 +196,7 @@ class ActualVapourPressureFao56Eq54(Calculation):
 
 
 class WindSpeedHeightCorrection(Calculation):
-    def __init__(self, ws: Union[str, pl.Expr], measured_height: Union[int, float], column_name=None):
+    def __init__(self, ws: Union[str, pl.Expr], measured_height: Union[int, float], column_name: str = None):
         """Correct wind speed to the standard 2m height.
 
         Steps taken from FAO-56 method (eq47) https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
@@ -213,7 +213,7 @@ class WindSpeedHeightCorrection(Calculation):
         self._measured_height = measured_height
 
     @property
-    def default_column_name(self):
+    def default_column_name(self) -> str:
         return "ws_2m"
 
     def expr(self) -> pl.Expr:
@@ -222,7 +222,7 @@ class WindSpeedHeightCorrection(Calculation):
 
 
 class LatentHeatOfVaporization(Calculation):
-    def __init__(self, ta: Union[str, pl.Expr], column_name=None):
+    def __init__(self, ta: Union[str, pl.Expr], column_name: str = None):
         """Calculate latent heat of vaporization
 
         Steps taken from Harrison (1963), referenced by FAO Annex 3 https://www.fao.org/4/x0490e/x0490e0k.htm
@@ -240,11 +240,11 @@ class LatentHeatOfVaporization(Calculation):
         self._ta = self._columns_to_expressions(ta)
 
     @property
-    def default_column_name(self):
+    def default_column_name(self) -> str:
         return "lv"
 
     def expr(self) -> pl.Expr:
-        lv = 2.501 - ((2.361 * 10e-3) * self._ta)
+        lv = 2.501 - 2.361e-3 * self._ta
         return lv
 
 

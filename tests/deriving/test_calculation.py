@@ -95,6 +95,22 @@ class Grandchild(Calculation):
 
 
 class TestEvaluate(unittest.TestCase):
+    def test_existing_output_column_raises_error(self):
+        df = pl.DataFrame({"col1": [1, 2, 3]})
+        calc = Child1()
+        calc._column_name = "col1"
+        with self.assertRaises(UserWarning):
+            calc.evaluate(df)
+
+    def test_existing_output_column_allowed(self):
+        df = pl.DataFrame({"col1": [1, 2, 3]})
+        expected = pl.DataFrame({"col1": [2, 4, 6]})
+
+        calc = Child1()
+        calc._column_name = "col1"
+        result = calc.evaluate(df, allow_override=True)
+        assert_frame_equal(result, expected)
+
     def test_no_dependencies(self):
         """ Test evaluation of a simple Calculation, which has no dependencies"""
         df = pl.DataFrame({"col1": [1, 2, 3]})

@@ -5,8 +5,13 @@ import polars as pl
 
 
 class Calculation(ABC):
-    def __init__(self, name: str, column_name: Optional[str], units: str):
+    def __init__(self, name: str, column_name: Optional[str] = None, units: Optional[str] = None):
         """Abstract base class for different types of calculations.
+
+        The rationale for abstracting Calculations into a class like this is to take advantage of Polars expression
+        chaining. Some Calculations are nested, e.g. calculating 1 thing requires the calculation of several other
+        things - by using Polars expressions we can make this more efficient, as Polars will look to optimise all
+        the expressions together before finally evaluating the calculation (lazy evaluation).
 
         Args:
             name: Name of the calculation.
@@ -14,7 +19,7 @@ class Calculation(ABC):
             units: Units of the calculated value.
         """
         self._name = name
-        self._column_name = self._get_final_column_name(column_name)
+        self._column_name = column_name
         self._units = units
 
     @property
@@ -23,7 +28,7 @@ class Calculation(ABC):
 
     @property
     def column_name(self) -> str:
-        return self._column_name
+        return self._get_final_column_name(self._column_name)
 
     @property
     def units(self) -> str:
@@ -77,12 +82,15 @@ class Calculation(ABC):
         """
         return column_name or self.default_column_name
 
-    def evaluate(self, df: pl.DataFrame, include_dependencies: bool = False) -> pl.DataFrame:
+    def evaluate(
+        self, df: pl.DataFrame, include_dependencies: bool = False, allow_override: bool = False
+    ) -> pl.DataFrame:
         """Evaluate the calculation, adding the result as a new column in the DataFrame.
 
         Args:
             df: Input DataFrame.
             include_dependencies: Whether to include dependencies of the calculation in the evaluation.
+            allow_override: Whether to allow columns to be overridden by the calculation.
 
         Returns:
             pl.DataFrame: DataFrame with the result of the calculation.
@@ -95,8 +103,8 @@ class Calculation(ABC):
 
         # Check for existing columns in the DataFrame
         existing_columns = set(expressions.keys()) & set(df.columns)
-        if existing_columns:
-            raise ValueError(f"Columns already exist in DataFrame: {existing_columns}")
+        if existing_columns and not allow_override:
+            raise UserWarning(f"Columns already exist in DataFrame: {existing_columns}")
 
         # Perform the evaluation(s)
         lazy_df = df.lazy()
@@ -111,7 +119,7 @@ class Calculation(ABC):
         """
         expressions = {}
 
-        def __collect_expressions(calc: "Calculation"):
+        def __collect_expressions(calc: "Calculation") -> None:
             """Recursive method for getting expressions from dependencies"""
             if calc in expressions:
                 return
@@ -135,7 +143,7 @@ class Calculation(ABC):
         dependencies_types = set()
         dependencies = []
 
-        def __collect_dependencies(calc: "Calculation"):
+        def __collect_dependencies(calc: "Calculation") -> None:
             """Recursive method for getting dependencies of this calculation"""
             for attr_name, attr_value in calc.__dict__.items():
                 # Check if the attribute is a Calculation instance
