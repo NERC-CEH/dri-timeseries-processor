@@ -78,26 +78,26 @@ class TestPreprocessCoreFlags(unittest.TestCase):
     """Unit tests for the preprocess_core_flags function."""
 
     @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.prpr_flag_column_name')
-    def test_preprocess_core_flags(self, mock_prpr_flag_column_name, mock_core_flag_column_name):
+    @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
+    def test_preprocess_core_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
         """
         Test that preprocess_core_flags correctly processes the TimeSeries object.
         """
-        mock_prpr_flag_column_name.return_value = "data_PRPRFLAG"
+        mock_pr_flag_column_name.return_value = "data_PRFLAG"
         mock_core_flag_column_name.return_value = "data_FLAG"
 
         df = pl.DataFrame({
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
             "data": [1, 2, 3],
-            "data_PRPRFLAG": ["MULT", None, "ADD"],
+            "data_PRFLAG": ["MULT", None, "ADD"],
             "data_FLAG": [0, 0, 0],
         })
-        ts = TimeSeries(df, "time", supplementary_columns=["data_PRPRFLAG", "data_FLAG"])
+        ts = TimeSeries(df, "time", supplementary_columns=["data_PRFLAG", "data_FLAG"])
 
         expected_df = pl.DataFrame({
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
             "data": [1, 2, 3],
-            "data_PRPRFLAG": ["MULT", None, "ADD"],
+            "data_PRFLAG": ["MULT", None, "ADD"],
             "data_FLAG": [8, 0, 8],
         })
         expected = TimeSeries(expected_df, "time", supplementary_columns=["data_FLAG"])
@@ -340,14 +340,14 @@ class TestAddCorrectedFlag(unittest.TestCase):
         self.df = pl.DataFrame({
             "data1": [1, 2, 3],
             "core_flag1": [0, 0, 0],
-            "prpr_flag1": [1, None, 1],
+            "pr_flag1": [1, None, 1],
             "data2": [10, 20, 30],
             "core_flag2": [0, 0, 0],
-            "prpr_flag2": [None, 1, None],
+            "pr_flag2": [None, 1, None],
         })
         self.flag_col_dict = {
-            "data1": {"core_flag_col": "core_flag1", "prpr_flag_col": "prpr_flag1"},
-            "data2": {"core_flag_col": "core_flag2", "prpr_flag_col": "prpr_flag2"},
+            "data1": {"core_flag_col": "core_flag1", "pr_flag_col": "pr_flag1"},
+            "data2": {"core_flag_col": "core_flag2", "pr_flag_col": "pr_flag2"},
         }
 
     def test_add_corrected_flag(self):
@@ -361,10 +361,10 @@ class TestAddCorrectedFlag(unittest.TestCase):
             expected_df = pl.DataFrame({
                 "data1": [1, 2, 3],
                 "core_flag1": [8, 0, 8],
-                "prpr_flag1": [1, None, 1],
+                "pr_flag1": [1, None, 1],
                 "data2": [10, 20, 30],
                 "core_flag2": [0, 8, 0],
-                "prpr_flag2": [None, 1, None],
+                "pr_flag2": [None, 1, None],
             })
 
             # Check if the result matches the expected DataFrame
@@ -375,10 +375,10 @@ class TestAddCorrectedFlag(unittest.TestCase):
         df_no_corrected_values = pl.DataFrame({
             "data1": [1, 2, 3],
             "core_flag1": [0, 0, 0],
-            "prpr_flag1": [None, None, None],
+            "pr_flag1": [None, None, None],
             "data2": [10, 20, 30],
             "core_flag2": [0, 0, 0],
-            "prpr_flag2": [None, None, None],
+            "pr_flag2": [None, None, None],
         })
         result = add_corrected_flag(df_no_corrected_values, self.flag_col_dict)
 

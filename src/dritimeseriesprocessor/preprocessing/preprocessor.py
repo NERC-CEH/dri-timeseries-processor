@@ -12,24 +12,24 @@ from time_series import TimeSeries
 logger = logging.getLogger(__name__)
 
 
-def prpr_flag_column_name(column: str) -> str:
+def pr_flag_column_name(column: str) -> str:
     """Return column name of preprocess flag column for a given variable column."""
-    return f"{column}_PRPRFLAG"
+    return f"{column}_PRFLAG"
 
 
-def initialise_preprocessing_column(ts: TimeSeries, prpr_flag_column: str) -> tuple[TimeSeries, str]:
+def initialise_preprocessing_column(ts: TimeSeries, pr_flag_column: str) -> tuple[TimeSeries, str]:
     """Initialise a preprocessing flag column in the DataFrame if it doesn't already exist.
 
     Args:
         ts: The TimeSeries to operate on.
-        prpr_flag_column: The name of the preprocessing flag column that should be checked/created.
+        pr_flag_column: The name of the preprocessing flag column that should be checked/created.
 
     Returns:
         A tuple containing the updated DataFrame and the name of the QC flag column.
     """
-    if prpr_flag_column not in ts.df.columns:
-        ts.df = ts.df.with_columns(pl.lit(None, dtype=pl.UInt64).alias(prpr_flag_column))
-        ts.set_supplementary_columns(prpr_flag_column)
+    if pr_flag_column not in ts.df.columns:
+        ts.df = ts.df.with_columns(pl.lit(None, dtype=pl.UInt64).alias(pr_flag_column))
+        ts.set_supplementary_columns(pr_flag_column)
 
     return ts
 
@@ -70,8 +70,8 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         )
 
         # Apply the specified correction function to the DataFrame
-        prpr_flag_col = prpr_flag_column_name(correction_config.VARIABLE)
-        ts = initialise_preprocessing_column(ts, prpr_flag_col)
-        ts.df = correction_fn(ts.df, correction_config, prpr_flag_col, mask)
+        pr_flag_col = pr_flag_column_name(correction_config.VARIABLE)
+        ts = initialise_preprocessing_column(ts, pr_flag_col)
+        ts.df = correction_fn(ts.df, correction_config, pr_flag_col, mask)
 
     return ts

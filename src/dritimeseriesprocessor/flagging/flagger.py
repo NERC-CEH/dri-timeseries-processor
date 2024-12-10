@@ -5,7 +5,7 @@ import logging
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
-from dritimeseriesprocessor.preprocessing.preprocessor import prpr_flag_column_name
+from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name
 from dritimeseriesprocessor.quality_control.utils import qc_flag_column_name
 from time_series import TimeSeries
 
@@ -63,14 +63,14 @@ def preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
     flag_col_dict = {}
     for data_col_name in ts.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
-        prpr_flag_col_name = prpr_flag_column_name(data_col_name)
+        pr_flag_col_name = pr_flag_column_name(data_col_name)
 
-        if prpr_flag_col_name not in ts.df.columns:
+        if pr_flag_col_name not in ts.df.columns:
             continue
         else:
             flag_col_dict[data_col_name] = {
                 "core_flag_col": core_flag_col_name,
-                "prpr_flag_col": prpr_flag_col_name,
+                "pr_flag_col": pr_flag_col_name,
             }
 
     ts.df = add_corrected_flag(ts.df, flag_col_dict)
@@ -216,7 +216,7 @@ def add_corrected_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
 
     for flag_cols in flag_col_dict.values():
         df = df.with_columns(
-            pl.when(pl.col(flag_cols["prpr_flag_col"]).is_not_null())
+            pl.when(pl.col(flag_cols["pr_flag_col"]).is_not_null())
             .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
             .otherwise(pl.col(flag_cols["core_flag_col"]))
             .alias(flag_cols["core_flag_col"])
