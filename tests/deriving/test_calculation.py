@@ -126,17 +126,17 @@ class TestEvaluate(unittest.TestCase):
         expected = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6], "child2": [0.9, 1.0, 1.1]})
 
         calc = Child2()
-        result = calc.evaluate(df, include_dependencies=False)
+        result = calc.evaluate(df, include_dependency_columns=False)
         assert_frame_equal(result, expected)
 
     def test_dependencies_include(self):
-        """ Test a calculation with a dependency, but not adding those dependency columns to the output."""
+        """ Test a calculation with a dependency, adding those dependency columns to the output."""
         df = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
         expected = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6],
                                  "child2": [0.9, 1.0, 1.1], "grandchild": [9, 10, 11]})
 
         calc = Child2()
-        result = calc.evaluate(df, include_dependencies=True)
+        result = calc.evaluate(df, include_dependency_columns=True)
         assert_frame_equal(result, expected)
 
 

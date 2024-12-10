@@ -83,20 +83,21 @@ class Calculation(ABC):
         return column_name or self.default_column_name
 
     def evaluate(
-        self, df: pl.DataFrame, include_dependencies: bool = False, allow_override: bool = False
+        self, df: pl.DataFrame, include_dependency_columns: bool = False, allow_override: bool = False
     ) -> pl.DataFrame:
         """Evaluate the calculation, adding the result as a new column in the DataFrame.
 
         Args:
             df: Input DataFrame.
-            include_dependencies: Whether to include dependencies of the calculation in the evaluation.
+            include_dependency_columns: Whether to include results of dependent calculations of this
+                                        calculation as columns in output df.
             allow_override: Whether to allow columns to be overridden by the calculation.
 
         Returns:
             pl.DataFrame: DataFrame with the result of the calculation.
         """
         # Collect the expressions that we want to evaluate
-        if include_dependencies:
+        if include_dependency_columns:
             expressions = self._collect_expressions()
         else:
             expressions = {self.column_name: self.expr().alias(self.column_name)}
@@ -145,7 +146,7 @@ class Calculation(ABC):
 
         def __collect_dependencies(calc: "Calculation") -> None:
             """Recursive method for getting dependencies of this calculation"""
-            for attr_name, attr_value in calc.__dict__.items():
+            for attr_value in calc.__dict__.values():
                 # Check if the attribute is a Calculation instance
                 if isinstance(attr_value, Calculation):
                     # Check if this Calculation instance type is already represented

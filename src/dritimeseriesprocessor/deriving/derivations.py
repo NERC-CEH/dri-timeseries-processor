@@ -270,7 +270,7 @@ def derive(
         TimeSeries: The resulting TimeSeries after applying the calculation.
     """
     calc_instance = calc(**kwargs, column_name=column_name)
-    new_df = calc_instance.evaluate(ts.df, include_dependencies=include_dependencies)
+    new_df = calc_instance.evaluate(ts.df, include_dependency_columns=include_dependencies)
 
     # TODO: this could use some work.
     new_metadata = (
