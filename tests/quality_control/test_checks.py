@@ -17,6 +17,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         self.data = pl.DataFrame({
             "BATTV": [12., 11., 9., 13., 8.],
             "value": [1., 2., 3., 4., 5.],
+            "value_QCFLAG": [0, 0, 0, 0, 0],
         })
 
         self.flag_value = 1
@@ -27,9 +28,9 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.battv_threshold_config
 
-        result = battery_voltage_check(self.data, "value", self.flag_value)
+        result = battery_voltage_check(self.data, "value", "value_QCFLAG", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([0, 0, self.flag_value, 0, self.flag_value], dtype=pl.UInt64)
+            pl.Series([0, 0, self.flag_value, 0, self.flag_value])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -40,9 +41,9 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=0.5)
 
-        result = battery_voltage_check(self.data, "value", self.flag_value)
+        result = battery_voltage_check(self.data, "value", "value_QCFLAG", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt64)
+            pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -53,9 +54,9 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=100.)
 
-        result = battery_voltage_check(self.data, "value", self.flag_value)
+        result = battery_voltage_check(self.data, "value", "value_QCFLAG", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value], dtype=pl.UInt64)
+            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -70,9 +71,9 @@ class TestBatteryVoltageCheck(unittest.TestCase):
             .alias("BATTV")
         )
 
-        result = battery_voltage_check(new_data, "value", self.flag_value)
+        result = battery_voltage_check(new_data, "value", "value_QCFLAG", self.flag_value)
         expected = new_data.with_columns(
-            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt64)
+            pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -83,7 +84,7 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.battv_threshold_config
         with self.assertRaises(UserWarning):
-            battery_voltage_check(self.data.drop(["BATTV"]), "value", self.flag_value)
+            battery_voltage_check(self.data.drop(["BATTV"]), "value", "value_QCFLAG", self.flag_value)
 
 
 class TestRangeCheck(unittest.TestCase):
@@ -91,7 +92,9 @@ class TestRangeCheck(unittest.TestCase):
         self.data = pl.DataFrame({
             'SITE_ID': ['site1'] * 6 + ['site2'] * 6,
             'value1': list(range(6)) * 2,
-            'value2': list(range(6, 12)) * 2
+            'value2': list(range(6, 12)) * 2,
+            "value1_QCFLAG": [0] * 12,
+            "value2_QCFLAG": [0] * 12,
         })
 
         self.range_thresholds = {
@@ -134,11 +137,11 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
 
-        result = range_check(self.data, "value1", self.flag_value)
+        result = range_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
 
         expected = self.data.with_columns(
             pl.Series([self.flag_value, 0, 0, 0, self.flag_value, self.flag_value,
-                              self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0], dtype=pl.UInt64)
+                              self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
             .alias("value1_QCFLAG")
         )
 
@@ -150,11 +153,11 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
 
-        result = range_check(self.data, "value2", self.flag_value)
+        result = range_check(self.data, "value2", "value2_QCFLAG", self.flag_value)
 
         expected = self.data.with_columns(
             pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0,
-                       self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0], dtype=pl.UInt64)
+                       self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
             .alias("value2_QCFLAG")
         )
 
@@ -166,7 +169,7 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
         with self.assertRaises(UserWarning):
-            range_check(self.data, "value3", self.flag_value)
+            range_check(self.data, "value3", "value3_QCFLAG", self.flag_value)
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_range_qc_no_default(self, mock_get_qc_config):
@@ -178,7 +181,7 @@ class TestRangeCheck(unittest.TestCase):
         mock_get_qc_config.return_value = range_thresholds
 
         with self.assertRaises(ValueError):
-            range_check(self.data, "value1", self.flag_value)
+            range_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
 
 
 class TestSoilmetScansCheck(unittest.TestCase):
@@ -190,6 +193,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
         self.data = pl.DataFrame({
             "SCANS": [20, 61, 100, 200, 59],
             "value": [1., 2., 3., 4., 5.],
+            "value_QCFLAG": [0, 0, 0, 0, 0],
         })
 
         self.flag_value = 1
@@ -200,9 +204,9 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
 
-        result = soilmet_scans_check(self.data, "value", self.flag_value)
+        result = soilmet_scans_check(self.data, "value", "value_QCFLAG", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([self.flag_value, 0, 0, 0, self.flag_value], dtype=pl.UInt64)
+            pl.Series([self.flag_value, 0, 0, 0, self.flag_value])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -213,9 +217,9 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=1)
 
-        result = soilmet_scans_check(self.data, "value", self.flag_value)
+        result = soilmet_scans_check(self.data, "value", "value_QCFLAG", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt64)
+            pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -226,9 +230,9 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=1000.)
 
-        result = soilmet_scans_check(self.data, "value", self.flag_value)
+        result = soilmet_scans_check(self.data, "value", "value_QCFLAG", self.flag_value)
         expected = self.data.with_columns(
-            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value], dtype=pl.UInt64)
+            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -243,9 +247,9 @@ class TestSoilmetScansCheck(unittest.TestCase):
             .alias("SCANS")
         )
 
-        result = soilmet_scans_check(new_data, "value", self.flag_value)
+        result = soilmet_scans_check(new_data, "value", "value_QCFLAG", self.flag_value)
         expected = new_data.with_columns(
-            pl.Series([0, 0, 0, 0, 0], dtype=pl.UInt64)
+            pl.Series([0, 0, 0, 0, 0])
             .alias("value_QCFLAG")
         )
         assert_frame_equal(result, expected)
@@ -256,7 +260,7 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
         with self.assertRaises(UserWarning):
-            battery_voltage_check(self.data.drop(["SCANS"]), "value", self.flag_value)
+            battery_voltage_check(self.data.drop(["SCANS"]), "value", "value_QCFLAG", self.flag_value)
 
 
 class TestErrorCodesCheck(unittest.TestCase):
@@ -266,6 +270,7 @@ class TestErrorCodesCheck(unittest.TestCase):
         """Set up a sample DataFrame for testing."""
         self.data = pl.DataFrame({
             "value": [12.0, 8999, 9.8, 10.2, 7999],
+            "value_QCFLAG": [0, 0, 0, 0, 0],
         })
 
         self.flag_value = 1
@@ -275,10 +280,10 @@ class TestErrorCodesCheck(unittest.TestCase):
         """Test flag correctly raised if values equal the set error codes.
         """
         expected = self.data.with_columns(
-            pl.Series([0, 1, 0, 0, 1], dtype=pl.UInt64)
+            pl.Series([0, 1, 0, 0, 1])
             .alias("value_QCFLAG")
         )
-        result = error_codes_check(self.data, "value", self.flag_value)
+        result = error_codes_check(self.data, "value", "value_QCFLAG", self.flag_value)
         assert_frame_equal(expected, result)
 
 
@@ -288,6 +293,8 @@ class TestSpikeCheck(unittest.TestCase):
             'SITE_ID': ['site1'] * 6,
             'value1': [1., 2., 3., 4., 5., 6.],
             'value2': [100., 105., 110., 115., 120., 125.],
+            "value1_QCFLAG": [0] * 6,
+            "value2_QCFLAG": [0] * 6,
         })
 
         self.spike_thresholds = {
@@ -325,10 +332,10 @@ class TestSpikeCheck(unittest.TestCase):
             .alias("value1")
         )
 
-        result = spike_check(self.data, "value1", self.flag_value)
+        result = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
 
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, self.flag_value, 0, 0], dtype=pl.UInt64)
+            pl.Series([0, 0, 0, self.flag_value, 0, 0])
             .alias("value1_QCFLAG")
         )
 
@@ -340,10 +347,10 @@ class TestSpikeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.spike_thresholds
 
-        result = spike_check(self.data, "value1", self.flag_value)
+        result = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
 
         expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0, 0], dtype=pl.UInt64)
+            pl.Series([0, 0, 0, 0, 0, 0])
             .alias("value1_QCFLAG")
         )
 
@@ -360,10 +367,10 @@ class TestSpikeCheck(unittest.TestCase):
             .alias("value1")
         )
 
-        result = spike_check(self.data, "value1", self.flag_value)
+        result = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
 
         expected = self.data.with_columns(
-            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0], dtype=pl.UInt64)
+            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
             .alias("value1_QCFLAG")
         )
 
@@ -381,17 +388,17 @@ class TestSpikeCheck(unittest.TestCase):
             pl.Series([1., 20., 3., 4., 50., 6.])
             .alias("value1")
         )
-        result1 = spike_check(self.data, "value1", self.flag_value)
+        result1 = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
         expected1 = result1.with_columns(
-            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0], dtype=pl.UInt64)
+            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
             .alias("value1_QCFLAG")
         )
 
         # Slice the data so the flagged values are first and last place in the array
         new_data = result1.slice(1, 4)
-        result2 = spike_check(new_data, "value1", self.flag_value)
+        result2 = spike_check(new_data, "value1", "value1_QCFLAG", self.flag_value)
         expected2 = new_data.with_columns(
-            pl.Series([self.flag_value, 0, 0, self.flag_value], dtype=pl.UInt64)  # The flags should be maintained
+            pl.Series([self.flag_value, 0, 0, self.flag_value])  # The flags should be maintained
             .alias("value1_QCFLAG")
         )
 
@@ -404,7 +411,7 @@ class TestSpikeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.spike_thresholds
         with self.assertRaises(UserWarning):
-            spike_check(self.data, "value3", self.flag_value)
+            spike_check(self.data, "value3", "value3_QCFLAG", self.flag_value)
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_spike_qc_no_default(self, mock_get_qc_config):
@@ -415,4 +422,4 @@ class TestSpikeCheck(unittest.TestCase):
         mock_get_qc_config.return_value = spike_thresholds
 
         with self.assertRaises(ValueError):
-            spike_check(self.data, "value1", self.flag_value)
+            spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)

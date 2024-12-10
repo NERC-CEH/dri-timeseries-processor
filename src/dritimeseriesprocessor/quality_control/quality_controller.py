@@ -5,19 +5,38 @@ import polars as pl
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
+from dritimeseriesprocessor.quality_control.utils import initialise_qc_column, qc_flag_column_name
+from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
 
+def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataFrame:
+    """
+    Remove values that have a QC flag for given column.
+
+    Args:
+        df: Dataframe containing data and QC flag column
+        column: Name data column
+        flag_column: Name of QC flag column
+
+    Returns:
+        pl.DataFrame with QC'd data removed
+    """
+    # Remove data
+    return df.with_columns(pl.when(pl.col(flag_column) > 0).then(None).otherwise(pl.col(column)).alias(column))
+
+
 @metrics.track_qc_time()
-def run_quality_control(df: pl.DataFrame) -> pl.DataFrame:
+def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on
     the configuration specified in the qc_config module.
 
     Args:
-        df: The input DataFrame containing the data to be quality controlled.
+        ts: The input TimeSeries containing the data to be quality controlled.
+        remove: Whether to remove any QC'd data.
 
     Returns:
         The DataFrame with quality control flags applied.
@@ -31,11 +50,16 @@ def run_quality_control(df: pl.DataFrame) -> pl.DataFrame:
             logger.warning(f"Unimplemented method: {check_id}")
             continue
 
-        for variable in check_config.variables:
-            if variable not in df:
-                logger.warning(f"Variable {variable} not in DataFrame for method {check_id}")
+        for column in check_config.variables:
+            if column not in ts.df:
+                logger.warning(f"Column {column} not in DataFrame for method {check_id}")
                 continue
 
-            df = check_func(df, variable, check_config.id)
+            qc_flag_col = qc_flag_column_name(column)
+            ts = initialise_qc_column(ts, qc_flag_col)
+            ts.df = check_func(ts.df, column, qc_flag_col, check_config.id)
 
-    return df
+            if remove:
+                ts.df = remove_qcd_data(ts.df, column, qc_flag_col)
+
+    return ts

@@ -7,13 +7,12 @@ from dritimeseriesprocessor.quality_control.utils import (
     column_threshold_check,
     get_site_range_values,
     get_site_spike_threshold,
-    initialise_qc_column,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def battery_voltage_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
+def battery_voltage_check(df: pl.DataFrame, column: str, flag_column: str, flag_id: int) -> pl.DataFrame:
     """Check that the battery voltage level is above the threshold.
 
     This function checks if the battery voltage ('BATTV' column) is below a certain threshold
@@ -22,18 +21,19 @@ def battery_voltage_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.Dat
     Args:
         df: The input DataFrame containing the data to be tested.
         column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
         flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
         The DataFrame with the quality control flag applied.
     """
     battv_config = get_qc_config("battv_threshold")
-    df = column_threshold_check(df, "BATTV", column, battv_config.threshold, "<", flag_id)
+    df = column_threshold_check(df, "BATTV", column, flag_column, battv_config.threshold, "<", flag_id)
 
     return df
 
 
-def range_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
+def range_check(df: pl.DataFrame, column: str, flag_column: str, flag_id: int) -> pl.DataFrame:
     """Check values falls between min and max range, applying a quality control flag if outside of range.
 
     Min and max range values are defined per site, per variable and per time resolution.
@@ -41,14 +41,13 @@ def range_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
     Args:
         df: The input DataFrame containing the data to be tested.
         column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
         flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
          The DataFrame with the quality control flag applied.
     """
     resolution = "PT30M"  # TODO: Get this from somewhere
-
-    df, qc_column = initialise_qc_column(df, column)
 
     # Perform range checks per site, as they can have different min/max thresholds
     sites = df.get_column("SITE_ID").unique()
@@ -57,37 +56,39 @@ def range_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
 
         df = df.with_columns(
             pl.when(pl.col("SITE_ID").eq(site) & (pl.col(column).lt(min_val) | pl.col(column).gt(max_val)))
-            .then(pl.col(qc_column).add(flag_id))
-            .otherwise(pl.col(qc_column))
-            .alias(qc_column)
+            .then(pl.col(flag_column).add(flag_id))
+            .otherwise(pl.col(flag_column))
+            .alias(flag_column)
         )
 
     return df
 
 
-def soilmet_scans_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
+def soilmet_scans_check(df: pl.DataFrame, column: str, flag_column: str, flag_id: int) -> pl.DataFrame:
     """Check the soilmet scans value is above an acceptable threshold.
 
     Args:
         df: The input DataFrame containing the data to be tested.
         column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
         flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
         The DataFrame with the quality control flag applied.
     """
     soilmet_scan_config = get_qc_config("soilmet_scan_threshold")
-    df = column_threshold_check(df, "SCANS", column, soilmet_scan_config.threshold, "<", flag_id)
+    df = column_threshold_check(df, "SCANS", column, flag_column, soilmet_scan_config.threshold, "<", flag_id)
 
     return df
 
 
-def error_codes_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
+def error_codes_check(df: pl.DataFrame, column: str, flag_column: str, flag_id: int) -> pl.DataFrame:
     """Add QC flag for expected error codes.
 
     Args:
         df: The input DataFrame
         column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
         flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
@@ -95,12 +96,12 @@ def error_codes_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFra
     """
     error_codes = [7999, 8999]  # TODO: Get these values from somewhere
     for error_code in error_codes:
-        df = column_threshold_check(df, column, column, error_code, "==", flag_id)
+        df = column_threshold_check(df, column, column, flag_column, error_code, "==", flag_id)
 
     return df
 
 
-def spike_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
+def spike_check(df: pl.DataFrame, column: str, flag_column: str, flag_id: int) -> pl.DataFrame:
     """Assess the total difference between a value and its neighbours and remove any skew in the size of the
     differences with each neighbour.
 
@@ -110,14 +111,13 @@ def spike_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
     Args:
         df: The input DataFrame containing the data to be tested.
         column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
         flag_id: The ID of the quality control flag that should be applied to data that fail this check.
 
     Returns:
         pl.DataFrame: The DataFrame with the quality control flag applied.
     """
     resolution = "PT30M"  # TODO: Get this from somewhere
-
-    df, qc_column = initialise_qc_column(df, column)
 
     # Perform spike checks per site, as they can have different spike thresholds
     sites = df.get_column("SITE_ID").unique()
@@ -151,7 +151,7 @@ def spike_check(df: pl.DataFrame, column: str, flag_id: int) -> pl.DataFrame:
         spikes = tst_spikes.get_column("d_no_skew").gt(spike_threshold * 2.0)
 
         df = df.with_columns(
-            pl.when(spikes).then(pl.col(qc_column).add(flag_id)).otherwise(pl.col(qc_column)).alias(qc_column)
+            pl.when(spikes).then(pl.col(flag_column).add(flag_id)).otherwise(pl.col(flag_column)).alias(flag_column)
         )
 
     return df
