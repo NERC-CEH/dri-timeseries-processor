@@ -27,9 +27,8 @@ def initialise_preprocessing_column(ts: TimeSeries, pr_flag_column: str) -> tupl
     Returns:
         A tuple containing the updated DataFrame and the name of the QC flag column.
     """
-    if pr_flag_column not in ts.df.columns:
-        ts.df = ts.df.with_columns(pl.lit(None, dtype=pl.UInt64).alias(pr_flag_column))
-        ts.set_supplementary_columns(pr_flag_column)
+    if pr_flag_column not in ts.columns:
+        ts.init_supplementary_column(pr_flag_column, data=None, dtype=pl.UInt64)
 
     return ts
 
