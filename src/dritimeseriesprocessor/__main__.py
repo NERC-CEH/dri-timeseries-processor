@@ -115,8 +115,6 @@ try:
     writer = S3Writer(s3_client)
 
     # Group data by date and site
-    # If query parameters are stored as variables at the top of module,
-    # could check date and site_id to see if we even need to do any grouping.
     dataframes = group_by_date_site_id(infld_data)
 
     writer.write(
