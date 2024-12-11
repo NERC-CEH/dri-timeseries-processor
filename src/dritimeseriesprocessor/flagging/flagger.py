@@ -50,7 +50,7 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     return ts
 
 
-def preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
+def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
     """Add 'corrected' flag where data has been corrected in preprocessing
     Remove preprocessing flag column.
 

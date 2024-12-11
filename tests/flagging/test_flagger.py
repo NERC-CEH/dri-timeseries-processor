@@ -10,7 +10,7 @@ from time_series import TimeSeries
 from dritimeseriesprocessor.flagging.flagger import (
     core_flag_column_name,
     initialise_core_flags,
-    preprocess_core_flags,
+    update_preprocess_core_flags,
     update_quality_control_core_flags,
     add_unchecked_flag,
     remove_unchecked_flag,
@@ -75,13 +75,13 @@ class TestInitialiseCoreFlags(unittest.TestCase):
 
 
 class TestPreprocessCoreFlags(unittest.TestCase):
-    """Unit tests for the preprocess_core_flags function."""
+    """Unit tests for the update_preprocess_core_flags function."""
 
     @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
     @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
     def test_preprocess_core_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
         """
-        Test that preprocess_core_flags correctly processes the TimeSeries object.
+        Test that update_preprocess_core_flags correctly processes the TimeSeries object.
         """
         mock_pr_flag_column_name.return_value = "data_PRFLAG"
         mock_core_flag_column_name.return_value = "data_FLAG"
@@ -104,14 +104,14 @@ class TestPreprocessCoreFlags(unittest.TestCase):
 
         with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
                         mock_core_flag_config, clear=True):
-            result = preprocess_core_flags(ts)
+            result = update_preprocess_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
 
     @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
     @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
     def test_preprocess_no_core_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
         """
-        Test that preprocess_core_flags adds the core flags when they are not present.
+        Test that update_preprocess_core_flags adds the core flags when they are not present.
         """
         mock_pr_flag_column_name.return_value = "data_PRFLAG"
         mock_core_flag_column_name.return_value = "data_FLAG"
@@ -133,14 +133,14 @@ class TestPreprocessCoreFlags(unittest.TestCase):
 
         with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
                         mock_core_flag_config, clear=True):
-            result = preprocess_core_flags(ts)
+            result = update_preprocess_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
 
     @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
     @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
     def test_preprocess_no_PR_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
         """
-        Test that preprocess_core_flags does nothing to the TimeSeries object when there's no preprocessing flags.
+        Test that update_preprocess_core_flags does nothing to the TimeSeries object when there's no preprocessing flags.
         """
         mock_pr_flag_column_name.return_value = "data_PRFLAG"
         mock_core_flag_column_name.return_value = "data_FLAG"
@@ -154,7 +154,7 @@ class TestPreprocessCoreFlags(unittest.TestCase):
 
         with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
                         mock_core_flag_config, clear=True):
-            result = preprocess_core_flags(ts)
+            result = update_preprocess_core_flags(ts)
             assert_frame_equal(result.df, ts.df)
 
 

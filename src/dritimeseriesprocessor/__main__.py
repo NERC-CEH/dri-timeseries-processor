@@ -8,7 +8,7 @@ import polars as pl
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
-    preprocess_core_flags,
+    update_preprocess_core_flags,
     update_quality_control_core_flags,
 )
 from dritimeseriesprocessor.infilling.infiller import run_infilling
@@ -74,7 +74,7 @@ try:
 
     # Preprocessing
     ts = run_preprocess(ts)
-    ts = preprocess_core_flags(ts)
+    ts = update_preprocess_core_flags(ts)
 
     logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
 
