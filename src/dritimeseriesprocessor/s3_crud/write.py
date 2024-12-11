@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import date, datetime
+from datetime import datetime
 from io import BytesIO
 
 import polars as pl
@@ -12,7 +12,6 @@ from polars.dataframe import DataFrame
 from polars.dataframe.group_by import GroupBy
 
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.utils import steralize_dates
 
 logger = logging.getLogger(__name__)
 

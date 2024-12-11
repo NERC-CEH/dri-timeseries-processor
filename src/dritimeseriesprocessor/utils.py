@@ -1,10 +1,11 @@
 from datetime import date, datetime
-from polars.dataframe.group_by import GroupBy
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
 import polars as pl
+from polars.dataframe.group_by import GroupBy
+
 
 def validate_iso8601_duration(duration: str) -> bool:
     """Validate if the given string is a valid ISO 8601 duration.
@@ -100,4 +101,6 @@ def steralize_site_ids(site_ids: Optional[Union[str, List[str]]] = None) -> List
 def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
     """Group a dataframe by the date and site_id column."""
 
-    return [(group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col('time').dt.date(), pl.col('SITE_ID')])]
+    return [
+        (group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col("time").dt.date(), pl.col("SITE_ID")])
+    ]

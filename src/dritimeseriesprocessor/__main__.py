@@ -24,13 +24,13 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 # Session parameters
-DATASET='PRECIP_1MIN_2024_LOOPED'
-START_DATE=date(2024, 3, 28)
-END_DATE=date(2024, 3, 29)
+DATASET = "PRECIP_1MIN_2024_LOOPED"
+START_DATE = date(2024, 3, 28)
+END_DATE = date(2024, 3, 29)
 # Optional
-SITE_IDS="BUNNY"
+SITE_IDS = "BUNNY"
 # Optional
-COLUMNS=["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"]
+COLUMNS = ["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"]
 
 try:
     # Setup s3
@@ -39,7 +39,6 @@ try:
         s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
     else:
         s3_client = boto3.client("s3")
-
 
     # Ingress
     # -------
@@ -70,7 +69,6 @@ try:
 
     logger.info(f"Added dummy data, shape: {data.shape}")
 
-
     # Initialise TimeSeries object
     # ---------------------------
     resolution = Period.of_minutes(1)
@@ -80,13 +78,11 @@ try:
     # Initialise core flags
     ts = initialise_core_flags(ts)
 
-
     # Preprocessing
     # -------------
     ts.df = run_preprocess(ts.df)
 
     logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
-
 
     # Quality control
     # ---------------
@@ -106,7 +102,6 @@ try:
     with pl.Config(tbl_rows=100):
         logger.info(qcd_data.limit(100))
 
-
     # Infilling
     # ---------
     infld_data = run_infilling(qcd_data)
@@ -114,7 +109,6 @@ try:
     # show first 100 rows to show how infill flags have been applied
     with pl.Config(tbl_rows=100):
         logger.info(infld_data.limit(100))
-
 
     # Writing
     # -------

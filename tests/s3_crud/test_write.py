@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 import moto
 import polars.testing
-import subprocess
 
 from tests.s3_crud.base_test_case import BaseTestCase
 from dritimeseriesprocessor.s3_crud.write import S3Writer
