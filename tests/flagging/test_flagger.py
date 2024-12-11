@@ -100,12 +100,62 @@ class TestPreprocessCoreFlags(unittest.TestCase):
             "data_PRFLAG": ["MULT", None, "ADD"],
             "data_FLAG": [8, 0, 8],
         })
-        expected = TimeSeries(expected_df, "time", supplementary_columns=["data_FLAG"])
+        expected = TimeSeries(expected_df, "time", supplementary_columns=["data_PRFLAG", "data_FLAG"])
 
         with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
                         mock_core_flag_config, clear=True):
             result = preprocess_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
+
+    @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
+    @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
+    def test_preprocess_no_core_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
+        """
+        Test that preprocess_core_flags adds the core flags when they are not present.
+        """
+        mock_pr_flag_column_name.return_value = "data_PRFLAG"
+        mock_core_flag_column_name.return_value = "data_FLAG"
+
+        df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, 3],
+            "data_PRFLAG": ["MULT", None, "ADD"],
+        })
+        ts = TimeSeries(df, "time", supplementary_columns=["data_PRFLAG"])
+
+        expected_df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, 3],
+            "data_PRFLAG": ["MULT", None, "ADD"],
+            "data_FLAG": [8, 0, 8],
+        }).with_columns(pl.col('data_FLAG').cast(pl.Int32))
+        expected = TimeSeries(expected_df, "time", supplementary_columns=["data_PRFLAG", "data_FLAG"])
+
+        with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
+                        mock_core_flag_config, clear=True):
+            result = preprocess_core_flags(ts)
+            assert_frame_equal(result.df, expected.df)
+
+    @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
+    @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
+    def test_preprocess_no_PR_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
+        """
+        Test that preprocess_core_flags does nothing to the TimeSeries object when there's no preprocessing flags.
+        """
+        mock_pr_flag_column_name.return_value = "data_PRFLAG"
+        mock_core_flag_column_name.return_value = "data_FLAG"
+
+        df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, 3],
+            "data_FLAG": [8, 0, 8],
+        })
+        ts = TimeSeries(df, "time", supplementary_columns=["data_FLAG"])
+
+        with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
+                        mock_core_flag_config, clear=True):
+            result = preprocess_core_flags(ts)
+            assert_frame_equal(result.df, ts.df)
 
 
 class TestQualityControlCoreFlags(unittest.TestCase):
