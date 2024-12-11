@@ -51,7 +51,7 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
 
 
 def preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
-    """Add 'corrected' flag where data has been coreected in preprocessing
+    """Add 'corrected' flag where data has been corrected in preprocessing
     Remove preprocessing flag column.
 
     Args:
@@ -65,9 +65,14 @@ def preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
         core_flag_col_name = core_flag_column_name(data_col_name)
         pr_flag_col_name = pr_flag_column_name(data_col_name)
 
-        if pr_flag_col_name not in ts.df.columns:
+        if core_flag_col_name not in ts.columns:
+            ts.init_supplementary_column(core_flag_col_name, 0)
+
+        if pr_flag_col_name not in ts.columns:
             continue
         else:
+            # Build dict that connects data col with its preprocessing flag and core flag
+            # columns.
             flag_col_dict[data_col_name] = {
                 "core_flag_col": core_flag_col_name,
                 "pr_flag_col": pr_flag_col_name,
@@ -91,6 +96,9 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
     for data_col_name in ts.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
         qc_flag_col_name = qc_flag_column_name(data_col_name)
+
+        if core_flag_col_name not in ts.columns:
+            ts.init_supplementary_column(core_flag_col_name, 0)
 
         if qc_flag_col_name not in ts.df.columns:
             continue

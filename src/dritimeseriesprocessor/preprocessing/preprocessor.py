@@ -17,7 +17,7 @@ def pr_flag_column_name(column: str) -> str:
     return f"{column}_PRFLAG"
 
 
-def initialise_preprocessing_column(ts: TimeSeries, pr_flag_column: str) -> tuple[TimeSeries, str]:
+def initialise_preprocessing_column(ts: TimeSeries, pr_flag_column: str) -> TimeSeries:
     """Initialise a preprocessing flag column in the DataFrame if it doesn't already exist.
 
     Args:
@@ -25,7 +25,7 @@ def initialise_preprocessing_column(ts: TimeSeries, pr_flag_column: str) -> tupl
         pr_flag_column: The name of the preprocessing flag column that should be checked/created.
 
     Returns:
-        A tuple containing the updated DataFrame and the name of the QC flag column.
+        The updated TimeSeries
     """
     if pr_flag_column not in ts.columns:
         ts.init_supplementary_column(pr_flag_column, data=None, dtype=pl.UInt64)
@@ -50,8 +50,8 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
             logger.warning(f"Unimplemented method: {correction_config.METHOD_ID}")
             continue
 
-        # Check if the target variable exists in the DataFrame
-        if correction_config.VARIABLE not in ts.df:
+        # Check if the target variable exists in the TimeSeries DataFrame
+        if correction_config.VARIABLE not in ts.data_columns:
             logger.warning(
                 f"Variable {correction_config.VARIABLE} not in DataFrame for method {correction_config.METHOD_ID}"
             )

@@ -6,7 +6,7 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.flagging import (
+from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
     preprocess_core_flags,
     update_quality_control_core_flags,

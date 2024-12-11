@@ -13,6 +13,7 @@ def multiply(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Ex
     Args:
         df: The input DataFrame.
         config: A configuration object containing the correction parameters.
+        flag_column: Name of pre-processing flag column.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -42,6 +43,7 @@ def add(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = 
     Args:
         df: The input DataFrame.
         config: A configuration object containing the correction parameters.
+        flag_column: Name of pre-processing flag column.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -71,6 +73,7 @@ def power(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr 
     Args:
         df: The input DataFrame.
         config: A configuration object containing the correction parameters.
+        flag_column: Name of pre-processing flag column.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
