@@ -97,9 +97,6 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
         core_flag_col_name = core_flag_column_name(data_col_name)
         qc_flag_col_name = qc_flag_column_name(data_col_name)
 
-        if core_flag_col_name not in ts.columns:
-            ts.init_supplementary_column(core_flag_col_name, 0)
-
         if qc_flag_col_name not in ts.df.columns:
             continue
         else:
