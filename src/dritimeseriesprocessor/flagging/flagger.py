@@ -49,8 +49,8 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
 
 
 def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
-    """Add 'corrected' flag where data has been corrected in preprocessing. This
-    determined by where there is preprocessing flag.
+    """Add 'corrected' flag where data has been corrected in preprocessing. This is
+    determined by where there is a preprocessing flag.
 
     Args:
         ts: The input TimeSeries object.

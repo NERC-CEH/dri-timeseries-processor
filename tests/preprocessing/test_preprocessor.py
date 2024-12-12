@@ -9,7 +9,7 @@ from time_series import TimeSeries
 from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name, run_preprocess
 
 
-class TestPrprFlagColumnName(unittest.TestCase):
+class TestPRFlagColumnName(unittest.TestCase):
     """Unit tests for the core_flag_column_name function.
     """
     def test_standard_column_name(self):
