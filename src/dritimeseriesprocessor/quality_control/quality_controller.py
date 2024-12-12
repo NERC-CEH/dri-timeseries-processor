@@ -5,10 +5,14 @@ import polars as pl
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
-from dritimeseriesprocessor.quality_control.utils import qc_flag_column_name
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
+
+
+def qc_flag_column_name(column: str) -> str:
+    """Return column name of QC flag column for a given variable column."""
+    return f"{column}_QCFLAG"
 
 
 def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataFrame:

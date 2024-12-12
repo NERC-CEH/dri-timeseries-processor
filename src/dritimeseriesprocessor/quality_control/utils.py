@@ -169,11 +169,6 @@ def get_site_range_values(site_id: str, variable: str, resolution: str) -> tuple
     return range_values.min_value, range_values.max_value
 
 
-def qc_flag_column_name(column: str) -> str:
-    """Return column name of QC flag column for a given variable column."""
-    return f"{column}_QCFLAG"
-
-
 def get_failed_qc_check_ids_from_flag(flag: int) -> List[int]:
     """Returns the indexes of failed tests from a QC flag
 

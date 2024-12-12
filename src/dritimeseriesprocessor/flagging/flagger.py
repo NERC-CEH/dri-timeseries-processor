@@ -6,7 +6,7 @@ import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
 from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name
-from dritimeseriesprocessor.quality_control.utils import qc_flag_column_name
+from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
