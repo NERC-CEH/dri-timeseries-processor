@@ -138,6 +138,7 @@ def update_infill_core_flags(ts: TimeSeries) -> TimeSeries:
                 "infl_flag_col": infill_flag_col_name,
             }
 
+    ts.df = remove_missing_flag(ts.df, flag_col_dict)
     ts.df = add_estimated_flag(ts.df, flag_col_dict)
 
     return ts
@@ -231,6 +232,32 @@ def add_removed_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
                 & (pl.col(flag_cols["qc_flag_col"]) > 0)
             )
             .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
+            .otherwise(pl.col(flag_cols["core_flag_col"]))
+            .alias(flag_cols["core_flag_col"])
+        )
+    return df
+
+
+def remove_missing_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
+    """
+    Remove "missing" flag for all values in df with a non-null value in the infill flag column.
+
+    NOTE. This is currently very crude and assumes the unchecked flag has already
+    been added to all values.
+
+    Args:
+        df: The dataframe to update
+        flag_col_dict: Dictionary of names of the data column with core and qc flag column names.
+
+    Returns:
+        Updated dataframe
+    """
+    flag_val = core_flag_config["missing"].id
+
+    for flag_cols in flag_col_dict.values():
+        df = df.with_columns(
+            pl.when(pl.col(flag_cols["infl_flag_col"]).is_not_null())
+            .then(pl.col(flag_cols["core_flag_col"]) - flag_val)
             .otherwise(pl.col(flag_cols["core_flag_col"]))
             .alias(flag_cols["core_flag_col"])
         )
