@@ -8,6 +8,7 @@ import polars as pl
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
+    update_infill_core_flags,
     update_preprocess_core_flags,
     update_quality_control_core_flags,
 )
@@ -108,6 +109,7 @@ try:
     # Infilling
     # ---------
     ts = run_infilling(ts)
+    ts = update_infill_core_flags(ts)
 
     # show first 100 rows to show how infill flags have been applied
     with pl.Config(tbl_rows=100):
