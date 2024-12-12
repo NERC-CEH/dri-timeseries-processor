@@ -29,13 +29,13 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 # Session parameters
-DATASET = "PRECIP_1MIN_2024_LOOPED"
-START_DATE = date(2024, 3, 28)
-END_DATE = date(2024, 3, 29)
+DATASET = "SOILMET_30MIN_2024_LOOPED"
+START_DATE = date(2024, 2, 24)
+END_DATE = date(2024, 2, 25)
 # Optional
 SITE_IDS = "BUNNY"
 # Optional
-COLUMNS = ["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"]
+COLUMNS = ["time", "SITE_ID", "TA", "PA"]
 
 try:
     # Setup s3
@@ -56,7 +56,7 @@ try:
         columns=COLUMNS,
     )
 
-    data = data.rename({"P_LOADCELL_TEMP": "TA"})
+    # data = data.rename({"P_LOADCELL_TEMP": "TA"})
 
     logger.info(f"Retrieved data from s3: {data.shape}")
 
@@ -70,14 +70,14 @@ try:
     )
 
     # Add a missing value
-    data[2, "TA"] = None
+    data[-2, "TA"] = None
 
     logger.info(f"Added dummy data, shape: {data.shape}")
 
     # Initialise TimeSeries object
     # ---------------------------
-    resolution = Period.of_minutes(1)
-    periodicity = Period.of_minutes(1)
+    resolution = Period.of_minutes(30)
+    periodicity = Period.of_minutes(30)
     ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
     # Initialise core flags
