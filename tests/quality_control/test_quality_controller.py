@@ -10,7 +10,7 @@ from time_series import TimeSeries, Period
 
 
 class TestQCFlagColumnName(unittest.TestCase):
-    """Unit tests for the core_flag_column_name function.
+    """Unit tests for the qc_flag_column_name function.
     """
     def test_standard_column_name(self):
         """

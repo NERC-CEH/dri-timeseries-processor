@@ -10,7 +10,7 @@ from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_nam
 
 
 class TestPRFlagColumnName(unittest.TestCase):
-    """Unit tests for the core_flag_column_name function.
+    """Unit tests for the pr_flag_column_name function.
     """
     def test_standard_column_name(self):
         """
