@@ -39,7 +39,7 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
         remove: Whether to remove any QC'd data.
 
     Returns:
-        The DataFrame with quality control flags applied.
+        The TimeSeries with quality control flags applied.
     """
 
     qc_check_configs = get_qc_config("qc_tests")
