@@ -4,7 +4,6 @@ from typing import Dict, List
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
-from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
@@ -173,25 +172,6 @@ def get_site_range_values(site_id: str, variable: str, resolution: str) -> tuple
 def qc_flag_column_name(column: str) -> str:
     """Return column name of QC flag column for a given variable column."""
     return f"{column}_QCFLAG"
-
-
-def initialise_qc_column(ts: TimeSeries, qc_flag_column: str) -> tuple[TimeSeries, str]:
-    """Initialise a QC flag column in the DataFrame if it doesn't already exist.
-
-    Args:
-        ts: The TimeSeries to operate on.
-        qc_flag_column: The name of the QC flag column that should be checked/created.
-
-    Returns:
-        A tuple containing the updated DataFrame and the name of the QC flag column.
-    """
-    if qc_flag_column not in ts.df.columns:
-        ts.df = ts.df.with_columns(
-            pl.lit(0, dtype=pl.UInt64).alias(qc_flag_column)  # TODO: Get this 0 value from somewhere
-        )
-        ts.set_supplementary_columns(qc_flag_column)
-
-    return ts
 
 
 def get_failed_qc_check_ids_from_flag(flag: int) -> List[int]:

@@ -12,20 +12,17 @@ from time_series import TimeSeries, Period
 class TestRemoveQCdData(unittest.TestCase):
     """ Unit tests for the remove_qcd_data function.
     """
-    def setUp(self):
-        """
-        Set up test cases.
-        """
-        self.df = pl.DataFrame({
-            'data': [1, 2, 3, 4, 5],
-            'qc_flag': [0, 1, 0, 1, 0]
-        })
 
     def test_remove_qcd_data(self):
         """
         Test that remove_qcd_data correctly removes QC'd data.
         """
-        result = remove_qcd_data(self.df, 'data', 'qc_flag')
+        df = pl.DataFrame({
+            'data': [1, 2, 3, 4, 5],
+            'qc_flag': [0, 1, 0, 1, 0]
+        })
+
+        result = remove_qcd_data(df, 'data', 'qc_flag')
         expected = pl.DataFrame({
             'data': [1, None, 3, None, 5],
             'qc_flag': [0, 1, 0, 1, 0]

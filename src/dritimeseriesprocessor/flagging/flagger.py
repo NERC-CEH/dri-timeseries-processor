@@ -42,17 +42,15 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
         flag_col_dict[data_col_name] = flag_col_name
         ts.init_supplementary_column(flag_col_name, 0)
 
-    flag_col_names = flag_col_dict.values()
-
-    ts.df = add_unchecked_flag(ts.df, flag_col_names)
+    ts.df = add_unchecked_flag(ts.df, flag_col_dict)
     ts.df = add_missing_flag(ts.df, flag_col_dict)
 
     return ts
 
 
 def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
-    """Add 'corrected' flag where data has been corrected in preprocessing
-    Remove preprocessing flag column.
+    """Add 'corrected' flag where data has been corrected in preprocessing. This
+    determined by where there is preprocessing flag.
 
     Args:
         ts: The input TimeSeries object.
@@ -65,10 +63,10 @@ def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
         core_flag_col_name = core_flag_column_name(data_col_name)
         pr_flag_col_name = pr_flag_column_name(data_col_name)
 
-        if core_flag_col_name not in ts.columns:
+        if core_flag_col_name not in ts.supplementary_columns:
             ts.init_supplementary_column(core_flag_col_name, 0)
 
-        if pr_flag_col_name not in ts.columns:
+        if pr_flag_col_name not in ts.supplementary_columns:
             continue
         else:
             # Build dict that connects data col with its preprocessing flag and core flag
@@ -97,7 +95,7 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
         core_flag_col_name = core_flag_column_name(data_col_name)
         qc_flag_col_name = qc_flag_column_name(data_col_name)
 
-        if qc_flag_col_name not in ts.df.columns:
+        if qc_flag_col_name not in ts.supplementary_columns:
             continue
         else:
             flag_col_dict[data_col_name] = {
@@ -111,20 +109,20 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
     return ts
 
 
-def add_unchecked_flag(df: pl.DataFrame, flag_col_names: list) -> pl.DataFrame:
+def add_unchecked_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
     """
     Add "unchecked" flag to all values in flag column
 
     Args:
         df: The dataframe to update
-        flag_col_names: Name of flag column
+        flag_col_dict: Dictionary of names of the data column and flag column.
 
     Returns:
         Updated dataframe
     """
     flag_val = core_flag_config["unchecked"].id
 
-    for flag_col_name in flag_col_names:
+    for flag_col_name in flag_col_dict.values():
         df = df.with_columns((pl.col(flag_col_name) + flag_val).alias(flag_col_name))
     return df
 

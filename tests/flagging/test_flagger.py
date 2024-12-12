@@ -77,15 +77,10 @@ class TestInitialiseCoreFlags(unittest.TestCase):
 class TestPreprocessCoreFlags(unittest.TestCase):
     """Unit tests for the update_preprocess_core_flags function."""
 
-    @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
-    def test_preprocess_core_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
+    def test_preprocess_core_flags(self):
         """
         Test that update_preprocess_core_flags correctly processes the TimeSeries object.
         """
-        mock_pr_flag_column_name.return_value = "data_PRFLAG"
-        mock_core_flag_column_name.return_value = "data_FLAG"
-
         df = pl.DataFrame({
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
             "data": [1, 2, 3],
@@ -107,15 +102,10 @@ class TestPreprocessCoreFlags(unittest.TestCase):
             result = update_preprocess_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
 
-    @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
-    def test_preprocess_no_core_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
+    def test_preprocess_no_core_flags(self):
         """
         Test that update_preprocess_core_flags adds the core flags when they are not present.
         """
-        mock_pr_flag_column_name.return_value = "data_PRFLAG"
-        mock_core_flag_column_name.return_value = "data_FLAG"
-
         df = pl.DataFrame({
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
             "data": [1, 2, 3],
@@ -136,15 +126,10 @@ class TestPreprocessCoreFlags(unittest.TestCase):
             result = update_preprocess_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
 
-    @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.pr_flag_column_name')
-    def test_preprocess_no_PR_flags(self, mock_pr_flag_column_name, mock_core_flag_column_name):
+    def test_preprocess_no_PR_flags(self):
         """
         Test that update_preprocess_core_flags does nothing to the TimeSeries object when there's no preprocessing flags.
         """
-        mock_pr_flag_column_name.return_value = "data_PRFLAG"
-        mock_core_flag_column_name.return_value = "data_FLAG"
-
         df = pl.DataFrame({
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
             "data": [1, 2, 3],
@@ -161,15 +146,10 @@ class TestPreprocessCoreFlags(unittest.TestCase):
 class TestQualityControlCoreFlags(unittest.TestCase):
     """Unit tests for the update_quality_control_core_flags function.
     """
-    @patch('dritimeseriesprocessor.flagging.flagger.core_flag_column_name')
-    @patch('dritimeseriesprocessor.quality_control.utils.qc_flag_column_name')
-    def test_update_quality_control_core_flags(self, mock_qc_flag_column_name, mock_core_flag_column_name):
+    def test_update_quality_control_core_flags(self):
         """
         Test that update_quality_control_core_flags correctly processes the TimeSeries object.
         """
-        mock_qc_flag_column_name.return_value = "data_QCFLAG"
-        mock_core_flag_column_name.return_value = "data_FLAG"
-
         df = pl.DataFrame({
                 "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3), datetime(2024, 1, 4)],
                 "data": [1, 2, None, None],
@@ -210,7 +190,7 @@ class TestAddUncheckedFlag(unittest.TestCase):
         with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
                         mock_core_flag_config, clear=True):
             # Call the function
-            result = add_unchecked_flag(self.df, ["flag1", "flag2"])
+            result = add_unchecked_flag(self.df, {"data1": "flag1", "data2": "flag2"})
 
             # Expected result
             expected_df = pl.DataFrame({
@@ -226,7 +206,7 @@ class TestAddUncheckedFlag(unittest.TestCase):
     def test_nonexistent_flag_column(self):
         """Test behavior when the specified flag column does not exist."""
         with self.assertRaises(pl.exceptions.ColumnNotFoundError):
-            add_unchecked_flag(self.df, ["nonexistent_flag"])
+            add_unchecked_flag(self.df, {"data1": "not_a_flag_col"})
 
 
 class TestRemoveUncheckedFlag(unittest.TestCase):
