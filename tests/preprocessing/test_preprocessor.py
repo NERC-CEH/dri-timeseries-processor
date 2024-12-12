@@ -6,7 +6,7 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from time_series import TimeSeries
-from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name, initialise_preprocessing_column, run_preprocess
+from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name, run_preprocess
 
 
 class TestPrprFlagColumnName(unittest.TestCase):
@@ -17,57 +17,6 @@ class TestPrprFlagColumnName(unittest.TestCase):
         Test that the function correctly appends '_PRFLAG' to a standard column name.
         """
         self.assertEqual(pr_flag_column_name('data'), 'data_PRFLAG')
-
-
-class TestInitialisePreprocessingColumn(unittest.TestCase):
-    """Unit tests for the initialise_preprocessing_column function."""
-
-    def test_pr_column_not_exists(self):
-        """Test that the function adds the preprocessing flag column if it does not exist."""
-        df = pl.DataFrame({
-            "value": [1, 2, 3, 4],
-            "time": [
-                datetime(2021, 4, 1),
-                datetime(2021, 4, 2),
-                datetime(2021, 4, 3),
-                datetime(2021, 4, 4),
-            ]
-        })
-        ts = TimeSeries(df, "time")
-
-        result = initialise_preprocessing_column(ts, "value_PRFLAG")
-
-        expected_df = pl.DataFrame({
-            "value": [1, 2, 3, 4],
-            "time": [
-                datetime(2021, 4, 1),
-                datetime(2021, 4, 2),
-                datetime(2021, 4, 3),
-                datetime(2021, 4, 4),
-            ],
-            "value_PRFLAG": [None, None, None, None],
-        }).with_columns(pl.col('value_PRFLAG').cast(pl.UInt64))
-        expected = TimeSeries(expected_df, "time")
-
-        assert_frame_equal(result.df, expected.df)
-
-    def test_pr_column_already_exists(self):
-        """Test that the function does not modify the DataFrame if the column already exists."""
-        df = pl.DataFrame({
-            "value": [1, 2, 3, 4],
-            "value_PRFLAG": [1, 1, 1, 1],
-            "time": [
-                datetime(2021, 4, 1),
-                datetime(2021, 4, 2),
-                datetime(2021, 4, 3),
-                datetime(2021, 4, 4),
-            ]
-        })
-        ts = TimeSeries(df, "time")
-
-        result = initialise_preprocessing_column(ts, "value_PRFLAG")
-
-        assert_frame_equal(result.df, ts.df)
 
 
 class TestPreprocess(unittest.TestCase):
