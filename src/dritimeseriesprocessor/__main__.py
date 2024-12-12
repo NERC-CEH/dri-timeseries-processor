@@ -14,6 +14,7 @@ from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
+from dritimeseriesprocessor.utils import group_by_date_site_id
 from time_series import TimeSeries
 from time_series.period import Period
 
@@ -22,24 +23,32 @@ setup_logging()
 
 logger = logging.getLogger(__name__)
 
+# Session parameters
+DATASET = "PRECIP_1MIN_2024_LOOPED"
+START_DATE = date(2024, 3, 28)
+END_DATE = date(2024, 3, 29)
+# Optional
+SITE_IDS = "BUNNY"
+# Optional
+COLUMNS = ["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"]
+
 try:
-    # Get S3 Client
+    # Setup s3
+    # --------
     if "environment" not in os.environ:
         s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
     else:
         s3_client = boto3.client("s3")
 
-    # Get data
-    prefix = "cosmos/dataset=PRECIP_1MIN_2024_LOOPED"
-    start_date = date(2024, 3, 28)
-    end_date = date(2024, 3, 29)
+    # Ingress
+    # -------
     data = data_manager.query_by_date_range(
         app_config.level_0_bucket,
-        prefix,
-        start_date,
-        end_date,
-        site_ids="BUNNY",
-        columns=["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"],
+        prefix=f"cosmos/dataset={DATASET}",
+        start_date=START_DATE,
+        end_date=END_DATE,
+        site_ids=SITE_IDS,
+        columns=COLUMNS,
     )
 
     data = data.rename({"P_LOADCELL_TEMP": "TA"})
@@ -60,7 +69,8 @@ try:
 
     logger.info(f"Added dummy data, shape: {data.shape}")
 
-    # Initilise TimeSeries object.
+    # Initialise TimeSeries object
+    # ---------------------------
     resolution = Period.of_minutes(1)
     periodicity = Period.of_minutes(1)
     ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
@@ -69,11 +79,13 @@ try:
     ts = initialise_core_flags(ts)
 
     # Preprocessing
+    # -------------
     ts.df = run_preprocess(ts.df)
 
     logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
 
     # Quality control
+    # ---------------
     ts = run_quality_control(ts, remove=True)
     ts = update_quality_control_core_flags(ts)
 
@@ -91,19 +103,24 @@ try:
         logger.info(qcd_data.limit(100))
 
     # Infilling
+    # ---------
     infld_data = run_infilling(qcd_data)
 
     # show first 100 rows to show how infill flags have been applied
     with pl.Config(tbl_rows=100):
         logger.info(infld_data.limit(100))
 
-    # Writing output
+    # Writing
+    # -------
     writer = S3Writer(s3_client)
+
+    # Group data by date and site
+    dataframes = group_by_date_site_id(infld_data)
+
     writer.write(
         bucket_name=app_config.qc_bucket,
-        key=f"""cosmos/dataset=PRECIP_1MIN_2024_LOOPED/
-            {writer._build_date_range_partition_key(start_date, end_date)}.parquet""",
-        body=infld_data,
+        dataset=DATASET,
+        data=dataframes,
     )
 
     metrics.record_successful_run()
