@@ -193,7 +193,7 @@ class TestGroupByDateSiteID(unittest.TestCase):
 
         result = utils.group_by_date_site_id(df)
 
-        # Should be 3 dataframes
+        # Should be 4 dataframes
         assert(len(result), 4)
 
         for date, site, data in result:
