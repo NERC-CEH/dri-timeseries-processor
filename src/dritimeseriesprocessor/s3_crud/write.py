@@ -2,16 +2,16 @@
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import date
+from datetime import datetime
 from io import BytesIO
 
 import polars as pl
 from botocore.client import BaseClient
 from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
+from polars.dataframe.group_by import GroupBy
 
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.utils import steralize_dates
 
 logger = logging.getLogger(__name__)
 
@@ -64,43 +64,44 @@ class S3Writer(WriterInterface):
         return buffer
 
     @metrics.track_s3_write_time()
-    def write(self, bucket_name: str, key: str, body: bytes) -> None:
-        """Uploads an object to an S3 bucket.
+    def write(self, bucket_name: str, dataset: str, data: GroupBy) -> None:
+        """Uploads objects to an S3 bucket.
 
-        This function attempts to upload a byte object to a specified S3 bucket
-        using the provided S3 client. If the upload fails, it logs an error
-        message and re-raises the exception.
+        This function attempts to upload objects to a specified S3 bucket
+        using the provided S3 client. Objects are converted to bytes.
+        If the upload fails, it logs an error message and re-raises the exception.
 
         Args:
             bucket_name: The name of the S3 bucket.
-            key: The key (path) of the object within the bucket.
-            body: data to write to s3 object
+            dataset: The dataset which the data sits in.
+            data: data to write to s3 object
 
         Raises:
             RuntimeError, ClientError
         """
-        if not isinstance(body, bytes):
-            body = self._get_bytes(body)
 
-        self.s3_client.put_object(Bucket=bucket_name, Key=key, Body=body)
+        for date, site_id, df in data:
+            s3_key = self._build_s3_key(dataset, site_id, date)
+
+            body = self._get_bytes(df)
+
+            self.s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=body)
 
     @staticmethod
-    def _build_date_range_partition_key(start_date: date, end_date: date) -> str:
-        """Builds a partitioned S3 key based on a date range
+    def _build_s3_key(dataset: str, site_id: str, date: datetime) -> str:
+        """Builds a S3 key.
+
+        dataset=<dataset>/site=<site_id>/date=<date>/data.parquet
 
         Args:
-            start_date: The start of the range
-            end_date: The end of the range
+            dataset: The dataset the data comes from
+            site_id: The site_id the data comes from
+            date: The date the data comes from
+
         Returns:
             A string of the key
-        Raises:
-            TypeError
         """
 
-        start_date, end_date = steralize_dates(start_date, end_date)
-        date_format = r"%Y-%m-%d"
+        day = date.strftime("%Y-%m-%d")
 
-        start_date = start_date.strftime(date_format)
-        end_date = end_date.strftime(date_format)
-
-        return f"start_date={start_date}/end_date={end_date}/{start_date}<=>{end_date}"
+        return f"cosmos/dataset={dataset}/site={site_id}/date={day}/data.parquet"

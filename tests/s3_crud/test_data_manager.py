@@ -19,7 +19,7 @@ class TestReadByDateRange(BaseTestCase):
 
         result = query_by_date_range(
             bucket_name=self.bucket_name,
-            prefix='TEST_CATEGORY',
+            prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
             end_date=end_date
         )
@@ -29,7 +29,7 @@ class TestReadByDateRange(BaseTestCase):
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(result_site_ids), expected_site_ids)
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
-        self.assertEqual(result.shape, (192, 6))
+        self.assertEqual(result.shape, (192, 7))
 
     def test_read_by_date_range_with_site_ids(self):
         """Test reading data when specifying site IDs.
@@ -41,7 +41,7 @@ class TestReadByDateRange(BaseTestCase):
 
         result = query_by_date_range(
             bucket_name=self.bucket_name,
-            prefix='TEST_CATEGORY',
+            prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
             end_date=end_date,
             site_ids='site1'
@@ -52,7 +52,7 @@ class TestReadByDateRange(BaseTestCase):
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(result_site_ids), expected_site_ids)
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
-        self.assertEqual(result.shape, (240, 6))
+        self.assertEqual(result.shape, (240, 7))
 
     def test_read_by_date_range_with_selected_columns(self):
         """Test reading data when specifying specific columns
@@ -65,7 +65,7 @@ class TestReadByDateRange(BaseTestCase):
         
         result = query_by_date_range(
             bucket_name=self.bucket_name,
-            prefix='TEST_CATEGORY',
+            prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
             end_date=end_date,
             columns=cols
