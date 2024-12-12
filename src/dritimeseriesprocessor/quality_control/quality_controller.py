@@ -56,7 +56,8 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
                 continue
 
             qc_flag_col = qc_flag_column_name(column)
-            ts.init_supplementary_column(qc_flag_col, 0)
+            if qc_flag_col not in ts.supplementary_columns:
+                ts.init_supplementary_column(qc_flag_col, 0)
             ts.df = check_func(ts.df, column, qc_flag_col, check_config.id)
 
             if remove:
