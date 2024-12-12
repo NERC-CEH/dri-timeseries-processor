@@ -55,7 +55,7 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         pr_flag_col = pr_flag_column_name(correction_config.VARIABLE)
 
         if pr_flag_col not in ts.columns:
-            ts.init_supplementary_column(pr_flag_col, data=None, dtype=pl.UInt64)
+            ts.init_supplementary_column(pr_flag_col, data=None, dtype=pl.String)
 
         # Apply the specified correction function to the DataFrame
         ts.df = correction_fn(ts.df, correction_config, pr_flag_col, mask)
