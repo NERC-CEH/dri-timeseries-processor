@@ -75,16 +75,17 @@ try:
     logger.info(f"Added dummy data, shape: {data.shape}")
 
     # Initialise TimeSeries object
-    # ---------------------------
+    # ----------------------------
     resolution = Period.of_minutes(30)
     periodicity = Period.of_minutes(30)
     ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
     # Initialise core flags
+    # ---------------------
     ts = initialise_core_flags(ts)
 
     # Preprocessing
-    # ---------------
+    # -------------
     ts = run_preprocess(ts)
     ts = update_preprocess_core_flags(ts)
 
