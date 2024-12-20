@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 # Session parameters
 DATASET = "SOILMET_30MIN_2024_LOOPED"
-START_DATE = date(2024, 2, 24)
-END_DATE = date(2024, 2, 25)
+START_DATE = date(2024, 2, 28)
+END_DATE = date(2024, 2, 29)
 # Optional
-SITE_IDS = "BUNNY"
+SITE_IDS = "ALIC1"
 # Optional
 COLUMNS = ["time", "SITE_ID", "TA", "PA"]
 
