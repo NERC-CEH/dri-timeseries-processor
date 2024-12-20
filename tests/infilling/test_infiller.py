@@ -1,14 +1,26 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import numpy as np
 import polars as pl
 from polars.testing import assert_frame_equal
 from datetime import datetime
 from dritimeseriesprocessor.infilling.infiller import (
+    infill_flag_column_name,
     run_infilling,
     get_infill_config,
     INFILL_METHODS
 )
+from time_series import TimeSeries, Period
 
+
+class TestInfillFlagColumnName(unittest.TestCase):
+    """Unit tests for the infill_flag_column_name function.
+    """
+    def test_standard_column_name(self):
+        """
+        Test that the function correctly appends '_INFILL_FLAG' to a standard column name.
+        """
+        self.assertEqual(infill_flag_column_name('data'), 'data_INFILL_FLAG')
 
 
 class TestRunInfilling(unittest.TestCase):
@@ -20,22 +32,35 @@ class TestRunInfilling(unittest.TestCase):
         """
         Set up common test data and mocks.
         """
-        dates = pl.date_range(start=datetime(2023, 1, 1), end=datetime(2023, 1, 5), interval='1d', eager=True)
-
-        self.test_df = pl.DataFrame({
-            'time': dates,
-            'temperature': [20.0, None, 22.0, None, 21.0],
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+            ],
+            'temperature': [20.0, np.nan, 22.0, np.nan, 21.0],
             'humidity': [50, 55, None, None, 60]
         })
 
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(
+            data,
+            "time",
+            resolution,
+            periodicity
+        )
+
         self.mock_config = {
             'temperature': {
-                'PT1M': MagicMock(methods=[
+                'P1D': MagicMock(methods=[
                     MagicMock(method_id='linear_interpolation', priority=1, constraints={'max_gap_size': 2})
                 ])
             },
             'humidity': {
-                'PT1M': MagicMock(methods=[
+                'P1D': MagicMock(methods=[
                     MagicMock(method_id='forward_fill', priority=1, constraints={'max_gap_size': 1})
                 ])
             }
@@ -62,12 +87,12 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_infill_config.return_value = self.mock_config
         mock_infill_methods.__getitem__.side_effect = self.mock_infill_methods.__getitem__
 
-        result = run_infilling(self.test_df)
+        result = run_infilling(self.ts)
 
-        self.assertIn('temperature_INFILL_METHOD', result.columns)
-        self.assertIn('humidity_INFILL_METHOD', result.columns)
-        self.assertEqual(result['temperature'].to_list(), [20.0, 21.0, 22.0, 21.5, 21.0])
-        self.assertEqual(result['humidity'].to_list(), [50, 55, 55, 55, 60])
+        self.assertIn('temperature_INFILL_FLAG', result.columns)
+        self.assertIn('humidity_INFILL_FLAG', result.columns)
+        self.assertEqual(result.df['temperature'].to_list(), [20.0, 21.0, 22.0, 21.5, 21.0])
+        self.assertEqual(result.df['humidity'].to_list(), [50, 55, 55, 55, 60])
 
         mock_get_infill_config.assert_called_once_with("variables")
         self.mock_infill_methods['linear_interpolation'].assert_called_once()
@@ -82,9 +107,9 @@ class TestRunInfilling(unittest.TestCase):
         """
         mock_get_infill_config.return_value = {}
 
-        result = run_infilling(self.test_df)
+        result = run_infilling(self.ts)
 
-        assert_frame_equal(result, self.test_df)
+        assert_frame_equal(result.df, self.ts.df)
         mock_infill_methods.__getitem__.assert_not_called()
 
     @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
@@ -97,9 +122,9 @@ class TestRunInfilling(unittest.TestCase):
         mock_config = {'temperature': {'PT1M': MagicMock(methods=[])}}
         mock_get_infill_config.return_value = mock_config
 
-        result = run_infilling(self.test_df)
+        result = run_infilling(self.ts)
 
-        assert_frame_equal(result, self.test_df)
+        assert_frame_equal(result.df, self.ts.df)
         mock_infill_methods.__getitem__.assert_not_called()
 
     @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
@@ -111,7 +136,7 @@ class TestRunInfilling(unittest.TestCase):
         """
         mock_config = {
             'temperature': {
-                'PT1M': MagicMock(methods=[
+                'P1D': MagicMock(methods=[
                     MagicMock(method_id='linear_interpolation', priority=2, constraints={'max_gap': 2}),
                     MagicMock(method_id='forward_fill', priority=1, constraints={'max_gap': 1})
                 ])
@@ -120,7 +145,7 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_infill_config.return_value = mock_config
         mock_infill_methods.__getitem__.side_effect = self.mock_infill_methods.__getitem__
 
-        result = run_infilling(self.test_df)
+        result = run_infilling(self.ts)
 
         self.mock_infill_methods['forward_fill'].assert_called_once()
         self.mock_infill_methods['linear_interpolation'].assert_called_once()
@@ -146,7 +171,7 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_infill_config.return_value = mock_config
         mock_infill_methods.__getitem__.side_effect = self.mock_infill_methods.__getitem__
 
-        result = run_infilling(self.test_df)
+        result = run_infilling(self.ts)
 
         self.mock_infill_methods['linear_interpolation'].assert_called_once()
-        self.assertIn('temperature_INFILL_METHOD', result.columns)
+        self.assertIn('temperature_INFILL_FLAG', result.columns)

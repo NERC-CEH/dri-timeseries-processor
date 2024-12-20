@@ -12,6 +12,7 @@ from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
     update_preprocess_core_flags,
     update_quality_control_core_flags,
+    update_infill_core_flags,
     add_unchecked_flag,
     remove_unchecked_flag,
     add_missing_flag,
@@ -25,6 +26,7 @@ mock_core_flag_config = {
     "missing": MagicMock(id=2),
     "removed": MagicMock(id=4),
     "corrected": MagicMock(id=8),
+    "estimated": MagicMock(id=16),
 }
 
 
@@ -126,7 +128,7 @@ class TestPreprocessCoreFlags(unittest.TestCase):
             result = update_preprocess_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
 
-    def test_preprocess_no_PR_flags(self):
+    def test_no_PR_flags(self):
         """
         Test that update_preprocess_core_flags does nothing to the TimeSeries object when there's no preprocessing flags.
         """
@@ -170,6 +172,75 @@ class TestQualityControlCoreFlags(unittest.TestCase):
                         mock_core_flag_config, clear=True):
             result = update_quality_control_core_flags(ts)
             assert_frame_equal(result.df, expected.df)
+
+
+class TestInfillCoreFlags(unittest.TestCase):
+    """Unit tests for the update_infill_core_flags function."""
+
+    def test_infill_core_flags(self):
+        """
+        Test that update_infill_core_flags correctly processes the TimeSeries object.
+        """
+        df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, None],
+            "data_INFILL_FLAG": ["INTERP_LINEAR", None, None],
+            "data_FLAG": [2, 0, 4],
+        })
+        ts = TimeSeries(df, "time", supplementary_columns=["data_INFILL_FLAG", "data_FLAG"])
+
+        expected_df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, None],
+            "data_INFILL_FLAG": ["INTERP_LINEAR", None, None],
+            "data_FLAG": [18, 0, 4],
+        })
+        expected = TimeSeries(expected_df, "time", supplementary_columns=["data_INFILL_FLAG", "data_FLAG"])
+
+        with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
+                        mock_core_flag_config, clear=True):
+            result = update_infill_core_flags(ts)
+            assert_frame_equal(result.df, expected.df)
+
+    def test_infill_no_core_flags(self):
+        """
+        Test that update_infill_core_flags adds the core flags when they are not present.
+        """
+        df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, None],
+            "data_INFILL_FLAG": ["INTERP_LINEAR", None, None],
+        })
+        ts = TimeSeries(df, "time", supplementary_columns=["data_INFILL_FLAG"])
+
+        expected_df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, None],
+            "data_INFILL_FLAG": ["INTERP_LINEAR", None, None],
+            "data_FLAG": [16, 0, 0],
+        }).with_columns(pl.col('data_FLAG').cast(pl.Int32))
+        expected = TimeSeries(expected_df, "time", supplementary_columns=["data_INFILL_FLAG", "data_FLAG"])
+
+        with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
+                        mock_core_flag_config, clear=True):
+            result = update_infill_core_flags(ts)
+            assert_frame_equal(result.df, expected.df)
+
+    def test_no_infill_flags(self):
+        """
+        Test that update_infill_core_flags does nothing to the TimeSeries object when there's no infill flags.
+        """
+        df = pl.DataFrame({
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data": [1, 2, 3],
+            "data_FLAG": [8, 0, 8],
+        })
+        ts = TimeSeries(df, "time", supplementary_columns=["data_FLAG"])
+
+        with patch.dict('dritimeseriesprocessor.__metadata__.config_core_flags.core_flag_config',
+                        mock_core_flag_config, clear=True):
+            result = update_infill_core_flags(ts)
+            assert_frame_equal(result.df, ts.df)
 
 
 class TestAddUncheckedFlag(unittest.TestCase):

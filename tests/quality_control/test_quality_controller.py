@@ -5,8 +5,18 @@ from unittest.mock import Mock, patch
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.quality_control.quality_controller import remove_qcd_data, run_quality_control
+from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name, remove_qcd_data, run_quality_control
 from time_series import TimeSeries, Period
+
+
+class TestQCFlagColumnName(unittest.TestCase):
+    """Unit tests for the qc_flag_column_name function.
+    """
+    def test_standard_column_name(self):
+        """
+        Test that the function correctly appends '_QCFLAG' to a standard column name.
+        """
+        self.assertEqual(qc_flag_column_name('data'), 'data_QCFLAG')
 
 
 class TestRemoveQCdData(unittest.TestCase):
