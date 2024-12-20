@@ -5,8 +5,9 @@ import logging
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
+from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name
 from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name
-from dritimeseriesprocessor.quality_control.utils import qc_flag_column_name
+from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
@@ -49,8 +50,8 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
 
 
 def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
-    """Add 'corrected' flag where data has been corrected in preprocessing. This
-    determined by where there is preprocessing flag.
+    """Add 'corrected' flag where data has been corrected in preprocessing. This is
+    determined by where there is a preprocessing flag.
 
     Args:
         ts: The input TimeSeries object.
@@ -105,6 +106,39 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
 
     ts.df = remove_unchecked_flag(ts.df, flag_col_dict)
     ts.df = add_removed_flag(ts.df, flag_col_dict)
+
+    return ts
+
+
+def update_infill_core_flags(ts: TimeSeries) -> TimeSeries:
+    """Add 'estimated' flag where data has been infilled. This is
+    determined by where there is an infill flag.
+
+    Args:
+        ts: The input TimeSeries object.
+
+    Returns:
+        The TimeSeries with the flag columns added
+    """
+    flag_col_dict = {}
+    for data_col_name in ts.data_columns:
+        core_flag_col_name = core_flag_column_name(data_col_name)
+        infill_flag_col_name = infill_flag_column_name(data_col_name)
+
+        if core_flag_col_name not in ts.supplementary_columns:
+            ts.init_supplementary_column(core_flag_col_name, 0)
+
+        if infill_flag_col_name not in ts.supplementary_columns:
+            continue
+        else:
+            # Build dict that connects data col with its infill flag and core flag
+            # columns.
+            flag_col_dict[data_col_name] = {
+                "core_flag_col": core_flag_col_name,
+                "infl_flag_col": infill_flag_col_name,
+            }
+
+    ts.df = add_estimated_flag(ts.df, flag_col_dict)
 
     return ts
 
@@ -220,6 +254,30 @@ def add_corrected_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
     for flag_cols in flag_col_dict.values():
         df = df.with_columns(
             pl.when(pl.col(flag_cols["pr_flag_col"]).is_not_null())
+            .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
+            .otherwise(pl.col(flag_cols["core_flag_col"]))
+            .alias(flag_cols["core_flag_col"])
+        )
+    return df
+
+
+def add_estimated_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
+    """
+    Add a flag for values that have been estimated by infilling.
+    Note, the infilling flag column must be non-null.
+
+    Args:
+        df: The Polars DataFrame to check and update.
+        flag_col_dict: Dictionary of names of the data column with core and infill flag column names.
+
+    Returns:
+        A DataFrame with the flag column updated for removed values in the specified data column.
+    """
+    flag_val = core_flag_config["estimated"].id
+
+    for flag_cols in flag_col_dict.values():
+        df = df.with_columns(
+            pl.when(pl.col(flag_cols["infl_flag_col"]).is_not_null())
             .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
             .otherwise(pl.col(flag_cols["core_flag_col"]))
             .alias(flag_cols["core_flag_col"])

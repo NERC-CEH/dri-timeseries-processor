@@ -10,6 +10,7 @@ import polars as pl
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
+    update_infill_core_flags,
     update_preprocess_core_flags,
     update_quality_control_core_flags,
 )
@@ -48,9 +49,9 @@ PERIOD = sys.argv[1]
 START_DATE = date(2024, 3, 28)
 END_DATE = date(2024, 3, 29)
 # Optional
-SITE_IDS = "BUNNY"
+SITE_IDS = "ALIC1"
 # Optional
-COLUMNS = ["time", "SITE_ID", "P_BUCKET_RT", "P_LOADCELL_TEMP"]
+COLUMNS = ["time", "SITE_ID", "TA", "PA"]
 
 try:
     # Setup s3
@@ -71,7 +72,7 @@ try:
         columns=COLUMNS,
     )
 
-    data = data.rename({"P_LOADCELL_TEMP": "TA"})
+    # data = data.rename({"P_LOADCELL_TEMP": "TA"})
 
     logger.info(f"Retrieved data from s3: {data.shape}")
 
@@ -85,20 +86,21 @@ try:
     )
 
     # Add a missing value
-    data[2, "TA"] = None
+    data[-2, "TA"] = None
 
     logger.info(f"Added dummy data, shape: {data.shape}")
 
     # Initialise TimeSeries object
     # ---------------------------
-    resolution = Period.of_minutes(1)
-    periodicity = Period.of_minutes(1)
+    resolution = Period.of_minutes(30)
+    periodicity = Period.of_minutes(30)
     ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
     # Initialise core flags
     ts = initialise_core_flags(ts)
 
     # Preprocessing
+    # ---------------
     ts = run_preprocess(ts)
     ts = update_preprocess_core_flags(ts)
 
@@ -109,10 +111,8 @@ try:
     ts = run_quality_control(ts, remove=True)
     ts = update_quality_control_core_flags(ts)
 
-    qcd_data = ts.df
-
     # Calculate the number of flags added
-    qcflag_columns = [col for col in qcd_data.columns if col.endswith("_QCFLAG")]
+    qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
     flags_count = len(qcflag_columns)
 
     logger.info(f"Number of QC flag columns: {flags_count}")
@@ -120,22 +120,23 @@ try:
 
     # show first 100 rows to show how qc flags have been applied
     with pl.Config(tbl_rows=100):
-        logger.info(qcd_data.limit(100))
+        logger.info(ts.df.limit(100))
 
     # Infilling
     # ---------
-    infld_data = run_infilling(qcd_data)
+    ts = run_infilling(ts)
+    ts = update_infill_core_flags(ts)
 
     # show first 100 rows to show how infill flags have been applied
     with pl.Config(tbl_rows=100):
-        logger.info(infld_data.limit(100))
+        logger.info(ts.df.limit(100))
 
     # Writing
     # -------
     writer = S3Writer(s3_client)
 
     # Group data by date and site
-    dataframes = group_by_date_site_id(infld_data)
+    dataframes = group_by_date_site_id(ts.df)
 
     writer.write(
         bucket_name=app_config.qc_bucket,

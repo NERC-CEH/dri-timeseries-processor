@@ -17,22 +17,6 @@ def pr_flag_column_name(column: str) -> str:
     return f"{column}_PRFLAG"
 
 
-def initialise_preprocessing_column(ts: TimeSeries, pr_flag_column: str) -> TimeSeries:
-    """Initialise a preprocessing flag column in the DataFrame if it doesn't already exist.
-
-    Args:
-        ts: The TimeSeries to operate on.
-        pr_flag_column: The name of the preprocessing flag column that should be checked/created.
-
-    Returns:
-        The updated TimeSeries
-    """
-    if pr_flag_column not in ts.columns:
-        ts.init_supplementary_column(pr_flag_column, data=None, dtype=pl.UInt64)
-
-    return ts
-
-
 @metrics.track_preprocessing_time()
 def run_preprocess(ts: TimeSeries) -> TimeSeries:
     """Preprocesses the DataFrame by applying a series of corrections based on predefined configurations.
@@ -68,9 +52,12 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
             & (pl.col("time") <= correction_config.END_DATETIME.replace(tzinfo=pytz.UTC))
         )
 
-        # Apply the specified correction function to the DataFrame
         pr_flag_col = pr_flag_column_name(correction_config.VARIABLE)
-        ts = initialise_preprocessing_column(ts, pr_flag_col)
+
+        if pr_flag_col not in ts.columns:
+            ts.init_supplementary_column(pr_flag_col, data=None, dtype=pl.String)
+
+        # Apply the specified correction function to the DataFrame
         ts.df = correction_fn(ts.df, correction_config, pr_flag_col, mask)
 
     return ts
