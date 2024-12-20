@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import numpy as np
 import polars as pl
 from polars.testing import assert_frame_equal
 from datetime import datetime
@@ -39,7 +40,7 @@ class TestRunInfilling(unittest.TestCase):
                 datetime(2023, 8, 13),
                 datetime(2023, 8, 14),
             ],
-            'temperature': [20.0, None, 22.0, None, 21.0],
+            'temperature': [20.0, np.nan, 22.0, np.nan, 21.0],
             'humidity': [50, 55, None, None, 60]
         })
 

@@ -51,7 +51,7 @@ def run_infilling(ts: TimeSeries) -> TimeSeries:
 
                 # Merge resulting infill values and method ID into df
                 ts.df = ts.df.with_columns(
-                    pl.col(column).fill_null(infl_df["value_filled"]).alias(column),
+                    pl.col(column).fill_null(infl_df["value_filled"]).fill_nan(infl_df["value_filled"]).alias(column),
                     infl_df["method_id"].alias(infl_flag_col),
                 )
 
