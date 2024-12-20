@@ -19,8 +19,6 @@ def query_by_date_range(
     end_date: Union[date, datetime, None],
     columns: Optional[List[str]] = None,
     site_ids: Optional[Union[str, List[str]]] = None,
-    date_field: str = "time",
-    site_id_field: str = "SITE_ID",
     reader: ParquetReaderInterface = DuckDbParquetReader(),
 ) -> pl.DataFrame:
     """Reads Parquet files from an S3 bucket for a given date range and combines them into a single Polars DataFrame.
@@ -32,8 +30,6 @@ def query_by_date_range(
         end_date: The end date of date range.
         columns: Optional list of columns to select.
         site_ids: Optional list of site IDs (or single site ID) to select.
-        date_field: The name of the field that we query date on. Defaults to time.
-        site_id_field: The name of the field that we query site ID on. Defaults to SITE_ID.
         reader: The object to use for reading the data. Assumed to be a DuckDbParquetReader by default.
     Returns:
         A Polars DataFrame containing the combined data from the Parquet files.
@@ -43,7 +39,7 @@ def query_by_date_range(
     site_ids = steralize_site_ids(site_ids)
 
     columns_sql = ", ".join(columns) if columns else "*"
-    site_ids_sql = f"AND {site_id_field} IN ({','.join(['?'] * len(site_ids))})" if site_ids else ""
+    site_ids_sql = f"AND site IN ({','.join(['?'] * len(site_ids))})" if site_ids else ""
 
     query = f"""
         SELECT {columns_sql}
