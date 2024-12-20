@@ -7,16 +7,38 @@ import pytz
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.operations import preprocessing_corrections
+from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
 
+def pr_flag_column_name(column: str) -> str:
+    """Return column name of preprocess flag column for a given variable column."""
+    return f"{column}_PRFLAG"
+
+
+def initialise_preprocessing_column(ts: TimeSeries, pr_flag_column: str) -> TimeSeries:
+    """Initialise a preprocessing flag column in the DataFrame if it doesn't already exist.
+
+    Args:
+        ts: The TimeSeries to operate on.
+        pr_flag_column: The name of the preprocessing flag column that should be checked/created.
+
+    Returns:
+        The updated TimeSeries
+    """
+    if pr_flag_column not in ts.columns:
+        ts.init_supplementary_column(pr_flag_column, data=None, dtype=pl.UInt64)
+
+    return ts
+
+
 @metrics.track_preprocessing_time()
-def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
+def run_preprocess(ts: TimeSeries) -> TimeSeries:
     """Preprocesses the DataFrame by applying a series of corrections based on predefined configurations.
 
     Args:
-        df: The input DataFrame that needs preprocessing.
+        ts: The input TimeSeries that needs preprocessing.
 
     Returns:
         The preprocessed DataFrame with corrections applied.
@@ -28,8 +50,8 @@ def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
             logger.warning(f"Unimplemented method: {correction_config.METHOD_ID}")
             continue
 
-        # Check if the target variable exists in the DataFrame
-        if correction_config.VARIABLE not in df:
+        # Check if the target variable exists in the TimeSeries DataFrame
+        if correction_config.VARIABLE not in ts.data_columns:
             logger.warning(
                 f"Variable {correction_config.VARIABLE} not in DataFrame for method {correction_config.METHOD_ID}"
             )
@@ -47,6 +69,8 @@ def run_preprocess(df: pl.DataFrame) -> pl.DataFrame:
         )
 
         # Apply the specified correction function to the DataFrame
-        df = correction_fn(df, correction_config, mask)
+        pr_flag_col = pr_flag_column_name(correction_config.VARIABLE)
+        ts = initialise_preprocessing_column(ts, pr_flag_col)
+        ts.df = correction_fn(ts.df, correction_config, pr_flag_col, mask)
 
-    return df
+    return ts

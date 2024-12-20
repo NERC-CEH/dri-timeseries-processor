@@ -9,8 +9,7 @@ from polars.testing import assert_frame_equal
 from time_series import TimeSeries
 from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
 from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_failed_qc_check_ids_from_flag,
-                                                          get_site_range_values, initialise_qc_column,
-                                                          QCTestIDValidator)
+                                                          get_site_range_values, QCTestIDValidator)
 
 
 class TestColumnThresholdCheck(unittest.TestCase):
@@ -233,53 +232,6 @@ class TestGetSiteRangeValues(unittest.TestCase):
         result = get_site_range_values("site1", "value3", "PT30M")
         expected = (99, 999)
         self.assertEqual(result, expected)
-
-
-class TestInitialiseQcColumn(unittest.TestCase):
-    def test_qc_column_not_exists(self):
-        df = pl.DataFrame({
-            "value": [1, 2, 3, 4],
-            "time": [
-                datetime(2021, 4, 1),
-                datetime(2021, 4, 2),
-                datetime(2021, 4, 3),
-                datetime(2021, 4, 4),
-            ]
-        })
-        ts = TimeSeries(df, "time")
-
-        result = initialise_qc_column(ts, "value_QCFLAG")
-
-        expected_df = pl.DataFrame({
-            "value": [1, 2, 3, 4],
-            "time": [
-                datetime(2021, 4, 1),
-                datetime(2021, 4, 2),
-                datetime(2021, 4, 3),
-                datetime(2021, 4, 4),
-            ],
-            "value_QCFLAG": [0, 0, 0, 0],
-        }).with_columns(pl.col('value_QCFLAG').cast(pl.UInt64))
-        expected = TimeSeries(expected_df, "time")
-
-        assert_frame_equal(result.df, expected.df)
-
-    def test_qc_column_already_exists(self):
-        df = pl.DataFrame({
-            "value": [1, 2, 3, 4],
-            "value_QCFLAG": [1, 1, 1, 1],
-            "time": [
-                datetime(2021, 4, 1),
-                datetime(2021, 4, 2),
-                datetime(2021, 4, 3),
-                datetime(2021, 4, 4),
-            ]
-        })
-        ts = TimeSeries(df, "time")
-
-        result = initialise_qc_column(ts, "value_QCFLAG")
-
-        assert_frame_equal(result.df, ts.df)
 
 
 class TestQCFlagging(unittest.TestCase):

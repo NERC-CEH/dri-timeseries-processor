@@ -7,12 +7,13 @@ from dritimeseriesprocessor.__metadata__.config_preprocessing import Correction
 logger = logging.getLogger(__name__)
 
 
-def multiply(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
+def multiply(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies a multiplication correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
         config: A configuration object containing the correction parameters.
+        flag_column: Name of pre-processing flag column.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -23,17 +24,26 @@ def multiply(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True))
     def _multiply() -> pl.Expr:
         return pl.col(config.VARIABLE).mul(config.CORRECTION_FACTOR)
 
-    corrected = df.with_columns(pl.when(mask).then(_multiply()).otherwise(pl.col(config.VARIABLE)))
+    corrected = df.with_columns(
+        [
+            pl.when(mask).then(_multiply()).otherwise(pl.col(config.VARIABLE)).alias(config.VARIABLE),
+            pl.when((mask) & (pl.col(config.VARIABLE).is_not_null()))
+            .then(pl.lit(config.METHOD_ID))
+            .otherwise(pl.col(flag_column))
+            .alias(flag_column),
+        ]
+    )
 
     return corrected
 
 
-def add(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
+def add(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies an addition correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
         config: A configuration object containing the correction parameters.
+        flag_column: Name of pre-processing flag column.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -44,17 +54,26 @@ def add(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> p
     def _add() -> pl.Expr:
         return pl.col(config.VARIABLE).add(config.CORRECTION_FACTOR)
 
-    corrected = df.with_columns(pl.when(mask).then(_add()).otherwise(pl.col(config.VARIABLE)))
+    corrected = df.with_columns(
+        [
+            pl.when(mask).then(_add()).otherwise(pl.col(config.VARIABLE)).alias(config.VARIABLE),
+            pl.when((mask) & (pl.col(config.VARIABLE).is_not_null()))
+            .then(pl.lit(config.METHOD_ID))
+            .otherwise(pl.col(flag_column))
+            .alias(flag_column),
+        ]
+    )
 
     return corrected
 
 
-def power(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
+def power(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies a power correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
         config: A configuration object containing the correction parameters.
+        flag_column: Name of pre-processing flag column.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -65,7 +84,15 @@ def power(df: pl.DataFrame, config: Correction, mask: pl.Expr = pl.lit(True)) ->
     def _power() -> pl.Expr:
         return pl.col(config.VARIABLE).pow(config.CORRECTION_FACTOR)
 
-    corrected = df.with_columns(pl.when(mask).then(_power()).otherwise(pl.col(config.VARIABLE)))
+    corrected = df.with_columns(
+        [
+            pl.when(mask).then(_power()).otherwise(pl.col(config.VARIABLE)).alias(config.VARIABLE),
+            pl.when((mask) & (pl.col(config.VARIABLE).is_not_null()))
+            .then(pl.lit(config.METHOD_ID))
+            .otherwise(pl.col(flag_column))
+            .alias(flag_column),
+        ]
+    )
 
     return corrected
 

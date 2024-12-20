@@ -5,7 +5,7 @@ import polars as pl
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
-from dritimeseriesprocessor.quality_control.utils import initialise_qc_column, qc_flag_column_name
+from dritimeseriesprocessor.quality_control.utils import qc_flag_column_name
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
@@ -51,12 +51,13 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
             continue
 
         for column in check_config.variables:
-            if column not in ts.df:
+            if column not in ts.data_columns:
                 logger.warning(f"Column {column} not in DataFrame for method {check_id}")
                 continue
 
             qc_flag_col = qc_flag_column_name(column)
-            ts = initialise_qc_column(ts, qc_flag_col)
+            if qc_flag_col not in ts.supplementary_columns:
+                ts.init_supplementary_column(qc_flag_col, 0)
             ts.df = check_func(ts.df, column, qc_flag_col, check_config.id)
 
             if remove:
