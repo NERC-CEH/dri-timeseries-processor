@@ -1,5 +1,7 @@
+import argparse
 import logging
 import os
+import sys
 from datetime import date
 
 import boto3
@@ -22,13 +24,27 @@ from dritimeseriesprocessor.utils import group_by_date_site_id
 from time_series import TimeSeries
 from time_series.period import Period
 
-metrics.setup_metrics()
+logger = logging.getLogger(__name__)
 setup_logging()
 
-logger = logging.getLogger(__name__)
+# Setup
+# -----
+metrics.setup_metrics()
+
+parser = argparse.ArgumentParser()
+
+if len(sys.argv) < 2:
+    raise RuntimeError(
+        "The 'timeeries processor' package must be run with a 'period' argument of the format P<number_of_days>D. Use as:\npython -m dritimeseriesprocessor \"P2D\""
+    )
+
+range = validate_period_input(sys.argv[1])
+
 
 # Session parameters
+# ------------------
 DATASET = "PRECIP_1MIN_2024_LOOPED"
+PERIOD = sys.argv[1]
 START_DATE = date(2024, 3, 28)
 END_DATE = date(2024, 3, 29)
 # Optional
