@@ -1,5 +1,4 @@
 import logging
-import os
 
 import boto3
 import polars as pl
@@ -26,6 +25,7 @@ from time_series.period import Period
 logger = logging.getLogger(__name__)
 setup_logging()
 
+
 # Setup metrics
 # -------------
 metrics.setup_metrics()
@@ -34,9 +34,8 @@ metrics.setup_metrics()
 # Parse and validate arguments
 # ----------------------------
 args = parser.get_args()
-start_date, end_date = parser.build_start_end_dates(args.period, args.end_date)
-print(start_date)
-print(end_date)
+start_date, end_date = parser.build_start_end_dates(args.period, args.end_date, app_config.environment)
+
 
 # Session parameters
 # ------------------
@@ -51,7 +50,7 @@ COLUMNS = ["time", "SITE_ID", "TA", "PA"]
 try:
     # Setup s3
     # --------
-    if "environment" not in os.environ:
+    if app_config.environment == "local":
         s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
     else:
         s3_client = boto3.client("s3")
