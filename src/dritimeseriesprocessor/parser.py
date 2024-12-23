@@ -7,9 +7,10 @@ from datetime import date, timedelta
 from typing import Tuple
 
 import isodate
+from isodate import Duration
 
 
-def get_args() -> ArgumentParser:
+def parse_args(args: list) -> ArgumentParser:
     """Build a parser instance and get the arguments.
 
     Period is required; end_date is optional (default is todays date).
@@ -32,10 +33,10 @@ def get_args() -> ArgumentParser:
         default=date.today().strftime("%Y-%m-%d"),
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
-def build_start_end_dates(period: str, end_date: str, environment: str) -> Tuple[str, str]:
+def build_date_range(period: str, end_date: str, environment: str) -> Tuple[str, str]:
     """Build the start and end date used in the duckdb query.
 
     Date must be in the format YYYY-MM-DD.
@@ -57,7 +58,7 @@ def build_start_end_dates(period: str, end_date: str, environment: str) -> Tuple
     end_date = validate_end_date(end_date)
 
     # Validate the period
-    period = validate_period(period)
+    period = validate_period(period, end_date)
 
     # Start date built from end_date and period
     start_date = end_date - period
@@ -65,7 +66,7 @@ def build_start_end_dates(period: str, end_date: str, environment: str) -> Tuple
     return start_date, end_date
 
 
-def validate_period(period: str) -> timedelta:
+def validate_period(period: str, end_date: date) -> timedelta:
     """Validate the period argument is an ISO8601 duration.
 
     The app only accepts durations from days upwards, and raises an
@@ -84,7 +85,16 @@ def validate_period(period: str) -> timedelta:
         raise ValueError("Period should not have a time component")
 
     try:
-        return isodate.parse_duration(period)
+        period = isodate.parse_duration(period)
+
+        # if the period contains years, isodate converts to its own Duration class
+        # as timedelta cannot take years. Using in-built methods we can then convert
+        # Duration to a time delta instance made up of days.
+        if isinstance(period, Duration):
+            period = period.totimedelta(end=end_date)
+
+        return period
+
     except ValueError:
         raise ValueError(
             """Incorrect period format. Should be a valid ISO8601 duration containing a combination of days,

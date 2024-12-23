@@ -1,4 +1,5 @@
 import logging
+import sys
 
 import boto3
 import polars as pl
@@ -33,8 +34,8 @@ metrics.setup_metrics()
 
 # Parse and validate arguments
 # ----------------------------
-args = parser.get_args()
-start_date, end_date = parser.build_start_end_dates(args.period, args.end_date, app_config.environment)
+args = parser.parse_args(sys.argv[1:])
+start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 
 
 # Session parameters
