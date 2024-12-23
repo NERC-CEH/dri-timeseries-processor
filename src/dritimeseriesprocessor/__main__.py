@@ -1,12 +1,10 @@
-import argparse
 import logging
 import os
-import sys
-from datetime import date
 
 import boto3
 import polars as pl
 
+from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
@@ -28,26 +26,23 @@ from time_series.period import Period
 logger = logging.getLogger(__name__)
 setup_logging()
 
-# Setup
-# -----
+# Setup metrics
+# -------------
 metrics.setup_metrics()
 
-parser = argparse.ArgumentParser()
 
-if len(sys.argv) < 2:
-    raise RuntimeError(
-        "The 'timeeries processor' package must be run with a 'period' argument of the format P<number_of_days>D. Use as:\npython -m dritimeseriesprocessor \"P2D\""
-    )
-
-range = validate_period_input(sys.argv[1])
-
+# Parse and validate arguments
+# ----------------------------
+args = parser.get_args()
+start_date, end_date = parser.build_start_end_dates(args.period, args.end_date)
+print(start_date)
+print(end_date)
 
 # Session parameters
 # ------------------
-DATASET = "PRECIP_1MIN_2024_LOOPED"
-PERIOD = sys.argv[1]
-START_DATE = date(2024, 3, 28)
-END_DATE = date(2024, 3, 29)
+DATASET = "SOILMET_30MIN_2024_LOOPED"
+START_DATE = start_date
+END_DATE = end_date
 # Optional
 SITE_IDS = "ALIC1"
 # Optional
