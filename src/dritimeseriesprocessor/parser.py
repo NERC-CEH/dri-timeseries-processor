@@ -54,17 +54,19 @@ def build_date_range(period: str, end_date: str, environment: str) -> Tuple[str,
         A tuple of the start and end date
     """
     # TEMP CODE
-    # Levelm1 data from the swarm only exists for a 6 month period (jan 2024 - june 2024)
+    # Level m1 data from the swarm only exists for a 6 month period (Jan-June 2024)
     # so there will only ever be certain dates stored in the level 0 bucket.
     # End dates are hardcoded here to make sure the app runs as it would with
     # live data.
+    # Different datasets will require different hardcoded dates, thus will need
+    # to be updated accordingly.
 
     # When running locally, we just need a date that has been loaded into the
     # `parquet-data` folder.
     if environment == "local":
         end_date = "2024-03-10"
 
-    # For staging, pick a random date between
+    # For staging, pick a random date from the range of dates in the level 0 bucket.
     if environment == "staging":
         swarm_start_date = datetime.datetime(2024, 2, 26)
         swarm_end_date = datetime.datetime(2024, 6, 6)

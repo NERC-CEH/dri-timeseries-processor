@@ -72,7 +72,7 @@ try:
     logger.info(f"Retrieved data from s3: {data.shape}")
 
     if data.shape[0] == 0:
-        metrics.record_failed_run("no_data")
+        metrics.record_no_data_run()
         logger.info("No data returned from the query. Ending pipeline.")
 
         # Push failed run metric
@@ -158,7 +158,7 @@ try:
         )
 
 except Exception as e:
-    metrics.record_failed_run("general_error")
+    metrics.record_failed_run()
     logger.exception(f"An error occurred during processing: {str(e)}")
 
     # Push all metrics even if an exception occurs

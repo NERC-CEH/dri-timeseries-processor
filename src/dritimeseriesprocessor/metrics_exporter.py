@@ -23,9 +23,10 @@ class Metrics:
         # Counter for flags
         self.flags_added = Counter("flags_added_total", "Total number of flags added to data")
 
-        # Counters for successful/failed runs
+        # Counters for successful/no data/failed runs
         self.successful_runs = Counter("successful_runs_total", "Number of successful runs")
-        self.failed_runs = Counter("failed_runs_total", "Number of failed runs", ["reason"])
+        self.no_data_runs = Counter("no_data_runs_total", "Number of no_data runs")
+        self.failed_runs = Counter("failed_runs_total", "Number of failed runs")
 
     def setup_metrics(self) -> None:
         """Setup metrics."""
@@ -35,6 +36,7 @@ class Metrics:
         self.registry.register(self.s3_write_time)
         self.registry.register(self.flags_added)
         self.registry.register(self.successful_runs)
+        self.registry.register(self.no_data_runs)
         self.registry.register(self.failed_runs)
 
     def get_pushgateway_url(self) -> str:
@@ -46,6 +48,7 @@ class Metrics:
         pushgateway_url = "pushgateway.monitoring.svc:9091"
         if "environment" not in os.environ:
             pushgateway_url = "localhost:9091"
+
         return pushgateway_url
 
     def export_metrics_to_pushgateway(self, url: str, job: str, registry: CollectorRegistry) -> None:
@@ -73,8 +76,11 @@ class Metrics:
     def record_successful_run(self) -> None:
         self.successful_runs.inc()
 
-    def record_failed_run(self, reason: str) -> None:
-        self.failed_runs.labels(reason).inc()
+    def record_failed_run(self) -> None:
+        self.failed_runs.inc()
+
+    def record_no_data_run(self) -> None:
+        self.no_data_runs.inc()
 
 
 metrics = Metrics()
