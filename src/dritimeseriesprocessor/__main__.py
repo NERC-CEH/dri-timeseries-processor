@@ -67,20 +67,20 @@ try:
         columns=COLUMNS,
     )
 
-    # data = data.rename({"P_LOADCELL_TEMP": "TA"})
-
-    logger.info(f"Retrieved data from s3: {data.shape}")
-
     if data.shape[0] == 0:
         metrics.record_no_data_run()
         logger.info("No data returned from the query. Ending pipeline.")
 
-        # Push failed run metric
+        # Push no data run metric
         metrics.export_metrics_to_pushgateway(
             url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
         )
 
     else:
+        logger.info(f"Retrieved data from s3: {data.shape}")
+
+        # data = data.rename({"P_LOADCELL_TEMP": "TA"})
+
         # Dummy some data that will force some qc checks to run
         data = data.with_columns(
             [
