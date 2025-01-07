@@ -25,7 +25,7 @@ class Metrics:
 
         # Counters for successful/failed runs
         self.successful_runs = Counter("successful_runs_total", "Number of successful runs")
-        self.failed_runs = Counter("failed_runs_total", "Number of failed runs")
+        self.failed_runs = Counter("failed_runs_total", "Number of failed runs", ["reason"])
 
     def setup_metrics(self) -> None:
         """Setup metrics."""
@@ -73,8 +73,8 @@ class Metrics:
     def record_successful_run(self) -> None:
         self.successful_runs.inc()
 
-    def record_failed_run(self) -> None:
-        self.failed_runs.inc()
+    def record_failed_run(self, reason: str) -> None:
+        self.failed_runs.labels(reason).inc()
 
 
 metrics = Metrics()

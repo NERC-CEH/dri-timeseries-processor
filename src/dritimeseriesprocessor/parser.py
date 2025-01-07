@@ -1,9 +1,10 @@
 """Handle the command line arguments."""
 
 import argparse
+import datetime
 import random
 from argparse import ArgumentParser
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Tuple
 
 import isodate
@@ -65,12 +66,12 @@ def build_date_range(period: str, end_date: str, environment: str) -> Tuple[str,
 
     # For staging, pick a random date between
     if environment == "staging":
-        swarm_start_date = datetime(2024, 2, 26)
-        swarm_end_date = datetime(2024, 6, 6)
+        swarm_start_date = datetime.datetime(2024, 2, 26)
+        swarm_end_date = datetime.datetime(2024, 6, 6)
         dates = [swarm_start_date + timedelta(days=x) for x in range((swarm_end_date - swarm_start_date).days)]
 
         # Pick random date
-        end_date = datetime.strftime(random.choice(dates), "%Y-%m-%d")
+        end_date = datetime.datetime.strftime(random.choice(dates), "%Y-%m-%d")
 
     end_date = validate_end_date(end_date)
 
