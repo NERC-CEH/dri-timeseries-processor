@@ -31,14 +31,17 @@ class TestParseArgs(unittest.TestCase):
             parser.parse_args(['P1D', "--wrong_name=2024-03-10"])
 
 class TestBuildDateRange(unittest.TestCase):
-    """Test the build_date_range function."""
+    """Test the build_date_range function.
+    
+    Note: Using 'prod' as the environment so we bypass the temp code and actually
+    test the functionality once real sensor data is available.
+    """
 
     @parameterized.expand(
         [
-            ('P1D', "2024-11-03", "local", (date(2024, 3, 9), date(2024, 3, 10))),
-            ('P2D', "2024-11-03", "staging", (date(2024, 11, 1), date(2024, 11, 3))),
-            ('P1M', "2024-11-03", "staging", (date(2024, 10, 3), date(2024, 11, 3))),
-            ('P1M2W3D', "2024-11-03", "staging", (date(2024, 9, 16), date(2024, 11, 3)))
+            ('P2D', "2024-11-03", "prod", (date(2024, 11, 1), date(2024, 11, 3))),
+            ('P1M', "2024-11-03", "prod", (date(2024, 10, 3), date(2024, 11, 3))),
+            ('P1M2W3D', "2024-11-03", "prod", (date(2024, 9, 16), date(2024, 11, 3)))
         ]
     )
     def test_valid_inputs(self, period, end_date, environment, expected):
