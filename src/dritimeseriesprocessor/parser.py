@@ -1,9 +1,9 @@
 """Handle the command line arguments."""
 
 import argparse
-import datetime
+import random
 from argparse import ArgumentParser
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Tuple
 
 import isodate
@@ -52,8 +52,25 @@ def build_date_range(period: str, end_date: str, environment: str) -> Tuple[str,
     Returns:
         A tuple of the start and end date
     """
+    # TEMP CODE
+    # Levelm1 data from the swarm only exists for a 6 month period (jan 2024 - june 2024)
+    # so there will only ever be certain dates stored in the level 0 bucket.
+    # End dates are hardcoded here to make sure the app runs as it would with
+    # live data.
+
+    # When running locally, we just need a date that has been loaded into the
+    # `parquet-data` folder.
     if environment == "local":
         end_date = "2024-03-10"
+
+    # For staging, pick a random date between
+    if environment == "staging":
+        swarm_start_date = datetime(2024, 2, 26)
+        swarm_end_date = datetime(2024, 6, 6)
+        dates = [swarm_start_date + timedelta(days=x) for x in range((swarm_end_date - swarm_start_date).days)]
+
+        # Pick random date
+        end_date = datetime.strftime(random.choice(dates), "%Y-%m-%d")
 
     end_date = validate_end_date(end_date)
 
