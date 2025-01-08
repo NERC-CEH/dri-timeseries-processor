@@ -36,6 +36,7 @@ metrics.setup_metrics()
 # ----------------------------
 args = parser.parse_args(sys.argv[1:])
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
+logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 
 
 # Session parameters
