@@ -53,7 +53,7 @@ def build_date_range(period: str, end_date: str, environment: str) -> Tuple[str,
     Returns:
         A tuple of the start and end date
     """
-    # TEMP CODE
+    # TEMP CODE-TO REMOVE FW-525
     # Level m1 data from the swarm only exists for a 6 month period (Jan-June 2024)
     # so there will only ever be certain dates stored in the level 0 bucket.
     # End dates are hardcoded here to make sure the app runs as it would with
