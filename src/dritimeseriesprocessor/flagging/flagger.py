@@ -13,6 +13,18 @@ from time_series import TimeSeries
 logger = logging.getLogger(__name__)
 
 
+def missing_expr(column_name: str) -> pl.Expr:
+    """Return expression for missing values in column.
+
+    Args:
+        column_name: Data column name
+
+    Returns:
+        Expression for missing values
+    """
+    return pl.col(column_name).is_null() | pl.col(column_name).is_nan()
+
+
 def core_flag_column_name(column: str) -> str:
     """Return flag column name for given data column name.
 
@@ -37,14 +49,18 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     Returns:
         The TimeSeries with the flag columns added
     """
-    flag_col_dict = {}
+    # Initialise core flag type within TimeSeries object
+    core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
+    ts.init_flag_type("core_flags", core_flags_dict)
+
     for data_col_name in ts.data_columns:
         flag_col_name = core_flag_column_name(data_col_name)
-        flag_col_dict[data_col_name] = flag_col_name
-        ts.init_supplementary_column(flag_col_name, 0)
+        ts.init_flag_column("core_flags", flag_col_name)
 
-    ts.df = add_unchecked_flag(ts.df, flag_col_dict)
-    ts.df = add_missing_flag(ts.df, flag_col_dict)
+        # Set all as unchecked
+        ts.add_flag(flag_col_name, "unchecked", pl.lit(True))
+        # Flag missing values
+        ts.add_flag(flag_col_name, "missing", missing_expr(data_col_name))
 
     return ts
 
@@ -143,24 +159,6 @@ def update_infill_core_flags(ts: TimeSeries) -> TimeSeries:
     return ts
 
 
-def add_unchecked_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
-    """
-    Add "unchecked" flag to all values in flag column
-
-    Args:
-        df: The dataframe to update
-        flag_col_dict: Dictionary of names of the data column and flag column.
-
-    Returns:
-        Updated dataframe
-    """
-    flag_val = core_flag_config["unchecked"].id
-
-    for flag_col_name in flag_col_dict.values():
-        df = df.with_columns((pl.col(flag_col_name) + flag_val).alias(flag_col_name))
-    return df
-
-
 def remove_unchecked_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
     """
     Remove "unchecked" flag for all values in df with a QC flag column.
@@ -183,29 +181,6 @@ def remove_unchecked_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame
             .then(pl.col(flag_cols["core_flag_col"]) - flag_val)
             .otherwise(pl.col(flag_cols["core_flag_col"]))
             .alias(flag_cols["core_flag_col"])
-        )
-    return df
-
-
-def add_missing_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
-    """
-    Add a flag for missing values in the specified data column.
-
-    Args:
-        df: The Polars DataFrame to check and update.
-        flag_col_dict: Dictionary of names of the data column and flag column.
-
-    Returns:
-        A DataFrame with the flag column updated for missing values in the specified data column.
-    """
-    flag_val = core_flag_config["missing"].id
-
-    for data_col_name, flag_col_name in flag_col_dict.items():
-        df = df.with_columns(
-            pl.when(pl.col(data_col_name).is_null() | pl.col(data_col_name).is_nan())
-            .then(pl.col(flag_col_name) + flag_val)
-            .otherwise(pl.col(flag_col_name))
-            .alias(flag_col_name)
         )
     return df
 
