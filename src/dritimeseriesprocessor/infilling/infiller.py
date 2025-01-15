@@ -10,7 +10,15 @@ logger = logging.getLogger(__name__)
 
 
 def infill_flag_column_name(column: str) -> str:
-    """Return column name of infill flag column for a given variable column."""
+    """
+    Return column name of infill flag column for a given variable column.
+
+    Args:
+        column (str): The name of the original variable column.
+
+    Returns:
+        str: The name of the corresponding infill flag column, formatted as '{column}_INFILL_FLAG'.
+    """
     return f"{column}_INFILL_FLAG"
 
 
@@ -51,7 +59,7 @@ def run_infilling(ts: TimeSeries) -> TimeSeries:
 
                 # Merge resulting infill values and method ID into df
                 ts.df = ts.df.with_columns(
-                    pl.col(column).fill_null(infl_df["value_filled"]).alias(column),
+                    pl.col(column).fill_null(infl_df["value_filled"]).fill_nan(infl_df["value_filled"]).alias(column),
                     infl_df["method_id"].alias(infl_flag_col),
                 )
 

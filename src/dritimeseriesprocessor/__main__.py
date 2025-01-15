@@ -1,10 +1,10 @@
 import logging
-import os
-from datetime import date
+import sys
 
 import boto3
 import polars as pl
 
+from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
@@ -23,24 +23,36 @@ from dritimeseriesprocessor.utils import group_by_date_site_id
 from time_series import TimeSeries
 from time_series.period import Period
 
-metrics.setup_metrics()
+logger = logging.getLogger(__name__)
 setup_logging()
 
-logger = logging.getLogger(__name__)
+
+# Setup metrics
+# -------------
+metrics.setup_metrics()
+
+
+# Parse and validate arguments
+# ----------------------------
+args = parser.parse_args(sys.argv[1:])
+start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
+logger.info(f"Processing level 0 data between {start_date} and {end_date}")
+
 
 # Session parameters
+# ------------------
 DATASET = "SOILMET_30MIN_2024_LOOPED"
-START_DATE = date(2024, 2, 24)
-END_DATE = date(2024, 2, 25)
+START_DATE = start_date
+END_DATE = end_date
 # Optional
-SITE_IDS = "BUNNY"
+SITE_IDS = "ALIC1"
 # Optional
 COLUMNS = ["time", "SITE_ID", "TA", "PA"]
 
 try:
     # Setup s3
     # --------
-    if "environment" not in os.environ:
+    if app_config.environment == "local":
         s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
     else:
         s3_client = boto3.client("s3")
@@ -56,86 +68,102 @@ try:
         columns=COLUMNS,
     )
 
-    # data = data.rename({"P_LOADCELL_TEMP": "TA"})
+    if data.shape[0] == 0:
+        metrics.record_no_data_run()
+        logger.info("No data returned from the query. Ending pipeline.")
 
-    logger.info(f"Retrieved data from s3: {data.shape}")
+        # Push no data run metric
+        metrics.export_metrics_to_pushgateway(
+            url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+        )
 
-    # Dummy some data that will force some qc checks to run
-    data = data.with_columns(
-        [
-            pl.Series([12 for i in range(len(data))]).alias("BATTV"),
-            pl.Series(i * 2 for i in range(len(data))).alias("PRECIP"),
-            pl.Series(i for i in range(len(data))).alias("SCANS"),
-        ]
-    )
+    else:
+        logger.info(f"Retrieved data from s3: {data.shape}")
 
-    # Add a missing value
-    data[-2, "TA"] = None
+        # data = data.rename({"P_LOADCELL_TEMP": "TA"})
 
-    logger.info(f"Added dummy data, shape: {data.shape}")
+        # Dummy some data that will force some qc checks to run
+        data = data.with_columns(
+            [
+                pl.Series([12 for i in range(len(data))]).alias("BATTV"),
+                pl.Series(i * 2 for i in range(len(data))).alias("PRECIP"),
+                pl.Series(i for i in range(len(data))).alias("SCANS"),
+            ]
+        )
 
-    # Initialise TimeSeries object
-    # ----------------------------
-    resolution = Period.of_minutes(30)
-    periodicity = Period.of_minutes(30)
-    ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
+        # Add a missing value
+        data[-2, "TA"] = None
 
-    # Initialise core flags
-    # ---------------------
-    ts = initialise_core_flags(ts)
+        logger.info(f"Added dummy data, shape: {data.shape}")
 
-    # Preprocessing
-    # -------------
-    ts = run_preprocess(ts)
-    ts = update_preprocess_core_flags(ts)
+        # Initialise TimeSeries object
+        # ---------------------------
+        resolution = Period.of_minutes(30)
+        periodicity = Period.of_minutes(30)
+        ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
-    logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
+        # Initialise TimeSeries object
+        # ----------------------------
+        resolution = Period.of_minutes(30)
+        periodicity = Period.of_minutes(30)
+        ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
-    # Quality control
-    # ---------------
-    ts = run_quality_control(ts, remove=True)
-    ts = update_quality_control_core_flags(ts)
+        # Initialise core flags
+        # ---------------------
+        ts = initialise_core_flags(ts)
 
-    # Calculate the number of flags added
-    qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
-    flags_count = len(qcflag_columns)
+        # Preprocessing
+        # -------------
+        ts = run_preprocess(ts)
+        ts = update_preprocess_core_flags(ts)
 
-    logger.info(f"Number of QC flag columns: {flags_count}")
-    metrics.increment_flags(flags_count)
+        logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
 
-    # show first 100 rows to show how qc flags have been applied
-    with pl.Config(tbl_rows=100):
-        logger.info(ts.df.limit(100))
+        # Quality control
+        # ---------------
+        ts = run_quality_control(ts, remove=True)
+        ts = update_quality_control_core_flags(ts)
 
-    # Infilling
-    # ---------
-    ts = run_infilling(ts)
-    ts = update_infill_core_flags(ts)
+        # Calculate the number of flags added
+        qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
+        flags_count = len(qcflag_columns)
 
-    # show first 100 rows to show how infill flags have been applied
-    with pl.Config(tbl_rows=100):
-        logger.info(ts.df.limit(100))
+        logger.info(f"Number of QC flag columns: {flags_count}")
+        metrics.increment_flags(flags_count)
 
-    # Writing
-    # -------
-    writer = S3Writer(s3_client)
+        # show first 100 rows to show how qc flags have been applied
+        with pl.Config(tbl_rows=100):
+            logger.info(ts.df.limit(100))
 
-    # Group data by date and site
-    dataframes = group_by_date_site_id(ts.df)
+        # Infilling
+        # ---------
+        ts = run_infilling(ts)
+        ts = update_infill_core_flags(ts)
 
-    writer.write(
-        bucket_name=app_config.qc_bucket,
-        dataset=DATASET,
-        data=dataframes,
-    )
+        # show first 100 rows to show how infill flags have been applied
+        with pl.Config(tbl_rows=100):
+            logger.info(ts.df.limit(100))
 
-    metrics.record_successful_run()
-    logger.info("Processing completed successfully")
+        # Writing
+        # -------
+        writer = S3Writer(s3_client)
 
-    # Push all metrics at the end of successful processing
-    metrics.export_metrics_to_pushgateway(
-        url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-    )
+        # Group data by date and site
+        dataframes = group_by_date_site_id(ts.df)
+
+        writer.write(
+            bucket_name=app_config.qc_bucket,
+            dataset=DATASET,
+            data=dataframes,
+        )
+
+        metrics.record_successful_run()
+        logger.info("Processing completed successfully")
+
+        # Push all metrics at the end of successful processing
+        metrics.export_metrics_to_pushgateway(
+            url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+        )
 
 except Exception as e:
     metrics.record_failed_run()
