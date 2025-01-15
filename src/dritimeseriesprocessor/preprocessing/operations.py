@@ -2,18 +2,16 @@ import logging
 
 import polars as pl
 
-from dritimeseriesprocessor.__metadata__.config_preprocessing import Correction
-
 logger = logging.getLogger(__name__)
 
 
-def multiply(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
+def multiply(df: pl.DataFrame, column: str, correction_factor: float, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies a multiplication correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
-        config: A configuration object containing the correction parameters.
-        flag_column: Name of pre-processing flag column.
+        column: The name of the column to correct.
+        correction_factor: The factor to multiply the column by.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -22,28 +20,22 @@ def multiply(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Ex
     """
 
     def _multiply() -> pl.Expr:
-        return pl.col(config.VARIABLE).mul(config.CORRECTION_FACTOR)
+        return pl.col(column).mul(correction_factor)
 
     corrected = df.with_columns(
-        [
-            pl.when(mask).then(_multiply()).otherwise(pl.col(config.VARIABLE)).alias(config.VARIABLE),
-            pl.when((mask) & (pl.col(config.VARIABLE).is_not_null()))
-            .then(pl.lit(config.METHOD_ID))
-            .otherwise(pl.col(flag_column))
-            .alias(flag_column),
-        ]
+        pl.when(mask).then(_multiply()).otherwise(pl.col(column)).alias(column),
     )
 
     return corrected
 
 
-def add(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
+def add(df: pl.DataFrame, column: str, correction_factor: float, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies an addition correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
-        config: A configuration object containing the correction parameters.
-        flag_column: Name of pre-processing flag column.
+        column: The name of the column to correct.
+        correction_factor: The factor to add to the column.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -52,28 +44,20 @@ def add(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = 
     """
 
     def _add() -> pl.Expr:
-        return pl.col(config.VARIABLE).add(config.CORRECTION_FACTOR)
+        return pl.col(column).add(correction_factor)
 
-    corrected = df.with_columns(
-        [
-            pl.when(mask).then(_add()).otherwise(pl.col(config.VARIABLE)).alias(config.VARIABLE),
-            pl.when((mask) & (pl.col(config.VARIABLE).is_not_null()))
-            .then(pl.lit(config.METHOD_ID))
-            .otherwise(pl.col(flag_column))
-            .alias(flag_column),
-        ]
-    )
+    corrected = df.with_columns(pl.when(mask).then(_add()).otherwise(pl.col(column)).alias(column))
 
     return corrected
 
 
-def power(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
+def power(df: pl.DataFrame, column: str, correction_factor: int, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
     """Applies a power correction to a specific column in the DataFrame based on a condition.
 
     Args:
         df: The input DataFrame.
-        config: A configuration object containing the correction parameters.
-        flag_column: Name of pre-processing flag column.
+        column: The name of the column to correct.
+        correction_factor: The factor to raise the column to the power of.
         mask: The condition to apply for the correction. Default is an expression that defaults to True
               so that expression happens on full DataFrame.
 
@@ -82,17 +66,9 @@ def power(df: pl.DataFrame, config: Correction, flag_column: str, mask: pl.Expr 
     """
 
     def _power() -> pl.Expr:
-        return pl.col(config.VARIABLE).pow(config.CORRECTION_FACTOR)
+        return pl.col(column).pow(correction_factor)
 
-    corrected = df.with_columns(
-        [
-            pl.when(mask).then(_power()).otherwise(pl.col(config.VARIABLE)).alias(config.VARIABLE),
-            pl.when((mask) & (pl.col(config.VARIABLE).is_not_null()))
-            .then(pl.lit(config.METHOD_ID))
-            .otherwise(pl.col(flag_column))
-            .alias(flag_column),
-        ]
-    )
+    corrected = df.with_columns(pl.when(mask).then(_power()).otherwise(pl.col(column)).alias(column))
 
     return corrected
 
