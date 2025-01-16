@@ -13,6 +13,9 @@ from time_series import TimeSeries
 logger = logging.getLogger(__name__)
 
 
+CORE_FLAG_TYPE_NAME = "core_flags"
+
+
 def missing_expr(column_name: str) -> pl.Expr:
     """Return expression for missing values in column.
 
@@ -51,11 +54,11 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     """
     # Initialise core flag type within TimeSeries object
     core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
-    ts.init_flag_type("core_flags", core_flags_dict)
+    ts.init_flag_type(CORE_FLAG_TYPE_NAME, core_flags_dict)
 
     for data_col_name in ts.data_columns:
         flag_col_name = core_flag_column_name(data_col_name)
-        ts.init_flag_column("core_flags", flag_col_name)
+        ts.init_flag_column(CORE_FLAG_TYPE_NAME, flag_col_name)
 
         # Set all as unchecked
         ts.add_flag(flag_col_name, "unchecked", pl.lit(True))
