@@ -32,7 +32,6 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
     """
     # Initialise preprocessing flag type within TimeSeries object
     pr_flags_dict = {method.method_id: method.id for method in preprocessing_config.correction_methods}
-
     ts.init_flag_type(PR_FLAG_TYPE_NAME, pr_flags_dict)
 
     for correction_config in preprocessing_config.corrections:

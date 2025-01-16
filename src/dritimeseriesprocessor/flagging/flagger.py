@@ -40,11 +40,24 @@ def core_flag_column_name(column: str) -> str:
     return f"{column}_FLAG"
 
 
-def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
-    """Add core flag column to each data column in Timeseries object, using the
-    data column name and flag name for new column name.
+def initialise_core_flag_type(ts: TimeSeries) -> TimeSeries:
+    """Setup core flag type in TimeSeries object.
 
-    Initialise all columns with the "unchecked" and "missing" flag.
+    Args:
+        ts: The input TimeSeries object.
+
+    Returns:
+        The TimeSeries with the core flag type added.
+    """
+    # Initialise core flag type within TimeSeries object
+    core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
+    ts.init_flag_type(CORE_FLAG_TYPE_NAME, core_flags_dict)
+
+    return ts
+
+
+def add_initial_core_flags(ts: TimeSeries) -> TimeSeries:
+    """Setup core flags and initialise with "unchecked" and "missing" flags.
 
     Args:
         ts: The input TimeSeries object.
@@ -52,9 +65,7 @@ def initialise_core_flags(ts: TimeSeries) -> TimeSeries:
     Returns:
         The TimeSeries with the flag columns added
     """
-    # Initialise core flag type within TimeSeries object
-    core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
-    ts.init_flag_type(CORE_FLAG_TYPE_NAME, core_flags_dict)
+    ts = initialise_core_flag_type(ts)
 
     for data_col_name in ts.data_columns:
         flag_col_name = core_flag_column_name(data_col_name)
@@ -78,25 +89,24 @@ def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
     Returns:
         The TimeSeries with the flag columns added
     """
-    flag_col_dict = {}
     for data_col_name in ts.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
         pr_flag_col_name = pr_flag_column_name(data_col_name)
 
-        if core_flag_col_name not in ts.supplementary_columns:
-            ts.init_supplementary_column(core_flag_col_name, 0)
+        # Check core flags are set up.
+        if CORE_FLAG_TYPE_NAME not in ts.flag_types:
+            ts = initialise_core_flag_type(ts)
 
-        if pr_flag_col_name not in ts.supplementary_columns:
+        if core_flag_col_name not in ts.flag_columns:
+            ts.init_flag_column(CORE_FLAG_TYPE_NAME, core_flag_col_name)
+
+        # Do nothing if there is no preprocess flag column.
+        if pr_flag_col_name not in ts.flag_columns:
             continue
-        else:
-            # Build dict that connects data col with its preprocessing flag and core flag
-            # columns.
-            flag_col_dict[data_col_name] = {
-                "core_flag_col": core_flag_col_name,
-                "pr_flag_col": pr_flag_col_name,
-            }
 
-    ts.df = add_corrected_flag(ts.df, flag_col_dict)
+        # Add corrected core flag where preprocess flag is not 0.
+        expr = pl.col(pr_flag_col_name) != 0
+        ts.add_flag(core_flag_col_name, "corrected", expr)
 
     return ts
 

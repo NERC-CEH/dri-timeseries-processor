@@ -7,7 +7,7 @@ import polars as pl
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
-    initialise_core_flags,
+    add_initial_core_flags,
     update_infill_core_flags,
     update_preprocess_core_flags,
     update_quality_control_core_flags,
@@ -110,7 +110,7 @@ try:
 
         # Initialise core flags
         # ---------------------
-        ts = initialise_core_flags(ts)
+        ts = add_initial_core_flags(ts)
 
         # Preprocessing
         # -------------
