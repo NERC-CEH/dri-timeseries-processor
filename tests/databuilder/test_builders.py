@@ -9,7 +9,6 @@ from tempfile import TemporaryDirectory
 import datetime
 from parameterized import  parameterized
 import pandas as pd
-import os
 
 class DataCase(unittest.TestCase):
 

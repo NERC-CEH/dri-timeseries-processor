@@ -7,7 +7,6 @@ from datetime import datetime
 from dritimeseriesprocessor.infilling.infiller import (
     infill_flag_column_name,
     run_infilling,
-    get_infill_config,
     INFILL_METHODS
 )
 from time_series import TimeSeries, Period
