@@ -142,6 +142,8 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
         # Add removed flag, the data value must be missing as well as have a QC flag value not 0.
         expr = (missing_expr(data_col_name)) & (pl.col(qc_flag_col_name) != 0)
         ts.add_flag(core_flag_col_name, "removed", expr)
+        # If data is removed, remove the corrected flag.
+        ts.remove_flag(core_flag_col_name, "corrected", expr)
 
     return ts
 
