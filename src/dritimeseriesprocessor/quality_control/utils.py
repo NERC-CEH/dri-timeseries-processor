@@ -4,30 +4,29 @@ from typing import List
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
+from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
 
 def column_threshold_check(
-    df: pl.DataFrame,
+    ts: TimeSeries,
     check_column: str,
-    qc_column: str,
     flag_column: str,
     threshold: float,
     operator: str,
     flag_id: int,
     flag_na: bool = False,
-) -> pl.DataFrame:
+) -> TimeSeries:
     """Generic function for flagging one column of data, based on a threshold check of a different column
 
     For example, we could look at the battery voltage column (the "check_column"), compare it to a threshold
-    using the given operator (e.g. which rows are < threshold), then the "qc_column" for any rows that are True for
+    using the given operator (e.g. which rows are < threshold), then the "flag_column" for any rows that are True for
     this check are flagged
 
     Args:
-        df: This must have only the columns wanted for flagging
+        ts: TimeSeries object containing the data to be checked.
         check_column: The column of data that is being checked against the threshold
-        qc_column: The column that should be flagged
         flag_column: The column to which flag value should be added
         threshold: Threshold value
         operator: What comparison to make
@@ -48,13 +47,10 @@ def column_threshold_check(
         "!=": pl.col(check_column).ne(threshold),
     }
 
-    if check_column not in df:
+    if check_column not in ts.columns:
         raise UserWarning(f"Can not run column threshold check. No {check_column} data provided")
 
-    if qc_column not in df:
-        raise UserWarning(f"Can not run column threshold check. No {qc_column} data provided")
-
-    if flag_column not in df:
+    if flag_column not in ts.columns:
         raise UserWarning(f"Can not run column threshold check. No {flag_column} flag column in dataframe")
 
     if operator not in operator_map:
@@ -66,11 +62,9 @@ def column_threshold_check(
         operator_expr = operator_expr | pl.col(check_column).is_null()
 
     # Apply the flags based on comparing requested column to the threshold
-    df = df.with_columns(
-        pl.when(operator_expr).then(pl.col(flag_column).add(flag_id)).otherwise(pl.col(flag_column)).alias(flag_column)
-    )
+    ts.add_flag(flag_column, flag_id, operator_expr)
 
-    return df
+    return ts
 
 
 def get_site_spike_threshold(site_id: str, variable: str, resolution: str) -> float:

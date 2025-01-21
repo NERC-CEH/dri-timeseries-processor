@@ -112,7 +112,7 @@ def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
 
 
 def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
-    """Remove 'unchecked' flag and add 'removed' flag where data has been removed
+    """Remove 'unchecked' flag and add 'removed' flag where data has been removed.
 
     Args:
         ts: The input TimeSeries object.
@@ -120,21 +120,28 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
     Returns:
         The TimeSeries with the flag columns added
     """
-    flag_col_dict = {}
     for data_col_name in ts.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
         qc_flag_col_name = qc_flag_column_name(data_col_name)
 
-        if qc_flag_col_name not in ts.supplementary_columns:
-            continue
-        else:
-            flag_col_dict[data_col_name] = {
-                "core_flag_col": core_flag_col_name,
-                "qc_flag_col": qc_flag_col_name,
-            }
+        # Check core flags are set up.
+        if CORE_FLAG_TYPE_NAME not in ts.flag_types:
+            ts = initialise_core_flag_type(ts)
 
-    ts.df = remove_unchecked_flag(ts.df, flag_col_dict)
-    ts.df = add_removed_flag(ts.df, flag_col_dict)
+        if core_flag_col_name not in ts.flag_columns:
+            ts.init_flag_column(CORE_FLAG_TYPE_NAME, core_flag_col_name)
+
+        # Do nothing if there is no QC flag column.
+        if qc_flag_col_name not in ts.flag_columns:
+            continue
+
+        # Remove unchecked flag where the is a non-null QC flag.
+        expr = ~missing_expr(qc_flag_col_name)
+        ts.remove_flag(core_flag_col_name, "unchecked", expr)
+
+        # Add removed flag, the data value must be missing as well as have a QC flag value not 0.
+        expr = (missing_expr(data_col_name)) & (pl.col(qc_flag_col_name) != 0)
+        ts.add_flag(core_flag_col_name, "removed", expr)
 
     return ts
 
