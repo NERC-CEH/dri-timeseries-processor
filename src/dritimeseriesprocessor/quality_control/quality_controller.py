@@ -51,7 +51,7 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
 
     # Initialise quality control flag type within TimeSeries object
     qc_flags_dict = {check_name: check_config.id for check_name, check_config in qc_check_configs.items()}
-    ts.init_flag_type(QC_FLAG_TYPE_NAME, qc_flags_dict)
+    ts.add_flag_system(QC_FLAG_TYPE_NAME, qc_flags_dict)
 
     for check_name, check_config in qc_check_configs.items():
         check_func = QC_CHECKS.get(check_name)

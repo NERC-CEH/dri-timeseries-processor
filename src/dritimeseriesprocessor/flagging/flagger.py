@@ -51,7 +51,7 @@ def initialise_core_flag_type(ts: TimeSeries) -> TimeSeries:
     """
     # Initialise core flag type within TimeSeries object
     core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
-    ts.init_flag_type(CORE_FLAG_TYPE_NAME, core_flags_dict)
+    ts.add_flag_system(CORE_FLAG_TYPE_NAME, core_flags_dict)
 
     return ts
 
@@ -94,7 +94,7 @@ def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
         pr_flag_col_name = pr_flag_column_name(data_col_name)
 
         # Check core flags are set up.
-        if CORE_FLAG_TYPE_NAME not in ts.flag_types:
+        if CORE_FLAG_TYPE_NAME not in ts.flag_systems:
             ts = initialise_core_flag_type(ts)
 
         if core_flag_col_name not in ts.flag_columns:
@@ -125,7 +125,7 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
         qc_flag_col_name = qc_flag_column_name(data_col_name)
 
         # Check core flags are set up.
-        if CORE_FLAG_TYPE_NAME not in ts.flag_types:
+        if CORE_FLAG_TYPE_NAME not in ts.flag_systems:
             ts = initialise_core_flag_type(ts)
 
         if core_flag_col_name not in ts.flag_columns:
