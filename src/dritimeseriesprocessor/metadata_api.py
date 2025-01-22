@@ -11,13 +11,14 @@ logger = logging.getLogger(__name__)
 class MetadataAPIManager:
     """Manage requests to the metadata API."""
 
-    def __init__(self, network: str) -> None:
+    def __init__(self, host: str, network: str) -> None:
         """Initialise the API Manager
 
         Args:
+            host: host URL for the metadata API
             network: what network of sensors to query
         """
-        self.host = "https://dri-metadata-api.staging.eds.ceh.ac.uk"
+        self.host = host
         self.network = network
 
     async def _make_api_call(self, url: str, params: Dict[str, str] = None) -> Dict[str, Any]:

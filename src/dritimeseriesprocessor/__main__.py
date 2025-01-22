@@ -35,7 +35,7 @@ metrics.setup_metrics()
 
 # Setup connection to the metadata API
 # ------------------------------------
-metadata = metadata_api.MetadataAPIManager(network="cosmos")
+metadata = metadata_api.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 # Sample call just for an example
 url = f"{metadata.host}/id/network/cosmos"
