@@ -1,0 +1,85 @@
+# Class for setting up metadata api
+
+"""Module to handle calls to the EA API."""
+
+
+import json
+import logging
+from datetime import datetime, timedelta, timezone
+from httpx import AsyncClient, HTTPError
+from pathlib import Path
+from typing import Dict, List, Any
+
+
+logger = logging.getLogger(__name__)
+
+
+class MetadataAPIManager():
+    """Manage requests to the metadata API."""
+
+    def __init__(self, network: str) -> None:
+        """Initialise the API Manager
+        
+        Args:
+            network: what network of sensors to query
+        """
+        self.host = "https://dri-metadata-api.staging.eds.ceh.ac.uk"
+        self.network = network
+    
+    async def _make_api_call(self, url, params=None):
+        """Some text"""
+        logger.info(f"Connecting to {self.host}")
+
+        async with AsyncClient() as client:
+            try:
+                response = await client.get(url=url, params=params)
+                logger.info(f"Trying to access: {response.url}")
+                return response.json()
+            except HTTPError as e:
+                logger.error(f"Failed to fetch {self.network} data: {str(e)}")
+                logger.exception(e)
+                raise e
+
+    async def _fetch_variable_metadata(self, site:str, resolution: str) -> Dict[str, Any]:
+        """Fetch variable metadata for a particular site."""
+        # Create call string
+        base_url = f"{self.host}/id/dataset"
+
+        variable_metadata = {}
+        # Note: @type doesnt exist in our architecture yet so request fails
+        # Loading in static JSON to replicate the response
+
+        #params = {
+        #    "@type": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset",
+        #    "originatingFacility": f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}",
+        #    "processingLevel": f"http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        #    "temporalResolution": f"{resolution}"
+        #}
+
+        f = open(Path(Path(__file__).parents[0], "__metadata__/", "sample_metadata_api.json"))
+        response = json.load(f)
+
+        # This returns a list of timeseries' (each one a variable). We currently need to look into
+        # each item to get the variable name and unit
+        # In discussion with epimorphics about having the metadata at the timeseries level which
+        # would mean we dont need to make the second API call
+        for timeseries in response['items']:
+            timeseries = timeseries['@id'].split('/')[-1]
+            response = await self._make_api_call(url=f"{base_url}/{timeseries}")
+
+            # Wrap into a function TODO
+            for item in response['items']:
+                for property in item['observedProperty']:
+                    variable_name = property['@id'].split('/')[-1]
+
+                    if 'unitless' not in property['hasUnit']['@id']:
+                        variable_unit = property['unitName']
+                    else:
+                        variable_unit = None
+
+                    variable_metadata[variable_name] = variable_unit
+
+        # Need to map between columns in s3 and columns in API
+        # If column not in API then delete from loaded data as metadata
+        # API is the source of truth.
+        return variable_metadata

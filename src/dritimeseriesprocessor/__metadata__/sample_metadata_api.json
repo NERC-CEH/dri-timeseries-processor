@@ -1,0 +1,796 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset.json?@type=http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset&originatingFacility=http://fdri.ceh.ac.uk/id/site/cosmos-alic1&processingLevel=http://fdri.ceh.ac.uk/ref/common/processing-level/1&temporalResolution=PT30M",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset.html?@type=http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset&originatingFacility=http://fdri.ceh.ac.uk/id/site/cosmos-alic1&processingLevel=http://fdri.ceh.ac.uk/ref/common/processing-level/1&temporalResolution=PT30M",
+      "http://fdri.ceh.ac.uk/id/dataset.json?@type=http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset&originatingFacility=http://fdri.ceh.ac.uk/id/site/cosmos-alic1&processingLevel=http://fdri.ceh.ac.uk/ref/common/processing-level/1&temporalResolution=PT30M",
+      "http://fdri.ceh.ac.uk/id/dataset.rdf?@type=http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset&originatingFacility=http://fdri.ceh.ac.uk/id/site/cosmos-alic1&processingLevel=http://fdri.ceh.ac.uk/ref/common/processing-level/1&temporalResolution=PT30M",
+      "http://fdri.ceh.ac.uk/id/dataset.geojson?@type=http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset&originatingFacility=http://fdri.ceh.ac.uk/id/site/cosmos-alic1&processingLevel=http://fdri.ceh.ac.uk/ref/common/processing-level/1&temporalResolution=PT30M",
+      "http://fdri.ceh.ac.uk/id/dataset.csv?@type=http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset&originatingFacility=http://fdri.ceh.ac.uk/id/site/cosmos-alic1&processingLevel=http://fdri.ceh.ac.uk/ref/common/processing-level/1&temporalResolution=PT30M",
+      "http://fdri.ceh.ac.uk/id/dataset.ttl?@type=http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset&originatingFacility=http://fdri.ceh.ac.uk/id/site/cosmos-alic1&processingLevel=http://fdri.ceh.ac.uk/ref/common/processing-level/1&temporalResolution=PT30M"
+    ],
+    "limit": 25
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_diag",
+      "title": [
+        "Precipitation diagnostic flag at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_diag"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/diag_precip",
+          "prefLabel": [
+            "Diagnostic flag for precipitation gauge"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_std_raw",
+      "title": [
+        "Air temperature (std dev, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_std_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/temp_air",
+          "prefLabel": [
+            "Air temperature"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-profile_vwc40_raw",
+      "title": [
+        "Soil moisture content (nominal depth 40 cm) (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/profile_vwc40_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/vwc_soil",
+          "prefLabel": [
+            "Soil volumetric water content"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-stp_tsoil10_raw",
+      "title": [
+        "Soil temperature profile (10 cm depth) (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/stp_tsoil10_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/temp_soil",
+          "prefLabel": [
+            "Soil temperature"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-profile_vwc65_raw",
+      "title": [
+        "Soil moisture content (nominal depth 65 cm) (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/profile_vwc65_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/vwc_soil",
+          "prefLabel": [
+            "Soil volumetric water content"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-profile_soilec40_raw",
+      "title": [
+        "Soil electrical conductivity (nominal depth 40 cm) (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/profile_soilec40_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/cond",
+          "prefLabel": [
+            "Soil conductivity"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-stp_tsoil5_raw",
+      "title": [
+        "Soil temperature profile (5 cm depth) (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/stp_tsoil5_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/temp_soil",
+          "prefLabel": [
+            "Soil temperature"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tdt1_soilec_raw",
+      "title": [
+        "Soil electrical conductivity 1 (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/tdt1_soilec_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/cond",
+          "prefLabel": [
+            "Soil conductivity"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_raw",
+      "title": [
+        "Atmospheric pressure (mean, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/pa",
+          "prefLabel": [
+            "Atmospheric pressure"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_raw",
+      "title": [
+        "Outgoing longwave radiation (uncorrected) (mean, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_unc_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/lwout_unc",
+          "prefLabel": [
+            "Outgoing longwave radiation (uncorrected)"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-metpak_samples_raw",
+      "title": [
+        "Number of half hourly samples taken (Raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/metpak_samples_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/scans_metpak",
+          "prefLabel": [
+            "Number of MetPak samples within interval"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_raw",
+      "title": [
+        "Outgoing longwave radiation (corrected) (mean, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/lwout",
+          "prefLabel": [
+            "Outgoing longwave radiation (corrected)"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_unc_raw",
+      "title": [
+        "Incoming longwave radiation (uncorrected) (mean, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_unc_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/lwin_unc",
+          "prefLabel": [
+            "Incoming longwave radiation (uncorrected)"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cts_mod_diag_1_raw",
+      "title": [
+        "COSMOS Moderated probe diagnostic 1 (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cts_mod_diag_1_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/diag_crns",
+          "prefLabel": [
+            "Diagnostic flag for CRNS tube"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_raw",
+      "title": [
+        "Outgoing shortwave radiation (mean, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/swout",
+          "prefLabel": [
+            "Outgoing shortwave radiation"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cts_mod_diag_5_raw",
+      "title": [
+        "COSMOS Moderated probe diagnostic 5 (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cts_mod_diag_5_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/diag_crns",
+          "prefLabel": [
+            "Diagnostic flag for CRNS tube"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_raw",
+      "title": [
+        "Soil heat flux 2 (Raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/heatflux_soil",
+          "prefLabel": [
+            "Soil heat flux"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tdt2_tsoil_raw",
+      "title": [
+        "Soil temperature 2 (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/tdt2_tsoil_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/temp_soil",
+          "prefLabel": [
+            "Soil temperature"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_std_raw",
+      "title": [
+        "Incoming shortwave radiation (std dev, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_std_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/swin",
+          "prefLabel": [
+            "Incoming shortwave radiation"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tdt1_vwc_raw",
+      "title": [
+        "Soil moisture content 1 (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/tdt1_vwc_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/vwc_soil",
+          "prefLabel": [
+            "Soil volumetric water content"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_raw",
+      "title": [
+        "Radiometer body temperature (mean, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/tnr01c_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/temp_radiometer",
+          "prefLabel": [
+            "Radiometer body temperature"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_std_raw",
+      "title": [
+        "Outgoing shortwave radiation (std dev, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_std_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/swout",
+          "prefLabel": [
+            "Outgoing shortwave radiation"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_raw",
+      "title": [
+        "Incoming longwave radiation (corrected) (30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/lwin",
+          "prefLabel": [
+            "Incoming longwave radiation (corrected)"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cts_mod_diag_3_raw",
+      "title": [
+        "COSMOS Moderated probe diagnostic 3 (raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cts_mod_diag_3_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/diag_crns",
+          "prefLabel": [
+            "Diagnostic flag for CRNS tube"
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_std_raw",
+      "title": [
+        "Outgoing longwave radiation (uncorrected) (std dev, 30 min, raw) at ALIC1"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_unc_std_raw"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/1",
+        "prefLabel": [
+          "Level 1"
+        ]
+      },
+      "temporalResolution": "PT30M",
+      "observedProperty": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/cop/lwout_unc",
+          "prefLabel": [
+            "Outgoing longwave radiation (uncorrected)"
+          ]
+        }
+      ]
+    }
+  ]
+}

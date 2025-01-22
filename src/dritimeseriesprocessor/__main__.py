@@ -1,9 +1,11 @@
+import asyncio
 import logging
 import sys
 
 import boto3
 import polars as pl
 
+from dritimeseriesprocessor import metadata_api
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
@@ -32,6 +34,11 @@ setup_logging()
 metrics.setup_metrics()
 
 
+# Setup connection to the metadata API
+# ------------------------------------
+metadata = metadata_api.MetadataAPIManager(network="cosmos")
+
+
 # Parse and validate arguments
 # ----------------------------
 args = parser.parse_args(sys.argv[1:])
@@ -41,12 +48,20 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 
 # Session parameters
 # ------------------
+
+# TO DO FW-548 Add resolution as CL argument; if empty then search for PT30M and PT1M
+RESOLUTION = "PT30M"
+# Linked to RESOLUTION; Can probably be removed as could map between RESOLUTION and DATASET
 DATASET = "SOILMET_30MIN_2024_LOOPED"
+
 START_DATE = start_date
 END_DATE = end_date
-# Optional
+
+# TO DO FW-545 Add sites as a CL argument; if empty search for all sites (use API to get list of sites)
 SITE_IDS = "ALIC1"
-# Optional
+
+# TO DO FW-549 Add variables as a CL argument; if empty get all variables
+# If they dont exist in metadata api then dont get them
 COLUMNS = ["time", "SITE_ID", "TA", "PA"]
 
 try:
@@ -96,11 +111,29 @@ try:
 
         logger.info(f"Added dummy data, shape: {data.shape}")
 
+
+        # Get metadata for the Timeseries object
+        # ----------------------------------------
+
+        # Note: Can processing level be set in the __init__? Will it ever not be 0?
+        variable_metadata = asyncio.run(
+            metadata._fetch_variable_metadata(site=SITE_IDS, resolution=RESOLUTION))
+
+
         # Initialise TimeSeries object
         # ---------------------------
         resolution = Period.of_minutes(30)
         periodicity = Period.of_minutes(30)
         ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
+
+        # Attach variable metadata TODO
+
+        # Note: How does the metadata attribute fit in with the metadata method?
+        # Assuming we want to attach the variable metadata to the columns returned by metadata method?
+
+        # Note: How does the column level metadata work with multiple sites?
+        # E.g. if two sites had the same column name but with a different description / unit
+
 
         # Initialise core flags
         ts = initialise_core_flags(ts)
