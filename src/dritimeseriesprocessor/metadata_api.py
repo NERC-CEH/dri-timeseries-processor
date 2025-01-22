@@ -32,7 +32,7 @@ class MetadataAPIManager:
         Returns:
             The JSON response from the API
 
-        Raies:
+        Raises:
             HTTP exception if the API request fails or returns an error.
         """
         logger.info(f"Connecting to {self.host}")
@@ -46,60 +46,3 @@ class MetadataAPIManager:
                 logger.error(f"Failed to fetch {self.network} data: {str(e)}")
                 logger.exception(e)
                 raise e
-
-    async def _fetch_variable_metadata(self, site: str, resolution: str) -> Dict[str, Any]:
-        """Fetch variable metadata.
-
-        Return the variable name and units for a site and a resolution.
-
-        Args:
-            site: The site to query
-            resolution: The resolution to query
-
-        Returns:
-            Something...
-        """
-
-        base_url = f"{self.host}/id/dataset"
-
-        variable_metadata = {}
-
-        # Note: @type doesnt exist in our architecture yet so request fails
-        # Loading in static JSON to replicate the response
-
-        # params = {
-        #    "@type": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset",
-        #    "originatingFacility": f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}",
-        #    "processingLevel": f"http://fdri.ceh.ac.uk/ref/common/processing-level/1",
-        #    "temporalResolution": f"{resolution}"
-        # }
-
-        f = open(Path(Path(__file__).parents[0], "__metadata__/", "sample_metadata_api.json"))
-        response = json.load(f)
-
-        # This returns a list of timeseries' (each one a variable). We currently need to look into
-        # each item to get the variable name and unit
-        # In discussion with epimorphics about having the metadata at the timeseries level which
-        # would mean we dont need to make the second API call
-        for dataset in response["items"]:
-            timeseries = dataset["@id"].split("/")[-1]
-            response = await self._make_api_call(url=f"{base_url}/{timeseries}")
-
-            # Wrap into a function TODO
-            for item in response["items"]:
-                for prop in item["observedProperty"]:
-                    variable_name = prop["@id"].split("/")[-1]
-
-                    if "unitless" not in prop["hasUnit"]["@id"]:
-                        variable_unit = prop["unitName"]
-                    else:
-                        variable_unit = None
-
-                    variable_metadata[variable_name] = variable_unit
-
-        # Need to map between columns in s3 and columns in API
-        # If column not in API then delete from loaded data as metadata
-        # API is the source of truth.
-
-        # Just returning for the time being.
-        return variable_metadata
