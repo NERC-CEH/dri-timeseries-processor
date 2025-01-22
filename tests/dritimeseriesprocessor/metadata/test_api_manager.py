@@ -1,14 +1,14 @@
 from unittest.mock import patch
 from unittest.async_case import IsolatedAsyncioTestCase
 import json
-from httpx import HTTPError, Response, Request
-from dritimeseriesprocessor.services.metadata.api import MetadataAPIManager
+from httpx import HTTPError, HTTPStatusError, Response, Request, TimeoutException
+from dritimeseriesprocessor.metadata.api_manager import MetadataAPIManager
 
 
 class TestMetadataApiManager(IsolatedAsyncioTestCase):
     def setUp(self):
         """Set up test cases"""
-        self.api = MetadataAPIManager(network="cosmos")
+        self.api = MetadataAPIManager(host='test_url.com', network="cosmos")
         self.mock_response_data = {
             "meta":
                 {
@@ -45,8 +45,8 @@ class TestMetadataApiManager(IsolatedAsyncioTestCase):
 
             self.assertEqual(result, self.mock_response_data)
 
-    async def test_make_api_call_http_error(self):
-        """Test handling of HTTP errors."""
+    async def test_make_api_call_general_error(self):
+        """Test handling of general errors."""
         with patch('httpx.AsyncClient.get') as mock_get:
             
             mock_error = HTTPError("API Error")
@@ -57,6 +57,29 @@ class TestMetadataApiManager(IsolatedAsyncioTestCase):
             
             self.assertEqual(str(context.exception), "API Error")
 
+    async def test_make_api_call_404_error(self):
+        """Test handling of 404 errors."""
+        with patch('httpx.AsyncClient.get') as mock_get:
+            
+            mock_error = HTTPStatusError("404 Error", request='test_request', response=404)
+            mock_get.side_effect = mock_error
+
+            with self.assertRaises(HTTPError) as context:
+                await self.api._make_api_call('test_url.com')
+            
+            self.assertEqual(str(context.exception), "404 Error")
+
+    async def test_make_api_call_timeout_error(self):
+        """Test handling of timeout errors."""
+        with patch('httpx.AsyncClient.get') as mock_get:
+            
+            mock_error = TimeoutException("timed_out")
+            mock_get.side_effect = mock_error
+
+            with self.assertRaises(HTTPError) as context:
+                await self.api._make_api_call('test_url.com')
+            
+            self.assertEqual(str(context.exception), "timed_out")
 
     async def test_make_api_call_invalid_json(self):
         """Test handling of invalid JSON response."""

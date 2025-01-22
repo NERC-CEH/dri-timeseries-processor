@@ -34,12 +34,11 @@ class MetadataAPIManager:
         Raises:
             HTTP exception if the API request fails or returns an error.
         """
-        logger.info(f"Connecting to {self.host}")
-
         async with AsyncClient() as client:
             try:
                 response = await client.get(url=url, params=params)
-                logger.info(f"Trying to access: {response.url}")
+                response.raise_for_status()
+                logger.debug(f"Trying to access: {response.url}")
                 return response.json()
             except HTTPError as e:
                 logger.error(f"Failed to fetch {self.network} data: {str(e)}")

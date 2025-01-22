@@ -15,12 +15,12 @@ from dritimeseriesprocessor.flagging.flagger import (
 )
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
+from dritimeseriesprocessor.metadata import api_manager
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.services.metadata import api
 from dritimeseriesprocessor.utils import group_by_date_site_id
 from time_series import TimeSeries
 from time_series.period import Period
@@ -36,10 +36,10 @@ metrics.setup_metrics()
 
 # Setup connection to the metadata API
 # ------------------------------------
-metadata = api.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
+metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 # Sample call just for an example
-url = f"{metadata.host}/id/network/cosmos"
+url = f"{metadata.host}/id/network/{metadata.network}"
 sites = asyncio.run(metadata._make_api_call(url))
 print(sites)
 
