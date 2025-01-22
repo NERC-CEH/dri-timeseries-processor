@@ -2,36 +2,36 @@
 
 import json
 import logging
-from httpx import AsyncClient, HTTPError
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
+from httpx import AsyncClient, HTTPError
 
 logger = logging.getLogger(__name__)
 
 
-class MetadataAPIManager():
+class MetadataAPIManager:
     """Manage requests to the metadata API."""
 
     def __init__(self, network: str) -> None:
         """Initialise the API Manager
-        
+
         Args:
             network: what network of sensors to query
         """
         self.host = "https://dri-metadata-api.staging.eds.ceh.ac.uk"
         self.network = network
-    
-    async def _make_api_call(self, url, params=None) -> Dict[str, Any]:
+
+    async def _make_api_call(self, url: str, params: Dict[str, str] = None) -> Dict[str, Any]:
         """Make a call to the metadata API.
-        
+
         Args:
             url: The request url.
             params: The request params. Defaults to None.
-        
+
         Returns:
             The JSON response from the API
-        
+
         Raies:
             HTTP exception if the API request fails or returns an error.
         """
@@ -47,15 +47,15 @@ class MetadataAPIManager():
                 logger.exception(e)
                 raise e
 
-    async def _fetch_variable_metadata(self, site:str, resolution: str) -> Dict[str, Any]:
+    async def _fetch_variable_metadata(self, site: str, resolution: str) -> Dict[str, Any]:
         """Fetch variable metadata.
-        
+
         Return the variable name and units for a site and a resolution.
 
         Args:
             site: The site to query
             resolution: The resolution to query
-        
+
         Returns:
             Something...
         """
@@ -67,12 +67,12 @@ class MetadataAPIManager():
         # Note: @type doesnt exist in our architecture yet so request fails
         # Loading in static JSON to replicate the response
 
-        #params = {
+        # params = {
         #    "@type": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset",
         #    "originatingFacility": f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}",
         #    "processingLevel": f"http://fdri.ceh.ac.uk/ref/common/processing-level/1",
         #    "temporalResolution": f"{resolution}"
-        #}
+        # }
 
         f = open(Path(Path(__file__).parents[0], "__metadata__/", "sample_metadata_api.json"))
         response = json.load(f)
@@ -81,17 +81,17 @@ class MetadataAPIManager():
         # each item to get the variable name and unit
         # In discussion with epimorphics about having the metadata at the timeseries level which
         # would mean we dont need to make the second API call
-        for timeseries in response['items']:
-            timeseries = timeseries['@id'].split('/')[-1]
+        for dataset in response["items"]:
+            timeseries = dataset["@id"].split("/")[-1]
             response = await self._make_api_call(url=f"{base_url}/{timeseries}")
 
             # Wrap into a function TODO
-            for item in response['items']:
-                for property in item['observedProperty']:
-                    variable_name = property['@id'].split('/')[-1]
+            for item in response["items"]:
+                for prop in item["observedProperty"]:
+                    variable_name = prop["@id"].split("/")[-1]
 
-                    if 'unitless' not in property['hasUnit']['@id']:
-                        variable_unit = property['unitName']
+                    if "unitless" not in prop["hasUnit"]["@id"]:
+                        variable_unit = prop["unitName"]
                     else:
                         variable_unit = None
 

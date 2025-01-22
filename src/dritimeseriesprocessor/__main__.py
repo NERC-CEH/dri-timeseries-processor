@@ -5,8 +5,7 @@ import sys
 import boto3
 import polars as pl
 
-from dritimeseriesprocessor import metadata_api
-from dritimeseriesprocessor import parser
+from dritimeseriesprocessor import metadata_api, parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
@@ -111,13 +110,10 @@ try:
 
         logger.info(f"Added dummy data, shape: {data.shape}")
 
-
         # Get metadata for the Timeseries object
         # ----------------------------------------
 
-        variable_metadata = asyncio.run(
-            metadata._fetch_variable_metadata(site=SITE_IDS, resolution=RESOLUTION))
-
+        variable_metadata = asyncio.run(metadata._fetch_variable_metadata(site=SITE_IDS, resolution=RESOLUTION))
 
         # Initialise TimeSeries object
         # ---------------------------
@@ -132,7 +128,6 @@ try:
 
         # Note: How does the column level metadata work with multiple sites?
         # E.g. if two sites had the same column name but with a different description / unit
-
 
         # Initialise core flags
         ts = initialise_core_flags(ts)
