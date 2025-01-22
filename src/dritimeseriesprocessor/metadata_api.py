@@ -1,8 +1,6 @@
 """Module to handle calls to the metadata API."""
 
-import json
 import logging
-from pathlib import Path
 from typing import Any, Dict
 
 from httpx import AsyncClient, HTTPError

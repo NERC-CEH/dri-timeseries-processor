@@ -112,7 +112,6 @@ try:
         periodicity = Period.of_minutes(30)
         ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
-
         # Initialise core flags
         ts = initialise_core_flags(ts)
 
