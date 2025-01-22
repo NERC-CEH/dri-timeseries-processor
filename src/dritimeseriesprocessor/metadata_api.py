@@ -1,14 +1,10 @@
-# Class for setting up metadata api
-
-"""Module to handle calls to the EA API."""
-
+"""Module to handle calls to the metadata API."""
 
 import json
 import logging
-from datetime import datetime, timedelta, timezone
 from httpx import AsyncClient, HTTPError
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 
 logger = logging.getLogger(__name__)
@@ -26,8 +22,19 @@ class MetadataAPIManager():
         self.host = "https://dri-metadata-api.staging.eds.ceh.ac.uk"
         self.network = network
     
-    async def _make_api_call(self, url, params=None):
-        """Some text"""
+    async def _make_api_call(self, url, params=None) -> Dict[str, Any]:
+        """Make a call to the metadata API.
+        
+        Args:
+            url: The request url.
+            params: The request params. Defaults to None.
+        
+        Returns:
+            The JSON response from the API
+        
+        Raies:
+            HTTP exception if the API request fails or returns an error.
+        """
         logger.info(f"Connecting to {self.host}")
 
         async with AsyncClient() as client:
@@ -41,11 +48,22 @@ class MetadataAPIManager():
                 raise e
 
     async def _fetch_variable_metadata(self, site:str, resolution: str) -> Dict[str, Any]:
-        """Fetch variable metadata for a particular site."""
-        # Create call string
+        """Fetch variable metadata.
+        
+        Return the variable name and units for a site and a resolution.
+
+        Args:
+            site: The site to query
+            resolution: The resolution to query
+        
+        Returns:
+            Something...
+        """
+
         base_url = f"{self.host}/id/dataset"
 
         variable_metadata = {}
+
         # Note: @type doesnt exist in our architecture yet so request fails
         # Loading in static JSON to replicate the response
 
@@ -82,4 +100,6 @@ class MetadataAPIManager():
         # Need to map between columns in s3 and columns in API
         # If column not in API then delete from loaded data as metadata
         # API is the source of truth.
+
+        # Just returning for the time being.
         return variable_metadata

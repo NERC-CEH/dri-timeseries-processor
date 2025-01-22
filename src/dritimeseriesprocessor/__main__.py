@@ -115,7 +115,6 @@ try:
         # Get metadata for the Timeseries object
         # ----------------------------------------
 
-        # Note: Can processing level be set in the __init__? Will it ever not be 0?
         variable_metadata = asyncio.run(
             metadata._fetch_variable_metadata(site=SITE_IDS, resolution=RESOLUTION))
 
