@@ -1,11 +1,15 @@
 """Handle the command line arguments."""
 
 import argparse
+import asyncio
 import datetime
 import random
 from argparse import ArgumentParser
 from datetime import date, timedelta
 from typing import Tuple
+
+from dritimeseriesprocessor.metadata_api import MetadataAPIManager
+from dritimeseriesprocessor.utils import extract_sites_from_metadata_response
 
 import isodate
 from isodate import Duration
@@ -14,7 +18,9 @@ from isodate import Duration
 def parse_args(args: list) -> ArgumentParser:
     """Build a parser instance and get the arguments.
 
-    Period is required; end_date is optional (default is todays date).
+    period: required
+    sites: optional (default is all sites)
+    end_date: optional (default is todays date).
 
     Returns:
         An instance of ArguementParser.
@@ -25,6 +31,13 @@ def parse_args(args: list) -> ArgumentParser:
         help=(
             """A valid ISO8601 period to extract level 0 data for. Should be a combination of
             days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
+        ),
+    )
+    parser.add_argument(
+        "-sites",
+        help=(
+            """The sites to extract. Must be a string of sites (upper or lower case) seperated by a comma
+              e.g. ALIC1,BUNNY or alic1,bunny. If not provided all sites will be extracted."""
         ),
     )
     parser.add_argument(
@@ -138,3 +151,40 @@ def validate_end_date(end_date: str) -> str:
         return datetime.date.fromisoformat(end_date)
     except ValueError:
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
+
+
+def validate_sites(sites: str, metadata: MetadataAPIManager) -> list:
+    """Validate the sites entered.
+
+    Checks user entered sites against the metadata site list and removes
+    if not contained.
+
+    Args:
+        sites:
+    """
+    # Extract sites from the metadata API
+    metadata_sites = asyncio.run(metadata._make_api_call(f"{metadata.host}/id/network/cosmos"))
+    metadata_sites = extract_sites_from_metadata_response(metadata_sites)
+
+    if sites is not None:
+        sites = sites.strip(" ").upper()
+
+        try:
+            sites_list = sites.split(",")
+        except ValueError:
+            raise ValueError(f"Site list {sites} not seperated by a comma.")
+
+        # Rough check for formatting
+        for site in sites_list:
+            if not site.isalnum():
+                raise ValueError(f"Site {site} should only contain letters and numbers.")
+
+            if len(site) != 5:
+                raise ValueError(f"Site {site} should only contain 5 characters.")
+
+        # Filter out user requested sites that dont exist
+        sites = list(set(sites_list).intersection(metadata_sites))
+    else:
+        sites = metadata_sites
+
+    return sites

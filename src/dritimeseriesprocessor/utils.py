@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 import isodate
 import polars as pl
+import re
 from polars.dataframe.group_by import GroupBy
 
 
@@ -104,3 +105,14 @@ def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
     return [
         (group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col("time").dt.date(), pl.col("SITE_ID")])
     ]
+
+
+def extract_sites_from_metadata_response(response):
+    sites = []
+
+    for item in response["items"][0]["contains"]:
+        match = re.search(r"cosmos-(\w+)$", item["@id"])
+        if match:
+            sites.append(match.group(1).upper())
+
+    return sorted(sites)

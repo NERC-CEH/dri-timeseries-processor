@@ -41,6 +41,7 @@ metadata = metadata_api.MetadataAPIManager(network="cosmos")
 # Parse and validate arguments
 # ----------------------------
 args = parser.parse_args(sys.argv[1:])
+sites = parser.validate_sites(args.sites, metadata)
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 
