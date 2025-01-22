@@ -5,7 +5,7 @@ import sys
 import boto3
 import polars as pl
 
-from dritimeseriesprocessor import metadata_api, parser
+from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flags,
@@ -20,6 +20,7 @@ from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
+from dritimeseriesprocessor.services.metadata import api
 from dritimeseriesprocessor.utils import group_by_date_site_id
 from time_series import TimeSeries
 from time_series.period import Period
@@ -35,7 +36,7 @@ metrics.setup_metrics()
 
 # Setup connection to the metadata API
 # ------------------------------------
-metadata = metadata_api.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
+metadata = api.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 # Sample call just for an example
 url = f"{metadata.host}/id/network/cosmos"
