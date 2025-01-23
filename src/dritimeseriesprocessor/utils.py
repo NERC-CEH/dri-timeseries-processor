@@ -81,7 +81,14 @@ def steralize_dates(
 
 
 def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
-    """Group a dataframe by the date and site_id column."""
+    """Group a dataframe by the date and site_id column.
+
+    Args:
+        df: A polars dataframe
+
+    Returns:
+        A list of dataframes grouped by date and site_id.
+    """
 
     return [
         (group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col("time").dt.date(), pl.col("SITE_ID")])
@@ -102,10 +109,24 @@ def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:
     matching_sites = list(set(sites) & set(metadata_sites))
     missing_sites = list(set(sites) - set(metadata_sites))
 
-    for site in missing_sites:
-        logger.info(f"Requested site {site} does not exist in the metadata store. Removing from query.")
-
-    if not matching_sites:
-        raise ValueError("None of the requested sites are in the metadata store")
+    if missing_sites:
+        raise ValueError(
+            f"The following sites {missing_sites} are not in the metadata store. Remove from '-sites' argument."
+        )
 
     return matching_sites
+
+
+def group_by_site_id(df: pl.DataFrame) -> List[GroupBy]:
+    """Group a dataframe by the site_id column.
+
+    Args:
+        df: A polars dataframe
+
+    Returns:
+        A list of dataframes grouped by site_id
+    """
+    # Structure will change when we introduce the ability to have multiple resolutions
+    # Hard coding periodicity and resolution atm but should be able
+    # to extract from the work in FW-548.
+    return [(site[0], data, {"resolution": 30, "periodicity": 30}) for site, data in df.group_by([pl.col("SITE_ID")])]

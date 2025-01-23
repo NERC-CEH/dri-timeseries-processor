@@ -161,8 +161,9 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
         sites: The sites to process
         metadata_sites: The sites from the metadata store
     """
+    # DONT DO REPLACE, BE SCRICT AND NOT EXPECT SPACES. GETS CAUGHT IN APLANUMERIC CHECK BELOW
     if sites is not None:
-        sites = sites.strip(" ").upper()
+        sites = sites.replace(" ", "").upper()
 
         try:
             sites_list = sites.split(",")
