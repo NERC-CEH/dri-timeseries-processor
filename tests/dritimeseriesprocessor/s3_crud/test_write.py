@@ -5,7 +5,7 @@ from unittest.mock import patch
 import moto
 import polars.testing
 
-from tests.s3_crud.base_test_case import BaseTestCase
+from tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
