@@ -80,28 +80,6 @@ def steralize_dates(
     return start_date, end_date
 
 
-def steralize_site_ids(site_ids: Optional[List[str]] = None) -> List[str]:
-    """
-    Configures site IDs into a list format.
-
-    Args:
-        site_ids: A single site ID as a string or a list of site IDs.
-            If None, defaults to an empty list.
-
-    Returns:
-        A list of site IDs.
-    """
-    # TODO
-    if site_ids is None or site_ids == "":
-        # If no site IDs are provided, return an empty list
-        site_ids = []
-    elif isinstance(site_ids, str):
-        # If a single site ID string is provided, convert it to a list
-        site_ids = [site_ids]
-
-    return site_ids
-
-
 def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
     """Group a dataframe by the date and site_id column."""
 
