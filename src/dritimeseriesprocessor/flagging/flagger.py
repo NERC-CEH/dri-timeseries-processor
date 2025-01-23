@@ -13,7 +13,7 @@ from time_series import TimeSeries
 logger = logging.getLogger(__name__)
 
 
-CORE_FLAG_TYPE_NAME = "core_flags"
+CORE_FLAG_SYS_NAME = "core_flags"
 
 
 def missing_expr(column_name: str) -> pl.Expr:
@@ -40,18 +40,18 @@ def core_flag_column_name(column: str) -> str:
     return f"{column}_FLAG"
 
 
-def initialise_core_flag_type(ts: TimeSeries) -> TimeSeries:
-    """Setup core flag type in TimeSeries object.
+def initialise_core_flag_system(ts: TimeSeries) -> TimeSeries:
+    """Setup core flag system in TimeSeries object.
 
     Args:
         ts: The input TimeSeries object.
 
     Returns:
-        The TimeSeries with the core flag type added.
+        The TimeSeries with the core flag system added.
     """
-    # Initialise core flag type within TimeSeries object
+    # Initialise core flag system within TimeSeries object
     core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
-    ts.add_flag_system(CORE_FLAG_TYPE_NAME, core_flags_dict)
+    ts.add_flag_system(CORE_FLAG_SYS_NAME, core_flags_dict)
 
     return ts
 
@@ -65,11 +65,11 @@ def add_initial_core_flags(ts: TimeSeries) -> TimeSeries:
     Returns:
         The TimeSeries with the flag columns added
     """
-    ts = initialise_core_flag_type(ts)
+    ts = initialise_core_flag_system(ts)
 
     for data_col_name in ts.data_columns:
         flag_col_name = core_flag_column_name(data_col_name)
-        ts.init_flag_column(CORE_FLAG_TYPE_NAME, flag_col_name)
+        ts.init_flag_column(CORE_FLAG_SYS_NAME, flag_col_name)
 
         # Set all as unchecked
         ts.add_flag(flag_col_name, "unchecked", pl.lit(True))
@@ -94,11 +94,11 @@ def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
         pr_flag_col_name = pr_flag_column_name(data_col_name)
 
         # Check core flags are set up.
-        if CORE_FLAG_TYPE_NAME not in ts.flag_systems:
-            ts = initialise_core_flag_type(ts)
+        if CORE_FLAG_SYS_NAME not in ts.flag_systems:
+            ts = initialise_core_flag_system(ts)
 
         if core_flag_col_name not in ts.flag_columns:
-            ts.init_flag_column(CORE_FLAG_TYPE_NAME, core_flag_col_name)
+            ts.init_flag_column(CORE_FLAG_SYS_NAME, core_flag_col_name)
 
         # Do nothing if there is no preprocess flag column.
         if pr_flag_col_name not in ts.flag_columns:
@@ -125,11 +125,11 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
         qc_flag_col_name = qc_flag_column_name(data_col_name)
 
         # Check core flags are set up.
-        if CORE_FLAG_TYPE_NAME not in ts.flag_systems:
-            ts = initialise_core_flag_type(ts)
+        if CORE_FLAG_SYS_NAME not in ts.flag_systems:
+            ts = initialise_core_flag_system(ts)
 
         if core_flag_col_name not in ts.flag_columns:
-            ts.init_flag_column(CORE_FLAG_TYPE_NAME, core_flag_col_name)
+            ts.init_flag_column(CORE_FLAG_SYS_NAME, core_flag_col_name)
 
         # Do nothing if there is no QC flag column.
         if qc_flag_col_name not in ts.flag_columns:

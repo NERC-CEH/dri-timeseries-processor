@@ -9,7 +9,7 @@ from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
-QC_FLAG_TYPE_NAME = "qc_flags"
+QC_FLAG_SYS_NAME = "qc_flags"
 
 
 def qc_flag_column_name(column: str) -> str:
@@ -49,9 +49,9 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
     """
     qc_check_configs = get_qc_config("qc_tests")
 
-    # Initialise quality control flag type within TimeSeries object
+    # Initialise quality control flag system within TimeSeries object
     qc_flags_dict = {check_name: check_config.id for check_name, check_config in qc_check_configs.items()}
-    ts.add_flag_system(QC_FLAG_TYPE_NAME, qc_flags_dict)
+    ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
 
     for check_name, check_config in qc_check_configs.items():
         check_func = QC_CHECKS.get(check_name)
@@ -67,7 +67,7 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
             qc_flag_col = qc_flag_column_name(column)
 
             if qc_flag_col not in ts.flag_columns:
-                ts.init_flag_column(QC_FLAG_TYPE_NAME, qc_flag_col)
+                ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
             ts = check_func(ts, column, qc_flag_col)
 

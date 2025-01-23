@@ -12,7 +12,7 @@ from time_series import TimeSeries
 logger = logging.getLogger(__name__)
 
 
-PR_FLAG_TYPE_NAME = "pr_flags"
+PR_FLAG_SYS_NAME = "pr_flags"
 
 
 def pr_flag_column_name(column: str) -> str:
@@ -30,9 +30,9 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
     Returns:
         The preprocessed DataFrame with corrections applied.
     """
-    # Initialise preprocessing flag type within TimeSeries object
+    # Initialise preprocessing flag system within TimeSeries object
     pr_flags_dict = {method.method_id: method.id for method in preprocessing_config.correction_methods}
-    ts.add_flag_system(PR_FLAG_TYPE_NAME, pr_flags_dict)
+    ts.add_flag_system(PR_FLAG_SYS_NAME, pr_flags_dict)
 
     for correction_config in preprocessing_config.corrections:
         # Check the target variable exists in the TimeSeries DataFrame
@@ -45,7 +45,7 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         # If variable exists, add a flag column for the correction method
         pr_flag_col = pr_flag_column_name(correction_config.variable)
         if pr_flag_col not in ts.columns:
-            ts.init_flag_column(PR_FLAG_TYPE_NAME, pr_flag_col)
+            ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
 
         # Check if the correction method is implemented
         correction_fn = preprocessing_corrections.get(correction_config.method_id)
