@@ -1,18 +1,16 @@
 """Handle the command line arguments."""
 
 import argparse
-import asyncio
 import datetime
 import random
 from argparse import ArgumentParser
 from datetime import date, timedelta
 from typing import Tuple
 
-from dritimeseriesprocessor.metadata_api import MetadataAPIManager
-from dritimeseriesprocessor.utils import extract_sites_from_metadata_response
-
 import isodate
 from isodate import Duration
+
+from dritimeseriesprocessor.utils import remove_sites_not_in_store
 
 
 def parse_args(args: list) -> ArgumentParser:
@@ -153,19 +151,16 @@ def validate_end_date(end_date: str) -> str:
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
 
-def validate_sites(sites: str, metadata: MetadataAPIManager) -> list:
+def validate_sites(sites: str, metadata_sites: list) -> list:
     """Validate the sites entered.
 
     Checks user entered sites against the metadata site list and removes
     if not contained.
 
     Args:
-        sites:
+        sites: The sites to process
+        metadata_sites: The sites from the metadata store
     """
-    # Extract sites from the metadata API
-    metadata_sites = asyncio.run(metadata._make_api_call(f"{metadata.host}/id/network/cosmos"))
-    metadata_sites = extract_sites_from_metadata_response(metadata_sites)
-
     if sites is not None:
         sites = sites.strip(" ").upper()
 
@@ -182,8 +177,8 @@ def validate_sites(sites: str, metadata: MetadataAPIManager) -> list:
             if len(site) != 5:
                 raise ValueError(f"Site {site} should only contain 5 characters.")
 
-        # Filter out user requested sites that dont exist
-        sites = list(set(sites_list).intersection(metadata_sites))
+        # Filter out user requested sites that are not in the metadata store
+        sites = remove_sites_not_in_store(sites_list, metadata_sites)
     else:
         sites = metadata_sites
 

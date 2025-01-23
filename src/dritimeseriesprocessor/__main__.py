@@ -16,6 +16,7 @@ from dritimeseriesprocessor.flagging.flagger import (
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metadata import api_manager
+from dritimeseriesprocessor.metadata.transformers import extract_site_ids
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
@@ -38,15 +39,20 @@ metrics.setup_metrics()
 # ------------------------------------
 metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
-# Sample call just for an example
-url = f"{metadata.host}/id/network/{metadata.network}"
-sites = asyncio.run(metadata._make_api_call(url))
-print(sites)
 
 # Parse and validate arguments
 # ----------------------------
+# All user inputs are checked against the metadata store as this is the source of truth
+# Any input that isnt in the store is removed from the query
 args = parser.parse_args(sys.argv[1:])
-sites = parser.validate_sites(args.sites, metadata)
+
+# Sites
+metadata_sites = asyncio.run(extract_site_ids(metadata.fetch_sites()))
+sites = parser.validate_sites(args.sites, metadata_sites)
+
+# TO DO: Resolution and variables
+
+# Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 
@@ -54,12 +60,8 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 # Session parameters
 # ------------------
 DATASET = "SOILMET_30MIN_2024_LOOPED"
-START_DATE = start_date
-END_DATE = end_date
 # Optional
-SITE_IDS = "ALIC1"
-# Optional
-COLUMNS = ["time", "SITE_ID", "TA", "PA"]
+VARIABLES = ["time", "SITE_ID", "TA", "PA"]
 
 try:
     # Setup s3
@@ -74,10 +76,10 @@ try:
     data = data_manager.query_by_date_range(
         app_config.level_0_bucket,
         prefix=f"cosmos/dataset={DATASET}",
-        start_date=START_DATE,
-        end_date=END_DATE,
-        site_ids=SITE_IDS,
-        columns=COLUMNS,
+        start_date=start_date,
+        end_date=end_date,
+        site_ids=sites,
+        columns=VARIABLES,
     )
 
     if data.shape[0] == 0:

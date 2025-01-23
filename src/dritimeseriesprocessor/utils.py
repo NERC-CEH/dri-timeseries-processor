@@ -1,11 +1,13 @@
+import logging
 from datetime import date, datetime
 from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
 import polars as pl
-import re
 from polars.dataframe.group_by import GroupBy
+
+logger = logging.getLogger(__name__)
 
 
 def validate_iso8601_duration(duration: str) -> bool:
@@ -78,7 +80,7 @@ def steralize_dates(
     return start_date, end_date
 
 
-def steralize_site_ids(site_ids: Optional[Union[str, List[str]]] = None) -> List[str]:
+def steralize_site_ids(site_ids: Optional[List[str]] = None) -> List[str]:
     """
     Configures site IDs into a list format.
 
@@ -89,6 +91,7 @@ def steralize_site_ids(site_ids: Optional[Union[str, List[str]]] = None) -> List
     Returns:
         A list of site IDs.
     """
+    # TODO
     if site_ids is None or site_ids == "":
         # If no site IDs are provided, return an empty list
         site_ids = []
@@ -107,12 +110,21 @@ def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
     ]
 
 
-def extract_sites_from_metadata_response(response):
-    sites = []
+def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:
+    """Filter out sites that are not in the metadata store.
 
-    for item in response["items"][0]["contains"]:
-        match = re.search(r"cosmos-(\w+)$", item["@id"])
-        if match:
-            sites.append(match.group(1).upper())
+    Args:
+        sites: Requested sites
+        metadata_sites: Sites in the metadata store
 
-    return sorted(sites)
+    Returns:
+        sites in both parameters.
+    """
+
+    matching_sites = list(set(sites) & set(metadata_sites))
+    missing_sites = list(set(sites) - set(metadata_sites))
+
+    for site in missing_sites:
+        logger.info(f"Requested {site} does not exist in the metadata store. Removing from query.")
+
+    return matching_sites
