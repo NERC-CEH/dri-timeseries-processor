@@ -47,7 +47,7 @@ metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, netw
 args = parser.parse_args(sys.argv[1:])
 
 # Sites
-metadata_sites = asyncio.run(extract_site_ids(metadata.fetch_sites()))
+metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()))
 sites = parser.validate_sites(args.sites, metadata_sites)
 
 # TO DO: Resolution and variables

@@ -1,6 +1,5 @@
 """Module to handle calls to the metadata API."""
 
-import asyncio
 import logging
 from typing import Any, Dict
 
@@ -47,6 +46,6 @@ class MetadataAPIManager:
                 raise e
 
     async def fetch_sites(self) -> Dict[str, Any]:
-        response = asyncio.run(self._make_api_call(f"{self.host}/id/network/{self.network}"))
+        response = await self._make_api_call(f"{self.host}/id/network/{self.network}")
 
         return response
