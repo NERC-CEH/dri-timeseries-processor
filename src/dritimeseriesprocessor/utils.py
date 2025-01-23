@@ -125,6 +125,9 @@ def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:
     missing_sites = list(set(sites) - set(metadata_sites))
 
     for site in missing_sites:
-        logger.info(f"Requested {site} does not exist in the metadata store. Removing from query.")
+        logger.info(f"Requested site {site} does not exist in the metadata store. Removing from query.")
+
+    if not matching_sites:
+        raise ValueError("None of the requested sites are in the metadata store")
 
     return matching_sites
