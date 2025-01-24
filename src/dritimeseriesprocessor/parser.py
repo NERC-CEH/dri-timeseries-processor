@@ -32,10 +32,10 @@ def parse_args(args: list) -> ArgumentParser:
         ),
     )
     parser.add_argument(
-        "-sites",
+        "--sites",
         help=(
             """The sites to extract. Must be a string of sites (upper or lower case) seperated by a comma
-              e.g. ALIC1,BUNNY or alic1,bunny. If not provided all sites will be extracted."""
+            e.g. ALIC1,BUNNY or alic1,bunny. If not provided all sites will be extracted."""
         ),
     )
     parser.add_argument(
@@ -161,14 +161,9 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
         sites: The sites to process
         metadata_sites: The sites from the metadata store
     """
-    # DONT DO REPLACE, BE SCRICT AND NOT EXPECT SPACES. GETS CAUGHT IN APLANUMERIC CHECK BELOW
     if sites is not None:
-        sites = sites.replace(" ", "").upper()
-
-        try:
-            sites_list = sites.split(",")
-        except ValueError:
-            raise ValueError(f"Site list {sites} not seperated by a comma.")
+        sites = sites.upper()
+        sites_list = sites.split(",")
 
         # Rough check for formatting
         for site in sites_list:

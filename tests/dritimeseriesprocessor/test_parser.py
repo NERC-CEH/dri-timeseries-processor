@@ -1,19 +1,20 @@
-import polars as pl
 import unittest
 
 from datetime import date, timedelta
 from freezegun import freeze_time
 from dritimeseriesprocessor import parser
 from parameterized import  parameterized
+from unittest import mock
 
 
 class TestParseArgs(unittest.TestCase):
     """Test the parser instance is correctly instantiated."""
 
     def test_instance_created(self):
-        args = parser.parse_args(['P1D', """--end_date=2024-03-10"""])
+        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny"""])
         assert args.period == 'P1D'
         assert args.end_date == '2024-03-10'
+        assert args.sites == 'alic1,bunny'
 
     @freeze_time("2024-09-19")
     def test_no_end_date(self):
@@ -21,6 +22,12 @@ class TestParseArgs(unittest.TestCase):
         args = parser.parse_args(['P1D'])
         assert args.period == 'P1D'
         assert args.end_date == '2024-09-19'
+
+    def test_no_sites(self):
+        """Test site is None by default."""
+        args = parser.parse_args(['P1D'])
+        assert args.period == 'P1D'
+        assert args.sites == None
 
     def test_no_period(self):
         with self.assertRaises(SystemExit):
@@ -104,3 +111,38 @@ class TestValidateEndDate(unittest.TestCase):
             str(exc.exception),
             "Incorrect date format, should be YYYY-MM-DD"""
         )
+
+class TestSites(unittest.TestCase):
+    """Test the validate_sites function."""
+
+    @parameterized.expand(
+        [
+            ('alic1', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1']),
+            ('alic1,bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
+            ('ALIC1,bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
+            (None, ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY', 'BALRD'])
+        ]
+    )
+    def test_correct_sites_argument(self, sites, metadata_sites, expected):
+        """Test correct formatted arguments return the right sites."""
+
+        result = parser.validate_sites(sites, metadata_sites)
+
+        self.assertEqual(sorted(result), sorted(expected))
+    
+    @parameterized.expand(
+        [
+            ('alic1, bunny', "Site  BUNNY should only contain letters and numbers."),
+            ('BU!!Y', "Site BU!!Y should only contain letters and numbers."),
+            ('alic1/bunny', "Site ALIC1/BUNNY should only contain letters and numbers."),
+            ('ALIC12345,bunny', "Site ALIC12345 should only contain 5 characters.")
+        ]
+    )
+    def test_incorrect_sites_argument(self, sites, error_message):
+        """Test incorrectly formatted arguments raise Value Errors."""
+        metadata_sites = ['some_sample_sites']
+
+        with self.assertRaises(ValueError) as err:
+            parser.validate_sites(sites, metadata_sites)
+
+        self.assertEqual(str(err.exception), error_message)

@@ -50,7 +50,8 @@ args = parser.parse_args(sys.argv[1:])
 metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()))
 sites = parser.validate_sites(args.sites, metadata_sites)
 
-# TO DO: Resolution and variables
+# TODO: Resolution FW-548
+# TODO: Variables FW-549
 
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
@@ -59,6 +60,7 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 
 # Session parameters
 # ------------------
+# These will be removed in FW-548 and FW-549
 DATASET = "SOILMET_30MIN_2024_LOOPED"
 # Optional
 VARIABLES = ["time", "SITE_ID", "TA", "PA"]
