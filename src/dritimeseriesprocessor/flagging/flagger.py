@@ -158,125 +158,23 @@ def update_infill_core_flags(ts: TimeSeries) -> TimeSeries:
     Returns:
         The TimeSeries with the flag columns added
     """
-    flag_col_dict = {}
     for data_col_name in ts.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
         infill_flag_col_name = infill_flag_column_name(data_col_name)
 
-        if core_flag_col_name not in ts.supplementary_columns:
-            ts.init_supplementary_column(core_flag_col_name, 0)
+        # Check core flags are set up.
+        if CORE_FLAG_SYS_NAME not in ts.flag_systems:
+            ts = initialise_core_flag_system(ts)
 
-        if infill_flag_col_name not in ts.supplementary_columns:
+        if core_flag_col_name not in ts.flag_columns:
+            ts.init_flag_column(CORE_FLAG_SYS_NAME, core_flag_col_name)
+
+        # Do nothing if there is no infilling flag column.
+        if infill_flag_col_name not in ts.flag_columns:
             continue
-        else:
-            # Build dict that connects data col with its infill flag and core flag
-            # columns.
-            flag_col_dict[data_col_name] = {
-                "core_flag_col": core_flag_col_name,
-                "infl_flag_col": infill_flag_col_name,
-            }
 
-    ts.df = add_estimated_flag(ts.df, flag_col_dict)
+        # Add estimated core flag where infill flag is not 0.
+        expr = pl.col(infill_flag_col_name) != 0
+        ts.add_flag(core_flag_col_name, "estimated", expr)
 
     return ts
-
-
-def remove_unchecked_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
-    """
-    Remove "unchecked" flag for all values in df with a QC flag column.
-
-    NOTE. This is currently very crude and assumes the unchhecked flag has already
-    been added to all values.
-
-    Args:
-        df: The dataframe to update
-        flag_col_dict: Dictionary of names of the data column with core and qc flag column names.
-
-    Returns:
-        Updated dataframe
-    """
-    flag_val = core_flag_config["unchecked"].id
-
-    for flag_cols in flag_col_dict.values():
-        df = df.with_columns(
-            pl.when(pl.col(flag_cols["qc_flag_col"]).is_not_null())
-            .then(pl.col(flag_cols["core_flag_col"]) - flag_val)
-            .otherwise(pl.col(flag_cols["core_flag_col"]))
-            .alias(flag_cols["core_flag_col"])
-        )
-    return df
-
-
-def add_removed_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
-    """
-    Add a flag for values that have been removed by QC.
-    Note, the value must be None (like) AND have a QC flag value > 0.
-
-    Args:
-        df: The Polars DataFrame to check and update.
-        flag_col_dict: Dictionary of names of the data column with core and qc flag column names.
-
-    Returns:
-        A DataFrame with the flag column updated for removed values in the specified data column.
-    """
-    flag_val = core_flag_config["removed"].id
-
-    for data_col_name, flag_cols in flag_col_dict.items():
-        df = df.with_columns(
-            pl.when(
-                (pl.col(data_col_name).is_null() | pl.col(data_col_name).is_nan())
-                & (pl.col(flag_cols["qc_flag_col"]) > 0)
-            )
-            .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
-            .otherwise(pl.col(flag_cols["core_flag_col"]))
-            .alias(flag_cols["core_flag_col"])
-        )
-    return df
-
-
-def add_corrected_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
-    """
-    Add a flag for values that have been corrected by preprocessing.
-    Note, the preprocess flag column must be non-null
-
-    Args:
-        df: The Polars DataFrame to check and update.
-        flag_col_dict: Dictionary of names of the data column with core and preprocess flag column names.
-
-    Returns:
-        A DataFrame with the flag column updated for removed values in the specified data column.
-    """
-    flag_val = core_flag_config["corrected"].id
-
-    for flag_cols in flag_col_dict.values():
-        df = df.with_columns(
-            pl.when(pl.col(flag_cols["pr_flag_col"]).is_not_null())
-            .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
-            .otherwise(pl.col(flag_cols["core_flag_col"]))
-            .alias(flag_cols["core_flag_col"])
-        )
-    return df
-
-
-def add_estimated_flag(df: pl.DataFrame, flag_col_dict: dict) -> pl.DataFrame:
-    """
-    Add a flag for values that have been estimated by infilling.
-    Note, the infilling flag column must be non-null.
-
-    Args:
-        df: The Polars DataFrame to check and update.
-        flag_col_dict: Dictionary of names of the data column with core and infill flag column names.
-
-    Returns:
-        A DataFrame with the flag column updated for removed values in the specified data column.
-    """
-    flag_val = core_flag_config["estimated"].id
-
-    for flag_cols in flag_col_dict.values():
-        df = df.with_columns(
-            pl.when(pl.col(flag_cols["infl_flag_col"]).is_not_null())
-            .then(pl.col(flag_cols["core_flag_col"]) + flag_val)
-            .otherwise(pl.col(flag_cols["core_flag_col"]))
-            .alias(flag_cols["core_flag_col"])
-        )
-    return df

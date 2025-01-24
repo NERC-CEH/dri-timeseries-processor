@@ -21,17 +21,18 @@ class InfillMethod(BaseModel):
     name: str
     description: str
     requirements: dict
+    id: int
 
 
 class Method(BaseModel):
-    method_id: str
+    method: str
     priority: int
     constraints: dict
 
     @model_validator(mode="after")
-    def validate_method_id(cls, v: "Method") -> "Method":
-        if v.method_id not in infill_methods:
-            raise ValueError(f"Invalid method_id: {v.method_id}. Must be one of {list(infill_methods.keys())}")
+    def validate_method(cls, v: "Method") -> "Method":
+        if v.method not in infill_methods:
+            raise ValueError(f"Invalid method: {v.method}. Must be one of {list(infill_methods.keys())}")
         return v
 
 
