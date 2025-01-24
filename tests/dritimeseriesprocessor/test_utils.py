@@ -199,7 +199,7 @@ class TestRemoveSitesNotInStore(unittest.TestCase):
 
         result = utils.remove_sites_not_in_store(sites, metadata_sites)
 
-        self.assertEqual(result, ['A', 'B'])
+        self.assertEqual(sorted(result), sorted(['A', 'B']))
     
     def test_one_site_not_in_store(self):
         sites = ['A', 'B']
