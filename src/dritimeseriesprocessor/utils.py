@@ -1,6 +1,6 @@
 import logging
 from datetime import date, datetime
-from typing import List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
@@ -111,22 +111,25 @@ def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:
 
     if missing_sites:
         raise ValueError(
-            f"The following sites {missing_sites} are not in the metadata store. Remove from '-sites' argument."
+            f"The following sites {missing_sites} are not in the metadata store. Remove from '--sites' argument."
         )
 
     return matching_sites
 
 
-def group_by_site_id(df: pl.DataFrame) -> List[GroupBy]:
-    """Group a dataframe by the site_id column.
+def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None) -> List[GroupBy]:
+    """Split the data ready for processing.
+
+    Data split by site_id with metadata added.
 
     Args:
         df: A polars dataframe
+        metadata: Metadata to be attached to each dataframe to be processed
 
     Returns:
-        A list of dataframes grouped by site_id
+        A list of dataframes grouped by site_id with metadata
     """
-    # Structure will change when we introduce the ability to have multiple resolutions
-    # Hard coding periodicity and resolution atm but should be able
-    # to extract from the work in FW-548.
-    return [(site[0], data, {"resolution": 30, "periodicity": 30}) for site, data in df.group_by([pl.col("SITE_ID")])]
+    # Structure of return and the way we attach metadata will change when we introduce the
+    # ability to have multiple resolutions
+
+    return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]

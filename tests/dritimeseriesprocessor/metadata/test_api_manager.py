@@ -6,6 +6,7 @@ from dritimeseriesprocessor.metadata.api_manager import MetadataAPIManager
 
 
 class TestMetadataApiManager(IsolatedAsyncioTestCase):
+    """Test the MetadataAPIManager class."""
     def setUp(self):
         """Set up test cases"""
         self.api = MetadataAPIManager(host='test_url.com', network="cosmos")

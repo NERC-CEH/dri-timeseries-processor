@@ -4,7 +4,6 @@ from datetime import date, timedelta
 from freezegun import freeze_time
 from dritimeseriesprocessor import parser
 from parameterized import  parameterized
-from unittest import mock
 
 
 class TestParseArgs(unittest.TestCase):

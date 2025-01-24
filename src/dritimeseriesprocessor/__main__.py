@@ -22,7 +22,7 @@ from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import group_by_date_site_id, group_by_site_id
+from dritimeseriesprocessor.utils import group_by_date_site_id, split_data_for_processing
 from time_series import TimeSeries
 from time_series.period import Period
 
@@ -112,7 +112,13 @@ try:
 
         # Split data by sites and add metadata
         # ------------------------------------
-        data = group_by_site_id(data)
+
+        # Hard coding periodicity and resolution metadata atm but should be able
+        # to extract from the work in FW-548 and FW-549
+        # This method likely to change when the metadata gets more complex i.e.
+        # multiple resolutions with different variables.
+        metadata = {"resolution": 30, "periodicity": 30}
+        data = split_data_for_processing(data, metadata)
 
         for site, timeseries, metadata in data:
             logger.info(f"Processing site: {site}")
