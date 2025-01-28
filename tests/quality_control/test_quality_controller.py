@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime
+import numpy as np
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -7,6 +8,21 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name, remove_qcd_data, run_quality_control
 from time_series import TimeSeries, Period
+
+
+
+def mock_range_check(ts, column, flag_column):
+    ts.add_flag(flag_column, "RANGE")
+    return ts
+
+def mock_spike_check(ts, column, flag_column):
+    ts.add_flag(flag_column, "SPIKE")
+    return ts
+
+test_QC_CHECKS = {
+    "RANGE": mock_range_check,
+    "SPIKE": mock_spike_check,
+}
 
 
 class TestQCFlagColumnName(unittest.TestCase):
@@ -68,8 +84,40 @@ class TestRemoveQCdData(unittest.TestCase):
         assert_frame_equal(result, expected)
 
 
+# class TestRunQualityControlORIG(unittest.TestCase):
+#     def setUp(self):
+#         data = pl.DataFrame({
+#             "time": [
+#                 datetime(2023, 8, 10),
+#                 datetime(2023, 8, 11),
+#                 datetime(2023, 8, 12),
+#                 datetime(2023, 8, 13),
+#                 datetime(2023, 8, 14),
+#                 datetime(2023, 8, 15)
+#             ],
+#             "value": [10., 20., 30., 40., 50., 60.]
+#         })
+#         resolution = Period.of_days(1)
+#         periodicity = Period.of_days(1)
+#         self.ts = TimeSeries(
+#             data,
+#             "time",
+#             resolution,
+#             periodicity
+#         )
+
+
+
+
 class TestRunQualityControl(unittest.TestCase):
+    """
+    Test suite for the run_quality_control function.
+    """
+
     def setUp(self):
+        """
+        Set up common test data and mocks.
+        """
         data = pl.DataFrame({
             "time": [
                 datetime(2023, 8, 10),
@@ -81,6 +129,7 @@ class TestRunQualityControl(unittest.TestCase):
             ],
             "value": [10., 20., 30., 40., 50., 60.]
         })
+
         resolution = Period.of_days(1)
         periodicity = Period.of_days(1)
         self.ts = TimeSeries(
@@ -90,24 +139,62 @@ class TestRunQualityControl(unittest.TestCase):
             periodicity
         )
 
+        self.mock_qc_check_configs = {
+            "RANGE": Mock(
+                id=1,
+                variables=["value"]
+            ),
+            "SPIKE": Mock(
+                id=2,
+                variables=["value"]
+            ),
+        }
+
+    @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_config")
+    @patch('dritimeseriesprocessor.quality_control.quality_controller.QC_CHECKS', new=test_QC_CHECKS)
+    def test_run_qc_basic(self, mock_get_qc_config):
+        """
+        Test basic functionality of run_quality_control.
+        Checks if the function adds the flag system, adds the flag columns, and runs the infill methods.
+        """
+        mock_get_qc_config.return_value = self.mock_qc_check_configs
+
+        result = run_quality_control(self.ts)
+
+        # Check flag system added
+        self.assertIn('qc_flags', result.flag_systems)
+        # Check columns added
+        self.assertIn('value_QCFLAG', result.columns)
+        # Check flag values (from mock functions) have been added
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [3, 3, 3, 3, 3, 3])
+
+    @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_config")
+    def test_run_qc_no_config(self, mock_get_qc_config):
+        """
+        Test run_quality_control when no QC config is available.
+        Checks if the function returns the original DataFrame unchanged.
+        """
+        mock_get_qc_config.return_value = {}
+
+        result = run_quality_control(self.ts)
+
+        assert_frame_equal(result.df, self.ts.df)
+
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_config")
     def test_preprocess_unimplemented_method(self, mock_get_qc_config):
         """ Test that run qc skips unimplemented methods.
         """
         mock_get_qc_config.return_value = {"unknown_check": Mock()}
 
-        with self.assertLogs("dritimeseriesprocessor.quality_control.quality_controller", level="WARNING") as logs:
-            result = run_quality_control(self.ts)
-            print(logs.output[0])
-            self.assertIn("Unimplemented method: unknown_check", logs.output[0])
-
-        assert_frame_equal(result.df, self.ts.df)
+        with self.assertRaises(ValueError):
+            run_quality_control(self.ts)
 
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_config")
     def test_qc_variable_not_in_df(self, mock_get_qc_config):
         """ Test that run qc skips corrections if the variable is not in DataFrame.
         """
         mock_get_qc_config.return_value = {"RANGE": Mock(
+            id=1,
             variables=["non_existent_column"]
         )}
 

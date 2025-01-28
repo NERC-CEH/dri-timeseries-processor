@@ -1,7 +1,9 @@
 import unittest
+from datetime import datetime
 from unittest.mock import patch, Mock
 
 import polars as pl
+from time_series import TimeSeries, Period
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.quality_control.checks import (battery_voltage_check, error_codes_check, range_check,
@@ -14,13 +16,31 @@ class TestBatteryVoltageCheck(unittest.TestCase):
             threshold=10.
         )
 
-        self.data = pl.DataFrame({
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+            ],
             "BATTV": [12., 11., 9., 13., 8.],
             "value": [1., 2., 3., 4., 5.],
-            "value_QCFLAG": [0, 0, 0, 0, 0],
         })
 
-        self.flag_value = 1
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(
+            data,
+            "time",
+            resolution,
+            periodicity
+        )
+
+        self.ts.add_flag_system("qc_flags", {
+            "BATTV": 1
+        })
+        self.ts.init_flag_column("qc_flags", "value_QCFLAG")
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_battery_voltage_below_threshold(self, mock_get_qc_config):
@@ -28,12 +48,9 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.battv_threshold_config
 
-        result = battery_voltage_check(self.data, "value", "value_QCFLAG", self.flag_value)
-        expected = self.data.with_columns(
-            pl.Series([0, 0, self.flag_value, 0, self.flag_value])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = battery_voltage_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [0, 0, 1, 0, 1])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_battery_voltage_none_below_threshold(self, mock_get_qc_config):
@@ -41,12 +58,9 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=0.5)
 
-        result = battery_voltage_check(self.data, "value", "value_QCFLAG", self.flag_value)
-        expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = battery_voltage_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [0, 0, 0, 0, 0])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_battery_voltage_all_below_threshold(self, mock_get_qc_config):
@@ -54,48 +68,65 @@ class TestBatteryVoltageCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=100.)
 
-        result = battery_voltage_check(self.data, "value", "value_QCFLAG", self.flag_value)
-        expected = self.data.with_columns(
-            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = battery_voltage_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [1, 1, 1, 1, 1])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_battery_voltage_all_at_threshold(self, mock_get_qc_config):
         """ Test that no flags applied because battery voltage exactly at threshold
         """
         mock_get_qc_config.return_value = self.battv_threshold_config
-        new_data = self.data.with_columns(
+        self.ts.df = self.ts.df.with_columns(
             pl.Series([10., 10., 10., 10., 10.])
             .alias("BATTV")
         )
 
-        result = battery_voltage_check(new_data, "value", "value_QCFLAG", self.flag_value)
-        expected = new_data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = battery_voltage_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [0, 0, 0, 0, 0])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_no_battv_column(self, mock_get_qc_config):
         """ Test terror raised when 'BATTV' column is missing.
         """
         mock_get_qc_config.return_value = self.battv_threshold_config
+        self.ts.df = self.ts.df.drop(["BATTV"])
+
         with self.assertRaises(UserWarning):
-            battery_voltage_check(self.data.drop(["BATTV"]), "value", "value_QCFLAG", self.flag_value)
+            battery_voltage_check(self.ts, "value", "value_QCFLAG")
 
 
 class TestRangeCheck(unittest.TestCase):
     def setUp(self):
-        self.data = pl.DataFrame({
-            'SITE_ID': ['site1'] * 6 + ['site2'] * 6,
-            'value1': list(range(6)) * 2,
-            'value2': list(range(6, 12)) * 2,
-            "value1_QCFLAG": [0] * 12,
-            "value2_QCFLAG": [0] * 12,
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+                datetime(2023, 8, 15),
+            ],
+            'SITE_ID': ['site1'] * 6,
+            'value1': list(range(6)),
+            'value2': list(range(6, 12)),
         })
+
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(
+            data,
+            "time",
+            resolution,
+            periodicity
+        )
+
+        self.ts.add_flag_system("qc_flags", {
+            "RANGE": 1
+        })
+        self.ts.init_flag_column("qc_flags", "value1_QCFLAG")
+        self.ts.init_flag_column("qc_flags", "value2_QCFLAG")
 
         self.range_thresholds = {
             "value1": Mock(
@@ -103,7 +134,7 @@ class TestRangeCheck(unittest.TestCase):
                     Mock(
                         min_value=4,
                         max_value=7,
-                        resolutions=["PT30M"]
+                        resolutions=["P1D"]
                     )
                 ],
                 sites=[
@@ -111,7 +142,7 @@ class TestRangeCheck(unittest.TestCase):
                         site_id="site1",
                         min_value=1,
                         max_value=3,
-                        resolutions=["PT30M"]
+                        resolutions=["P1D"]
                     )
                 ]
             ),
@@ -128,24 +159,16 @@ class TestRangeCheck(unittest.TestCase):
             )
         }
 
-        self.flag_value = 1
-
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
-    def test_range_check_default_and_site_specific(self, mock_get_qc_config):
+    def test_range_check_site_specific(self, mock_get_qc_config):
         """ Test that the range check returns expected results when 1 site has site specific range thresholds,
         and one site has to use default range thresholds.
         """
         mock_get_qc_config.return_value = self.range_thresholds
 
-        result = range_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
-
-        expected = self.data.with_columns(
-            pl.Series([self.flag_value, 0, 0, 0, self.flag_value, self.flag_value,
-                              self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
-            .alias("value1_QCFLAG")
-        )
-
-        assert_frame_equal(result, expected)
+        result = range_check(self.ts, "value1", "value1_QCFLAG")
+        # Check values out of range are flagged
+        self.assertEqual(result.df['value1_QCFLAG'].to_list(), [1, 0, 0, 0, 1, 1])
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_range_check_default_only(self, mock_get_qc_config):
@@ -153,15 +176,9 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
 
-        result = range_check(self.data, "value2", "value2_QCFLAG", self.flag_value)
-
-        expected = self.data.with_columns(
-            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0,
-                       self.flag_value, self.flag_value, self.flag_value, self.flag_value, 0, 0])
-            .alias("value2_QCFLAG")
-        )
-
-        assert_frame_equal(result, expected)
+        result = range_check(self.ts, "value2", "value2_QCFLAG")
+        # Check values out of range are flagged
+        self.assertEqual(result.df['value2_QCFLAG'].to_list(), [1, 1, 1, 1, 0, 0])
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_range_qc_no_threshold(self, mock_get_qc_config):
@@ -169,19 +186,19 @@ class TestRangeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.range_thresholds
         with self.assertRaises(UserWarning):
-            range_check(self.data, "value3", "value3_QCFLAG", self.flag_value)
+            range_check(self.ts, "value3", "value3_QCFLAG")
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_range_qc_no_default(self, mock_get_qc_config):
         """ Test error raised when no default is provided for values with no site specific thresholds.
         """
         range_thresholds = self.range_thresholds.copy()
-        range_thresholds["value1"].defaults = []
+        range_thresholds["value2"].defaults = []
 
         mock_get_qc_config.return_value = range_thresholds
 
         with self.assertRaises(ValueError):
-            range_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
+            range_check(self.ts, "value2", "value2_QCFLAG")
 
 
 class TestSoilmetScansCheck(unittest.TestCase):
@@ -190,13 +207,31 @@ class TestSoilmetScansCheck(unittest.TestCase):
             threshold=60.
         )
 
-        self.data = pl.DataFrame({
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+            ],
             "SCANS": [20, 61, 100, 200, 59],
             "value": [1., 2., 3., 4., 5.],
-            "value_QCFLAG": [0, 0, 0, 0, 0],
         })
 
-        self.flag_value = 1
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(
+            data,
+            "time",
+            resolution,
+            periodicity
+        )
+
+        self.ts.add_flag_system("qc_flags", {
+            "SCANS": 1
+        })
+        self.ts.init_flag_column("qc_flags", "value_QCFLAG")
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_scans_below_threshold(self, mock_get_qc_config):
@@ -204,12 +239,9 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
 
-        result = soilmet_scans_check(self.data, "value", "value_QCFLAG", self.flag_value)
-        expected = self.data.with_columns(
-            pl.Series([self.flag_value, 0, 0, 0, self.flag_value])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = soilmet_scans_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [1, 0, 0, 0, 1])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_scans_none_below_threshold(self, mock_get_qc_config):
@@ -217,12 +249,9 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=1)
 
-        result = soilmet_scans_check(self.data, "value", "value_QCFLAG", self.flag_value)
-        expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = soilmet_scans_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [0, 0, 0, 0, 0])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_scans_all_below_threshold(self, mock_get_qc_config):
@@ -230,37 +259,33 @@ class TestSoilmetScansCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = Mock(threshold=1000.)
 
-        result = soilmet_scans_check(self.data, "value", "value_QCFLAG", self.flag_value)
-        expected = self.data.with_columns(
-            pl.Series([self.flag_value, self.flag_value, self.flag_value, self.flag_value, self.flag_value])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = soilmet_scans_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [1, 1, 1, 1, 1])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_scans_all_at_threshold(self, mock_get_qc_config):
         """ Test that no flags applied because SCANS exactly at threshold
         """
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
-        new_data = self.data.with_columns(
+        self.ts.df = self.ts.df.with_columns(
             pl.Series([60., 60., 60., 60., 60.])
             .alias("SCANS")
         )
 
-        result = soilmet_scans_check(new_data, "value", "value_QCFLAG", self.flag_value)
-        expected = new_data.with_columns(
-            pl.Series([0, 0, 0, 0, 0])
-            .alias("value_QCFLAG")
-        )
-        assert_frame_equal(result, expected)
+        result = soilmet_scans_check(self.ts, "value", "value_QCFLAG")
+        # Check values below threshold are flagged
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [0, 0, 0, 0, 0])
 
     @patch('dritimeseriesprocessor.quality_control.checks.get_qc_config')
     def test_no_scans_column(self, mock_get_qc_config):
         """ Test error raised when 'SCANS' column is missing.
         """
         mock_get_qc_config.return_value = self.soilmet_scans_threshold_config
+
+        self.ts.df = self.ts.df.drop(["SCANS"])
         with self.assertRaises(UserWarning):
-            battery_voltage_check(self.data.drop(["SCANS"]), "value", "value_QCFLAG", self.flag_value)
+            soilmet_scans_check(self.ts, "value", "value_QCFLAG")
 
 
 class TestErrorCodesCheck(unittest.TestCase):
@@ -268,41 +293,76 @@ class TestErrorCodesCheck(unittest.TestCase):
 
     def setUp(self):
         """Set up a sample DataFrame for testing."""
-        self.data = pl.DataFrame({
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+            ],
             "value": [12.0, 8999, 9.8, 10.2, 7999],
-            "value_QCFLAG": [0, 0, 0, 0, 0],
         })
 
-        self.flag_value = 1
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(
+            data,
+            "time",
+            resolution,
+            periodicity
+        )
+
+        self.ts.add_flag_system("qc_flags", {
+            "ERROR_CODES": 1
+        })
+        self.ts.init_flag_column("qc_flags", "value_QCFLAG")
 
 
     def test_error_code_qc(self):
         """Test flag correctly raised if values equal the set error codes.
         """
-        expected = self.data.with_columns(
-            pl.Series([0, 1, 0, 0, 1])
-            .alias("value_QCFLAG")
-        )
-        result = error_codes_check(self.data, "value", "value_QCFLAG", self.flag_value)
-        assert_frame_equal(expected, result)
+        result = error_codes_check(self.ts, "value", "value_QCFLAG")
+        self.assertEqual(result.df['value_QCFLAG'].to_list(), [0, 1, 0, 0, 1])
 
 
 class TestSpikeCheck(unittest.TestCase):
     def setUp(self):
-        self.data = pl.DataFrame({
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+                datetime(2023, 8, 15),
+            ],
             'SITE_ID': ['site1'] * 6,
             'value1': [1., 2., 3., 4., 5., 6.],
             'value2': [100., 105., 110., 115., 120., 125.],
-            "value1_QCFLAG": [0] * 6,
-            "value2_QCFLAG": [0] * 6,
         })
+
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(
+            data,
+            "time",
+            resolution,
+            periodicity
+        )
+
+        self.ts.add_flag_system("qc_flags", {
+            "SPIKE": 1
+        })
+        self.ts.init_flag_column("qc_flags", "value1_QCFLAG")
+        self.ts.init_flag_column("qc_flags", "value2_QCFLAG")
 
         self.spike_thresholds = {
             "value1": Mock(
                 defaults=[
                     Mock(
                         threshold=10.,
-                        resolutions=["PT30M"]
+                        resolutions=["P1D"]
                     )
                 ],
                 sites=[]
@@ -311,14 +371,12 @@ class TestSpikeCheck(unittest.TestCase):
                 defaults=[
                     Mock(
                         threshold=20.,
-                        resolutions=["PT30M"]
+                        resolutions=["P1D"]
                     )
                 ],
                 sites=[]
             ),
         }
-
-        self.flag_value = 1
 
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
@@ -327,19 +385,14 @@ class TestSpikeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.spike_thresholds
 
-        self.data = self.data.with_columns(
+        self.ts.df = self.ts.df.with_columns(
             pl.Series([1., 2., 3., 40., 5., 6.])
             .alias("value1")
         )
 
-        result = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
-
-        expected = self.data.with_columns(
-            pl.Series([0, 0, 0, self.flag_value, 0, 0])
-            .alias("value1_QCFLAG")
-        )
-
-        assert_frame_equal(result, expected)
+        result = spike_check(self.ts, "value1", "value1_QCFLAG")
+        # Check spike values are flagged
+        self.assertEqual(result.df['value1_QCFLAG'].to_list(), [0, 0, 0, 1, 0, 0])
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_no_spike(self, mock_get_qc_config):
@@ -347,14 +400,9 @@ class TestSpikeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.spike_thresholds
 
-        result = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
-
-        expected = self.data.with_columns(
-            pl.Series([0, 0, 0, 0, 0, 0])
-            .alias("value1_QCFLAG")
-        )
-
-        assert_frame_equal(result, expected)
+        result = spike_check(self.ts, "value1", "value1_QCFLAG")
+        # Check spike values are flagged
+        self.assertEqual(result.df['value1_QCFLAG'].to_list(), [0, 0, 0, 0, 0, 0])
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_large_spike(self, mock_get_qc_config):
@@ -362,48 +410,15 @@ class TestSpikeCheck(unittest.TestCase):
         Check this is not the case here.
         """
         mock_get_qc_config.return_value = self.spike_thresholds
-        self.data = self.data.with_columns(
+
+        self.ts.df = self.ts.df.with_columns(
             pl.Series([1., 9999., 3., 4., 999999999., 6.])
             .alias("value1")
         )
 
-        result = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
-
-        expected = self.data.with_columns(
-            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
-            .alias("value1_QCFLAG")
-        )
-
-        assert_frame_equal(result, expected)
-
-    @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
-    def test_overriding_flags_first_and_last(self, mock_get_qc_config):
-        """The first and last value always "pass" the check, even if the value is actually a spike.
-         We want to make sure that the flag from a previously flagged spike value is not removed when that value
-         becomes first or last in the array
-         """
-        mock_get_qc_config.return_value = self.spike_thresholds
-
-        self.data = self.data.with_columns(
-            pl.Series([1., 20., 3., 4., 50., 6.])
-            .alias("value1")
-        )
-        result1 = spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
-        expected1 = result1.with_columns(
-            pl.Series([0, self.flag_value, 0, 0, self.flag_value, 0])
-            .alias("value1_QCFLAG")
-        )
-
-        # Slice the data so the flagged values are first and last place in the array
-        new_data = result1.slice(1, 4)
-        result2 = spike_check(new_data, "value1", "value1_QCFLAG", self.flag_value)
-        expected2 = new_data.with_columns(
-            pl.Series([self.flag_value, 0, 0, self.flag_value])  # The flags should be maintained
-            .alias("value1_QCFLAG")
-        )
-
-        assert_frame_equal(result1, expected1)
-        assert_frame_equal(result2, expected2)
+        result = spike_check(self.ts, "value1", "value1_QCFLAG")
+        # Check spike values are flagged
+        self.assertEqual(result.df['value1_QCFLAG'].to_list(), [0, 1, 0, 0, 1, 0])
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_spike_qc_no_threshold(self, mock_get_qc_config):
@@ -411,7 +426,7 @@ class TestSpikeCheck(unittest.TestCase):
         """
         mock_get_qc_config.return_value = self.spike_thresholds
         with self.assertRaises(UserWarning):
-            spike_check(self.data, "value3", "value3_QCFLAG", self.flag_value)
+            spike_check(self.ts, "value3", "value3_QCFLAG")
 
     @patch('dritimeseriesprocessor.quality_control.utils.get_qc_config')
     def test_spike_qc_no_default(self, mock_get_qc_config):
@@ -422,4 +437,4 @@ class TestSpikeCheck(unittest.TestCase):
         mock_get_qc_config.return_value = spike_thresholds
 
         with self.assertRaises(ValueError):
-            spike_check(self.data, "value1", "value1_QCFLAG", self.flag_value)
+            spike_check(self.ts, "value1", "value1_QCFLAG")
