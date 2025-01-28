@@ -40,7 +40,11 @@ def run_infilling(ts: TimeSeries) -> TimeSeries:
 
     # Initialise infilling flag system within TimeSeries object
     infill_flags_dict = {method: method_config.id for method, method_config in infill_methods.items()}
-    ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
+    if infill_flags_dict:
+        ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
+    else:
+        logger.warning("No infill methods given in config.")
+        return ts
 
     for column in ts.data_columns:
         if column in var_configs:

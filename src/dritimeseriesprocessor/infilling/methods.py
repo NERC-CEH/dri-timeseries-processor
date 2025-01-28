@@ -20,11 +20,13 @@ def linear_interpolation(ts: TimeSeries, column: str, flag_column: str, max_gap_
     # Create a new dataframe to store the original and filled values
     df = ts.df[[column]].clone()
 
+    df = df.with_columns(pl.when(pl.col(column).is_nan()).then(None).otherwise(pl.col(column)).alias(column))
+
     # Detect where the values are null
     null_mask = df[column].is_null()
 
     if max_gap_size is None:
-        df = df.with_columns(pl.col(column).interpolate().alias("value_filled"))
+        df = df.with_columns(df[column].interpolate().alias("value_filled"))
     else:
         # Calculate the gaps (consecutive nulls)
         df = df.with_columns(
@@ -37,7 +39,7 @@ def linear_interpolation(ts: TimeSeries, column: str, flag_column: str, max_gap_
 
         # Conditionally fill gaps that are smaller than the threshold
         df = df.with_columns(
-            pl.when(pl.col("gap_size") < max_gap_size)
+            pl.when(pl.col("gap_size") <= max_gap_size)
             .then(pl.col(column).interpolate())
             .otherwise(None)
             .alias("value_filled")
