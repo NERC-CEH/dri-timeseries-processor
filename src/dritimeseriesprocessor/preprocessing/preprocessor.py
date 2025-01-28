@@ -6,7 +6,7 @@ import pytz
 
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.preprocessing.operations import preprocessing_corrections
+from dritimeseriesprocessor.preprocessing.operations import CORRECTION_METHODS
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,11 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
     """
     # Initialise preprocessing flag system within TimeSeries object
     pr_flags_dict = {method.method_id: method.id for method in preprocessing_config.correction_methods}
-    ts.add_flag_system(PR_FLAG_SYS_NAME, pr_flags_dict)
+    if pr_flags_dict:
+        ts.add_flag_system(PR_FLAG_SYS_NAME, pr_flags_dict)
+    else:
+        logger.warning("No correction methods given in config.")
+        return ts
 
     for correction_config in preprocessing_config.corrections:
         # Check the target variable exists in the TimeSeries DataFrame
@@ -48,7 +52,7 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
             ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
 
         # Check if the correction method is implemented
-        correction_fn = preprocessing_corrections.get(correction_config.method_id)
+        correction_fn = CORRECTION_METHODS.get(correction_config.method_id)
         if not correction_fn:
             logger.warning(f"Unimplemented method: {correction_config.method_id}")
             continue
@@ -60,8 +64,8 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         # Create a mask to filter rows based on SITE_ID and the time range
         mask = (
             (pl.col("SITE_ID") == correction_config.site_id)
-            & (pl.col("time") >= correction_config.start_datetime.replace(tzinfo=pytz.UTC))
-            & (pl.col("time") <= correction_config.end_datetime.replace(tzinfo=pytz.UTC))
+            & (pl.col(ts.time_name) >= correction_config.start_datetime.replace(tzinfo=pytz.UTC))
+            & (pl.col(ts.time_name) <= correction_config.end_datetime.replace(tzinfo=pytz.UTC))
         )
 
         # Apply the specified correction function to the DataFrame

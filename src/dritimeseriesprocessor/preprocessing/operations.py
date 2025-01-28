@@ -73,4 +73,4 @@ def power(df: pl.DataFrame, column: str, correction_factor: int, mask: pl.Expr =
     return corrected
 
 
-preprocessing_corrections = {"MULTIPLY": multiply, "ADD": add, "POWER": power}
+CORRECTION_METHODS = {"MULTIPLY": multiply, "ADD": add, "POWER": power}
