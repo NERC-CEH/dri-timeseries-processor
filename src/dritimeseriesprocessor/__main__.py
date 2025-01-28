@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 
@@ -14,6 +15,7 @@ from dritimeseriesprocessor.flagging.flagger import (
 )
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
+from dritimeseriesprocessor.metadata import api_manager
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
@@ -31,6 +33,15 @@ setup_logging()
 # -------------
 metrics.setup_metrics()
 
+
+# Setup connection to the metadata API
+# ------------------------------------
+metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
+
+# Sample call just for an example
+url = f"{metadata.host}/id/network/{metadata.network}"
+sites = asyncio.run(metadata._make_api_call(url))
+print(sites)
 
 # Parse and validate arguments
 # ----------------------------

@@ -6,7 +6,8 @@ from polars.testing import assert_frame_equal
 from datetime import datetime
 from dritimeseriesprocessor.infilling.infiller import (
     infill_flag_column_name,
-    run_infilling
+    run_infilling,
+    INFILL_METHODS
 )
 from time_series import TimeSeries, Period
 
