@@ -273,20 +273,22 @@ def derive(
     new_df = calc_instance.evaluate(ts.df, include_dependency_columns=include_dependencies)
 
     # TODO: this could use some work.
-    new_metadata = (
-        ts.metadata()
+    new_column_metadata = (
+        {col: ts.columns[col].metadata() for col in ts.columns}
         | {calc_instance.column_name: {units_meta_name: calc_instance.units}}
         | {dep_calc.column_name: {units_meta_name: dep_calc.units} for dep_calc in calc_instance.dependencies}
     )
 
     new_ts = TimeSeries(
-        new_df,
-        ts.time_name,
-        ts.resolution,
-        ts.periodicity,
-        ts.time_zone,
-        ts.supplementary_columns,
-        new_metadata,
+        df=new_df,
+        time_name=ts.time_name,
+        resolution=ts.resolution,
+        periodicity=ts.periodicity,
+        time_zone=ts.time_zone,
+        supplementary_columns=ts.supplementary_columns,
+        flag_columns=ts.flag_columns,
+        flag_systems=ts.flag_systems,
+        column_metadata=new_column_metadata,
     )
 
     return new_ts
