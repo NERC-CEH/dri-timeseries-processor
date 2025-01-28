@@ -96,17 +96,12 @@ class TestRunInfilling(unittest.TestCase):
             }
         }
 
-        self.mock_INFILL_METHODS = {
-            "INTERP_LINEAR": mock_linear_interpolation,
-            "FORWARD_FILL": mock_forward_fill
-        }
-
     @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
     @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new=test_INFILL_METHODS)
     def test_run_infilling_basic(self, mock_get_infill_config):
         """
         Test basic functionality of run_infilling.
-        Checks if the function add the flag system, add the flag columns, and runs the infill methods.
+        Checks if the function adds the flag system, adds the flag columns, and runs the infill methods.
         """
         mock_get_infill_config.side_effect = lambda key: self.mock_var_config if key == 'variables' else self.mock_infill_methods
 
