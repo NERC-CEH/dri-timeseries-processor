@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import numpy as np
 import polars as pl
 from polars.testing import assert_frame_equal
@@ -185,6 +185,3 @@ class TestRunPreprocessing(unittest.TestCase):
         self.assertEqual(result.df['temperature'].to_list(), [20.0, 32.0, 31.0, 30.0, 29.0])
         # Check flag values have been added
         self.assertEqual(result.df['temperature_PRFLAG'].to_list(), [0, 1, 1, 1, 1])
-
-if __name__ == "__main__":
-    unittest.main()
