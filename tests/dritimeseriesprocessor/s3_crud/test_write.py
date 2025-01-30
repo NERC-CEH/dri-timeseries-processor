@@ -43,7 +43,8 @@ class TestS3WriterWithData(BaseTestCase):
             bucket_name=self.bucket_name,
             prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            site_ids=['site1', 'site2']
         )
 
     def test_polars_df_bytes_conversion(self):

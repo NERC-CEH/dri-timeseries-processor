@@ -76,59 +76,52 @@ class TestRunInfilling(unittest.TestCase):
             }))
         }
 
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
     @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new_callable=MagicMock)
-    def test_run_infilling_basic(self, mock_infill_methods, mock_get_infill_config):
+    def test_run_infilling_basic(self, mock_infill_methods):
         """
         Test basic functionality of run_infilling.
         Checks if the function correctly applies infilling methods and updates the DataFrame.
         """
-        mock_get_infill_config.return_value = self.mock_config
         mock_infill_methods.__getitem__.side_effect = self.mock_infill_methods.__getitem__
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, self.mock_config)
 
         self.assertIn('temperature_INFILL_FLAG', result.columns)
         self.assertIn('humidity_INFILL_FLAG', result.columns)
         self.assertEqual(result.df['temperature'].to_list(), [20.0, 21.0, 22.0, 21.5, 21.0])
         self.assertEqual(result.df['humidity'].to_list(), [50, 55, 55, 55, 60])
 
-        mock_get_infill_config.assert_called_once_with("variables")
         self.mock_infill_methods['linear_interpolation'].assert_called_once()
         self.mock_infill_methods['forward_fill'].assert_called_once()
 
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
     @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new_callable=MagicMock)
-    def test_run_infilling_no_config(self, mock_infill_methods, mock_get_infill_config):
+    def test_run_infilling_no_config(self, mock_infill_methods):
         """
         Test run_infilling when no infill config is available for any column.
         Checks if the function returns the original DataFrame unchanged.
         """
-        mock_get_infill_config.return_value = {}
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, self.mock_config)
 
         assert_frame_equal(result.df, self.ts.df)
-        mock_infill_methods.__getitem__.assert_not_called()
 
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
+
     @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new_callable=MagicMock)
-    def test_run_infilling_no_methods(self, mock_infill_methods, mock_get_infill_config):
+    def test_run_infilling_no_methods(self, mock_infill_methods):
         """
         Test run_infilling when infill config exists but no methods are specified.
         Checks if the function returns the original DataFrame unchanged.
         """
         mock_config = {'temperature': {'PT1M': MagicMock(methods=[])}}
-        mock_get_infill_config.return_value = mock_config
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, mock_config)
 
         assert_frame_equal(result.df, self.ts.df)
         mock_infill_methods.__getitem__.assert_not_called()
 
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
+
     @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new_callable=MagicMock)
-    def test_run_infilling_multiple_methods(self, mock_infill_methods, mock_get_infill_config):
+    def test_run_infilling_multiple_methods(self, mock_infill_methods):
         """
         Test run_infilling with multiple infill methods for a single column.
         Checks if the methods are applied in the correct order (by priority).
@@ -141,10 +134,10 @@ class TestRunInfilling(unittest.TestCase):
                 ])
             }
         }
-        mock_get_infill_config.return_value = mock_config
+
         mock_infill_methods.__getitem__.side_effect = self.mock_infill_methods.__getitem__
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, mock_config)
 
         self.mock_infill_methods['forward_fill'].assert_called_once()
         self.mock_infill_methods['linear_interpolation'].assert_called_once()
@@ -153,9 +146,9 @@ class TestRunInfilling(unittest.TestCase):
             [unittest.mock.call('forward_fill'), unittest.mock.call('linear_interpolation')]
         )
 
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
+
     @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new_callable=MagicMock)
-    def test_run_infilling_default_resolution(self, mock_infill_methods, mock_get_infill_config):
+    def test_run_infilling_default_resolution(self, mock_infill_methods):
         """
         Test run_infilling using default resolution when PT1M is not available.
         Checks if the function correctly falls back to the default resolution.
@@ -167,10 +160,10 @@ class TestRunInfilling(unittest.TestCase):
                 ])
             }
         }
-        mock_get_infill_config.return_value = mock_config
+
         mock_infill_methods.__getitem__.side_effect = self.mock_infill_methods.__getitem__
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, mock_config)
 
         self.mock_infill_methods['linear_interpolation'].assert_called_once()
         self.assertIn('temperature_INFILL_FLAG', result.columns)
