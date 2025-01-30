@@ -93,12 +93,8 @@ def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
         core_flag_col_name = core_flag_column_name(data_col_name)
         pr_flag_col_name = pr_flag_column_name(data_col_name)
 
-        # Check core flags are set up.
-        if CORE_FLAG_SYS_NAME not in ts.flag_systems:
-            ts = initialise_core_flag_system(ts)
-
         if core_flag_col_name not in ts.flag_columns:
-            ts.init_flag_column(CORE_FLAG_SYS_NAME, core_flag_col_name)
+            raise ValueError(f"Core flag column {core_flag_col_name} not found in TimeSeries.")
 
         # Do nothing if there is no preprocess flag column.
         if pr_flag_col_name not in ts.flag_columns:
@@ -124,12 +120,8 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
         core_flag_col_name = core_flag_column_name(data_col_name)
         qc_flag_col_name = qc_flag_column_name(data_col_name)
 
-        # Check core flags are set up.
-        if CORE_FLAG_SYS_NAME not in ts.flag_systems:
-            ts = initialise_core_flag_system(ts)
-
         if core_flag_col_name not in ts.flag_columns:
-            ts.init_flag_column(CORE_FLAG_SYS_NAME, core_flag_col_name)
+            raise ValueError(f"Core flag column {core_flag_col_name} not found in TimeSeries.")
 
         # Do nothing if there is no QC flag column.
         if qc_flag_col_name not in ts.flag_columns:
@@ -162,12 +154,8 @@ def update_infill_core_flags(ts: TimeSeries) -> TimeSeries:
         core_flag_col_name = core_flag_column_name(data_col_name)
         infill_flag_col_name = infill_flag_column_name(data_col_name)
 
-        # Check core flags are set up.
-        if CORE_FLAG_SYS_NAME not in ts.flag_systems:
-            ts = initialise_core_flag_system(ts)
-
         if core_flag_col_name not in ts.flag_columns:
-            ts.init_flag_column(CORE_FLAG_SYS_NAME, core_flag_col_name)
+            raise ValueError(f"Core flag column {core_flag_col_name} not found in TimeSeries.")
 
         # Do nothing if there is no infilling flag column.
         if infill_flag_col_name not in ts.flag_columns:

@@ -74,10 +74,15 @@ class TestAddInitialCoreFlags(TestFlagger):
 class TestUpdatePreprocessCoreFlags(TestFlagger):
     def test_update_preprocess_core_flags(self):
         """Test the the core flag column is updated with 'corrected' core flag (1)."""
-
+        ts = add_initial_core_flags(self.sample_timeseries)
         ts = update_preprocess_core_flags(self.sample_timeseries)
         flag_col = core_flag_column_name("value")
-        self.assertEqual(list(ts.df[flag_col]), [1, 0, 0, 0, 1])
+        self.assertEqual(list(ts.df[flag_col]), [33, 36, 32, 36, 33])
+    
+    def test_no_core_flag_column(self):
+        """Test that an error is raised if the core flag column is not found."""
+        with self.assertRaises(ValueError):
+            update_preprocess_core_flags(self.sample_timeseries)
 
 
 class TestUpdateQualityControlCoreFlags(TestFlagger):
@@ -101,10 +106,21 @@ class TestUpdateQualityControlCoreFlags(TestFlagger):
         # Should be left with missing (4) plus unchecked (32) flags.
         self.assertEqual(list(ts.df[flag_col]), [0, 36, 0, 36, 0])
 
+    def test_no_core_flag_column(self):
+        """Test that an error is raised if the core flag column is not found."""
+        with self.assertRaises(ValueError):
+            update_quality_control_core_flags(self.sample_timeseries)
+
 
 class TestUpdateInfillCoreFlags(TestFlagger):
     def test_update_infill_core_flags(self):
         """Test the the core flag column is updated with the 'interpolated' core flag (2)."""
+        ts = add_initial_core_flags(self.sample_timeseries)
         ts = update_infill_core_flags(self.sample_timeseries)
         flag_col = core_flag_column_name("value")
-        self.assertEqual(list(ts.df[flag_col]), [0, 0, 2, 0, 0])
+        self.assertEqual(list(ts.df[flag_col]), [32, 36, 34, 36, 32])
+
+    def test_no_core_flag_column(self):
+        """Test that an error is raised if the core flag column is not found."""
+        with self.assertRaises(ValueError):
+            update_infill_core_flags(self.sample_timeseries)
