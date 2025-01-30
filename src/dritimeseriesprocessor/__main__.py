@@ -130,7 +130,7 @@ try:
         ts = update_quality_control_core_flags(ts)
 
         # Calculate the number of flags added
-        qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
+        qcflag_columns = [col for col in ts.columns if col.endswith("_QC_FLAG")]
         flags_count = len(qcflag_columns)
 
         logger.info(f"Number of QC flag columns: {flags_count}")

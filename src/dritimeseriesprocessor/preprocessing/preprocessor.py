@@ -17,7 +17,7 @@ PR_FLAG_SYS_NAME = "pr_flags"
 
 def pr_flag_column_name(column: str) -> str:
     """Return column name of preprocess flag column for a given variable column."""
-    return f"{column}_PRFLAG"
+    return f"{column}_PR_FLAG"
 
 
 @metrics.track_preprocessing_time()

@@ -27,8 +27,8 @@ class TestMissingExpr(unittest.TestCase):
 class TestCoreFlagColumnName(unittest.TestCase):
     def test_core_flag_column_name(self):
         """Test the generation of core flag column names."""
-        self.assertEqual(core_flag_column_name("value"), "value_FLAG")
-        self.assertEqual(core_flag_column_name("temperature"), "temperature_FLAG")
+        self.assertEqual(core_flag_column_name("value"), "value_CORE_FLAG")
+        self.assertEqual(core_flag_column_name("temperature"), "temperature_CORE_FLAG")
 
 
 class TestFlagger(unittest.TestCase):
@@ -48,9 +48,9 @@ class TestFlagger(unittest.TestCase):
             time_name="timestamp",
         )
         self.sample_timeseries.add_flag_system("pr_flags", {"ADD": 1})
-        self.sample_timeseries.init_flag_column("pr_flags", "value_PRFLAG", [1, 0, 0, 0, 1])
+        self.sample_timeseries.init_flag_column("pr_flags", "value_PR_FLAG", [1, 0, 0, 0, 1])
         self.sample_timeseries.add_flag_system("qc_flags", {"RANGE": 1})
-        self.sample_timeseries.init_flag_column("qc_flags", "value_QCFLAG", [0, 1, 0, 1, 0])
+        self.sample_timeseries.init_flag_column("qc_flags", "value_QC_FLAG", [0, 1, 0, 1, 0])
         self.sample_timeseries.add_flag_system("infill_flags", {"INTERP": 1})
         self.sample_timeseries.init_flag_column("infill_flags", "value_INFILL_FLAG", [0, 0, 1, 0, 0])
 
@@ -95,7 +95,7 @@ class TestUpdateQualityControlCoreFlags(TestFlagger):
         """Test that the 'unchecked' flag is not removed when the QC flag is missing."""
         # Init core flags so the uncheked flag is present.
         ts = add_initial_core_flags(self.sample_timeseries)
-        ts.df = ts.df.with_columns(pl.Series("value_QCFLAG", [0, None, 0, None, 0]))
+        ts.df = ts.df.with_columns(pl.Series("value_QC_FLAG", [0, None, 0, None, 0]))
         ts = update_quality_control_core_flags(ts)
         flag_col = core_flag_column_name("value")
         # Should be left with missing (4) plus unchecked (32) flags.

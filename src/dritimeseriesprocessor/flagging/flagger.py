@@ -37,7 +37,7 @@ def core_flag_column_name(column: str) -> str:
     Returns:
         Flag column name
     """
-    return f"{column}_FLAG"
+    return f"{column}_CORE_FLAG"
 
 
 def initialise_core_flag_system(ts: TimeSeries) -> TimeSeries:
