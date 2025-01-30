@@ -113,12 +113,6 @@ try:
         periodicity = Period.of_minutes(30)
         ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
 
-        # Initialise TimeSeries object
-        # ----------------------------
-        resolution = Period.of_minutes(30)
-        periodicity = Period.of_minutes(30)
-        ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
-
         # Initialise core flags
         # ---------------------
         ts = add_initial_core_flags(ts)
