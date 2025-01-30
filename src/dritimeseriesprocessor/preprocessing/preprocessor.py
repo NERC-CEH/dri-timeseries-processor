@@ -52,16 +52,16 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
             )
             continue
 
-        # If variable exists, add a flag column for the correction method
-        pr_flag_col = pr_flag_column_name(correction_config.variable)
-        if pr_flag_col not in ts.columns:
-            ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
-
         # Check if the correction method is implemented
         correction_fn = CORRECTION_METHODS.get(correction_config.method_id)
         if not correction_fn:
             logger.warning(f"Unimplemented method: {correction_config.method_id}")
             continue
+
+        # If variable exists, add a flag column for the correction method
+        pr_flag_col = pr_flag_column_name(correction_config.variable)
+        if pr_flag_col not in ts.columns:
+            ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
 
         # Ensure the end datetime is set; default to the current time if not provided
         if correction_config.end_datetime is None:
