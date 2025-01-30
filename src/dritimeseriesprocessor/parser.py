@@ -162,16 +162,12 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
         metadata_sites: The sites from the metadata store
     """
     if sites is not None:
-        sites = sites.upper()
         sites_list = sites.split(",")
 
         # Rough check for formatting
         for site in sites_list:
             if not site.isalnum():
                 raise ValueError(f"Site {site} should only contain letters and numbers.")
-
-            if len(site) != 5:
-                raise ValueError(f"Site {site} should only contain 5 characters.")
 
         # Filter out user requested sites that are not in the metadata store
         sites = remove_sites_not_in_store(sites_list, metadata_sites)

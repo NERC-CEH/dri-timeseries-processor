@@ -116,9 +116,8 @@ class TestSites(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ('alic1', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1']),
-            ('alic1,bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
-            ('ALIC1,bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
+            ('ALIC1', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1']),
+            ('ALIC1,BUNNY', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
             (None, ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY', 'BALRD'])
         ]
     )
@@ -131,10 +130,9 @@ class TestSites(unittest.TestCase):
     
     @parameterized.expand(
         [
-            ('alic1, bunny', "Site  BUNNY should only contain letters and numbers."),
+            ('ALIC1, BUNNY', "Site  BUNNY should only contain letters and numbers."),
             ('BU!!Y', "Site BU!!Y should only contain letters and numbers."),
-            ('alic1/bunny', "Site ALIC1/BUNNY should only contain letters and numbers."),
-            ('ALIC12345,bunny', "Site ALIC12345 should only contain 5 characters.")
+            ('ALIC1/BUNNY', "Site ALIC1/BUNNY should only contain letters and numbers."),
         ]
     )
     def test_incorrect_sites_argument(self, sites, error_message):
