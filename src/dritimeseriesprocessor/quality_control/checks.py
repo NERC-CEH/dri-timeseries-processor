@@ -13,7 +13,7 @@ from time_series import TimeSeries
 logger = logging.getLogger(__name__)
 
 
-def battery_voltage_check(ts: TimeSeries, column: str, flag_column: str) -> pl.DataFrame:
+def battery_voltage_check(ts: TimeSeries, column: str, flag_column: str) -> TimeSeries:
     """Check that the battery voltage level is above the threshold.
 
     This function checks if the battery voltage ('BATTV' column) is below a certain threshold
@@ -33,7 +33,7 @@ def battery_voltage_check(ts: TimeSeries, column: str, flag_column: str) -> pl.D
     return ts
 
 
-def range_check(ts: TimeSeries, column: str, flag_column: str) -> pl.DataFrame:
+def range_check(ts: TimeSeries, column: str, flag_column: str) -> TimeSeries:
     """Check values falls between min and max range, applying a quality control flag if outside of range.
 
     Min and max range values are defined per site, per variable and per time resolution.
@@ -60,7 +60,7 @@ def range_check(ts: TimeSeries, column: str, flag_column: str) -> pl.DataFrame:
     return ts
 
 
-def soilmet_scans_check(ts: TimeSeries, column: str, flag_column: str) -> pl.DataFrame:
+def soilmet_scans_check(ts: TimeSeries, column: str, flag_column: str) -> TimeSeries:
     """Check the soilmet scans value is above an acceptable threshold.
 
     Args:
@@ -77,7 +77,7 @@ def soilmet_scans_check(ts: TimeSeries, column: str, flag_column: str) -> pl.Dat
     return ts
 
 
-def error_codes_check(ts: TimeSeries, column: str, flag_column: str) -> pl.DataFrame:
+def error_codes_check(ts: TimeSeries, column: str, flag_column: str) -> TimeSeries:
     """Add QC flag for expected error codes.
 
     Args:
@@ -95,7 +95,7 @@ def error_codes_check(ts: TimeSeries, column: str, flag_column: str) -> pl.DataF
     return ts
 
 
-def spike_check(ts: TimeSeries, column: str, flag_column: str) -> pl.DataFrame:
+def spike_check(ts: TimeSeries, column: str, flag_column: str) -> TimeSeries:
     """Assess the total difference between a value and its neighbours and remove any skew in the size of the
     differences with each neighbour.
 

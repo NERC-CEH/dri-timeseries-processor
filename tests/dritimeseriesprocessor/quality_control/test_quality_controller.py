@@ -1,6 +1,5 @@
 import unittest
 from datetime import datetime
-import numpy as np
 from unittest.mock import Mock, patch
 
 import polars as pl

@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
-import numpy as np
 import polars as pl
 from polars.testing import assert_frame_equal
 

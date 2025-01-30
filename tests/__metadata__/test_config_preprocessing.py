@@ -17,7 +17,7 @@ def test_get_valid_method_ids():
     """
     valid_ids = get_valid_method_ids()
     assert isinstance(valid_ids, list)
-    assert all(isinstance(id, str) for id in valid_ids)
+    assert all(isinstance(meth_id, str) for meth_id in valid_ids)
     assert set(valid_ids) == set(method["method_id"] for method in correction_methods_data)
 
 def test_correction_method():

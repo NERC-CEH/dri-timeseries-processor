@@ -1,4 +1,3 @@
-import pytest
 import unittest
 import polars as pl
 from time_series import TimeSeries
@@ -87,9 +86,9 @@ class TestUpdatePreprocessCoreFlags(TestFlagger):
 
 class TestUpdateQualityControlCoreFlags(TestFlagger):
     def test_update_quality_control_core_flags(self):
-        """Test the the core flag column is updated with the 'removed' core flag (8),
+        """Test the core flag column is updated with the 'removed' core flag (8),
         and the 'unchecked' core flag (32) is removed."""
-        # Init core flags so the uncheked flag is present.
+        # Init core flags so the unchecked flag is present.
         ts = add_initial_core_flags(self.sample_timeseries)
         ts = update_quality_control_core_flags(ts)
         flag_col = core_flag_column_name("value")
@@ -98,7 +97,7 @@ class TestUpdateQualityControlCoreFlags(TestFlagger):
 
     def test_unchecked_not_removed(self):
         """Test that the 'unchecked' flag is not removed when the QC flag is missing."""
-        # Init core flags so the uncheked flag is present.
+        # Init core flags so the unchecked flag is present.
         ts = add_initial_core_flags(self.sample_timeseries)
         ts.df = ts.df.with_columns(pl.Series("value_QC_FLAG", [0, None, 0, None, 0]))
         ts = update_quality_control_core_flags(ts)

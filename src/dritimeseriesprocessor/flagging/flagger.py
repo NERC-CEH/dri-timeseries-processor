@@ -127,7 +127,7 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
         if qc_flag_col_name not in ts.flag_columns:
             continue
 
-        # Remove unchecked flag where the is a non-null QC flag.
+        # Remove unchecked flag where there is a non-null QC flag.
         expr = ~missing_expr(qc_flag_col_name)
         ts.remove_flag(core_flag_col_name, "unchecked", expr)
 

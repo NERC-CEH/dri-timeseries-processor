@@ -4,10 +4,8 @@ from unittest.mock import Mock, patch
 import polars as pl
 from datetime import datetime
 from parameterized import parameterized
-from polars.testing import assert_frame_equal
 
 from time_series import TimeSeries, Period
-from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
 from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_failed_qc_check_ids_from_flag,
                                                           get_site_range_values)
 
