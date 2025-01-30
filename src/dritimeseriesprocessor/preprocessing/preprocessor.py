@@ -38,7 +38,13 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         logger.warning("No correction methods given in config.")
         return ts
 
+    # TODO: This should be replace by TimeSeries metadata
+    site_id = ts.df["SITE_ID"].first()
+
     for correction_config in preprocessing_config.corrections:
+        if correction_config.site_id != site_id:
+            continue
+
         # Check the target variable exists in the TimeSeries DataFrame
         if correction_config.variable not in ts.data_columns:
             logger.warning(
