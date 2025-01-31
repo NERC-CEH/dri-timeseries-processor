@@ -1,6 +1,11 @@
 import logging
+from typing import Dict, Union
 
-from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
+from dritimeseriesprocessor.__metadata__.config_infilling import (
+    InfillMethod,
+    VariableResolutionMethods,
+    get_infill_config,
+)
 from dritimeseriesprocessor.infilling.methods import INFILL_METHODS
 from time_series import TimeSeries
 
@@ -23,7 +28,9 @@ def infill_flag_column_name(column: str) -> str:
     return f"{column}_INFILL_FLAG"
 
 
-def run_infilling(ts: TimeSeries) -> TimeSeries:
+def run_infilling(
+    ts: TimeSeries, infill_configs: Union[Dict[str, InfillMethod], Dict[str, Dict[str, VariableResolutionMethods]]]
+) -> TimeSeries:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.

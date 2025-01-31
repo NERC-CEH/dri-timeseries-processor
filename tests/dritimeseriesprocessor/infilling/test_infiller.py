@@ -105,7 +105,7 @@ class TestRunInfilling(unittest.TestCase):
         """
         mock_get_infill_config.side_effect = lambda key: self.mock_var_config if key == 'variables' else self.mock_infill_methods
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, self.mock_var_config)
 
         # Check flag system added
         self.assertIn('infill_flags', result.flag_systems)
@@ -124,7 +124,7 @@ class TestRunInfilling(unittest.TestCase):
         """
         mock_get_infill_config.side_effect = lambda key: self.mock_var_config if key == 'variables' else {}
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, self.mock_var_config)
 
         assert_frame_equal(result.df, self.ts.df)
 
@@ -137,7 +137,7 @@ class TestRunInfilling(unittest.TestCase):
         mock_config = {'temperature': {'PT1M': MagicMock(methods=[])}}
         mock_get_infill_config.side_effect = lambda key: mock_config if key == 'variables' else self.mock_infill_methods
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, mock_config)
 
         assert_frame_equal(result.df, self.ts.df)
 
@@ -158,7 +158,7 @@ class TestRunInfilling(unittest.TestCase):
         }
         mock_get_infill_config.side_effect = lambda key: mock_config if key == 'variables' else self.mock_infill_methods
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, mock_config)
 
         # Check flag values (from both mock functions) have been added
         self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [3, 3, 3, 3, 3, 3, 3])
@@ -180,6 +180,6 @@ class TestRunInfilling(unittest.TestCase):
         }
         mock_get_infill_config.side_effect = lambda key: mock_config if key == 'variables' else self.mock_infill_methods
 
-        result = run_infilling(self.ts)
+        result = run_infilling(self.ts, mock_config)
 
         self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [1, 1, 1, 1, 1, 1, 1])

@@ -72,23 +72,25 @@ class BaseTestCase(unittest.TestCase):
         current_date = start_date
 
         while current_date <= end_date:
-            # Create hourly data for the current date
-            data = {
-                'time': [current_date + timedelta(hours=i) for i in range(24)] * 2,
-                'SITE_ID': ['site1'] * 48,
-                'col1': list(range(48)),
-                'col2': list(range(48, 96))
-            }
-            df = pl.DataFrame(data)
+            for site in ['site1', 'site2']:
+                # Create hourly data for the current date
+                data = {
+                    'time': [current_date + timedelta(hours=i) for i in range(24)] * 2,
+                    'SITE_ID': [site] * 48,
+                    'col1': list(range(48)),
+                    'col2': list(range(48, 96))
+                }
+                df = pl.DataFrame(data)
 
-            # Convert DataFrame to Parquet
-            parquet_buffer = io.BytesIO()
-            df.write_parquet(parquet_buffer)
-            parquet_buffer.seek(0)
+                # Convert DataFrame to Parquet
+                parquet_buffer = io.BytesIO()
+                df.write_parquet(parquet_buffer)
+                parquet_buffer.seek(0)
 
-            # Upload Parquet file to S3 bucket with date-stamped filename
-            file_key = f"cosmos/dataset=test_dataset/site=site1/date={current_date.strftime('%Y-%m-%d')}/data.parquet"
-            cls.s3_client.put_object(Bucket=cls.bucket_name, Key=file_key, Body=parquet_buffer.getvalue())
+                # Upload Parquet file to S3 bucket with date-stamped filename
+                file_key = f"cosmos/dataset=test_dataset/site={site}/date={current_date.strftime('%Y-%m-%d')}/data.parquet"
+  
+                cls.s3_client.put_object(Bucket=cls.bucket_name, Key=file_key, Body=parquet_buffer.getvalue())
 
             current_date += timedelta(days=1)
 

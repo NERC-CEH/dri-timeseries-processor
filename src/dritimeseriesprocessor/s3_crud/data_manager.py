@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 import polars as pl
 
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader, ParquetReaderInterface
-from dritimeseriesprocessor.utils import steralize_dates, steralize_site_ids
+from dritimeseriesprocessor.utils import steralize_dates
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,8 @@ def query_by_date_range(
     prefix: str,
     start_date: Union[date, datetime],
     end_date: Union[date, datetime, None],
+    site_ids: List[str],
     columns: Optional[List[str]] = None,
-    site_ids: Optional[Union[str, List[str]]] = None,
     reader: ParquetReaderInterface = DuckDbParquetReader(),
 ) -> pl.DataFrame:
     """Reads Parquet files from an S3 bucket for a given date range and combines them into a single Polars DataFrame.
@@ -28,15 +28,14 @@ def query_by_date_range(
         prefix: The bucket prefix to search within.
         start_date: The start date of date range.
         end_date: The end date of date range.
+        site_ids: list of site IDs to select.
         columns: Optional list of columns to select.
-        site_ids: Optional list of site IDs (or single site ID) to select.
         reader: The object to use for reading the data. Assumed to be a DuckDbParquetReader by default.
     Returns:
         A Polars DataFrame containing the combined data from the Parquet files.
     """
 
     start_date, end_date = steralize_dates(start_date, end_date)
-    site_ids = steralize_site_ids(site_ids)
 
     columns_sql = ", ".join(columns) if columns else "*"
     site_ids_sql = f"AND site IN ({','.join(['?'] * len(site_ids))})" if site_ids else ""
