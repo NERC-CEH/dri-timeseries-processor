@@ -7,6 +7,7 @@ import pytz
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.operations import CORRECTION_METHODS
+from dritimeseriesprocessor.utils import not_missing_expr
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
@@ -78,7 +79,7 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         ts.df = correction_fn(ts.df, correction_config.variable, correction_config.correction_factor, mask)
 
         # Apply flagging to the DataFrame.
-        expr = mask & pl.col(correction_config.variable).is_not_null()
+        expr = mask & not_missing_expr(correction_config.variable)
         ts.add_flag(pr_flag_col, correction_config.method_id, expr)
 
     return ts

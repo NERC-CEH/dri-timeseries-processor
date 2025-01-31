@@ -104,3 +104,27 @@ def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
     return [
         (group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col("time").dt.date(), pl.col("SITE_ID")])
     ]
+
+
+def missing_expr(column_name: str) -> pl.Expr:
+    """Return expression for missing values in column.
+
+    Args:
+        column_name: Data column name
+
+    Returns:
+        Expression for missing values
+    """
+    return pl.col(column_name).is_null() | pl.col(column_name).is_nan()
+
+
+def not_missing_expr(column_name: str) -> pl.Expr:
+    """Return expression for not missing values in column.
+
+    Args:
+        column_name: Data column name
+
+    Returns:
+        Expression for not missing values
+    """
+    return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()

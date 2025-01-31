@@ -10,17 +10,7 @@ from dritimeseriesprocessor.flagging.flagger import (
     update_quality_control_core_flags,
     update_infill_core_flags,
     core_flag_column_name,
-    missing_expr,
 )
-
-
-class TestMissingExpr(unittest.TestCase):
-    def test_missing_expr(self):
-        """Test the expression for detecting missing values."""
-        expr = missing_expr("value")
-        df = pl.DataFrame({"value": [10, None, 30, float('nan'), 50]}, strict=False)
-        result = df.with_columns(expr.alias("is_missing"))
-        self.assertEqual(result["is_missing"].to_list(), [False, True, False, True, False])
 
 
 class TestCoreFlagColumnName(unittest.TestCase):

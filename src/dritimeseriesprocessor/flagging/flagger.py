@@ -8,24 +8,13 @@ from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_conf
 from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name
 from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name
 from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name
+from dritimeseriesprocessor.utils import missing_expr, not_missing_expr
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
 
 CORE_FLAG_SYS_NAME = "core_flags"
-
-
-def missing_expr(column_name: str) -> pl.Expr:
-    """Return expression for missing values in column.
-
-    Args:
-        column_name: Data column name
-
-    Returns:
-        Expression for missing values
-    """
-    return pl.col(column_name).is_null() | pl.col(column_name).is_nan()
 
 
 def core_flag_column_name(column: str) -> str:
@@ -128,7 +117,7 @@ def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
             continue
 
         # Remove unchecked flag where there is a non-null QC flag.
-        expr = ~missing_expr(qc_flag_col_name)
+        expr = not_missing_expr(qc_flag_col_name)
         ts.remove_flag(core_flag_col_name, "unchecked", expr)
 
         # Add removed flag, the data value must be missing as well as have a QC flag value not 0.
