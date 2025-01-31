@@ -1,37 +1,37 @@
 import logging
-from typing import Dict, List
+from typing import List, Union
 
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
+from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
 
 def column_threshold_check(
-    df: pl.DataFrame,
+    ts: TimeSeries,
     check_column: str,
-    qc_column: str,
     flag_column: str,
     threshold: float,
     operator: str,
-    flag_id: int,
+    flag_id: Union[int, str],
     flag_na: bool = False,
-) -> pl.DataFrame:
+) -> TimeSeries:
     """Generic function for flagging one column of data, based on a threshold check of a different column
 
     For example, we could look at the battery voltage column (the "check_column"), compare it to a threshold
-    using the given operator (e.g. which rows are < threshold), then the "qc_column" for any rows that are True for
+    using the given operator (e.g. which rows are < threshold), then the "flag_column" for any rows that are True for
     this check are flagged
 
     Args:
-        df: This must have only the columns wanted for flagging
+        ts: TimeSeries object containing the data to be checked.
         check_column: The column of data that is being checked against the threshold
-        qc_column: The column that should be flagged
         flag_column: The column to which flag value should be added
         threshold: Threshold value
         operator: What comparison to make
-        flag_id: The ID of the quality control flag that should be applied to data that fail this check.
+        flag_id: The integer ID or the flag name, of the quality control flag that should be applied to data that
+            fail this check.
         flag_na: Comparison tests against NaNs will always result in False. By default, NaN values will not cause
             data in data to be flagged. Set this to True to change that.
 
@@ -48,13 +48,10 @@ def column_threshold_check(
         "!=": pl.col(check_column).ne(threshold),
     }
 
-    if check_column not in df:
+    if check_column not in ts.columns:
         raise UserWarning(f"Can not run column threshold check. No {check_column} data provided")
 
-    if qc_column not in df:
-        raise UserWarning(f"Can not run column threshold check. No {qc_column} data provided")
-
-    if flag_column not in df:
+    if flag_column not in ts.columns:
         raise UserWarning(f"Can not run column threshold check. No {flag_column} flag column in dataframe")
 
     if operator not in operator_map:
@@ -66,11 +63,9 @@ def column_threshold_check(
         operator_expr = operator_expr | pl.col(check_column).is_null()
 
     # Apply the flags based on comparing requested column to the threshold
-    df = df.with_columns(
-        pl.when(operator_expr).then(pl.col(flag_column).add(flag_id)).otherwise(pl.col(flag_column)).alias(flag_column)
-    )
+    ts.add_flag(flag_column, flag_id, operator_expr)
 
-    return df
+    return ts
 
 
 def get_site_spike_threshold(site_id: str, variable: str, resolution: str) -> float:
@@ -179,125 +174,3 @@ def get_failed_qc_check_ids_from_flag(flag: int) -> List[int]:
     """
 
     return [1 << i for i, x in enumerate(reversed(bin(flag)[2:])) if x == "1"]
-
-
-class QCTestIDValidator:
-    """Validates that a list of QC tests is valid and non-wasteful
-
-    These methods ensure that the test_id values are unique, bitwise,
-    sequential, and don't skip any valid bits.
-
-    It is desirable to not waste any bits, because maximum bits can grow
-    quite large.
-
-    These validation methods are currently only used in `pytest` to ensure
-    that the QC check IDs are valid before changes are integrated."""
-
-    @staticmethod
-    def _check_id_type(id_value: int) -> None:
-        """Checks the type of the test ID and raises a TypeError if
-        not an integer.
-
-        Args:
-            id_value: A numberic value of the test ID.
-        Raises:
-            TypeError: Raises if type is not int.
-        """
-
-        if not isinstance(id_value, int):
-            raise TypeError(f'A bitwise ID must be an integer, received "{type(id_value)}"')
-
-    @staticmethod
-    def _ids_are_unique(test_dict: Dict[str, dict]) -> bool:
-        """Checks if IDs are unique
-
-        Args:
-            test_dict: A dictionary of dictionaries representing QC tests.
-
-        Returns:
-            bool: A bool result of whether the IDs are unique.
-        """
-
-        test_ids = [item["id"] for item in test_dict.values()]
-
-        if len(test_ids) == len(set(test_ids)):
-            return True
-
-        return False
-
-    @staticmethod
-    def _ids_are_sequential(test_dict: Dict[str, dict]) -> bool:
-        """Checks that IDs are sequential and start at number 1.
-
-        Args:
-            test_dict: A dictionary of dictionaries representing QC tests.
-
-        Returns:
-            bool: A bool result of whether the IDs are sequential and start at 1.
-        """
-        for i, test in enumerate(test_dict.values()):
-            QCTestIDValidator._check_id_type(test["id"])
-
-            if test["id"] != 1 << i:
-                return False
-
-        return True
-
-    @staticmethod
-    def _ids_are_bitwise(test_dict: Dict[str, dict]) -> bool:
-        """Checks that all test IDs are bitwise.
-
-        Args:
-            test_dict: A dictionary of dictionaries representing QC tests.
-
-        Returns:
-            bool: A bool result of whether the IDs are bitwise.
-        """
-
-        for test in test_dict.values():
-            QCTestIDValidator._check_id_type(test["id"])
-
-            if test["id"] == 0 or ((test["id"] & (test["id"] - 1)) != 0):
-                return False
-
-        return True
-
-    @staticmethod
-    def _ids_are_all_present(test_dict: Dict[str, dict]) -> bool:
-        """Checks that all tests have  a "test_id" attribute
-
-        Args:
-            test_dict: A dictionary of dictionaries representing QC tests.
-
-        Returns:
-            bool: A bool result of whether all tests have test IDs.
-        """
-
-        for test in test_dict.values():
-            if "id" not in test:
-                return False
-            QCTestIDValidator._check_id_type(test["id"])
-
-        return True
-
-    @staticmethod
-    def validate(test_dict: Dict[str, dict]) -> bool:
-        """Checks that IDs in a list of tests are valid.
-
-        Args:
-            test_dict: A dictionary of dictionaries representing QC tests.
-
-        Returns:
-            bool: A bool result of whether the IDs are valid.
-        """
-
-        for check in [
-            QCTestIDValidator._ids_are_unique,
-            QCTestIDValidator._ids_are_bitwise,
-            QCTestIDValidator._ids_are_sequential,
-            QCTestIDValidator._ids_are_all_present,
-        ]:
-            if not check(test_dict):
-                return False
-
-        return True

@@ -5,7 +5,8 @@
             "description": "Linear interpolation. Creates straight line through the gap",
             "requirements": {
                 "window": 1
-            }
+            },
+            "id": 1
         }
     },
     "variables": {
@@ -13,7 +14,7 @@
             "default": {
                 "methods": [
                     {
-                        "method_id": "INTERP_LINEAR",
+                        "method": "INTERP_LINEAR",
                         "priority": 1,
                         "constraints": {
                             "max_gap_size": 10
@@ -25,7 +26,7 @@
             "PT30M": {
                 "methods": [
                     {
-                        "method_id": "INTERP_LINEAR",
+                        "method": "INTERP_LINEAR",
                         "priority": 2,
                         "constraints": {
                             "max_gap_size": 10
@@ -38,7 +39,7 @@
             "default": {
                 "methods": [
                     {
-                        "method_id": "INTERP_LINEAR",
+                        "method": "INTERP_LINEAR",
                         "priority": 1,
                         "constraints": {
                             "max_gap_size": 6
@@ -49,7 +50,7 @@
             "PT30M": {
                 "methods": [
                     {
-                        "method_id": "INTERP_LINEAR",
+                        "method": "INTERP_LINEAR",
                         "priority": 1,
                         "constraints": {
                             "max_gap_size": 6

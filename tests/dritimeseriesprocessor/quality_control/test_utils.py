@@ -4,105 +4,108 @@ from unittest.mock import Mock, patch
 import polars as pl
 from datetime import datetime
 from parameterized import parameterized
-from polars.testing import assert_frame_equal
 
-from time_series import TimeSeries
-from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
+from time_series import TimeSeries, Period
 from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_failed_qc_check_ids_from_flag,
-                                                          get_site_range_values, QCTestIDValidator)
+                                                          get_site_range_values)
 
 
 class TestColumnThresholdCheck(unittest.TestCase):
     def setUp(self):
-        self.data = pl.DataFrame({
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+            ],
             "value_a": [5., 10., 20., 30.],
             "value_b": [1.0, 1.1, 1.2, 1.3],
             "value_c": [None, 50., 100., None],
-            "value_b_QCFLAG": [0, 0, 0, 0],
-            "value_c_QCFLAG": [0, 0, 0, 0],
         })
+
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(
+            data,
+            "time",
+            resolution,
+            periodicity
+        )
+
+        self.ts.add_flag_system("qc_flags", {
+            "TEST": 1
+        })
+        self.ts.init_flag_column("qc_flags", "value_b_QC_FLAG")
+        self.ts.init_flag_column("qc_flags", "value_c_QC_FLAG")
 
     def test_greater_than(self):
         """ Test the column threshold check function with '>' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, ">", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 0, 1, 1]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, ">", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 0, 1, 1])
 
     def test_greater_than_or_equal(self):
         """ Test the column threshold check function with '>=' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, ">=", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 1, 1]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, ">=", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 1, 1, 1])
 
     def test_less_than(self):
         """ Test the column threshold check function with '<' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "<", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 0, 0, 0]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "<", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 0, 0, 0])
 
     def test_less_than_or_equal(self):
         """ Test the column threshold check function with '<=' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "<=", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 1, 0, 0]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "<=", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 1, 0, 0])
         
     def test_equal(self):
         """ Test the column threshold check function with '==' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "==", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 0, 0]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "==", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 1, 0, 0])
         
     def test_not_equal(self):
         """ Test the column threshold check function with '!=' operator.
         """
-        result = column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, "!=", 1)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 0, 1, 1]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "!=", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 0, 1, 1])
 
     def test_flag_na_when_true(self):
         """ Test that setting flag_na to True means that any NULL values in the check column are treated as failing
         the QC check (so qc flag set in result)
         """
-        result = column_threshold_check(self.data, "value_c", "value_b", "value_b_QCFLAG", 10, ">", 1, flag_na=True)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [1, 1, 1, 1]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_c", "value_b_QC_FLAG", 10, ">", 1, flag_na=True)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 1, 1, 1])
 
     def test_flag_na_when_false(self):
         """ Test that setting flag_na to False means that any NULL values in the check column are ignored in
         the QC check (so qc flag not set in result)
         """
-        result = column_threshold_check(self.data, "value_c", "value_b", "value_b_QCFLAG", 10, ">", 1, flag_na=False)
-        expected = self.data.with_columns(pl.Series("value_b_QCFLAG", [0, 1, 1, 0]))
-        assert_frame_equal(result, expected)
+        result = column_threshold_check(self.ts, "value_c", "value_b_QC_FLAG", 10, ">", 1, flag_na=False)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 1, 1, 0])
 
     def test_missing_check_column(self):
         """ Test that a missing check column raises error
         """
         with self.assertRaises(UserWarning):
-            column_threshold_check(self.data, "missing_check_column", "value_b", "value_b_QCFLAG", 10, ">", 1)
-
-    def test_missing_qc_column(self):
-        """ Test that a missing qc column raises error
-        """
-        with self.assertRaises(UserWarning):
-            column_threshold_check(self.data, "value_a", "missing_qc_column", "value_b_QCFLAG", 10, ">", 1)
+            column_threshold_check(self.ts, "missing_check_column", "value_b_QC_FLAG", 10, ">", 1)
 
     def test_missing_flag_column(self):
         """ Test that a missing qc column raises error
         """
         with self.assertRaises(UserWarning):
-            column_threshold_check(self.data, "value_a", "value_b", "missing_QCFLAG", 10, ">", 1)
+            column_threshold_check(self.ts, "value_a", "missing_QC_FLAG", 10, ">", 1)
 
     def test_invalid_operator(self):
         """ Test that invalid operator raises error
         """
         with self.assertRaises(ValueError):
-            column_threshold_check(self.data, "value_a", "value_b", "value_b_QCFLAG", 10, ">>", 1)
+            column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, ">>", 1)
 
 
 class TestGetSiteRangeValues(unittest.TestCase):
@@ -277,150 +280,3 @@ class TestQCFlagging(unittest.TestCase):
         result = get_failed_qc_check_ids_from_flag(flag)
 
         self.assertListEqual(result, expected)
-
-
-class TestQCTestValidator(unittest.TestCase):
-    """Suite to check validity of QC tests in codebase"""
-
-    def setUp(self):
-        self.good_tests = {
-            "RANGE": {
-                "id": 1 << 0
-            },
-            "MIN": {
-                "id": 1 << 1
-            },
-            "MAX": {
-                "id": 1 << 2
-            }
-        }
-
-    def test_unique_ids(self):
-        """Ensures that all tests have unique IDs"""
-
-        self.assertTrue(
-            QCTestIDValidator._ids_are_unique(self.good_tests)
-        )
-
-        non_unique_ids = {
-            "RANGE": {
-                "id": 1 << 0
-            },
-            "MIN": {
-                "id": 1 << 0
-            },
-            "MAX": {
-                "id": 1 << 2
-            }
-        }
-
-        self.assertFalse(QCTestIDValidator._ids_are_unique(non_unique_ids))
-
-    def test_bitwise_ids(self):
-        """Ensures that all test_ids are bitwise (2**n)"""
-
-        self.assertTrue(
-            QCTestIDValidator._ids_are_bitwise(self.good_tests)
-        )
-
-        bad_tests_int = {
-            "RANGE": {
-                "id": 1 << 0
-            },
-            "MIN": {
-                "id": 3
-            },
-            "MAX": {
-                "id": 1 << 1
-            }
-        }
-
-        bad_tests_float = {
-            "RANGE": {
-                "id": 1 << 0
-            },
-            "MIN": {
-                "id": 1 << 1
-            },
-            "MAX": {
-                "id": 1.5
-            }
-        }
-
-        self.assertFalse(QCTestIDValidator._ids_are_bitwise(bad_tests_int))
-
-        with self.assertRaises(TypeError):
-            QCTestIDValidator._ids_are_bitwise(bad_tests_float)
-
-    def test_sequential_ids(self):
-        """Ensures that all tests have sequential IDs"""
-
-        self.assertTrue(
-            QCTestIDValidator._ids_are_sequential(self.good_tests)
-        )
-
-        bad_tests = {
-            "RANGE": {
-                "id": 1 << 1
-            },
-            "MIN": {
-                "id": 1 << 0
-            },
-            "MAX": {
-                "id": 1 << 2
-            }
-        }
-
-        self.assertFalse(QCTestIDValidator._ids_are_sequential(bad_tests))
-
-    def test_missing_test_id_returns_false(self):
-        """Tests that a KeyError is raised if there is no test ID for a given test"""
-
-        bad_tests = {
-            "RANGE": {
-                "id": 1 << 0
-            },
-            "MIN": {
-                "id": 1 << 1
-            },
-            "MAX": {
-            }
-        }
-
-        self.assertTrue(QCTestIDValidator._ids_are_all_present(self.good_tests))
-        self.assertFalse(QCTestIDValidator._ids_are_all_present(bad_tests))
-
-
-    @patch("dritimeseriesprocessor.quality_control.utils.QCTestIDValidator._ids_are_sequential")
-    @patch("dritimeseriesprocessor.quality_control.utils.QCTestIDValidator._ids_are_bitwise")
-    @patch("dritimeseriesprocessor.quality_control.utils.QCTestIDValidator._ids_are_unique")
-    @patch("dritimeseriesprocessor.quality_control.utils.QCTestIDValidator._ids_are_all_present")
-    def test_validation_methods_called(self, mock_checks_have_ids, mock_ids_are_unique, mock_ids_are_bitwise, mock_ids_are_sequential):
-        """Tests that all validation methods are called when main function invoked"""
-
-        assert QCTestIDValidator.validate(self.good_tests)
-        assert mock_ids_are_unique.called
-        assert mock_ids_are_bitwise.called
-        assert mock_ids_are_sequential.called
-        assert mock_checks_have_ids.called
-
-
-class TestQCTestsAreValid(unittest.TestCase):
-
-    def test_check_validity(self):
-        """Runs the QCTestIDValidator"""
-
-        invalid_msg = "QC tests in config are invalid."
-
-        self.assertTrue(QCTestIDValidator._ids_are_all_present(qc_tests),
-            msg=f"{invalid_msg} Some tests don't have IDs."
-            )
-        self.assertTrue(QCTestIDValidator._ids_are_bitwise(qc_tests),
-            msg=f"{invalid_msg} Some tests are not bitwise."
-            )
-        self.assertTrue(QCTestIDValidator._ids_are_sequential(qc_tests),
-            msg=f"{invalid_msg} Tests are not sequential."
-            )
-        self.assertTrue(QCTestIDValidator._ids_are_unique(qc_tests),
-            msg=f"{invalid_msg} Some tests are not unique."
-            )

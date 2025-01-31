@@ -27,9 +27,9 @@ def get_valid_method_ids() -> list:
     Retrieve a list of valid method IDs from the correction methods data.
 
     Returns:
-        list: A list of valid METHOD_IDs.
+        list: A list of valid method_ids.
     """
-    return [method["METHOD_ID"] for method in correction_methods_data]
+    return [method["method_id"] for method in correction_methods_data]
 
 
 class CorrectionMethod(BaseModel):
@@ -37,12 +37,13 @@ class CorrectionMethod(BaseModel):
     A model representing a correction method.
 
     Attributes:
-        METHOD_ID (str): The identifier for the correction method.
-        DESCRIPTION (str): A description of the correction method.
+        method_id (str): The identifier for the correction method.
+        description (str): A description of the correction method.
     """
 
-    METHOD_ID: str
-    DESCRIPTION: str
+    method_id: str
+    description: str
+    id: int
 
 
 class Correction(BaseModel):
@@ -50,69 +51,69 @@ class Correction(BaseModel):
     A model representing a correction to be applied.
 
     Attributes:
-        SITE_ID (str): The site identifier where the correction applies.
-        VARIABLE (str): The variable to be corrected.
-        START_DATETIME (datetime): The start date and time for the correction.
-        END_DATETIME (Optional[datetime]): The end date and time for the correction.
-        METHOD_ID (str): The method identifier for the correction.
-        CORRECTION_FACTOR (Optional[float]): The factor by which to correct.
-        DESCRIPTION (str): A description of the correction.
+        site_id (str): The site identifier where the correction applies.
+        variable (str): The variable to be corrected.
+        start_datetime (datetime): The start date and time for the correction.
+        end_datetime (Optional[datetime]): The end date and time for the correction.
+        method_id (str): The method identifier for the correction.
+        correction_factor (Optional[float]): The factor by which to correct.
+        description (str): A description of the correction.
     """
 
-    SITE_ID: str
-    VARIABLE: str
-    START_DATETIME: datetime
-    END_DATETIME: Optional[datetime] = None
-    METHOD_ID: str = Field(..., validate_default=True)
-    CORRECTION_FACTOR: Optional[float] = None
-    DESCRIPTION: str
+    site_id: str
+    variable: str
+    start_datetime: datetime
+    end_datetime: Optional[datetime] = None
+    method_id: str = Field(..., validate_default=True)
+    correction_factor: Optional[float] = None
+    description: str
 
-    @field_validator("METHOD_ID")
+    @field_validator("method_id")
     @classmethod
     def validate_method_id(cls, v: str) -> str:
         """
-        Validate that the METHOD_ID is one of the valid method IDs.
+        Validate that the method_id is one of the valid method IDs.
 
         Args:
-            v (str): The METHOD_ID to validate.
+            v (str): The method_id to validate.
 
         Returns:
-            str: The validated METHOD_ID.
+            str: The validated method_id.
 
         Raises:
-            ValueError: If the METHOD_ID is not valid.
+            ValueError: If the method_id is not valid.
         """
         valid_methods = get_valid_method_ids()
         if v not in valid_methods:
-            raise ValueError(f"Invalid METHOD_ID: {v}. Must be one of {valid_methods}")
+            raise ValueError(f"Invalid method_id: {v}. Must be one of {valid_methods}")
         return v
 
-    @field_validator("END_DATETIME")
+    @field_validator("end_datetime")
     @classmethod
     def end_datetime_must_be_after_start(cls, v: Optional[datetime], info: ValidationInfo) -> datetime:
         """
-        Validate that END_DATETIME is after START_DATETIME if it is provided.
+        Validate that end_datetime is after start_datetime if it is provided.
 
         Args:
-            v (Optional[datetime]): The END_DATETIME to validate.
+            v (Optional[datetime]): The end_datetime to validate.
             info (ValidationInfo): The validation information context.
 
         Returns:
-            datetime: The validated END_DATETIME.
+            datetime: The validated end_datetime.
 
         Raises:
-            ValueError: If END_DATETIME is before START_DATETIME.
+            ValueError: If end_datetime is before start_datetime.
         """
         if v is not None:
-            start_datetime = info.data.get("START_DATETIME")
+            start_datetime = info.data.get("start_datetime")
             if start_datetime and v < start_datetime:
-                raise ValueError("END_DATETIME must be after START_DATETIME")
+                raise ValueError("end_datetime must be after start_datetime")
         return v
 
     @model_validator(mode="after")
     def check_method_variable(cls, values: "Correction") -> "Correction":
         """
-        Validate that the METHOD_ID is consistent with the VARIABLE.
+        Validate that the method_id is consistent with the variable.
 
         Args:
             values (Correction): The Correction instance to validate.
@@ -121,17 +122,17 @@ class Correction(BaseModel):
             Correction: The validated Correction instance.
 
         Raises:
-            ValueError: If METHOD_ID is inconsistent with VARIABLE.
+            ValueError: If method_id is inconsistent with variable.
         """
-        method_id = values.METHOD_ID
-        variable = values.VARIABLE
+        method_id = values.method_id
+        variable = values.variable
 
         if method_id == "LW_CORR" and variable not in ["LWIN", "LWOUT"]:
-            raise ValueError('If METHOD_ID is "LW_CORR", VARIABLE must be either "LWIN" or "LWOUT"')
+            raise ValueError('If method_id is "LW_CORR", variable must be either "LWIN" or "LWOUT"')
         if method_id == "PA_CORR" and variable != "PA":
-            raise ValueError('If METHOD_ID is "PA_CORR", VARIABLE must be "PA"')
+            raise ValueError('If method_id is "PA_CORR", variable must be "PA"')
         if method_id == "WD_CORR" and variable != "WD":
-            raise ValueError('If METHOD_ID is "WD_CORR", VARIABLE must be "WD"')
+            raise ValueError('If method_id is "WD_CORR", variable must be "WD"')
 
         return values
 

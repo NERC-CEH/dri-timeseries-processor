@@ -163,6 +163,24 @@ class TestGroupByDateSiteID(unittest.TestCase):
             polars.testing.assert_frame_equal(data, expected)
 
 
+class TestMissingExpr(unittest.TestCase):
+    def test_missing_expr(self):
+        """Test the expression for detecting missing values."""
+        expr = utils.missing_expr("value")
+        df = pl.DataFrame({"value": [10, None, 30, float('nan'), 50]}, strict=False)
+        result = df.with_columns(expr.alias("is_missing"))
+        self.assertEqual(result["is_missing"].to_list(), [False, True, False, True, False])
+
+
+class TestNotMissingExpr(unittest.TestCase):
+    def test_not_missing_expr(self):
+        """Test the expression for detecting non-missing values."""
+        expr = utils.not_missing_expr("value")
+        df = pl.DataFrame({"value": [10, None, 30, float('nan'), 50]}, strict=False)
+        result = df.with_columns(expr.alias("is_not_missing"))
+        self.assertEqual(result["is_not_missing"].to_list(), [True, False, True, False, True])
+
+
 class TestSplitDataForProcessing(unittest.TestCase):
     """Test the split_data_for_processing function."""
 

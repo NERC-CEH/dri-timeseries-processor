@@ -9,10 +9,12 @@ from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 
+QC_FLAG_SYS_NAME = "qc_flags"
+
 
 def qc_flag_column_name(column: str) -> str:
     """Return column name of QC flag column for a given variable column."""
-    return f"{column}_QCFLAG"
+    return f"{column}_QC_FLAG"
 
 
 def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataFrame:
@@ -45,26 +47,29 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
     Returns:
         The TimeSeries with quality control flags applied.
     """
-
     qc_check_configs = get_qc_config("qc_tests")
 
-    for check_id, check_config in qc_check_configs.items():
-        check_func = QC_CHECKS.get(check_id)
+    # Initialise quality control flag system within TimeSeries object
+    qc_flags_dict = {check_name: check_config.id for check_name, check_config in qc_check_configs.items()}
+    ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
+
+    for check_name, check_config in qc_check_configs.items():
+        check_func = QC_CHECKS.get(check_name)
         if check_func is None:
-            logger.warning(f"Unimplemented method: {check_id}")
+            logger.warning(f"Unimplemented QC check: {check_name}")
             continue
 
         for column in check_config.variables:
             if column not in ts.data_columns:
-                logger.warning(f"Column {column} not in DataFrame for method {check_id}")
+                logger.warning(f"Column {column} not in DataFrame for method {check_name}")
                 continue
 
             qc_flag_col = qc_flag_column_name(column)
 
-            if qc_flag_col not in ts.supplementary_columns:
-                ts.init_supplementary_column(qc_flag_col, 0)
+            if qc_flag_col not in ts.flag_columns:
+                ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
-            ts.df = check_func(ts.df, column, qc_flag_col, check_config.id)
+            ts = check_func(ts, column, qc_flag_col)
 
             if remove:
                 ts.df = remove_qcd_data(ts.df, column, qc_flag_col)

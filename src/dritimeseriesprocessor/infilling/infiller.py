@@ -1,13 +1,18 @@
 import logging
 from typing import Dict, Union
 
-import polars as pl
-
-from dritimeseriesprocessor.__metadata__.config_infilling import InfillMethod, VariableResolutionMethods
+from dritimeseriesprocessor.__metadata__.config_infilling import (
+    InfillMethod,
+    VariableResolutionMethods,
+    get_infill_config,
+)
 from dritimeseriesprocessor.infilling.methods import INFILL_METHODS
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
+
+
+INFILL_FLAG_SYS_NAME = "infill_flags"
 
 
 def infill_flag_column_name(column: str) -> str:
@@ -37,31 +42,38 @@ def run_infilling(
         The TimeSeries with infilling and infill flags applied.
     """
 
+    var_configs = get_infill_config("variables")
+    infill_methods = get_infill_config("infill_methods")
+
+    # Initialise infilling flag system within TimeSeries object
+    infill_flags_dict = {method: method_config.id for method, method_config in infill_methods.items()}
+    if infill_flags_dict:
+        ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
+    else:
+        logger.warning("No infill methods given in config.")
+        return ts
+
     for column in ts.data_columns:
-        if column in infill_configs:
+        if column in var_configs:
             # Get available infill methods for this variable/resolution
-            methods = infill_configs[column].get(ts.resolution.iso_duration, infill_configs[column].get("default"))
+            methods = var_configs[column].get(ts.resolution.iso_duration, var_configs[column].get("default"))
             if methods is None:
                 logger.warning(f"No infill methods for: {column}")
                 continue
 
             # Order by priority
             sorted_methods = sorted(methods.methods, key=lambda x: x.priority)
-            for method in sorted_methods:
-                infill_func = INFILL_METHODS[method.method_id]
+            for method_config in sorted_methods:
+                infill_flag_col = infill_flag_column_name(column)
+
+                if infill_flag_col not in ts.flag_columns:
+                    ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
+
                 # Run infill function
-                logger.info(f"Infilling {column} with method: {method.method_id}. Constraints: {method.constraints}")
-                infl_df = infill_func(ts.df[column], **method.constraints)
-
-                infl_flag_col = infill_flag_column_name(column)
-
-                if infl_flag_col not in ts.supplementary_columns:
-                    ts.init_supplementary_column(infl_flag_col, data=None, dtype=pl.String)
-
-                # Merge resulting infill values and method ID into df
-                ts.df = ts.df.with_columns(
-                    pl.col(column).fill_null(infl_df["value_filled"]).fill_nan(infl_df["value_filled"]).alias(column),
-                    infl_df["method_id"].alias(infl_flag_col),
+                infill_func = INFILL_METHODS[method_config.method]
+                logger.info(
+                    f"Infilling {column} with method: {method_config.method}. Constraints: {method_config.constraints}"
                 )
+                ts = infill_func(ts, column, infill_flag_col, **method_config.constraints)
 
     return ts

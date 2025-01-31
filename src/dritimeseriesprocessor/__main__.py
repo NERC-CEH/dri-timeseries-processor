@@ -9,7 +9,7 @@ from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
-    initialise_core_flags,
+    add_initial_core_flags,
     update_infill_core_flags,
     update_preprocess_core_flags,
     update_quality_control_core_flags,
@@ -118,7 +118,6 @@ try:
 
         # Split data by sites and add metadata
         # ------------------------------------
-
         # Hard coding periodicity and resolution metadata atm but should be able
         # to extract from the work in FW-548 and FW-549
         # This method likely to change when the metadata gets more complex i.e.
@@ -138,7 +137,7 @@ try:
             )
 
             # Initialise core flags
-            ts = initialise_core_flags(ts)
+            ts = add_initial_core_flags(ts)
 
             # Preprocessing
             # ---------------
