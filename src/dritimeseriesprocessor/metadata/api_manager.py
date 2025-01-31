@@ -44,3 +44,8 @@ class MetadataAPIManager:
                 logger.error(f"Failed to fetch {self.network} data: {str(e)}")
                 logger.exception(e)
                 raise e
+
+    async def fetch_sites(self) -> Dict[str, Any]:
+        response = await self._make_api_call(f"{self.host}/id/network/{self.network}")
+
+        return response

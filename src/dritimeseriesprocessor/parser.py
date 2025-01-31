@@ -10,11 +10,15 @@ from typing import Tuple
 import isodate
 from isodate import Duration
 
+from dritimeseriesprocessor.utils import remove_sites_not_in_store
+
 
 def parse_args(args: list) -> ArgumentParser:
     """Build a parser instance and get the arguments.
 
-    Period is required; end_date is optional (default is todays date).
+    period: required
+    sites: optional (default is all sites)
+    end_date: optional (default is todays date).
 
     Returns:
         An instance of ArguementParser.
@@ -25,6 +29,13 @@ def parse_args(args: list) -> ArgumentParser:
         help=(
             """A valid ISO8601 period to extract level 0 data for. Should be a combination of
             days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
+        ),
+    )
+    parser.add_argument(
+        "--sites",
+        help=(
+            """The sites to extract. Must be a string of sites (upper or lower case) seperated by a comma
+            e.g. ALIC1,BUNNY or alic1,bunny. If not provided all sites will be extracted."""
         ),
     )
     parser.add_argument(
@@ -138,3 +149,29 @@ def validate_end_date(end_date: str) -> str:
         return datetime.date.fromisoformat(end_date)
     except ValueError:
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
+
+
+def validate_sites(sites: str, metadata_sites: list) -> list:
+    """Validate the sites entered.
+
+    Checks user entered sites against the metadata site list and removes
+    if not contained.
+
+    Args:
+        sites: The sites to process
+        metadata_sites: The sites from the metadata store
+    """
+    if sites is not None:
+        sites_list = sites.split(",")
+
+        # Rough check for formatting
+        for site in sites_list:
+            if not site.isalnum():
+                raise ValueError(f"Site {site} should only contain letters and numbers.")
+
+        # Filter out user requested sites that are not in the metadata store
+        sites = remove_sites_not_in_store(sites_list, metadata_sites)
+    else:
+        sites = metadata_sites
+
+    return sites

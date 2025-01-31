@@ -1,6 +1,5 @@
 import unittest
 from datetime import datetime
-import numpy as np
 from unittest.mock import Mock, patch
 
 import polars as pl
@@ -30,9 +29,9 @@ class TestQCFlagColumnName(unittest.TestCase):
     """
     def test_standard_column_name(self):
         """
-        Test that the function correctly appends '_QCFLAG' to a standard column name.
+        Test that the function correctly appends '_QC_FLAG' to a standard column name.
         """
-        self.assertEqual(qc_flag_column_name('data'), 'data_QCFLAG')
+        self.assertEqual(qc_flag_column_name('data'), 'data_QC_FLAG')
 
 
 class TestRemoveQCdData(unittest.TestCase):
@@ -164,9 +163,9 @@ class TestRunQualityControl(unittest.TestCase):
         # Check flag system added
         self.assertIn('qc_flags', result.flag_systems)
         # Check columns added
-        self.assertIn('value_QCFLAG', result.columns)
+        self.assertIn('value_QC_FLAG', result.columns)
         # Check flag values (from mock functions) have been added
-        self.assertEqual(result.df['value_QCFLAG'].to_list(), [3, 3, 3, 3, 3, 3])
+        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [3, 3, 3, 3, 3, 3])
 
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_config")
     def test_run_qc_no_config(self, mock_get_qc_config):

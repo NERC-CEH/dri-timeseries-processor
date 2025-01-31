@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Union
 
 import polars as pl
 
@@ -15,7 +15,7 @@ def column_threshold_check(
     flag_column: str,
     threshold: float,
     operator: str,
-    flag_id: int,
+    flag_id: Union[int, str],
     flag_na: bool = False,
 ) -> TimeSeries:
     """Generic function for flagging one column of data, based on a threshold check of a different column
@@ -30,7 +30,8 @@ def column_threshold_check(
         flag_column: The column to which flag value should be added
         threshold: Threshold value
         operator: What comparison to make
-        flag_id: The ID of the quality control flag that should be applied to data that fail this check.
+        flag_id: The integer ID or the flag name, of the quality control flag that should be applied to data that
+            fail this check.
         flag_na: Comparison tests against NaNs will always result in False. By default, NaN values will not cause
             data in data to be flagged. Set this to True to change that.
 

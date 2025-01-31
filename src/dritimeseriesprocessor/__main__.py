@@ -6,6 +6,7 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor import parser
+from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     add_initial_core_flags,
@@ -16,12 +17,13 @@ from dritimeseriesprocessor.flagging.flagger import (
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metadata import api_manager
+from dritimeseriesprocessor.metadata.transformers import extract_site_ids
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import group_by_date_site_id
+from dritimeseriesprocessor.utils import group_by_date_site_id, split_data_for_processing
 from time_series import TimeSeries
 from time_series.period import Period
 
@@ -34,31 +36,40 @@ setup_logging()
 metrics.setup_metrics()
 
 
+# Setup configs
+# -------------
+infill_configs = get_infill_config("variables")
+
+
 # Setup connection to the metadata API
 # ------------------------------------
 metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
-# Sample call just for an example
-url = f"{metadata.host}/id/network/{metadata.network}"
-sites = asyncio.run(metadata._make_api_call(url))
-print(sites)
 
 # Parse and validate arguments
 # ----------------------------
+# All user inputs are checked against the metadata store as this is the source of truth
+# Any input that isnt in the store is removed from the query
 args = parser.parse_args(sys.argv[1:])
+
+# Sites
+metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="cosmos")
+sites = parser.validate_sites(args.sites, metadata_sites)
+
+# TODO: Resolution FW-548
+# TODO: Variables FW-549
+
+# Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 
 
 # Session parameters
 # ------------------
+# These will be removed in FW-548 and FW-549
 DATASET = "SOILMET_30MIN_2024_LOOPED"
-START_DATE = start_date
-END_DATE = end_date
 # Optional
-SITE_IDS = "ALIC1"
-# Optional
-COLUMNS = ["time", "SITE_ID", "TA", "PA"]
+VARIABLES = ["time", "SITE_ID", "TA", "PA"]
 
 try:
     # Setup s3
@@ -73,10 +84,10 @@ try:
     data = data_manager.query_by_date_range(
         app_config.level_0_bucket,
         prefix=f"cosmos/dataset={DATASET}",
-        start_date=START_DATE,
-        end_date=END_DATE,
-        site_ids=SITE_IDS,
-        columns=COLUMNS,
+        start_date=start_date,
+        end_date=end_date,
+        site_ids=sites,
+        columns=VARIABLES,
     )
 
     if data.shape[0] == 0:
@@ -90,8 +101,6 @@ try:
 
     else:
         logger.info(f"Retrieved data from s3: {data.shape}")
-
-        # data = data.rename({"P_LOADCELL_TEMP": "TA"})
 
         # Dummy some data that will force some qc checks to run
         data = data.with_columns(
@@ -107,74 +116,81 @@ try:
 
         logger.info(f"Added dummy data, shape: {data.shape}")
 
-        # Initialise TimeSeries object
-        # ---------------------------
-        resolution = Period.of_minutes(30)
-        periodicity = Period.of_minutes(30)
-        ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
+        # Split data by sites and add metadata
+        # ------------------------------------
+        # Hard coding periodicity and resolution metadata atm but should be able
+        # to extract from the work in FW-548 and FW-549
+        # This method likely to change when the metadata gets more complex i.e.
+        # multiple resolutions with different variables.
+        metadata = {"resolution": 30, "periodicity": 30}
+        data = split_data_for_processing(data, metadata)
 
-        # Initialise TimeSeries object
-        # ----------------------------
-        resolution = Period.of_minutes(30)
-        periodicity = Period.of_minutes(30)
-        ts = TimeSeries(data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"])
+        for site, timeseries, metadata in data:
+            logger.info(f"Processing site: {site}")
 
-        # Initialise core flags
-        # ---------------------
-        ts = add_initial_core_flags(ts)
+            # Initialise TimeSeries object
+            # ---------------------------
+            resolution = Period.of_minutes(metadata["resolution"])
+            periodicity = Period.of_minutes(metadata["periodicity"])
+            ts = TimeSeries(
+                timeseries, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"]
+            )
 
-        # Preprocessing
-        # -------------
-        ts = run_preprocess(ts)
-        ts = update_preprocess_core_flags(ts)
+            # Initialise core flags
+            ts = add_initial_core_flags(ts)
 
-        logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
+            # Preprocessing
+            # ---------------
+            ts = run_preprocess(ts)
+            ts = update_preprocess_core_flags(ts)
 
-        # Quality control
-        # ---------------
-        ts = run_quality_control(ts, remove=True)
-        ts = update_quality_control_core_flags(ts)
+            logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
 
-        # Calculate the number of flags added
-        qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
-        flags_count = len(qcflag_columns)
+            # Quality control
+            # ---------------
+            ts = run_quality_control(ts, remove=True)
+            ts = update_quality_control_core_flags(ts)
 
-        logger.info(f"Number of QC flag columns: {flags_count}")
-        metrics.increment_flags(flags_count)
+            # Calculate the number of flags added
+            qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
+            flags_count = len(qcflag_columns)
 
-        # show first 100 rows to show how qc flags have been applied
-        with pl.Config(tbl_rows=100):
-            logger.info(ts.df.limit(100))
+            logger.info(f"Number of QC flag columns: {flags_count}")
+            metrics.increment_flags(flags_count)
 
-        # Infilling
-        # ---------
-        ts = run_infilling(ts)
-        ts = update_infill_core_flags(ts)
+            # show first 100 rows to show how qc flags have been applied
+            with pl.Config(tbl_rows=100):
+                logger.info(ts.df.limit(100))
 
-        # show first 100 rows to show how infill flags have been applied
-        with pl.Config(tbl_rows=100):
-            logger.info(ts.df.limit(100))
+            # Infilling
+            # ---------
+            ts = run_infilling(ts, infill_configs)
+            ts = update_infill_core_flags(ts)
 
-        # Writing
-        # -------
-        writer = S3Writer(s3_client)
+            # show first 100 rows to show how infill flags have been applied
+            with pl.Config(tbl_rows=100):
+                logger.info(ts.df.limit(100))
 
-        # Group data by date and site
-        dataframes = group_by_date_site_id(ts.df)
+            # Writing
+            # -------
+            writer = S3Writer(s3_client)
 
-        writer.write(
-            bucket_name=app_config.qc_bucket,
-            dataset=DATASET,
-            data=dataframes,
-        )
+            # Group data by date and site
+            dataframes = group_by_date_site_id(ts.df)
 
-        metrics.record_successful_run()
-        logger.info("Processing completed successfully")
+            writer.write(
+                bucket_name=app_config.qc_bucket,
+                dataset=DATASET,
+                data=dataframes,
+            )
 
-        # Push all metrics at the end of successful processing
-        metrics.export_metrics_to_pushgateway(
-            url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-        )
+            metrics.record_successful_run()
+            logger.info("Processing completed successfully")
+
+            # Push all metrics at the end of successful processing
+            metrics.export_metrics_to_pushgateway(
+                url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+            )
 
 except Exception as e:
     metrics.record_failed_run()

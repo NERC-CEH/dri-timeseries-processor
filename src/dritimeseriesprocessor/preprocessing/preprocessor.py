@@ -7,6 +7,7 @@ import pytz
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.operations import CORRECTION_METHODS
+from dritimeseriesprocessor.utils import not_missing_expr
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ PR_FLAG_SYS_NAME = "pr_flags"
 
 def pr_flag_column_name(column: str) -> str:
     """Return column name of preprocess flag column for a given variable column."""
-    return f"{column}_PRFLAG"
+    return f"{column}_PR_FLAG"
 
 
 @metrics.track_preprocessing_time()
@@ -38,7 +39,13 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         logger.warning("No correction methods given in config.")
         return ts
 
+    # TODO: This should be replace by TimeSeries metadata
+    site_id = ts.df["SITE_ID"].first()
+
     for correction_config in preprocessing_config.corrections:
+        if correction_config.site_id != site_id:
+            continue
+
         # Check the target variable exists in the TimeSeries DataFrame
         if correction_config.variable not in ts.data_columns:
             logger.warning(
@@ -46,16 +53,16 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
             )
             continue
 
-        # If variable exists, add a flag column for the correction method
-        pr_flag_col = pr_flag_column_name(correction_config.variable)
-        if pr_flag_col not in ts.columns:
-            ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
-
         # Check if the correction method is implemented
         correction_fn = CORRECTION_METHODS.get(correction_config.method_id)
         if not correction_fn:
             logger.warning(f"Unimplemented method: {correction_config.method_id}")
             continue
+
+        # If variable exists, add a flag column for the correction method
+        pr_flag_col = pr_flag_column_name(correction_config.variable)
+        if pr_flag_col not in ts.columns:
+            ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
 
         # Ensure the end datetime is set; default to the current time if not provided
         if correction_config.end_datetime is None:
@@ -72,7 +79,7 @@ def run_preprocess(ts: TimeSeries) -> TimeSeries:
         ts.df = correction_fn(ts.df, correction_config.variable, correction_config.correction_factor, mask)
 
         # Apply flagging to the DataFrame.
-        expr = mask & pl.col(correction_config.variable).is_not_null()
+        expr = mask & not_missing_expr(correction_config.variable)
         ts.add_flag(pr_flag_col, correction_config.method_id, expr)
 
     return ts

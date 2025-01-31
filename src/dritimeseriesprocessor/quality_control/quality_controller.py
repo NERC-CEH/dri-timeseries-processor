@@ -14,7 +14,7 @@ QC_FLAG_SYS_NAME = "qc_flags"
 
 def qc_flag_column_name(column: str) -> str:
     """Return column name of QC flag column for a given variable column."""
-    return f"{column}_QCFLAG"
+    return f"{column}_QC_FLAG"
 
 
 def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataFrame:

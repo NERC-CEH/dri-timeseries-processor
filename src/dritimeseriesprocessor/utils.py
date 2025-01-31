@@ -1,10 +1,13 @@
+import logging
 from datetime import date, datetime
-from typing import List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
+
+logger = logging.getLogger(__name__)
 
 
 def validate_iso8601_duration(duration: str) -> bool:
@@ -77,30 +80,80 @@ def steralize_dates(
     return start_date, end_date
 
 
-def steralize_site_ids(site_ids: Optional[Union[str, List[str]]] = None) -> List[str]:
-    """
-    Configures site IDs into a list format.
+def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
+    """Group a dataframe by the date and site_id column.
 
     Args:
-        site_ids: A single site ID as a string or a list of site IDs.
-            If None, defaults to an empty list.
+        df: A polars dataframe
 
     Returns:
-        A list of site IDs.
+        A list of dataframes grouped by date and site_id.
     """
-    if site_ids is None or site_ids == "":
-        # If no site IDs are provided, return an empty list
-        site_ids = []
-    elif isinstance(site_ids, str):
-        # If a single site ID string is provided, convert it to a list
-        site_ids = [site_ids]
-
-    return site_ids
-
-
-def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
-    """Group a dataframe by the date and site_id column."""
 
     return [
         (group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col("time").dt.date(), pl.col("SITE_ID")])
     ]
+
+
+def missing_expr(column_name: str) -> pl.Expr:
+    """Return expression for missing values in column.
+
+    Args:
+        column_name: Data column name
+
+    Returns:
+        Expression for missing values
+    """
+    return pl.col(column_name).is_null() | pl.col(column_name).is_nan()
+
+
+def not_missing_expr(column_name: str) -> pl.Expr:
+    """Return expression for not missing values in column.
+
+    Args:
+        column_name: Data column name
+
+    Returns:
+        Expression for not missing values
+    """
+    return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
+
+
+def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:
+    """Filter out sites that are not in the metadata store.
+
+    Args:
+        sites: Requested sites
+        metadata_sites: Sites in the metadata store
+
+    Returns:
+        sites in both parameters.
+    """
+
+    matching_sites = list(set(sites) & set(metadata_sites))
+    missing_sites = list(set(sites) - set(metadata_sites))
+
+    if missing_sites:
+        raise ValueError(
+            f"The following sites {missing_sites} are not in the metadata store. Remove from '--sites' argument."
+        )
+
+    return matching_sites
+
+
+def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None) -> List[GroupBy]:
+    """Split the data ready for processing.
+
+    Data split by site_id with metadata added.
+
+    Args:
+        df: A polars dataframe
+        metadata: Metadata to be attached to each dataframe to be processed
+
+    Returns:
+        A list of dataframes grouped by site_id with metadata
+    """
+    # Structure of return and the way we attach metadata will change when we introduce the
+    # ability to have multiple resolutions
+
+    return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]

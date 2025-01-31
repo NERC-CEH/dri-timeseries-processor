@@ -139,44 +139,6 @@ class TestSteralizeDates(unittest.TestCase):
         self.assertEqual(result, (expected_start, end))
 
 
-class TestSteralizeSiteIds(unittest.TestCase):
-    def test_none_input(self):
-        """Test with None as input, should return an empty list.
-        """
-        result = utils.steralize_site_ids(None)
-        self.assertEqual(result, [])
-
-    def test_no_input(self):
-        """Test with no input, should return an empty list.
-        """
-        result = utils.steralize_site_ids()
-        self.assertEqual(result, [])
-
-    def test_empty_string_input(self):
-        """Test with an empty string as input, should return an empty list.
-        """
-        result = utils.steralize_site_ids('')
-        self.assertEqual(result, [])
-
-    def test_single_string_input(self):
-        """Test with a single site ID as a string.
-        """
-        result = utils.steralize_site_ids('site1')
-        self.assertEqual(result, ['site1'])
-
-    def test_list_of_strings_input(self):
-        """Test with a list of site IDs.
-        """
-        result = utils.steralize_site_ids(['site1', 'site2', 'site3'])
-        self.assertEqual(result, ['site1', 'site2', 'site3'])
-
-    def test_empty_list_input(self):
-        """Test with an empty list, should return an empty list.
-        """
-        result = utils.steralize_site_ids([])
-        self.assertEqual(result, [])
-
-
 class TestGroupByDateSiteID(unittest.TestCase):
     """Test the group_by_date_site_id function."""
 
@@ -199,3 +161,69 @@ class TestGroupByDateSiteID(unittest.TestCase):
         for date, site, data in result:
             expected = df.filter((pl.col('time').dt.date() == date) & (pl.col('SITE_ID') == site))
             polars.testing.assert_frame_equal(data, expected)
+
+
+class TestMissingExpr(unittest.TestCase):
+    def test_missing_expr(self):
+        """Test the expression for detecting missing values."""
+        expr = utils.missing_expr("value")
+        df = pl.DataFrame({"value": [10, None, 30, float('nan'), 50]}, strict=False)
+        result = df.with_columns(expr.alias("is_missing"))
+        self.assertEqual(result["is_missing"].to_list(), [False, True, False, True, False])
+
+
+class TestNotMissingExpr(unittest.TestCase):
+    def test_not_missing_expr(self):
+        """Test the expression for detecting non-missing values."""
+        expr = utils.not_missing_expr("value")
+        df = pl.DataFrame({"value": [10, None, 30, float('nan'), 50]}, strict=False)
+        result = df.with_columns(expr.alias("is_not_missing"))
+        self.assertEqual(result["is_not_missing"].to_list(), [True, False, True, False, True])
+
+
+class TestSplitDataForProcessing(unittest.TestCase):
+    """Test the split_data_for_processing function."""
+
+    def test_split_data_for_processing(self):
+        """Test that df is split correctly."""
+
+        data = {"time": [datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 2, 1, 10, 0),
+                        datetime(2024, 1, 2, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0)],
+                "SITE_ID": ["site1", "site1", "site1", "site2", "site3", "site3"],
+                "value": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}
+        schema = {"time": pl.Datetime, "SITE_ID": pl.String, "value": pl.Float64}
+
+        df = pl.DataFrame(data, schema)
+        metadata = {'test': 'test_metadata'}
+
+        result = utils.split_data_for_processing(df, metadata)
+
+        # Should be 3 dataframes
+        assert(len(result), 3)
+
+        for site, data, metadata in result:
+            expected = df.filter((pl.col('SITE_ID') == site))
+            polars.testing.assert_frame_equal(data, expected)
+
+            self.assertEqual(metadata, {'test': 'test_metadata'})
+
+
+class TestRemoveSitesNotInStore(unittest.TestCase):
+    """Test the remove_sites_not_in_store function."""
+
+    def test_all_sites_in_store(self):
+        sites = ['A', 'B']
+        metadata_sites = ['A', 'B', 'C']
+
+        result = utils.remove_sites_not_in_store(sites, metadata_sites)
+
+        self.assertEqual(sorted(result), sorted(['A', 'B']))
+    
+    def test_one_site_not_in_store(self):
+        sites = ['A', 'B']
+        metadata_sites = ['A']
+
+        with self.assertRaises(ValueError) as err:
+            utils.remove_sites_not_in_store(sites, metadata_sites)
+
+        self.assertEqual(str(err.exception), "The following sites ['B'] are not in the metadata store. Remove from '--sites' argument.")

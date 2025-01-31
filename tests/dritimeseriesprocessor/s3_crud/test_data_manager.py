@@ -10,18 +10,21 @@ from tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 class TestReadByDateRange(BaseTestCase):
     def test_read_by_date_range_no_site_ids(self):
-        """Test reading data without specifying site IDs.
+        """Test reading data when no site_ids added to command line.
+
+        This means all sites are read.
         """
         start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 4))
         
-        expected_site_ids = ['site1']
+        expected_site_ids = ['site1', 'site2']
         expected_datetimes = pl.datetime_range(start=start_date, end=end_date, interval="1h", eager=True).to_list()
 
         result = query_by_date_range(
             bucket_name=self.bucket_name,
             prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            site_ids=['site1', 'site2']
         )
         result_site_ids = result['SITE_ID'].unique().to_list()
         result_datetimes = result['time'].unique().to_list()
@@ -29,7 +32,7 @@ class TestReadByDateRange(BaseTestCase):
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(sorted(result_site_ids), expected_site_ids)
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
-        self.assertEqual(result.shape, (192, 7))
+        self.assertEqual(result.shape, (384, 7))
 
     def test_read_by_date_range_with_site_ids(self):
         """Test reading data when specifying site IDs.
@@ -44,7 +47,7 @@ class TestReadByDateRange(BaseTestCase):
             prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
             end_date=end_date,
-            site_ids='site1'
+            site_ids=['site1']
         )
         result_site_ids = result['SITE_ID'].unique().to_list()
         result_datetimes = result['time'].unique().to_list()
@@ -68,6 +71,7 @@ class TestReadByDateRange(BaseTestCase):
             prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
             end_date=end_date,
+            site_ids=['site1'],
             columns=cols
         )
         result_site_ids = result['SITE_ID'].unique().to_list()

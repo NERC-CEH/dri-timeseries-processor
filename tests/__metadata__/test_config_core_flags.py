@@ -12,17 +12,17 @@ class TestCoreFlag(unittest.TestCase):
         ("Test flag", "Tests the tests", "T", 16),
         ("Test flag", "Tests the tests", "T", 128)
     ])
-    def test_valid_core_flag(self, name, description, symbol, id):
+    def test_valid_core_flag(self, name, description, symbol, flag_id):
         """Test that a valid CoreFlag instance is created correctly.
         Also testing valid id's do not raise errors.
 
         """
         core_flag = CoreFlag(name=name, description=description,
-                           symbol=symbol, id=id)
+                           symbol=symbol, id=flag_id)
         self.assertEqual(core_flag.name, name)
         self.assertEqual(core_flag.description, description)
         self.assertEqual(core_flag.symbol, symbol)
-        self.assertEqual(core_flag.id, id)
+        self.assertEqual(core_flag.id, flag_id)
 
     @parameterized.expand([
         -2,

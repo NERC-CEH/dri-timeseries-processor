@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
-import numpy as np
 import polars as pl
 from polars.testing import assert_frame_equal
 
@@ -14,9 +13,9 @@ class TestPRFlagColumnName(unittest.TestCase):
     """
     def test_standard_column_name(self):
         """
-        Test that the function correctly appends '_PRFLAG' to a standard column name.
+        Test that the function correctly appends '_PR_FLAG' to a standard column name.
         """
-        self.assertEqual(pr_flag_column_name('data'), 'data_PRFLAG')
+        self.assertEqual(pr_flag_column_name('data'), 'data_PR_FLAG')
 
 
 class TestRunPreprocessing(unittest.TestCase):
@@ -85,11 +84,11 @@ class TestRunPreprocessing(unittest.TestCase):
         # Check flag system added
         self.assertIn('pr_flags', result.flag_systems)
         # Check columns added
-        self.assertIn('temperature_PRFLAG', result.columns)
+        self.assertIn('temperature_PR_FLAG', result.columns)
         # Check the correction method has been applied
         self.assertEqual(result.df['temperature'].to_list(), [20.0, 32.0, 31.0, 30.0, 19.0])
         # Check flag values have been added
-        self.assertEqual(result.df['temperature_PRFLAG'].to_list(), [0, 1, 1, 1, 0])
+        self.assertEqual(result.df['temperature_PR_FLAG'].to_list(), [0, 1, 1, 1, 0])
 
     @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
     def test_run_preprocessing_no_config(self, mock_preprocessing_config):
@@ -159,7 +158,7 @@ class TestRunPreprocessing(unittest.TestCase):
         # Check the correction method has been applied
         self.assertEqual(result.df['temperature'].to_list(), [40.0, 64.0, 62.0, 30.0, 19.0])
         # Check flag values have been added
-        self.assertEqual(result.df['temperature_PRFLAG'].to_list(), [2, 3, 3, 1, 0])
+        self.assertEqual(result.df['temperature_PR_FLAG'].to_list(), [2, 3, 3, 1, 0])
 
     @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
     def test_run_preprocessing_end_date_is_none(self, mock_preprocessing_config):
@@ -184,4 +183,4 @@ class TestRunPreprocessing(unittest.TestCase):
         # Check the correction method has been applied
         self.assertEqual(result.df['temperature'].to_list(), [20.0, 32.0, 31.0, 30.0, 29.0])
         # Check flag values have been added
-        self.assertEqual(result.df['temperature_PRFLAG'].to_list(), [0, 1, 1, 1, 1])
+        self.assertEqual(result.df['temperature_PR_FLAG'].to_list(), [0, 1, 1, 1, 1])

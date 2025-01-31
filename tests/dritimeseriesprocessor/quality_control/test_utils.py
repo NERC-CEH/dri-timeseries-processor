@@ -4,10 +4,8 @@ from unittest.mock import Mock, patch
 import polars as pl
 from datetime import datetime
 from parameterized import parameterized
-from polars.testing import assert_frame_equal
 
 from time_series import TimeSeries, Period
-from dritimeseriesprocessor.__metadata__.config_quality_control import qc_tests
 from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_failed_qc_check_ids_from_flag,
                                                           get_site_range_values)
 
@@ -38,76 +36,76 @@ class TestColumnThresholdCheck(unittest.TestCase):
         self.ts.add_flag_system("qc_flags", {
             "TEST": 1
         })
-        self.ts.init_flag_column("qc_flags", "value_b_QCFLAG")
-        self.ts.init_flag_column("qc_flags", "value_c_QCFLAG")
+        self.ts.init_flag_column("qc_flags", "value_b_QC_FLAG")
+        self.ts.init_flag_column("qc_flags", "value_c_QC_FLAG")
 
     def test_greater_than(self):
         """ Test the column threshold check function with '>' operator.
         """
-        result = column_threshold_check(self.ts, "value_a", "value_b_QCFLAG", 10, ">", 1)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [0, 0, 1, 1])
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, ">", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 0, 1, 1])
 
     def test_greater_than_or_equal(self):
         """ Test the column threshold check function with '>=' operator.
         """
-        result = column_threshold_check(self.ts, "value_a", "value_b_QCFLAG", 10, ">=", 1)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [0, 1, 1, 1])
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, ">=", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 1, 1, 1])
 
     def test_less_than(self):
         """ Test the column threshold check function with '<' operator.
         """
-        result = column_threshold_check(self.ts, "value_a", "value_b_QCFLAG", 10, "<", 1)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [1, 0, 0, 0])
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "<", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 0, 0, 0])
 
     def test_less_than_or_equal(self):
         """ Test the column threshold check function with '<=' operator.
         """
-        result = column_threshold_check(self.ts, "value_a", "value_b_QCFLAG", 10, "<=", 1)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [1, 1, 0, 0])
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "<=", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 1, 0, 0])
         
     def test_equal(self):
         """ Test the column threshold check function with '==' operator.
         """
-        result = column_threshold_check(self.ts, "value_a", "value_b_QCFLAG", 10, "==", 1)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [0, 1, 0, 0])
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "==", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 1, 0, 0])
         
     def test_not_equal(self):
         """ Test the column threshold check function with '!=' operator.
         """
-        result = column_threshold_check(self.ts, "value_a", "value_b_QCFLAG", 10, "!=", 1)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [1, 0, 1, 1])
+        result = column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, "!=", 1)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 0, 1, 1])
 
     def test_flag_na_when_true(self):
         """ Test that setting flag_na to True means that any NULL values in the check column are treated as failing
         the QC check (so qc flag set in result)
         """
-        result = column_threshold_check(self.ts, "value_c", "value_b_QCFLAG", 10, ">", 1, flag_na=True)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [1, 1, 1, 1])
+        result = column_threshold_check(self.ts, "value_c", "value_b_QC_FLAG", 10, ">", 1, flag_na=True)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [1, 1, 1, 1])
 
     def test_flag_na_when_false(self):
         """ Test that setting flag_na to False means that any NULL values in the check column are ignored in
         the QC check (so qc flag not set in result)
         """
-        result = column_threshold_check(self.ts, "value_c", "value_b_QCFLAG", 10, ">", 1, flag_na=False)
-        self.assertEqual(result.df['value_b_QCFLAG'].to_list(), [0, 1, 1, 0])
+        result = column_threshold_check(self.ts, "value_c", "value_b_QC_FLAG", 10, ">", 1, flag_na=False)
+        self.assertEqual(result.df['value_b_QC_FLAG'].to_list(), [0, 1, 1, 0])
 
     def test_missing_check_column(self):
         """ Test that a missing check column raises error
         """
         with self.assertRaises(UserWarning):
-            column_threshold_check(self.ts, "missing_check_column", "value_b_QCFLAG", 10, ">", 1)
+            column_threshold_check(self.ts, "missing_check_column", "value_b_QC_FLAG", 10, ">", 1)
 
     def test_missing_flag_column(self):
         """ Test that a missing qc column raises error
         """
         with self.assertRaises(UserWarning):
-            column_threshold_check(self.ts, "value_a", "missing_QCFLAG", 10, ">", 1)
+            column_threshold_check(self.ts, "value_a", "missing_QC_FLAG", 10, ">", 1)
 
     def test_invalid_operator(self):
         """ Test that invalid operator raises error
         """
         with self.assertRaises(ValueError):
-            column_threshold_check(self.ts, "value_a", "value_b_QCFLAG", 10, ">>", 1)
+            column_threshold_check(self.ts, "value_a", "value_b_QC_FLAG", 10, ">>", 1)
 
 
 class TestGetSiteRangeValues(unittest.TestCase):
