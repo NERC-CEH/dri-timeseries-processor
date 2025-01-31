@@ -63,7 +63,7 @@ class TestDerive(unittest.TestCase):
         })
 
         self.assertIn("mock_calc", result.data_columns)
-        self.assertEqual(result.mock_calc.column_metadata(), {"units": "mock_unit"})
+        self.assertEqual(result.mock_calc.metadata(), {"units": "mock_unit"})
         assert_frame_equal(result.df, expected_df, check_dtype=False)
 
 
