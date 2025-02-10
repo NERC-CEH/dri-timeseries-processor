@@ -67,7 +67,7 @@ class TestReadParquetByQuery(BaseTestCase):
         key = "non_existent_key.parquet"
         query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}')"
 
-        with self.assertRaises(duckdb.HTTPException):
+        with self.assertRaises(duckdb.IOException):
             self.reader.read(query)
 
     def test_read_parquet_by_query_corrupt_error(self):
