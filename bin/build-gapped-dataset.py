@@ -20,13 +20,13 @@ COSMOS_DIR = DATA_DIR / "cosmos"
 COSMOS_GAP_DIR = DATA_DIR / "cosmos-with-gaps"
 
 # Creating the directories and copying files
-initialise_directory(COSMOS_GAP_DIR / "dataset=PRECIP_1MIN_2024_LOOPED", COSMOS_DIR / "dataset=PRECIP_1MIN_2024_LOOPED", purge=True)
-initialise_directory(COSMOS_GAP_DIR / "dataset=SOILMET_30MIN_2024_LOOPED", COSMOS_DIR / "dataset=SOILMET_30MIN_2024_LOOPED", purge=True)
+initialise_directory(COSMOS_GAP_DIR / "dataset=LIVE_PRECIP_1MIN", COSMOS_DIR / "dataset=LIVE_PRECIP_1MIN", purge=True)
+initialise_directory(COSMOS_GAP_DIR / "dataset=LIVE_SOILMET_30MIN", COSMOS_DIR / "dataset=LIVE_SOILMET_30MIN", purge=True)
 
 
 ##### PRECIPITATION #####
 
-COSMOS_GAP_PRECIP_DIR = COSMOS_GAP_DIR / "dataset=PRECIP_1MIN_2024_LOOPED"
+COSMOS_GAP_PRECIP_DIR = COSMOS_GAP_DIR / "dataset=LIVE_PRECIP_1MIN"
 
 # Removing data
 # Rows and cells removed
@@ -87,7 +87,7 @@ builder.build_all(row_removal_percent=70, cell_removal_percent=60, protected_col
 builder.write_output()
 
 ##### SOILMET ####
-COSMOS_GAP_SOILMET_DIR = COSMOS_GAP_DIR / "dataset=SOILMET_30MIN_2024_LOOPED"
+COSMOS_GAP_SOILMET_DIR = COSMOS_GAP_DIR / "dataset=LIVE_SOILMET_30MIN"
 
 # Remove a full day
 os.remove(COSMOS_GAP_SOILMET_DIR / "site=ALIC1" / "date=2024-02-28" / "data.parquet")
