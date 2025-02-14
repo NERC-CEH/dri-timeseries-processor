@@ -67,7 +67,7 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}")
 # Session parameters
 # ------------------
 # These will be removed in FW-548 and FW-549
-DATASET = "SOILMET_30MIN_2024_LOOPED"
+DATASET = "LIVE_SOILMET_30MIN"
 # Optional
 VARIABLES = ["time", "SITE_ID", "TA", "PA"]
 

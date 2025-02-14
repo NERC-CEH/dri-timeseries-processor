@@ -11,8 +11,8 @@ class DataCase(unittest.TestCase):
     def setUpClass(cls):
         cls.data_dir = Path(__file__).parents[2] / "parquet-data"
         cls.cosmos_data = cls.data_dir / "cosmos"
-        cls.cosmos_precip = cls.cosmos_data / "PRECIP_1MIN_2024_LOOPED"
-        cls.cosmos_soilmet = cls.cosmos_data / "SOILMET_30MIN_2024_LOOPED"
+        cls.cosmos_precip = cls.cosmos_data / "LIVE_PRECIP_1MIN"
+        cls.cosmos_soilmet = cls.cosmos_data / "LIVE_SOILMET_30MIN"
 
 class TestInitialization(DataCase):
 
