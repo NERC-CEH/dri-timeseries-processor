@@ -14,20 +14,23 @@ from time_series.flag_manager import TimeSeriesFlagManager
 class BaseFlagManagerTest(unittest.TestCase):
     """Base class for setting up test fixtures for TimeSeriesFlagManager tests."""
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set up a mock TimeSeries and FlagManager for testing."""
-        self.df = pl.DataFrame({
+        cls.df = pl.DataFrame({
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
-            "value": [10, 20, 30],
-            "existing_flags": [0, 1, 2]
+            "data_col": [10, 20, 30],
+            "existing_flags": [0, 1, 2],
+            "more_flags": [0, 1, 2],
+            "more_flags2": [0, 1, 2]
         })
-        self.flag_system = {
+        cls.flag_system = {
             "OUT_OF_RANGE": 1,
             "SPIKE": 2,
             "LOW_BATTERY": 4
         }
-        self.flag_systems = {"quality_control": BitwiseFlag("quality_control", self.flag_system)}
-        self.ts = TimeSeries(df=self.df, time_name="time", flag_systems=self.flag_systems)
+        cls.flag_systems = {"quality_control": BitwiseFlag("quality_control", cls.flag_system)}
+        cls.ts = TimeSeries(df=cls.df, time_name="time", flag_systems=cls.flag_systems)
 
 
 class TestAddFlagSystem(BaseFlagManagerTest):
@@ -101,3 +104,29 @@ class TestInitFlagColumn(BaseFlagManagerTest):
         with self.assertRaises(pl.ShapeError):
             flag_manager.init_flag_column("quality_control", "flag_column", data=new_values)
 
+
+class TestCheckDataFlagRelationship(BaseFlagManagerTest):
+    def setUp(self):
+        super().setUpClass()
+
+        new_flag_system = {"FLAG_A": 1, "FLAG_B": 2, "FLAG_C": 4}
+        self.ts.add_flag_system("new_flags", new_flag_system)
+
+        self.ts.set_flag_column("quality_control", "existing_flags")
+        self.ts.set_flag_column("new_flags", "more_flags")
+        self.ts.set_flag_column("quality_control", "more_flags2")
+
+        self.ts.data_col.add_relationship(self.ts.existing_flags)
+
+    def test_check_data_flag_relationship_success(self):
+        """ Test that non-related columns with unique flag system passes the check (no errors) """
+        TimeSeriesFlagManager.check_data_flag_relationship(self.ts.data_col, self.ts.more_flags)
+    
+    def test_check_data_flag_relationship_existing_relationship(self):
+        """ Test that already related flag column does not error"""
+        TimeSeriesFlagManager.check_data_flag_relationship(self.ts.data_col, self.ts.existing_flags)
+        
+    def test_check_data_flag_relationship_fail(self):
+        """ Test that non-related columns with same flag system as a related column fails the check """
+        with self.assertRaises(UserWarning):
+            TimeSeriesFlagManager.check_data_flag_relationship(self.ts.data_col, self.ts.more_flags2)

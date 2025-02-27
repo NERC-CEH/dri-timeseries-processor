@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Type, Union
 
 import polars as pl
 
+from time_series.bitwise import BitwiseMeta
 from time_series.relationships import DeletionPolicy, Relationship, RelationshipType
 
 if TYPE_CHECKING:
@@ -264,6 +265,16 @@ class TimeSeriesColumn(ABC):
         """
         return self._ts._relationship_manager._get_relationships(self)
 
+    def has_relationship(self, other: Union["TimeSeriesColumn", str]) -> bool:
+        """Checks if this column has an existing relationship with another column.
+
+        Args:
+            other: Column(s) to check relationship.
+        """
+        if isinstance(other, str):
+            other = self._ts.columns[other]
+        return any([relationship.other_column == other for relationship in self.get_relationships()])
+
     def __str__(self) -> str:
         """Return the string representation of the Column."""
         return str(self.data)
@@ -422,13 +433,14 @@ class DataColumn(TimeSeriesColumn):
             if type(col) is SupplementaryColumn:
                 relationship = Relationship(self, col, RelationshipType.MANY_TO_MANY, DeletionPolicy.UNLINK)
             elif type(col) is FlagColumn:
+                self._ts.check_data_flag_relationship(self, col)
                 relationship = Relationship(self, col, RelationshipType.ONE_TO_MANY, DeletionPolicy.CASCADE)
             else:
                 raise TypeError(f"Related column must be supplementary or flag: {col.name}:{type(col)}")
 
             self._ts._relationship_manager._add(relationship)
 
-    def get_flag_system_column(self, flag_system: str) -> Optional["TimeSeriesColumn"]:
+    def get_flag_system_column(self, flag_system: Union[str, BitwiseMeta]) -> Optional["TimeSeriesColumn"]:
         """Retrieves the flag column linked to this data column that corresponds to the specified flag system.
 
         Args:
@@ -440,8 +452,10 @@ class DataColumn(TimeSeriesColumn):
         Returns:
             The matching flag column if exactly one match is found, or None if no matching column is found.
         """
+        if isinstance(flag_system, str):
+            flag_system = self._ts._flag_manager.flag_systems.get(flag_system, None)
         relationships = self.get_relationships()
-        flag_system = self._ts._flag_manager.flag_systems.get(flag_system, None)
+
         matches = []
         for relationship in relationships:
             if type(relationship.other_column) is FlagColumn and relationship.other_column.flag_system == flag_system:
@@ -520,6 +534,7 @@ class FlagColumn(SupplementaryColumn):
 
         for col in other:
             if type(col) is DataColumn:
+                self._ts.check_data_flag_relationship(col, self)
                 relationship = Relationship(col, self, RelationshipType.ONE_TO_MANY, DeletionPolicy.CASCADE)
             else:
                 raise TypeError(f"Related column must be data: {col.name}:{type(col)}")

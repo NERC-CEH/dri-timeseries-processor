@@ -561,6 +561,20 @@ class TestAddRelationship(BaseTimeSeriesTest):
         with self.assertRaises(ValueError):
             self.ts.flag_col.add_relationship("data_col2")
 
+    def test_data_column_only_allowed_one_relationship_to_flag_column_with_single_flag_system(self):
+        """ Test that can't set relationship between a data column and a flag column when the data column
+        already has an existing relationship with another flag column of the same flag system"""
+        self.ts.set_flag_column("example_flag_system", "flag_col2")
+        self.ts.data_col1.add_relationship("flag_col")
+        
+        with self.assertRaises(UserWarning):
+            self.ts.data_col1.add_relationship("flag_col2")
+            
+        # and try the opposite way around
+        with self.assertRaises(UserWarning):
+            self.ts.flag_col2.add_relationship("data_col1")
+
+
 class TestRemoveRelationship(BaseTimeSeriesTest):
     def setUp(self):
         """Ensure ts is reset before each test."""
@@ -640,3 +654,26 @@ class TestGetFlagSystemColumn(BaseTimeSeriesTest):
 
         with self.assertRaises(UserWarning):
             self.ts.data_col1.get_flag_system_column(flag_system)
+
+class TestHasRelationship(BaseTimeSeriesTest):
+    def setUp(self):
+        """Ensure ts is reset before each test."""
+        super().setUpClass()
+
+        # Add a flag column relationship
+        self.ts.data_col1.add_relationship(["flag_col"])
+
+    def test_has_relationship(self):
+        """Test true when there is a relationship"""
+        result = self.ts.data_col1.has_relationship(self.ts.flag_col)
+        self.assertTrue(result)
+
+    def test_has_relationship_by_str(self):
+        """Test true when there is a relationship"""
+        result = self.ts.data_col1.has_relationship(self.ts.flag_col.name)
+        self.assertTrue(result)
+
+    def test_has_no_relationship(self):
+        """Test false when there is not a relationship"""
+        result = self.ts.data_col1.has_relationship(self.ts.flag_col2)
+        self.assertFalse(result)

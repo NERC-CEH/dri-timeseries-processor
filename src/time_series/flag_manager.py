@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Sequence, Type, Union
 import polars as pl
 
 from time_series.bitwise import BitwiseFlag
-from time_series.columns import FlagColumn
+from time_series.columns import DataColumn, FlagColumn
 
 if TYPE_CHECKING:
     from time_series.base import TimeSeries
@@ -135,3 +135,24 @@ class TimeSeriesFlagManager:
             expr: Polars expression for which rows to remove flag from
         """
         self._ts.columns[col_name].remove_flag(flag_value, expr)
+
+    @staticmethod
+    def check_data_flag_relationship(data_col: DataColumn, flag_col: FlagColumn) -> None:
+        """Checks the relationship between a data column and a flag column to ensure that the data column
+        does not already have an existing relationship with another flag column for the same flag system.
+
+        Args:
+            data_col: The data column
+            flag_col: The flag column
+
+        Raises:
+            UserWarning: If the data column is already related to another flag column using the same flag system.
+        """
+        if not data_col.has_relationship(flag_col):  # check the columns aren't already related
+            flag_system_columns = data_col.get_flag_system_column(flag_col.flag_system)
+            if flag_system_columns:
+                raise UserWarning(
+                    f"Data column {data_col.name} already has relationship with another "
+                    f"Flag column {flag_system_columns.name} using the "
+                    f"flag system {flag_col.flag_system.__name__}"
+                )
