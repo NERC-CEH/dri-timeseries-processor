@@ -517,6 +517,29 @@ class FlagColumn(SupplementaryColumn):
         """
         super().__init__(name, ts, metadata)
         self.flag_system = self._ts.flag_systems[flag_system]
+        self._validate_values()
+
+    def _validate_values(self) -> None:
+        """Validates that all values in the flag column are valid within the flag system.
+
+        Raises:
+            TypeError: If the type of the column is not integer.
+            ValueError: If any value in the column is not valid within the flag system.
+        """
+        # Check data type is valid
+        dtype = self._ts.df[self.name].dtype
+        if not dtype.is_integer():
+            raise TypeError(f"Cannot set column {self.name} as a flag column. Invalid data type: {dtype}")
+
+        # Determine the maximum valid value (sum of all bits in the flag system)
+        mask = sum([flag.value for flag in self.flag_system])
+        # Check values in the column against this mask using a bitwise AND
+        all_valid = (self._ts.df[self.name] & ~mask == 0).all()
+        if not all_valid:
+            raise ValueError(
+                f"Cannot set column {self.name} as a flag column. Invalid values found when "
+                f"using flag system {self.flag_system.__name__}"
+            )
 
     def add_relationship(self, other: Union["TimeSeriesColumn", str, list[Union["TimeSeriesColumn", str]]]) -> None:
         """Adds a relationship between this flag column and data column(s).
