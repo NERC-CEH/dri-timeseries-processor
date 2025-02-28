@@ -57,6 +57,9 @@ class TestAddFlagSystem(BaseFlagManagerTest):
 
 
 class TestInitFlagColumn(BaseFlagManagerTest):
+    def setUp(self):
+        super().setUpClass()
+
     def test_init_flag_column_success(self):
         """Test initializing a flag column with a valid flag system."""
         flag_manager = TimeSeriesFlagManager(self.ts, self.flag_systems)
