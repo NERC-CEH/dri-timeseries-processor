@@ -1,11 +1,13 @@
 import unittest
 from datetime import datetime
+from unittest.mock import MagicMock, patch
 
 import polars as pl
+from parameterized import parameterized
 from polars.testing import assert_series_equal
 
 from time_series.base import TimeSeries
-from time_series.bitwise import BitwiseMeta
+from time_series.bitwise import BitwiseFlag, BitwiseMeta
 from time_series.columns import DataColumn, FlagColumn, SupplementaryColumn
 from time_series.relationships import Relationship, RelationshipType, DeletionPolicy
 
@@ -19,6 +21,8 @@ class BaseTimeSeriesTest(unittest.TestCase):
             "data_col1": [1, 2, 3],
             "data_col2": [4, 5, 6],
             "supp_col": ["a", "b", "c"],
+            "supp_col2": [1, 2, 4],
+            "supp_col3": [1, 2, 8],
             "flag_col": [0, 0, 0],
             "flag_col2": [2, 2, 2],
         })
@@ -181,14 +185,26 @@ class TestSetAsFlag(BaseTimeSeriesTest):
         self.assertNotIn(column.name, self.ts.supplementary_columns)
 
     def test_supplementary_to_flag(self):
-        """ Test that a supplementary column gets converted to a flag column"""
-        column = SupplementaryColumn("supp_col", self.ts, self.metadata["supp_col"])
+        """ Test that a supplementary column with valid values gets converted to a flag column"""
+        column = SupplementaryColumn("supp_col2", self.ts)
 
         column = column.set_as_flag("example_flag_system")
         self.assertIsInstance(column, FlagColumn)
         self.assertIn(column.name, self.ts.flag_columns)
         self.assertNotIn(column.name, self.ts.supplementary_columns)
         self.assertNotIn(column.name, self.ts.data_columns)
+
+    def test_to_flag_invalid_data_type(self):
+        """ Test that a supplementary column with invalid data type (string) can't be converted to a flag column"""
+        column = SupplementaryColumn("supp_col", self.ts)
+        with self.assertRaises(TypeError):
+            column.set_as_flag("example_flag_system")
+
+    def test_to_flag_invalid_values(self):
+        """ Test that a supplementary column with invalid values can't be converted to a flag column"""
+        column = SupplementaryColumn("supp_col3", self.ts)
+        with self.assertRaises(ValueError):
+            column.set_as_flag("example_flag_system")
 
 class TestUnset(BaseTimeSeriesTest):
     def test_unset_data_column(self):
@@ -420,6 +436,81 @@ class TestRemoveFlag(BaseTimeSeriesTest):
         column = SupplementaryColumn("supp_col", self.ts)
         with self.assertRaises(TypeError):
             column.remove_flag(1)
+
+
+class TestValidateValues(unittest.TestCase):
+    class flag_system(BitwiseFlag):
+        A = 1
+        B = 2
+        C = 4
+        D = 16
+
+    def setUp(self):
+        self.ts = MagicMock()
+
+    def test_valid_single_values(self):
+        """ Test that validation succeeds with single values from the flag system. """
+        df = pl.DataFrame({"flags": [0, 1, 2, 4, 16]})
+        self.ts.df = df
+
+        with patch.object(FlagColumn, '_validate_values'):  # Don't run validate values on init
+            column = FlagColumn("flags", self.ts, "flag_system")
+
+        column.flag_system = self.flag_system
+        column._validate_values()
+
+    def test_valid_combined_values(self):
+        """ Test that validation succeeds with combined values from the flag system. """
+        df = pl.DataFrame({"flags": [3, 5, 6, 7, 17, 18, 19, 20, 21, 22, 23]})
+        self.ts.df = df
+
+        with patch.object(FlagColumn, '_validate_values'):  # Don't run validate values on init
+            column = FlagColumn("flags", self.ts, "flag_system")
+
+        column.flag_system = self.flag_system
+        column._validate_values()
+
+    def test_invalid_single_values(self):
+        """ Test that validation fails with single values not in the flag system. """
+        df = pl.DataFrame({"flags": [8, 32, 64]})
+        self.ts.df = df
+
+        with patch.object(FlagColumn, '_validate_values'):  # Don't run validate values on init
+            column = FlagColumn("flags", self.ts, "flag_system")
+
+        column.flag_system = self.flag_system
+        with self.assertRaises(ValueError):
+            column._validate_values()
+
+    def test_invalid_combined_values(self):
+        """ Test that validation fails with combined values not in the flag system. """
+        df = pl.DataFrame({"flags": [9, 10, 11, 12, 13, 14, 15, 24, 30, 100, 1000]})
+        self.ts.df = df
+
+        with patch.object(FlagColumn, '_validate_values'):  # Don't run validate values on init
+            column = FlagColumn("flags", self.ts, "flag_system")
+
+        column.flag_system = self.flag_system
+        with self.assertRaises(ValueError):
+            column._validate_values()
+
+    @parameterized.expand([
+        ("str", ["A", "B", "C"]),
+        ("float_of valid ints", [1.0, 2.0, 4.0]),
+        ("float", [1.2348743, 2.1234234, 4.248097]),
+        ("lists", [[1,2,3], [4,5,6]]),
+    ])
+    def test_invalid_value_type(self, _, non_integer_values):
+        """ Test that validation fails with non integer values in the dataframe column. """
+        df = pl.DataFrame({"flags": non_integer_values})
+        self.ts.df = df
+
+        with patch.object(FlagColumn, '_validate_values'):  # Don't run validate values on init
+            column = FlagColumn("flags", self.ts, "flag_system")
+
+        column.flag_system = self.flag_system
+        with self.assertRaises(TypeError):
+            column._validate_values()
 
 
 class TestAsTimeSeries(BaseTimeSeriesTest):
