@@ -1,0 +1,12 @@
+{
+    "interp_linear": {
+        "name": "Linear interpolation",
+        "description": "Linear interpolation. Creates straight line through the gap",
+        "id": 1
+    },
+    "alt_data": {
+        "name": "Alternative Data Source",
+        "description": "Uses data from an alternative source to fill gaps",
+        "id": 2
+    }
+}

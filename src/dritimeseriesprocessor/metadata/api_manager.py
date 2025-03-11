@@ -20,6 +20,7 @@ class MetadataAPIManager:
         """
         self.host = host
         self.network = network
+        self.service_base_uri = "http://fdri.ceh.ac.uk"
 
     async def _make_api_call(self, url: str, params: Dict[str, str] = None) -> Dict[str, Any]:
         """Make a call to the metadata API.
@@ -47,5 +48,17 @@ class MetadataAPIManager:
 
     async def fetch_sites(self) -> Dict[str, Any]:
         response = await self._make_api_call(f"{self.host}/id/network/{self.network}")
+        return response
+
+    async def fetch_infill_configs(self, site_id: str = None) -> Dict[str, Any]:
+        url = (
+            f"{self.host}/id/data-processing-configuration.json?"
+            f"type={self.service_base_uri}/ref/common/configuration-type/infill-configuration"
+        )
+
+        if site_id:
+            url += f"&appliesToFacility={self.service_base_uri}/id/site/{self.network}-{site_id.lower()}"
+
+        response = await self._make_api_call(url)
 
         return response
