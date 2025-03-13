@@ -62,3 +62,8 @@ class MetadataAPIManager:
         response = await self._make_api_call(url)
 
         return response
+
+    async def fetch_timeseries_metadata(self, timeseries_id: str = None) -> Dict[str, Any]:
+        url = f"{self.host}/ref/{self.network}/time-series/{timeseries_id}.json"
+        response = await self._make_api_call(url)
+        return response

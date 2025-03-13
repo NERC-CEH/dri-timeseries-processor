@@ -3,7 +3,7 @@ import polars as pl
 from time_series import TimeSeries
 
 
-def linear_interpolation(ts: TimeSeries, column: str, flag_column: str, max_gap_size: int = None) -> TimeSeries:
+def linear_interpolation(ts: TimeSeries, column: str, flag_column: str, max_gap_size: int = None, **kwargs) -> TimeSeries:
     """
     Perform linear interpolation on a Polars Series, filling gaps that are smaller than a specified size.
 
@@ -58,11 +58,11 @@ def linear_interpolation(ts: TimeSeries, column: str, flag_column: str, max_gap_
 
     # Update the flag column with the method ID
     expr = df["value_filled"].is_not_null()
-    ts.add_flag(flag_column, "INTERP_LINEAR", expr)
+    ts.add_flag(flag_column, "interp_linear", expr)
 
     return ts
 
 
-INFILL_METHODS = {
-    "INTERP_LINEAR": linear_interpolation,
-}
+def alt_data():
+    # Placeholder for alternative data source method.
+    pass

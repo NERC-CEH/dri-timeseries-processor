@@ -8,6 +8,7 @@ from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.metadata import api_manager
 from dritimeseriesprocessor.metadata.models.configs.infilling import InfillingProcessConfigs
 from dritimeseriesprocessor.metadata.models.methods.infilling_methods import InfillingMethodRegistry
+from dritimeseriesprocessor.metadata.models.time_series import TimeSeriesMetadataResponse
 
 
 class ConfigType(Enum):
@@ -51,3 +52,17 @@ def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMetho
         with open(Path(__file__).parent.absolute() / "methods" / "infilling_methods.json", "r") as f:
             data = json.load(f)
         return InfillingMethodRegistry.model_validate(data)
+
+
+def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataResponse:
+    """Load time series metadata from the API.
+
+    Args:
+        timeseries_id: Optional ID to fetch a specific time series
+
+    Returns:
+        The parsed time series metadata.
+    """
+    metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
+    data = asyncio.run(metadata.fetch_timeseries_metadata(timeseries_id=timeseries_id))
+    return TimeSeriesMetadataResponse.model_validate(data)

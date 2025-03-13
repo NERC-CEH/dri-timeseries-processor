@@ -2,6 +2,8 @@ from typing import Dict
 
 from pydantic import BaseModel, field_validator
 
+from dritimeseriesprocessor.infilling import methods as infilling_functions
+
 
 class InfillingMethod(BaseModel):
     """Represents a specific infilling method.
@@ -15,6 +17,7 @@ class InfillingMethod(BaseModel):
     method_id: int
     name: str
     description: str
+    function_name: str
 
     @field_validator("method_id")
     @classmethod
@@ -31,6 +34,13 @@ class InfillingMethod(BaseModel):
         if not name.strip():
             raise ValueError("name cannot be empty")
         return name
+
+    def __call__(self, *args, **kwargs):
+        """Call the infilling function directly."""
+        func = getattr(infilling_functions, self.function_name, None)
+        if func is None:
+            raise ValueError(f"Function '{self.function_name}' not found in module '{infilling_functions}'")
+        return func(*args, **kwargs)
 
 
 class InfillingMethodRegistry(Dict[str, InfillingMethod]):
