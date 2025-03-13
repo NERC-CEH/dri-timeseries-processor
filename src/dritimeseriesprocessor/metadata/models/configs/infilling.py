@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
@@ -86,11 +86,10 @@ class MethodConfigItem(BaseModel):
         parameters: Dictionary of configuration parameters, keyed by parameter name
     """
 
-    method: str
+    name: str
     start_date: datetime
     end_date: Optional[datetime] = None
     parameters: Dict[str, Any]
-    priority: int
 
     @field_validator("end_date", mode="after")
     @classmethod
@@ -129,27 +128,21 @@ class MethodConfigItem(BaseModel):
         result = {}
 
         # Extract method name from URL
-        if "method" in data:
-            result["method"] = data["method"]["@id"].split("/")[-1]
+        result["name"] = data["method"]["@id"].split("/")[-1]
 
         # Extract dates from observation interval
-        if "observationInterval" in data:
-            interval = data["observationInterval"]
-            if "startDate" in interval:
-                result["start_date"] = interval["startDate"]
-            if "endDate" in interval:
-                result["end_date"] = interval["endDate"]
+        interval = data["observationInterval"]
+        if "startDate" in interval:
+            result["start_date"] = interval["startDate"]
+        if "endDate" in interval:
+            result["end_date"] = interval["endDate"]
 
         # Extract parameters
         params = {}
-        if "argument" in data:
-            for arg in data["argument"]:
-                param = Parameter.model_validate(arg)
-                params[param.name] = param.value
+        for arg in data["argument"]:
+            param = Parameter.model_validate(arg)
+            params[param.name] = param.value
         result["parameters"] = params
-
-        # TODO: UPDATE this to use priority in api, but waiting on change to the API
-        result["priority"] = 1
 
         return result
 
@@ -166,8 +159,8 @@ class InfillingConfig(BaseModel):
 
     site_id: str
     variable: TimeSeriesMetadata
-    annotations: Dict[str, Any]
-    methods: List[MethodConfigItem]
+    priority: int
+    method: MethodConfigItem
 
     @model_validator(mode="before")
     @classmethod
@@ -198,19 +191,20 @@ class InfillingConfig(BaseModel):
         variable_meta = load_timeseries(variable_name)
         result["variable"] = variable_meta
 
-        # Extract annotations from hasAnnotation
+        # Extract annotations from hasAnnotation, and get the priority value
         annotation_dict = {}
         for annotation_data in data["hasAnnotation"]:
             annotation = Annotation.model_validate(annotation_data)
             annotation_dict[annotation.name] = annotation.value
-        result["annotations"] = annotation_dict
+        result["priority"] = annotation_dict["data-processing-configuration-priority"]
 
-        # Extract infilling methods info
-        methods_dict = []
-        for config_data in data["hasCurrentConfiguration"]:
-            method_config = MethodConfigItem.model_validate(config_data)
-            methods_dict.append(method_config)
-        result["methods"] = methods_dict
+        # Extract infilling method info
+        current_config = data["hasCurrentConfiguration"]
+        if len(current_config) != 1:
+            # TODO: verify this is expected - only one hasCurrentConfiguration per InternalDataProcessingConfiguration
+            raise UserWarning(f"Unexpected number of infilling configurations found in {data}")
+        method_config = MethodConfigItem.model_validate(current_config[0])
+        result["method"] = method_config
 
         return result
 
@@ -228,7 +222,7 @@ class InfillingProcessConfigs(Dict[str, Dict[str, InfillingConfig]]):
         Returns:
             A dictionary with variable names as keys and InfillingConfig instances as values.
         """
-        result = defaultdict(lambda: defaultdict(dict))
+        result = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
         if isinstance(data, dict) and "items" in data:
             items = data["items"]
@@ -243,6 +237,6 @@ class InfillingProcessConfigs(Dict[str, Dict[str, InfillingConfig]]):
             column = config.variable.column
             resolution = config.variable.measure.resolution
 
-            result[site_id][resolution][column] = config
+            result[site_id][resolution][column].append(config)
 
         return cls(result)

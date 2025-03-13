@@ -56,17 +56,8 @@ def run_infilling(ts: TimeSeries, site_id: str) -> TimeSeries:
         return ts
 
     for column in ts.data_columns:
-        config = infill_configs.get(column)
-        if config:
-            # Get available infill methods
-            methods = config.methods
-            
-            # # Get available infill methods for this variable/resolution
-            # methods = INFILL_CONFIGS[column].get(ts.resolution.iso_duration, INFILL_CONFIGS[column].get("default"))
-            # if methods is None:
-            #     logger.warning(f"No infill methods for: {column}")
-            #     continue
-
+        methods = infill_configs.get(column)
+        if methods:
             # Order by priority
             sorted_methods = sorted(methods, key=lambda x: x.priority)
             for method_config in sorted_methods:
@@ -76,10 +67,13 @@ def run_infilling(ts: TimeSeries, site_id: str) -> TimeSeries:
                     ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
 
                 # Run infill function
-                infill_func = INFILL_METHODS[method_config.method]
+                infill_func = INFILL_METHODS[method_config.method.name]
                 logger.info(
-                    f"Infilling {column} with method: {method_config.method}. Constraints: {method_config.parameters}"
+                    f"Infilling {column} with method: {method_config.method.name}. Constraints: {method_config.method.parameters}"
                 )
-                ts = infill_func(ts, column, infill_flag_col, **method_config.parameters)
+                ts = infill_func(ts, column, infill_flag_col, **method_config.method.parameters)
+
+        else:
+            logger.warning(f"No infill methods for: {column}")
 
     return ts
