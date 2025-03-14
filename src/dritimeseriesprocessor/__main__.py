@@ -6,7 +6,7 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor import parser
-from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
+#from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     add_initial_core_flags,
@@ -38,7 +38,7 @@ metrics.setup_metrics()
 
 # Setup configs
 # -------------
-infill_configs = get_infill_config("variables")
+#infill_configs = get_infill_config("variables")
 
 
 # Setup connection to the metadata API
@@ -61,7 +61,7 @@ sites = parser.validate_sites(args.sites, metadata_sites)
 
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
-logger.info(f"Processing level 0 data between {start_date} and {end_date}")
+logger.info(f"Processing level 0 data between {start_date} and {end_date}, {sites}")
 
 
 # Session parameters

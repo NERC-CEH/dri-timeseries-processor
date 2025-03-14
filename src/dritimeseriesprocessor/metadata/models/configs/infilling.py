@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
+from dritimeseriesprocessor.metadata.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 from dritimeseriesprocessor.metadata.models.time_series import TimeSeriesMetadata
 
 
@@ -30,9 +31,7 @@ class Annotation(BaseModel):
             Processed annotation data.
         """
         result = {}
-
-        regex = r".*\/(.+)"
-        result["name"] = re.match(regex, data["property"]["@id"]).group(1)
+        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["property"]["@id"]).group(1)
         result["value"] = data["hasValue"]["value"]
 
         return result
@@ -63,8 +62,7 @@ class Parameter(BaseModel):
         """
         result = {}
 
-        regex = r".*\/(.+)"
-        result["name"] = re.match(regex, data["parameter"]["@id"]).group(1).replace("-", "_")
+        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["parameter"]["@id"]).group(1).replace("-", "_")
 
         # Extract value or reference
         has_value = data["hasValue"]
@@ -80,7 +78,7 @@ class MethodConfigItem(BaseModel):
     """Represents an infilling configuration item with method, dates, and parameters (specific to the method).
 
     Attributes:
-        method: The interpolation or data processing method
+        name: The method name
         start_date: When this configuration becomes active
         end_date: When this configuration ends (optional)
         parameters: Dictionary of configuration parameters, keyed by parameter name
@@ -126,14 +124,10 @@ class MethodConfigItem(BaseModel):
             Processed configuration data.
         """
         result = {}
+        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["method"]["@id"]).group(1)
 
-        # Extract method name from URL
-        result["name"] = data["method"]["@id"].split("/")[-1]
-
-        # Extract dates from observation interval
         interval = data["observationInterval"]
-        if "startDate" in interval:
-            result["start_date"] = interval["startDate"]
+        result["start_date"] = interval["startDate"]
         if "endDate" in interval:
             result["end_date"] = interval["endDate"]
 
@@ -154,7 +148,7 @@ class InfillingConfig(BaseModel):
         site_id: Identifier for the site/facility
         variable: Name of the time series variable
         priority: Processing priority
-        configuration: The configuration details
+        method: The method configuration details
     """
 
     site_id: str
@@ -178,27 +172,26 @@ class InfillingConfig(BaseModel):
         """
         result = {}
 
-        # Extract site_id
-        regex = r".*\/\w+-(\w+)"
-        result["site_id"] = re.match(regex, data["appliesToFacility"][0]["@id"]).group(1).upper()
+        result["site_id"] = re.match(SITE_ID_EXTRACT_REGEX, data["appliesToFacility"][0]["@id"]).group(1).upper()
 
-        # Extract time series variable info
-        regex = r".*\/(.+)"
-        variable_name = re.match(regex, data["appliesToTimeSeries"][0]["@id"]).group(1)
-        # hopefully this info will be bought into the config response, rather than having to do a separate api call
-        # need a local import to avoid circular import.  hopefully won't need this after above is done.
+        try:
+            variable_name = re.match(URI_ID_EXTRACT_REGEX, data["appliesToTimeSeries"][0]["@id"]).group(1)
+        except:
+            print(URI_ID_EXTRACT_REGEX)
+            print(data["appliesToTimeSeries"])
+            raise
+        # need a local import to avoid circular import.
+        # TODO what's a better way of doing this?
         from dritimeseriesprocessor.metadata.models.service import load_timeseries
         variable_meta = load_timeseries(variable_name)
         result["variable"] = variable_meta
 
-        # Extract annotations from hasAnnotation, and get the priority value
         annotation_dict = {}
         for annotation_data in data["hasAnnotation"]:
             annotation = Annotation.model_validate(annotation_data)
             annotation_dict[annotation.name] = annotation.value
         result["priority"] = annotation_dict["data-processing-configuration-priority"]
 
-        # Extract infilling method info
         current_config = data["hasCurrentConfiguration"]
         if len(current_config) != 1:
             # TODO: verify this is expected - only one hasCurrentConfiguration per InternalDataProcessingConfiguration
