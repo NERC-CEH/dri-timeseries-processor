@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from dritimeseriesprocessor.metadata.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 
 
 class TestUriIdExtractRegex(TestCase):

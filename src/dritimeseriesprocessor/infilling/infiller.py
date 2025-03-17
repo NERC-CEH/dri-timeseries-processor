@@ -1,6 +1,6 @@
 import logging
 
-from dritimeseriesprocessor.metadata.models.service import load_config, load_methods
+from metadata_manager.models.service import load_config, load_methods
 from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,5 @@
 import unittest
-from dritimeseriesprocessor.metadata.transformers import extract_cosmos_site_ids, extract_site_ids
+from metadata_manager.transformers import extract_cosmos_site_ids, extract_site_ids
 from unittest.mock import patch
 
 
@@ -65,7 +65,7 @@ class TestExtractSiteIds(unittest.TestCase):
             }]
         }
 
-    @patch('dritimeseriesprocessor.metadata.transformers.extract_cosmos_site_ids')
+    @patch('metadata_manager.transformers.extract_cosmos_site_ids')
     def test_extract_site_ids_valid_network(self, mock_extract_cosmos_site_ids):
         """Test extracting site IDs from cosmos network"""
         mock_extract_cosmos_site_ids.return_value = ['SITE123', 'SITE456']

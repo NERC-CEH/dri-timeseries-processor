@@ -3,7 +3,7 @@ from datetime import datetime
 from parameterized import parameterized
 from unittest.mock import patch, MagicMock
 
-from dritimeseriesprocessor.metadata.models.configs.infilling import (
+from metadata_manager.models.configs.infilling import (
     Annotation,
     Parameter,
     MethodConfigItem,
@@ -373,7 +373,7 @@ class TestInfillingConfig(unittest.TestCase):
         result = InfillingConfig.model_validate(self.test_data)
         self.assertEqual(result.priority, 1)
 
-    @patch("dritimeseriesprocessor.metadata.models.configs.infilling.MethodConfigItem.model_validate")
+    @patch("metadata_manager.models.configs.infilling.MethodConfigItem.model_validate")
     def test_extract_method_config(self, mock_method_validate):
         """Test extraction and validation of method configuration."""
         mock_method = MagicMock(spec=MethodConfigItem)
@@ -464,7 +464,7 @@ class TestInfillingConfig(unittest.TestCase):
 
 
 class TestInfillingProcessConfigs(unittest.TestCase):
-    @patch("dritimeseriesprocessor.metadata.models.configs.infilling.InfillingConfig.model_validate")
+    @patch("metadata_manager.models.configs.infilling.InfillingConfig.model_validate")
     def test_model_validate_with_items_dict(self, mock_validate):
         """Test validation with a dictionary containing 'items'."""
         mock_config = MagicMock(spec=InfillingConfig)
@@ -476,7 +476,7 @@ class TestInfillingProcessConfigs(unittest.TestCase):
         result = InfillingProcessConfigs.model_validate(test_data)
         self.assertEqual(len(result), 3)
 
-    @patch("dritimeseriesprocessor.metadata.models.configs.infilling.InfillingConfig.model_validate")
+    @patch("metadata_manager.models.configs.infilling.InfillingConfig.model_validate")
     def test_model_validate_with_list(self, mock_validate):
         """Test validation with a list of items."""
         mock_config = MagicMock(spec=InfillingConfig)

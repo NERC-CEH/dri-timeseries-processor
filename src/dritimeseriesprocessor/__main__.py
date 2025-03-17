@@ -16,8 +16,8 @@ from dritimeseriesprocessor.flagging.flagger import (
 )
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
-from dritimeseriesprocessor.metadata import api_manager
-from dritimeseriesprocessor.metadata.transformers import extract_site_ids
+from metadata_manager import api_manager
+from metadata_manager.transformers import extract_site_ids
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control

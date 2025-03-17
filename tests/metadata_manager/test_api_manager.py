@@ -2,7 +2,7 @@ from unittest.mock import patch
 from unittest.async_case import IsolatedAsyncioTestCase
 import json
 from httpx import HTTPError, HTTPStatusError, Response, Request, TimeoutException
-from dritimeseriesprocessor.metadata.api_manager import MetadataAPIManager
+from metadata_manager.api_manager import MetadataAPIManager
 
 
 class TestMetadataApiManager(IsolatedAsyncioTestCase):

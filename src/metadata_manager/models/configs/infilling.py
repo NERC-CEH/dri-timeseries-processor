@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
-from dritimeseriesprocessor.metadata.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 
 
 class Annotation(BaseModel):

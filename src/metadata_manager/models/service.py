@@ -6,10 +6,10 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.metadata import api_manager
-from dritimeseriesprocessor.metadata.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
-from dritimeseriesprocessor.metadata.models.methods.infilling_methods import InfillingMethodRegistry
-from dritimeseriesprocessor.metadata.models.time_series import TimeSeriesMetadataResponse
+from metadata_manager import api_manager
+from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
+from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
+from metadata_manager.models.time_series import TimeSeriesMetadataResponse
 
 
 class ConfigType(Enum):
