@@ -6,7 +6,8 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor import parser
-#from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
+
+# from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     add_initial_core_flags,
@@ -16,14 +17,14 @@ from dritimeseriesprocessor.flagging.flagger import (
 )
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
-from metadata_manager import api_manager
-from metadata_manager.transformers import extract_site_ids
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id, split_data_for_processing
+from metadata_manager import api_manager
+from metadata_manager.transformers import extract_site_ids
 from time_series import TimeSeries
 from time_series.period import Period
 
@@ -38,7 +39,7 @@ metrics.setup_metrics()
 
 # Setup configs
 # -------------
-#infill_configs = get_infill_config("variables")
+# infill_configs = get_infill_config("variables")
 
 
 # Setup connection to the metadata API

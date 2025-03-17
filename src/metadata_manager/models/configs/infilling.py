@@ -8,12 +8,13 @@ from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT
 
 
 class Annotation(BaseModel):
-    """ Represents a generic annotation parameter
+    """Represents a generic annotation parameter
 
     Attributes:
         name: The annotation name
         value: The annotation value
     """
+
     name: str
     value: Optional[Union[int, float, str]] = None
 
@@ -43,6 +44,7 @@ class Parameter(BaseModel):
         value: The direct parameter value
         value_reference: A reference to another configuration item
     """
+
     name: str
     value: Optional[Union[int, float, str]] = None
     value_reference: Optional[str] = None

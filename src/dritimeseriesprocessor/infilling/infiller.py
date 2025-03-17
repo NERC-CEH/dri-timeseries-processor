@@ -69,7 +69,8 @@ def run_infilling(ts: TimeSeries, site_id: str) -> TimeSeries:
                 # Run infill function
                 infill_func = INFILL_METHODS[method_config.method.name]
                 logger.info(
-                    f"Infilling {column} with method: {method_config.method.name}. Constraints: {method_config.method.parameters}"
+                    f"Infilling {column} with method: {method_config.method.name}. "
+                    f"Constraints: {method_config.method.parameters}"
                 )
                 ts = infill_func(ts, column, infill_flag_col, **method_config.method.parameters)
 

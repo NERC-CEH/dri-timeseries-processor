@@ -1,6 +1,6 @@
 import re
-
 from typing import Any, Dict, Optional
+
 from pydantic import BaseModel, Field, model_validator
 
 from metadata_manager.models.common import URI_ID_EXTRACT_REGEX
@@ -8,6 +8,7 @@ from metadata_manager.models.common import URI_ID_EXTRACT_REGEX
 
 class Measure(BaseModel):
     """Processing time series measure information"""
+
     units: Optional[str]
     resolution: str
     periodicity: str
@@ -31,6 +32,7 @@ class Measure(BaseModel):
 
 class ProcessingLevel(BaseModel):
     """Processing level information"""
+
     description: str
 
     @model_validator(mode="before")
@@ -47,6 +49,7 @@ class ProcessingLevel(BaseModel):
 
 class TimeSeriesMetadata(BaseModel):
     """Model for time series metadata"""
+
     name: str
     description: str
     measure: Measure
@@ -87,10 +90,11 @@ class TimeSeriesMetadata(BaseModel):
 
 class TimeSeriesMetadataResponse(BaseModel):
     """Response wrapper that automatically extracts the single time series item"""
+
     item: TimeSeriesMetadata = Field(None)
 
     @classmethod
-    def model_validate(cls, obj, *args, **kwargs):
+    def model_validate(cls, obj: Dict[str, Any], *args, **kwargs) -> TimeSeriesMetadata:
         if len(obj["items"]) != 1:
             raise ValueError(f"Expected exactly one item in the time series response, got {len(obj['items'])}")
         # Create a new dict with the single item
