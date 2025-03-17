@@ -38,7 +38,8 @@ metrics.setup_metrics()
 
 # Setup configs
 # -------------
-infill_configs = get_infill_config("variables")
+infill_var_configs = get_infill_config("variables")
+infill_method_configs = get_infill_config("infill_methods")
 
 
 # Setup connection to the metadata API
@@ -164,7 +165,7 @@ try:
 
             # Infilling
             # ---------
-            ts = run_infilling(ts, infill_configs)
+            ts = run_infilling(ts, infill_var_configs, infill_method_configs)
             ts = update_infill_core_flags(ts)
 
             # show first 100 rows to show how infill flags have been applied

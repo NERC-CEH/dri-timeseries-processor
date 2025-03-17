@@ -4,7 +4,6 @@ from typing import Dict, Union
 from dritimeseriesprocessor.__metadata__.config_infilling import (
     InfillMethod,
     VariableResolutionMethods,
-    get_infill_config,
 )
 from dritimeseriesprocessor.infilling.methods import INFILL_METHODS
 from time_series import TimeSeries
@@ -29,7 +28,9 @@ def infill_flag_column_name(column: str) -> str:
 
 
 def run_infilling(
-    ts: TimeSeries, infill_configs: Union[Dict[str, InfillMethod], Dict[str, Dict[str, VariableResolutionMethods]]]
+    ts: TimeSeries,
+    infill_var_configs: Union[Dict[str, InfillMethod], Dict[str, Dict[str, VariableResolutionMethods]]],
+    infill_method_configs: Union[Dict[str, InfillMethod], Dict[str, Dict[str, VariableResolutionMethods]]],
 ) -> TimeSeries:
     """Run data through Infilling.
 
@@ -37,16 +38,15 @@ def run_infilling(
 
     Args:
         ts: The input TimeSeries containing the data to be infilled.
+        infill_var_configs: The infilling variable configurations.
+        infill_method_configs: The infilling method configurations.
 
     Returns:
         The TimeSeries with infilling and infill flags applied.
     """
 
-    var_configs = get_infill_config("variables")
-    infill_methods = get_infill_config("infill_methods")
-
     # Initialise infilling flag system within TimeSeries object
-    infill_flags_dict = {method: method_config.id for method, method_config in infill_methods.items()}
+    infill_flags_dict = {method: method_config.id for method, method_config in infill_method_configs.items()}
     if infill_flags_dict:
         ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
     else:
@@ -54,9 +54,11 @@ def run_infilling(
         return ts
 
     for column in ts.data_columns:
-        if column in var_configs:
+        if column in infill_var_configs:
             # Get available infill methods for this variable/resolution
-            methods = var_configs[column].get(ts.resolution.iso_duration, var_configs[column].get("default"))
+            methods = infill_var_configs[column].get(
+                ts.resolution.iso_duration, infill_var_configs[column].get("default")
+            )
             if methods is None:
                 logger.warning(f"No infill methods for: {column}")
                 continue
