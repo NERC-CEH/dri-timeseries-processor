@@ -6,8 +6,6 @@ import boto3
 import polars as pl
 
 from dritimeseriesprocessor import parser
-
-# from dritimeseriesprocessor.__metadata__.config_infilling import get_infill_config
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.flagging.flagger import (
     add_initial_core_flags,
@@ -35,12 +33,6 @@ setup_logging()
 # Setup metrics
 # -------------
 metrics.setup_metrics()
-
-
-# Setup configs
-# -------------
-# infill_configs = get_infill_config("variables")
-
 
 # Setup connection to the metadata API
 # ------------------------------------
