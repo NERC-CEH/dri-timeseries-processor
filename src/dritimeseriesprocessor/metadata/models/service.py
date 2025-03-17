@@ -1,12 +1,13 @@
 import asyncio
 import json
+from collections import defaultdict
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.metadata import api_manager
-from dritimeseriesprocessor.metadata.models.configs.infilling import InfillingProcessConfigs
+from dritimeseriesprocessor.metadata.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from dritimeseriesprocessor.metadata.models.methods.infilling_methods import InfillingMethodRegistry
 from dritimeseriesprocessor.metadata.models.time_series import TimeSeriesMetadataResponse
 
@@ -16,7 +17,7 @@ class ConfigType(Enum):
     CORRECTION = "correction"  # placeholder for moving other configs across
 
 
-def load_config(config_type: Union[ConfigType, str]) -> Optional[InfillingProcessConfigs]:
+def load_config(config_type: Union[ConfigType, str]) -> Optional[Dict[str, Dict[str, InfillingConfig]]]:
     """Load configuration data based on the given configuration type.
 
     Args:
@@ -33,7 +34,21 @@ def load_config(config_type: Union[ConfigType, str]) -> Optional[InfillingProces
         #         a network name, and/or site name, and/or infilling method?
         metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
         data = asyncio.run(metadata.fetch_infill_configs())
-        return InfillingProcessConfigs.model_validate(data)
+        infilling_configs = InfillingProcessConfigs.model_validate(data)
+
+        # Add in the time-series metadata.
+        # TODO: Might not need to do this as might include this info in the config api view.
+        #   In which case, this dictionary can be built in the InfillingProcessConfigs object.
+        result = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        for config in infilling_configs:
+            site_id = config.site_id
+            time_series_meta = load_timeseries(config.time_series_name)
+            column = time_series_meta.column
+            resolution = time_series_meta.measure.resolution
+
+            result[site_id][resolution][column].append(config)
+
+        return result
 
 
 def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMethodRegistry]:

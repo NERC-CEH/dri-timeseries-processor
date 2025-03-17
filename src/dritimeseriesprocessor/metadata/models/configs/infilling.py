@@ -1,12 +1,10 @@
 import re
-from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
 from dritimeseriesprocessor.metadata.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
-from dritimeseriesprocessor.metadata.models.time_series import TimeSeriesMetadata
 
 
 class Annotation(BaseModel):
@@ -146,13 +144,13 @@ class InfillingConfig(BaseModel):
 
     Attributes:
         site_id: Identifier for the site/facility
-        variable: Name of the time series variable
+        time_series_name: Name of the time series variable
         priority: Processing priority
         method: The method configuration details
     """
 
     site_id: str
-    variable: TimeSeriesMetadata
+    time_series_name: str
     priority: int
     method: MethodConfigItem
 
@@ -173,18 +171,7 @@ class InfillingConfig(BaseModel):
         result = {}
 
         result["site_id"] = re.match(SITE_ID_EXTRACT_REGEX, data["appliesToFacility"][0]["@id"]).group(1).upper()
-
-        try:
-            variable_name = re.match(URI_ID_EXTRACT_REGEX, data["appliesToTimeSeries"][0]["@id"]).group(1)
-        except:
-            print(URI_ID_EXTRACT_REGEX)
-            print(data["appliesToTimeSeries"])
-            raise
-        # need a local import to avoid circular import.
-        # TODO what's a better way of doing this?
-        from dritimeseriesprocessor.metadata.models.service import load_timeseries
-        variable_meta = load_timeseries(variable_name)
-        result["variable"] = variable_meta
+        result["time_series_name"] = re.match(URI_ID_EXTRACT_REGEX, data["appliesToTimeSeries"][0]["@id"]).group(1)
 
         annotation_dict = {}
         for annotation_data in data["hasAnnotation"]:
@@ -202,8 +189,8 @@ class InfillingConfig(BaseModel):
         return result
 
 
-class InfillingProcessConfigs(Dict[str, Dict[str, InfillingConfig]]):
-    """Dictionary of infilling configurations for time series, indexed by variable name."""
+class InfillingProcessConfigs(List[InfillingConfig]):
+    """List of infilling configurations for time series."""
 
     @classmethod
     def model_validate(cls, data: Any) -> "InfillingProcessConfigs":
@@ -215,21 +202,12 @@ class InfillingProcessConfigs(Dict[str, Dict[str, InfillingConfig]]):
         Returns:
             A dictionary with variable names as keys and InfillingConfig instances as values.
         """
-        result = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-
-        if isinstance(data, dict) and "items" in data:
+        if isinstance(data, dict):
             items = data["items"]
         elif isinstance(data, list):
             items = data
         else:
             items = []
 
-        for item in items:
-            config = InfillingConfig.model_validate(item)
-            site_id = config.site_id
-            column = config.variable.column
-            resolution = config.variable.measure.resolution
-
-            result[site_id][resolution][column].append(config)
-
-        return cls(result)
+        configs = [InfillingConfig.model_validate(item) for item in items]
+        return cls(configs)

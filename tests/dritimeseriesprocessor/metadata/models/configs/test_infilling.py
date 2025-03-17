@@ -10,7 +10,6 @@ from dritimeseriesprocessor.metadata.models.configs.infilling import (
     InfillingConfig,
     InfillingProcessConfigs
 )
-from dritimeseriesprocessor.metadata.models.time_series import TimeSeriesMetadata
 
 
 class TestAnnotation(unittest.TestCase):
@@ -337,7 +336,7 @@ class TestInfillingConfig(unittest.TestCase):
     def setUp(self):
         self.test_data = {
             "appliesToFacility": [{"@id": "http://example.com/facility/site-abcd1"}],
-            "appliesToTimeSeries": [{"@id": "http://example.com/timeseries/air_temperature_hourly"}],
+            "appliesToTimeSeries": [{"@id": "http://example.com/timeseries/example_name"}],
             "hasAnnotation": [
                 {
                     "property": {"@id": "http://example.com/property/data-processing-configuration-priority"},
@@ -361,8 +360,149 @@ class TestInfillingConfig(unittest.TestCase):
 
     def test_extract_site_id(self):
         """Test extraction of site ID."""
-        # TODO: Decide how best to handle the API call that is done to get the timeseries variable info...
-        #   I reckon it might be better not to extract that info in this config object.
-        #   instead, just extract the variable name, and then externally do another API call to get the specific info.
         result = InfillingConfig.model_validate(self.test_data)
         self.assertEqual(result.site_id, "ABCD1")
+
+    def test_extract_time_series_name(self):
+        """Test extraction of time series name."""
+        result = InfillingConfig.model_validate(self.test_data)
+        self.assertEqual(result.time_series_name, "example_name")
+
+    def test_extract_priority(self):
+        """Test extraction of priority from hasAnnotation."""
+        result = InfillingConfig.model_validate(self.test_data)
+        self.assertEqual(result.priority, 1)
+
+    @patch("dritimeseriesprocessor.metadata.models.configs.infilling.MethodConfigItem.model_validate")
+    def test_extract_method_config(self, mock_method_validate):
+        """Test extraction and validation of method configuration."""
+        mock_method = MagicMock(spec=MethodConfigItem)
+        mock_method.name = "linear-interpolation"
+        mock_method_validate.return_value = mock_method
+
+        result = InfillingConfig.model_validate(self.test_data)
+        self.assertEqual(result.method, mock_method)
+
+    def test_multiple_configurations_warning(self):
+        """Test warning when multiple configurations are found."""
+        test_data = self.test_data.copy()
+        test_data["hasCurrentConfiguration"] = [
+            {
+                "method": {"@id": "http://example.com/method/method1"},
+                "observationInterval": {"startDate": "2023-01-01T00:00:00"},
+                "argument": []
+            },
+            {
+                "method": {"@id": "http://example.com/method/method2"},
+                "observationInterval": {"startDate": "2023-01-01T00:00:00"},
+                "argument": []
+            }
+        ]
+        with self.assertRaises(UserWarning) :
+            InfillingConfig.model_validate(test_data)
+
+    def test_missing_applies_to_facility(self):
+        """Test that validation fails when appliesToFacility is missing."""
+        test_data = self.test_data.copy()
+        test_data.pop("appliesToFacility")
+        with self.assertRaises(KeyError):
+            InfillingConfig.model_validate(test_data)
+
+    def test_empty_applies_to_facility(self):
+        """Test that validation fails when appliesToFacility is empty."""
+        test_data = self.test_data.copy()
+        test_data["appliesToFacility"] = []
+        with self.assertRaises(IndexError):
+            InfillingConfig.model_validate(test_data)
+
+    def test_missing_applies_to_time_series(self):
+        """Test that validation fails when appliesToTimeSeries is missing."""
+        test_data = self.test_data.copy()
+        test_data.pop("appliesToTimeSeries")
+        with self.assertRaises(KeyError):
+            InfillingConfig.model_validate(test_data)
+
+    def test_empty_applies_to_time_series(self):
+        """Test that validation fails when appliesToTimeSeries is empty."""
+        test_data = self.test_data.copy()
+        test_data["appliesToTimeSeries"] = []
+        with self.assertRaises(IndexError):
+            InfillingConfig.model_validate(test_data)
+
+    def test_missing_has_annotation(self):
+        """Test that validation fails when hasAnnotation is missing."""
+        test_data = self.test_data.copy()
+        test_data.pop("hasAnnotation")
+        with self.assertRaises(KeyError):
+            InfillingConfig.model_validate(test_data)
+
+    def test_missing_priority_annotation(self):
+        """Test that validation fails when priority annotation is missing."""
+        test_data = self.test_data.copy()
+        test_data["hasAnnotation"] = [
+            {
+                "property": {"@id": "http://example.com/property/some-other-annotation"},
+                "hasValue": {"value": "something"}
+            }
+        ]
+        with self.assertRaises(KeyError):
+            InfillingConfig.model_validate(test_data)
+
+    def test_missing_has_current_configuration(self):
+        """Test that validation fails when hasCurrentConfiguration is missing."""
+        test_data = self.test_data.copy()
+        test_data.pop("hasCurrentConfiguration")
+        with self.assertRaises(KeyError):
+            InfillingConfig.model_validate(test_data)
+
+    def test_empty_has_current_configuration(self):
+        """Test that validation fails when hasCurrentConfiguration is empty."""
+        test_data = self.test_data.copy()
+        test_data["hasCurrentConfiguration"] = []
+        with self.assertRaises(UserWarning):
+            InfillingConfig.model_validate(test_data)
+
+
+class TestInfillingProcessConfigs(unittest.TestCase):
+    @patch("dritimeseriesprocessor.metadata.models.configs.infilling.InfillingConfig.model_validate")
+    def test_model_validate_with_items_dict(self, mock_validate):
+        """Test validation with a dictionary containing 'items'."""
+        mock_config = MagicMock(spec=InfillingConfig)
+        mock_validate.return_value = mock_config
+        test_data = {
+            "items": ["config1", "config2", "config3"]
+        }
+
+        result = InfillingProcessConfigs.model_validate(test_data)
+        self.assertEqual(len(result), 3)
+
+    @patch("dritimeseriesprocessor.metadata.models.configs.infilling.InfillingConfig.model_validate")
+    def test_model_validate_with_list(self, mock_validate):
+        """Test validation with a list of items."""
+        mock_config = MagicMock(spec=InfillingConfig)
+        mock_validate.return_value = mock_config
+
+        test_data = ["config1", "config2", "config3"]
+
+        result = InfillingProcessConfigs.model_validate(test_data)
+        self.assertEqual(len(result), 3)
+
+    def test_model_validate_with_empty_dict_input(self):
+        """Test validation with empty dict inputs."""
+        result = InfillingProcessConfigs.model_validate({"items": []})
+        self.assertEqual(len(result), 0)
+
+    def test_model_validate_with_empty_list_input(self):
+        """Test validation with empty list inputs."""
+        result = InfillingProcessConfigs.model_validate([])
+        self.assertEqual(len(result), 0)
+
+    def test_model_validate_with_none(self):
+        """ Test validation with None input."""
+        result = InfillingProcessConfigs.model_validate(None)
+        self.assertEqual(len(result), 0)
+
+    def test_model_validate_with_dict_no_items(self):
+        """ Test validation fails if dict input doesn't have an items key """
+        with self.assertRaises(KeyError):
+            InfillingProcessConfigs.model_validate({"not_items": []})
