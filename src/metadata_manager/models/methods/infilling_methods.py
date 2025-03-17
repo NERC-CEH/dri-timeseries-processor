@@ -12,6 +12,7 @@ class InfillingMethod(BaseModel):
         method_id: Unique identifier for the method - should be a bitwise flag value.
         name: Human-readable name of the method
         description: Detailed description of what the method does
+        function_name: Name of the function that runs the method
     """
 
     method_id: int

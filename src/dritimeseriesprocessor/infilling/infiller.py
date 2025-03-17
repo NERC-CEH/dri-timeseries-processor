@@ -38,7 +38,8 @@ def run_infilling(ts: TimeSeries, site_id: str) -> TimeSeries:
     """
     # Currently only have config info in the metadata API for CHIMN.  Hack it here so other sites use this for now...
     # TODO: REMOVE THIS WHEN WE HAVE ALL CONFIGS IN THE API
-    INFILL_CONFIGS[site_id] = INFILL_CONFIGS["CHIMN"]
+    if site_id not in INFILL_CONFIGS:
+        INFILL_CONFIGS[site_id] = INFILL_CONFIGS["CHIMN"]
 
     # Filter configs by the site and resolution
     infill_configs = INFILL_CONFIGS.get(site_id, {}).get(ts.resolution.iso_duration)
