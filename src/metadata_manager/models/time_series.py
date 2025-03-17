@@ -1,7 +1,9 @@
 import re
 
-from typing import Any, List, Dict, Optional
+from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field, model_validator
+
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX
 
 
 class Measure(BaseModel):
@@ -15,8 +17,12 @@ class Measure(BaseModel):
     def extract_measure_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
         result = {}
 
-        pref_label = data["hasUnit"].get("prefLabel")
-        result["units"] = pref_label[0] if pref_label else None
+        units = data["hasUnit"].get("prefLabel")
+        if isinstance(units, list):
+            if len(units) != 1:
+                raise ValueError(f"Units must have 1 prefLabel: {units}")
+
+        result["units"] = units[0] if units else None
         result["resolution"] = data["aggregation"]["resolution"]
         result["periodicity"] = data["aggregation"]["periodicity"]
 
@@ -25,18 +31,24 @@ class Measure(BaseModel):
 
 class ProcessingLevel(BaseModel):
     """Processing level information"""
-    description: List[str]
+    description: str
 
     @model_validator(mode="before")
     @classmethod
     def extract_processing_level_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        return {"description": data["prefLabel"]}
+        proc_level = data["prefLabel"]
+        if isinstance(proc_level, list):
+            if len(proc_level) != 1:
+                raise ValueError(f"Processing level must have 1 prefLabel: {proc_level}")
+            proc_level = proc_level[0]
+
+        return {"description": proc_level}
 
 
 class TimeSeriesMetadata(BaseModel):
     """Model for time series metadata"""
     name: str
-    description: List[str]
+    description: str
     measure: Measure
     processing_level: ProcessingLevel
     bucket: str
@@ -56,9 +68,14 @@ class TimeSeriesMetadata(BaseModel):
         """
         result = {}
 
-        regex = r".*\/(.+)"
-        result["name"] = re.match(regex, data["@id"]).group(1)
-        result["description"] = data["prefLabel"]
+        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["@id"]).group(1)
+
+        description = data["prefLabel"]
+        if isinstance(description, list):
+            if len(description) != 1:
+                raise ValueError(f"Time-series must have 1 prefLabel: {description}")
+        result["description"] = description[0]
+
         result["measure"] = Measure.model_validate(data["measure"])
         result["processing_level"] = ProcessingLevel.model_validate(data["processingLevel"])
         result["bucket"] = data["sourceBucket"]
