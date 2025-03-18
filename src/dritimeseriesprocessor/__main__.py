@@ -151,9 +151,9 @@ try:
             logger.info(f"Number of QC flag columns: {flags_count}")
             metrics.increment_flags(flags_count)
 
-            # # show first 100 rows to show how qc flags have been applied
-            # with pl.Config(tbl_rows=100):
-            #     logger.info(ts.df.limit(100))
+            # show first 100 rows to show how qc flags have been applied
+            with pl.Config(tbl_rows=100):
+                logger.info(ts.df.limit(100))
 
             # Infilling
             # ---------
