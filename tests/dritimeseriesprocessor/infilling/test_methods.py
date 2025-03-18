@@ -41,7 +41,7 @@ class TestLinearInterpolation(unittest.TestCase):
         )
 
         self.ts.add_flag_system("infill_flags", {
-            "INTERP_LINEAR": 1
+            "interp_linear": 1
         })
         self.ts.init_flag_column("infill_flags", "temperature_INFILL_FLAG")
         self.ts.init_flag_column("infill_flags", "humidity_INFILL_FLAG")
