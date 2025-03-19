@@ -1,23 +1,21 @@
 import unittest
-from unittest.mock import patch, MagicMock
-import numpy as np
-import polars as pl
-from polars.testing import assert_frame_equal
 from datetime import datetime
-from dritimeseriesprocessor.infilling.infiller import (
-    infill_flag_column_name,
-    run_infilling
-)
-from time_series import TimeSeries, Period
+from unittest.mock import MagicMock, patch
+
+import pandas as pd
+import polars as pl
+
+from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name, run_infilling
+from time_series import Period, TimeSeries
 
 
-def mock_linear_interpolation(ts, column, flag_column, max_gap_size=None):
-    ts.add_flag(flag_column, "INTERP_LINEAR")
+def mock_infill_method1(ts, _, flag_column, *args, **kwargs):
+    ts.add_flag(flag_column, "method1")
     return ts
 
 
-def mock_forward_fill(ts, column, flag_column, max_gap_size=None):
-    ts.add_flag(flag_column, "FORWARD_FILL")
+def mock_infill_method2(ts, _, flag_column, *args, **kwargs):
+    ts.add_flag(flag_column, "method2")
     return ts
 
 
@@ -31,155 +29,144 @@ class TestInfillFlagColumnName(unittest.TestCase):
         self.assertEqual(infill_flag_column_name('data'), 'data_INFILL_FLAG')
 
 
-test_INFILL_METHODS = {
-    "INTERP_LINEAR": mock_linear_interpolation,
-    "FORWARD_FILL": mock_forward_fill
-}
-
 class TestRunInfilling(unittest.TestCase):
-    """
-    Test suite for the run_infilling function.
-    """
-
     def setUp(self):
         """
         Set up common test data and mocks.
         """
         data = pl.DataFrame({
-            'time': [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13),
-                datetime(2023, 8, 14),
-                datetime(2023, 8, 15),
-                datetime(2023, 8, 16),
-            ],
-            'temperature': [20.0, np.nan, 22.0, np.nan, 21.0, 20.0, 19.0],
-            'humidity': [50, 55, None, None, 60, None, 70]
+            "time": pd.date_range(start="2023-01-01", periods=10, freq="H"),
+            "temperature": [20.0, 21.0, None, None, 22.0, 23.0, None, 24.0, 25.0, 26.0],
+            "pressure": [1010, 1012, 1013, None, None, 1015, 1016, 1017, 1018, 1019],
         })
+        resolution = Period.of_hours(1)
+        periodicity = Period.of_hours(1)
+        self.ts = TimeSeries(data, "time", resolution, periodicity)
+        self.site_id = "SITE1"
 
-        resolution = Period.of_days(1)
-        periodicity = Period.of_days(1)
-        self.ts = TimeSeries(
-            data,
-            "time",
-            resolution,
-            periodicity
-        )
+        # Set up dummy infilling methods
+        infill_method1 = type("DummyInfillMethod", (), {
+            "method_id": 1,
+            "name": "method1",
+            "description": "description of method1",
+            "function_name": "run_method1",
+            "__call__": lambda self, *args, **kwargs: mock_infill_method1(*args, **kwargs),
+        })()
 
-        self.mock_infill_methods = {
-            'INTERP_LINEAR': MagicMock(
-                name="Linear interpolation",
-                description="straight line interpolation",
-                requirements={'window': 1},
-                id=1
-            ),
-            'FORWARD_FILL': MagicMock(
-                name="Forward fill",
-                description="filling with the last known value",
-                requirements={'window': 1},
-                id=2
-            ),
+        infill_method2 = type("DummyInfillMethod", (), {
+            "method_id": 2,
+            "name": "method2",
+            "description": "description of method2",
+            "function_name": "run_method2",
+            "__call__": lambda self, *args, **kwargs: mock_infill_method2(*args, **kwargs),
+        })()
+
+        self.mock_methods_dict = {
+            "method1": infill_method1,
+            "method2": infill_method2,
         }
 
-        self.mock_var_config = {
-            'temperature': {
-                'P1D': MagicMock(methods=[
-                    MagicMock(method='INTERP_LINEAR', priority=1, constraints={'max_gap_size': 2})
-                ])
-            },
-            'humidity': {
-                'P1D': MagicMock(methods=[
-                    MagicMock(method='FORWARD_FILL', priority=1, constraints={'max_gap_size': 1})
-                ])
+        # Set up infilling configs
+        self.infill_config1 = type("DummyInfillConfig", (), {
+            "site_id": self.site_id,
+            "time_series_name": "temperature",
+            "priority": 1,
+            "method": type("DummyMethodConfig", (), {
+                "name": "method1",
+                "start_date": datetime(2023, 1, 1),
+                "parameters": {
+                    "max_gap_size": 3
+                },
+            })
+        })()
+
+        self.infill_config2 = type("DummyInfillConfig", (), {
+            "site_id": self.site_id,
+            "time_series_name": "temperature",
+            "priority": 2,
+            "method": type("DummyMethodConfig", (), {
+                "name": "method2",
+                "start_date": datetime(2023, 1, 1),
+                "parameters": {
+                    "max_gap_size": 6
+                },
+            })
+        })()
+
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    def test_run_infilling_no_configs(self, mock_get_configs):
+        """Test run_infilling when no configs are found for the site."""
+        site_id = "NONEXISTENT"
+
+        mock_get_configs.return_value = {}
+        result = run_infilling(self.ts, site_id)
+
+        self.assertEqual(result, self.ts)
+
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
+    def test_run_infilling_no_methods(self, mock_get_methods, mock_get_configs):
+        """Test run_infilling when no infill methods are defined."""
+        mock_get_configs.return_value = {
+            self.site_id: {
+                "PT1H": {
+                    "temperature":  [MagicMock()]
+                }
             }
         }
+        mock_get_methods.return_value = {}
+        result = run_infilling(self.ts, self.site_id)
 
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
-    @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new=test_INFILL_METHODS)
-    def test_run_infilling_basic(self, mock_get_infill_config):
-        """
-        Test basic functionality of run_infilling.
-        Checks if the function adds the flag system, adds the flag columns, and runs the infill methods.
-        """
-        mock_get_infill_config.side_effect = lambda key: self.mock_var_config if key == 'variables' else self.mock_infill_methods
+        self.assertEqual(result, self.ts)
 
-        result = run_infilling(self.ts, self.mock_var_config)
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
+    def test_run_infilling_success(self, mock_get_methods, mock_get_configs):
+        """Test basic results of run_infilling.
+        """
+        mock_get_configs.return_value = {
+            self.site_id: {
+                "PT1H": {
+                    "temperature": [self.infill_config1],
+                    # pressure has no methods
+                }
+            }
+        }
+        mock_get_methods.return_value = self.mock_methods_dict
+
+        # Call function
+        result = run_infilling(self.ts, self.site_id)
 
         # Check flag system added
         self.assertIn('infill_flags', result.flag_systems)
         # Check columns added
         self.assertIn('temperature_INFILL_FLAG', result.columns)
-        self.assertIn('humidity_INFILL_FLAG', result.columns)
+        self.assertNotIn('pressure_INFILL_FLAG', result.columns)  # pressure has no methods so shouldn't have flag col
         # Check flag values (from mock functions) have been added
-        self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [1, 1, 1, 1, 1, 1, 1])
-        self.assertEqual(result.df['humidity_INFILL_FLAG'].to_list(), [2, 2, 2, 2, 2, 2, 2])
+        self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
-    def test_run_infilling_no_config(self, mock_get_infill_config):
-        """
-        Test run_infilling when no infill config is available for any column.
-        Checks if the function returns the original DataFrame unchanged.
-        """
-        mock_get_infill_config.side_effect = lambda key: self.mock_var_config if key == 'variables' else {}
-
-        result = run_infilling(self.ts, self.mock_var_config)
-
-        assert_frame_equal(result.df, self.ts.df)
-
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
-    def test_run_infilling_no_methods(self, mock_get_infill_config):
-        """
-        Test run_infilling when infill config exists but no methods are specified.
-        Checks if the function returns the original DataFrame unchanged.
-        """
-        mock_config = {'temperature': {'PT1M': MagicMock(methods=[])}}
-        mock_get_infill_config.side_effect = lambda key: mock_config if key == 'variables' else self.mock_infill_methods
-
-        result = run_infilling(self.ts, mock_config)
-
-        assert_frame_equal(result.df, self.ts.df)
-
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
-    @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new=test_INFILL_METHODS)
-    def test_run_infilling_multiple_methods(self, mock_get_infill_config):
-        """
-        Test run_infilling with multiple infill methods for a single column.
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
+    def test_run_infilling_multiple_methods(self, mock_get_methods, mock_get_configs):
+        """ Test run_infilling with multiple infill methods for a single column.
         Checks if the methods are applied in the correct order (by priority).
         """
-        mock_config = {
-            'temperature': {
-                'P1D': MagicMock(methods=[
-                    MagicMock(method='INTERP_LINEAR', priority=2, constraints={'max_gap_size': 2}, id=1),
-                    MagicMock(method='FORWARD_FILL', priority=1, constraints={'max_gap_size': 1}, id=2)
-                ])
+        mock_get_configs.return_value = {
+            self.site_id: {
+                "PT1H": {
+                    "temperature": [self.infill_config1, self.infill_config2],
+                    # pressure has no methods
+                }
             }
         }
-        mock_get_infill_config.side_effect = lambda key: mock_config if key == 'variables' else self.mock_infill_methods
+        mock_get_methods.return_value = self.mock_methods_dict
 
-        result = run_infilling(self.ts, mock_config)
+        # Call function
+        result = run_infilling(self.ts, self.site_id)
 
+        # Check flag system added
+        self.assertIn('infill_flags', result.flag_systems)
+        # Check columns added
+        self.assertIn('temperature_INFILL_FLAG', result.columns)
         # Check flag values (from both mock functions) have been added
-        self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [3, 3, 3, 3, 3, 3, 3])
-
-
-    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_config')
-    @patch('dritimeseriesprocessor.infilling.infiller.INFILL_METHODS', new=test_INFILL_METHODS)
-    def test_run_infilling_default_resolution(self, mock_get_infill_config):
-        """
-        Test run_infilling using default resolution when PT1M is not available.
-        Checks if the function correctly falls back to the default resolution.
-        """
-        mock_config = {
-            'temperature': {
-                'default': MagicMock(methods=[
-                    MagicMock(method='INTERP_LINEAR', priority=1, constraints={'max_gap_size': 2}, id=1)
-                ])
-            }
-        }
-        mock_get_infill_config.side_effect = lambda key: mock_config if key == 'variables' else self.mock_infill_methods
-
-        result = run_infilling(self.ts, mock_config)
-
-        self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [1, 1, 1, 1, 1, 1, 1])
+        self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [3, 3, 3, 3, 3, 3, 3, 3, 3, 3])

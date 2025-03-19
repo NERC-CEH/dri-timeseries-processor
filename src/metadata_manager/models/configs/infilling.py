@@ -1,0 +1,215 @@
+import re
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
+
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+
+
+class Annotation(BaseModel):
+    """Represents a generic annotation parameter
+
+    Attributes:
+        name: The annotation name
+        value: The annotation value
+    """
+
+    name: str
+    value: Optional[Union[int, float, str]] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_param_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract annotation info from raw API data.
+
+        Args:
+            data: The raw input data dictionary.
+
+        Returns:
+            Processed annotation data.
+        """
+        result = {}
+        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["property"]["@id"]).group(1)
+        result["value"] = data["hasValue"]["value"]
+
+        return result
+
+
+class Parameter(BaseModel):
+    """Represents an infilling method's configuration parameter with a name and value/reference.
+
+    Attributes:
+        name: The parameter name
+        value: The direct parameter value
+        value_reference: A reference to another configuration item
+    """
+
+    name: str
+    value: Optional[Union[int, float, str]] = None
+    value_reference: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_param_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract parameter information from raw API data.
+
+        Args:
+            data: The raw input data dictionary.
+
+        Returns:
+            Processed parameter data.
+        """
+        result = {}
+
+        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["parameter"]["@id"]).group(1).replace("-", "_")
+
+        # Extract value or reference
+        has_value = data["hasValue"]
+        if "value" in has_value:
+            result["value"] = has_value["value"]
+        if "valueReference" in has_value and "@id" in has_value["valueReference"]:
+            result["value"] = has_value["valueReference"]["@id"]
+
+        return result
+
+
+class MethodConfigItem(BaseModel):
+    """Represents an infilling configuration item with method, dates, and parameters (specific to the method).
+
+    Attributes:
+        name: The method name
+        start_date: When this configuration becomes active
+        end_date: When this configuration ends (optional)
+        parameters: Dictionary of configuration parameters, keyed by parameter name
+    """
+
+    name: str
+    start_date: datetime
+    end_date: Optional[datetime] = None
+    parameters: Dict[str, Any]
+
+    @field_validator("end_date", mode="after")
+    @classmethod
+    def validate_end_date(cls, end_date: Optional[datetime], info: ValidationInfo) -> Optional[datetime]:
+        """Validate that end_date is after start_date (if provided).
+
+        Args:
+            end_date: The end_date value to validate.
+            info: Provides the other fields of the metadata (including the start_date).
+
+        Raises:
+            ValueError: If end_date is provided and is not later than start_date.
+
+        Returns:
+            The validated end_date value.
+        """
+        if end_date is not None:
+            start_date = info.data.get("start_date")
+            if start_date and end_date <= start_date:
+                raise ValueError(f"end_date [{end_date}] must be after start_date [{start_date}]")
+        return end_date
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_config_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract configuration information for infill methods from raw API data.
+
+        Parses the input to extract the infill method name, observation interval dates, and parameters for the method.
+
+        Args:
+            data: Raw configuration data from the API.
+
+        Returns:
+            Processed configuration data.
+        """
+        result = {}
+        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["method"]["@id"]).group(1)
+
+        interval = data["observationInterval"]
+        result["start_date"] = interval["startDate"]
+        if "endDate" in interval:
+            result["end_date"] = interval["endDate"]
+
+        # Extract parameters
+        params = {}
+        for arg in data["argument"]:
+            param = Parameter.model_validate(arg)
+            params[param.name] = param.value
+        result["parameters"] = params
+
+        return result
+
+
+class InfillingConfig(BaseModel):
+    """Configuration for a specific infilling method for a time series variable.
+
+    Attributes:
+        site_id: Identifier for the site/facility
+        time_series_name: Name of the time series variable
+        priority: Processing priority
+        method: The method configuration details
+    """
+
+    site_id: str
+    time_series_name: str
+    priority: int
+    method: MethodConfigItem
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_config_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract infilling configuration information from raw API data.
+
+        Parses the input data to extract the site identifier, variable name, processing priority,
+        and associated configuration details.
+
+        Args:
+            Raw infilling configuration data from the API.
+
+        Returns:
+            Processed infilling configuration data.
+        """
+        result = {}
+
+        result["site_id"] = re.match(SITE_ID_EXTRACT_REGEX, data["appliesToFacility"][0]["@id"]).group(1).upper()
+        result["time_series_name"] = re.match(URI_ID_EXTRACT_REGEX, data["appliesToTimeSeries"][0]["@id"]).group(1)
+
+        annotation_dict = {}
+        for annotation_data in data["hasAnnotation"]:
+            annotation = Annotation.model_validate(annotation_data)
+            annotation_dict[annotation.name] = annotation.value
+        result["priority"] = annotation_dict["data-processing-configuration-priority"]
+
+        current_config = data["hasCurrentConfiguration"]
+        if len(current_config) != 1:
+            # TODO: verify this is expected - only one hasCurrentConfiguration per InternalDataProcessingConfiguration
+            raise UserWarning(f"Unexpected number of infilling configurations found in {data}")
+        method_config = MethodConfigItem.model_validate(current_config[0])
+        result["method"] = method_config
+
+        return result
+
+
+class InfillingProcessConfigs(List[InfillingConfig]):
+    """List of infilling configurations for time series."""
+
+    @classmethod
+    def model_validate(cls, data: Any) -> "InfillingProcessConfigs":
+        """Parse API data into a dictionary of variable name to configuration mappings.
+
+        Args:
+            data: Raw API data which can be a dictionary containing an "items" key or a list of configuration items.
+
+        Returns:
+            A dictionary with variable names as keys and InfillingConfig instances as values.
+        """
+        if isinstance(data, dict):
+            items = data["items"]
+        elif isinstance(data, list):
+            items = data
+        else:
+            items = []
+
+        configs = [InfillingConfig.model_validate(item) for item in items]
+        return cls(configs)
