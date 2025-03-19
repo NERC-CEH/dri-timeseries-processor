@@ -93,42 +93,46 @@ class TestRunInfilling(unittest.TestCase):
             })
         })()
 
-    @patch("dritimeseriesprocessor.infilling.infiller.INFILL_CONFIGS")
-    def test_run_infilling_no_configs(self, mock_configs):
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    def test_run_infilling_no_configs(self, mock_get_configs):
         """Test run_infilling when no configs are found for the site."""
         site_id = "NONEXISTENT"
 
-        mock_configs.get.return_value = {}
+        mock_get_configs.return_value = {}
         result = run_infilling(self.ts, site_id)
 
         self.assertEqual(result, self.ts)
 
-    @patch("dritimeseriesprocessor.infilling.infiller.INFILL_CONFIGS")
-    @patch("dritimeseriesprocessor.infilling.infiller.INFILL_METHODS")
-    def test_run_infilling_no_methods(self, mock_methods, mock_configs):
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
+    def test_run_infilling_no_methods(self, mock_get_methods, mock_get_configs):
         """Test run_infilling when no infill methods are defined."""
-        site_id = "SITE1"
-
-        mock_configs.get.return_value = {"PT1H": {"temperature": [MagicMock()]}}
-        mock_methods.items.return_value = {}.items()  # Empty methods dict
-        result = run_infilling(self.ts, site_id)
-
-        self.assertEqual(result, self.ts)
-
-    @patch("dritimeseriesprocessor.infilling.infiller.INFILL_CONFIGS")
-    @patch("dritimeseriesprocessor.infilling.infiller.INFILL_METHODS")
-    def test_run_infilling_success(self, mock_methods, mock_configs):
-        """Test basic results of run_infilling.
-        """
-        mock_configs.get.return_value = {
-            "PT1H": {
-                "temperature": [self.infill_config1],
-                # pressure has no methods
+        mock_get_configs.return_value = {
+            self.site_id: {
+                "PT1H": {
+                    "temperature":  [MagicMock()]
+                }
             }
         }
-        # Set up method config
-        mock_methods.items.return_value = self.mock_methods_dict.items()
-        mock_methods.__getitem__.side_effect = lambda key: self.mock_methods_dict[key]
+        mock_get_methods.return_value = {}
+        result = run_infilling(self.ts, self.site_id)
+
+        self.assertEqual(result, self.ts)
+
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
+    def test_run_infilling_success(self, mock_get_methods, mock_get_configs):
+        """Test basic results of run_infilling.
+        """
+        mock_get_configs.return_value = {
+            self.site_id: {
+                "PT1H": {
+                    "temperature": [self.infill_config1],
+                    # pressure has no methods
+                }
+            }
+        }
+        mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
         result = run_infilling(self.ts, self.site_id)
@@ -141,21 +145,21 @@ class TestRunInfilling(unittest.TestCase):
         # Check flag values (from mock functions) have been added
         self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
-    @patch("dritimeseriesprocessor.infilling.infiller.INFILL_CONFIGS")
-    @patch("dritimeseriesprocessor.infilling.infiller.INFILL_METHODS")
-    def test_run_infilling_multiple_methods(self, mock_methods, mock_configs):
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_configs')
+    @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
+    def test_run_infilling_multiple_methods(self, mock_get_methods, mock_get_configs):
         """ Test run_infilling with multiple infill methods for a single column.
         Checks if the methods are applied in the correct order (by priority).
         """
-        mock_configs.get.return_value = {
-            "PT1H": {
-                "temperature": [self.infill_config1, self.infill_config2],
-                # pressure has no methods
+        mock_get_configs.return_value = {
+            self.site_id: {
+                "PT1H": {
+                    "temperature": [self.infill_config1, self.infill_config2],
+                    # pressure has no methods
+                }
             }
         }
-        # Set up method config
-        mock_methods.items.return_value = self.mock_methods_dict.items()
-        mock_methods.__getitem__.side_effect = lambda key: self.mock_methods_dict[key]
+        mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
         result = run_infilling(self.ts, self.site_id)
