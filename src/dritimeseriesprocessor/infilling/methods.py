@@ -3,7 +3,9 @@ import polars as pl
 from time_series import TimeSeries
 
 
-def linear_interpolation(ts: TimeSeries, column: str, flag_column: str, max_gap_size: int = None) -> TimeSeries:
+def linear_interpolation(
+    ts: TimeSeries, column: str, flag_column: str, max_gap_size: int = None, window: int = None
+) -> TimeSeries:
     """
     Perform linear interpolation on a Polars Series, filling gaps that are smaller than a specified size.
 
@@ -13,7 +15,7 @@ def linear_interpolation(ts: TimeSeries, column: str, flag_column: str, max_gap_
         flag_column: The name of the flag column to be updated with the method ID.
         max_gap_size: The maximum size of consecutive null gaps that should be filled. Any gap larger than this will not
             be interpolated and will remain as null.
-
+        window: Window size for interpolation.
     Returns:
         The TimeSeries with the infilled column and updated flag column.
     """
