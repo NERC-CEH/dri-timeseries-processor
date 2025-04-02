@@ -6,6 +6,11 @@ COPY src /app/src
 COPY .git /app/.git
 RUN pip install --upgrade pip pdm
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && apt-get purge -y --auto-remove \
+    && rm -rf /var/lib/apt/lists/* \
+
 # Installs the codebase in editable mode into .venv
 RUN pdm install
 
