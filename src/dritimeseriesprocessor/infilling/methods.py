@@ -1,5 +1,4 @@
 import polars as pl
-
 from time_stream import TimeSeries
 
 

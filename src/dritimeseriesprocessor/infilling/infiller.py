@@ -1,8 +1,9 @@
 import logging
 from functools import lru_cache
 
-from metadata_manager.models.service import load_config, load_methods
 from time_stream import TimeSeries
+
+from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
 

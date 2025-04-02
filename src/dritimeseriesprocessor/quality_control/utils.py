@@ -2,9 +2,9 @@ import logging
 from typing import List, Union
 
 import polars as pl
+from time_stream import TimeSeries
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
-from time_stream import TimeSeries
 
 logger = logging.getLogger(__name__)
 

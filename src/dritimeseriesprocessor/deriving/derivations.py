@@ -2,9 +2,9 @@ import math
 from typing import Optional, Type, Union
 
 import polars as pl
+from time_stream import TimeSeries
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
-from time_stream import TimeSeries
 
 
 class PotentialEvapotranspiration30Min(Calculation):

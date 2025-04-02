@@ -3,12 +3,12 @@ from datetime import datetime
 
 import polars as pl
 import pytz
+from time_stream import TimeSeries
 
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.operations import CORRECTION_METHODS
 from dritimeseriesprocessor.utils import not_missing_expr
-from time_stream import TimeSeries
 
 logger = logging.getLogger(__name__)
 
