@@ -3,7 +3,7 @@ from typing import Union
 import polars as pl
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
-from time_series import Period
+from time_stream import Period
 
 
 class HpaToKpa(Calculation):

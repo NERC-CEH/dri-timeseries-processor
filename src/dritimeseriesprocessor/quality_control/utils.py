@@ -4,7 +4,7 @@ from typing import List, Union
 import polars as pl
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
-from time_series import TimeSeries
+from time_stream import TimeSeries
 
 logger = logging.getLogger(__name__)
 

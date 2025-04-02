@@ -8,7 +8,7 @@ from dritimeseriesprocessor.quality_control.utils import (
     get_site_range_values,
     get_site_spike_threshold,
 )
-from time_series import TimeSeries
+from time_stream import TimeSeries
 
 logger = logging.getLogger(__name__)
 

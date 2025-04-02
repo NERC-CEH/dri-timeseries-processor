@@ -3,7 +3,7 @@ import unittest
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from time_series import Period
+from time_stream import Period
 from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
 
 

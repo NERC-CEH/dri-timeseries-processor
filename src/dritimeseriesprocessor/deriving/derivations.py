@@ -4,7 +4,7 @@ from typing import Optional, Type, Union
 import polars as pl
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
-from time_series import TimeSeries
+from time_stream import TimeSeries
 
 
 class PotentialEvapotranspiration30Min(Calculation):

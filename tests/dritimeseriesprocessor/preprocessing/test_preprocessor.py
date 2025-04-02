@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from time_series import TimeSeries, Period
+from time_stream import TimeSeries, Period
 from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name, run_preprocess
 
 

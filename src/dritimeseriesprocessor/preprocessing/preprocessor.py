@@ -8,7 +8,7 @@ from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessi
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.operations import CORRECTION_METHODS
 from dritimeseriesprocessor.utils import not_missing_expr
-from time_series import TimeSeries
+from time_stream import TimeSeries
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ from datetime import datetime
 from unittest.mock import patch, Mock
 
 import polars as pl
-from time_series import TimeSeries, Period
+from time_stream import TimeSeries, Period
 
 from dritimeseriesprocessor.quality_control.checks import (battery_voltage_check, error_codes_check, range_check,
                                                            soilmet_scans_check, spike_check)

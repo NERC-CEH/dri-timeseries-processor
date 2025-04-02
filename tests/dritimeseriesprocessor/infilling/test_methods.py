@@ -6,7 +6,7 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.infilling.methods import linear_interpolation
 
-from time_series import TimeSeries, Period
+from time_stream import TimeSeries, Period
 
 
 class TestLinearInterpolation(unittest.TestCase):

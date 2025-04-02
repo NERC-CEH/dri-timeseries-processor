@@ -9,7 +9,7 @@ from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name
 from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name
 from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name
 from dritimeseriesprocessor.utils import missing_expr, not_missing_expr
-from time_series import TimeSeries
+from time_stream import TimeSeries
 
 logger = logging.getLogger(__name__)
 
