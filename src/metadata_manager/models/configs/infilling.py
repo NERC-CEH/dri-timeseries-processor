@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
-from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX, check_single_list_item
 
 
 class Annotation(BaseModel):
@@ -172,8 +172,10 @@ class InfillingConfig(BaseModel):
         """
         result = {}
 
-        result["site_id"] = re.match(SITE_ID_EXTRACT_REGEX, data["appliesToFacility"][0]["@id"]).group(1).upper()
-        result["time_series_name"] = re.match(URI_ID_EXTRACT_REGEX, data["appliesToTimeSeries"][0]["@id"]).group(1)
+        originating_site = data["appliesToTimeSeries"][0]["originatingSite"]["@id"]
+        time_series_id = data["appliesToTimeSeries"][0]["@id"]
+        result["site_id"] = re.match(SITE_ID_EXTRACT_REGEX, originating_site).group(1).upper()
+        result["time_series_name"] = re.match(URI_ID_EXTRACT_REGEX, time_series_id).group(1)
 
         annotation_dict = {}
         for annotation_data in data["hasAnnotation"]:
@@ -181,11 +183,8 @@ class InfillingConfig(BaseModel):
             annotation_dict[annotation.name] = annotation.value
         result["priority"] = annotation_dict["data-processing-configuration-priority"]
 
-        current_config = data["hasCurrentConfiguration"]
-        if len(current_config) != 1:
-            # TODO: verify this is expected - only one hasCurrentConfiguration per InternalDataProcessingConfiguration
-            raise UserWarning(f"Unexpected number of infilling configurations found in {data}")
-        method_config = MethodConfigItem.model_validate(current_config[0])
+        current_config = check_single_list_item(data["hasCurrentConfiguration"])
+        method_config = MethodConfigItem.model_validate(current_config)
         result["method"] = method_config
 
         return result
