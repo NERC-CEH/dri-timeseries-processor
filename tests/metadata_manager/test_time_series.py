@@ -1,13 +1,10 @@
 import unittest
-from datetime import datetime
 from parameterized import parameterized
-from unittest.mock import patch, MagicMock
 
 from metadata_manager.models.time_series import (
     Measure,
     ProcessingLevel,
-    TimeSeriesMetadata,
-    TimeSeriesMetadataResponse
+    TimeSeriesMetadata
 )
 
 
@@ -15,6 +12,7 @@ class TestMeasure(unittest.TestCase):
     def test_extract_measure_info_with_units(self):
         """Test extraction of measure info with units present."""
         test_data = {
+            "@id": "http://example.com/ref/common/measure/measure-id",
             "hasUnit": {
                 "prefLabel": ["mm/day"]
             },
@@ -31,6 +29,7 @@ class TestMeasure(unittest.TestCase):
     def test_extract_measure_info_without_units(self):
         """Test extraction of measure info without units."""
         test_data = {
+            "@id": "http://example.com/ref/common/measure/measure-id",
             "hasUnit": {},
             "aggregation": {
                 "resolution": "P1D",
@@ -46,6 +45,7 @@ class TestMeasure(unittest.TestCase):
     def test_raises_measure_info_with_multiple_units(self):
         """Test extraction of measure info with multiple units."""
         test_data = {
+            "@id": "http://example.com/ref/common/measure/measure-id",
             "hasUnit": {"prefLabel": ["mm", "mm-day"]},
             "aggregation": {
                 "resolution": "P1D",
@@ -58,6 +58,7 @@ class TestMeasure(unittest.TestCase):
     def test_missing_aggregation_resolution(self):
         """Test validation fails when resolution field is missing."""
         test_data = {
+            "@id": "http://example.com/ref/common/measure/measure-id",
             "hasUnit": {},
             "aggregation": {
                 # Missing resolution
@@ -71,6 +72,7 @@ class TestMeasure(unittest.TestCase):
     def test_missing_aggregation_periodicity(self):
         """Test validation fails when periodicity field is missing."""
         test_data = {
+            "@id": "http://example.com/ref/common/measure/measure-id",
             "hasUnit": {},
             "aggregation": {
                 "resolution": "P1D"
@@ -83,54 +85,36 @@ class TestMeasure(unittest.TestCase):
 
 
 class TestProcessingLevel(unittest.TestCase):
-    def test_extract_processing_level_info(self):
-        """Test extraction of processing level info."""
+    def test_extract_processing_level_id(self):
+        """Test extraction of processing level id."""
         test_data = {
-            "prefLabel": ["Level 1"]
+            "@id": "http://example.com/ref/common/processing_level/proc-lev-id",
         }
         processing_level = ProcessingLevel.model_validate(test_data)
-        self.assertEqual(processing_level.description, "Level 1")
-
-    def test_multiple_processing_level_info_raises(self):
-        """Test error raised when multiple processing level info found."""
-        test_data = {
-            "prefLabel": ["Level 1", "Level 2"]
-        }
-        with self.assertRaises(ValueError):
-            ProcessingLevel.model_validate(test_data)
-
-    def test_empty_preflabel(self):
-        """Test validation with empty prefLabel."""
-        test_data = {
-            "prefLabel": []
-        }
-        with self.assertRaises(ValueError):
-            ProcessingLevel.model_validate(test_data)
-
-    def test_missing_preflabel(self):
-        """Test validation fails when prefLabel is missing."""
-        test_data = {}
-        with self.assertRaises(KeyError):
-            ProcessingLevel.model_validate(test_data)
+        self.assertEqual(processing_level.processing_level_id, "http://example.com/ref/common/processing_level/proc-lev-id")
 
 
 class TestTimeSeriesMetadata(unittest.TestCase):
     def setUp(self):
         self.valid_data = {
             "@id": "http://example.com/timeseries/rainfall",
-            "prefLabel": ["Daily Rainfall"],
-            "measure": {
-                "hasUnit": {
-                    "prefLabel": ["mm"]
-                },
-                "aggregation": {
-                    "resolution": "P1D",
-                    "periodicity": "P1Y"
+            "type": [
+                {
+                    "measure": {
+                        "@id": "http://example.com/timeseries/rainfall-measure-id",
+                        "hasUnit": {
+                            "prefLabel": ["mm"]
+                        },
+                        "aggregation": {
+                            "resolution": "P1D",
+                            "periodicity": "P1Y"
+                        }
+                    },
+                    "processingLevel": {
+                        "@id": "http://example.com/common/proc-level-id",
+                    },
                 }
-            },
-            "processingLevel": {
-                "prefLabel": ["Level 1"]
-            },
+            ],
             "sourceBucket": "bucket-name",
             "sourceDataset": "rainfall-dataset",
             "sourceColumnName": "rainfall_1D"
@@ -141,18 +125,18 @@ class TestTimeSeriesMetadata(unittest.TestCase):
         metadata = TimeSeriesMetadata.model_validate(self.valid_data)
 
         self.assertEqual(metadata.name, "rainfall")
-        self.assertEqual(metadata.description, "Daily Rainfall")
+        self.assertEqual(metadata.measure.measure_id, "http://example.com/timeseries/rainfall-measure-id")
         self.assertEqual(metadata.measure.units, "mm")
         self.assertEqual(metadata.measure.resolution, "P1D")
-        self.assertEqual(metadata.processing_level.description, "Level 1")
+        self.assertEqual(metadata.measure.periodicity, "P1Y")
+        self.assertEqual(metadata.processing_level.processing_level_id, "http://example.com/common/proc-level-id")
         self.assertEqual(metadata.bucket, "bucket-name")
         self.assertEqual(metadata.dataset, "rainfall-dataset")
         self.assertEqual(metadata.column, "rainfall_1D")
 
 
     @parameterized.expand([
-        ("test_missing_measure", "measure"),
-        ("test_missing_processing_level", "processingLevel"),
+        ("test_missing_type", "type"),
         ("test_missing_bucket", "sourceBucket"),
         ("test_missing_dataset", "sourceDataset"),
         ("test_missing_column", "sourceColumnName"),

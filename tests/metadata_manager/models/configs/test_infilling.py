@@ -335,8 +335,10 @@ class TestInfillingConfig(unittest.TestCase):
 
     def setUp(self):
         self.test_data = {
-            "appliesToFacility": [{"@id": "http://example.com/facility/site-abcd1"}],
-            "appliesToTimeSeries": [{"@id": "http://example.com/timeseries/example_name"}],
+            "appliesToTimeSeries": [{
+                "@id": "http://example.com/id/dataset/example_name",
+                "originatingSite": {"@id": "http://example.com/site/site-abcd1"}
+            }],
             "hasAnnotation": [
                 {
                     "property": {"@id": "http://example.com/property/data-processing-configuration-priority"},
@@ -398,21 +400,7 @@ class TestInfillingConfig(unittest.TestCase):
                 "argument": []
             }
         ]
-        with self.assertRaises(UserWarning) :
-            InfillingConfig.model_validate(test_data)
-
-    def test_missing_applies_to_facility(self):
-        """Test that validation fails when appliesToFacility is missing."""
-        test_data = self.test_data.copy()
-        test_data.pop("appliesToFacility")
-        with self.assertRaises(KeyError):
-            InfillingConfig.model_validate(test_data)
-
-    def test_empty_applies_to_facility(self):
-        """Test that validation fails when appliesToFacility is empty."""
-        test_data = self.test_data.copy()
-        test_data["appliesToFacility"] = []
-        with self.assertRaises(IndexError):
+        with self.assertRaises(ValueError) :
             InfillingConfig.model_validate(test_data)
 
     def test_missing_applies_to_time_series(self):
@@ -459,7 +447,7 @@ class TestInfillingConfig(unittest.TestCase):
         """Test that validation fails when hasCurrentConfiguration is empty."""
         test_data = self.test_data.copy()
         test_data["hasCurrentConfiguration"] = []
-        with self.assertRaises(UserWarning):
+        with self.assertRaises(ValueError):
             InfillingConfig.model_validate(test_data)
 
 

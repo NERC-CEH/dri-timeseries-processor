@@ -3,18 +3,20 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, check_single_list_item
 
 
 class Measure(BaseModel):
     """Processing time series measure information
 
     Attributes:
+        measure_id: The ID of the measure
         units: The units of the time series
         resolution: The resolution value
         periodicity: The periodicity value
     """
 
+    measure_id: str
     units: Optional[str]
     resolution: str
     periodicity: str
@@ -29,18 +31,11 @@ class Measure(BaseModel):
 
         Returns:
             A dictionary with the extracted measure information
-
-        Raises:
-            ValueError: If the 'prefLabel' in 'hasUnit' contains more than one element.
         """
         result = {}
 
-        units = data["hasUnit"].get("prefLabel")
-        if isinstance(units, list):
-            if len(units) != 1:
-                raise ValueError(f"Units must have 1 prefLabel: {units}")
-
-        result["units"] = units[0] if units else None
+        result["measure_id"] = data["@id"]
+        result["units"] = check_single_list_item(data["hasUnit"].get("prefLabel"))
         result["resolution"] = data["aggregation"]["resolution"]
         result["periodicity"] = data["aggregation"]["periodicity"]
 
@@ -51,10 +46,10 @@ class ProcessingLevel(BaseModel):
     """Processing level information
 
     Attributes:
-        description: The description of the processing level
+        processing_level_id: The ID of the processing level
     """
 
-    description: str
+    processing_level_id: str
 
     @model_validator(mode="before")
     @classmethod
@@ -65,18 +60,9 @@ class ProcessingLevel(BaseModel):
            data: The raw data dictionary containing processing level details.
 
         Returns:
-           A dictionary with the processing level description.
-
-        Raises:
-           ValueError: If the 'prefLabel' contains more than one element.
+           A dictionary with the processing level info.
         """
-        proc_level = data["prefLabel"]
-        if isinstance(proc_level, list):
-            if len(proc_level) != 1:
-                raise ValueError(f"Processing level must have 1 prefLabel: {proc_level}")
-            proc_level = proc_level[0]
-
-        return {"description": proc_level}
+        return {"processing_level_id": data["@id"]}
 
 
 class TimeSeriesMetadata(BaseModel):
@@ -93,7 +79,6 @@ class TimeSeriesMetadata(BaseModel):
     """
 
     name: str
-    description: str
     measure: Measure
     processing_level: ProcessingLevel
     bucket: str
@@ -113,16 +98,11 @@ class TimeSeriesMetadata(BaseModel):
         """
         result = {}
 
+        type_info = check_single_list_item(data["type"])
+
         result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["@id"]).group(1)
-
-        description = data["prefLabel"]
-        if isinstance(description, list):
-            if len(description) != 1:
-                raise ValueError(f"Time-series must have 1 prefLabel: {description}")
-        result["description"] = description[0]
-
-        result["measure"] = Measure.model_validate(data["measure"])
-        result["processing_level"] = ProcessingLevel.model_validate(data["processingLevel"])
+        result["measure"] = Measure.model_validate(type_info["measure"])
+        result["processing_level"] = ProcessingLevel.model_validate(type_info["processingLevel"])
         result["bucket"] = data["sourceBucket"]
         result["dataset"] = data["sourceDataset"]
         result["column"] = data["sourceColumnName"]
