@@ -6,7 +6,7 @@ import pandas as pd
 import polars as pl
 
 from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name, run_infilling
-from time_series import Period, TimeSeries
+from time_stream import Period, TimeSeries
 
 
 def mock_infill_method1(ts, _, flag_column, *args, **kwargs):

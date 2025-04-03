@@ -6,7 +6,7 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name, remove_qcd_data, run_quality_control
-from time_series import TimeSeries, Period
+from time_stream import TimeSeries, Period
 
 
 

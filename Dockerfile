@@ -6,6 +6,8 @@ COPY src /app/src
 COPY .git /app/.git
 RUN pip install --upgrade pip pdm
 
+RUN dnf install -y git
+
 # Installs the codebase in editable mode into .venv
 RUN pdm install
 

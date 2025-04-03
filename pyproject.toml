@@ -19,7 +19,8 @@ dependencies = [
     "pandas",
     "tenacity",
     "prometheus-client",
-    "setuptools"
+    "setuptools",
+    "time-stream @ git+https://github.com/NERC-CEH/time-stream.git"
 ]
 name = "dritimeseriesprocessor"
 dynamic = ["version"]
@@ -46,7 +47,7 @@ version = { attr = "dritimeseriesprocessor.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["dritimeseriesprocessor*", "databuilder*", "time_series*"]
+include = ["dritimeseriesprocessor*", "databuilder*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
@@ -61,11 +62,6 @@ omit = [
     "*__init__.py",
     "src/dritimeseriesprocessor/__main__.py",
     "src/dritimeseriesprocessor/metrics_exporter.py",
-    "src/time_series/example.py",
-    "src/time_series/period.py",
-    "src/time_series/time_series_base.py",
-    "src/time_series/examples/*",
-    "src/time_series/docs/*",
 ]
 
 filterwarnings = [
@@ -77,10 +73,7 @@ filterwarnings = [
 src = ["src", "tests"]
 include = ["src/**.py"]
 line-length = 120
-exclude = [
-    "src/time_series/examples",
-    "src/time_series/docs"
-]
+exclude = []
 
 [tool.ruff.lint]
 select = [

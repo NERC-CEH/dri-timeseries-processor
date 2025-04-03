@@ -4,7 +4,7 @@ import unittest
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from time_series import Period, TimeSeries
+from time_stream import Period, TimeSeries
 from dritimeseriesprocessor.deriving.calculation import Calculation
 from dritimeseriesprocessor.deriving.derivations import (
     derive,

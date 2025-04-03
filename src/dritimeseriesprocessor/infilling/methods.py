@@ -1,6 +1,5 @@
 import polars as pl
-
-from time_series import TimeSeries
+from time_stream import TimeSeries
 
 
 def linear_interpolation(

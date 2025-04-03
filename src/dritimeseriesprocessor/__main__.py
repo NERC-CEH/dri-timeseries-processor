@@ -4,6 +4,8 @@ import sys
 
 import boto3
 import polars as pl
+from time_stream import TimeSeries
+from time_stream.period import Period
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
@@ -23,8 +25,6 @@ from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id, split_data_for_processing
 from metadata_manager import api_manager
 from metadata_manager.transformers import extract_site_ids
-from time_series import TimeSeries
-from time_series.period import Period
 
 logger = logging.getLogger(__name__)
 setup_logging()

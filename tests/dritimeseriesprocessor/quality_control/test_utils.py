@@ -5,7 +5,7 @@ import polars as pl
 from datetime import datetime
 from parameterized import parameterized
 
-from time_series import TimeSeries, Period
+from time_stream import TimeSeries, Period
 from dritimeseriesprocessor.quality_control.utils import (column_threshold_check, get_failed_qc_check_ids_from_flag,
                                                           get_site_range_values)
 

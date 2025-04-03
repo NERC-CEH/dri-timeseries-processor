@@ -1,11 +1,11 @@
 import logging
 
 import polars as pl
+from time_stream import TimeSeries
 
 from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
-from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 

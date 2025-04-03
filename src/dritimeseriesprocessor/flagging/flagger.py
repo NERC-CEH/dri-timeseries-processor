@@ -3,13 +3,13 @@
 import logging
 
 import polars as pl
+from time_stream import TimeSeries
 
 from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
 from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name
 from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name
 from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name
 from dritimeseriesprocessor.utils import missing_expr, not_missing_expr
-from time_series import TimeSeries
 
 logger = logging.getLogger(__name__)
 

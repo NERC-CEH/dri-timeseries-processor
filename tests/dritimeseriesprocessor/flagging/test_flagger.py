@@ -1,6 +1,6 @@
 import unittest
 import polars as pl
-from time_series import TimeSeries
+from time_stream import TimeSeries
 from datetime import datetime
 
 from dritimeseriesprocessor.flagging.flagger import (
