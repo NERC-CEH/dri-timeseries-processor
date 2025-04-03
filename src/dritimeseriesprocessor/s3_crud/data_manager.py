@@ -37,7 +37,7 @@ def query_by_date_range(
 
     start_date, end_date = steralize_dates(start_date, end_date)
 
-    columns_sql = ", ".join(columns) if columns else "*"
+    columns_sql = "time,SITE_ID," + ", ".join(columns) if columns else "*"
     site_ids_sql = f"AND site IN ({','.join(['?'] * len(site_ids))})" if site_ids else ""
 
     query = f"""
