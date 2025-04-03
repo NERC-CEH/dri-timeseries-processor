@@ -48,9 +48,9 @@ args = parser.parse_args(sys.argv[1:])
 # Sites
 metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="cosmos")
 sites = parser.validate_sites(args.sites, metadata_sites)
+col_names = parser.validate_col_names(args.vars, network="cosmos")
 
 # TODO: Resolution FW-548
-# TODO: Variables FW-549
 
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
@@ -61,8 +61,6 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}, {site
 # ------------------
 # These will be removed in FW-548 and FW-549
 DATASET = "LIVE_SOILMET_30MIN"
-# Optional
-VARIABLES = ["time", "SITE_ID", "TA", "PA"]
 
 try:
     # Setup s3
@@ -80,7 +78,7 @@ try:
         start_date=start_date,
         end_date=end_date,
         site_ids=sites,
-        columns=VARIABLES,
+        columns=col_names,
     )
 
     if data.shape[0] == 0:

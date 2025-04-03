@@ -38,6 +38,13 @@ def parse_args(args: list) -> ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--vars",
+        help=(
+            """The col_names to extract. Must be a string of col_names by column name (upper or lower case) seperated by
+            a comma e.g. TA,RN or ta,rn. If not provided all col_names will be extracted."""
+        ),
+    )
+    parser.add_argument(
         "-ed",
         "--end_date",
         help=("The date to start the data extraction from. Must be of the form YYYY-MM-DD (default: todays date)"),
@@ -161,3 +168,31 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
         sites = metadata_sites
 
     return sites
+
+
+def validate_col_names(col_names: str, network: str) -> list:
+    """Validate the col_names entered.
+
+    Args:
+        col_names: The col_names to process
+        network: The project network the data comes from.
+    """
+    if col_names is not None:
+        col_name_list = col_names.split(",")
+
+        if network == "cosmos":
+            # Add default col_names
+            checked_col_names = ["time", "SITE_ID"]
+        else:
+            checked_col_names = []
+
+        # Rough check for formatting
+        for variable in col_name_list:
+            if not variable.isalnum():
+                raise ValueError(f"Variable {variable} should only contain letters and numbers.")
+            else:
+                checked_col_names.append(variable.upper())
+
+        return checked_col_names
+    else:
+        return []
