@@ -93,7 +93,7 @@ class MetadataAPIManager:
         Raises:
             HTTPError: If the API request fails.
         """
-        url = f"{self.host}/ref/{self.network}/time-series/{timeseries_id}.json"
+        url = f"{self.host}/id/dataset.json?@id={self.service_base_uri}/id/dataset/{timeseries_id}&_view=timeseries"
         response = await self._make_api_call(url)
         return response
 

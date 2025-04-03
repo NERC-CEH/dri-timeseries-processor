@@ -204,10 +204,11 @@ for metadata in processing_metadata:
 
             # Writing
             # -------
+            # TODO How do we write out when processing variables rather than whole dataset.
             writer = S3Writer(s3_client)
 
             # Group data by date and site
-            # Note: Might not need to group by site anymore. Depends on what
+            # TODO Might not need to group by site anymore. Depends on what
             # we do with grouping for optimising the query
             dataframes = group_by_date_site_id(ts.df)
 
