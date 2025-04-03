@@ -11,6 +11,7 @@ from metadata_manager.models.configs.infilling import InfillingConfig, Infilling
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
 from metadata_manager.models.time_series import TimeSeriesMetadataResponse
 
+METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 class ConfigType(Enum):
     INFILLING = "infilling"
@@ -81,3 +82,9 @@ def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataRe
     metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
     data = asyncio.run(metadata.fetch_timeseries_metadata(timeseries_id=timeseries_id))
     return TimeSeriesMetadataResponse.model_validate(data)
+
+
+def load_datasets(parameters: Dict):
+    data = asyncio.run(METADATA_CONNECTION.fetch_dataset_metadata(parameters))
+    # return TimeSeriesMetadataResponse.model_validate(data)
+    return data

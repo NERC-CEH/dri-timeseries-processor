@@ -4,8 +4,6 @@ import sys
 
 import boto3
 import polars as pl
-from time_stream import TimeSeries
-from time_stream.period import Period
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
@@ -24,7 +22,11 @@ from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id, split_data_for_processing
 from metadata_manager import api_manager
-from metadata_manager.transformers import extract_site_ids
+from metadata_manager.transformers import extract_site_ids, extract_dataset_metadata
+from metadata_manager.models.service import load_datasets
+from metadata_manager.models.common import build_site_query_parameter
+from time_series import TimeSeries
+from time_series.period import Period
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -41,92 +43,128 @@ metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, netw
 
 # Parse and validate arguments
 # ----------------------------
-# All user inputs are checked against the metadata store as this is the source of truth
-# Any input that isnt in the store is removed from the query
+# User arguments are combined to create the dataset(s) to be built.
+# The metadata store is queried to see if they exist, and extract the required
+# metadata for building if so.
 args = parser.parse_args(sys.argv[1:])
 
 # Sites
 metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="cosmos")
 sites = parser.validate_sites(args.sites, metadata_sites)
+site_query_parameter = build_site_query_parameter(sites)
 
-# TODO: Resolution FW-548
+# TODO: Periodicity FW-548
+# Hardcoded
+periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")]
+
 # TODO: Variables FW-549
+# Hardcoded
+variable_query_paremeter = [("type.measure.variable", "http://fdri.ceh.ac.uk/ref/common/cop/temp_air")]
+
+# TODO Processing level (ticket not yet created)
+# Hardcoded
+processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/processed")]
+
+# View parameter
+view_query_parameter = [("_view", "timeseries")]
+
+
+# Extract metadata for the desired dataset
+datasets_to_build = load_datasets(site_query_parameter + periodicity_query_parameter +
+                                variable_query_paremeter + processing_query_parameter + view_query_parameter)
+
+processing_metadata = extract_dataset_metadata(datasets_to_build, "output")
+
+
+# TODO: Get dependencies
+# Each dataset to build is dependent on other timeseries.
+# Potential method:
+# For each entry in processing_parameters, add the dependency metadata to
+# an 'input' key using extract_datatset_metadata.
+
+# Hard coding dependent datasets
+for item in processing_metadata:
+    site = item['output']['sourceSite'].rsplit("-")[-1]
+
+    item['input'] = {}
+    item['input']['ts_id'] = f"http://fdri.ceh.ac.uk/id/dataset/cosmos-{site}-ta_30min_raw"
+    item['input']['ts_def'] = "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw"
+    item['input']['periodicity'] = 30 # This comes as PT30M so would need formatting
+    item['input']['resolution'] = 30
+    item['input']['sourceBucket'] = "ukceh-fdri-staging-timeseries-level-0"
+    item['input']['sourceDataset'] = "LIVE_SOILMET_30MIN"
+    item['input']['sourceColumnName'] = "TA"
+    item['input']['sourceSite'] = site.upper()
+
+# TODO (Maybe) Undertake some grouping to optimise
+# number of queries to duckDB
 
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 logger.info(f"Processing level 0 data between {start_date} and {end_date}, {sites}")
 
 
-# Session parameters
-# ------------------
-# These will be removed in FW-548 and FW-549
-DATASET = "LIVE_SOILMET_30MIN"
-# Optional
-VARIABLES = ["time", "SITE_ID", "TA", "PA"]
+# Start processing
+# ----------------
 
-try:
-    # Setup s3
-    # --------
-    if app_config.environment == "local":
-        s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
-    else:
-        s3_client = boto3.client("s3")
+for metadata in processing_metadata:
+    DATASET=metadata["input"]["sourceDataset"]
+    VARIABLES=metadata["input"]["sourceColumnName"]
+    BUCKET=metadata["input"]["sourceBucket"]
+    SITES=metadata["input"]["sourceSite"]
 
-    # Ingress
-    # -------
-    data = data_manager.query_by_date_range(
-        app_config.level_0_bucket,
-        prefix=f"cosmos/dataset={DATASET}",
-        start_date=start_date,
-        end_date=end_date,
-        site_ids=sites,
-        columns=VARIABLES,
-    )
+    try:
+        # Setup s3
+        # --------
+        if app_config.environment == "local":
+            s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
+        else:
+            s3_client = boto3.client("s3")
 
-    if data.shape[0] == 0:
-        metrics.record_no_data_run()
-        logger.info("No data returned from the query. Ending pipeline.")
-
-        # Push no data run metric
-        metrics.export_metrics_to_pushgateway(
-            url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+        # Ingress
+        # -------
+        data = data_manager.query_by_date_range(
+            bucket_name=BUCKET,
+            prefix=f"cosmos/dataset={DATASET}",
+            start_date=start_date,
+            end_date=end_date,
+            site_ids=[SITES],
+            columns=[VARIABLES]
         )
 
-    else:
-        logger.info(f"Retrieved data from s3: {data.shape}")
+        if data.shape[0] == 0:
+            metrics.record_no_data_run()
+            logger.info("No data returned from the query. Ending pipeline.")
 
-        # Dummy some data that will force some qc checks to run
-        data = data.with_columns(
-            [
-                pl.Series([12 for i in range(len(data))]).alias("BATTV"),
-                pl.Series(i * 2 for i in range(len(data))).alias("PRECIP"),
-                pl.Series(i for i in range(len(data))).alias("SCANS"),
-            ]
-        )
+            # Push no data run metric
+            metrics.export_metrics_to_pushgateway(
+                url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+            )
 
-        # Add a missing value
-        data[-2, "TA"] = None
+        else:
+            logger.info(f"Retrieved data from s3: {data.shape}")
 
-        logger.info(f"Added dummy data, shape: {data.shape}")
+            # Dummy some data that will force some qc checks to run
+            data = data.with_columns(
+                [
+                    pl.Series([12 for i in range(len(data))]).alias("BATTV"),
+                    pl.Series(i * 2 for i in range(len(data))).alias("PRECIP"),
+                    pl.Series(i for i in range(len(data))).alias("SCANS"),
+                ]
+            )
 
-        # Split data by sites and add metadata
-        # ------------------------------------
-        # Hard coding periodicity and resolution metadata atm but should be able
-        # to extract from the work in FW-548 and FW-549
-        # This method likely to change when the metadata gets more complex i.e.
-        # multiple resolutions with different variables.
-        metadata = {"resolution": 30, "periodicity": 30}
-        data = split_data_for_processing(data, metadata)
+            # Add a missing value
+            data[-2, "TA"] = None
 
-        for site, timeseries, metadata in data:
-            logger.info(f"Processing site: {site}")
+            logger.info(f"Added dummy data, shape: {data.shape}")
+
 
             # Initialise TimeSeries object
             # ---------------------------
-            resolution = Period.of_minutes(metadata["resolution"])
-            periodicity = Period.of_minutes(metadata["periodicity"])
+            resolution = Period.of_minutes(metadata["input"]["resolution"])
+            periodicity = Period.of_minutes(metadata["input"]["periodicity"])
             ts = TimeSeries(
-                timeseries, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"]
+                data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"]
             )
 
             # Initialise core flags
@@ -169,10 +207,12 @@ try:
             writer = S3Writer(s3_client)
 
             # Group data by date and site
+            # Note: Might not need to group by site anymore. Depends on what
+            # we do with grouping for optimising the query
             dataframes = group_by_date_site_id(ts.df)
 
             writer.write(
-                bucket_name=app_config.qc_bucket,
+                bucket_name=metadata['output']['sourceBucket'],
                 dataset=DATASET,
                 data=dataframes,
             )
@@ -185,13 +225,13 @@ try:
                 url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
             )
 
-except Exception as e:
-    metrics.record_failed_run()
-    logger.exception(f"An error occurred during processing: {str(e)}")
+    except Exception as e:
+        metrics.record_failed_run()
+        logger.exception(f"An error occurred during processing: {str(e)}")
 
-    # Push all metrics even if an exception occurs
-    metrics.export_metrics_to_pushgateway(
-        url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-    )
+        # Push all metrics even if an exception occurs
+        metrics.export_metrics_to_pushgateway(
+            url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+        )
 
-    raise
+        raise

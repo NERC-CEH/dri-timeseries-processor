@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Dict, Any
 
 # To get the last bit of a uri string, after the last trailing slash.
 #   Allows for alpha characters, underscore and hyphen.
@@ -9,19 +9,22 @@ URI_ID_EXTRACT_REGEX = r".+\/([a-zA-Z0-9\-\_]+)$"
 #   e.g. http://fdri.ceh.ac.uk/id/site/cosmos-chimn => chimn
 SITE_ID_EXTRACT_REGEX = r".+\/\w+\-([a-zA-Z0-9]+)$"
 
+def build_site_query_parameter(sites):
+    """"""
+    sites_params = []
+    for site in sites:
+        sites_params.append(('originatingSite', f"http://fdri.ceh.ac.uk/id/site/cosmos-{site}"))
+    return sites_params
 
-def check_single_list_item(data: List) -> Any:
-    """Checks that list has a single item within in.
 
-    Args:
-        data: List to check
-
-    Returns:
-        The first item of the list
+def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
     """
-    if isinstance(data, list):
-        num_items = len(data)
-        if num_items != 1:
-            raise ValueError(f"Single list check failed. {num_items} items found: {data}")
-        data = data[0]
-    return data
+    Given a dict like {key: [a,b,c]}, the first value of the list will be returned
+    Given a dict like {key: a}, a will be returned
+    """
+    if not prop:
+        return None
+    values = prop.get(key)
+    if isinstance(values, list):
+        return values[0]
+    return values

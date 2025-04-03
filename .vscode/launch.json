@@ -28,7 +28,7 @@
             "module": "dritimeseriesprocessor",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": "P2D"
+            "args": "--sites=alic1,bunny P2D"
         }
     ]
 }
