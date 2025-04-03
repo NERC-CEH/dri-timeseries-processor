@@ -47,10 +47,29 @@ class MetadataAPIManager:
                 raise e
 
     async def fetch_sites(self) -> Dict[str, Any]:
+        """Fetch all sites from the specified network.
+
+        Returns:
+            JSON response containing site information for the network.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
         response = await self._make_api_call(f"{self.host}/id/network/{self.network}")
         return response
 
     async def fetch_infill_configs(self, site_id: str = None) -> Dict[str, Any]:
+        """Fetch infill configurations, optionally filtered by site ID.
+
+        Args:
+            site_id: Site identifier to filter configurations. Defaults to None, returns all infill configurations.
+        
+        Returns:
+            JSON response containing infill configurations.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
         url = (
             f"{self.host}/id/data-processing-configuration.json?"
             f"type={self.service_base_uri}/ref/common/configuration-type/infill-configuration"
@@ -64,6 +83,16 @@ class MetadataAPIManager:
         return response
 
     async def fetch_timeseries_metadata(self, timeseries_id: str = None) -> Dict[str, Any]:
+        """Fetch metadata for a specific time series.
+        Args:
+            timeseries_id: Identifier for the time series to fetch metadata for.
+        
+        Returns:
+            JSON response containing time series metadata.
+        
+        Raises:
+            HTTPError: If the API request fails.
+        """
         url = f"{self.host}/ref/{self.network}/time-series/{timeseries_id}.json"
         response = await self._make_api_call(url)
         return response
