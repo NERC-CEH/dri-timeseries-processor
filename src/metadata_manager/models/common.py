@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 
 # To get the last bit of a uri string, after the last trailing slash.
 #   Allows for alpha characters, underscore and hyphen.
@@ -25,11 +25,21 @@ def check_single_list_item(data: List) -> Any:
     return data
 
 
-def build_site_query_parameter(sites):
-    """"""
+def build_site_query_parameter(sites: List) -> List[Tuple]:
+    """Build the site query parameters for the dataset endpoint.
+    
+    As we use the same key for multiple sites, it needs to be a list of tuples.
+    
+    Args:
+        sites: A list of the sites to query.
+    
+    Returns:
+        A list of tuples with query parameter string and site.
+    """
     sites_params = []
     for site in sites:
         sites_params.append(('originatingSite', f"http://fdri.ceh.ac.uk/id/site/cosmos-{site}"))
+
     return sites_params
 
 
@@ -37,10 +47,19 @@ def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
     """
     Given a dict like {key: [a,b,c]}, the first value of the list will be returned
     Given a dict like {key: a}, a will be returned
+
+    Args:
+        key: the key to look for
+        prop: the dict to search in.
+    
+    Returns:
+        The value associated with the key.
     """
     if not prop:
         return None
+    
     values = prop.get(key)
     if isinstance(values, list):
         return values[0]
+    
     return values

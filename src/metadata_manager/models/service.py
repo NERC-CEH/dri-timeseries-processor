@@ -85,6 +85,14 @@ def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataRe
 
 
 def load_datasets(parameters: Dict):
+    """Load dataset metadata from the API.
+
+    Args:
+        parameters: API query parameters for the dataset endpoint
+
+    Returns:
+        The parsed dataset metadata.
+    """
     data = asyncio.run(METADATA_CONNECTION.fetch_dataset_metadata(parameters))
-    # return TimeSeriesMetadataResponse.model_validate(data)
+    # TODO build and test pydantic model for dataset return FW-XXX
     return data

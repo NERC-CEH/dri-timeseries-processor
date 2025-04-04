@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX, get_property, build_site_query_parameter
 
 
 class TestUriIdExtractRegex(TestCase):
@@ -55,3 +55,66 @@ class TestSiteIdExtractRegex(TestCase):
         """Test that no result matched when string format that fails the regex."""
         result = re.match(SITE_ID_EXTRACT_REGEX, string)
         self.assertIsNone(result)
+
+
+class TestGetProperty(TestCase):
+    """Test the get_property function."""
+
+    def test_get_property_int_float_str(self) -> None:
+        """Test extracting an int property"""
+        key = "abc"
+
+        expected = 123
+        result = get_property(key, {key: expected})
+        self.assertEqual(result, expected)
+
+        expected = 123.4
+        result = get_property(key, {key: expected})
+        self.assertEqual(result, expected)
+        
+        expected = "123"
+        result = get_property(key, {key: expected})
+        self.assertEqual(result, expected)
+
+    def test_get_property_list(self) -> None:
+        """Test extracting a string property"""
+        key = "abc"
+        expected = "123"
+        result = get_property(key, {key: [expected]})
+        self.assertEqual(result, expected)
+
+    def test_get_property_none(self) -> None:
+        """Test trying to extract a None dictionary"""
+        key = "abc"
+        expected = None
+        result = get_property(key, None)
+        self.assertEqual(result, expected)
+
+    def test_get_property_falsy_value(self) -> None:
+        """Test extracting a falsy value"""
+        key = "abc"
+
+        expected = None
+        result = get_property(key, {key: expected})
+        self.assertEqual(result, expected)
+
+        expected = ""
+        result = get_property(key, {key: expected})
+        self.assertEqual(result, expected)
+
+        expected = 0
+        result = get_property(key, {key: expected})
+        self.assertEqual(result, expected)
+
+class TestBuildSiteQueryParameter(TestCase):
+    """Tests the build_site_query_parameter."""
+
+    def test_multiple_sites(self) -> None:
+        """Test string built with multiple sites"""
+        sites =["test1", "test2"]
+        expected = [('originatingSite', f"http://fdri.ceh.ac.uk/id/site/cosmos-test1"),
+                    ('originatingSite', f"http://fdri.ceh.ac.uk/id/site/cosmos-test2")]
+        
+        result = build_site_query_parameter(sites)
+
+        assert result == expected

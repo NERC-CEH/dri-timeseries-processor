@@ -84,6 +84,7 @@ class MetadataAPIManager:
 
     async def fetch_timeseries_metadata(self, timeseries_id: str = None) -> Dict[str, Any]:
         """Fetch metadata for a specific time series.
+        
         Args:
             timeseries_id: Identifier for the time series to fetch metadata for.
         
@@ -98,8 +99,20 @@ class MetadataAPIManager:
         return response
 
     async def fetch_dataset_metadata(self, parameters: Dict) -> Dict[str, Any]:
+        """Fetch metadata for a specific dataset
+        
+        Args:
+            parameters: API query parameters for the dataset endpoint
+        
+        Returns:
+            JSON response containing time series ID metadata.
+        
+        Raises:
+            HTTPError: If the API request fails.
+        """
         url = f"{self.host}/id/dataset"
         response = await self._make_api_call(url, parameters)
 
-        # check if limitm exists and handle pagination with offset. Top Do
+        # TODO: Functionality to handle pagination if more than 25 records returned FW-692
+
         return response

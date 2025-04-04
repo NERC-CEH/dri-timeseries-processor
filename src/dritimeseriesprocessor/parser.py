@@ -145,7 +145,6 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
         metadata_sites: The sites from the metadata store
     """
     if sites is not None:
-        sites = sites.lower()
         sites_list = sites.split(",")
 
         # Rough check for formatting

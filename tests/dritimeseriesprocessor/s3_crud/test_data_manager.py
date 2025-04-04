@@ -60,7 +60,7 @@ class TestReadByDateRange(BaseTestCase):
     def test_read_by_date_range_with_selected_columns(self):
         """Test reading data when specifying specific columns
         """
-        cols = ['time', 'SITE_ID', 'col1']
+        cols = ['col1']
         start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 10))
 
         expected_site_ids = ['site1']
@@ -81,7 +81,7 @@ class TestReadByDateRange(BaseTestCase):
         self.assertEqual(result.shape, (480, 3))
         self.assertEqual(sorted(result_site_ids), expected_site_ids)
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
-        self.assertEqual(result.columns, cols)
+        self.assertEqual(result.columns, ['time', 'SITE_ID', 'col1'])
 
 if __name__ == "__main__":
     unittest.main()

@@ -29,7 +29,7 @@ def query_by_date_range(
         start_date: The start date of date range.
         end_date: The end date of date range.
         site_ids: list of site IDs to select.
-        columns: Optional list of columns to select.
+        columns: Optional list of columns to select. If used, time and SITE_ID added by default.
         reader: The object to use for reading the data. Assumed to be a DuckDbParquetReader by default.
     Returns:
         A Polars DataFrame containing the combined data from the Parquet files.
