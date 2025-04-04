@@ -10,6 +10,7 @@ from dritimeseriesprocessor.deriving.derivations import (
     derive,
     ActualVapourPressureFao56Eq54,
     LatentHeatOfVaporization,
+    NetRadiation,
     PotentialEvapotranspiration30Min,
     PsychrometricConstant,
     SaturationVapourPressure,
@@ -169,3 +170,19 @@ class TestPotentialEvapotranspiration30Min(unittest.TestCase):
         result = calc.evaluate(df)
 
         assert_frame_equal(result, expected, check_exact=False, atol=0.00001)
+
+
+class TestNetRadiation(unittest.TestCase):
+    def test_calculation(self):
+        df = pl.DataFrame({
+            "SWIN": [22.9, 19.3, 14, 25.1],
+            "SWOUT": [4.9, 4.2, 3, 5.5],
+            "LWIN": [24.1, 26, 26.2, 23.1],
+            "LWOUT": [31.2, 31.9, 30.9, 30.8],
+        })
+        expected = df.with_columns(pl.Series("RN", [10.9, 9.2, 6.3, 11.9]))
+
+        calc = NetRadiation("SWIN", "SWOUT", "LWIN", "LWOUT", column_name="RN")
+        result = calc.evaluate(df)
+
+        assert_frame_equal(result, expected, check_exact=False, atol=0.001)
