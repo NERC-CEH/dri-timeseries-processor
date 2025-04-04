@@ -22,11 +22,11 @@ from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import group_by_date_site_id, split_data_for_processing
+from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
-from metadata_manager.transformers import extract_site_ids, extract_dataset_metadata
-from metadata_manager.models.service import load_datasets
 from metadata_manager.models.common import build_site_query_parameter
+from metadata_manager.models.service import load_datasets
+from metadata_manager.transformers import extract_dataset_metadata, extract_site_ids
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -70,8 +70,13 @@ view_query_parameter = [("_view", "timeseries")]
 
 
 # Extract metadata for the desired datasets
-datasets_to_build = load_datasets(site_query_parameter + periodicity_query_parameter +
-                                variable_query_paremeter + processing_query_parameter + view_query_parameter)
+datasets_to_build = load_datasets(
+    site_query_parameter
+    + periodicity_query_parameter
+    + variable_query_paremeter
+    + processing_query_parameter
+    + view_query_parameter
+)
 
 processing_metadata = extract_dataset_metadata(datasets_to_build, "output")
 
@@ -90,8 +95,8 @@ for item in processing_metadata:
     item["inputs"] = [{}]
     item["inputs"][0]["ts_id"] = f"http://fdri.ceh.ac.uk/id/dataset/cosmos-{site}-ta_30min_raw"
     item["inputs"][0]["ts_def"] = "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw"
-    item["inputs"][0]["periodicity"] = 30 # This comes as PT30M so would need formatting
-    item["inputs"][0]["resolution"] = 30 # This comes as PT30M so would need formatting
+    item["inputs"][0]["periodicity"] = 30  # This comes as PT30M so would need formatting
+    item["inputs"][0]["resolution"] = 30  # This comes as PT30M so would need formatting
     item["inputs"][0]["sourceBucket"] = "ukceh-fdri-staging-timeseries-level-0"
     item["inputs"][0]["sourceDataset"] = "LIVE_SOILMET_30MIN"
     item["inputs"][0]["sourceColumnName"] = "TA"
@@ -115,11 +120,11 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}, {site
 
 # Currently just processing each input one by one
 for metadata in processing_metadata:
-    for input in metadata["inputs"]:
-        DATASET=input["sourceDataset"]
-        VARIABLES=input["sourceColumnName"]
-        BUCKET=input["sourceBucket"]
-        SITES=input["sourceSite"]
+    for item in metadata["inputs"]:
+        DATASET = input["sourceDataset"]
+        VARIABLES = input["sourceColumnName"]
+        BUCKET = input["sourceBucket"]
+        SITES = input["sourceSite"]
 
         try:
             # Setup s3
@@ -137,7 +142,7 @@ for metadata in processing_metadata:
                 start_date=start_date,
                 end_date=end_date,
                 site_ids=[SITES],
-                columns=[VARIABLES]
+                columns=[VARIABLES],
             )
 
             if data.shape[0] == 0:
@@ -166,11 +171,10 @@ for metadata in processing_metadata:
 
                 logger.info(f"Added dummy data, shape: {data.shape}")
 
-
                 # Initialise TimeSeries object
                 # ---------------------------
-                resolution = Period.of_minutes(input["resolution"])
-                periodicity = Period.of_minutes(input["periodicity"])
+                resolution = Period.of_minutes(item["resolution"])
+                periodicity = Period.of_minutes(item["periodicity"])
                 ts = TimeSeries(
                     data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"]
                 )
@@ -209,7 +213,6 @@ for metadata in processing_metadata:
                 # show first 100 rows to show how infill flags have been applied
                 with pl.Config(tbl_rows=100):
                     logger.info(ts.df.limit(100))
-                
 
                 # Writing
                 # -------

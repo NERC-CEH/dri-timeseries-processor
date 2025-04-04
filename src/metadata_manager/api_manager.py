@@ -63,7 +63,7 @@ class MetadataAPIManager:
 
         Args:
             site_id: Site identifier to filter configurations. Defaults to None, returns all infill configurations.
-        
+
         Returns:
             JSON response containing infill configurations.
 
@@ -84,13 +84,13 @@ class MetadataAPIManager:
 
     async def fetch_timeseries_metadata(self, timeseries_id: str = None) -> Dict[str, Any]:
         """Fetch metadata for a specific time series.
-        
+
         Args:
             timeseries_id: Identifier for the time series to fetch metadata for.
-        
+
         Returns:
             JSON response containing time series metadata.
-        
+
         Raises:
             HTTPError: If the API request fails.
         """
@@ -100,13 +100,13 @@ class MetadataAPIManager:
 
     async def fetch_dataset_metadata(self, parameters: Dict) -> Dict[str, Any]:
         """Fetch metadata for a specific dataset
-        
+
         Args:
             parameters: API query parameters for the dataset endpoint
-        
+
         Returns:
             JSON response containing time series ID metadata.
-        
+
         Raises:
             HTTPError: If the API request fails.
         """

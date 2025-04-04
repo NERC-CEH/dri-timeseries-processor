@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
@@ -12,6 +12,7 @@ from metadata_manager.models.methods.infilling_methods import InfillingMethodReg
 from metadata_manager.models.time_series import TimeSeriesMetadataResponse
 
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
+
 
 class ConfigType(Enum):
     INFILLING = "infilling"
@@ -84,7 +85,7 @@ def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataRe
     return TimeSeriesMetadataResponse.model_validate(data)
 
 
-def load_datasets(parameters: Dict):
+def load_datasets(parameters: Dict) -> Any:
     """Load dataset metadata from the API.
 
     Args:
@@ -95,4 +96,5 @@ def load_datasets(parameters: Dict):
     """
     data = asyncio.run(METADATA_CONNECTION.fetch_dataset_metadata(parameters))
     # TODO build and test pydantic model for dataset return FW-XXX
+    # Add as return annotation
     return data

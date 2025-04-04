@@ -49,7 +49,7 @@ class TestExtractCOSMOSSiteIds(unittest.TestCase):
 
 
 class TestExtractSiteIds(unittest.TestCase):
-    """Test the extract_site_ids function."""
+    """Test the extract_site_ids function"""
 
     def setUp(self):
         """Set up test cases"""

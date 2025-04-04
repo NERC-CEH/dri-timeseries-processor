@@ -2,6 +2,7 @@
 
 import re
 from typing import Any, Dict
+
 from metadata_manager.models.common import get_property
 
 
@@ -45,21 +46,25 @@ def extract_dataset_metadata(response: Dict[str, Any], key: str) -> list:
     Args:
         response: The response from the metadata store dataset request.
         key: What key the metadata is to be stored under.
-    
+
     Returns:
         A list of the required metadata for processing.
     """
     processing_parameters = []
-    for item in response['items']:
+    for item in response["items"]:
         metadata = {key: {}}
-        metadata['ts_id'] = get_property("@id", item)
-        metadata['ts_def'] = get_property("@id", get_property("type", item))
-        metadata[key]['resolution'] = get_property('resolution', get_property('aggregation', get_property('measure', get_property('type', item))))
-        metadata[key]['periodicity'] = get_property('periodicity', get_property('aggregation', get_property('measure', get_property('type', item))))
-        metadata[key]['sourceBucket'] = get_property("sourceBucket", item)
-        metadata[key]['sourceDataset'] = get_property("sourceDataset", item)
-        metadata[key]['sourceColumnName'] = get_property("sourceColumnName", item)
-        metadata[key]['sourceSite'] = get_property("@id", get_property("originatingSite", item)).rsplit("/")[-1]
+        metadata["ts_id"] = get_property("@id", item)
+        metadata["ts_def"] = get_property("@id", get_property("type", item))
+        metadata[key]["resolution"] = get_property(
+            "resolution", get_property("aggregation", get_property("measure", get_property("type", item)))
+        )
+        metadata[key]["periodicity"] = get_property(
+            "periodicity", get_property("aggregation", get_property("measure", get_property("type", item)))
+        )
+        metadata[key]["sourceBucket"] = get_property("sourceBucket", item)
+        metadata[key]["sourceDataset"] = get_property("sourceDataset", item)
+        metadata[key]["sourceColumnName"] = get_property("sourceColumnName", item)
+        metadata[key]["sourceSite"] = get_property("@id", get_property("originatingSite", item)).rsplit("/")[-1]
 
         processing_parameters.append(metadata)
 
