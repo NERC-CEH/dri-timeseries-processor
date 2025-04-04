@@ -121,10 +121,10 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}, {site
 # Currently just processing each input one by one
 for metadata in processing_metadata:
     for item in metadata["inputs"]:
-        DATASET = input["sourceDataset"]
-        VARIABLES = input["sourceColumnName"]
-        BUCKET = input["sourceBucket"]
-        SITES = input["sourceSite"]
+        DATASET = item["sourceDataset"]
+        VARIABLES = item["sourceColumnName"]
+        BUCKET = item["sourceBucket"]
+        SITES = item["sourceSite"]
 
         try:
             # Setup s3
@@ -226,7 +226,7 @@ for metadata in processing_metadata:
 
                 writer.write(
                     bucket_name=metadata["output"]["sourceBucket"],
-                    dataset=DATASET,
+                    dataset=metadata["output"]["sourceDataset"],
                     data=dataframes,
                 )
 
