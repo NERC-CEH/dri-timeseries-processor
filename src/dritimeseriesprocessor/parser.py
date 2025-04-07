@@ -2,22 +2,27 @@
 
 import argparse
 import datetime
+import logging
 from argparse import ArgumentParser
 from datetime import date, timedelta
-from typing import Tuple
+from typing import List, Tuple
 
 import isodate
 from isodate import Duration
+from time_stream.period import Period
 
 from dritimeseriesprocessor.utils import remove_sites_not_in_store
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args(args: list) -> ArgumentParser:
     """Build a parser instance and get the arguments.
 
     period: required
-    sites: optional (default is all sites)
     end_date: optional (default is todays date).
+    sites: optional (if not provided all available sites will be built)
+    peridicity: optional (if not provided all available periodicities will be built)
 
     Returns:
         An instance of ArguementParser.
@@ -26,15 +31,8 @@ def parse_args(args: list) -> ArgumentParser:
     parser.add_argument(
         "period",
         help=(
-            """A valid ISO8601 period to extract level 0 data for. Should be a combination of
+            """A valid ISO8601 period to build the timeseries for. Should be a combination of
             days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
-        ),
-    )
-    parser.add_argument(
-        "--sites",
-        help=(
-            """The sites to extract. Must be a string of sites (upper or lower case) seperated by a comma
-            e.g. ALIC1,BUNNY or alic1,bunny. If not provided all sites will be extracted."""
         ),
     )
     parser.add_argument(
@@ -42,6 +40,21 @@ def parse_args(args: list) -> ArgumentParser:
         "--end_date",
         help=("The date to start the data extraction from. Must be of the form YYYY-MM-DD (default: todays date)"),
         default=date.today().strftime("%Y-%m-%d"),
+    )
+    parser.add_argument(
+        "--sites",
+        help=(
+            """The sites to extract. Must be a string of sites (lower case) seperated by a comma
+            e.g. alic1,bunny. If not provided all sites will be extracted."""
+        ),
+    )
+    parser.add_argument(
+        "--periodicity",
+        help=(
+            """The periodicity of the timeseries to be built. Must be a valid ISO8601 string and multiple
+            periodicities must be seperated by a comma e.g. P1D,PT30M. If not provided all available
+            periodicities will be built."""
+        ),
     )
 
     return parser.parse_args(args)
@@ -134,7 +147,7 @@ def validate_end_date(end_date: str) -> str:
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
 
-def validate_sites(sites: str, metadata_sites: list) -> list:
+def validate_sites(sites: str, metadata_sites: list) -> List[str]:
     """Validate the sites entered.
 
     Checks user entered sites against the metadata site list and removes
@@ -158,3 +171,20 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
         sites = metadata_sites
 
     return sites
+
+
+def validate_periodicity(periodicities: str) -> List[str]:
+    """"""
+    # Using timesteram to validate the ISO8601 period for ease
+    # Try to create a period
+    if periodicities is not None:
+        validated_periodicities = []
+        periodicities = periodicities.split(",")
+
+        for periodicity in periodicities:
+            p = Period.of_iso_duration(periodicity)
+            validated_periodicities.append(p.iso_duration)
+    else:
+        validated_periodicities = []
+
+    return validated_periodicities

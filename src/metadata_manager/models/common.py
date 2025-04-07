@@ -63,3 +63,21 @@ def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
         return values[0]
 
     return values
+
+
+def build_periodicity_query_parameter(periodicities: List) -> List[Tuple]:
+    """Build the periodicity query parameters for the dataset endpoint.
+
+    As we use the same key for multiple periods, it needs to be a list of tuples.
+
+    Args:
+        periodicities: A list of the periodicities to query.
+
+    Returns:
+        A list of tuples with query parameter string and period.
+    """
+    periodicities_params = []
+    for periodicity in periodicities:
+        periodicities_params.append(("type.measure.aggregation.periodicity", periodicity))
+
+    return periodicities_params

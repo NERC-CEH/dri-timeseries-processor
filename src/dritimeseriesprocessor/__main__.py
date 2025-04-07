@@ -24,7 +24,7 @@ from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
-from metadata_manager.models.common import build_site_query_parameter
+from metadata_manager.models.common import build_periodicity_query_parameter, build_site_query_parameter
 from metadata_manager.models.service import load_datasets
 from metadata_manager.transformers import extract_dataset_metadata, extract_site_ids
 
@@ -53,9 +53,10 @@ metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="
 sites = parser.validate_sites(args.sites, metadata_sites)
 site_query_parameter = build_site_query_parameter(sites)
 
-# TODO: Periodicity FW-548
-# Hardcoded
-periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")]
+# Periodicity
+periodicities = parser.validate_periodicity(args.periodicity)
+periodicity_query_parameter = build_periodicity_query_parameter(periodicities)
+
 
 # TODO: Variables FW-549
 # Hardcoded
