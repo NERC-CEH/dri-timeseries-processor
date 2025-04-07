@@ -156,6 +156,9 @@ def validate_sites(sites: str, metadata_sites: list) -> List[str]:
     Args:
         sites: The sites to process
         metadata_sites: The sites from the metadata store
+
+    Returns:
+        A list of site and query parameter tuple pairs
     """
     if sites is not None:
         sites_list = sites.split(",")
@@ -174,17 +177,26 @@ def validate_sites(sites: str, metadata_sites: list) -> List[str]:
 
 
 def validate_periodicity(periodicities: str) -> List[str]:
-    """"""
-    # Using timesteram to validate the ISO8601 period for ease
-    # Try to create a period
+    """Ensure enetered periods conform to valid ISO8601 periods.
+
+    When no periods are entered by the user, the query parameter is left
+    out of the API call.
+
+    Args:
+        periodicities: the periods to validate
+
+    Returns:
+        A list of query parameters.
+    """
     if periodicities is not None:
         validated_periodicities = []
         periodicities = periodicities.split(",")
 
         for periodicity in periodicities:
+            # The timestream Period class has builtin validation
             p = Period.of_iso_duration(periodicity)
             validated_periodicities.append(p.iso_duration)
     else:
-        validated_periodicities = []
+        validated_periodicities = None
 
     return validated_periodicities

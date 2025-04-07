@@ -10,10 +10,11 @@ class TestParseArgs(unittest.TestCase):
     """Test the parser instance is correctly instantiated."""
 
     def test_instance_created(self):
-        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny"""])
+        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--periodicity=PT30M"""])
         assert args.period == 'P1D'
         assert args.end_date == '2024-03-10'
         assert args.sites == 'alic1,bunny'
+        assert args.periodicity == 'PT30M'
 
     @freeze_time("2024-09-19")
     def test_no_end_date(self):
@@ -27,6 +28,12 @@ class TestParseArgs(unittest.TestCase):
         args = parser.parse_args(['P1D'])
         assert args.period == 'P1D'
         assert args.sites == None
+
+    def test_no_periodicity(self):
+        """Test period is None by default."""
+        args = parser.parse_args(['P1D'])
+        assert args.period == 'P1D'
+        assert args.periodicity == None
 
     def test_no_period(self):
         with self.assertRaises(SystemExit):
@@ -111,7 +118,7 @@ class TestValidateEndDate(unittest.TestCase):
             "Incorrect date format, should be YYYY-MM-DD"""
         )
 
-class TestSites(unittest.TestCase):
+class TestValidateSites(unittest.TestCase):
     """Test the validate_sites function."""
 
     @parameterized.expand(
@@ -141,5 +148,34 @@ class TestSites(unittest.TestCase):
 
         with self.assertRaises(ValueError) as err:
             parser.validate_sites(sites, metadata_sites)
+
+        self.assertEqual(str(err.exception), error_message)
+
+
+class TestValidatePeriodicity(unittest.TestCase):
+    """Test the validate_periodicity function."""
+
+    @parameterized.expand(
+        [
+            ('P2D', ['P2D']),
+            ('PT30M,P2D', ['PT30M', 'P2D']),
+            (None, None)
+        ]
+    )
+    def test_correct_period_argument(self, periods, expected):
+        """Test correct formatted arguments return the right periods."""
+
+        result = parser.validate_periodicity(periods)
+
+        self.assertEqual(result, expected)
+    
+
+    def test_incorrect_periods_argument(self):
+        """Test incorrectly formatted arguments raise Value Errors."""
+        period = "rubbish"
+        error_message = f"Illegal ISO 8601 duration: {period}"
+
+        with self.assertRaises(ValueError) as err:
+            parser.validate_periodicity(period)
 
         self.assertEqual(str(err.exception), error_message)
