@@ -1,0 +1,125 @@
+{
+    "meta": {
+        "@id": "http://fdri.ceh.ac.uk/id/dataset.json?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny&type.measure.aggregation.periodicity=PT30M&type.measure.variable=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fcop%2Ftemp_air&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+        "publisher": "UK Centre for Ecology & Hydrology",
+        "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+        "licenseName": "OGL 3",
+        "comment": "",
+        "version": "1.0.0",
+        "hasFormat": [
+            "http://fdri.ceh.ac.uk/id/dataset.html?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny&type.measure.aggregation.periodicity=PT30M&type.measure.variable=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fcop%2Ftemp_air&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+            "http://fdri.ceh.ac.uk/id/dataset.json?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny&type.measure.aggregation.periodicity=PT30M&type.measure.variable=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fcop%2Ftemp_air&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+            "http://fdri.ceh.ac.uk/id/dataset.rdf?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny&type.measure.aggregation.periodicity=PT30M&type.measure.variable=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fcop%2Ftemp_air&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+            "http://fdri.ceh.ac.uk/id/dataset.ttl?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny&type.measure.aggregation.periodicity=PT30M&type.measure.variable=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fcop%2Ftemp_air&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+            "http://fdri.ceh.ac.uk/id/dataset.geojson?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny&type.measure.aggregation.periodicity=PT30M&type.measure.variable=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fcop%2Ftemp_air&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+            "http://fdri.ceh.ac.uk/id/dataset.csv?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny&type.measure.aggregation.periodicity=PT30M&type.measure.variable=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fcop%2Ftemp_air&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed"
+        ],
+        "limit": 25
+    },
+    "items": [
+        {
+            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+            "@type": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                }
+            ],
+            "type": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+                    "processingLevel": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+                    },
+                    "measure": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-degc-mean_prec-pt30m-pt30m",
+                        "variable": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
+                            "prefLabel": [
+                                "Air temperature"
+                            ]
+                        },
+                        "hasUnit": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
+                            "prefLabel": [
+                                "Deg Celsius"
+                            ]
+                        },
+                        "aggregation": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+                            "valueStatistic": {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+                            },
+                            "periodicity": "PT30M",
+                            "resolution": "PT30M"
+                        }
+                    }
+                }
+            ],
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "originatingFacility": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+                }
+            ],
+            "originatingSite": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+                }
+            ]
+        },
+        {
+            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
+            "@type": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                }
+            ],
+            "type": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+                    "processingLevel": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+                    },
+                    "measure": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-degc-mean_prec-pt30m-pt30m",
+                        "variable": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
+                            "prefLabel": [
+                                "Air temperature"
+                            ]
+                        },
+                        "hasUnit": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
+                            "prefLabel": [
+                                "Deg Celsius"
+                            ]
+                        },
+                        "aggregation": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+                            "valueStatistic": {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+                            },
+                            "periodicity": "PT30M",
+                            "resolution": "PT30M"
+                        }
+                    }
+                }
+            ],
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "originatingFacility": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws"
+                }
+            ],
+            "originatingSite": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
+                }
+            ]
+        }
+    ]
+}

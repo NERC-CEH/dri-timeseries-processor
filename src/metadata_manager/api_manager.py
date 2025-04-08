@@ -50,12 +50,11 @@ class MetadataAPIManager:
         """Fetch all sites from the specified network.
 
         Returns:
-           JSON response containing site information for the network.
+            JSON response containing site information for the network.
 
         Raises:
-           HTTPError: If the API request fails.
+            HTTPError: If the API request fails.
         """
-
         response = await self._make_api_call(f"{self.host}/id/network/{self.network}")
         return response
 
@@ -71,7 +70,6 @@ class MetadataAPIManager:
         Raises:
             HTTPError: If the API request fails.
         """
-
         url = (
             f"{self.host}/id/data-processing-configuration.json?"
             f"type={self.service_base_uri}/ref/common/configuration-type/infill-configuration"
@@ -81,6 +79,7 @@ class MetadataAPIManager:
             url += f"&appliesToFacility={self.service_base_uri}/id/site/{self.network}-{site_id.lower()}"
 
         response = await self._make_api_call(url)
+
         return response
 
     async def fetch_timeseries_metadata(self, timeseries_id: str = None) -> Dict[str, Any]:
@@ -97,4 +96,23 @@ class MetadataAPIManager:
         """
         url = f"{self.host}/id/dataset.json?@id={self.service_base_uri}/id/dataset/{timeseries_id}&_view=timeseries"
         response = await self._make_api_call(url)
+        return response
+
+    async def fetch_dataset_metadata(self, parameters: Dict) -> Dict[str, Any]:
+        """Fetch metadata for a specific dataset
+
+        Args:
+            parameters: API query parameters for the dataset endpoint
+
+        Returns:
+            JSON response containing time series ID metadata.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
+        url = f"{self.host}/id/dataset"
+        response = await self._make_api_call(url, parameters)
+
+        # TODO: Functionality to handle pagination if more than 25 records returned FW-692
+
         return response
