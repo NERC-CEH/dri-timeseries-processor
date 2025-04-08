@@ -64,7 +64,7 @@ def extract_dataset_metadata(response: Dict[str, Any], key: str) -> list:
         metadata[key]["sourceBucket"] = get_property("sourceBucket", item)
         metadata[key]["sourceDataset"] = get_property("sourceDataset", item)
         metadata[key]["sourceColumnName"] = get_property("sourceColumnName", item)
-        metadata[key]["sourceSite"] = get_property("@id", get_property("originatingSite", item)).rsplit("/")[-1]
+        metadata[key]["sourceSite"] = get_property("@id", get_property("originatingSite", item))
 
         processing_parameters.append(metadata)
 

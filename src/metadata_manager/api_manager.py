@@ -116,3 +116,22 @@ class MetadataAPIManager:
         # TODO: Functionality to handle pagination if more than 25 records returned FW-692
 
         return response
+
+    async def fetch_timeseries_derivation_metadata(self, parameters: Dict) -> Dict[str, Any]:
+        """Fetch metadata for derivations associated to a timeseries definition
+
+        Args:
+            parameters: API query parameters for the timeseries definition endpoint
+
+        Returns:
+            JSON response containing time series derivation metadata.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
+        url = f"{self.host}/ref/time-series-definition?_view=derivation&exists-methodology=true"
+        response = await self._make_api_call(url, parameters)
+
+        # TODO: Functionality to handle pagination if more than 25 records returned FW-692
+
+        return response

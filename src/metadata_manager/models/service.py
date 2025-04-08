@@ -9,7 +9,8 @@ from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
-from metadata_manager.models.time_series import TimeSeriesMetadataResponse
+from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
+from metadata_manager.models.schemas.derivations import TimeSeriesDerivationResponse
 
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
@@ -98,3 +99,16 @@ def load_datasets(parameters: Dict) -> Any:
     # TODO build and test pydantic model for dataset return FW-696
     # Add as return annotation
     return data
+
+
+def load_timeseries_derivations(parameters: Dict) -> Any:
+    """Load the timeseries derivation metadata from the API.
+
+    Args:
+        parameters: API query parameters for the time series definition endpoint
+
+    Returns:
+        The parsed dataset metadata.
+    """
+    data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_derivation_metadata(parameters))
+    return TimeSeriesDerivationResponse.model_validate(data)

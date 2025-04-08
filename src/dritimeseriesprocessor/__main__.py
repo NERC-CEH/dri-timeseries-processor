@@ -82,14 +82,24 @@ datasets_to_build = load_datasets(
 processing_metadata = extract_dataset_metadata(datasets_to_build, "output")
 
 
-# TODO: Get dependencies FW-641
-# Each dataset to build is dependent on other timeseries.
+# ----------------
+# Get dependencies
+# ----------------
+# Each dataset to build is dependent on other timeseries. Extract the required
+# input metadata so the requested output can be built
+dependencies = load_dependencies(parameters)
+
+
 # Potential method:
 # For each entry in processing_parameters, add the dependency metadata to
 # an "input" key using extract_datatset_metadata.
 
 # Hard coding dependent datasets
 # Each output can be dependent on multiple inputs
+
+# tsdefs from derivation view (this includes uses)
+# loop through uses and extract derivation info + source bucket from tsdef + site (might be multiple)
+# do this recursively until uses no longer exists
 for item in processing_metadata:
     site = item["output"]["sourceSite"].rsplit("-")[-1]
 
