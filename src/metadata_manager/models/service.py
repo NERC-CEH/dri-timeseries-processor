@@ -95,6 +95,6 @@ def load_datasets(parameters: Dict) -> Any:
         The parsed dataset metadata.
     """
     data = asyncio.run(METADATA_CONNECTION.fetch_dataset_metadata(parameters))
-    # TODO build and test pydantic model for dataset return FW-XXX
+    # TODO build and test pydantic model for dataset return FW-696
     # Add as return annotation
     return data

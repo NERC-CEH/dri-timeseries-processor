@@ -248,6 +248,38 @@ class LatentHeatOfVaporization(Calculation):
         return lv
 
 
+class NetRadiation(Calculation):
+    def __init__(
+        self,
+        swin: Union[str, pl.Expr],
+        swout: Union[str, pl.Expr],
+        lwin: Union[str, pl.Expr],
+        lwout: Union[str, pl.Expr],
+        column_name: str = None,
+    ):
+        """Calculate net radiation.
+
+        Args:
+            swin: Incoming shortwave radiation [W m-2]
+            swout: Outgoing shortwave radiation [W m-2]
+            lwin: Incoming longwave radiation [W m-2]
+            lwout: Outgoing longwave radiation [W m-2]
+
+        Returns:
+            Net radiation [W m-2]
+        """
+        super().__init__("Net radiation", column_name, "W m-2")
+        self._swin, self._swout, self._lwin, self._lwout = self._columns_to_expressions(swin, swout, lwin, lwout)
+
+    @property
+    def default_column_name(self) -> str:
+        return "rn"
+
+    def expr(self) -> pl.Expr:
+        rn = self._swin - self._swout + self._lwin - self._lwout
+        return rn
+
+
 def derive(
     ts: TimeSeries,
     calc: Type[Calculation],

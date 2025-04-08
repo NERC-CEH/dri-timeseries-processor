@@ -49,6 +49,7 @@ metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, netw
 args = parser.parse_args(sys.argv[1:])
 
 # Sites
+# TODO build service and pydantic model for sites endpoint FW-694
 metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="cosmos")
 sites = parser.validate_sites(args.sites, metadata_sites)
 site_query_parameter = build_site_query_parameter(sites)
