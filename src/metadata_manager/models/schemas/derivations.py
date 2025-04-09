@@ -3,23 +3,12 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, check_single_list_item
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, check_single_list_item, get_property
 
 
 class Measure(BaseModel):
-    """Processing time series measure information
-
-    Attributes:
-        measure_id: The ID of the measure
-        units: The units of the time series
-        resolution: The resolution value
-        periodicity: The periodicity value
-    """
-
+    
     measure_id: str
-    units: Optional[str]
-    resolution: str
-    periodicity: str
 
     @model_validator(mode="before")
     @classmethod
@@ -30,60 +19,54 @@ class Measure(BaseModel):
             data: The raw data dictionary containing measure details.
 
         Returns:
-            A dictionary with the extracted measure information
+            A dictionary with the measure info.
         """
-        result = {}
-
-        result["measure_id"] = data["@id"]
-        result["units"] = check_single_list_item(data["hasUnit"].get("prefLabel"))
-        result["resolution"] = data["aggregation"]["resolution"]
-        result["periodicity"] = data["aggregation"]["periodicity"]
-
-        return result
+        return {"measure_id": data["@id"]}
 
 
-class ProcessingLevel(BaseModel):
-    """Processing level information
-
-    Attributes:
-        processing_level_id: The ID of the processing level
-    """
-
-    processing_level_id: str
+class Methodology(BaseModel):
+    derivation_id: str
+    uses: list
+    configuration_type: str
 
     @model_validator(mode="before")
     @classmethod
-    def extract_processing_level_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract processing level information from raw data.
+    def extract_timeseries_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract time series information from raw API data.
 
         Args:
-           data: The raw data dictionary containing processing level details.
+            data : Raw time series data from the API.
 
         Returns:
-           A dictionary with the processing level info.
+            Processed data.
         """
-        return {"processing_level_id": data["@id"]}
+        result = {}
+        uses = []
 
 
-class TimeSeriesMetadata(BaseModel):
-    """Model for time series metadata
+        result['derivation_id'] = get_property("@id", data)
+        dependencies = data['uses']
+        for items in dependencies:
+            uses.append(get_property("@id", items))
+        result["uses"] = uses
+        result["configuration_type"] = get_property("@id", get_property("type", get_property("configuration", data)))
+
+        return result
+
+class DerivationMetadata(BaseModel):
+    """Processing time series methodology information
 
     Attributes:
-        name: Name of time series
-        description: Description of time series
-        measure: Measure object containing units, resolution etc.
-        processing_level: ProcessingLevel object
-        bucket: Name of s3 bucket where time series data is saved
-        dataset: Name of dataset in bucket
-        column: Name of column this time series is referred to as in files
+        methodology_id: The ID of the measure
+        units: The units of the time series
+        resolution: The resolution value
+        periodicity: The periodicity value
     """
 
-    name: str
-    measure: Measure
-    processing_level: ProcessingLevel
-    bucket: str
-    dataset: str
-    column: str
+    timeseries_def: str
+    measure_id: Measure
+    methodology: Optional[Methodology] = None
+
 
     @model_validator(mode="before")
     @classmethod
@@ -98,25 +81,21 @@ class TimeSeriesMetadata(BaseModel):
         """
         result = {}
 
-        type_info = check_single_list_item(data["type"])
-
-        result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["@id"]).group(1)
-        result["measure"] = Measure.model_validate(type_info["measure"])
-        result["processing_level"] = ProcessingLevel.model_validate(type_info["processingLevel"])
-        result["bucket"] = data["sourceBucket"]
-        result["dataset"] = data["sourceDataset"]
-        result["column"] = data["sourceColumnName"]
+        result["timeseries_def"] = data["@id"]
+        result["measure_id"] = Measure.model_validate(data["measure"])
+        if 'methodology' in data:
+            result["methodology"] = Methodology.model_validate(data['methodology'])
 
         return result
 
 
-class TimeSeriesMetadataResponse(BaseModel):
+class TimeseriesDerivationResponse(BaseModel):
     """Response wrapper that automatically extracts the single time series item"""
 
-    item: TimeSeriesMetadata = Field(None)
+    item: DerivationMetadata = Field(None)
 
     @classmethod
-    def model_validate(cls, obj: Dict[str, Any], *args, **kwargs) -> TimeSeriesMetadata:
+    def model_validate(cls, obj: Dict[str, Any], *args, **kwargs) -> DerivationMetadata:
         """Validate and extract a single time series metadata item from the response.
 
         Args:
@@ -133,4 +112,4 @@ class TimeSeriesMetadataResponse(BaseModel):
         if len(obj["items"]) != 1:
             raise ValueError(f"Expected exactly one item in the time series response, got {len(obj['items'])}")
         # Create a new dict with the single item
-        return TimeSeriesMetadata.model_validate(obj["items"][0])
+        return DerivationMetadata.model_validate(obj["items"][0])

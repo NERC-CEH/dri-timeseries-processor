@@ -129,8 +129,9 @@ class MetadataAPIManager:
         Raises:
             HTTPError: If the API request fails.
         """
-        url = f"{self.host}/ref/time-series-definition?_view=derivation&exists-methodology=true"
-        response = await self._make_api_call(url, parameters)
+        base_parameters = {"_view": "derivation"}
+        url = f"{self.host}/ref/time-series-definition"
+        response = await self._make_api_call(url, base_parameters | parameters)
 
         # TODO: Functionality to handle pagination if more than 25 records returned FW-692
 

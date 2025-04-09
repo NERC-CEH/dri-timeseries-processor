@@ -25,7 +25,7 @@ from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
 from metadata_manager.models.common import build_site_query_parameter
-from metadata_manager.models.service import load_datasets
+from metadata_manager.models.service import load_datasets, load_timeseries_derivations
 from metadata_manager.transformers import extract_dataset_metadata, extract_site_ids
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")
 
 # TODO: Variables FW-549
 # Hardcoded
-variable_query_paremeter = [("type.measure.variable", "http://fdri.ceh.ac.uk/ref/common/cop/temp_air")]
+variable_query_paremeter = [("type.measure.variable", "http://fdri.ceh.ac.uk/ref/common/cop/rn")]
 
 # TODO Processing level (ticket not yet created)
 # Hardcoded
@@ -69,8 +69,12 @@ processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/re
 # View parameter
 view_query_parameter = [("_view", "timeseries")]
 
+# Dates
+start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 
-# Extract metadata for the desired datasets
+# Get metadata for datasets to be built
+# -------------------------------------
+# Validate and load API response before transforming to required format
 datasets_to_build = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
@@ -78,24 +82,24 @@ datasets_to_build = load_datasets(
     + processing_query_parameter
     + view_query_parameter
 )
-
 processing_metadata = extract_dataset_metadata(datasets_to_build, "output")
 
 
-# ----------------
-# Get dependencies
-# ----------------
+# Get derivation metadata for datasets to be built
+# -----------------------------------------
 # Each dataset to build is dependent on other timeseries. Extract the required
 # input metadata so the requested output can be built
-dependencies = load_dependencies(parameters)
+for output in processing_metadata:
+    parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"}
+    # parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed"}
+    derivation = load_timeseries_derivations(parameters)
+    # use transformer to extract whats required
+    print(derivation)
+
+    #dependencies = some_recursive function that calls the load_depenencies and transforms
+    # append result to processing metadata
 
 
-# Potential method:
-# For each entry in processing_parameters, add the dependency metadata to
-# an "input" key using extract_datatset_metadata.
-
-# Hard coding dependent datasets
-# Each output can be dependent on multiple inputs
 
 # tsdefs from derivation view (this includes uses)
 # loop through uses and extract derivation info + source bucket from tsdef + site (might be multiple)
@@ -117,17 +121,14 @@ for item in processing_metadata:
     item["output"]["derivation_method"] = "http://fdri.ceh.ac.uk/ref/common/method/calculate-calculate-ta"
 
 
-# Dates
-start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
-logger.info(f"Processing level 0 data between {start_date} and {end_date}, {sites}")
-
 
 # Start processing
 # ----------------
-
 # TODO Input data to be processed by dataset
 # Get all the required data and merge into dataframes
 # Process altogether and then separate back into timeseries required for each timeseries ID
+
+logger.info(f"Processing level 0 data between {start_date} and {end_date} for sites: {sites}")
 
 # Currently just processing each input one by one
 for metadata in processing_metadata:
