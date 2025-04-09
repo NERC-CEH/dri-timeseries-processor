@@ -20,7 +20,7 @@ def extract_cosmos_site_ids(response: Dict[str, Any]) -> list:
     for item in response["items"][0]["contains"]:
         match = re.search(r"cosmos-(\w+)$", item["@id"])
         if match:
-            sites.append(match.group(1))
+            sites.append(match.group(1).upper())
 
     return sorted(sites)
 

@@ -38,7 +38,7 @@ def build_site_query_parameter(sites: List) -> List[Tuple]:
     """
     sites_params = []
     for site in sites:
-        sites_params.append(("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site}"))
+        sites_params.append(("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}"))
 
     return sites_params
 
