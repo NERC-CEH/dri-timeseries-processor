@@ -170,7 +170,7 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
     return sites
 
 
-def validate_col_names(col_names: str, network: str) -> list:
+def validate_col_names(col_names: str) -> list:
     """Validate the col_names entered.
 
     Args:
@@ -180,11 +180,7 @@ def validate_col_names(col_names: str, network: str) -> list:
     if col_names is not None:
         col_name_list = col_names.split(",")
 
-        if network == "cosmos":
-            # Add default col_names
-            checked_col_names = ["time", "SITE_ID"]
-        else:
-            checked_col_names = []
+        checked_col_names = []
 
         # Rough check for formatting
         for variable in col_name_list:
