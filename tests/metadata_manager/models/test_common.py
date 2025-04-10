@@ -119,7 +119,7 @@ class TestBuildSiteQueryParameter(TestCase):
 
         assert result == expected
 
-class TestBuildColNameQueryParameter(TestCase):
+class TestBuildColumnsQueryParameter(TestCase):
     """Tests the build_column_query_parameter."""
 
     def test_multiple_columns(self) -> None:
