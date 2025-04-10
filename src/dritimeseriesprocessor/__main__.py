@@ -26,7 +26,7 @@ from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
 from metadata_manager.models.common import build_site_query_parameter
 from metadata_manager.models.service import load_datasets, load_timeseries_derivations
-from metadata_manager.transformers import extract_dataset_metadata, extract_site_ids
+from metadata_manager.transformers import extract_timeseries_id_metadata, extract_site_ids
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -43,9 +43,9 @@ metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, netw
 
 # Parse and validate arguments
 # ----------------------------
-# User arguments are combined to create the dataset(s) to be built.
+# User arguments are combined to create the timeseries IDs to be processed.
 # The metadata store is queried to see if they exist, and extract the required
-# metadata for building if so.
+# metadata for processing if so.
 args = parser.parse_args(sys.argv[1:])
 
 # Sites
@@ -72,24 +72,33 @@ view_query_parameter = [("_view", "timeseries")]
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 
-# Get metadata for datasets to be built
-# -------------------------------------
+# Get metadata for timeseries IDs to be processed
+# -----------------------------------------------
 # Validate and load API response before transforming to required format
-datasets_to_build = load_datasets(
+timeseries_ids_to_process = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
     + variable_query_paremeter
     + processing_query_parameter
     + view_query_parameter
 )
-processing_metadata = extract_dataset_metadata(datasets_to_build, "output")
+processing_metadata = extract_timeseries_id_metadata(timeseries_ids_to_process)
 
 
-# Get derivation metadata for datasets to be built
-# -----------------------------------------
-# Each dataset to build is dependent on other timeseries. Extract the required
-# input metadata so the requested output can be built
-for output in processing_metadata:
+# Get derivation metadata for datasets to be processed
+# ----------------------------------------------------
+# Derivation metadata is held with the timeseries definition rather than the ID
+# So first extract all unique timeseries defs from the IDS to be processed
+
+# Hardcoded
+timeseries_defs = ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed']
+
+# Extract all the dependencies associated with each timeseries definition.
+timeseries_defs_for_processing = load_timeseries_derivations(timeseries_defs)
+
+
+
+for ts_def in processing_metadata:
     #parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"}
     parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed"}
     derivation = load_timeseries_derivations(processing_metadata, parameters)

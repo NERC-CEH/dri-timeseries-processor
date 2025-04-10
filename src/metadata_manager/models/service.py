@@ -114,7 +114,7 @@ def load_single_timeseries_derivation(timeseries_def: str) -> Any:
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def load_timeseries_derivations(metadata_parameters) -> Any:
+def load_timeseries_derivations(ts_defs) -> Any:
     # recursive function calling the above
     # transforming done in main??
     # Every ts_def will have at least one dataset it needs to get built
@@ -122,19 +122,20 @@ def load_timeseries_derivations(metadata_parameters) -> Any:
     #1 build inputs
     #2 loop through inputs
     #3 buildinputs etc....
-    has_dependencies = True
-    test= []
-    while has_dependencies:
-        inputs = load_single_timeseries_derivation(timeseries_def)
-        # do some transfomring here?
-        if inputs.methodology:
-            dependencies = inputs.methodology.uses
-            for item in dependencies:
-                test.append(item)
-                parameters = {"@id": item}
-                inputs = load_single_timeseries_derivation(timeseries_def)
-        else:
-            test.append(inputs)
-            has_dependencies = False
-    
-    return test
+    for ts_def in ts_defs:
+        b = []
+        inputs_to_check = [ts_def]
+        while len(inputs_to_check) != 0:
+            for a in inputs_to_check:
+                test = load_single_timeseries_derivation(a)
+                # Build dict for defs map (if it doesnt already exist)
+                if test.methodology:
+                    b.append(test.methodology.uses)
+
+                    # Set new inputs to check to outputs.
+                    inputs_to_check = test.methodology.uses
+                else:
+                    inputs_to_check = []
+
+    # merge all dicts somehow
+    return b

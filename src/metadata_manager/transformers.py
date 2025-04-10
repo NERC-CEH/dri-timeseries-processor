@@ -40,32 +40,31 @@ def extract_site_ids(response: Dict[str, Any], network: str) -> list:
         raise ValueError(f"Network {network} not supported.")
 
 
-def extract_dataset_metadata(response: Dict[str, Any], key: str) -> list:
-    """Extract the metadata required for processing timeseries from the dataset endpoint.
+def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict:
+    """Extract the metadata required for processing timeseries IDs from the dataset endpoint.
 
     Args:
         response: The response from the metadata store dataset request.
-        key: What key the metadata is to be stored under.
 
     Returns:
-        A list of the required metadata for processing.
+        A dict of the required metadata for processing.
     """
-    processing_parameters = []
+    metadata = {}
     for item in response["items"]:
-        metadata = {key: {}}
-        metadata["ts_id"] = get_property("@id", item)
-        metadata["ts_def"] = get_property("@id", get_property("type", item))
-        metadata[key]["resolution"] = get_property(
+        ts_id_metadata = {}
+
+        ts_id_metadata["ts_def"] = get_property("@id", get_property("type", item))
+        ts_id_metadata["resolution"] = get_property(
             "resolution", get_property("aggregation", get_property("measure", get_property("type", item)))
         )
-        metadata[key]["periodicity"] = get_property(
+        ts_id_metadata["periodicity"] = get_property(
             "periodicity", get_property("aggregation", get_property("measure", get_property("type", item)))
         )
-        metadata[key]["sourceBucket"] = get_property("sourceBucket", item)
-        metadata[key]["sourceDataset"] = get_property("sourceDataset", item)
-        metadata[key]["sourceColumnName"] = get_property("sourceColumnName", item)
-        metadata[key]["sourceSite"] = get_property("@id", get_property("originatingSite", item))
+        ts_id_metadata["sourceBucket"] = get_property("sourceBucket", item)
+        ts_id_metadata["sourceDataset"] = get_property("sourceDataset", item)
+        ts_id_metadata["sourceColumnName"] = get_property("sourceColumnName", item)
+        ts_id_metadata["sourceSite"] = get_property("@id", get_property("originatingSite", item))
 
-        processing_parameters.append(metadata)
+        metadata[get_property("@id", item)] = ts_id_metadata
 
-    return processing_parameters
+    return metadata
