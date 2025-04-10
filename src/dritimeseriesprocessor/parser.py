@@ -183,9 +183,14 @@ def validate_col_names(col_names: str) -> list:
         checked_col_names = []
 
         # Rough check for formatting
-        for variable in col_name_list:
+        for col_name in col_name_list:
+            variable = col_name.strip()
+            if variable == "":
+                raise ValueError("Variable cannot be empty.")
             if not variable.isalnum():
                 raise ValueError(f"Variable {variable} should only contain letters and numbers.")
+            elif variable in checked_col_names:
+                raise ValueError(f"Variable {variable} is duplicated in the arguments.")
             else:
                 checked_col_names.append(variable.upper())
 

@@ -10,10 +10,11 @@ class TestParseArgs(unittest.TestCase):
     """Test the parser instance is correctly instantiated."""
 
     def test_instance_created(self):
-        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny"""])
+        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--vars=TA,PA"""])
         assert args.period == 'P1D'
         assert args.end_date == '2024-03-10'
         assert args.sites == 'alic1,bunny'
+        assert args.vars == 'TA,PA'
 
     @freeze_time("2024-09-19")
     def test_no_end_date(self):
@@ -27,6 +28,12 @@ class TestParseArgs(unittest.TestCase):
         args = parser.parse_args(['P1D'])
         assert args.period == 'P1D'
         assert args.sites == None
+
+    def test_no_vars(self):
+        """Test vars is None by default."""
+        args = parser.parse_args(['P1D'])
+        assert args.period == 'P1D'
+        assert args.vars == None
 
     def test_no_period(self):
         with self.assertRaises(SystemExit):
@@ -111,7 +118,7 @@ class TestValidateEndDate(unittest.TestCase):
             "Incorrect date format, should be YYYY-MM-DD"""
         )
 
-class TestSites(unittest.TestCase):
+class TestValidateSites(unittest.TestCase):
     """Test the validate_sites function."""
 
     @parameterized.expand(
@@ -141,5 +148,36 @@ class TestSites(unittest.TestCase):
 
         with self.assertRaises(ValueError) as err:
             parser.validate_sites(sites, metadata_sites)
+
+        self.assertEqual(str(err.exception), error_message)
+
+
+class TestValidateColNames(unittest.TestCase):
+    """Test the validate_col_names function."""
+
+    @parameterized.expand(
+        [
+            ('TA,PA', ['TA', 'PA']),
+            ('TA, PA ', ['TA', 'PA']),
+            (None, [])
+        ]
+    )
+    def test_correct_col_names(self, col_names, expected):
+        """Test correct formatted arguments return the right column names."""
+        result = parser.validate_col_names(col_names)
+
+        self.assertEqual(result, expected)
+    
+    @parameterized.expand(
+        [
+            ('TA,PA, ', "Variable cannot be empty."),
+            ('T!,PA', "Variable T! should only contain letters and numbers."),
+            ('TA,PA,TA', "Variable TA is duplicated in the arguments.")
+        ]
+    )
+    def test_incorrect_col_names(self, col_names, error_message):
+        """Test incorrectly formatted arguments raise Value Errors."""
+        with self.assertRaises(ValueError) as err:
+            parser.validate_col_names(col_names)
 
         self.assertEqual(str(err.exception), error_message)
