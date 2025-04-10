@@ -38,9 +38,23 @@ def build_site_query_parameter(sites: List) -> List[Tuple]:
     """
     sites_params = []
     for site in sites:
-        sites_params.append(("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site}"))
+        sites_params.append(("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}"))
 
     return sites_params
+
+
+def build_column_query_parameter(columns: list) -> List[Tuple]:
+    """Build the column name query parameters for the dataset endpoint.
+
+    As we use the same key for multiple columns, it needs to be a list of tuples.
+
+    Args:
+        columns: The column names to query.
+
+    Returns:
+        A list of tuples with query parameter string and column name.
+    """
+    return [("sourceColumnName", column) for column in columns]
 
 
 def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
