@@ -169,7 +169,7 @@ class TestValidatePeriodicity(unittest.TestCase):
             ('P2D', ['P2D']),
             ('PT30M,P2D', ['PT30M', 'P2D']),
             ('pt30M,P2d', ['PT30M', 'P2D']),
-            (None, None)
+            (None, [])
         ]
     )
     def test_correct_period_argument(self, periods, expected):
