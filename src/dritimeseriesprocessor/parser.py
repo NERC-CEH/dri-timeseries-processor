@@ -38,10 +38,10 @@ def parse_args(args: list) -> ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--vars",
+        "--columns",
         help=(
-            """The col_names to extract. Must be a string of col_names by column name (upper or lower case) seperated by
-            a comma e.g. TA,RN or ta,rn. If not provided all col_names will be extracted."""
+            """The columns to extract. Must be a string of column names (upper or lower case) seperated by
+            a comma e.g. TA,RN or ta,rn. If not provided all columns for given resolution will be extracted."""
         ),
     )
     parser.add_argument(
@@ -170,30 +170,30 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
     return sites
 
 
-def validate_col_names(col_names: str) -> list:
-    """Validate the col_names entered.
+def validate_columns(columns: str) -> list:
+    """Validate the columns entered.
 
     Args:
-        col_names: The col_names to process
+        columns: The columns to process
         network: The project network the data comes from.
     """
-    if col_names is not None:
-        col_name_list = col_names.split(",")
+    if columns is not None:
+        column_list = columns.split(",")
 
-        checked_col_names = []
+        checked_columns = []
 
         # Rough check for formatting
-        for col_name in col_name_list:
-            variable = col_name.strip()
-            if variable == "":
-                raise ValueError("Variable cannot be empty.")
-            if not variable.isalnum():
-                raise ValueError(f"Variable {variable} should only contain letters and numbers.")
-            elif variable in checked_col_names:
-                raise ValueError(f"Variable {variable} is duplicated in the arguments.")
+        for column in column_list:
+            col = column.strip()
+            if col == "":
+                raise ValueError("Column cannot be empty.")
+            if not col.isalnum():
+                raise ValueError(f"Column {col} should only contain letters and numbers.")
+            elif col in checked_columns:
+                raise ValueError(f"Column {col} is duplicated in the arguments.")
             else:
-                checked_col_names.append(variable.upper())
+                checked_columns.append(col.upper())
 
-        return checked_col_names
+        return checked_columns
     else:
         return []

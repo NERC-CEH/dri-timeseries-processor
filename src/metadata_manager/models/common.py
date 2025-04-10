@@ -43,18 +43,18 @@ def build_site_query_parameter(sites: List) -> List[Tuple]:
     return sites_params
 
 
-def build_col_name_query_parameter(col_names: list) -> List[Tuple]:
+def build_column_query_parameter(columns: list) -> List[Tuple]:
     """Build the column name query parameters for the dataset endpoint.
 
     As we use the same key for multiple columns, it needs to be a list of tuples.
 
     Args:
-        col_names: The column names to query.
+        columns: The column names to query.
 
     Returns:
         A list of tuples with query parameter string and column name.
     """
-    return [("sourceColumnName", col_name) for col_name in col_names]
+    return [("sourceColumnName", column) for column in columns]
 
 
 def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
