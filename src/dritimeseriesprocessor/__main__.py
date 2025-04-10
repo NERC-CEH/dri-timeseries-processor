@@ -60,7 +60,7 @@ periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")
 
 # Processing column name query params
 columns = parser.validate_columns(args.columns)
-variable_query_paremeter = build_column_query_parameter(columns)
+column_query_paremeter = build_column_query_parameter(columns)
 
 # TODO Processing level (ticket not yet created)
 # Hardcoded
@@ -74,7 +74,7 @@ view_query_parameter = [("_view", "timeseries")]
 datasets_to_build = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
-    + variable_query_paremeter
+    + column_query_paremeter
     + processing_query_parameter
     + view_query_parameter
 )
@@ -123,7 +123,7 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date}, {site
 for metadata in processing_metadata:
     for item in metadata["inputs"]:
         DATASET = item["sourceDataset"]
-        VARIABLES = item["sourceColumnName"]
+        COLUMNS = item["sourceColumnName"]
         BUCKET = item["sourceBucket"]
         SITES = item["sourceSite"]
 
@@ -143,7 +143,7 @@ for metadata in processing_metadata:
                 start_date=start_date,
                 end_date=end_date,
                 site_ids=[SITES],
-                columns=[VARIABLES],
+                columns=[COLUMNS],
             )
 
             if data.shape[0] == 0:

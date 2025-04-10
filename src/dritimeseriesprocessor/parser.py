@@ -175,7 +175,9 @@ def validate_columns(columns: str) -> list:
 
     Args:
         columns: The columns to process
-        network: The project network the data comes from.
+
+    Returns:
+        A list of columns to process
     """
     if columns is not None:
         column_list = columns.split(",")
@@ -187,7 +189,7 @@ def validate_columns(columns: str) -> list:
             col = column.strip()
             if col == "":
                 raise ValueError("Column cannot be empty.")
-            if not col.isalnum():
+            elif not col.isalnum():
                 raise ValueError(f"Column {col} should only contain letters and numbers.")
             elif col in checked_columns:
                 raise ValueError(f"Column {col} is duplicated in the arguments.")
