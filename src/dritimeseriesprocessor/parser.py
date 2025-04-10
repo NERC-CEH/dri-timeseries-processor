@@ -29,23 +29,17 @@ def parse_args(args: list) -> ArgumentParser:
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
-        "period",
+        "--sites",
         help=(
-            """A valid ISO8601 period to build the timeseries for. Should be a combination of
-            days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
+            """The sites to extract. Must be a string of sites (upper or lower case) seperated by a comma
+            e.g. ALIC1,BUNNY or alic1,bunny. If not provided all sites will be extracted."""
         ),
     )
     parser.add_argument(
-        "-ed",
-        "--end_date",
-        help=("The date to start the data extraction from. Must be of the form YYYY-MM-DD (default: todays date)"),
-        default=date.today().strftime("%Y-%m-%d"),
-    )
-    parser.add_argument(
-        "--sites",
+        "--columns",
         help=(
-            """The sites to extract. Must be a string of sites (lower case) seperated by a comma
-            e.g. alic1,bunny. If not provided all sites will be extracted."""
+            """The columns to extract. Must be a string of column names (upper or lower case) seperated by
+            a comma e.g. TA,RN or ta,rn. If not provided all columns for given resolution will be extracted."""
         ),
     )
     parser.add_argument(
@@ -56,7 +50,19 @@ def parse_args(args: list) -> ArgumentParser:
             periodicities will be built."""
         ),
     )
-
+    parser.add_argument(
+        "-ed",
+        "--end_date",
+        help=("The date to start the data extraction from. Must be of the form YYYY-MM-DD (default: todays date)"),
+        default=date.today().strftime("%Y-%m-%d"),
+    )
+    parser.add_argument(
+        "period",
+        help=(
+            """A valid ISO8601 period to build the timeseries for. Should be a combination of
+            days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
+        ),
+    )
     return parser.parse_args(args)
 
 
@@ -163,13 +169,16 @@ def validate_sites(sites: str, metadata_sites: list) -> List[str]:
     if sites is not None:
         sites_list = sites.split(",")
 
+        checked_sites = []
         # Rough check for formatting
         for site in sites_list:
             if not site.isalnum():
                 raise ValueError(f"Site {site} should only contain letters and numbers.")
+            else:
+                checked_sites.append(site.upper())
 
         # Filter out user requested sites that are not in the metadata store
-        sites = remove_sites_not_in_store(sites_list, metadata_sites)
+        sites = remove_sites_not_in_store(checked_sites, metadata_sites)
     else:
         sites = metadata_sites
 
@@ -200,3 +209,34 @@ def validate_periodicity(periodicities: str) -> List[str]:
         validated_periodicities = None
 
     return validated_periodicities
+
+
+def validate_columns(columns: str) -> list:
+    """Validate the columns entered.
+
+    Args:
+        columns: The columns to process
+
+    Returns:
+        A list of columns to process
+    """
+    if columns is not None:
+        column_list = columns.split(",")
+
+        checked_columns = []
+
+        # Rough check for formatting
+        for column in column_list:
+            col = column.strip()
+            if col == "":
+                raise ValueError("Column cannot be empty.")
+            elif not col.isalnum():
+                raise ValueError(f"Column {col} should only contain letters and numbers.")
+            elif col in checked_columns:
+                raise ValueError(f"Column {col} is duplicated in the arguments.")
+            else:
+                checked_columns.append(col.upper())
+
+        return checked_columns
+    else:
+        return []

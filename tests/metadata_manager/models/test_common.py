@@ -7,9 +7,9 @@ from metadata_manager.models.common import (
     SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX,
     get_property,
     build_site_query_parameter,
-    build_periodicity_query_parameter
+    build_periodicity_query_parameter,
+    build_column_query_parameter
 )
-
 
 class TestUriIdExtractRegex(TestCase):
     @parameterized.expand([
@@ -143,5 +143,17 @@ class TestBuildPeriodicityQueryParameter(TestCase):
         expected = []
         
         result = build_periodicity_query_parameter(periods)
+
+        assert result == expected
+
+class TestBuildColumnsQueryParameter(TestCase):
+    """Tests the build_column_query_parameter."""
+
+    def test_multiple_columns(self) -> None:
+        """Test string built with multiple column names"""
+        columns = ["col1", "col2"]
+        expected = [('sourceColumnName', 'col1'), ('sourceColumnName', 'col2')]
+        
+        result = build_column_query_parameter(columns)
 
         assert result == expected

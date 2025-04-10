@@ -10,11 +10,12 @@ class TestParseArgs(unittest.TestCase):
     """Test the parser instance is correctly instantiated."""
 
     def test_instance_created(self):
-        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--periodicity=PT30M"""])
+        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--columns=TA,PA""", """--periodicity=PT30M"""])
         assert args.period == 'P1D'
         assert args.end_date == '2024-03-10'
         assert args.sites == 'alic1,bunny'
         assert args.periodicity == 'PT30M'
+        assert args.columns == 'TA,PA'
 
     @freeze_time("2024-09-19")
     def test_no_end_date(self):
@@ -34,6 +35,12 @@ class TestParseArgs(unittest.TestCase):
         args = parser.parse_args(['P1D'])
         assert args.period == 'P1D'
         assert args.periodicity == None
+
+    def test_no_columns(self):
+        """Test columns is None by default."""
+        args = parser.parse_args(['P1D'])
+        assert args.period == 'P1D'
+        assert args.columns == None
 
     def test_no_period(self):
         with self.assertRaises(SystemExit):
@@ -125,6 +132,8 @@ class TestValidateSites(unittest.TestCase):
         [
             ('ALIC1', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1']),
             ('ALIC1,BUNNY', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
+            ('bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY']),
+            ('buNnY,BALrd', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY', 'BALRD']),
             (None, ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY', 'BALRD'])
         ]
     )
@@ -177,5 +186,38 @@ class TestValidatePeriodicity(unittest.TestCase):
 
         with self.assertRaises(ValueError) as err:
             parser.validate_periodicity(period)
+
+        self.assertEqual(str(err.exception), error_message)
+
+
+class TestValidateColNames(unittest.TestCase):
+    """Test the validate_columns function."""
+
+    @parameterized.expand(
+        [
+            ('TA,PA', ['TA', 'PA']),
+            ('TA, PA ', ['TA', 'PA']),
+            ('ta,PA ', ['TA', 'PA']),
+            ('Ta,pA ', ['TA', 'PA']),
+            (None, [])
+        ]
+    )
+    def test_correct_columns(self, columns, expected):
+        """Test correct formatted arguments return the right column names."""
+        result = parser.validate_columns(columns)
+
+        self.assertEqual(result, expected)
+    
+    @parameterized.expand(
+        [
+            ('TA,PA, ', "Column cannot be empty."),
+            ('T!,PA', "Column T! should only contain letters and numbers."),
+            ('TA,PA,TA', "Column TA is duplicated in the arguments.")
+        ]
+    )
+    def test_incorrect_columns(self, columns, error_message):
+        """Test incorrectly formatted arguments raise Value Errors."""
+        with self.assertRaises(ValueError) as err:
+            parser.validate_columns(columns)
 
         self.assertEqual(str(err.exception), error_message)
