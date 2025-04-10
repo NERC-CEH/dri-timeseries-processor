@@ -69,7 +69,7 @@ column_query_parameter = build_column_query_parameter(columns)
 # Processing level
 processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/processed")]
 
-# Views
+# View
 view_query_parameter = [("_view", "timeseries")]
 
 

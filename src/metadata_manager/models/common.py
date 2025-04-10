@@ -47,7 +47,7 @@ def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
     return values
 
 
-def build_site_query_parameter(sites: List[str]) -> List[Tuple]:
+def build_site_query_parameter(sites: List[str]) -> List[Tuple | None]:
     """Build the site query parameters for the dataset endpoint.
 
     As we use the same key for multiple sites, it needs to be a list of tuples.
@@ -61,7 +61,7 @@ def build_site_query_parameter(sites: List[str]) -> List[Tuple]:
     return [("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}") for site in sites]
 
 
-def build_column_query_parameter(columns: List[str]) -> List[Tuple]:
+def build_column_query_parameter(columns: List[str]) -> List[Tuple | None]:
     """Build the column name query parameters for the dataset endpoint.
 
     As we use the same key for multiple columns, it needs to be a list of tuples.
@@ -75,7 +75,7 @@ def build_column_query_parameter(columns: List[str]) -> List[Tuple]:
     return [("sourceColumnName", column) for column in columns]
 
 
-def build_periodicity_query_parameter(periodicities: List[str]) -> List[Tuple]:
+def build_periodicity_query_parameter(periodicities: List[str]) -> List[Tuple | None]:
     """Build the periodicity query parameters for the dataset endpoint.
 
     As we use the same key for multiple periods, it needs to be a list of tuples.

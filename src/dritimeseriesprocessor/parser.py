@@ -153,7 +153,7 @@ def validate_end_date(end_date: str) -> str:
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
 
-def validate_sites(sites: str, metadata_sites: list) -> List[str]:
+def validate_sites(sites: str, metadata_sites: list) -> List[str | None]:
     """Validate the sites entered.
 
     Checks user entered sites against the metadata site list and removes
@@ -164,7 +164,7 @@ def validate_sites(sites: str, metadata_sites: list) -> List[str]:
         metadata_sites: The sites from the metadata store
 
     Returns:
-        A list of site and query parameter tuple pairs
+        A list of sites
     """
     if sites is not None:
         sites_list = sites.split(",")
@@ -185,11 +185,8 @@ def validate_sites(sites: str, metadata_sites: list) -> List[str]:
     return sites
 
 
-def validate_periodicity(periodicities: str) -> List[str]:
-    """Ensure enetered periods conform to valid ISO8601 periods.
-
-    When no periods are entered by the user, the query parameter is left
-    out of the API call.
+def validate_periodicity(periodicities: str) -> List[str | None]:
+    """Ensure user defined periods conform to valid ISO8601 strings.
 
     Args:
         periodicities: the periods to validate
@@ -206,12 +203,12 @@ def validate_periodicity(periodicities: str) -> List[str]:
             p = Period.of_iso_duration(periodicity.upper())
             validated_periodicities.append(p.iso_duration)
     else:
-        validated_periodicities = None
+        validated_periodicities = []
 
     return validated_periodicities
 
 
-def validate_columns(columns: str) -> list:
+def validate_columns(columns: str) -> List[str | None]:
     """Validate the columns entered.
 
     Args:
