@@ -125,6 +125,8 @@ class TestValidateSites(unittest.TestCase):
         [
             ('ALIC1', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1']),
             ('ALIC1,BUNNY', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
+            ('bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY']),
+            ('buNnY,BALrd', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY', 'BALRD']),
             (None, ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY', 'BALRD'])
         ]
     )
@@ -159,6 +161,8 @@ class TestValidateColNames(unittest.TestCase):
         [
             ('TA,PA', ['TA', 'PA']),
             ('TA, PA ', ['TA', 'PA']),
+            ('ta,PA ', ['TA', 'PA']),
+            ('Ta,pA ', ['TA', 'PA']),
             (None, [])
         ]
     )
