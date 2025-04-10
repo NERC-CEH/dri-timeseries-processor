@@ -24,7 +24,7 @@ from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
-from metadata_manager.models.common import build_col_name_query_parameter, build_site_query_parameter
+from metadata_manager.models.common import build_column_query_parameter, build_site_query_parameter
 from metadata_manager.models.service import load_datasets
 from metadata_manager.transformers import extract_dataset_metadata, extract_site_ids
 
@@ -59,8 +59,8 @@ site_query_parameter = build_site_query_parameter(sites)
 periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")]
 
 # Processing column name query params
-col_names = parser.validate_col_names(args.vars)
-variable_query_paremeter = build_col_name_query_parameter(col_names)
+columns = parser.validate_columns(args.columns)
+variable_query_paremeter = build_column_query_parameter(columns)
 
 # TODO Processing level (ticket not yet created)
 # Hardcoded
