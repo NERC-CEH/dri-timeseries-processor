@@ -101,7 +101,7 @@ def load_datasets(parameters: Dict) -> Any:
     return data
 
 
-def load_single_timeseries_derivation(parameters: Dict) -> Any:
+def load_single_timeseries_derivation(timeseries_def: str) -> Any:
     """Load the timeseries derivation metadata from the API.
 
     Args:
@@ -110,20 +110,29 @@ def load_single_timeseries_derivation(parameters: Dict) -> Any:
     Returns:
         The parsed dataset metadata.
     """
-    data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_derivation_metadata(parameters))
+    data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_derivation_metadata(timeseries_def))
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def load_timeseries_derivations(parameters: Dict) -> Any:
+def load_timeseries_derivations(metadata_parameters) -> Any:
     # recursive function calling the above
     # transforming done in main??
     # Every ts_def will have at least one dataset it needs to get built
+
+    #1 build inputs
+    #2 loop through inputs
+    #3 buildinputs etc....
     has_dependencies = True
     test= []
     while has_dependencies:
-        inputs = load_single_timeseries_derivation(parameters)
+        inputs = load_single_timeseries_derivation(timeseries_def)
+        # do some transfomring here?
         if inputs.methodology:
-            inputs = load_single_timeseries_derivation(parameters)
+            dependencies = inputs.methodology.uses
+            for item in dependencies:
+                test.append(item)
+                parameters = {"@id": item}
+                inputs = load_single_timeseries_derivation(timeseries_def)
         else:
             test.append(inputs)
             has_dependencies = False

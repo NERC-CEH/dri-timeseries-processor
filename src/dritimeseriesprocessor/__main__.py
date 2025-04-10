@@ -60,7 +60,7 @@ periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")
 
 # TODO: Variables FW-549
 # Hardcoded
-variable_query_paremeter = [("type.measure.variable", "http://fdri.ceh.ac.uk/ref/common/cop/rn")]
+variable_query_paremeter = [("type.measure.variable", "http://fdri.ceh.ac.uk/ref/common/cop/pe")]
 
 # TODO Processing level (ticket not yet created)
 # Hardcoded
@@ -90,9 +90,9 @@ processing_metadata = extract_dataset_metadata(datasets_to_build, "output")
 # Each dataset to build is dependent on other timeseries. Extract the required
 # input metadata so the requested output can be built
 for output in processing_metadata:
-    parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"}
-    # parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed"}
-    derivation = load_timeseries_derivations(parameters)
+    #parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"}
+    parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed"}
+    derivation = load_timeseries_derivations(processing_metadata, parameters)
     # use transformer to extract whats required
     print(derivation)
 
