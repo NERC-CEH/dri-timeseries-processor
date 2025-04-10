@@ -46,8 +46,8 @@ def parse_args(args: list) -> ArgumentParser:
         "--periodicity",
         help=(
             """The periodicity of the timeseries to be built. Must be a valid ISO8601 string and multiple
-            periodicities must be seperated by a comma e.g. P1D,PT30M. If not provided all available
-            periodicities will be built."""
+            periodicities must be seperated by a comma e.g. P1D,PT30M. Can be upper or lower case. If not
+            provided all available periodicities will be built."""
         ),
     )
     parser.add_argument(
@@ -180,7 +180,7 @@ def validate_sites(sites: str, metadata_sites: list) -> List[str]:
         # Filter out user requested sites that are not in the metadata store
         sites = remove_sites_not_in_store(checked_sites, metadata_sites)
     else:
-        sites = metadata_sites
+        sites = []
 
     return sites
 
@@ -203,7 +203,7 @@ def validate_periodicity(periodicities: str) -> List[str]:
 
         for periodicity in periodicities:
             # The timestream Period class has builtin validation
-            p = Period.of_iso_duration(periodicity)
+            p = Period.of_iso_duration(periodicity.upper())
             validated_periodicities.append(p.iso_duration)
     else:
         validated_periodicities = None

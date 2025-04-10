@@ -124,6 +124,15 @@ class TestBuildSiteQueryParameter(TestCase):
 
         assert result == expected
 
+    def test_no_sites(self) -> None:
+        """Test empty list if no sites."""
+        sites = []
+        expected = []
+        
+        result = build_periodicity_query_parameter(sites)
+
+        assert result == expected
+
 class TestBuildPeriodicityQueryParameter(TestCase):
     """Tests the build_periodicity_query_parameter."""
 
@@ -138,8 +147,8 @@ class TestBuildPeriodicityQueryParameter(TestCase):
         assert result == expected
 
     def test_no_periods(self) -> None:
-        """Test empty list if no period."""
-        periods = None
+        """Test empty list if no periods."""
+        periods = []
         expected = []
         
         result = build_periodicity_query_parameter(periods)
@@ -157,3 +166,13 @@ class TestBuildColumnsQueryParameter(TestCase):
         result = build_column_query_parameter(columns)
 
         assert result == expected
+
+    def test_no_columns(self) -> None:
+        """Test empty list if no columns."""
+        columns = []
+        expected = []
+        
+        result = build_periodicity_query_parameter(columns)
+
+        assert result == expected
+        

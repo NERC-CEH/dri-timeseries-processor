@@ -134,7 +134,7 @@ class TestValidateSites(unittest.TestCase):
             ('ALIC1,BUNNY', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
             ('bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY']),
             ('buNnY,BALrd', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY', 'BALRD']),
-            (None, ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY', 'BALRD'])
+            (None, ['ALIC1', 'BUNNY', 'BALRD'], [])
         ]
     )
     def test_correct_sites_argument(self, sites, metadata_sites, expected):
@@ -168,6 +168,7 @@ class TestValidatePeriodicity(unittest.TestCase):
         [
             ('P2D', ['P2D']),
             ('PT30M,P2D', ['PT30M', 'P2D']),
+            ('pt30M,P2d', ['PT30M', 'P2D']),
             (None, None)
         ]
     )
@@ -182,7 +183,7 @@ class TestValidatePeriodicity(unittest.TestCase):
     def test_incorrect_periods_argument(self):
         """Test incorrectly formatted arguments raise Value Errors."""
         period = "rubbish"
-        error_message = f"Illegal ISO 8601 duration: {period}"
+        error_message = f"Illegal ISO 8601 duration: {period.upper()}"
 
         with self.assertRaises(ValueError) as err:
             parser.validate_periodicity(period)
