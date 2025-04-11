@@ -30,4 +30,4 @@ ENV VIRTUAL_ENV="/app/.venv"
 # Unsetting entrypoint from parent image
 ENTRYPOINT []
 
-CMD ["python", "-m", "dritimeseriesprocessor", "P2D"]
+CMD ["python", "-m", "dritimeseriesprocessor", "sites=alic1,bunny", "--periodicity=PT30M", "--columns=TA,PA", "P2D"]
