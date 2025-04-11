@@ -26,7 +26,11 @@ from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
 from metadata_manager.models.common import build_site_query_parameter
 from metadata_manager.models.service import load_datasets, load_timeseries_derivations
-from metadata_manager.transformers import extract_timeseries_id_metadata, extract_site_ids
+from metadata_manager.transformers import (
+    extract_timeseries_id_metadata,
+    extract_site_ids,
+    extract_timeseries_definition_metadata
+)
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -82,7 +86,7 @@ timeseries_ids_to_process = load_datasets(
     + processing_query_parameter
     + view_query_parameter
 )
-processing_metadata = extract_timeseries_id_metadata(timeseries_ids_to_process)
+timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_process)
 
 
 # Get derivation metadata for datasets to be processed
@@ -90,30 +94,23 @@ processing_metadata = extract_timeseries_id_metadata(timeseries_ids_to_process)
 # Derivation metadata is held with the timeseries definition rather than the ID
 # So first extract all unique timeseries defs from the IDS to be processed
 
+# TODO Extract unique ts_defs from timeseries IDs FW-XXX
 # Hardcoded
-timeseries_defs = ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed']
+timeseries_defs = ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed',
+                   'http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw']
 
-# Extract all the dependencies associated with each timeseries definition.
+# Extract all the dependencies associated with each timeseries definition and
+# transform into required format
 timeseries_defs_for_processing = load_timeseries_derivations(timeseries_defs)
+timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseries_defs_for_processing)
 
 
+# TODO Combine timeseries ID and defs dicts; add processing level. FW-XXX
 
-for ts_def in processing_metadata:
-    #parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"}
-    parameters = {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed"}
-    derivation = load_timeseries_derivations(processing_metadata, parameters)
-    # use transformer to extract whats required
-    print(derivation)
-
-    #dependencies = some_recursive function that calls the load_depenencies and transforms
-    # append result to processing metadata
-
-
-
-# tsdefs from derivation view (this includes uses)
-# loop through uses and extract derivation info + source bucket from tsdef + site (might be multiple)
-# do this recursively until uses no longer exists
-for item in processing_metadata:
+# TODO Undertake processing (several tickets; unknown yet)
+# Hardcoded a sample combined ts_id and ts_def dictionary that can be processed
+# to make the processor at least run through.
+for item in timeseries_ids_to_process:
     site = item["output"]["sourceSite"].rsplit("-")[-1]
 
     item["inputs"] = [{}]
@@ -128,7 +125,6 @@ for item in processing_metadata:
 
     item["output"]["derivation_type"] = "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
     item["output"]["derivation_method"] = "http://fdri.ceh.ac.uk/ref/common/method/calculate-calculate-ta"
-
 
 
 # Start processing

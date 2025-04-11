@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
@@ -114,28 +114,55 @@ def load_single_timeseries_derivation(timeseries_def: str) -> Any:
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def load_timeseries_derivations(ts_defs) -> Any:
-    # recursive function calling the above
-    # transforming done in main??
-    # Every ts_def will have at least one dataset it needs to get built
+def load_timeseries_derivations(ts_defs: List[str]) -> Any:
+    """"""
+    # Somewhere to store all ts_defs and their inputs (uses)
+    derivations = {}
 
-    #1 build inputs
-    #2 loop through inputs
-    #3 buildinputs etc....
     for ts_def in ts_defs:
-        b = []
-        inputs_to_check = [ts_def]
-        while len(inputs_to_check) != 0:
-            for a in inputs_to_check:
-                test = load_single_timeseries_derivation(a)
-                # Build dict for defs map (if it doesnt already exist)
-                if test.methodology:
-                    b.append(test.methodology.uses)
+        # For each pass we will generate a new set of inputs to check
+        # When this becomes empty, we can stop checking for dependencies
+        new_inputs_to_check = []
 
-                    # Set new inputs to check to outputs.
-                    inputs_to_check = test.methodology.uses
+        # Create the first set of inputs to check.
+        # We will check one parent ts_def at a time.
+        # As its only one, we need to make this a list.
+        # This will be replaced by new_inputs_to_check at the end of
+        # every iteration
+        inputs_to_check = [ts_def]
+
+        # Keep checking until inputs_to_check contains no values
+        while len(inputs_to_check) != 0:
+            for item in inputs_to_check:
+                derivation_metadata = load_single_timeseries_derivation(item)
+                
+                # If the response has a methodology section then it will contain
+                # some dependencies that need checking.
+                # Extract the required metadata
+                
+                if derivation_metadata.methodology:
+
+                    # Build dict for defs map (if it doesnt already exist)
+                    if not item in derivations:
+                        derivations[item] = {derivation_metadata.methodology}
+
+                        # Add the dependencies to the list to be check next time
+                        new_inputs_to_check += derivation_metadata.methodology.uses
+
+                # If no methodology section then there will be no further dependencies
+                # Dont add anything to be checked next time
                 else:
-                    inputs_to_check = []
+                    # Update dictionary
+                    derivations[item] = None
+
+                    new_inputs_to_check += []
+
+            # Update the inputs to be checked to the ones extracted in this loop
+            inputs_to_check = new_inputs_to_check
+
+            # Reset the new inputs
+            new_inputs_to_check = []
 
     # merge all dicts somehow
-    return b
+    return derivations
+

@@ -68,3 +68,7 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict:
         metadata[get_property("@id", item)] = ts_id_metadata
 
     return metadata
+
+
+def extract_timeseries_definition_metadata(response: Dict[str, Any]) -> Dict:
+    """"""
