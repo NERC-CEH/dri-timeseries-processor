@@ -9,7 +9,7 @@ from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
-from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
+from metadata_manager.models.schemas.derivations import Methodology, TimeseriesDerivationResponse
 from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
 
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
@@ -101,7 +101,7 @@ def load_datasets(parameters: Dict) -> Any:
     return data
 
 
-def load_single_timeseries_derivation(timeseries_def: str) -> Any:
+def load_single_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationResponse:
     """Load the timeseries derivation metadata from the API.
 
     Args:
@@ -114,8 +114,8 @@ def load_single_timeseries_derivation(timeseries_def: str) -> Any:
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def load_timeseries_derivations(ts_defs: List[str]) -> Any:
-    """"""
+def load_timeseries_derivations(ts_defs: List[str]) -> Dict[str: Methodology | None]:
+    """Note: return type should be"""
     # Somewhere to store all ts_defs and their inputs (uses)
     derivations = {}
 
@@ -162,5 +162,4 @@ def load_timeseries_derivations(ts_defs: List[str]) -> Any:
             # Reset the new inputs
             new_inputs_to_check = []
 
-    # merge all dicts somehow
     return derivations

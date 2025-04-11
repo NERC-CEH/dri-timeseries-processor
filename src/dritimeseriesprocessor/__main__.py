@@ -27,8 +27,9 @@ from metadata_manager import api_manager
 from metadata_manager.models.common import build_site_query_parameter
 from metadata_manager.models.service import load_datasets, load_timeseries_derivations
 from metadata_manager.transformers import (
-    extract_site_ids,
     extract_timeseries_id_metadata,
+    extract_site_ids,
+    extract_timeseries_definition_metadata
 )
 
 logger = logging.getLogger(__name__)
@@ -95,49 +96,48 @@ timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_pro
 
 # TODO Extract unique ts_defs from timeseries IDs FW-XXX
 # Hardcoded
-timeseries_defs = [
-    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
-    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw",
-]
+timeseries_defs = ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed',
+                   'http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw']
 
 # Extract all the dependencies associated with each timeseries definition and
 # transform into required format
 timeseries_defs_for_processing = load_timeseries_derivations(timeseries_defs)
-# timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseries_defs_for_processing)
+timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseries_defs_for_processing)
 
 
 # TODO Combine timeseries ID and defs dicts; add processing level. FW-XXX
 
-# TODO Undertake processing (several tickets; unknown yet)
+# TODO Undertake processing (to discuss)
 # Hardcoded a sample combined ts_id and ts_def dictionary that can be processed
 # to make the processor at least run through.
 timeseries_ids_to_process = [
     {
-        "output": {
+        "output":
+        {
             "resolution": "PT30M",
             "periodicity": "PT30M",
             "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
-            "sourceSite": "cosmos-alic1",
+            "sourceSite": "cosmos-alic1"
         },
         "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
-        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"
     },
     {
-        "output": {
+        "output":
+        {
             "resolution": "PT30M",
             "periodicity": "PT30M",
             "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
-            "sourceSite": "cosmos-bunny",
+            "sourceSite": "cosmos-bunny"
         },
         "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
-        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
-    },
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"
+    }
 ]
-
 
 for item in timeseries_ids_to_process:
     site = item["output"]["sourceSite"].rsplit("-")[-1]
@@ -158,7 +158,7 @@ for item in timeseries_ids_to_process:
 
 # Start processing
 # ----------------
-# TODO Input data to be processed by dataset
+# TODO Input data to be processed by dataset (to discuss)
 # Get all the required data and merge into dataframes
 # Process altogether and then separate back into timeseries required for each timeseries ID
 
