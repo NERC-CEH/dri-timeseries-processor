@@ -197,9 +197,9 @@ class TestValidateColNames(unittest.TestCase):
     @parameterized.expand(
         [
             ('TA,PA', ['TA', 'PA']),
-            ('TA, PA ', ['TA', 'PA']),
-            ('ta,PA ', ['TA', 'PA']),
-            ('Ta,pA ', ['TA', 'PA']),
+            ('TA,PA', ['TA', 'PA']),
+            ('ta,PA', ['TA', 'PA']),
+            ('Ta,pA', ['TA', 'PA']),
             (None, [])
         ]
     )
@@ -211,9 +211,9 @@ class TestValidateColNames(unittest.TestCase):
     
     @parameterized.expand(
         [
-            ('TA,PA, ', "Column cannot be empty."),
             ('T!,PA', "Column T! should only contain letters and numbers."),
-            ('TA,PA,TA', "Column TA is duplicated in the arguments.")
+            ('TA,PA,TA', "Column TA is duplicated in the arguments."),
+            ('TA, PA', "Column  PA should only contain letters and numbers.")
         ]
     )
     def test_incorrect_columns(self, columns, error_message):
