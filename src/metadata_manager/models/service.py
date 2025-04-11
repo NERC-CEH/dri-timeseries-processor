@@ -97,6 +97,7 @@ def load_datasets(parameters: Dict) -> Any:
     """
     data = asyncio.run(METADATA_CONNECTION.fetch_dataset_metadata(parameters))
     # TODO build and test pydantic model for dataset return FW-696
+    # NOTE The Pydantic model may need to vary depending on the view used in the API call.
     # Add as return annotation
     return data
 
@@ -114,7 +115,7 @@ def load_single_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivati
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def load_timeseries_derivations(ts_defs: List[str]) -> Dict[str: Methodology | None]:
+def load_timeseries_derivations(ts_defs: List[str]) -> Any:
     """Note: return type should be"""
     # Somewhere to store all ts_defs and their inputs (uses)
     derivations = {}

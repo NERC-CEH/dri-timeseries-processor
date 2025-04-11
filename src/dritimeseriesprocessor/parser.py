@@ -2,34 +2,33 @@
 
 import argparse
 import datetime
+import logging
 from argparse import ArgumentParser
 from datetime import date, timedelta
-from typing import Tuple
+from typing import List, Tuple
 
 import isodate
 from isodate import Duration
+from time_stream.period import Period
 
 from dritimeseriesprocessor.utils import remove_sites_not_in_store
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args(args: list) -> ArgumentParser:
     """Build a parser instance and get the arguments.
 
     period: required
-    sites: optional (default is all sites)
     end_date: optional (default is todays date).
+    sites: optional (if not provided all available sites will be processed)
+    peridicity: optional (if not provided all available periodicities will be processed)
+    columns: optional (if not provided all available columns will be processed)
 
     Returns:
         An instance of ArguementParser.
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument(
-        "period",
-        help=(
-            """A valid ISO8601 period to extract level 0 data for. Should be a combination of
-            days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
-        ),
-    )
     parser.add_argument(
         "--sites",
         help=(
@@ -38,12 +37,33 @@ def parse_args(args: list) -> ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--columns",
+        help=(
+            """The columns to extract. Must be a string of column names (upper or lower case) seperated by
+            a comma e.g. TA,RN or ta,rn. If not provided all columns for given resolution will be extracted."""
+        ),
+    )
+    parser.add_argument(
+        "--periodicity",
+        help=(
+            """The periodicity of the timeseries to be built. Must be a valid ISO8601 string and multiple
+            periodicities must be seperated by a comma e.g. P1D,PT30M. Can be upper or lower case. If not
+            provided all available periodicities will be built."""
+        ),
+    )
+    parser.add_argument(
         "-ed",
         "--end_date",
         help=("The date to start the data extraction from. Must be of the form YYYY-MM-DD (default: todays date)"),
         default=date.today().strftime("%Y-%m-%d"),
     )
-
+    parser.add_argument(
+        "period",
+        help=(
+            """A valid ISO8601 period to build the timeseries for. Should be a combination of
+            days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
+        ),
+    )
     return parser.parse_args(args)
 
 
@@ -134,7 +154,7 @@ def validate_end_date(end_date: str) -> str:
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
 
-def validate_sites(sites: str, metadata_sites: list) -> list:
+def validate_sites(sites: str, metadata_sites: list) -> List[str | None]:
     """Validate the sites entered.
 
     Checks user entered sites against the metadata site list and removes
@@ -143,18 +163,77 @@ def validate_sites(sites: str, metadata_sites: list) -> list:
     Args:
         sites: The sites to process
         metadata_sites: The sites from the metadata store
+
+    Returns:
+        A list of sites
     """
     if sites is not None:
         sites_list = sites.split(",")
 
+        checked_sites = []
         # Rough check for formatting
         for site in sites_list:
             if not site.isalnum():
                 raise ValueError(f"Site {site} should only contain letters and numbers.")
+            else:
+                checked_sites.append(site.upper())
 
         # Filter out user requested sites that are not in the metadata store
-        sites = remove_sites_not_in_store(sites_list, metadata_sites)
+        sites = remove_sites_not_in_store(checked_sites, metadata_sites)
     else:
-        sites = metadata_sites
+        sites = []
 
     return sites
+
+
+def validate_periodicity(periodicities: str) -> List[str | None]:
+    """Ensure user defined periods conform to valid ISO8601 strings.
+
+    Args:
+        periodicities: the periods to validate
+
+    Returns:
+        A list of query parameters.
+    """
+    if periodicities is not None:
+        validated_periodicities = []
+        periodicities = periodicities.split(",")
+
+        for periodicity in periodicities:
+            # The timestream Period class has builtin validation
+            p = Period.of_iso_duration(periodicity.upper())
+            validated_periodicities.append(p.iso_duration)
+    else:
+        validated_periodicities = []
+
+    return validated_periodicities
+
+
+def validate_columns(columns: str) -> List[str | None]:
+    """Validate the columns entered.
+
+    Args:
+        columns: The columns to process
+
+    Returns:
+        A list of columns to process
+    """
+    if columns is not None:
+        column_list = columns.split(",")
+
+        checked_columns = []
+
+        # Rough check for formatting
+        for column in column_list:
+            if column == "":
+                raise ValueError("Column cannot be empty.")
+            elif not column.isalnum():
+                raise ValueError(f"Column {column} should only contain letters and numbers.")
+            elif column in checked_columns:
+                raise ValueError(f"Column {column} is duplicated in the arguments.")
+            else:
+                checked_columns.append(column.upper())
+
+        return checked_columns
+    else:
+        return []

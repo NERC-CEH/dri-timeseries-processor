@@ -24,7 +24,11 @@ from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
-from metadata_manager.models.common import build_site_query_parameter
+from metadata_manager.models.common import (
+    build_column_query_parameter,
+    build_periodicity_query_parameter,
+    build_site_query_parameter,
+)
 from metadata_manager.models.service import load_datasets, load_timeseries_derivations
 from metadata_manager.transformers import (
     extract_timeseries_id_metadata,
@@ -58,19 +62,18 @@ metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="
 sites = parser.validate_sites(args.sites, metadata_sites)
 site_query_parameter = build_site_query_parameter(sites)
 
-# TODO: Periodicity FW-548
-# Hardcoded
-periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")]
+# Periodicity
+periodicities = parser.validate_periodicity(args.periodicity)
+periodicity_query_parameter = build_periodicity_query_parameter(periodicities)
 
-# TODO: Variables FW-549
-# Hardcoded
-variable_query_paremeter = [("type.measure.variable", "http://fdri.ceh.ac.uk/ref/common/cop/pe")]
+# Columns
+columns = parser.validate_columns(args.columns)
+column_query_parameter = build_column_query_parameter(columns)
 
-# TODO Processing level (ticket not yet created)
-# Hardcoded
+# Processing level
 processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/processed")]
 
-# View parameter
+# View
 view_query_parameter = [("_view", "timeseries")]
 
 # Dates
@@ -82,7 +85,7 @@ start_date, end_date = parser.build_date_range(args.period, args.end_date, app_c
 timeseries_ids_to_process = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
-    + variable_query_paremeter
+    + column_query_parameter
     + processing_query_parameter
     + view_query_parameter
 )
@@ -168,7 +171,7 @@ logger.info(f"Processing level 0 data between {start_date} and {end_date} for si
 for metadata in timeseries_ids_to_process:
     for item in metadata["inputs"]:
         DATASET = item["sourceDataset"]
-        VARIABLES = item["sourceColumnName"]
+        COLUMNS = item["sourceColumnName"]
         BUCKET = item["sourceBucket"]
         SITES = item["sourceSite"]
 
@@ -188,7 +191,7 @@ for metadata in timeseries_ids_to_process:
                 start_date=start_date,
                 end_date=end_date,
                 site_ids=[SITES],
-                columns=[VARIABLES],
+                columns=[COLUMNS],
             )
 
             if data.shape[0] == 0:

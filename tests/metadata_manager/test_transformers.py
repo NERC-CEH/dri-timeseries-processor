@@ -38,14 +38,14 @@ class TestExtractCOSMOSSiteIds(unittest.TestCase):
         """Test extracting site IDs from cosmos URI"""
 
         result = extract_cosmos_site_ids(self.sample_raw_data)
-        self.assertEqual(result, ['site123', 'site456'])
+        self.assertEqual(result, ['SITE123', 'SITE456'])
 
     def test_extract_site_ids_cosmos_uri_fail(self):
         """Test extracting site IDs from cosmos URI where one fails."""
 
         self.sample_raw_data['items'][0]['contains'][1]['@id'] = 'http://fdri.ceh.ac.uk/id/site/fdri-site456'
         result = extract_cosmos_site_ids(self.sample_raw_data)
-        self.assertEqual(result, ['site123'])
+        self.assertEqual(result, ['SITE123'])
 
 
 class TestExtractSiteIds(unittest.TestCase):
