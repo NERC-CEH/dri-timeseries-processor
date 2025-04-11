@@ -130,7 +130,7 @@ class MetadataAPIManager:
             HTTPError: If the API request fails.
         """
         base_parameters = {"_view": "derivation"}
-        timeseries_def_parameter =  {"@id": timeseries_def}
+        timeseries_def_parameter = {"@id": timeseries_def}
         url = f"{self.host}/ref/time-series-definition"
         response = await self._make_api_call(url, base_parameters | timeseries_def_parameter)
 

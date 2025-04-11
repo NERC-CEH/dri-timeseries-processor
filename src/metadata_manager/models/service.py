@@ -9,8 +9,8 @@ from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
-from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
+from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
 
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
@@ -135,16 +135,15 @@ def load_timeseries_derivations(ts_defs: List[str]) -> Any:
         while len(inputs_to_check) != 0:
             for item in inputs_to_check:
                 derivation_metadata = load_single_timeseries_derivation(item)
-                
+
                 # If the response has a methodology section then it will contain
                 # some dependencies that need checking.
                 # Extract the required metadata
-                
-                if derivation_metadata.methodology:
 
+                if derivation_metadata.methodology:
                     # Build dict for defs map (if it doesnt already exist)
-                    if not item in derivations:
-                        derivations[item] = {derivation_metadata.methodology}
+                    if item not in derivations:
+                        derivations[item] = derivation_metadata.methodology
 
                         # Add the dependencies to the list to be check next time
                         new_inputs_to_check += derivation_metadata.methodology.uses
@@ -165,4 +164,3 @@ def load_timeseries_derivations(ts_defs: List[str]) -> Any:
 
     # merge all dicts somehow
     return derivations
-

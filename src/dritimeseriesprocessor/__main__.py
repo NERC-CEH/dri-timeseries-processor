@@ -27,9 +27,8 @@ from metadata_manager import api_manager
 from metadata_manager.models.common import build_site_query_parameter
 from metadata_manager.models.service import load_datasets, load_timeseries_derivations
 from metadata_manager.transformers import (
-    extract_timeseries_id_metadata,
     extract_site_ids,
-    extract_timeseries_definition_metadata
+    extract_timeseries_id_metadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -96,13 +95,15 @@ timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_pro
 
 # TODO Extract unique ts_defs from timeseries IDs FW-XXX
 # Hardcoded
-timeseries_defs = ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed',
-                   'http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw']
+timeseries_defs = [
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw",
+]
 
 # Extract all the dependencies associated with each timeseries definition and
 # transform into required format
 timeseries_defs_for_processing = load_timeseries_derivations(timeseries_defs)
-timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseries_defs_for_processing)
+# timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseries_defs_for_processing)
 
 
 # TODO Combine timeseries ID and defs dicts; add processing level. FW-XXX
@@ -110,6 +111,34 @@ timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseri
 # TODO Undertake processing (several tickets; unknown yet)
 # Hardcoded a sample combined ts_id and ts_def dictionary that can be processed
 # to make the processor at least run through.
+timeseries_ids_to_process = [
+    {
+        "output": {
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "sourceSite": "cosmos-alic1",
+        },
+        "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+    },
+    {
+        "output": {
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "sourceSite": "cosmos-bunny",
+        },
+        "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+    },
+]
+
+
 for item in timeseries_ids_to_process:
     site = item["output"]["sourceSite"].rsplit("-")[-1]
 
@@ -136,7 +165,7 @@ for item in timeseries_ids_to_process:
 logger.info(f"Processing level 0 data between {start_date} and {end_date} for sites: {sites}")
 
 # Currently just processing each input one by one
-for metadata in processing_metadata:
+for metadata in timeseries_ids_to_process:
     for item in metadata["inputs"]:
         DATASET = item["sourceDataset"]
         VARIABLES = item["sourceColumnName"]

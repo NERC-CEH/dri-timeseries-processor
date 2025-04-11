@@ -1,13 +1,11 @@
-import re
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, check_single_list_item, get_property
+from metadata_manager.models.common import get_property
 
 
 class Measure(BaseModel):
-    
     measure_id: str
 
     @model_validator(mode="before")
@@ -43,15 +41,15 @@ class Methodology(BaseModel):
         result = {}
         uses = []
 
-
-        result['derivation_id'] = get_property("@id", data)
-        dependencies = data['uses']
+        result["derivation_id"] = get_property("@id", data)
+        dependencies = data["uses"]
         for items in dependencies:
             uses.append(get_property("@id", items))
         result["uses"] = uses
         result["configuration_type"] = get_property("@id", get_property("type", get_property("configuration", data)))
 
         return result
+
 
 class DerivationMetadata(BaseModel):
     """Processing time series methodology information
@@ -66,7 +64,6 @@ class DerivationMetadata(BaseModel):
     timeseries_def: str
     measure_id: Measure
     methodology: Optional[Methodology] = None
-
 
     @model_validator(mode="before")
     @classmethod
@@ -83,8 +80,8 @@ class DerivationMetadata(BaseModel):
 
         result["timeseries_def"] = data["@id"]
         result["measure_id"] = Measure.model_validate(data["measure"])
-        if 'methodology' in data:
-            result["methodology"] = Methodology.model_validate(data['methodology'])
+        if "methodology" in data:
+            result["methodology"] = Methodology.model_validate(data["methodology"])
 
         return result
 
