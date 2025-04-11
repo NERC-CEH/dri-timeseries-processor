@@ -41,7 +41,7 @@ def extract_site_ids(response: Dict[str, Any], network: str) -> list:
         raise ValueError(f"Network {network} not supported.")
 
 
-def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict:
+def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
     """Extract the metadata required for processing timeseries IDs from the dataset endpoint.
 
     Args:
@@ -74,7 +74,14 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict:
 def extract_timeseries_definition_metadata(
     derivation_metadata: Methodology,
 ) -> Dict[str, Dict[str, Union[str, List[str]]]]:
-    """"""
+    """Extract the metadata required for deriving timeseries definitions.
+
+    Args:
+        derivation_metadata: The validated Methodology model from the response
+
+    Returns:
+        A dict of the required derivation metadata for processing.
+    """
     metadata = {}
     metadata["method_type"] = re.match(URI_ID_EXTRACT_REGEX, derivation_metadata.configuration_type).group(1)
     metadata["inputs"] = [re.match(URI_ID_EXTRACT_REGEX, item).group(1) for item in derivation_metadata.uses]

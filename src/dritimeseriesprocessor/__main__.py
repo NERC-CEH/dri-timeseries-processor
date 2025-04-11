@@ -29,7 +29,7 @@ from metadata_manager.models.common import (
     build_periodicity_query_parameter,
     build_site_query_parameter,
 )
-from metadata_manager.models.service import load_datasets, load_timeseries_derivations
+from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ timeseries_defs = [
 
 # Extract all the dependencies associated with each timeseries definition and
 # transform into required format
-timeseries_defs_for_processing = load_timeseries_derivations(timeseries_defs)
+timeseries_defs_for_processing = load_nested_timeseries_derivations(timeseries_defs)
 
 
 # TODO Combine timeseries ID and defs dicts; add processing level. FW-XXX

@@ -29,11 +29,11 @@ class Methodology(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def extract_timeseries_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract time series information from raw API data.
+    def extract_methodology_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract methodology information from raw API data.
 
         Args:
-            data : Raw time series data from the API.
+            data : Raw methodlogy data from the API.
 
         Returns:
             Processed data.
@@ -55,10 +55,9 @@ class DerivationMetadata(BaseModel):
     """Processing time series methodology information
 
     Attributes:
-        methodology_id: The ID of the measure
-        units: The units of the time series
-        resolution: The resolution value
-        periodicity: The periodicity value
+        timeseries_def: The timeseires definition
+        measure_id: The ID of the measure
+        methodology: Info on how the timeseries def is processed
     """
 
     timeseries_def: str
@@ -67,11 +66,11 @@ class DerivationMetadata(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def extract_timeseries_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Extract time series information from raw API data.
+    def extract_derivation_metadata_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract derivation_metadata information from raw API data.
 
         Args:
-            data : Raw time series data from the API.
+            data : Raw derivation metadata from the API.
 
         Returns:
             Processed data.
@@ -96,15 +95,15 @@ class TimeseriesDerivationResponse(BaseModel):
         """Validate and extract a single time series metadata item from the response.
 
         Args:
-           obj: Dictionary containing the response with an "items" key.
-           *args: Additional positional arguments (needed to match call to BaseModel.model_validate).
-           **kwargs: Additional keyword arguments (needed to match call to BaseModel.model_validate).
+            obj: Dictionary containing the response with an "items" key.
+            *args: Additional positional arguments (needed to match call to BaseModel.model_validate).
+            **kwargs: Additional keyword arguments (needed to match call to BaseModel.model_validate).
 
         Returns:
-           TimeSeriesMetadata: The validated time series metadata instance.
+            TimeSeriesMetadata: The validated time series metadata instance.
 
         Raises:
-           ValueError: If the "items" list does not contain exactly one item.
+            ValueError: If the "items" list does not contain exactly one item.
         """
         if len(obj["items"]) != 1:
             raise ValueError(f"Expected exactly one item in the time series response, got {len(obj['items'])}")

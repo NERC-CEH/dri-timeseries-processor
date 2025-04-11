@@ -105,8 +105,8 @@ def load_datasets(parameters: Dict) -> Any:
     return data
 
 
-def load_single_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationResponse:
-    """Load the timeseries derivation metadata from the API.
+def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationResponse:
+    """Load the derivation metadata for a particular timeseries definition.
 
     Args:
         parameters: API query parameters for the time series definition endpoint
@@ -118,8 +118,20 @@ def load_single_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivati
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def load_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Methodology | None]]:
-    """Note: return type should be"""
+def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Methodology | None]]:
+    """Recursively loads all timeseries derivation metadata for timeseries definitions.
+
+    Each timeseries definition will have a dataset(s) that that need to be
+    processed before it can be built. In turn, these datasets could be dependent
+    on other datasets. And so on. Extract all derivation metadata for every dependent
+    dataset.
+
+    Args:
+        ts_defs: A list of timeseries definitions to extract metadata for
+
+    Returns:
+        A dict containing transformed meatdata from the response
+    """
     # Somewhere to store all ts_defs and their inputs (uses)
     derivations = {}
 
@@ -138,7 +150,7 @@ def load_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Methodolo
         # Keep checking until inputs_to_check contains no values
         while len(inputs_to_check) != 0:
             for item in inputs_to_check:
-                derivation_metadata = load_single_timeseries_derivation(item)
+                derivation_metadata = load_timeseries_derivation(item)
 
                 # If the response has a methodology section then it will contain
                 # some dependencies that need checking.
