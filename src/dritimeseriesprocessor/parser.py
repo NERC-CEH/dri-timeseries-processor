@@ -21,8 +21,9 @@ def parse_args(args: list) -> ArgumentParser:
 
     period: required
     end_date: optional (default is todays date).
-    sites: optional (if not provided all available sites will be built)
-    peridicity: optional (if not provided all available periodicities will be built)
+    sites: optional (if not provided all available sites will be processed)
+    peridicity: optional (if not provided all available periodicities will be processed)
+    columns: optional (if not provided all available columns will be processed)
 
     Returns:
         An instance of ArguementParser.
@@ -224,15 +225,14 @@ def validate_columns(columns: str) -> List[str | None]:
 
         # Rough check for formatting
         for column in column_list:
-            col = column.strip()
-            if col == "":
+            if column == "":
                 raise ValueError("Column cannot be empty.")
-            elif not col.isalnum():
-                raise ValueError(f"Column {col} should only contain letters and numbers.")
-            elif col in checked_columns:
-                raise ValueError(f"Column {col} is duplicated in the arguments.")
+            elif not column.isalnum():
+                raise ValueError(f"Column {column} should only contain letters and numbers.")
+            elif column in checked_columns:
+                raise ValueError(f"Column {column} is duplicated in the arguments.")
             else:
-                checked_columns.append(col.upper())
+                checked_columns.append(column.upper())
 
         return checked_columns
     else:
