@@ -30,11 +30,7 @@ from metadata_manager.models.common import (
     build_site_query_parameter,
 )
 from metadata_manager.models.service import load_datasets, load_timeseries_derivations
-from metadata_manager.transformers import (
-    extract_timeseries_id_metadata,
-    extract_site_ids,
-    extract_timeseries_definition_metadata
-)
+from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -43,6 +39,7 @@ setup_logging()
 # Setup metrics
 # -------------
 metrics.setup_metrics()
+
 
 # Setup connection to the metadata API
 # ------------------------------------
@@ -79,6 +76,7 @@ view_query_parameter = [("_view", "timeseries")]
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 
+
 # Get metadata for timeseries IDs to be processed
 # -----------------------------------------------
 # Validate and load API response before transforming to required format
@@ -99,13 +97,14 @@ timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_pro
 
 # TODO Extract unique ts_defs from timeseries IDs FW-XXX
 # Hardcoded
-timeseries_defs = ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed',
-                   'http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw']
+timeseries_defs = [
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw",
+]
 
 # Extract all the dependencies associated with each timeseries definition and
 # transform into required format
 timeseries_defs_for_processing = load_timeseries_derivations(timeseries_defs)
-timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseries_defs_for_processing)
 
 
 # TODO Combine timeseries ID and defs dicts; add processing level. FW-XXX
@@ -115,31 +114,29 @@ timeseries_defs_for_processing = extract_timeseries_definition_metadata(timeseri
 # to make the processor at least run through.
 timeseries_ids_to_process = [
     {
-        "output":
-        {
+        "output": {
             "resolution": "PT30M",
             "periodicity": "PT30M",
             "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
-            "sourceSite": "cosmos-alic1"
+            "sourceSite": "cosmos-alic1",
         },
         "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
-        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
     },
     {
-        "output":
-        {
+        "output": {
             "resolution": "PT30M",
             "periodicity": "PT30M",
             "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
-            "sourceSite": "cosmos-bunny"
+            "sourceSite": "cosmos-bunny",
         },
         "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
-        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"
-    }
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+    },
 ]
 
 for item in timeseries_ids_to_process:

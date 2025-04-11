@@ -1,9 +1,10 @@
 """Helpers to transform metadata API responses."""
 
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List, Union
 
-from metadata_manager.models.common import get_property
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_property
+from metadata_manager.models.schemas.derivations import Methodology
 
 
 def extract_cosmos_site_ids(response: Dict[str, Any]) -> list:
@@ -70,5 +71,12 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict:
     return metadata
 
 
-def extract_timeseries_definition_metadata(response: Dict[str, Any]) -> Dict:
+def extract_timeseries_definition_metadata(
+    derivation_metadata: Methodology,
+) -> Dict[str, Dict[str, Union[str, List[str]]]]:
     """"""
+    metadata = {}
+    metadata["method_type"] = re.match(URI_ID_EXTRACT_REGEX, derivation_metadata.configuration_type).group(1)
+    metadata["inputs"] = [re.match(URI_ID_EXTRACT_REGEX, item).group(1) for item in derivation_metadata.uses]
+
+    return {"methodology": metadata}

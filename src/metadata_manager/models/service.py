@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 from collections import defaultdict
 from enum import Enum
 from pathlib import Path
@@ -7,10 +8,12 @@ from typing import Any, Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX
 from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
 from metadata_manager.models.schemas.derivations import Methodology, TimeseriesDerivationResponse
 from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
+from metadata_manager.transformers import extract_timeseries_definition_metadata
 
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
@@ -115,7 +118,7 @@ def load_single_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivati
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def load_timeseries_derivations(ts_defs: List[str]) -> Any:
+def load_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Methodology | None]]:
     """Note: return type should be"""
     # Somewhere to store all ts_defs and their inputs (uses)
     derivations = {}
@@ -141,10 +144,14 @@ def load_timeseries_derivations(ts_defs: List[str]) -> Any:
                 # some dependencies that need checking.
                 # Extract the required metadata
 
+                # From here on we just want to keep the last part of the ts_def
+                item_def = re.match(URI_ID_EXTRACT_REGEX, item).group(1)
+
                 if derivation_metadata.methodology:
                     # Build dict for defs map (if it doesnt already exist)
                     if item not in derivations:
-                        derivations[item] = derivation_metadata.methodology
+                        # Transform the reponse
+                        derivations[item_def] = extract_timeseries_definition_metadata(derivation_metadata.methodology)
 
                         # Add the dependencies to the list to be check next time
                         new_inputs_to_check += derivation_metadata.methodology.uses
@@ -153,7 +160,7 @@ def load_timeseries_derivations(ts_defs: List[str]) -> Any:
                 # Dont add anything to be checked next time
                 else:
                     # Update dictionary
-                    derivations[item] = None
+                    derivations[item_def] = None
 
                     new_inputs_to_check += []
 
