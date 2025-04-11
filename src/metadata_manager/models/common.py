@@ -25,38 +25,6 @@ def check_single_list_item(data: List) -> Any:
     return data
 
 
-def build_site_query_parameter(sites: List) -> List[Tuple]:
-    """Build the site query parameters for the dataset endpoint.
-
-    As we use the same key for multiple sites, it needs to be a list of tuples.
-
-    Args:
-        sites: A list of the sites to query.
-
-    Returns:
-        A list of tuples with query parameter string and site.
-    """
-    sites_params = []
-    for site in sites:
-        sites_params.append(("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}"))
-
-    return sites_params
-
-
-def build_column_query_parameter(columns: list) -> List[Tuple]:
-    """Build the column name query parameters for the dataset endpoint.
-
-    As we use the same key for multiple columns, it needs to be a list of tuples.
-
-    Args:
-        columns: The column names to query.
-
-    Returns:
-        A list of tuples with query parameter string and column name.
-    """
-    return [("sourceColumnName", column) for column in columns]
-
-
 def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
     """
     Given a dict like {key: [a,b,c]}, the first value of the list will be returned
@@ -77,3 +45,45 @@ def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
         return values[0]
 
     return values
+
+
+def build_site_query_parameter(sites: List[str]) -> List[Tuple | None]:
+    """Build the site query parameters for the dataset endpoint.
+
+    As we use the same key for multiple sites, it needs to be a list of tuples.
+
+    Args:
+        sites: A list of the sites to query.
+
+    Returns:
+        A list of tuples with query parameter string and site.
+    """
+    return [("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}") for site in sites]
+
+
+def build_column_query_parameter(columns: List[str]) -> List[Tuple | None]:
+    """Build the column name query parameters for the dataset endpoint.
+
+    As we use the same key for multiple columns, it needs to be a list of tuples.
+
+    Args:
+        columns: The column names to query.
+
+    Returns:
+        A list of tuples with query parameter string and column name.
+    """
+    return [("sourceColumnName", column) for column in columns]
+
+
+def build_periodicity_query_parameter(periodicities: List[str]) -> List[Tuple | None]:
+    """Build the periodicity query parameters for the dataset endpoint.
+
+    As we use the same key for multiple periods, it needs to be a list of tuples.
+
+    Args:
+        periodicities: A list of the periodicities to query.
+
+    Returns:
+        A list of tuples with query parameter string and period.
+    """
+    return [("type.measure.aggregation.periodicity", period) for period in periodicities]

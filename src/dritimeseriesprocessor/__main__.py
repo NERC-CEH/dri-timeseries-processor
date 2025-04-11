@@ -24,7 +24,11 @@ from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import group_by_date_site_id
 from metadata_manager import api_manager
-from metadata_manager.models.common import build_column_query_parameter, build_site_query_parameter
+from metadata_manager.models.common import (
+    build_column_query_parameter,
+    build_periodicity_query_parameter,
+    build_site_query_parameter,
+)
 from metadata_manager.models.service import load_datasets
 from metadata_manager.transformers import extract_dataset_metadata, extract_site_ids
 
@@ -54,19 +58,18 @@ metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="
 sites = parser.validate_sites(args.sites, metadata_sites)
 site_query_parameter = build_site_query_parameter(sites)
 
-# TODO: Periodicity FW-548
-# Hardcoded
-periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")]
+# Periodicity
+periodicities = parser.validate_periodicity(args.periodicity)
+periodicity_query_parameter = build_periodicity_query_parameter(periodicities)
 
-# Processing column name query params
+# Columns
 columns = parser.validate_columns(args.columns)
-column_query_paremeter = build_column_query_parameter(columns)
+column_query_parameter = build_column_query_parameter(columns)
 
-# TODO Processing level (ticket not yet created)
-# Hardcoded
+# Processing level
 processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/processed")]
 
-# View parameter
+# View
 view_query_parameter = [("_view", "timeseries")]
 
 
@@ -74,7 +77,7 @@ view_query_parameter = [("_view", "timeseries")]
 datasets_to_build = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
-    + column_query_paremeter
+    + column_query_parameter
     + processing_query_parameter
     + view_query_parameter
 )

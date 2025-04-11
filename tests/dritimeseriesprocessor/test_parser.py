@@ -10,10 +10,11 @@ class TestParseArgs(unittest.TestCase):
     """Test the parser instance is correctly instantiated."""
 
     def test_instance_created(self):
-        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--columns=TA,PA"""])
+        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--columns=TA,PA""", """--periodicity=PT30M"""])
         assert args.period == 'P1D'
         assert args.end_date == '2024-03-10'
         assert args.sites == 'alic1,bunny'
+        assert args.periodicity == 'PT30M'
         assert args.columns == 'TA,PA'
 
     @freeze_time("2024-09-19")
@@ -28,6 +29,12 @@ class TestParseArgs(unittest.TestCase):
         args = parser.parse_args(['P1D'])
         assert args.period == 'P1D'
         assert args.sites == None
+
+    def test_no_periodicity(self):
+        """Test period is None by default."""
+        args = parser.parse_args(['P1D'])
+        assert args.period == 'P1D'
+        assert args.periodicity == None
 
     def test_no_columns(self):
         """Test columns is None by default."""
@@ -127,7 +134,7 @@ class TestValidateSites(unittest.TestCase):
             ('ALIC1,BUNNY', ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY']),
             ('bunny', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY']),
             ('buNnY,BALrd', ['ALIC1', 'BUNNY', 'BALRD'], ['BUNNY', 'BALRD']),
-            (None, ['ALIC1', 'BUNNY', 'BALRD'], ['ALIC1', 'BUNNY', 'BALRD'])
+            (None, ['ALIC1', 'BUNNY', 'BALRD'], [])
         ]
     )
     def test_correct_sites_argument(self, sites, metadata_sites, expected):
@@ -154,15 +161,45 @@ class TestValidateSites(unittest.TestCase):
         self.assertEqual(str(err.exception), error_message)
 
 
+class TestValidatePeriodicity(unittest.TestCase):
+    """Test the validate_periodicity function."""
+
+    @parameterized.expand(
+        [
+            ('P2D', ['P2D']),
+            ('PT30M,P2D', ['PT30M', 'P2D']),
+            ('pt30M,P2d', ['PT30M', 'P2D']),
+            (None, [])
+        ]
+    )
+    def test_correct_period_argument(self, periods, expected):
+        """Test correct formatted arguments return the right periods."""
+
+        result = parser.validate_periodicity(periods)
+
+        self.assertEqual(result, expected)
+    
+
+    def test_incorrect_periods_argument(self):
+        """Test incorrectly formatted arguments raise Value Errors."""
+        period = "rubbish"
+        error_message = f"Illegal ISO 8601 duration: {period.upper()}"
+
+        with self.assertRaises(ValueError) as err:
+            parser.validate_periodicity(period)
+
+        self.assertEqual(str(err.exception), error_message)
+
+
 class TestValidateColNames(unittest.TestCase):
     """Test the validate_columns function."""
 
     @parameterized.expand(
         [
             ('TA,PA', ['TA', 'PA']),
-            ('TA, PA ', ['TA', 'PA']),
-            ('ta,PA ', ['TA', 'PA']),
-            ('Ta,pA ', ['TA', 'PA']),
+            ('TA,PA', ['TA', 'PA']),
+            ('ta,PA', ['TA', 'PA']),
+            ('Ta,pA', ['TA', 'PA']),
             (None, [])
         ]
     )
@@ -174,9 +211,9 @@ class TestValidateColNames(unittest.TestCase):
     
     @parameterized.expand(
         [
-            ('TA,PA, ', "Column cannot be empty."),
             ('T!,PA', "Column T! should only contain letters and numbers."),
-            ('TA,PA,TA', "Column TA is duplicated in the arguments.")
+            ('TA,PA,TA', "Column TA is duplicated in the arguments."),
+            ('TA, PA', "Column  PA should only contain letters and numbers.")
         ]
     )
     def test_incorrect_columns(self, columns, error_message):
