@@ -116,14 +116,14 @@ def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationRespo
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def handle_derivation_response(timeseries_def, derivations):
+def handle_derivation_response(timeseries_def):
+    """To Do"""
     # Validate API response for the definition
     derivation_metadata = load_timeseries_derivation(timeseries_def)
 
     # If the response has a methodology section then it will contain
     # some dependencies that need checking.
     # Extract the required metadata
-
     metadata = extract_timeseries_definition_metadata(derivation_metadata)
 
     return metadata

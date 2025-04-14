@@ -91,7 +91,6 @@ def extract_timeseries_definition_metadata(
         metadata["methodology"]["inputs"] = derivation_metadata.methodology.uses
     else:
         # If no methodology section then there will be no further dependencies
-        # Dont add anything to be checked next time
         metadata["methodology"]["inputs"] = []
 
     return metadata
