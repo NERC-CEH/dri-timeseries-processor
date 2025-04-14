@@ -4,7 +4,7 @@ import re
 from typing import Any, Dict, List, Union
 
 from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_property
-from metadata_manager.models.schemas.derivations import Methodology
+from metadata_manager.models.schemas.derivations import DerivationMetadata
 
 
 def extract_cosmos_site_ids(response: Dict[str, Any]) -> list:
@@ -72,18 +72,26 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[s
 
 
 def extract_timeseries_definition_metadata(
-    derivation_metadata: Methodology,
-) -> Dict[str, Dict[str, Union[str, List[str]]]]:
+    derivation_metadata: DerivationMetadata,
+) -> Dict[str, Union[Dict[str, Union[str, List[str]]] | None]]:
     """Extract the metadata required for deriving timeseries definitions.
 
     Args:
-        derivation_metadata: The validated Methodology model from the response
+        derivation_metadata: The validated DerivationMetadata model from the response
 
     Returns:
         A dict of the required derivation metadata for processing.
     """
-    metadata = {}
-    metadata["method_type"] = re.match(URI_ID_EXTRACT_REGEX, derivation_metadata.configuration_type).group(1)
-    metadata["inputs"] = [re.match(URI_ID_EXTRACT_REGEX, item).group(1) for item in derivation_metadata.uses]
+    metadata = {"methodology": {}}
 
-    return {"methodology": metadata}
+    if derivation_metadata.methodology:
+        metadata["methodology"]["method_type"] = re.match(
+            URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.configuration_type
+        ).group(1)
+        metadata["methodology"]["inputs"] = derivation_metadata.methodology.uses
+    else:
+        # If no methodology section then there will be no further dependencies
+        # Dont add anything to be checked next time
+        metadata["methodology"]["inputs"] = []
+
+    return metadata

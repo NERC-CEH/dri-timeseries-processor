@@ -1,6 +1,5 @@
 import asyncio
 import json
-import re
 from collections import defaultdict
 from enum import Enum
 from pathlib import Path
@@ -8,7 +7,6 @@ from typing import Any, Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX
 from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
 from metadata_manager.models.schemas.derivations import Methodology, TimeseriesDerivationResponse
@@ -118,6 +116,19 @@ def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationRespo
     return TimeseriesDerivationResponse.model_validate(data)
 
 
+def handle_derivation_response(timeseries_def, derivations):
+    # Validate API response for the definition
+    derivation_metadata = load_timeseries_derivation(timeseries_def)
+
+    # If the response has a methodology section then it will contain
+    # some dependencies that need checking.
+    # Extract the required metadata
+
+    metadata = extract_timeseries_definition_metadata(derivation_metadata)
+
+    return metadata
+
+
 def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Methodology | None]]:
     """Recursively loads all timeseries derivation metadata for timeseries definitions.
 
@@ -130,7 +141,7 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Me
         ts_defs: A list of timeseries definitions to extract metadata for
 
     Returns:
-        A dict containing transformed meatdata from the response
+        A dict containing transformed metadata from the response
     """
     # Somewhere to store all ts_defs and their inputs (uses)
     derivations = {}
@@ -150,31 +161,16 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Me
         # Keep checking until inputs_to_check contains no values
         while len(inputs_to_check) != 0:
             for item in inputs_to_check:
-                derivation_metadata = load_timeseries_derivation(item)
-
-                # If the response has a methodology section then it will contain
-                # some dependencies that need checking.
                 # Extract the required metadata
+                metadata = handle_derivation_response(item, derivations)
 
-                # From here on we just want to keep the last part of the ts_def
-                item_def = re.match(URI_ID_EXTRACT_REGEX, item).group(1)
+                # Build dict for defs map (if it doesnt already exist)
+                if item not in derivations:
+                    # Transform the response
+                    derivations[item] = metadata
 
-                if derivation_metadata.methodology:
-                    # Build dict for defs map (if it doesnt already exist)
-                    if item not in derivations:
-                        # Transform the reponse
-                        derivations[item_def] = extract_timeseries_definition_metadata(derivation_metadata.methodology)
-
-                        # Add the dependencies to the list to be check next time
-                        new_inputs_to_check += derivation_metadata.methodology.uses
-
-                # If no methodology section then there will be no further dependencies
-                # Dont add anything to be checked next time
-                else:
-                    # Update dictionary
-                    derivations[item_def] = None
-
-                    new_inputs_to_check += []
+                    # Add the dependencies to the list to be check next time
+                    new_inputs_to_check += derivations[item]["methodology"]["inputs"]
 
             # Update the inputs to be checked to the ones extracted in this loop
             inputs_to_check = new_inputs_to_check
