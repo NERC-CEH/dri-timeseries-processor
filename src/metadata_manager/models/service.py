@@ -116,8 +116,16 @@ def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationRespo
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def handle_derivation_response(timeseries_def):
-    """To Do"""
+def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[Dict[str, Union[str, List[str]]] | None]]:
+    """Wrapper to handle the timeseries derivation service and transformation functionality
+
+    Args:
+        timeseries_def: the timeseries definition
+
+    Returns:
+        A dictionary containing the transfomred meatdata form the API response.
+    """
+
     # Validate API response for the definition
     derivation_metadata = load_timeseries_derivation(timeseries_def)
 

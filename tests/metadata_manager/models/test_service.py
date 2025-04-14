@@ -1,9 +1,6 @@
-
-
 import unittest
 from unittest.mock import patch
 
-from metadata_manager.models.schemas.derivations import Methodology, Measure, DerivationMetadata
 from metadata_manager.models.service import load_nested_timeseries_derivations
 
 class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
@@ -121,6 +118,3 @@ class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
 		result = load_nested_timeseries_derivations(timeseries_defs)
 
 		assert result == expected
-
-
-
