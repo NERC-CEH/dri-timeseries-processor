@@ -1,6 +1,12 @@
 import unittest
 import json
-from metadata_manager.transformers import extract_cosmos_site_ids, extract_site_ids, extract_dataset_metadata
+from metadata_manager.transformers import (
+    extract_cosmos_site_ids,
+    extract_site_ids,
+    extract_timeseries_id_metadata,
+    extract_timeseries_definition_metadata
+)
+from metadata_manager.models.schemas.derivations import Methodology, TimeseriesDerivationResponse
 from unittest.mock import patch
 from pathlib import Path
 
@@ -87,8 +93,8 @@ class TestExtractSiteIds(unittest.TestCase):
         self.assertEqual(str(context.exception), 'Network unsupported_network not supported.')
 
 
-class TestExtractDatasetMetadata(unittest.TestCase):
-    """Test the extract _dataset_metadata function."""
+class TestExtractTimeseriesIDMetadata(unittest.TestCase):
+    """Test the extract_timeseries_id_metadata function."""
 
     def setUp(self):
         self.sample_dataset_response = (
@@ -98,35 +104,50 @@ class TestExtractDatasetMetadata(unittest.TestCase):
     def test_extract_two_items(self):
         """Test two items are correctly extracted."""
 
-        item_one =   {
-            "output": {
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
-                "sourceDataset": "PROCESSED_DATA_30MIN",
-                "sourceColumnName": "TA",
-                "sourceSite": "cosmos-alic1"
-            },
-            "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
-            "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"
-            }
+        item_one = {
+            "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "sourceSite": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
         
         item_two =   {
-            "output": {
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
-                "sourceDataset": "PROCESSED_DATA_30MIN",
-                "sourceColumnName": "TA",
-                "sourceSite": "cosmos-bunny"
-            },
-            "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
-            "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"
+            "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "sourceSite": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
         }
 
-        expected = [item_one, item_two]
+        expected = {"http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed": item_one,
+                    "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed": item_two}
 
-        result = extract_dataset_metadata(self.sample_dataset_response, "output")
+        result = extract_timeseries_id_metadata(self.sample_dataset_response)
+
+        assert result == expected
+
+
+class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
+    """Test the extract_timeseries_definition_metadata function."""
+
+    def setUp(self):
+        self.sample_dataset_response = (
+            load_json(Path(Path(__file__).parents[0], "sample_test_data", "timeseries_definition_response.json"))
+        )
+    
+    def test_extract_ts_def_metadata(self):
+        """Test the extract_timeseries_definition_metadata function."""
+        # Load the data into the pyantic model
+        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+
+        expected = {'methodology': {'method_type': 'calculate', 'inputs': ['pe_30min_processed', 'ta_30min_processed']}}
+        
+        result = extract_timeseries_definition_metadata(model_output.methodology)
 
         assert result == expected
 
