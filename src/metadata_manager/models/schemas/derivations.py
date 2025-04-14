@@ -6,6 +6,12 @@ from metadata_manager.models.common import get_property
 
 
 class Measure(BaseModel):
+    """Measure information
+
+    Attributes:
+        measure_id: The ID of the measure.
+    """
+
     measure_id: str
 
     @model_validator(mode="before")
@@ -23,6 +29,14 @@ class Measure(BaseModel):
 
 
 class Methodology(BaseModel):
+    """Methodology information
+
+    Attributes:
+        derivation_id: The ID of the derivation process
+        uses: the dependent time series definitions
+        configuration_type: the processing method
+    """
+
     derivation_id: str
     uses: list
     configuration_type: str
@@ -56,12 +70,12 @@ class DerivationMetadata(BaseModel):
 
     Attributes:
         timeseries_def: The timeseires definition
-        measure_id: The ID of the measure
+        measure: Info on the measure
         methodology: Info on how the timeseries def is processed
     """
 
     timeseries_def: str
-    measure_id: Measure
+    measure: Measure
     methodology: Optional[Methodology] = None
 
     @model_validator(mode="before")
@@ -78,7 +92,7 @@ class DerivationMetadata(BaseModel):
         result = {}
 
         result["timeseries_def"] = data["@id"]
-        result["measure_id"] = Measure.model_validate(data["measure"])
+        result["measure"] = Measure.model_validate(data["measure"])
         if "methodology" in data:
             result["methodology"] = Methodology.model_validate(data["methodology"])
 

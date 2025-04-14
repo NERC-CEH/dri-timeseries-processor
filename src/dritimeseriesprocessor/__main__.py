@@ -95,7 +95,7 @@ timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_pro
 # Derivation metadata is held with the timeseries definition rather than the ID
 # So first extract all unique timeseries defs from the IDS to be processed
 
-# TODO Extract unique ts_defs from timeseries IDs FW-XXX
+# TODO Extract unique ts_defs from timeseries IDs FW-727
 # Hardcoded
 timeseries_defs = [
     "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
@@ -107,7 +107,7 @@ timeseries_defs = [
 timeseries_defs_for_processing = load_nested_timeseries_derivations(timeseries_defs)
 
 
-# TODO Combine timeseries ID and defs dicts; add processing level. FW-XXX
+# TODO Combine timeseries ID and defs dicts; add processing level. (to discuss)
 
 # TODO Undertake processing (to discuss)
 # Hardcoded a sample combined ts_id and ts_def dictionary that can be processed

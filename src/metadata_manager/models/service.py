@@ -109,7 +109,7 @@ def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationRespo
     """Load the derivation metadata for a particular timeseries definition.
 
     Args:
-        parameters: API query parameters for the time series definition endpoint
+        timeseries_def: The timeseries definition
 
     Returns:
         The parsed dataset metadata.
