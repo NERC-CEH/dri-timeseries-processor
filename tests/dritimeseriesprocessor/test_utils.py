@@ -254,4 +254,4 @@ class TestExtractUniqueTimeseriesDefinitions(unittest.TestCase):
 
     result = utils.extract_unique_timeseries_defs(test_timeseries_ids)
 
-    assert result == expected
+    assert sorted(result) == sorted(expected)

@@ -168,10 +168,6 @@ def extract_unique_timeseries_defs(timeseries_ids_to_process: Dict[str, Dict[str
     Returns:
         A list of unique timeseries definitions
     """
-    unique_timeseries_defs = []
+    unique_timeseries_defs = {value["ts_def"] for value in timeseries_ids_to_process.values()}
 
-    for value in timeseries_ids_to_process.values():
-        if value["ts_def"] not in unique_timeseries_defs:
-            unique_timeseries_defs.append(value["ts_def"])
-
-    return unique_timeseries_defs
+    return list(unique_timeseries_defs)
