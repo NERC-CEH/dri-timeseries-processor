@@ -1,7 +1,7 @@
 import unittest
 from parameterized import parameterized
 
-from metadata_manager.models.time_series import (
+from metadata_manager.models.schemas.time_series import (
     Measure,
     ProcessingLevel,
     TimeSeriesMetadata

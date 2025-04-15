@@ -1,9 +1,10 @@
 """Helpers to transform metadata API responses."""
 
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List, Union
 
-from metadata_manager.models.common import get_property
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_property
+from metadata_manager.models.schemas.derivations import DerivationMetadata
 
 
 def extract_cosmos_site_ids(response: Dict[str, Any]) -> list:
@@ -40,32 +41,60 @@ def extract_site_ids(response: Dict[str, Any], network: str) -> list:
         raise ValueError(f"Network {network} not supported.")
 
 
-def extract_dataset_metadata(response: Dict[str, Any], key: str) -> list:
-    """Extract the metadata required for processing timeseries from the dataset endpoint.
+def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+    """Extract the metadata required for processing timeseries IDs from the dataset endpoint.
 
     Args:
         response: The response from the metadata store dataset request.
-        key: What key the metadata is to be stored under.
 
     Returns:
-        A list of the required metadata for processing.
+        A dict of the required metadata for processing.
     """
-    processing_parameters = []
+    metadata = {}
     for item in response["items"]:
-        metadata = {key: {}}
-        metadata["ts_id"] = get_property("@id", item)
-        metadata["ts_def"] = get_property("@id", get_property("type", item))
-        metadata[key]["resolution"] = get_property(
+        ts_id_metadata = {}
+
+        ts_id_metadata["ts_def"] = get_property("@id", get_property("type", item))
+        ts_id_metadata["resolution"] = get_property(
             "resolution", get_property("aggregation", get_property("measure", get_property("type", item)))
         )
-        metadata[key]["periodicity"] = get_property(
+        ts_id_metadata["periodicity"] = get_property(
             "periodicity", get_property("aggregation", get_property("measure", get_property("type", item)))
         )
-        metadata[key]["sourceBucket"] = get_property("sourceBucket", item)
-        metadata[key]["sourceDataset"] = get_property("sourceDataset", item)
-        metadata[key]["sourceColumnName"] = get_property("sourceColumnName", item)
-        metadata[key]["sourceSite"] = get_property("@id", get_property("originatingSite", item)).rsplit("/")[-1]
+        ts_id_metadata["processing_level"] = re.match(
+            URI_ID_EXTRACT_REGEX, get_property("@id", get_property("processingLevel", get_property("type", item)))
+        ).group(1)
 
-        processing_parameters.append(metadata)
+        ts_id_metadata["sourceBucket"] = get_property("sourceBucket", item)
+        ts_id_metadata["sourceDataset"] = get_property("sourceDataset", item)
+        ts_id_metadata["sourceColumnName"] = get_property("sourceColumnName", item)
+        ts_id_metadata["sourceSite"] = get_property("@id", get_property("originatingSite", item))
 
-    return processing_parameters
+        metadata[get_property("@id", item)] = ts_id_metadata
+
+    return metadata
+
+
+def extract_timeseries_definition_metadata(
+    derivation_metadata: DerivationMetadata,
+) -> Dict[str, Union[Dict[str, Union[str, List[str | None]]]]]:
+    """Extract the metadata required for deriving timeseries definitions.
+
+    Args:
+        derivation_metadata: The validated DerivationMetadata model from the response
+
+    Returns:
+        The required derivation metadata for processing.
+    """
+    metadata = {"methodology": {}}
+
+    if derivation_metadata.methodology:
+        metadata["methodology"]["method_type"] = re.match(
+            URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.configuration_type
+        ).group(1)
+        metadata["methodology"]["inputs"] = derivation_metadata.methodology.uses
+    else:
+        # If no methodology section then there will be no further dependencies
+        metadata["methodology"]["inputs"] = []
+
+    return metadata

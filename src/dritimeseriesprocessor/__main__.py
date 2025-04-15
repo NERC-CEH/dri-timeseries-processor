@@ -29,8 +29,8 @@ from metadata_manager.models.common import (
     build_periodicity_query_parameter,
     build_site_query_parameter,
 )
-from metadata_manager.models.service import load_datasets
-from metadata_manager.transformers import extract_dataset_metadata, extract_site_ids
+from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations
+from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
 setup_logging()
@@ -40,6 +40,7 @@ setup_logging()
 # -------------
 metrics.setup_metrics()
 
+
 # Setup connection to the metadata API
 # ------------------------------------
 metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
@@ -47,9 +48,9 @@ metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, netw
 
 # Parse and validate arguments
 # ----------------------------
-# User arguments are combined to create the dataset(s) to be built.
+# User arguments are combined to create the timeseries IDs to be processed.
 # The metadata store is queried to see if they exist, and extract the required
-# metadata for building if so.
+# metadata for processing if so.
 args = parser.parse_args(sys.argv[1:])
 
 # Sites
@@ -72,28 +73,74 @@ processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/re
 # View
 view_query_parameter = [("_view", "timeseries")]
 
+# Dates
+start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
 
-# Extract metadata for the desired datasets
-datasets_to_build = load_datasets(
+
+# Get metadata for timeseries IDs to be processed
+# -----------------------------------------------
+# Validate and load API response before transforming to required format
+timeseries_ids_to_process = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
     + column_query_parameter
     + processing_query_parameter
     + view_query_parameter
 )
+timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_process)
 
-processing_metadata = extract_dataset_metadata(datasets_to_build, "output")
+
+# Get derivation metadata for datasets to be processed
+# ----------------------------------------------------
+# Derivation metadata is held with the timeseries definition rather than the ID
+# So first extract all unique timeseries defs from the IDS to be processed
+
+# TODO Extract unique ts_defs from timeseries IDs FW-727
+# Hardcoded
+timeseries_defs = [
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw",
+]
 
 
-# TODO: Get dependencies FW-641
-# Each dataset to build is dependent on other timeseries.
-# Potential method:
-# For each entry in processing_parameters, add the dependency metadata to
-# an "input" key using extract_datatset_metadata.
+# Extract all the dependencies associated with each timeseries definition and
+# transform into required format
+timeseries_defs_for_processing = load_nested_timeseries_derivations(timeseries_defs)
 
-# Hard coding dependent datasets
-# Each output can be dependent on multiple inputs
-for item in processing_metadata:
+
+# TODO Combine timeseries ID and defs dicts; add processing level. (to discuss)
+
+# TODO Undertake processing (to discuss)
+# Hardcoded a sample combined ts_id and ts_def dictionary that can be processed
+# to make the processor at least run through.
+timeseries_ids_to_process = [
+    {
+        "output": {
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "sourceSite": "cosmos-alic1",
+        },
+        "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+    },
+    {
+        "output": {
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceDataset": "PROCESSED_DATA_30MIN",
+            "sourceColumnName": "TA",
+            "sourceSite": "cosmos-bunny",
+        },
+        "ts_id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
+        "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+    },
+]
+
+for item in timeseries_ids_to_process:
     site = item["output"]["sourceSite"].rsplit("-")[-1]
 
     item["inputs"] = [{}]
@@ -110,20 +157,16 @@ for item in processing_metadata:
     item["output"]["derivation_method"] = "http://fdri.ceh.ac.uk/ref/common/method/calculate-calculate-ta"
 
 
-# Dates
-start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
-logger.info(f"Processing level 0 data between {start_date} and {end_date}, {sites}")
-
-
 # Start processing
 # ----------------
-
-# TODO Input data to be processed by dataset
+# TODO Input data to be processed by dataset (to discuss)
 # Get all the required data and merge into dataframes
 # Process altogether and then separate back into timeseries required for each timeseries ID
 
+logger.info(f"Processing level 0 data between {start_date} and {end_date} for sites: {sites}")
+
 # Currently just processing each input one by one
-for metadata in processing_metadata:
+for metadata in timeseries_ids_to_process:
     for item in metadata["inputs"]:
         DATASET = item["sourceDataset"]
         COLUMNS = item["sourceColumnName"]
