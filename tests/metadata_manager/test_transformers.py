@@ -140,15 +140,31 @@ class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
             load_json(Path(Path(__file__).parents[0], "sample_test_data", "timeseries_definition_response.json"))
         )
     
-    def test_extract_ts_def_metadata(self):
-        """Test the extract_timeseries_definition_metadata function."""
+    def test_extract_ts_def_metadata_with_methodology(self):
+        """Test the extract_timeseries_definition_metadata function when the response
+        contains a methodology section.
+        """
         # Load the data into the pyantic model
         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        expected = {'methodology': {'method_type': 'calculate', 'inputs': ['pe_30min_processed', 'ta_30min_processed']}}
+        expected = {'methodology': {'method_type': 'calculate', 'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed']}}
         
-        result = extract_timeseries_definition_metadata(model_output.methodology)
+        result = extract_timeseries_definition_metadata(model_output)
 
         assert result == expected
 
-# TO DO ADD TEST FOR {} NOW!
+    def test_extract_ts_def_metadata_with_no_methodology(self):
+        """Test the extract_timeseries_definition_metadata function when the response
+        doesnt contain a methodology section.
+        """
+        # Remove methodology section
+        del self.sample_dataset_response['items'][0]['methodology']
+
+        # Load the data into the pyantic model
+        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+
+        expected = {'methodology': {'inputs': []}}
+        
+        result = extract_timeseries_definition_metadata(model_output)
+
+        assert result == expected

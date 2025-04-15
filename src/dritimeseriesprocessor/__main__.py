@@ -97,14 +97,11 @@ timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_pro
 
 # TODO Extract unique ts_defs from timeseries IDs FW-727
 # Hardcoded
-# timeseries_defs = [
-#    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
-#    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw",
-# ]
-
 timeseries_defs = [
-    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
+    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw",
 ]
+
 
 # Extract all the dependencies associated with each timeseries definition and
 # transform into required format

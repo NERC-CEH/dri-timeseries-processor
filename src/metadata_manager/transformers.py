@@ -73,14 +73,14 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[s
 
 def extract_timeseries_definition_metadata(
     derivation_metadata: DerivationMetadata,
-) -> Dict[str, Union[Dict[str, Union[str, List[str]]] | None]]:
+) -> Dict[str, Union[Dict[str, Union[str, List[str | None]]]]]:
     """Extract the metadata required for deriving timeseries definitions.
 
     Args:
         derivation_metadata: The validated DerivationMetadata model from the response
 
     Returns:
-        A dict of the required derivation metadata for processing.
+        The required derivation metadata for processing.
     """
     metadata = {"methodology": {}}
 
