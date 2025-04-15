@@ -61,6 +61,10 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[s
         ts_id_metadata["periodicity"] = get_property(
             "periodicity", get_property("aggregation", get_property("measure", get_property("type", item)))
         )
+        ts_id_metadata["processing_level"] = re.match(
+            URI_ID_EXTRACT_REGEX, get_property("@id", get_property("processingLevel", get_property("type", item)))
+        ).group(1)
+
         ts_id_metadata["sourceBucket"] = get_property("sourceBucket", item)
         ts_id_metadata["sourceDataset"] = get_property("sourceDataset", item)
         ts_id_metadata["sourceColumnName"] = get_property("sourceColumnName", item)
