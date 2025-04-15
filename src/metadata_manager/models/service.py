@@ -170,7 +170,7 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Me
         while len(inputs_to_check) != 0:
             for item in inputs_to_check:
                 # Extract the required metadata
-                metadata = handle_derivation_response(item, derivations)
+                metadata = handle_derivation_response(item)
 
                 # Build dict for defs map (if it doesnt already exist)
                 if item not in derivations:
