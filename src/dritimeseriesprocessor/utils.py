@@ -157,3 +157,21 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     # ability to have multiple resolutions
 
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
+
+
+def extract_unique_timeseries_defs(timeseries_ids_to_process: Dict[str, Dict[str, str]]) -> List[str]:
+    """Extract a unique list of timeseries definitions from the timeseries ids to be processed.
+
+    Args:
+        timeseries_ids_to_process: metadata about the timeseries ids to process
+
+    Returns:
+        A list of unique timeseries definitions
+    """
+    unique_timeseries_defs = []
+
+    for value in timeseries_ids_to_process.values():
+        if value["ts_def"] not in unique_timeseries_defs:
+            unique_timeseries_defs.append(value["ts_def"])
+
+    return unique_timeseries_defs

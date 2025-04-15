@@ -22,7 +22,7 @@ from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import group_by_date_site_id
+from dritimeseriesprocessor.utils import extract_unique_timeseries_defs, group_by_date_site_id
 from metadata_manager import api_manager
 from metadata_manager.models.common import (
     build_column_query_parameter,
@@ -94,18 +94,12 @@ timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_pro
 # ----------------------------------------------------
 # Derivation metadata is held with the timeseries definition rather than the ID
 # So first extract all unique timeseries defs from the IDS to be processed
-
-# TODO Extract unique ts_defs from timeseries IDs FW-727
-# Hardcoded
-timeseries_defs = [
-    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_1day_processed",
-    "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw",
-]
+unique_timeseries_defs = extract_unique_timeseries_defs(timeseries_ids_to_process)
 
 
 # Extract all the dependencies associated with each timeseries definition and
 # transform into required format
-timeseries_defs_for_processing = load_nested_timeseries_derivations(timeseries_defs)
+timeseries_defs_for_processing = load_nested_timeseries_derivations(unique_timeseries_defs)
 
 
 # TODO Combine timeseries ID and defs dicts; add processing level. (to discuss)

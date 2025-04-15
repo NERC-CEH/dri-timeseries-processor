@@ -227,3 +227,31 @@ class TestRemoveSitesNotInStore(unittest.TestCase):
             utils.remove_sites_not_in_store(sites, metadata_sites)
 
         self.assertEqual(str(err.exception), "The following sites ['B'] are not in the metadata store. Remove from '--sites' argument.")
+
+
+class TestExtractUniqueTimeseriesDefinitions(unittest.TestCase):
+    """Test the extract_unique_timeseries_definitions function."""
+    test_timeseries_ids = {
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed":
+        {
+            "ts_def": "test_a"
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
+        {
+            "ts_def": "test_b"
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-pa_30min_processed":
+        {
+            "ts_def": "test_a"
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed":
+        {
+            "ts_def": "test_d",
+        }
+    }
+
+    expected = ["test_a", "test_b", "test_d"]
+
+    result = utils.extract_unique_timeseries_defs(test_timeseries_ids)
+
+    assert result == expected
