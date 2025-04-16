@@ -89,8 +89,8 @@ class TestSitesMetadata(unittest.TestCase):
         self.assertEqual(metadata.network_label, "COSMOS Network")
 
     @parameterized.expand([
-        ("test_missing_netwrok_id", "@id", ValidationError),
-        ("test_missing_measure_id", "label", ValidationError),
+        ("test_missing_network_id", "@id", ValidationError),
+        ("test_missing_label", "label", ValidationError),
         ("test_missing_contains", "contains", KeyError)
     ])
     def test_missing_required_fields(self, _, field, error):
