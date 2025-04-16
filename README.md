@@ -33,42 +33,61 @@ Build the docker container to access local data
 ```commandline
 docker compose up -d
 ```
-Then call the app which can take two command-line arguments:
+Then call the app which can take several command-line arguments:
 
-period (required): The period of time you want to extract data for.\
+period (required): The period of time you want to build data for.\
     - Must be a valid ISO8601 duration\
     - Must not have a time component\
     - Can be a combination of days, weeks, months and years
 
 e.g. P1D: previous days data; P1M: previous months data; P1M14D: previous month + 14 days data; PT4: invalid
 
-end_date (optional): The date to start extraction from.\
+end_date (optional): The date to start building from.\
     - Must be of the format YYYY-MM-DD\
     - If not provided then todays date is used\
-    - If running locally, the value is overwritten by 2024-03-10 to ensure data is always extracted.
-    - If running in staging, the value is overwritten by a random date between two specified dates.
+    - If running locally, the value is overwritten by 2024-03-10 to ensure data is always built.
 
-sites (optional): The sites to extract data from.\
-    - If empty then all sites will be extracted\
+sites (optional): The sites to build data from.\
+    - If empty then all sites will be built\
     - Entered sites are checked against available sites in the metadata store and removed if not found\
     - sites must be seperated by a comma, by 5 characters long and not contain special characters\
     - sites can be lower or upper case\
 
-Until the live sensor data is available, the `end_date` parameter is hardcoded within the `build_date_range` function to ensure the app can process some data. If the dataset to be processed is changed, then its likely you will need to update these. Check the dates available for each dataset in `parquet-data` (running locally) and in the [level-0 bucket](https://eu-west-2.console.aws.amazon.com/s3/buckets/ukceh-fdri-staging-timeseries-level-0?region=eu-west-2&bucketType=general) (running in staging).
+columns (optional): The columns to build data from.\
+    - If empty then all columns will be built\
+    - Columns must be seperated by a comma (no spaces)\
+    - Columns can be upper or lower case\
 
-Get the last two days data from hardcoded end dates (as above)
+periodicity (optional): The periodicity of the timeseries to be built.\
+    - Must be a valid ISO8601 string\
+    - Multiple periodicities must be seperated by a comma\
+    - Can be upper or lower case\
+
+When running locally, the default `end_date` value is overwritten by `2024-03-10` to ensure some local data is processed.
+
+Get the last two days data for all sites, columns and periodicities
 ```commandline
 python -m dritimeseriesprocessor P2D
 ```
 
-Get the last two days data from 2024-03-05
+Get the last two days data from 2024-03-05 for all sites, columns and periodicities
 ```commandline
 python -m dritimeseriesprocessor P2D --end_date=2024-03-05
 ```
 
-Get the last two days data from 2024-03-05 for ALCI and BUNNY sites
+Get the last two days data from 2024-03-05 for ALCI and BUNNY sites and all columns and periodicities
 ```commandline
 python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny
+```
+
+Get the last two days data from 2024-03-05 for ALCI and BUNNY sites, variables TA and PA and all periodicities
+```commandline
+python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny --columns=TA,PA
+```
+
+Get the last two days data from 2024-03-05 for ALCI and BUNNY sites, variables TA and PA and a periodicity of 30 mins
+```commandline
+python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny --periodicity=PT30M
 ```
 
 ## Linting
