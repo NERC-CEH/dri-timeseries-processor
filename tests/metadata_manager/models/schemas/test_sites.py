@@ -87,3 +87,15 @@ class TestSitesMetadata(unittest.TestCase):
         self.assertEqual(metadata.sites.site_list, ["http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
                                                     "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy"])
         self.assertEqual(metadata.network_label, "COSMOS Network")
+
+    @parameterized.expand([
+        ("test_missing_netwrok_id", "@id", ValidationError),
+        ("test_missing_measure_id", "label", ValidationError),
+        ("test_missing_contains", "contains", KeyError)
+    ])
+    def test_missing_required_fields(self, _, field, error):
+        """Test validation fails when required fields are missing."""
+        invalid_data = self.test_data.copy()
+        del invalid_data[field]
+        with self.assertRaises(error):
+            SitesMetadata.model_validate(invalid_data)
