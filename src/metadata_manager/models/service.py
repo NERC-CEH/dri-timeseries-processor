@@ -10,6 +10,7 @@ from metadata_manager import api_manager
 from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
 from metadata_manager.models.schemas.derivations import Methodology, TimeseriesDerivationResponse
+from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
 from metadata_manager.transformers import extract_timeseries_definition_metadata
 
@@ -187,3 +188,13 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Me
             new_inputs_to_check = []
 
     return derivations
+
+
+def load_sites() -> SitesResponse:
+    """Validate and load the sites endpoint response.
+
+    Returns:
+        The parsed sites metadata.
+    """
+    data = asyncio.run(METADATA_CONNECTION.fetch_sites())
+    return SitesResponse.model_validate(data)

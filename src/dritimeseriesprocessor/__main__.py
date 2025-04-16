@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import sys
 
@@ -29,7 +28,7 @@ from metadata_manager.models.common import (
     build_periodicity_query_parameter,
     build_site_query_parameter,
 )
-from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations
+from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations, load_sites
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
@@ -54,8 +53,8 @@ metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, netw
 args = parser.parse_args(sys.argv[1:])
 
 # Sites
-# TODO build service and pydantic model for sites endpoint FW-694
-metadata_sites = extract_site_ids(asyncio.run(metadata.fetch_sites()), network="cosmos")
+metadata_sites = load_sites()
+metadata_sites = extract_site_ids(metadata_sites.sites.site_list, network="cosmos")
 sites = parser.validate_sites(args.sites, metadata_sites)
 site_query_parameter = build_site_query_parameter(sites)
 
