@@ -54,7 +54,7 @@ args = parser.parse_args(sys.argv[1:])
 
 # Sites
 metadata_sites = load_sites()
-metadata_sites = extract_site_ids(metadata_sites.sites.site_list, network="cosmos")
+metadata_sites = extract_site_ids(metadata_sites, network="cosmos")
 sites = parser.validate_sites(args.sites, metadata_sites)
 site_query_parameter = build_site_query_parameter(sites)
 

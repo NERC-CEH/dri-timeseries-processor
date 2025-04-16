@@ -5,20 +5,21 @@ from typing import Any, Dict, List, Union
 
 from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_property
 from metadata_manager.models.schemas.derivations import DerivationMetadata
+from metadata_manager.models.schemas.sites import SitesResponse
 
 
-def extract_cosmos_site_ids(site_list: List[str]) -> list:
+def extract_cosmos_site_ids(site_metadata: SitesResponse) -> list:
     """Extract the COSMOS site ids from the validated response.
 
     Args:
-        site_list: Validated site list from the sites endpoint.
+        site_metadata: Validated site metadata from the sites endpoint.
 
     Returns:
         A list of sorted site ids.
     """
     sites = []
 
-    for item in site_list:
+    for item in site_metadata.sites.site_list:
         match = re.search(r"cosmos-(\w+)$", item)
         if match:
             sites.append(match.group(1).upper())
