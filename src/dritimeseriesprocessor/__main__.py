@@ -157,7 +157,10 @@ for item in timeseries_ids_to_process:
 # Get all the required data and merge into dataframes
 # Process altogether and then separate back into timeseries required for each timeseries ID
 
-logger.info(f"Processing level 0 data between {start_date} and {end_date} for sites: {sites}")
+logger.info(
+    f"Building timeseries IDs {[ts_id['ts_id'] for ts_id in timeseries_ids_to_process]}"
+    f" between {start_date} and {end_date}"
+)
 
 # Currently just processing each input one by one
 for metadata in timeseries_ids_to_process:
