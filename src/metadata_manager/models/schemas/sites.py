@@ -6,7 +6,7 @@ from metadata_manager.models.common import get_property
 
 
 class Sites(BaseModel):
-    """Sites information
+    """Sites information.
 
     Attributes:
         site_list: list of sites
