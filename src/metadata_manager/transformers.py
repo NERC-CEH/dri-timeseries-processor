@@ -3,7 +3,7 @@
 import re
 from typing import Any, Dict, List, Union
 
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_property
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, SITE_ID_EXTRACT_REGEX, get_property
 from metadata_manager.models.schemas.derivations import DerivationMetadata
 
 
@@ -68,7 +68,9 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[s
         ts_id_metadata["sourceBucket"] = get_property("sourceBucket", item)
         ts_id_metadata["sourceDataset"] = get_property("sourceDataset", item)
         ts_id_metadata["sourceColumnName"] = get_property("sourceColumnName", item)
-        ts_id_metadata["sourceSite"] = get_property("@id", get_property("originatingSite", item))
+        ts_id_metadata["sourceSite"] = re.match(
+            SITE_ID_EXTRACT_REGEX, get_property("@id", get_property("originatingSite", item))
+        ).group(1)
 
         metadata[get_property("@id", item)] = ts_id_metadata
 

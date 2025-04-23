@@ -187,3 +187,14 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Me
             new_inputs_to_check = []
 
     return derivations
+
+def load_dependent_datasets():
+    """"""
+    # https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset?_limit=10&originatingSite=http://fdri.ceh.ac.uk/id/site/cosmos-chobh&_view=timeseries&type=http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_30min_raw
+
+# Maybe first stage to extract all the time series defs and loop through them?
+# Add timeseries IDs for each timeseries definition dependency
+# loop through ts def and for each site
+# - join the methodlogy stage
+# - add entry for each in inputs
+timeseries_ids_to_process = combine
