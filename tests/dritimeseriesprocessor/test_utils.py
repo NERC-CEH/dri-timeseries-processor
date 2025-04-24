@@ -255,3 +255,52 @@ class TestExtractUniqueTimeseriesDefinitions(unittest.TestCase):
     result = utils.extract_unique_timeseries_defs(test_timeseries_ids)
 
     assert sorted(result) == sorted(expected)
+
+
+class TestExtractDependentTimeseriesDefs(unittest.TestCase):
+    """Test the extract_dependent_timeseries_defs function."""
+
+    test_timeseries_defs_for_processing = {
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed":
+        {
+            "method_type": "calculate",
+            "inputs":
+            [
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed"
+            ]
+        },
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed":
+        {
+            "method_type": "process",
+            "inputs":
+            [
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_raw"
+            ]
+        },
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw":
+        {
+            "inputs":
+            []
+        }
+    }
+
+    expected = [
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed",
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed",
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed",
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed",
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed",
+        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_raw"
+    ]
+
+    result = utils.extract_dependent_timeseries_defs(test_timeseries_defs_for_processing)
+
+    assert result == expected

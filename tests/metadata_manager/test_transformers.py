@@ -112,7 +112,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
-            "sourceSite": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            "sourceSite": "ALIC1"
         }
         
         item_two =   {
@@ -123,7 +123,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
-            "sourceSite": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
+            "sourceSite": "BUNNY"
         }
 
         expected = {"http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed": item_one,
@@ -149,7 +149,7 @@ class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
         # Load the data into the pyantic model
         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        expected = {'methodology': {'method_type': 'calculate', 'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed']}}
+        expected = {'method_type': 'calculate', 'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed']}
         
         result = extract_timeseries_definition_metadata(model_output)
 
@@ -165,7 +165,7 @@ class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
         # Load the data into the pyantic model
         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        expected = {'methodology': {'inputs': []}}
+        expected = {'inputs': []}
         
         result = extract_timeseries_definition_metadata(model_output)
 
