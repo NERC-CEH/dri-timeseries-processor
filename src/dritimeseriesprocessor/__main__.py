@@ -141,7 +141,7 @@ timeseries_ids_to_process = timeseries_ids_to_process | dependent_timeseries_ids
 
 # Currently just processing each raw input one by one
 for ts_id, metadata in timeseries_ids_to_process.items():
-    if metadata['processing_level'] == 'raw':
+    if metadata["processing_level"] == "raw":
         DATASET = metadata["sourceDataset"]
         COLUMNS = metadata["sourceColumnName"]
         BUCKET = metadata["sourceBucket"]
@@ -192,7 +192,7 @@ for ts_id, metadata in timeseries_ids_to_process.items():
                 )
 
                 # Add a missing value
-                #data[-2, "TA"] = None
+                # data[-2, "TA"] = None
 
                 logger.info(f"Added dummy data, shape: {data.shape}")
 
