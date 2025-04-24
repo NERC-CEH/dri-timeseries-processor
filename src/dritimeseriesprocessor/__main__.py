@@ -5,7 +5,6 @@ import sys
 import boto3
 import polars as pl
 from time_stream import TimeSeries
-from time_stream.period import Period
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
@@ -22,16 +21,19 @@ from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import extract_unique_timeseries_defs, group_by_date_site_id
+from dritimeseriesprocessor.utils import (
+    extract_dependent_timeseries_defs,
+    extract_unique_timeseries_defs,
+    group_by_date_site_id,
+)
 from metadata_manager import api_manager
 from metadata_manager.models.common import (
     build_column_query_parameter,
     build_periodicity_query_parameter,
     build_site_query_parameter,
+    build_timeseries_def_query_parameter,
 )
-from metadata_manager.models.service import (
-    load_datasets, load_nested_timeseries_derivations, load_dependent_datasets
-)
+from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
@@ -70,9 +72,11 @@ columns = parser.validate_columns(args.columns)
 column_query_parameter = build_column_query_parameter(columns)
 
 # Processing level
+# TODO extract to build_processing_query_parameter
 processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/processed")]
 
 # View
+# TODO extract to build_view_query_parameter
 view_query_parameter = [("_view", "timeseries")]
 
 # Dates
@@ -95,6 +99,7 @@ timeseries_ids_to_process = load_datasets(
 )
 timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_process)
 
+
 # Step 2
 # Get derivation metadata for the timeseries IDs to be built
 # Every timeseries ID will be dependent on another (raw or processed)
@@ -108,14 +113,24 @@ timeseries_defs_for_processing = load_nested_timeseries_derivations(unique_times
 
 # Step 3
 # Get timeseries ID metadata for all dependencies
-# Add to the original dictionary of timeseries IDs
-dependent_timeseries_ids_to_process = load_dependent_datasets(timeseries_defs_for_processing)
-# this needs to give the API response which can be put into below
-# Might be able to do all types and sites together as one
+# First extract all dependent timeseries definitions
+# Then call the dataset endpoint with site and ts def to get the metadata
+# Validate and transform response
+dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_for_processing)
+timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
+
+# TODO remove the limit parameter once FW-692 has been implemented
+dependent_timeseries_ids_to_process = load_datasets(
+    site_query_parameter + timeseries_def_parameter + view_query_parameter + [("_limit", 50)]
+)
+
 dependent_timeseries_ids_to_process = extract_timeseries_id_metadata(dependent_timeseries_ids_to_process)
 
 
-
+# Step 4
+# Combine all the metadata into a single object for processing
+# TODO (maybe) add method_type and inputs
+timeseries_ids_to_process = timeseries_ids_to_process | dependent_timeseries_ids_to_process
 
 
 # Start processing
@@ -125,16 +140,15 @@ dependent_timeseries_ids_to_process = extract_timeseries_id_metadata(dependent_t
 # Process altogether and then separate back into timeseries required for each timeseries ID
 
 # Currently just processing each raw input one by one
-for metadata in timeseries_ids_to_process:
-    for item in metadata["inputs"]:
-        DATASET = item["sourceDataset"]
-        COLUMNS = item["sourceColumnName"]
-        BUCKET = item["sourceBucket"]
-        SITES = item["sourceSite"]
+for ts_id, metadata in timeseries_ids_to_process.items():
+    if metadata['processing_level'] == 'raw':
+        DATASET = metadata["sourceDataset"]
+        COLUMNS = metadata["sourceColumnName"]
+        BUCKET = metadata["sourceBucket"]
+        SITES = metadata["sourceSite"]
 
         logger.info(
-            f"Processing {DATASET} with columns {COLUMNS} for sites {SITES}"
-            f" between {start_date} and {end_date}"
+            f"Processing {DATASET} with columns {COLUMNS} for sites {SITES} between {start_date} and {end_date}"
         )
 
         try:
@@ -178,14 +192,14 @@ for metadata in timeseries_ids_to_process:
                 )
 
                 # Add a missing value
-                data[-2, "TA"] = None
+                #data[-2, "TA"] = None
 
                 logger.info(f"Added dummy data, shape: {data.shape}")
 
                 # Initialise TimeSeries object
                 # ---------------------------
-                resolution = Period.of_minutes(item["resolution"])
-                periodicity = Period.of_minutes(item["periodicity"])
+                resolution = metadata["resolution"]
+                periodicity = metadata["periodicity"]
                 ts = TimeSeries(
                     data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"]
                 )
@@ -218,7 +232,7 @@ for metadata in timeseries_ids_to_process:
 
                 # Infilling
                 # ---------
-                ts = run_infilling(ts, site)
+                ts = run_infilling(ts, SITES)
                 ts = update_infill_core_flags(ts)
 
                 # show first 100 rows to show how infill flags have been applied

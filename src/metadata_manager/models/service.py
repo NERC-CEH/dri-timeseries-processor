@@ -9,7 +9,7 @@ from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
-from metadata_manager.models.schemas.derivations import Methodology, TimeseriesDerivationResponse
+from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
 from metadata_manager.transformers import extract_timeseries_definition_metadata
 
@@ -116,14 +116,14 @@ def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationRespo
     return TimeseriesDerivationResponse.model_validate(data)
 
 
-def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[Dict[str, Union[str, List[str]]] | None]]:
+def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[str, List[str | None]]]:
     """Wrapper to handle the timeseries derivation service and transformation functionality
 
     Args:
         timeseries_def: the timeseries definition
 
     Returns:
-        A dictionary containing the transfomred meatdata form the API response.
+        A dictionary containing the transformed metadata form the API response.
     """
 
     # Validate API response for the definition
@@ -137,7 +137,7 @@ def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[Dict[str,
     return metadata
 
 
-def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Methodology | None]]:
+def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Dict[str, Union[str, List[str | None]]]]:
     """Recursively loads all timeseries derivation metadata for timeseries definitions.
 
     Each timeseries definition will have a dataset(s) that that need to be
@@ -178,7 +178,7 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Me
                     derivations[item] = metadata
 
                     # Add the dependencies to the list to be check next time
-                    new_inputs_to_check += derivations[item]["methodology"]["inputs"]
+                    new_inputs_to_check += derivations[item]["inputs"]
 
             # Update the inputs to be checked to the ones extracted in this loop
             inputs_to_check = new_inputs_to_check
@@ -187,14 +187,3 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Union[Me
             new_inputs_to_check = []
 
     return derivations
-
-def load_dependent_datasets():
-    """"""
-    # https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset?_limit=10&originatingSite=http://fdri.ceh.ac.uk/id/site/cosmos-chobh&_view=timeseries&type=http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_30min_raw
-
-# Maybe first stage to extract all the time series defs and loop through them?
-# Add timeseries IDs for each timeseries definition dependency
-# loop through ts def and for each site
-# - join the methodlogy stage
-# - add entry for each in inputs
-timeseries_ids_to_process = combine

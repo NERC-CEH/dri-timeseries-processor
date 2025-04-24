@@ -171,3 +171,9 @@ def extract_unique_timeseries_defs(timeseries_ids_to_process: Dict[str, Dict[str
     unique_timeseries_defs = {value["ts_def"] for value in timeseries_ids_to_process.values()}
 
     return list(unique_timeseries_defs)
+
+
+def extract_dependent_timeseries_defs(timeseries_defs_to_process: Dict[str, Dict[str, Union[str, List[str | None]]]]) -> List[str]:
+    """Extract timeseries def dependencies."""
+
+    return [items for items in timeseries_defs_to_process.values() for items in items["inputs"]]
