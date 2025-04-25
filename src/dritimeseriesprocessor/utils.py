@@ -185,4 +185,4 @@ def extract_dependent_timeseries_defs(
         A list of all dependent timeseries definitions.
     """
 
-    return [items for items in timeseries_defs_to_process.values() for items in items["inputs"]]
+    return list({items for items in timeseries_defs_to_process.values() for items in items["inputs"]})

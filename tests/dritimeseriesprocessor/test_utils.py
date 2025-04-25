@@ -280,6 +280,7 @@ class TestExtractDependentTimeseriesDefs(unittest.TestCase):
             "method_type": "process",
             "inputs":
             [
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed", # duplicate
                 "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_raw"
             ]
         },
@@ -303,4 +304,4 @@ class TestExtractDependentTimeseriesDefs(unittest.TestCase):
 
     result = utils.extract_dependent_timeseries_defs(test_timeseries_defs_for_processing)
 
-    assert result == expected
+    assert sorted(result) == sorted(expected)
