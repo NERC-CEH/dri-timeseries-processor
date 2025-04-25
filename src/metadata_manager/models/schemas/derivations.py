@@ -47,7 +47,7 @@ class Methodology(BaseModel):
         """Extract methodology information from raw API data.
 
         Args:
-            data : Raw methodlogy data from the API.
+            data : Raw methodology data from the API.
 
         Returns:
             Processed data.
@@ -100,13 +100,13 @@ class DerivationMetadata(BaseModel):
 
 
 class TimeseriesDerivationResponse(BaseModel):
-    """Response wrapper that automatically extracts the single time series item"""
+    """Response wrapper that automatically extracts the single derivation item"""
 
     item: DerivationMetadata = Field(None)
 
     @classmethod
     def model_validate(cls, obj: Dict[str, Any], *args, **kwargs) -> DerivationMetadata:
-        """Validate and extract a single time series metadata item from the response.
+        """Validate and extract a single derivation metadata item from the response.
 
         Args:
             obj: Dictionary containing the response with an "items" key.
@@ -114,12 +114,12 @@ class TimeseriesDerivationResponse(BaseModel):
             **kwargs: Additional keyword arguments (needed to match call to BaseModel.model_validate).
 
         Returns:
-            TimeSeriesMetadata: The validated time series metadata instance.
+            DerivationMetadata: The validated derivation metadata instance.
 
         Raises:
             ValueError: If the "items" list does not contain exactly one item.
         """
         if len(obj["items"]) != 1:
-            raise ValueError(f"Expected exactly one item in the time series response, got {len(obj['items'])}")
+            raise ValueError(f"Expected exactly one item in the derivation response, got {len(obj['items'])}")
         # Create a new dict with the single item
         return DerivationMetadata.model_validate(obj["items"][0])

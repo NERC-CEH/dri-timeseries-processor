@@ -5,38 +5,42 @@ from typing import Any, Dict, List, Union
 
 from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX, get_property
 from metadata_manager.models.schemas.derivations import DerivationMetadata
+from metadata_manager.models.schemas.sites import SitesResponse
 
 
-def extract_cosmos_site_ids(response: Dict[str, Any]) -> list:
-    """Extract the COSMOS site ids from the metadata store site request.
+def extract_cosmos_site_ids(site_metadata: SitesResponse) -> list:
+    """Extract the COSMOS site ids from the validated response.
 
     Args:
-        response: The response from the metadat store sites request.
+        site_metadata: Validated site metadata from the sites endpoint.
 
     Returns:
         A list of sorted site ids.
     """
     sites = []
 
-    for item in response["items"][0]["contains"]:
-        match = re.search(r"cosmos-(\w+)$", item["@id"])
+    for item in site_metadata.sites.site_list:
+        match = re.search(r"cosmos-(\w+)$", item)
         if match:
             sites.append(match.group(1).upper())
 
     return sorted(sites)
 
 
-def extract_site_ids(response: Dict[str, Any], network: str) -> list:
-    """Extract the site ids from the metadata store site request.
+def extract_site_ids(site_list: List[str], network: str) -> list:
+    """Extract the site ids from the validated site_list.
 
     Args:
-        response: The response from the metadata store sites request.
+        site_list: Validated site list from the sites endpoint.
+        network: The network
 
+    Raises:
+        Value Error if network not supported.
     Returns:
         A list of sorted site ids.
     """
     if network == "cosmos":
-        return extract_cosmos_site_ids(response)
+        return extract_cosmos_site_ids(site_list)
     else:
         raise ValueError(f"Network {network} not supported.")
 

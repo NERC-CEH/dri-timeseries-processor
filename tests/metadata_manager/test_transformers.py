@@ -6,7 +6,8 @@ from metadata_manager.transformers import (
     extract_timeseries_id_metadata,
     extract_timeseries_definition_metadata
 )
-from metadata_manager.models.schemas.derivations import Methodology, TimeseriesDerivationResponse
+from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
+from metadata_manager.models.schemas.sites import SitesResponse
 from unittest.mock import patch
 from pathlib import Path
 
@@ -22,35 +23,55 @@ class TestExtractCOSMOSSiteIds(unittest.TestCase):
     def setUp(self):
         """Set up test cases"""
 
-        self.sample_site1 = {
-            '@id': 'http://fdri.ceh.ac.uk/id/site/cosmos-site123',
-            'label': ['Test Site1'],
-            'comment': ['Test Comment1']
-        }
-        
-        self.sample_site2 = {
-            '@id': 'http://fdri.ceh.ac.uk/id/site/cosmos-site456',
-            'label': ['Test Site2'],
-            'comment': ['Test Comment2']
-        }
-
         self.sample_raw_data = {
-            'items': [{
-                'contains': [self.sample_site1, self.sample_site2]
-            }]
+            "items":
+                [
+                    {
+                    "@id": "http://fdri.ceh.ac.uk/id/network/cosmos",
+                    "contains":
+                    [
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-site123",
+                            "label":
+                            [
+                                "Cardington"
+                            ]
+                        },
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-site456",
+                            "label":
+                            [
+                                "Cwm Garw"
+                            ]
+                        }
+                    ],
+                    "@type":
+                    [
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/EnvironmentalMonitoringNetwork"
+                        }
+                    ],
+                    "label":
+                    [
+                        "COSMOS Network"
+                    ]
+        }
+        ]
         }
 
     def test_extract_site_ids_cosmos_uri(self):
         """Test extracting site IDs from cosmos URI"""
 
-        result = extract_cosmos_site_ids(self.sample_raw_data)
+        validated_data = SitesResponse.model_validate(self.sample_raw_data)
+        result = extract_cosmos_site_ids(validated_data)
         self.assertEqual(result, ['SITE123', 'SITE456'])
 
     def test_extract_site_ids_cosmos_uri_fail(self):
         """Test extracting site IDs from cosmos URI where one fails."""
 
         self.sample_raw_data['items'][0]['contains'][1]['@id'] = 'http://fdri.ceh.ac.uk/id/site/fdri-site456'
-        result = extract_cosmos_site_ids(self.sample_raw_data)
+        validated_data = SitesResponse.model_validate(self.sample_raw_data)
+        result = extract_cosmos_site_ids(validated_data)
         self.assertEqual(result, ['SITE123'])
 
 
