@@ -183,10 +183,11 @@ class TestRunQualityControl(unittest.TestCase):
     def test_preprocess_unimplemented_method(self, mock_get_qc_config):
         """ Test that run qc skips unimplemented methods.
         """
-        mock_get_qc_config.return_value = {"unknown_check": Mock()}
+        mock_get_qc_config.return_value = {"unknown_check": Mock(id=1)}
 
-        with self.assertRaises(ValueError):
+        with self.assertLogs("dritimeseriesprocessor.quality_control.quality_controller", level="WARNING") as logs:
             run_quality_control(self.ts)
+            self.assertIn("Unimplemented QC check: unknown_check", logs.output[0])
 
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_config")
     def test_qc_variable_not_in_df(self, mock_get_qc_config):

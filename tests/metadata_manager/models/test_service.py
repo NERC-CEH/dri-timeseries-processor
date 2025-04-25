@@ -7,7 +7,7 @@ class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
 	"""Test the load_nested_timeseries_derivations function."""
 
 	@patch("metadata_manager.models.service.handle_derivation_response")
-	def test_imeseries_definition_no_nesting(self, mock_handle_derivation_response):
+	def test_timeseries_definition_no_nesting(self, mock_handle_derivation_response):
 		"""Timeseries definition only dependent on its own raw dataset."""
 	
 		timeseries_defs = [
@@ -15,37 +15,25 @@ class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
 		]
 	
 		extract_derivation_result_1 = {
-			"methodology":
-			{
-				"method_type": "process",
-				"inputs":
-				["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
-			}
+			"method_type": "process",
+			"inputs":
+			["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
 		}
 
-		extract_derivation_result_2 = {
-			"methodology":
-			{
-				"inputs":[]
-			}
-		}
+
+		extract_derivation_result_2 = {"inputs":[]}
+
 		mock_handle_derivation_response.side_effect = [extract_derivation_result_1, extract_derivation_result_2]
 
 		expected = {
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_processed":
 			{
-				"methodology":
-				{
-					"method_type": "process",
-					"inputs": ["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
-				}
+				"method_type": "process",
+				"inputs": ["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
 			},
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw":
-				{
-				"methodology":
-				{
-					"inputs":[]
-				}
+			{
+				"inputs":[]
 			}
 		}
 		result = load_nested_timeseries_derivations(timeseries_defs)
@@ -61,29 +49,18 @@ class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
 		]
 
 		extract_derivation_result_1  =  {
-			"methodology":
-			{
-				"method_type": "calculate",
-				"inputs":
-				["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed"]
-			}
+			"method_type": "calculate",
+			"inputs":
+			["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed"]
 		}
 
 		extract_derivation_result_2 = {
-			"methodology":
-			{
-				"method_type": "process",
-				"inputs":["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
-			}
+			"method_type": "process",
+			"inputs":["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
 		}
 
 
-		extract_derivation_result_3 = {
-			"methodology":
-			{
-				"inputs":[]
-			}
-		}
+		extract_derivation_result_3 = {"inputs":[]}
 
 		mock_handle_derivation_response.side_effect = (
 			[extract_derivation_result_1, extract_derivation_result_2, extract_derivation_result_3]
@@ -92,28 +69,19 @@ class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
 		expected = {
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed":
 			{
-				"methodology":
-				{
-					"method_type": "calculate",
-					"inputs":
-					["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed"]
-				}
+				"method_type": "calculate",
+				"inputs":
+				["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed"]
 			},
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed":
 			{
-				"methodology":
-				{
-					"method_type": "process",
-					"inputs":
-					["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
-				}
+				"method_type": "process",
+				"inputs":
+				["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
 			},
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw":
 			{
-				"methodology":
-				{
-					"inputs":[]
-				}
+				"inputs":[]
 			}
 		}
 
@@ -133,36 +101,20 @@ class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
 
 		# swin timeseries
 		swin_extract_derivation_result_1 = {
-			"methodology":
-			{
-				"method_type": "process",
-				"inputs":["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
-			}
+			"method_type": "process",
+			"inputs":["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
 		}
 
-		swin_extract_derivation_result_2 = {
-			"methodology":
-			{
-				"inputs":[]
-			}
-		}
+		swin_extract_derivation_result_2 = {"inputs":[]}
 
 		# cov_ux_uz timeseries
 		cov_ux_uz_extract_derivation_result_1 = {
-			"methodology":
-			{
-				"method_type": "process",
-				"inputs":
-				["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
-			}
+			"method_type": "process",
+			"inputs":
+			["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
 		}
 
-		cov_ux_uz_extract_derivation_result_2 = {
-			"methodology":
-			{
-				"inputs":[]
-			}
-		}
+		cov_ux_uz_extract_derivation_result_2 = {"inputs":[]}
 
 		mock_handle_derivation_response.side_effect = (
 			[swin_extract_derivation_result_1, swin_extract_derivation_result_2,
@@ -172,34 +124,22 @@ class TestLoadNestedTimeseriesDerivations(unittest.TestCase):
 		expected = {
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed":
 			{
-				"methodology":
-				{
-					"method_type": "process",
-					"inputs":
-					["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
-				}
+				"method_type": "process",
+				"inputs":
+				["http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"]
 			},
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw":
 			{
-				"methodology":
-				{
-					"inputs":[]
-				}
+				"inputs":[]
 			},
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_processed":
 			{
-				"methodology":
-				{
-					"method_type": "process",
-					"inputs": ["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
-				}
+				"method_type": "process",
+				"inputs": ["http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw"]
 			},
 			"http://fdri.ceh.ac.uk/ref/cosmos/time-series/cov_ux_uz_30min_raw":
-				{
-				"methodology":
-				{
-					"inputs":[]
-				}
+			{
+				"inputs":[]
 			}
 		}
 

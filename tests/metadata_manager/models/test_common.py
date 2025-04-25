@@ -8,7 +8,8 @@ from metadata_manager.models.common import (
     get_property,
     build_site_query_parameter,
     build_periodicity_query_parameter,
-    build_column_query_parameter
+    build_column_query_parameter,
+    build_timeseries_def_query_parameter
 )
 
 class TestUriIdExtractRegex(TestCase):
@@ -175,4 +176,16 @@ class TestBuildColumnsQueryParameter(TestCase):
         result = build_periodicity_query_parameter(columns)
 
         assert result == expected
+
+
+class TestBuildTimeseriesDefQueryParameter(TestCase):
+    """Tests the build_timeseries_def_query_parameter."""
+
+    def test_multiple_timeseries_defs(self) -> None:
+        """Test string built with multiple timeseries defs"""
+        timeseries_defs = ["ts_def_a", "ts_def_b"]
+        expected = [('type', 'ts_def_a'), ('type', 'ts_def_b')]
         
+        result = build_timeseries_def_query_parameter(timeseries_defs)
+
+        assert result == expected

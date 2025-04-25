@@ -3,7 +3,7 @@
 import re
 from typing import Any, Dict, List, Union
 
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_property
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX, get_property
 from metadata_manager.models.schemas.derivations import DerivationMetadata
 
 
@@ -68,7 +68,9 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[s
         ts_id_metadata["sourceBucket"] = get_property("sourceBucket", item)
         ts_id_metadata["sourceDataset"] = get_property("sourceDataset", item)
         ts_id_metadata["sourceColumnName"] = get_property("sourceColumnName", item)
-        ts_id_metadata["sourceSite"] = get_property("@id", get_property("originatingSite", item))
+        ts_id_metadata["sourceSite"] = (
+            re.match(SITE_ID_EXTRACT_REGEX, get_property("@id", get_property("originatingSite", item))).group(1).upper()
+        )
 
         metadata[get_property("@id", item)] = ts_id_metadata
 
@@ -77,7 +79,7 @@ def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[s
 
 def extract_timeseries_definition_metadata(
     derivation_metadata: DerivationMetadata,
-) -> Dict[str, Union[Dict[str, Union[str, List[str | None]]]]]:
+) -> Dict[str, Dict[str, Union[str, List[str | None]]]]:
     """Extract the metadata required for deriving timeseries definitions.
 
     Args:
@@ -86,15 +88,15 @@ def extract_timeseries_definition_metadata(
     Returns:
         The required derivation metadata for processing.
     """
-    metadata = {"methodology": {}}
+    metadata = {}
 
     if derivation_metadata.methodology:
-        metadata["methodology"]["method_type"] = re.match(
+        metadata["method_type"] = re.match(
             URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.configuration_type
         ).group(1)
-        metadata["methodology"]["inputs"] = derivation_metadata.methodology.uses
+        metadata["inputs"] = derivation_metadata.methodology.uses
     else:
         # If no methodology section then there will be no further dependencies
-        metadata["methodology"]["inputs"] = []
+        metadata["inputs"] = []
 
     return metadata
