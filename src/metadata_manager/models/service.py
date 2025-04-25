@@ -123,7 +123,7 @@ def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[str, List
         timeseries_def: the timeseries definition
 
     Returns:
-        A dictionary containing the transformed metadata form the API response.
+        A dictionary containing the transformed metadata from the API response.
     """
 
     # Validate API response for the definition
