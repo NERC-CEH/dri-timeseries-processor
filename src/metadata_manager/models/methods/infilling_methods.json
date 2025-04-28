@@ -1,5 +1,5 @@
 {
-    "interp_linear": {
+    "linear_linear": {
         "name": "Linear interpolation",
         "description": "Linear interpolation. Creates straight line through the gap",
         "id": 1,

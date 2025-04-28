@@ -3,7 +3,7 @@ from time_stream import TimeSeries
 
 
 def linear_interpolation(
-    ts: TimeSeries, column: str, flag_column: str, max_gap_size: int = None, window: int = None
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, max_gap_size: int = None, window: int = None
 ) -> TimeSeries:
     """
     Perform linear interpolation on a Polars Series, filling gaps that are smaller than a specified size.
@@ -11,6 +11,7 @@ def linear_interpolation(
     Args:
         ts: The input TimeSeries containing the data to be infilled.
         column: The name of the column to be infilled.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the infill config.
         flag_column: The name of the flag column to be updated with the method ID.
         max_gap_size: The maximum size of consecutive null gaps that should be filled. Any gap larger than this will not
             be interpolated and will remain as null.
@@ -59,7 +60,7 @@ def linear_interpolation(
 
     # Update the flag column with the method ID
     expr = df["value_filled"].is_not_null()
-    ts.add_flag(flag_column, "interp_linear", expr)
+    ts.add_flag(flag_column, flag_name, expr)
 
     return ts
 

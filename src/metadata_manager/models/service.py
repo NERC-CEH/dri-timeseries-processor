@@ -1,13 +1,12 @@
 import asyncio
 import json
-from collections import defaultdict
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
-from metadata_manager.models.configs.infilling import InfillingConfig, InfillingProcessConfigs
+from metadata_manager.models.configs.infilling import InfillingProcessConfigs
 from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.sites import SitesResponse
@@ -22,11 +21,12 @@ class ConfigType(Enum):
     CORRECTION = "correction"  # placeholder for moving other configs across
 
 
-def load_config(config_type: Union[ConfigType, str]) -> Optional[Dict[str, Dict[str, InfillingConfig]]]:
+def load_config(config_type: Union[ConfigType, str], ts_id: str) -> InfillingProcessConfigs | None:
     """Load configuration data based on the given configuration type.
 
     Args:
         config_type: The type of configuration to load.
+        ts_id: The time series ID to load configurations for.
 
     Returns:
         The parsed configurations.
@@ -35,25 +35,11 @@ def load_config(config_type: Union[ConfigType, str]) -> Optional[Dict[str, Dict[
         config_type = ConfigType(config_type)
 
     if config_type == ConfigType.INFILLING:
-        # TODO: To decide how to filter down (and at what stage to filter).  E.g. do we provide this function with
-        #         a network name, and/or site name, and/or infilling method?
-        metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
-        data = asyncio.run(metadata.fetch_infill_configs())
-        infilling_configs = InfillingProcessConfigs.model_validate(data)
-
-        # Add in the time-series metadata.
-        # TODO: Might not need to do this as might include this info in the config api view.
-        #   In which case, this dictionary can be built in the InfillingProcessConfigs object.
-        result = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-        for config in infilling_configs:
-            site_id = config.site_id
-            time_series_meta = load_timeseries(config.time_series_name)
-            column = time_series_meta.column
-            resolution = time_series_meta.measure.resolution
-
-            result[site_id][resolution][column].append(config)
-
-        return result
+        data = asyncio.run(METADATA_CONNECTION.fetch_infill_config(ts_id))
+        infill_config = InfillingProcessConfigs.model_validate(data)
+        return infill_config
+    else:
+        return None
 
 
 def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMethodRegistry]:
@@ -72,6 +58,8 @@ def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMetho
         with open(Path(__file__).parent.absolute() / "methods" / "infilling_methods.json", "r") as f:
             data = json.load(f)
         return InfillingMethodRegistry.model_validate(data)
+    else:
+        return None
 
 
 def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataResponse:
