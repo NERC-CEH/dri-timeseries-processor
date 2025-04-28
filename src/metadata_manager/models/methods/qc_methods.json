@@ -1,0 +1,14 @@
+{
+    "min-max-range": {
+        "name": "Range check",
+        "description": "Checks if the value falls within a specified range",
+        "id": 1,
+        "function_name": "range_check"
+    },
+    "battery_v": {
+        "name": "Battery voltage check",
+        "description": "Checks that the battery voltage level is above the threshold",
+        "id": 2,
+        "function_name": "battery_voltage_check"
+    }
+}
