@@ -11,8 +11,8 @@ def linear_interpolation(
     Args:
         ts: The input TimeSeries containing the data to be infilled.
         column: The name of the column to be infilled.
-        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the infill config.
         flag_column: The name of the flag column to be updated with the method ID.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the infill config.
         max_gap_size: The maximum size of consecutive null gaps that should be filled. Any gap larger than this will not
             be interpolated and will remain as null.
         window: Window size for interpolation.

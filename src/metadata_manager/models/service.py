@@ -71,8 +71,7 @@ def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataRe
     Returns:
         The parsed time series metadata.
     """
-    metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
-    data = asyncio.run(metadata.fetch_timeseries_metadata(timeseries_id=timeseries_id))
+    data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_metadata(timeseries_id=timeseries_id))
     return TimeSeriesMetadataResponse.model_validate(data)
 
 
