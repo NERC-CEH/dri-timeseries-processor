@@ -58,12 +58,12 @@ class MetadataAPIManager:
         response = await self._make_api_call(f"{self.host}/id/network/{self.network}")
         return response
 
-    async def fetch_infill_configs(self, site_id: str = None) -> Dict[str, Any]:
-        """Fetch infill configurations, optionally filtered by site ID.
+    async def fetch_infill_config(self, ts_id: str) -> Dict[str, Any]:
+        """Fetch infill configurations for a given time series ID.
 
         Args:
             site_id: Site identifier to filter configurations. Defaults to None, returns all infill configurations.
-
+            ts_id: The time series ID to load infill configurations for.
         Returns:
             JSON response containing infill configurations.
 
@@ -73,10 +73,8 @@ class MetadataAPIManager:
         url = (
             f"{self.host}/id/data-processing-configuration.json?"
             f"type={self.service_base_uri}/ref/common/configuration-type/infill-configuration"
+            f"&appliesToTimeSeries={ts_id}"
         )
-
-        if site_id:
-            url += f"&appliesToFacility={self.service_base_uri}/id/site/{self.network}-{site_id.lower()}"
 
         response = await self._make_api_call(url)
 

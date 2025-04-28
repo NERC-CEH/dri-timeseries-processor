@@ -300,24 +300,24 @@ class TestMethodConfigItem(unittest.TestCase):
             MethodConfigItem.model_validate(test_data)
 
     def test_missing_observation_interval(self):
-        """Test that validation fails when observationInterval is missing."""
+        """Test that validation passes when observationInterval is missing.
+        It's okay for this to be missing, as we then assume it applies for the whole time series."""
         test_data = {
             "method": {"@id": "http://example.com/method/test"},
             # Missing observationInterval
             "argument": []
         }
-        with self.assertRaises(KeyError):
-            MethodConfigItem.model_validate(test_data)
+        MethodConfigItem.model_validate(test_data)
 
     def test_missing_start_date(self):
-        """Test that validation fails when startDate is missing."""
+        """Test that validation passes when startDate is missing.
+        It's okay for this to be missing, as we then assume it applies for the whole time series."""
         test_data = {
             "method": {"@id": "http://example.com/method/test"},
             "observationInterval": {},  # Missing startDate
             "argument": []
         }
-        with self.assertRaises(KeyError):
-            MethodConfigItem.model_validate(test_data)
+        MethodConfigItem.model_validate(test_data)
 
     def test_missing_arguments(self):
         """Test handling when argument list is missing."""
@@ -383,25 +383,7 @@ class TestInfillingConfig(unittest.TestCase):
         mock_method_validate.return_value = mock_method
 
         result = InfillingConfig.model_validate(self.test_data)
-        self.assertEqual(result.method, mock_method)
-
-    def test_multiple_configurations_warning(self):
-        """Test warning when multiple configurations are found."""
-        test_data = self.test_data.copy()
-        test_data["hasCurrentConfiguration"] = [
-            {
-                "method": {"@id": "http://example.com/method/method1"},
-                "observationInterval": {"startDate": "2023-01-01T00:00:00"},
-                "argument": []
-            },
-            {
-                "method": {"@id": "http://example.com/method/method2"},
-                "observationInterval": {"startDate": "2023-01-01T00:00:00"},
-                "argument": []
-            }
-        ]
-        with self.assertRaises(ValueError) :
-            InfillingConfig.model_validate(test_data)
+        self.assertEqual(result.methods, [mock_method])
 
     def test_missing_applies_to_time_series(self):
         """Test that validation fails when appliesToTimeSeries is missing."""

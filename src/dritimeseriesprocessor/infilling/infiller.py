@@ -1,5 +1,6 @@
 import logging
 from functools import lru_cache
+from typing import Dict
 
 from time_stream import TimeSeries
 
@@ -12,13 +13,7 @@ INFILL_FLAG_SYS_NAME = "infill_flags"
 
 
 @lru_cache(maxsize=1)
-def get_infill_configs() -> dict:
-    """Load the infill configurations and cache the results."""
-    return load_config("infilling")
-
-
-@lru_cache(maxsize=1)
-def get_infill_methods() -> dict:
+def get_infill_methods() -> Dict:
     """Load the infill methods and cache the results."""
     return load_methods("infilling")
 
@@ -36,31 +31,26 @@ def infill_flag_column_name(column: str) -> str:
     return f"{column}_INFILL_FLAG"
 
 
-def run_infilling(ts: TimeSeries, site_id: str) -> TimeSeries:
+def run_infilling(ts: TimeSeries, ts_id: str, metadata: Dict) -> TimeSeries:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.
 
     Args:
         ts: The input TimeSeries containing the data to be infilled.
-        site_id: The site ID being processed.
+        ts_id: The ID of the TimeSeries being processed.
+        metadata: The metadata for the site being processed.
 
     Returns:
         The TimeSeries with infilling and infill flags applied.
     """
-    infill_configs = get_infill_configs()
+    column = metadata["sourceColumnName"]
+
+    infill_configs = load_config("infilling", ts_id)
     infill_methods = get_infill_methods()
 
-    # Currently only have config info in the metadata API for CHIMN.  Hack it here so other sites use this for now...
-    # TODO: REMOVE THIS WHEN WE HAVE ALL CONFIGS IN THE API
-    if site_id not in infill_configs:
-        infill_configs[site_id] = infill_configs.get("CHIMN", {})
-
-    # Filter configs by the site and resolution
-    infill_configs = infill_configs.get(site_id, {}).get(ts.resolution.iso_duration)
-
     if not infill_configs:
-        logger.info(f"No infilling configs found for site: {site_id}")
+        logger.info(f"No infilling config found for Time Series ID: {ts_id}")
         return ts
 
     # Initialise infilling flag system within TimeSeries object
@@ -71,26 +61,19 @@ def run_infilling(ts: TimeSeries, site_id: str) -> TimeSeries:
         logger.warning("No infill methods given in config.")
         return ts
 
-    for column in ts.data_columns:
-        methods = infill_configs.get(column)
-        if methods:
-            # Order by priority
-            sorted_methods = sorted(methods, key=lambda x: x.priority)
-            for method_config in sorted_methods:
-                infill_flag_col = infill_flag_column_name(column)
+    # Order by priority
+    sorted_infillers = sorted(infill_configs, key=lambda x: x.priority)
+    for config in sorted_infillers:
+        infill_flag_col = infill_flag_column_name(column)
+        if infill_flag_col not in ts.flag_columns:
+            ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
 
-                if infill_flag_col not in ts.flag_columns:
-                    ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
-
-                # Run infill function
-                infill_func = infill_methods[method_config.method.name]
-                logger.info(
-                    f"Infilling {column} with method: {method_config.method.name}. "
-                    f"Constraints: {method_config.method.parameters}"
-                )
-                ts = infill_func(ts, column, infill_flag_col, **method_config.method.parameters)
-
-        else:
-            logger.warning(f"No infill methods for: {column}")
+        # Run infill methods on time series
+        # TODO: Will have to add in start and end dates so that infilling only applied to specific part of time
+        #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
+        for method in config.methods:
+            infill_func = infill_methods[method.name]
+            logger.info(f"Infilling {column} with method: {method.name}. Constraints: {method.parameters}")
+            ts = infill_func(ts, column, infill_flag_col, method.name, **method.parameters)
 
     return ts

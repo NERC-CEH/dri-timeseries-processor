@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 
-from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX, check_single_list_item
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 
 
 class Annotation(BaseModel):
@@ -126,10 +126,15 @@ class MethodConfigItem(BaseModel):
         result = {}
         result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["method"]["@id"]).group(1)
 
-        interval = data["observationInterval"]
-        result["start_date"] = interval["startDate"]
-        if "endDate" in interval:
-            result["end_date"] = interval["endDate"]
+        interval = data.get("observationInterval")
+        if interval:
+            result["start_date"] = interval["startDate"]
+            if "endDate" in interval:
+                result["end_date"] = interval["endDate"]
+        else:
+            # A missing observationInterval means that the configuration applies to the entire temporal range of the
+            # time series, so set the start date to some nominal time before the project started.
+            result["start_date"] = datetime(1800, 1, 1)
 
         # Extract parameters
         params = {}
@@ -148,13 +153,15 @@ class InfillingConfig(BaseModel):
         site_id: Identifier for the site/facility
         time_series_name: Name of the time series variable
         priority: Processing priority
-        method: The method configuration details
+        methods: A list of the method configuration details.  Usually there is only one, but there can be multiple
+                    if different methods used at different points in the time series. Use start and end date to
+                    determine which method is used at a given point in time.
     """
 
     site_id: str
     time_series_name: str
     priority: int
-    method: MethodConfigItem
+    methods: List[MethodConfigItem]
 
     @model_validator(mode="before")
     @classmethod
@@ -183,9 +190,10 @@ class InfillingConfig(BaseModel):
             annotation_dict[annotation.name] = annotation.value
         result["priority"] = annotation_dict["data-processing-configuration-priority"]
 
-        current_config = check_single_list_item(data["hasCurrentConfiguration"])
-        method_config = MethodConfigItem.model_validate(current_config)
-        result["method"] = method_config
+        methods = [MethodConfigItem.model_validate(config) for config in data["hasCurrentConfiguration"]]
+        if len(methods) == 0:
+            raise ValueError("Expect at least one method configuration, but found none.")
+        result["methods"] = methods
 
         return result
 

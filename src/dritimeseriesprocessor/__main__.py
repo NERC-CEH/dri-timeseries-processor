@@ -25,7 +25,6 @@ from dritimeseriesprocessor.utils import (
     extract_unique_timeseries_defs,
     group_by_date_site_id,
 )
-from metadata_manager import api_manager
 from metadata_manager.models.common import (
     build_column_query_parameter,
     build_periodicity_query_parameter,
@@ -42,11 +41,6 @@ setup_logging()
 # Setup metrics
 # -------------
 metrics.setup_metrics()
-
-
-# Setup connection to the metadata API
-# ------------------------------------
-metadata = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
 # Parse and validate arguments
@@ -231,7 +225,7 @@ for ts_id, metadata in timeseries_ids_to_process.items():
 
                 # Infilling
                 # ---------
-                ts = run_infilling(ts, SITES)
+                ts = run_infilling(ts, ts_id, metadata)
                 ts = update_infill_core_flags(ts)
 
                 # show first 100 rows to show how infill flags have been applied
@@ -249,8 +243,8 @@ for ts_id, metadata in timeseries_ids_to_process.items():
                 dataframes = group_by_date_site_id(ts.df)
 
                 writer.write(
-                    bucket_name=metadata["output"]["sourceBucket"],
-                    dataset=metadata["output"]["sourceDataset"],
+                    bucket_name=app_config.qc_bucket,
+                    dataset=DATASET,
                     data=dataframes,
                 )
 
