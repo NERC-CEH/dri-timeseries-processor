@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Tuple
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # To get the last bit of a uri string, after the last trailing slash.
 #   Allows for alpha characters, underscore and hyphen.
@@ -101,3 +102,43 @@ def build_timeseries_def_query_parameter(ts_defs: List[str]) -> List[Tuple | Non
         A list of tuples with query parameter string and the timeseries definition.
     """
     return [("type", ts_def) for ts_def in ts_defs]
+
+
+
+def get_interval_dates(interval: Optional[Dict[str, Union[str, datetime]]]) -> Tuple[datetime, Optional[datetime]]:
+    """Extract and validate start and end dates from an interval dictionary.
+
+    If the interval is None, a default start date of 1800 is used. The function validates that when an
+    end date is provided, it occurs after the start date.
+
+    Args:
+        interval: A dictionary containing at minimum a 'startDate' key with a datetime value,
+                 and optionally an 'endDate' key with a datetime value. If None, a default
+                 start date is used.
+
+    Returns:
+        A tuple containing:
+        - start_date: The start date of the interval
+        - end_date: The end date of the interval, or None if not provided
+
+    Raises:
+        ValueError: If the end date is provided and is not after the start date.
+    """
+    end_date = None
+    default_start_date = datetime(1800, 1, 1)
+
+    if interval:
+        start_date = datetime.fromisoformat(interval["startDate"]) if "startDate" in interval else default_start_date
+        if "endDate" in interval:
+            end_date = datetime.fromisoformat(interval["endDate"])
+    else:
+        # A missing interval means that it applies to the entire temporal range of the time series,
+        # so set the start date to some nominal time before the project started.
+        start_date = default_start_date
+
+    if end_date:
+        if end_date <= start_date:
+            raise ValueError(f"end_date [{end_date}] must be after start_date [{start_date}]")
+
+    return start_date, end_date
+
