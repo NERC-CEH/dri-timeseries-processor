@@ -18,11 +18,11 @@ METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_ap
 
 class ConfigType(Enum):
     INFILLING = "infilling"
-    CORRECTION = "correction"  # placeholder for moving other configs across
     QC = "quality_control"
+    CORRECTION = "correction"  # placeholder for moving other configs across
 
 
-def load_config(config_type: Union[ConfigType, str], ts_id: str) -> DataProcessingConfigurations | None:
+def load_config(config_type: Union[ConfigType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:
     """Load configuration data based on the given configuration type.
 
     Args:

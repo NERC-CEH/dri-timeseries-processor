@@ -1,5 +1,5 @@
 {
-    "min-max-range": {
+    "range": {
         "name": "Range check",
         "description": "Checks if the value falls within a specified range",
         "id": 1,
@@ -28,5 +28,11 @@
         "description": "Checks for individual spikes in data that exceed a threshold",
         "id": 16,
         "function_name": "spike_check"
+    },
+    "nr01_temp": {
+        "name": "Radiometer temperature check",
+        "description": "Removes LWIN and LWOUT where radiometer tempurature out of range",
+        "id": 32,
+        "function_name": "radiometer_ta_check"
     }
 }

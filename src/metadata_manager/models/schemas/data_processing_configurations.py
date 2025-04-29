@@ -110,7 +110,17 @@ class ConfigItem(BaseModel):
         params = {}
         for arg in data["argument"]:
             param = Parameter.model_validate(arg)
-            params[param.name] = param.value
+
+            # Some arguments have the same names, e.g. in "error code" QC test, there could be multiple "value"
+            # arguments.  Therefore, need to handle this here - make the dictionary value a list of all values found
+            # with the same name.
+            if param.name not in params:
+                params[param.name] = param.value
+            else:
+                if not isinstance(params[param.name], list):
+                    params[param.name] = [params[param.name]]
+                params[param.name].append(param.value)
+
         result["parameters"] = params
 
         return result
