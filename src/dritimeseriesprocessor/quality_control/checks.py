@@ -6,19 +6,13 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.quality_control.utils import (
     column_threshold_check,
-    get_site_spike_threshold,
 )
 
 logger = logging.getLogger(__name__)
 
 
 def battery_voltage_check(
-        ts: TimeSeries,
-        column: str,
-        flag_column: str,
-        flag_name: str,
-        lt: float,
-        dep_ts: str
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float, dep_ts: str
 ) -> TimeSeries:
     """Check that the battery voltage level is above the threshold.
 
@@ -59,13 +53,15 @@ def range_check(ts: TimeSeries, column: str, flag_column: str, flag_name: str, g
          The TimeSeries with the quality control flag applied.
     """
     # Apply range check
-    expr = (pl.col(column).lt(lt) | pl.col(column).gt(gt))
+    expr = pl.col(column).lt(lt) | pl.col(column).gt(gt)
     ts.add_flag(flag_column, flag_name, expr)
 
     return ts
 
 
-def soilmet_scans_check(ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float, dep_ts: str) -> TimeSeries:
+def soilmet_scans_check(
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float, dep_ts: str
+) -> TimeSeries:
     """Check the soilmet scans value is above an acceptable threshold.
 
     Args:
@@ -136,9 +132,7 @@ def spike_check(ts: TimeSeries, column: str, flag_column: str, flag_name: str, g
     tst_spikes = tst_spikes.with_columns((pl.col("diff_prev").sub(pl.col("diff_next"))).abs().alias("d"))
 
     # Calculate the absolute skew in differences each side of the data value.
-    tst_spikes = tst_spikes.with_columns(
-        (pl.col("diff_prev").abs().sub(pl.col("diff_next").abs())).abs().alias("skew")
-    )
+    tst_spikes = tst_spikes.with_columns((pl.col("diff_prev").abs().sub(pl.col("diff_next").abs())).abs().alias("skew"))
 
     # Calculate the total difference minus the skew
     tst_spikes = tst_spikes.with_columns((pl.col("d").sub(pl.col("skew"))).alias("d_no_skew"))
@@ -153,13 +147,7 @@ def spike_check(ts: TimeSeries, column: str, flag_column: str, flag_name: str, g
 
 
 def radiometer_ta_check(
-        ts: TimeSeries,
-        column: str,
-        flag_column: str,
-        flag_name: str,
-        gt: float,
-        lt: float,
-        dep_ts: str
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, gt: float, lt: float, dep_ts: str
 ) -> TimeSeries:
     """Check radiometer temperature values falls between min and max range, applying a quality control flag if
     outside of range.

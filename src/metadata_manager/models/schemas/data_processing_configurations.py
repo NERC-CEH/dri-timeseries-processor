@@ -14,6 +14,7 @@ class Annotation(BaseModel):
         name: The annotation name
         value: The annotation value
     """
+
     name: str
     value: Optional[Union[int, float, str]] = None
 
@@ -127,7 +128,7 @@ class ConfigItem(BaseModel):
 
 
 class DataProcessingConfiguration(BaseModel):
-    """ Information for a specific data processing configuration applied to a time series.
+    """Information for a specific data processing configuration applied to a time series.
 
     Attributes:
         site_id: Name of the site the config is applied to

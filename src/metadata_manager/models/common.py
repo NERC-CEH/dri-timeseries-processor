@@ -104,7 +104,6 @@ def build_timeseries_def_query_parameter(ts_defs: List[str]) -> List[Tuple | Non
     return [("type", ts_def) for ts_def in ts_defs]
 
 
-
 def get_interval_dates(interval: Optional[Dict[str, Union[str, datetime]]]) -> Tuple[datetime, Optional[datetime]]:
     """Extract and validate start and end dates from an interval dictionary.
 
@@ -141,4 +140,3 @@ def get_interval_dates(interval: Optional[Dict[str, Union[str, datetime]]]) -> T
             raise ValueError(f"end_date [{end_date}] must be after start_date [{start_date}]")
 
     return start_date, end_date
-

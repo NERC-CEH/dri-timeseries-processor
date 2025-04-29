@@ -61,7 +61,7 @@ class Method(BaseModel):
             "method_type": MethodType(data["method_type"]),
             "name": data["name"],
             "description": data["description"],
-            "function_name": data["function_name"]
+            "function_name": data["function_name"],
         }
         return result
 
