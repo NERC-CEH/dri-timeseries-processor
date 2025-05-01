@@ -29,7 +29,7 @@
             "module": "dritimeseriesprocessor",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": "--sites=alic1,bunny --columns=PE --periodicity=PT30M P2D",
+            "args": "--sites=alic1,bunny --columns=PE,PRECIP --periodicity=PT30M P2D",
         }
     ]
 }
