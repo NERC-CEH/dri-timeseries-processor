@@ -1,8 +1,8 @@
 import re
-from datetime import datetime
+from datetime import datetime, time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_interval_dates
 
@@ -42,12 +42,10 @@ class Parameter(BaseModel):
     Attributes:
         name: The parameter name
         value: The direct parameter value
-        value_reference: A reference to another configuration item
     """
 
     name: str
-    value: Optional[Union[int, float, str]] = None
-    value_reference: Optional[str] = None
+    value: Optional[Union[int, float, str, time]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -72,6 +70,48 @@ class Parameter(BaseModel):
             result["value"] = has_value["valueReference"]["@id"]
 
         return result
+
+    @field_validator("value")
+    @classmethod
+    def parse_value(cls, value: str) -> Union[None, int, float, str, time]:
+        """Validate and convert the 'value' field to the appropriate type.
+
+        This validator attempts to parse the input value into one of four types:
+        - int: If the value is a numeric whole number
+        - float: If the value is a numeric decimal number
+        - time: If the value is a time string in "HH:MM:SS" format
+        - str: As a fallback if the value doesn't match any other type
+
+        Args:
+            value: The input value to parse
+
+        Returns:
+            The parsed value in the appropriate type
+        """
+        if value is None:
+            return value
+
+        # Try to convert to numeric (int or float)
+        try:
+            potential_numeric = float(value)
+            if potential_numeric.is_integer():
+                return int(potential_numeric)
+            # Fall back to float if not an integer
+            return potential_numeric
+        except (ValueError, TypeError):
+            pass
+
+        # Try to parse as a time
+        try:
+            if isinstance(value, time):
+                return value
+            potential_time = datetime.strptime(value, "%H:%M:%S").time()
+            return potential_time
+        except (ValueError, TypeError):
+            pass
+
+        # Fall back to string representation
+        return str(value)
 
 
 class ConfigItem(BaseModel):

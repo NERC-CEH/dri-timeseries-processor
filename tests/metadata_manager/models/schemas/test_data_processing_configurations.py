@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, time
 from itertools import product
 from parameterized import parameterized
 from unittest.mock import patch, MagicMock
@@ -102,6 +102,7 @@ class TestParameter(unittest.TestCase):
         ("test_float", 0.75),
         ("test_str", "str_value"),
         ("test_none", None),
+        ("test_time", time(10, 30, 0)),
     ])
     def test_extract_param_info_with_direct_value(self, _, param_value):
         """Test parameter extraction with direct values of different types."""
@@ -112,6 +113,21 @@ class TestParameter(unittest.TestCase):
         result = Parameter.model_validate(test_data)
         self.assertEqual(result.value, param_value)
 
+    @parameterized.expand([
+        ("test_int", "24", 24),
+        ("test_float", "0.75", 0.75),
+        ("test_str", "str_value", "str_value"),
+        ("test_none", None, None),
+        ("test_time", "10:30:00", time(10, 30, 0)),
+    ])
+    def test_extract_param_info_with_direct_string_value(self, _, param_value, expected):
+        """Test parameter extraction with direct values of different types, but originally in string format"""
+        test_data = {
+            "parameter": {"@id": "http://example.com/parameter/test_value"},
+            "hasValue": {"value": param_value}
+        }
+        result = Parameter.model_validate(test_data)
+        self.assertEqual(result.value, expected)
 
     def test_extract_param_info_with_reference(self):
         """Test parameter extraction with reference values."""

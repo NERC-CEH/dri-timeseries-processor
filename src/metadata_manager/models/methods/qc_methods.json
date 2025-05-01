@@ -34,5 +34,11 @@
         "description": "Removes LWIN and LWOUT where radiometer tempurature out of range",
         "id": 32,
         "function_name": "radiometer_ta_check"
+    },
+    "hfp_removal": {
+        "name": "Heat flux plates check",
+        "description": "Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate",
+        "id": 64,
+        "function_name": "heat_flux_plate_check"
     }
 }

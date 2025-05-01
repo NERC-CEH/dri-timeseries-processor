@@ -1,4 +1,5 @@
 import logging
+from datetime import time
 from typing import List
 
 import polars as pl
@@ -168,4 +169,25 @@ def radiometer_ta_check(
     """
 
     # TODO: Fill in this placeholder for radiometer temperature check
+    return ts
+
+
+def heat_flux_plate_check(
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, time_ge: time, time_le: time
+) -> TimeSeries:
+    """Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate
+
+    Args:
+        ts: The input TimeSeries containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        time_ge: The minimum time to remove data from.
+        time_le: The maximum time to remove data from.
+
+    Returns:
+         The TimeSeries with the quality control flag applied.
+    """
+
+    # TODO: Fill in this placeholder
     return ts
