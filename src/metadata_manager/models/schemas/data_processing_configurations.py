@@ -45,7 +45,7 @@ class Parameter(BaseModel):
     """
 
     name: str
-    value: Optional[Union[int, float, str, time]] = None
+    value: Optional[Union[None, int, float, str, time]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -60,6 +60,7 @@ class Parameter(BaseModel):
         """
         result = {}
 
+        # Need to replace dashes with underscores as these will be extracted as key word arguments.
         result["name"] = re.match(URI_ID_EXTRACT_REGEX, data["parameter"]["@id"]).group(1).replace("-", "_")
 
         # Extract value or reference
