@@ -209,7 +209,7 @@ for ts_id, metadata in timeseries_ids_to_process.items():
 
                 # Quality control
                 # ---------------
-                ts = run_quality_control(ts, remove=True)
+                ts = run_quality_control(ts, ts_id, metadata, remove=True)
                 ts = update_quality_control_core_flags(ts)
 
                 # Calculate the number of flags added

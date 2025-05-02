@@ -62,7 +62,6 @@ class MetadataAPIManager:
         """Fetch infill configurations for a given time series ID.
 
         Args:
-            site_id: Site identifier to filter configurations. Defaults to None, returns all infill configurations.
             ts_id: The time series ID to load infill configurations for.
         Returns:
             JSON response containing infill configurations.
@@ -73,6 +72,27 @@ class MetadataAPIManager:
         url = (
             f"{self.host}/id/data-processing-configuration.json?"
             f"type={self.service_base_uri}/ref/common/configuration-type/infill-configuration"
+            f"&appliesToTimeSeries={ts_id}"
+        )
+
+        response = await self._make_api_call(url)
+
+        return response
+
+    async def fetch_qc_config(self, ts_id: str) -> Dict[str, Any]:
+        """Fetch QC configurations for a given time series ID.
+
+        Args:
+            ts_id: The time series ID to load qc configurations for.
+        Returns:
+            JSON response containing qc configurations.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
+        url = (
+            f"{self.host}/id/data-processing-configuration.json?"
+            f"type={self.service_base_uri}/ref/common/configuration-type/qc"
             f"&appliesToTimeSeries={ts_id}"
         )
 
