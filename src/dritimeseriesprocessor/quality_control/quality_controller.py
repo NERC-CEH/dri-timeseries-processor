@@ -1,15 +1,23 @@
 import logging
+from functools import lru_cache
+from typing import Dict
 
 import polars as pl
 from time_stream import TimeSeries
 
-from dritimeseriesprocessor.__metadata__.config_quality_control import get_qc_config
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.quality_control.checks import QC_CHECKS
+from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
 
+
 QC_FLAG_SYS_NAME = "qc_flags"
+
+
+@lru_cache(maxsize=1)
+def get_qc_methods() -> Dict:
+    """Load the qc methods and cache the results."""
+    return load_methods("quality_control")
 
 
 def qc_flag_column_name(column: str) -> str:
@@ -34,7 +42,7 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 
 @metrics.track_qc_time()
-def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
+def run_quality_control(ts: TimeSeries, ts_id: str, metadata: Dict, remove: bool = False) -> TimeSeries:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on
@@ -42,34 +50,42 @@ def run_quality_control(ts: TimeSeries, remove: bool = False) -> TimeSeries:
 
     Args:
         ts: The input TimeSeries containing the data to be quality controlled.
+        ts_id: The ID of the TimeSeries being processed.
+        metadata: The metadata for the site being processed.
         remove: Whether to remove any QC'd data.
 
     Returns:
         The TimeSeries with quality control flags applied.
     """
-    qc_check_configs = get_qc_config("qc_tests")
+    column = metadata["sourceColumnName"]
+
+    qc_configs = load_config("quality_control", ts_id)
+    qc_methods = get_qc_methods()
+
+    if not qc_configs:
+        logger.info(f"No quality control config found for Time Series ID: {ts_id}")
+        return ts
 
     # Initialise quality control flag system within TimeSeries object
-    qc_flags_dict = {check_name: check_config.id for check_name, check_config in qc_check_configs.items()}
-    ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
+    qc_flags_dict = {method: method_config.method_id for method, method_config in qc_methods.items()}
+    if qc_flags_dict:
+        ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
+    else:
+        logger.warning("No qc methods given in config.")
+        return ts
 
-    for check_name, check_config in qc_check_configs.items():
-        check_func = QC_CHECKS.get(check_name)
-        if check_func is None:
-            logger.warning(f"Unimplemented QC check: {check_name}")
-            continue
+    for config in qc_configs:
+        qc_flag_col = qc_flag_column_name(column)
+        if qc_flag_col not in ts.flag_columns:
+            ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
-        for column in check_config.variables:
-            if column not in ts.data_columns:
-                logger.warning(f"Column {column} not in DataFrame for method {check_name}")
-                continue
-
-            qc_flag_col = qc_flag_column_name(column)
-
-            if qc_flag_col not in ts.flag_columns:
-                ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
-
-            ts = check_func(ts, column, qc_flag_col)
+        # Run QC methods on time series
+        # TODO: Will have to add in start and end dates so that QC only applied to specific part of time
+        #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
+        for method in config.configs:
+            qc_func = qc_methods[method.name]
+            logger.info(f"Quality controlling {column} with method: {method.name}. Constraints: {method.parameters}")
+            ts = qc_func(ts, column, qc_flag_col, method.name, **method.parameters)
 
             if remove:
                 ts.df = remove_qcd_data(ts.df, column, qc_flag_col)

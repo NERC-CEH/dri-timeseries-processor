@@ -73,26 +73,28 @@ class TestRunInfilling(unittest.TestCase):
             "site_id": self.site_id,
             "time_series_name": "temperature",
             "priority": 1,
-            "methods": [type("DummyMethodConfig", (), {
+            "configs": [type("DummyMethodConfig", (), {
                 "name": "method1",
                 "start_date": datetime(2023, 1, 1),
                 "parameters": {
                     "max_gap_size": 3
                 },
-            })]
+            })],
+            "annotations": {"data-processing-configuration-priority": 1}
         })()
 
         self.infill_config2 = type("DummyInfillConfig", (), {
             "site_id": self.site_id,
             "time_series_name": "temperature",
             "priority": 2,
-            "methods": [type("DummyMethodConfig", (), {
+            "configs": [type("DummyMethodConfig", (), {
                 "name": "method2",
                 "start_date": datetime(2023, 1, 1),
                 "parameters": {
                     "max_gap_size": 6
                 },
-            })]
+            })],
+            "annotations": {"data-processing-configuration-priority": 1}
         })()
 
     @patch('dritimeseriesprocessor.infilling.infiller.load_config')

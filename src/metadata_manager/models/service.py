@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
-from metadata_manager.models.configs.infilling import InfillingProcessConfigs
-from metadata_manager.models.methods.infilling_methods import InfillingMethodRegistry
+from metadata_manager.models.methods.method_registry import InfillingMethods, QcMethods
+from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
@@ -18,10 +18,11 @@ METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_ap
 
 class ConfigType(Enum):
     INFILLING = "infilling"
+    QC = "quality_control"
     CORRECTION = "correction"  # placeholder for moving other configs across
 
 
-def load_config(config_type: Union[ConfigType, str], ts_id: str) -> InfillingProcessConfigs | None:
+def load_config(config_type: Union[ConfigType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:
     """Load configuration data based on the given configuration type.
 
     Args:
@@ -36,13 +37,19 @@ def load_config(config_type: Union[ConfigType, str], ts_id: str) -> InfillingPro
 
     if config_type == ConfigType.INFILLING:
         data = asyncio.run(METADATA_CONNECTION.fetch_infill_config(ts_id))
-        infill_config = InfillingProcessConfigs.model_validate(data)
+        infill_config = DataProcessingConfigurations.model_validate(data)
         return infill_config
+
+    elif config_type == ConfigType.QC:
+        data = asyncio.run(METADATA_CONNECTION.fetch_qc_config(ts_id))
+        qc_config = DataProcessingConfigurations.model_validate(data)
+        return qc_config
+
     else:
         return None
 
 
-def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMethodRegistry]:
+def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMethods | QcMethods]:
     """Load method definitions based on the given configuration type.
 
     Args:
@@ -55,11 +62,18 @@ def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMetho
         config_type = ConfigType(config_type)
 
     if config_type == ConfigType.INFILLING:
-        with open(Path(__file__).parent.absolute() / "methods" / "infilling_methods.json", "r") as f:
-            data = json.load(f)
-        return InfillingMethodRegistry.model_validate(data)
+        methods_json_file = Path(__file__).parent.absolute() / "methods" / "infilling_methods.json"
+        registry = InfillingMethods
+
+    elif config_type == ConfigType.QC:
+        methods_json_file = Path(__file__).parent.absolute() / "methods" / "qc_methods.json"
+        registry = QcMethods
+
     else:
         return None
+
+    with open(methods_json_file, "r") as f:
+        return registry.model_validate(json.load(f))
 
 
 def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataResponse:

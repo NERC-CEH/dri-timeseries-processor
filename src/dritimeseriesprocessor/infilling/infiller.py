@@ -62,7 +62,7 @@ def run_infilling(ts: TimeSeries, ts_ids: List, metadata: Dict) -> TimeSeries:
             continue
 
         # Order by priority
-        sorted_infillers = sorted(infill_configs, key=lambda x: x.priority)
+        sorted_infillers = sorted(infill_configs, key=lambda x: x.annotations["data-processing-configuration-priority"])
         for config in sorted_infillers:
             infill_flag_col = infill_flag_column_name(column)
             if infill_flag_col not in ts.flag_columns:
@@ -71,7 +71,7 @@ def run_infilling(ts: TimeSeries, ts_ids: List, metadata: Dict) -> TimeSeries:
             # Run infill methods on time series
             # TODO: Will have to add in start and end dates so that infilling only applied to specific part of time
             #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
-            for method in config.methods:
+            for method in config.configs:
                 infill_func = infill_methods[method.name]
                 logger.info(f"Infilling {column} with method: {method.name}. Constraints: {method.parameters}")
                 ts = infill_func(ts, column, infill_flag_col, method.name, **method.parameters)

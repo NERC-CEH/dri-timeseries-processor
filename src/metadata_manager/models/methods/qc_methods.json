@@ -1,0 +1,44 @@
+{
+    "range": {
+        "name": "Range check",
+        "description": "Checks if the value falls within a specified range",
+        "id": 1,
+        "function_name": "range_check"
+    },
+    "battery_v": {
+        "name": "Battery voltage check",
+        "description": "Checks that the battery voltage level is above the threshold",
+        "id": 2,
+        "function_name": "battery_voltage_check"
+    },
+    "samples": {
+        "name": "Samples check",
+        "description": "Checks if the number of samples taken in measuring period are too low.",
+        "id": 4,
+        "function_name": "soilmet_scans_check"
+    },
+    "error_code": {
+        "name": "Error codes check",
+        "description": "Check for specific error codes",
+        "id": 8,
+        "function_name": "error_codes_check"
+    },
+    "spike": {
+        "name": "Spike check",
+        "description": "Checks for individual spikes in data that exceed a threshold",
+        "id": 16,
+        "function_name": "spike_check"
+    },
+    "nr01_temp": {
+        "name": "Radiometer temperature check",
+        "description": "Removes LWIN and LWOUT where radiometer tempurature out of range",
+        "id": 32,
+        "function_name": "radiometer_ta_check"
+    },
+    "hfp_removal": {
+        "name": "Heat flux plates check",
+        "description": "Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate",
+        "id": 64,
+        "function_name": "heat_flux_plate_check"
+    }
+}
