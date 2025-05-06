@@ -159,30 +159,72 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
 
 
-def extract_unique_timeseries_defs(timeseries_ids_to_process: Dict[str, Dict[str, str]]) -> List[str]:
+def extract_unique_timeseries_defs(timeseries_ids_metadata: Dict[str, Dict[str, str]]) -> List[str]:
     """Extract a unique list of timeseries definitions from the timeseries ids to be processed.
 
     Args:
-        timeseries_ids_to_process: metadata about the timeseries ids to process
+        timeseries_ids_metadata: metadata about the timeseries ids to process
 
     Returns:
         A list of unique timeseries definitions
     """
-    unique_timeseries_defs = {value["ts_def"] for value in timeseries_ids_to_process.values()}
+    unique_timeseries_defs = {value["ts_def"] for value in timeseries_ids_metadata.values()}
 
     return list(unique_timeseries_defs)
 
 
 def extract_dependent_timeseries_defs(
-    timeseries_defs_to_process: Dict[str, Dict[str, Union[str, List[str | None]]]],
+    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
 ) -> List[str]:
     """Extract a list of dependent timeseries definitions.
 
     Args:
-        timeseries_defs_to_process: An object with all the dependencies
+        timeseries_defs_derivation_map: An object with all the dependencies
 
     Returns:
         A list of all dependent timeseries definitions.
     """
 
-    return list({items for items in timeseries_defs_to_process.values() for items in items["inputs"]})
+    return list({items for items in timeseries_defs_derivation_map.values() for items in items["inputs"]})
+
+
+def group_timeseries_to_process(
+    timeseries_ids_metadata: Dict[str, Dict[str, str]],
+    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
+) -> Dict[str, Union[str, List[str]]]:
+    """Return timeseries ids that are to be processed.
+    This function will group the timeseries ids by their site, resolution and periodicity.
+
+    Args:
+        timeseries_ids_metadata: metadata about the timeseries ids to process
+        timeseries_defs_derivation_map: An object with all the dependencies
+
+    Returns:
+        A dictionary of timeseries ids for each set of site_id, resolution and periodicity.
+    """
+    grouped_timeseries = {}
+
+    for timeseries_id, metadata in timeseries_ids_metadata.items():
+        # Only add the timeseries ids with no derivation method.
+        # These are the TS that are to be processed.
+        process_method = timeseries_defs_derivation_map[metadata["ts_def"]].get("method_type")
+        if process_method is None:
+            site_id = metadata["sourceSite"]
+            resolution = metadata["resolution"]
+            periodicity = metadata["periodicity"]
+
+            # Create a unique key for the group based on site_id, resolution and periodicity
+            group_key = f"{site_id}_{resolution}_{periodicity}"
+
+            # Add the timeseries id to the group
+            if group_key not in grouped_timeseries:
+                grouped_timeseries[group_key] = {
+                    "site_id": site_id,
+                    "resolution": resolution,
+                    "periodicity": periodicity,
+                    "timeseries_ids": [],
+                }
+
+            grouped_timeseries[group_key]["timeseries_ids"].append(timeseries_id)
+
+    return grouped_timeseries

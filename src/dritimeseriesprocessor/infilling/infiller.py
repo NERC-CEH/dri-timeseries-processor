@@ -1,6 +1,6 @@
 import logging
 from functools import lru_cache
-from typing import Dict
+from typing import Dict, List
 
 from time_stream import TimeSeries
 
@@ -31,27 +31,20 @@ def infill_flag_column_name(column: str) -> str:
     return f"{column}_INFILL_FLAG"
 
 
-def run_infilling(ts: TimeSeries, ts_id: str, metadata: Dict) -> TimeSeries:
+def run_infilling(ts: TimeSeries, ts_ids: List, metadata: Dict) -> TimeSeries:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.
 
     Args:
         ts: The input TimeSeries containing the data to be infilled.
-        ts_id: The ID of the TimeSeries being processed.
-        metadata: The metadata for the site being processed.
+        ts_ids: List of the TimeSeries IDs being processed.
+        metadata: The metadata for the TimeSeries IDs.
 
     Returns:
         The TimeSeries with infilling and infill flags applied.
     """
-    column = metadata["sourceColumnName"]
-
-    infill_configs = load_config("infilling", ts_id)
     infill_methods = get_infill_methods()
-
-    if not infill_configs:
-        logger.info(f"No infilling config found for Time Series ID: {ts_id}")
-        return ts
 
     # Initialise infilling flag system within TimeSeries object
     infill_flags_dict = {method: method_config.method_id for method, method_config in infill_methods.items()}
@@ -61,19 +54,26 @@ def run_infilling(ts: TimeSeries, ts_id: str, metadata: Dict) -> TimeSeries:
         logger.warning("No infill methods given in config.")
         return ts
 
-    # Order by priority
-    sorted_infillers = sorted(infill_configs, key=lambda x: x.priority)
-    for config in sorted_infillers:
-        infill_flag_col = infill_flag_column_name(column)
-        if infill_flag_col not in ts.flag_columns:
-            ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
+    for ts_id in ts_ids:
+        column = metadata[ts_id]["sourceColumnName"]
+        infill_configs = load_config("infilling", ts_id)
+        if not infill_configs:
+            logger.info(f"No infilling config found for Time Series ID: {ts_id}")
+            continue
 
-        # Run infill methods on time series
-        # TODO: Will have to add in start and end dates so that infilling only applied to specific part of time
-        #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
-        for method in config.methods:
-            infill_func = infill_methods[method.name]
-            logger.info(f"Infilling {column} with method: {method.name}. Constraints: {method.parameters}")
-            ts = infill_func(ts, column, infill_flag_col, method.name, **method.parameters)
+        # Order by priority
+        sorted_infillers = sorted(infill_configs, key=lambda x: x.priority)
+        for config in sorted_infillers:
+            infill_flag_col = infill_flag_column_name(column)
+            if infill_flag_col not in ts.flag_columns:
+                ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
+
+            # Run infill methods on time series
+            # TODO: Will have to add in start and end dates so that infilling only applied to specific part of time
+            #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
+            for method in config.methods:
+                infill_func = infill_methods[method.name]
+                logger.info(f"Infilling {column} with method: {method.name}. Constraints: {method.parameters}")
+                ts = infill_func(ts, column, infill_flag_col, method.name, **method.parameters)
 
     return ts
