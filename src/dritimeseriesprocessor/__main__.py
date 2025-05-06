@@ -249,7 +249,7 @@ for ts_group in grouped_timeseries_to_process.values():
 
         # Quality control
         # ---------------
-        ts = run_quality_control(ts, ts_id, all_timeseries_ids_metadata, remove=True)
+        ts = run_quality_control(ts, ts_ids, all_timeseries_ids_metadata, remove=True)
         ts = update_quality_control_core_flags(ts)
 
         # Calculate the number of flags added
