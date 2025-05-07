@@ -166,7 +166,6 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Dict[str
 
         # Keep checking until inputs_to_check contains no values
         while len(inputs_to_check) != 0:
-
             # Reset the new inputs
             new_inputs_to_check = []
 
