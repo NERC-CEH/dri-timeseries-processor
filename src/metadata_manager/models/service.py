@@ -157,10 +157,6 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Dict[str
     derivations = {}
 
     for ts_def in ts_defs:
-        # For each pass we will generate a new set of inputs to check
-        # When this becomes empty, we can stop checking for dependencies
-        new_inputs_to_check = []
-
         # Create the first set of inputs to check.
         # We will check one parent ts_def at a time.
         # As its only one, we need to make this a list.
@@ -170,6 +166,10 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Dict[str
 
         # Keep checking until inputs_to_check contains no values
         while len(inputs_to_check) != 0:
+
+            # Reset the new inputs
+            new_inputs_to_check = []
+
             for item in inputs_to_check:
                 # Extract the required metadata
                 metadata = handle_derivation_response(item)
@@ -184,9 +184,6 @@ def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Dict[str
 
             # Update the inputs to be checked to the ones extracted in this loop
             inputs_to_check = new_inputs_to_check
-
-            # Reset the new inputs
-            new_inputs_to_check = []
 
     return derivations
 
