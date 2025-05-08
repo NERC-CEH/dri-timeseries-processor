@@ -55,6 +55,12 @@ def run_infilling(ts: TimeSeries, ts_ids: List, metadata: Dict) -> TimeSeries:
         return ts
 
     for ts_id in ts_ids:
+        if ts_id not in metadata:
+            # There should always be a metadata entry for the time series ID
+            msg = f"Time Series ID {ts_id} not found in metadata."
+            logger.error(msg)
+            raise KeyError(msg)
+
         column = metadata[ts_id]["sourceColumnName"]
         infill_configs = load_config("infilling", ts_id)
         if not infill_configs:
