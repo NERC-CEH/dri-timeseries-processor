@@ -21,25 +21,69 @@ logger = logging.getLogger(__name__)
 setup_logging()
 
 
+# Setup metrics
+# -------------
+metrics.setup_metrics()
+
+
 def load_data_for_group(
-    ts_group: dict, all_timeseries_ids_metadata: dict, start_date: datetime, end_date: datetime
+    ts_ids: list, site_id: str, all_timeseries_ids_metadata: dict, start_date: datetime, end_date: datetime
 ) -> pl.DataFrame:
     """
-    Load data for a group of timeseries IDs.
+    Load data for given timeseries IDs. The "group" is timeseries IDs that are of the same
+    periodicity. This is so the data can be merged together.
 
     Args:
-        ts_group: A dictionary containing information about the timeseries group,
-            including timeseries IDs, site ID, resolution, and periodicity.
+        ts_ids: List of the timeseries IDs to load in data for. Must be same periodicity.
+        site_id: The site ID for the timeseries group.
         all_timeseries_ids_metadata: Metadata for all timeseries IDs, mapping timeseries IDs
             to their respective metadata.
         start_date: The start date of the data
         end_date: The end date of the data
 
     Returns:
-        pl.DataFrame: A Polars DataFrame containing the loaded data for the specified group.
+        pl.DataFrame: A Polars DataFrame containing the loaded data.
+    """
+    data_to_load = prepare_data_to_load(ts_ids, all_timeseries_ids_metadata)
+
+    data = None
+    for dataset, buckets in data_to_load.items():
+        for bucket_name, params in buckets.items():
+            logger.info(
+                f"Loading data. Dataset:{dataset}. Bucket:{bucket_name}. Columns:{params['columns']} "
+                f"Site:{site_id}. Dates:{start_date} to {end_date}"
+            )
+            bucket_data = data_manager.query_by_date_range(
+                bucket_name=bucket_name,
+                prefix=f"cosmos/dataset={dataset}",
+                start_date=start_date,
+                end_date=end_date,
+                site_ids=[site_id],
+                columns=params["columns"],
+            )
+
+            if bucket_data.shape[0] == 0:
+                handle_no_data_case()
+            else:
+                bucket_data = add_processing_dependencies(bucket_data)
+                data = merge_data(data, bucket_data)
+
+    return data
+
+
+def prepare_data_to_load(ts_ids: list, all_timeseries_ids_metadata: dict) -> dict:
+    """
+    Prepare the data structure for loading timeseries data.
+
+    Args:
+        ts_ids: List of timeseries IDs to process.
+        all_timeseries_ids_metadata: Metadata for all timeseries IDs.
+
+    Returns:
+        dict: A nested dictionary structure for datasets, buckets, and columns to load.
     """
     data_to_load = {}
-    for ts_id in ts_group["timeseries_ids"]:
+    for ts_id in ts_ids:
         ts_metadata = all_timeseries_ids_metadata[ts_id]
         dataset = ts_metadata["sourceDataset"]
         bucket_name = ts_metadata["sourceBucket"]
@@ -47,47 +91,79 @@ def load_data_for_group(
 
         if dataset not in data_to_load:
             data_to_load[dataset] = {}
+
         if bucket_name not in data_to_load[dataset]:
             data_to_load[dataset][bucket_name] = {"columns": set()}
+
         data_to_load[dataset][bucket_name]["columns"].add(column_name)
 
-    data = None
-    for dataset, buckets in data_to_load.items():
-        for bucket_name, params in buckets.items():
-            logger.info(
-                f"Processing {dataset} with columns {params['columns']} for site {ts_group['site_id']} "
-                f"between {start_date} and {end_date}"
-            )
-            bucket_data = data_manager.query_by_date_range(
-                bucket_name=bucket_name,
-                prefix=f"cosmos/dataset={dataset}",
-                start_date=start_date,
-                end_date=end_date,
-                site_ids=[ts_group["site_id"]],
-                columns=params["columns"],
-            )
+    return data_to_load
 
-            if bucket_data.shape[0] == 0:
-                metrics.record_no_data_run()
-                logger.info("No data returned from the query.")
-                metrics.export_metrics_to_pushgateway(
-                    url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-                )
-            else:
-                logger.info(f"Retrieved data from s3: {bucket_data.shape}")
-                bucket_data = bucket_data.with_columns(
-                    [
-                        pl.Series([12 for i in range(len(bucket_data))]).alias("BATTV"),
-                        pl.Series(i for i in range(len(bucket_data))).alias("SCANS"),
-                    ]
-                )
-                logger.info(f"Added dummy data, shape: {bucket_data.shape}")
-                if data is None:
-                    data = bucket_data
-                else:
-                    matching_columns = set(data.columns) & set(bucket_data.columns)
-                    data = data.join(bucket_data, left_on=matching_columns, right_on=matching_columns, how="left")
-    return data
+
+def handle_no_data_case() -> None:
+    """
+    Handle the case where no data is returned from the query.
+    """
+    metrics.record_no_data_run()
+    logger.info("No data returned from the query.")
+    metrics.export_metrics_to_pushgateway(
+        url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+    )
+
+
+def add_processing_dependencies(bucket_data: pl.DataFrame) -> pl.DataFrame:
+    """
+    TODO
+    Placeholder function to add processing dependencies to the data.
+    This function is acurrently hard coded to add  BATTV and SCANS columns.
+
+    Args:
+        bucket_data: The Polars DataFrame containing the bucket data.
+
+    Returns:
+        pl.DataFrame: The Polars DataFrame with dummy data added.
+    """
+    bucket_data = bucket_data.with_columns(
+        [
+            pl.Series([12 for _ in range(len(bucket_data))]).alias("BATTV"),
+            pl.Series(range(len(bucket_data))).alias("SCANS"),
+        ]
+    )
+    logger.info(f"Added dummy data, shape: {bucket_data.shape}")
+    return bucket_data
+
+
+def merge_data(existing_data: pl.DataFrame, new_data: pl.DataFrame) -> pl.DataFrame:
+    """
+    Merge new data into the existing data.
+
+    Args:
+        existing_data: The existing Polars DataFrame.
+        new_data: The new Polars DataFrame to merge.
+
+    Returns:
+        pl.DataFrame: The merged Polars DataFrame.
+    """
+    if existing_data is None:
+        return new_data
+
+    if new_data.height == 0:
+        logger.info("No new data to merge.")
+        return existing_data
+
+    # Check what expected height of the data should be after merge
+    expected_height = max(existing_data.height, new_data.height)
+
+    matching_columns = set(existing_data.columns) & set(new_data.columns)
+
+    existing_data = existing_data.join(new_data, on=matching_columns, how="full", coalesce=True)
+
+    if existing_data.height != expected_height:
+        msg = f"Data merge failed. Extra rows added: {existing_data}"
+        logger.error(msg)
+        raise ValueError(msg)
+
+    return existing_data
 
 
 def process_timeseries(ts: TimeSeries, ts_ids: list[str], all_timeseries_ids_metadata: dict[str, dict]) -> TimeSeries:

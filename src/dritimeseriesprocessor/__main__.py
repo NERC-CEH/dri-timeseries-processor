@@ -127,13 +127,15 @@ else:
 # Process raw data
 # ----------------
 # Group TS IDs into groups that can be processed together. Currently this is by site, resolution and periodicity
-# TODO - We want to be able to process differing resolutions/periodicities and sites together: FW-687
 grouped_timeseries_to_process = group_timeseries_to_process(all_timeseries_ids_metadata, timeseries_defs_derivation_map)
 
+# TODO - We want to be able to process differing resolutions/periodicities and sites together: FW-687
 
 for ts_group_id, ts_group in grouped_timeseries_to_process.items():
     logger.info(f"Processing group {ts_group_id} with {len(ts_group['timeseries_ids'])} timeseries IDs")
-    data = load_data_for_group(ts_group, all_timeseries_ids_metadata, start_date, end_date)
+    data = load_data_for_group(
+        ts_group["timeseries_ids"], ts_group["site_id"], all_timeseries_ids_metadata, start_date, end_date
+    )
 
     if data is not None:
         ts = TimeSeries(
