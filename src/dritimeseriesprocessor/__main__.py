@@ -33,6 +33,13 @@ setup_logging()
 # -------------
 metrics.setup_metrics()
 
+# Setup s3
+# --------
+if app_config.environment == "local":
+    s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
+else:
+    s3_client = boto3.client("s3")
+
 
 # Parse and validate arguments
 # ----------------------------
@@ -114,14 +121,6 @@ dependent_timeseries_ids = extract_timeseries_id_metadata(dependent_timeseries_i
 # Combine all the metadata into a single object for processing
 # TODO (maybe) add method_type and inputs
 all_timeseries_ids_metadata = user_timeseries_ids_metadata | dependent_timeseries_ids
-
-
-# Setup s3
-# --------
-if app_config.environment == "local":
-    s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
-else:
-    s3_client = boto3.client("s3")
 
 
 # Process raw data
