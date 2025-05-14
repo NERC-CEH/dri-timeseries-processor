@@ -104,21 +104,12 @@ class TestRunInfilling(unittest.TestCase):
         })()
 
     @patch('dritimeseriesprocessor.infilling.infiller.load_config')
-    def test_run_infilling_no_configs(self, mock_get_configs):
-        """Test run_infilling when no configs are found for a ts_id."""
-        ts_ids = ["NONEXISTENT"]
-
-        mock_get_configs.return_value = []
-        with self.assertRaises(KeyError):
-            run_infilling(self.ts, ts_ids, self.metadata)
-
-    @patch('dritimeseriesprocessor.infilling.infiller.load_config')
     @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
     def test_run_infilling_no_methods(self, mock_get_methods, mock_get_configs):
         """Test run_infilling when no infill methods are defined."""
         mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
-        result = run_infilling(self.ts, self.ts_ids, self.metadata)
+        result = run_infilling(self.ts, self.metadata)
 
         self.assertEqual(result, self.ts)
 
@@ -131,7 +122,7 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_infilling(self.ts, self.ts_ids, self.metadata)
+        result = run_infilling(self.ts, self.metadata)
 
         # Check flag system added
         self.assertIn('infill_flags', result.flag_systems)
@@ -150,7 +141,7 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_infilling(self.ts, self.ts_ids, self.metadata)
+        result = run_infilling(self.ts, self.metadata)
 
         # Check flag system added
         self.assertIn('infill_flags', result.flag_systems)

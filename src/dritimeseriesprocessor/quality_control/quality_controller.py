@@ -42,7 +42,7 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 
 @metrics.track_qc_time()
-def run_quality_control(ts: TimeSeries, ts_ids: str, metadata: Dict, remove: bool = False) -> TimeSeries:
+def run_quality_control(ts: TimeSeries, metadata: Dict, remove: bool = False) -> TimeSeries:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on
@@ -50,7 +50,6 @@ def run_quality_control(ts: TimeSeries, ts_ids: str, metadata: Dict, remove: boo
 
     Args:
         ts: The input TimeSeries containing the data to be quality controlled.
-        ts_ids: List of the TimeSeries IDs being processed.
         metadata: The metadata for the TimeSeries IDs.
         remove: Whether to remove any QC'd data.
 
@@ -67,14 +66,8 @@ def run_quality_control(ts: TimeSeries, ts_ids: str, metadata: Dict, remove: boo
         logger.warning("No QC methods given in config.")
         return ts
 
-    for ts_id in ts_ids:
-        if ts_id not in metadata:
-            # There should always be a metadata entry for the time series ID
-            msg = f"Time Series ID {ts_id} not found in metadata."
-            logger.error(msg)
-            raise KeyError(msg)
-
-        column = metadata[ts_id]["sourceColumnName"]
+    for ts_id, ts_metadata in metadata.items():
+        column = ts_metadata["sourceColumnName"]
         qc_configs = load_config("quality_control", ts_id)
         if not qc_configs:
             logger.info(f"No quality control config found for Time Series ID: {ts_id}")

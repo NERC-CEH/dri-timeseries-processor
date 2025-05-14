@@ -26,25 +26,21 @@ setup_logging()
 metrics.setup_metrics()
 
 
-def load_data_for_group(
-    ts_ids: list, site_id: str, all_timeseries_ids_metadata: dict, start_date: datetime, end_date: datetime
-) -> pl.DataFrame:
+def load_data_for_group(ts_metadata: dict, site_id: str, start_date: datetime, end_date: datetime) -> pl.DataFrame:
     """
     Load data for given timeseries IDs. The "group" is timeseries IDs that are of the same
     periodicity. This is so the data can be merged together.
 
     Args:
-        ts_ids: List of the timeseries IDs to load in data for. Must be same periodicity.
+        ts_metadata: Metadata for timeseries IDs to load
         site_id: The site ID for the timeseries group.
-        all_timeseries_ids_metadata: Metadata for all timeseries IDs, mapping timeseries IDs
-            to their respective metadata.
         start_date: The start date of the data
         end_date: The end date of the data
 
     Returns:
         pl.DataFrame: A Polars DataFrame containing the loaded data.
     """
-    data_to_load = prepare_data_to_load(ts_ids, all_timeseries_ids_metadata)
+    data_to_load = prepare_data_to_load(ts_metadata)
 
     data = None
     for dataset, buckets in data_to_load.items():
@@ -71,23 +67,21 @@ def load_data_for_group(
     return data
 
 
-def prepare_data_to_load(ts_ids: list, all_timeseries_ids_metadata: dict) -> dict:
+def prepare_data_to_load(ts_metadata: dict) -> dict:
     """
     Prepare the data structure for loading timeseries data.
 
     Args:
-        ts_ids: List of timeseries IDs to process.
-        all_timeseries_ids_metadata: Metadata for all timeseries IDs.
+        ts_metadata: Metadata for timeseries IDs to load
 
     Returns:
         dict: A nested dictionary structure for datasets, buckets, and columns to load.
     """
     data_to_load = {}
-    for ts_id in ts_ids:
-        ts_metadata = all_timeseries_ids_metadata[ts_id]
-        dataset = ts_metadata["sourceDataset"]
-        bucket_name = ts_metadata["sourceBucket"]
-        column_name = ts_metadata["sourceColumnName"]
+    for ts_item in ts_metadata.values():
+        dataset = ts_item["sourceDataset"]
+        bucket_name = ts_item["sourceBucket"]
+        column_name = ts_item["sourceColumnName"]
 
         if dataset not in data_to_load:
             data_to_load[dataset] = {}
@@ -166,14 +160,13 @@ def merge_data(existing_data: pl.DataFrame, new_data: pl.DataFrame) -> pl.DataFr
     return existing_data
 
 
-def process_timeseries(ts: TimeSeries, ts_ids: list[str], all_timeseries_ids_metadata: dict[str, dict]) -> TimeSeries:
+def process_timeseries(ts: TimeSeries, ts_metadata: dict[str, dict]) -> TimeSeries:
     """
     Process the timeseries data.
 
     Args:
         ts: The timeseries object to process.
-        ts_ids: List of timeseries IDs to process.
-        all_timeseries_ids_metadata: Metadata for all timeseries IDs.
+        ts_metadata: Metadata for timeseries IDs to process.
 
     Returns:
         TimeSeries: The processed timeseries object.
@@ -187,7 +180,7 @@ def process_timeseries(ts: TimeSeries, ts_ids: list[str], all_timeseries_ids_met
     logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
 
     # Quality control
-    ts = run_quality_control(ts, ts_ids, all_timeseries_ids_metadata, remove=True)
+    ts = run_quality_control(ts, ts_metadata, remove=True)
     ts = update_quality_control_core_flags(ts)
     qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
     flags_count = len(qcflag_columns)
@@ -198,7 +191,7 @@ def process_timeseries(ts: TimeSeries, ts_ids: list[str], all_timeseries_ids_met
         logger.info(ts.df.limit(100))
 
     # Infilling
-    ts = run_infilling(ts, ts_ids, all_timeseries_ids_metadata)
+    ts = run_infilling(ts, ts_metadata)
     ts = update_infill_core_flags(ts)
 
     with pl.Config(tbl_rows=100):

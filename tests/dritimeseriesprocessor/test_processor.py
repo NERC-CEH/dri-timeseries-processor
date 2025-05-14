@@ -46,12 +46,13 @@ class TestLoadDataForGroup(unittest.TestCase):
         """Test the load_data_for_group where ts_ids are from the same dataset and bucket.
         """
         ts_ids = ["ts1", "ts2"]
+        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
         site_id = "site1"
 
         mock_query.side_effect = mock_query_by_date_range
         mock_deps.side_effect = lambda x: x
 
-        result = load_data_for_group(ts_ids, site_id, self.all_timeseries_ids_metadata, self.start_date, self.end_date)
+        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(result.shape, (3, 4))
 
@@ -61,12 +62,13 @@ class TestLoadDataForGroup(unittest.TestCase):
         """Test the load_data_for_group where ts_ids are from multiple datasets and buckets.
         """
         ts_ids = ["ts1", "ts2", "ts3", "ts4", "ts5"]
+        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
         site_id = "site1"
 
         mock_query.side_effect = mock_query_by_date_range
         mock_deps.side_effect = lambda x: x
 
-        result = load_data_for_group(ts_ids, site_id, self.all_timeseries_ids_metadata, self.start_date, self.end_date)
+        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
         self.assertIsInstance(result, pl.DataFrame)
         self.assertEqual(result.shape, (3, 7))
 
@@ -76,12 +78,13 @@ class TestLoadDataForGroup(unittest.TestCase):
         """Test when no data is returned from the query.
         """
         ts_ids = ["ts1", "ts2"]
+        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
         site_id = "site1"
 
         mock_query.return_value = pl.DataFrame()
         mock_deps.side_effect = lambda x: x
 
-        result = load_data_for_group(ts_ids, site_id, self.all_timeseries_ids_metadata, self.start_date, self.end_date)
+        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
         self.assertEqual(result, None)
         
 
@@ -97,7 +100,10 @@ class TestPrepareDataToLoad(unittest.TestCase):
 
     def test_single_bucket_and_dataset(self):
         """Test the prepare_data_to_load function with a single dataset and bucket."""
-        result = prepare_data_to_load(["ts1", "ts2"], self.all_timeseries_ids_metadata)
+        ts_ids = ["ts1", "ts2"]
+        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
+        result = prepare_data_to_load(ts_metadata)
+
         expected = {
             "dataset1": {
                 "bucket1": {"columns": {"col1", "col2"}}
@@ -107,7 +113,10 @@ class TestPrepareDataToLoad(unittest.TestCase):
     
     def test_multiple_buckets_and_datasets(self):
         """Test the prepare_data_to_load function with multiple datasets and buckets."""
-        result = prepare_data_to_load(["ts1", "ts2", "ts3", "ts4", "ts5"], self.all_timeseries_ids_metadata)
+        ts_ids = ["ts1", "ts2", "ts3", "ts4", "ts5"]
+        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
+        result = prepare_data_to_load(ts_metadata)
+
         expected = {
             "dataset1": {
                 "bucket1": {"columns": {"col1", "col2"}},
@@ -121,12 +130,12 @@ class TestPrepareDataToLoad(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_repeated_columns(self):
-        all_timeseries_ids_metadata = {
+        ts_metadata = {
             "ts1": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
             "ts2": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
         }
 
-        result = prepare_data_to_load(["ts1", "ts2"], all_timeseries_ids_metadata)
+        result = prepare_data_to_load(ts_metadata)
         expected = {
             "dataset1": {
                 "bucket1": {"columns": {"col1"}}
@@ -212,15 +221,14 @@ class TestProcessTimeseries(unittest.TestCase):
         self, mock_run_infilling, mock_run_quality_control, mock_run_preprocess, mock_add_initial_core_flags
     ):
         ts = MagicMock(spec=TimeSeries)
-        ts_ids = ["ts1", "ts2"]
-        all_timeseries_ids_metadata = {"ts1": {}, "ts2": {}}
+        ts_metadata = {"ts1": {}, "ts2": {}}
 
         mock_add_initial_core_flags.return_value = ts
         mock_run_preprocess.return_value = ts
         mock_run_quality_control.return_value = ts
         mock_run_infilling.return_value = ts
 
-        result = process_timeseries(ts, ts_ids, all_timeseries_ids_metadata)
+        result = process_timeseries(ts, ts_metadata)
         self.assertEqual(result, ts)
         mock_add_initial_core_flags.assert_called_once()
         mock_run_preprocess.assert_called_once()

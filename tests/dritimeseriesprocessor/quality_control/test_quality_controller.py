@@ -164,21 +164,12 @@ class TestRunQualityControl(unittest.TestCase):
         })()
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
-    def test_run_quality_control_no_configs(self, mock_get_configs):
-        """Test run_quality_control when no configs are found for a ts_id."""
-        ts_ids = ["NONEXISTENT"]
-
-        mock_get_configs.return_value = []
-        with self.assertRaises(KeyError):
-            run_quality_control(self.ts, ts_ids, self.metadata)
-
-    @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
     def test_run_quality_control_no_methods(self, mock_get_methods, mock_get_configs):
         """Test run_quality_control when no QC methods are defined."""
         mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
-        result = run_quality_control(self.ts, self.ts_ids, self.metadata)
+        result = run_quality_control(self.ts, self.metadata)
 
         self.assertEqual(result, self.ts)
 
@@ -191,7 +182,7 @@ class TestRunQualityControl(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_quality_control(self.ts, self.ts_ids, self.metadata)
+        result = run_quality_control(self.ts, self.metadata)
 
         # Check flag system added
         self.assertIn('qc_flags', result.flag_systems)
@@ -210,7 +201,7 @@ class TestRunQualityControl(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_quality_control(self.ts, self.ts_ids, self.metadata)
+        result = run_quality_control(self.ts, self.metadata)
 
         # Check flag system added
         self.assertIn('qc_flags', result.flag_systems)

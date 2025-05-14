@@ -1,6 +1,6 @@
 import logging
 from functools import lru_cache
-from typing import Dict, List
+from typing import Dict
 
 from time_stream import TimeSeries
 
@@ -31,14 +31,13 @@ def infill_flag_column_name(column: str) -> str:
     return f"{column}_INFILL_FLAG"
 
 
-def run_infilling(ts: TimeSeries, ts_ids: List, metadata: Dict) -> TimeSeries:
+def run_infilling(ts: TimeSeries, metadata: Dict) -> TimeSeries:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.
 
     Args:
         ts: The input TimeSeries containing the data to be infilled.
-        ts_ids: List of the TimeSeries IDs being processed.
         metadata: The metadata for the TimeSeries IDs.
 
     Returns:
@@ -54,14 +53,8 @@ def run_infilling(ts: TimeSeries, ts_ids: List, metadata: Dict) -> TimeSeries:
         logger.warning("No infill methods given in config.")
         return ts
 
-    for ts_id in ts_ids:
-        if ts_id not in metadata:
-            # There should always be a metadata entry for the time series ID
-            msg = f"Time Series ID {ts_id} not found in metadata."
-            logger.error(msg)
-            raise KeyError(msg)
-
-        column = metadata[ts_id]["sourceColumnName"]
+    for ts_id, ts_metadata in metadata.items():
+        column = ts_metadata["sourceColumnName"]
         infill_configs = load_config("infilling", ts_id)
         if not infill_configs:
             logger.info(f"No infilling config found for Time Series ID: {ts_id}")

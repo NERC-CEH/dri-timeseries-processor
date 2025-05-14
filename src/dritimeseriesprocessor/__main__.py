@@ -132,9 +132,11 @@ grouped_timeseries_to_process = group_timeseries_to_process(all_timeseries_ids_m
 
 for ts_group_id, ts_group in grouped_timeseries_to_process.items():
     logger.info(f"Processing group {ts_group_id} with {len(ts_group['timeseries_ids'])} timeseries IDs")
-    data = load_data_for_group(
-        ts_group["timeseries_ids"], ts_group["site_id"], all_timeseries_ids_metadata, start_date, end_date
-    )
+
+    # Create subset for this ts group metadata
+    ts_group_metadata = {ts_id: all_timeseries_ids_metadata[ts_id] for ts_id in ts_group["timeseries_ids"]}
+
+    data = load_data_for_group(ts_group_metadata, ts_group["site_id"], start_date, end_date)
 
     if data is not None:
         ts = TimeSeries(
@@ -146,7 +148,7 @@ for ts_group_id, ts_group in grouped_timeseries_to_process.items():
         )
 
         try:
-            ts = process_timeseries(ts, ts_group["timeseries_ids"], all_timeseries_ids_metadata)
+            ts = process_timeseries(ts, ts_group_metadata)
         except Exception as e:
             metrics.record_failed_run()
             logger.exception(f"An error occurred during processing: {str(e)}")
