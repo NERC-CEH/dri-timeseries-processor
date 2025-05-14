@@ -139,15 +139,15 @@ for ts_group_id, ts_group in grouped_timeseries_to_process.items():
     data = load_data_for_group(ts_group_metadata, ts_group["site_id"], start_date, end_date)
 
     if data is not None:
-        ts = TimeSeries(
-            data,
-            "time",
-            ts_group["resolution"],
-            ts_group["periodicity"],
-            supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
-        )
-
         try:
+            ts = TimeSeries(
+                data,
+                "time",
+                ts_group["resolution"],
+                ts_group["periodicity"],
+                supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
+            )
+
             ts = process_timeseries(ts, ts_group_metadata)
         except Exception as e:
             metrics.record_failed_run()
