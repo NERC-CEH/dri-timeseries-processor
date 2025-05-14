@@ -7,8 +7,6 @@ from time_stream import TimeSeries
 from dritimeseriesprocessor.processor import (
     load_data_for_group,
     prepare_data_to_load,
-    handle_no_data_case,
-    add_processing_dependencies,
     merge_data,
     process_timeseries,
 )
@@ -142,15 +140,6 @@ class TestPrepareDataToLoad(unittest.TestCase):
             }
         }
         self.assertEqual(result, expected)
-
-
-class TestHandleNoDataCase(unittest.TestCase):
-    @patch("dritimeseriesprocessor.processor.metrics.record_no_data_run")
-    @patch("dritimeseriesprocessor.processor.metrics.export_metrics_to_pushgateway")
-    def test_handle_no_data_case(self, mock_export_metrics, mock_record_no_data_run):
-        handle_no_data_case()
-        mock_record_no_data_run.assert_called_once()
-        mock_export_metrics.assert_called_once()
 
 
 class TestMergeData(unittest.TestCase):

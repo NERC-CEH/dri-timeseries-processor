@@ -57,7 +57,11 @@ def load_data_for_group(ts_metadata: dict, site_id: str, start_date: datetime, e
             )
 
             if bucket_data.shape[0] == 0:
-                handle_no_data_case()
+                metrics.record_no_data_run()
+                logger.info("No data returned from the query.")
+                metrics.export_metrics_to_pushgateway(
+                    url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+                )
             else:
                 bucket_data = add_processing_dependencies(bucket_data)
                 data = merge_data(data, bucket_data)
@@ -90,17 +94,6 @@ def prepare_data_to_load(ts_metadata: dict) -> dict:
         data_to_load[dataset][bucket_name]["columns"].add(column_name)
 
     return data_to_load
-
-
-def handle_no_data_case() -> None:
-    """
-    Handle the case where no data is returned from the query.
-    """
-    metrics.record_no_data_run()
-    logger.info("No data returned from the query.")
-    metrics.export_metrics_to_pushgateway(
-        url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-    )
 
 
 def add_processing_dependencies(bucket_data: pl.DataFrame) -> pl.DataFrame:
