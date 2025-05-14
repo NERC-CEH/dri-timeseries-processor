@@ -11,14 +11,12 @@ from dritimeseriesprocessor.flagging.flagger import (
     update_quality_control_core_flags,
 )
 from dritimeseriesprocessor.infilling.infiller import run_infilling
-from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 
 logger = logging.getLogger(__name__)
-setup_logging()
 
 
 # Setup metrics
