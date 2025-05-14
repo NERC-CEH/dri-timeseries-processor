@@ -42,9 +42,9 @@ def load_data_for_group(ts_metadata: dict, site_id: str, start_date: datetime, e
 
     data = None
     for dataset, buckets in data_to_load.items():
-        for bucket_name, params in buckets.items():
+        for bucket_name, columns in buckets.items():
             logger.info(
-                f"Loading data. Dataset:{dataset}. Bucket:{bucket_name}. Columns:{params['columns']} "
+                f"Loading data. Dataset:{dataset}. Bucket:{bucket_name}. Columns:{columns} "
                 f"Site:{site_id}. Dates:{start_date} to {end_date}"
             )
             bucket_data = data_manager.query_by_date_range(
@@ -53,7 +53,7 @@ def load_data_for_group(ts_metadata: dict, site_id: str, start_date: datetime, e
                 start_date=start_date,
                 end_date=end_date,
                 site_ids=[site_id],
-                columns=params["columns"],
+                columns=columns,
             )
 
             if bucket_data.shape[0] == 0:
@@ -89,9 +89,9 @@ def prepare_data_to_load(ts_metadata: dict) -> dict:
             data_to_load[dataset] = {}
 
         if bucket_name not in data_to_load[dataset]:
-            data_to_load[dataset][bucket_name] = {"columns": set()}
+            data_to_load[dataset][bucket_name] = set()
 
-        data_to_load[dataset][bucket_name]["columns"].add(column_name)
+        data_to_load[dataset][bucket_name].add(column_name)
 
     return data_to_load
 

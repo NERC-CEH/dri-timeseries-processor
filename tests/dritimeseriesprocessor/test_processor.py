@@ -104,7 +104,7 @@ class TestPrepareDataToLoad(unittest.TestCase):
 
         expected = {
             "dataset1": {
-                "bucket1": {"columns": {"col1", "col2"}}
+                "bucket1": {"col1", "col2"}
             }
         }
         self.assertEqual(result, expected)
@@ -117,12 +117,12 @@ class TestPrepareDataToLoad(unittest.TestCase):
 
         expected = {
             "dataset1": {
-                "bucket1": {"columns": {"col1", "col2"}},
-                "bucket2": {"columns": {"col1"}}
+                "bucket1": {"col1", "col2"},
+                "bucket2": {"col1"}
             },
             "dataset2": {
-                "bucket1": {"columns": {"col2"}},
-                "bucket2": {"columns": {"col2"}}
+                "bucket1": {"col2"},
+                "bucket2": {"col2"}
             }
         }
         self.assertEqual(result, expected)
@@ -136,7 +136,7 @@ class TestPrepareDataToLoad(unittest.TestCase):
         result = prepare_data_to_load(ts_metadata)
         expected = {
             "dataset1": {
-                "bucket1": {"columns": {"col1"}}
+                "bucket1": {"col1"}
             }
         }
         self.assertEqual(result, expected)
