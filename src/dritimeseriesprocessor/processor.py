@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 
 import polars as pl
 from time_stream import TimeSeries
@@ -43,7 +43,7 @@ def load_data_for_group(
     """
     data_to_load = prepare_data_to_load(ts_metadata)
 
-    data = None
+    dfs = []
     for dataset, buckets in data_to_load.items():
         for bucket_name, columns in buckets.items():
             logger.info(
@@ -67,9 +67,28 @@ def load_data_for_group(
                 )
             else:
                 bucket_data = add_processing_dependencies(bucket_data)
-                data = merge_data(data, bucket_data)
+                dfs.append(bucket_data)
 
-    return data
+    return merge_data(dfs)
+
+
+def merge_data(dfs: List[pl.DataFrame]) -> pl.DataFrame:
+    """
+    Merge dataframes together using Polars concat.
+
+    Args:
+        dfs: List of Polars DataFrames to merge.
+
+    Returns:
+        pl.DataFrame: The merged Polars DataFrame.
+    """
+    # Filter out empty dataframes (so that concat doesn't fail)
+    dfs = [df for df in dfs if df.height > 0]
+
+    if len(dfs) == 0:
+        return None
+    else:
+        return pl.concat(dfs, how="align")
 
 
 def prepare_data_to_load(ts_metadata: Dict[str, Dict[str, str]]) -> Dict[str, Dict[str, set]]:
@@ -121,39 +140,6 @@ def add_processing_dependencies(bucket_data: pl.DataFrame) -> pl.DataFrame:
     )
     logger.info(f"Added dummy data, shape: {bucket_data.shape}")
     return bucket_data
-
-
-def merge_data(existing_data: pl.DataFrame, new_data: pl.DataFrame) -> pl.DataFrame:
-    """
-    Merge new data into the existing data.
-
-    Args:
-        existing_data: The existing Polars DataFrame.
-        new_data: The new Polars DataFrame to merge.
-
-    Returns:
-        pl.DataFrame: The merged Polars DataFrame.
-    """
-    if existing_data is None:
-        return new_data
-
-    if new_data.height == 0:
-        logger.info("No new data to merge.")
-        return existing_data
-
-    # Check what expected height of the data should be after merge
-    expected_height = max(existing_data.height, new_data.height)
-
-    matching_columns = set(existing_data.columns) & set(new_data.columns)
-
-    existing_data = existing_data.join(new_data, on=matching_columns, how="full", coalesce=True)
-
-    if existing_data.height != expected_height:
-        msg = f"Data merge failed. Extra rows added: {existing_data}"
-        logger.error(msg)
-        raise ValueError(msg)
-
-    return existing_data
 
 
 def process_timeseries(ts: TimeSeries, ts_metadata: Dict[str, Dict[str, str]]) -> TimeSeries:

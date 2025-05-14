@@ -158,9 +158,20 @@ class TestMergeData(unittest.TestCase):
             "col1": [1, 2],
             "col3": [5, 6]
         })
-        result = merge_data(self.existing_data, new_data)
-        self.assertIn("col3", result.columns)
-        self.assertEqual(result.shape, (2, 4))
+        result = merge_data([self.existing_data, new_data])
+        expected = pl.DataFrame({
+            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
+            "col1": [1, 2],
+            "col2": [3, 4],
+            "col3": [5, 6]
+        })
+        self.assertTrue(result.equals(expected))
+
+    def test_single_dataframe(self):
+        """Test the merge_data function with a single dataframe."""
+        result = merge_data([self.existing_data])
+        expected = self.existing_data
+        self.assertTrue(result.equals(expected))
 
     def test_larger_new_data(self):
         """Test the merge_data function with larger new data."""
@@ -168,38 +179,56 @@ class TestMergeData(unittest.TestCase):
             "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
             "col4": [7, 8, 9]
         })
-        result = merge_data(self.existing_data, new_data)
-        self.assertIn("col4", result.columns)
-        self.assertEqual(result.shape, (3, 4))
+        result = merge_data([self.existing_data, new_data])
+        expected = pl.DataFrame({
+            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
+            "col1": [1, 2, None],
+            "col2": [3, 4, None],
+            "col4": [7, 8, 9]
+        })
+        self.assertTrue(result.equals(expected))
 
-    def test_no_data(self):
-        """Test the merge_data function with no data."""
-        new_data = pl.DataFrame()
-        result = merge_data(self.existing_data, new_data)
-        self.assertEqual(result.columns, ["time", "col1", "col2"])
-        self.assertEqual(result.shape, (2, 3))
+    def test_with_new_rows(self):
+        """Test the merge_data function with differing rows."""
+        new_data = pl.DataFrame({
+            "time": [datetime(2023, 1, 1), datetime(2023, 1, 3)],
+            "col1": [1, 3],
+            "col2": [3, 5]
+        })
+        result = merge_data([self.existing_data, new_data])
+        expected = pl.DataFrame({
+            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
+            "col1": [1, 2, 3],
+            "col2": [3, 4, 5]
+        })
+        self.assertTrue(result.equals(expected))
 
     def test_differing_column_data(self):
-        """Test the merge_data function fails when matching columns have differing data."""
+        """Test the merge_data function adds duplicated time rows.
+        Note, ultimately we don't want this but the detection of duplicated time rows falls
+        outside the scope of this function."""
         new_data = pl.DataFrame({
             "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
             "col1": [10, 2]
         })
-        with self.assertRaises(ValueError):
-            merge_data(self.existing_data, new_data)
+        result = merge_data([self.existing_data, new_data])
+        expected = pl.DataFrame({
+            "time": [datetime(2023, 1, 1), datetime(2023, 1, 1), datetime(2023, 1, 2)],
+            "col1": [1, 10, 2],
+            "col2": [3, None, 4]
+        })
+        self.assertTrue(result.equals(expected))
 
-    def test_all_matching_columns_all_the_same(self):
-        """Test the merge_data function fails when all matching columns have repeated data."""
-        existing_data = pl.DataFrame({
-            "SITE_ID": ["site1", "site1"],
+    def test_no_data(self):
+        """Test the merge_data function with no data."""
+        new_data = pl.DataFrame()
+        result = merge_data([self.existing_data, new_data])
+        expected = pl.DataFrame({
+            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
+            "col1": [1, 2],
             "col2": [3, 4]
         })
-        new_data = pl.DataFrame({
-            "SITE_ID": ["site1", "site1"],
-            "col3": [1, 2]
-        })
-        with self.assertRaises(ValueError):
-            merge_data(existing_data, new_data)
+        self.assertTrue(result.equals(expected))
 
 
 class TestProcessTimeseries(unittest.TestCase):
