@@ -29,8 +29,12 @@ def load_data_for_group(
     ts_metadata: Dict[str, Dict[str, str]], site_id: str, start_date: datetime, end_date: datetime
 ) -> pl.DataFrame:
     """
-    Load data for given timeseries IDs. The "group" is timeseries IDs that are of the same
-    periodicity. This is so the data can be merged together.
+    This function has three steps:
+    1. Prepare the data to load by grouping the timeseries IDs by their dataset and bucket.
+    2. Load the data from S3 using the data_manager.
+    3. Merge the loaded data together into a single Polars DataFrame.
+
+    The "group" is timeseries IDs that are of the same periodicity. This is so the data can be merged together.
 
     Args:
         ts_metadata: Metadata for timeseries IDs to load
