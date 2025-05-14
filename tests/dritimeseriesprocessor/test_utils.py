@@ -427,7 +427,7 @@ class TestGroupTimeseriesToProcess(unittest.TestCase):
                 "site_id": 'bunny',
                 "resolution": 'PT30M',
                 "periodicity": 'PT30M',
-               "timeseries_ids": [
+                "timeseries_ids": [
                     'http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-pa_30min_raw'
                 ]
             },

@@ -31,7 +31,7 @@ def infill_flag_column_name(column: str) -> str:
     return f"{column}_INFILL_FLAG"
 
 
-def run_infilling(ts: TimeSeries, metadata: Dict) -> TimeSeries:
+def run_infilling(ts: TimeSeries, metadata: Dict[str, Dict[str, str]]) -> TimeSeries:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.

@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Dict
 
 import polars as pl
 from time_stream import TimeSeries
@@ -24,7 +25,9 @@ logger = logging.getLogger(__name__)
 metrics.setup_metrics()
 
 
-def load_data_for_group(ts_metadata: dict, site_id: str, start_date: datetime, end_date: datetime) -> pl.DataFrame:
+def load_data_for_group(
+    ts_metadata: Dict[str, Dict[str, str]], site_id: str, start_date: datetime, end_date: datetime
+) -> pl.DataFrame:
     """
     Load data for given timeseries IDs. The "group" is timeseries IDs that are of the same
     periodicity. This is so the data can be merged together.
@@ -69,9 +72,11 @@ def load_data_for_group(ts_metadata: dict, site_id: str, start_date: datetime, e
     return data
 
 
-def prepare_data_to_load(ts_metadata: dict) -> dict:
+def prepare_data_to_load(ts_metadata: Dict[str, Dict[str, str]]) -> Dict[str, Dict[str, set]]:
     """
-    Prepare the data structure for loading timeseries data.
+    Loop through the metadata for the timeseries IDs to load and group together column
+    names that live in the same dataset and bucket.
+    This structured dictionary can then be used to load data from S3.
 
     Args:
         ts_metadata: Metadata for timeseries IDs to load
@@ -151,7 +156,7 @@ def merge_data(existing_data: pl.DataFrame, new_data: pl.DataFrame) -> pl.DataFr
     return existing_data
 
 
-def process_timeseries(ts: TimeSeries, ts_metadata: dict[str, dict]) -> TimeSeries:
+def process_timeseries(ts: TimeSeries, ts_metadata: Dict[str, Dict[str, str]]) -> TimeSeries:
     """
     Process the timeseries data.
 

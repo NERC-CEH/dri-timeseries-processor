@@ -42,7 +42,7 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 
 @metrics.track_qc_time()
-def run_quality_control(ts: TimeSeries, metadata: Dict, remove: bool = False) -> TimeSeries:
+def run_quality_control(ts: TimeSeries, metadata: Dict[str, Dict[str, str]], remove: bool = False) -> TimeSeries:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on

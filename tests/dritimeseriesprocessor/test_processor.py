@@ -128,6 +128,7 @@ class TestPrepareDataToLoad(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_repeated_columns(self):
+        """Test the prepare_data_to_load function with repeated columns."""
         ts_metadata = {
             "ts1": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
             "ts2": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
@@ -209,6 +210,8 @@ class TestProcessTimeseries(unittest.TestCase):
     def test_process_timeseries(
         self, mock_run_infilling, mock_run_quality_control, mock_run_preprocess, mock_add_initial_core_flags
     ):
+        """Test the process_timeseries function.
+        """
         ts = MagicMock(spec=TimeSeries)
         ts_metadata = {"ts1": {}, "ts2": {}}
 
