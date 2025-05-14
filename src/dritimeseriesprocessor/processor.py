@@ -20,11 +20,6 @@ from dritimeseriesprocessor.s3_crud import data_manager
 logger = logging.getLogger(__name__)
 
 
-# Setup metrics
-# -------------
-metrics.setup_metrics()
-
-
 def load_data_for_group(
     ts_metadata: Dict[str, Dict[str, str]], site_id: str, start_date: datetime, end_date: datetime
 ) -> pl.DataFrame:
