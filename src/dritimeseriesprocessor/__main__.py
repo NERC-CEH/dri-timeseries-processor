@@ -133,7 +133,7 @@ grouped_timeseries_to_process = group_timeseries_to_process(all_timeseries_ids_m
 for ts_group_id, ts_group in grouped_timeseries_to_process.items():
     logger.info(f"Processing group {ts_group_id} with {len(ts_group['timeseries_ids'])} timeseries IDs")
 
-    # Create subset for this ts group metadata
+    # For each timeseries ID in the group to process, extract the metadata required to load the data from S3
     ts_group_metadata = {ts_id: all_timeseries_ids_metadata[ts_id] for ts_id in ts_group["timeseries_ids"]}
 
     data = load_data_for_group(ts_group_metadata, ts_group["site_id"], start_date, end_date)

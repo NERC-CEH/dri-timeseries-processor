@@ -4,12 +4,17 @@ from datetime import datetime
 import polars as pl
 from time_stream import TimeSeries
 
+from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import (
     load_data_for_group,
     prepare_data_to_load,
     merge_data,
     process_timeseries,
 )
+
+# Setup metrics
+# -------------
+metrics.setup_metrics()
 
 
 def mock_query_by_date_range(bucket_name, prefix, start_date, end_date, site_ids, columns):

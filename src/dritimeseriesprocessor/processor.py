@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import polars as pl
 from time_stream import TimeSeries
@@ -20,15 +20,12 @@ from dritimeseriesprocessor.s3_crud import data_manager
 logger = logging.getLogger(__name__)
 
 
-# Setup metrics
-# -------------
-metrics.setup_metrics()
-
-
 def load_data_for_group(
     ts_metadata: Dict[str, Dict[str, str]], site_id: str, start_date: datetime, end_date: datetime
 ) -> pl.DataFrame:
     """
+    Load in data for the given timeseries IDs.
+
     This function has three steps:
     1. Prepare the data to load by grouping the timeseries IDs by their dataset and bucket.
     2. Load the data from S3 using the data_manager.
@@ -76,15 +73,15 @@ def load_data_for_group(
     return merge_data(dfs)
 
 
-def merge_data(dfs: List[pl.DataFrame]) -> pl.DataFrame:
+def merge_data(dfs: List[pl.DataFrame]) -> Union[None, pl.DataFrame]:
     """
-    Merge dataframes together using Polars concat.
+    Merge dataframes together (if they exist).
 
     Args:
         dfs: List of Polars DataFrames to merge.
 
     Returns:
-        pl.DataFrame: The merged Polars DataFrame.
+        pl.DataFrame: The merged Polars DataFrame, or None if no dataframes are provided.
     """
     # Filter out empty dataframes (so that concat doesn't fail)
     dfs = [df for df in dfs if df.height > 0]
@@ -97,9 +94,11 @@ def merge_data(dfs: List[pl.DataFrame]) -> pl.DataFrame:
 
 def prepare_data_to_load(ts_metadata: Dict[str, Dict[str, str]]) -> Dict[str, Dict[str, set]]:
     """
+    Format the timeseries ID metadata so it can be loaded.
+
     Loop through the metadata for the timeseries IDs to load and group together column
-    names that live in the same dataset and bucket.
-    This structured dictionary can then be used to load data from S3.
+    names that live in the same dataset and bucket. This structured dictionary can then
+    be used to load data from S3.
 
     Args:
         ts_metadata: Metadata for timeseries IDs to load
