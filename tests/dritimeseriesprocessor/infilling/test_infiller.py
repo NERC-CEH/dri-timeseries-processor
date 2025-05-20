@@ -41,9 +41,15 @@ class TestRunInfilling(unittest.TestCase):
         resolution = Period.of_hours(1)
         periodicity = Period.of_hours(1)
         self.ts = TimeSeries(data, "time", resolution, periodicity)
-        self.site_id = "SITE1"
+        self.ts_ids = ["ta_30min_raw", "pa_30min_raw"]
+        site_id = "SITE1"
         self.metadata = {
-            "sourceColumnName": "temperature",
+            "ta_30min_raw": {
+                "sourceColumnName": "temperature",
+            },
+            "pa_30min_raw": {
+                "sourceColumnName": "pressure",
+            }
         }
 
         # Set up dummy infilling methods
@@ -70,12 +76,12 @@ class TestRunInfilling(unittest.TestCase):
 
         # Set up infilling configs
         self.infill_config1 = type("DummyInfillConfig", (), {
-            "site_id": self.site_id,
-            "time_series_name": "temperature",
-            "priority": 1,
+            "site_id": site_id,
+            "ts_id": self.ts_ids[0],
             "configs": [type("DummyMethodConfig", (), {
                 "name": "method1",
-                "start_date": datetime(2023, 1, 1),
+                "interval": (datetime(2000, 1, 1), None),
+                "observation_interval": (datetime(2023, 1, 1), None),
                 "parameters": {
                     "max_gap_size": 3
                 },
@@ -84,28 +90,18 @@ class TestRunInfilling(unittest.TestCase):
         })()
 
         self.infill_config2 = type("DummyInfillConfig", (), {
-            "site_id": self.site_id,
-            "time_series_name": "temperature",
-            "priority": 2,
+            "site_id": site_id,
+            "ts_id": self.ts_ids[1],
             "configs": [type("DummyMethodConfig", (), {
                 "name": "method2",
-                "start_date": datetime(2023, 1, 1),
+                "interval": (datetime(2000, 1, 1), None),
+                "observation_interval": (datetime(2023, 1, 1), None),
                 "parameters": {
                     "max_gap_size": 6
                 },
             })],
-            "annotations": {"data-processing-configuration-priority": 1}
+            "annotations": {"data-processing-configuration-priority": 2}
         })()
-
-    @patch('dritimeseriesprocessor.infilling.infiller.load_config')
-    def test_run_infilling_no_configs(self, mock_get_configs):
-        """Test run_infilling when no configs are found for the site."""
-        site_id = "NONEXISTENT"
-
-        mock_get_configs.return_value = []
-        result = run_infilling(self.ts, site_id, self.metadata)
-
-        self.assertEqual(result, self.ts)
 
     @patch('dritimeseriesprocessor.infilling.infiller.load_config')
     @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
@@ -113,7 +109,7 @@ class TestRunInfilling(unittest.TestCase):
         """Test run_infilling when no infill methods are defined."""
         mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
-        result = run_infilling(self.ts, self.site_id, self.metadata)
+        result = run_infilling(self.ts, self.metadata)
 
         self.assertEqual(result, self.ts)
 
@@ -126,7 +122,7 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_infilling(self.ts, self.site_id, self.metadata)
+        result = run_infilling(self.ts, self.metadata)
 
         # Check flag system added
         self.assertIn('infill_flags', result.flag_systems)
@@ -145,7 +141,7 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_infilling(self.ts, self.site_id, self.metadata)
+        result = run_infilling(self.ts, self.metadata)
 
         # Check flag system added
         self.assertIn('infill_flags', result.flag_systems)

@@ -42,7 +42,7 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 
 @metrics.track_qc_time()
-def run_quality_control(ts: TimeSeries, ts_id: str, metadata: Dict, remove: bool = False) -> TimeSeries:
+def run_quality_control(ts: TimeSeries, metadata: Dict[str, Dict[str, str]], remove: bool = False) -> TimeSeries:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on
@@ -50,44 +50,45 @@ def run_quality_control(ts: TimeSeries, ts_id: str, metadata: Dict, remove: bool
 
     Args:
         ts: The input TimeSeries containing the data to be quality controlled.
-        ts_id: The ID of the TimeSeries being processed.
-        metadata: The metadata for the site being processed.
+        metadata: The metadata for the TimeSeries IDs.
         remove: Whether to remove any QC'd data.
 
     Returns:
         The TimeSeries with quality control flags applied.
     """
-    column = metadata["sourceColumnName"]
-
-    qc_configs = load_config("quality_control", ts_id)
     qc_methods = get_qc_methods()
-
-    if not qc_configs:
-        logger.info(f"No quality control config found for Time Series ID: {ts_id}")
-        return ts
 
     # Initialise quality control flag system within TimeSeries object
     qc_flags_dict = {method: method_config.method_id for method, method_config in qc_methods.items()}
     if qc_flags_dict:
         ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
     else:
-        logger.warning("No qc methods given in config.")
+        logger.warning("No QC methods given in config.")
         return ts
 
-    for config in qc_configs:
-        qc_flag_col = qc_flag_column_name(column)
-        if qc_flag_col not in ts.flag_columns:
-            ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
+    for ts_id, ts_metadata in metadata.items():
+        column = ts_metadata["sourceColumnName"]
+        qc_configs = load_config("quality_control", ts_id)
+        if not qc_configs:
+            logger.info(f"No quality control config found for Time Series ID: {ts_id}")
+            return ts
 
-        # Run QC methods on time series
-        # TODO: Will have to add in start and end dates so that QC only applied to specific part of time
-        #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
-        for method in config.configs:
-            qc_func = qc_methods[method.name]
-            logger.info(f"Quality controlling {column} with method: {method.name}. Constraints: {method.parameters}")
-            ts = qc_func(ts, column, qc_flag_col, method.name, **method.parameters)
+        for config in qc_configs:
+            qc_flag_col = qc_flag_column_name(column)
+            if qc_flag_col not in ts.flag_columns:
+                ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
-            if remove:
-                ts.df = remove_qcd_data(ts.df, column, qc_flag_col)
+            # Run QC methods on time series
+            # TODO: Will have to add in start and end dates so that QC only applied to specific part of time
+            #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
+            for method in config.configs:
+                qc_func = qc_methods[method.name]
+                logger.info(
+                    f"Quality controlling {column} with method: {method.name}. Constraints: {method.parameters}"
+                )
+                ts = qc_func(ts, column, qc_flag_col, method.name, **method.parameters)
+
+                if remove:
+                    ts.df = remove_qcd_data(ts.df, column, qc_flag_col)
 
     return ts

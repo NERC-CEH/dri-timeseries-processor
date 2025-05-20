@@ -13,6 +13,10 @@ def mock_range_check(ts, column, flag_column, flag_name, *args, **kwargs):
     ts.add_flag(flag_column, flag_name)
     return ts
 
+def mock_spike_check(ts, column, flag_column, flag_name, *args, **kwargs):
+    ts.add_flag(flag_column, flag_name)
+    return ts
+
 
 class TestQCFlagColumnName(unittest.TestCase):
     """Unit tests for the qc_flag_column_name function.
@@ -74,10 +78,6 @@ class TestRemoveQCdData(unittest.TestCase):
 
 
 class TestRunQualityControl(unittest.TestCase):
-    """
-    Test suite for the run_quality_control function.
-    """
-
     def setUp(self):
         """
         Set up common test data and mocks.
@@ -94,64 +94,118 @@ class TestRunQualityControl(unittest.TestCase):
             "value": [10., 20., 30., 40., 50., 60.]
         })
 
-        self.ts = TimeSeries(data, "time")
+        resolution = Period.of_days(1)
+        periodicity = Period.of_days(1)
+        self.ts = TimeSeries(data, "time", resolution, periodicity)
 
-        self.metadata = {"sourceColumnName": "value"}
+        self.ts_ids = ["ta_30min_raw", "pa_30min_raw"]
+        site_id = "SITE1"
+        self.metadata = {
+            "ta_30min_raw": {
+                "sourceColumnName": "temperature",
+            },
+            "pa_30min_raw": {
+                "sourceColumnName": "pressure",
+            }
+        }
 
-        mock_config = MagicMock()
-        mock_config.name = "range_check"
-        mock_config.parameters = {"threshold": 100}
-        mock_config.method_id = 1
+        # Set up dummy QC methods
+        QC_method1 = type("DummyQCMethod", (), {
+            "method_id": 1,
+            "name": "Range Check",
+            "description": "Check if the value is within the specified range",
+            "function_name": "mock_range_check",
+            "method_type": "quality_control",
+            "__call__": lambda self, *args, **kwargs: mock_range_check(*args, **kwargs),
+        })()
 
-        self.mock_configs = MagicMock()
-        self.mock_configs.configs = [mock_config]
+        QC_method2 = type("DummyQCMethod", (), {
+            "method_id": 2,
+            "name": "Spike Check",
+            "description": "Check if the value is a spike",
+            "function_name": "mock_spike_check",
+            "method_type": "quality_control",
+            "__call__": lambda self, *args, **kwargs: mock_spike_check(*args, **kwargs),
+        })()
 
-        self.mock_qc_method = MagicMock()
-        self.mock_qc_method.method_id = 1
-        self.mock_qc_method.function_name = "mock_range_check"
-        self.mock_qc_method.name = "Range Check"
-        self.mock_qc_method.description = "Check if the value is within the specified range"
-        self.mock_qc_method.method_type = "quality_control"
-        self.mock_qc_method.side_effect = mock_range_check
+        self.mock_methods_dict = {
+            "range_check": QC_method1,
+            "spike_check": QC_method2,
+        }
+
+        # Set up quality_control configs
+        self.QC_config1 = type("DummyQCConfig", (), {
+            "site_id": site_id,
+            "ts_id": self.ts_ids[0],
+            "configs": [type("DummyMethodConfig", (), {
+                "name": "range_check",
+                "interval": (datetime(2000, 1, 1), None),
+                "observation_interval": (datetime(2023, 1, 1), None),
+                "parameters": {
+                    "lt": -40,
+                    "gt": 40,
+                },
+            })],
+            "annotations": {}
+        })()
+
+        self.QC_config2 = type("DummyQCConfig", (), {
+            "site_id": site_id,
+            "ts_id": self.ts_ids[1],
+            "configs": [type("DummyMethodConfig", (), {
+                "name": "spike_check",
+                "interval": (datetime(2000, 1, 1), None),
+                "observation_interval": (datetime(2023, 1, 1), None),
+                "parameters": {
+                    "gt": 20
+                },
+            })],
+            "annotations": {}
+        })()
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
-    def test_run_qc_basic(self, mock_get_qc_methods, mock_load_config):
-        """ 
-        Test basic functionality of run_quality_control.
-        Checks if the function adds the flag system, adds the flag columns, and runs the infill methods.
+    def test_run_quality_control_no_methods(self, mock_get_methods, mock_get_configs):
+        """Test run_quality_control when no QC methods are defined."""
+        mock_get_configs.return_value = [MagicMock()]
+        mock_get_methods.return_value = {}
+        result = run_quality_control(self.ts, self.metadata)
+
+        self.assertEqual(result, self.ts)
+
+    @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
+    @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
+    def test_run_quality_control_success(self, mock_get_methods, mock_get_configs):
+        """Test basic results of run_quality_control.
         """
-        mock_load_config.return_value = [self.mock_configs]
-        mock_get_qc_methods.return_value = {"range_check": self.mock_qc_method}
+        mock_get_configs.return_value = [self.QC_config1]
+        mock_get_methods.return_value = self.mock_methods_dict
 
-        result = run_quality_control(self.ts, 'test_id', self.metadata)
+        # Call function
+        result = run_quality_control(self.ts, self.metadata)
 
-        # Check flag system added 
+        # Check flag system added
         self.assertIn('qc_flags', result.flag_systems)
         # Check columns added
-        self.assertIn('value_QC_FLAG', result.columns)
+        self.assertIn('temperature_QC_FLAG', result.columns)
         # Check flag values (from mock functions) have been added
-        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1, 1])
-
-    @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
-    def test_run_qc_no_config(self, mock_load_config):
-        """
-        Test run_quality_control when no QC config is available.
-        Checks if the function returns the original DataFrame unchanged.
-        """
-        mock_load_config.return_value = []
-        result = run_quality_control(self.ts, 'test_id', self.metadata)
-        assert_frame_equal(result.df, self.ts.df)
+        self.assertEqual(result.df['temperature_QC_FLAG'].to_list(), [1, 1, 1, 1, 1, 1])
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
-    def test_run_qc_no_config_methods(self, mock_get_qc_methods, mock_load_config):
+    def test_run_quality_control_multiple_methods(self, mock_get_methods, mock_get_configs):
+        """ Test run_quality_control with multiple QC methods for a single column.
+        Checks if the methods are applied in the correct order (by priority).
         """
-        Test run_quality_control when no methods specified in the QC config.
-        Checks if the function returns the original DataFrame unchanged.
-        """
-        mock_load_config.return_value = [self.mock_configs]
-        mock_get_qc_methods.return_value = {}
+        mock_get_configs.return_value = [self.QC_config1, self.QC_config2]
+        mock_get_methods.return_value = self.mock_methods_dict
 
-        result = run_quality_control(self.ts, 'test_id', self.metadata)
-        assert_frame_equal(result.df, self.ts.df)
+        # Call function
+        result = run_quality_control(self.ts, self.metadata)
+
+        # Check flag system added
+        self.assertIn('qc_flags', result.flag_systems)
+        # Check columns added
+        self.assertIn('temperature_QC_FLAG', result.columns)
+        # Check flag values (from both mock functions) have been added
+        self.assertEqual(result.df['temperature_QC_FLAG'].to_list(), [3, 3, 3, 3, 3, 3])

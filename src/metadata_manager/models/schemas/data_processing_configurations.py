@@ -174,6 +174,7 @@ class DataProcessingConfiguration(BaseModel):
     Attributes:
         site_id: Name of the site the config is applied to
         ts_id: Time series identifier
+        annotations: A dictionary of annotation names and values
         configs: A list of the configuration details.  Usually there is only one, but there can be multiple
                  if different methods used at different points in the time series. Use start and end date to
                  determine which method is used at a given point in time.

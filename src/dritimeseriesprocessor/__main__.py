@@ -2,28 +2,19 @@ import logging
 import sys
 
 import boto3
-import polars as pl
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.flagging.flagger import (
-    add_initial_core_flags,
-    update_infill_core_flags,
-    update_preprocess_core_flags,
-    update_quality_control_core_flags,
-)
-from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
-from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
-from dritimeseriesprocessor.s3_crud import data_manager
+from dritimeseriesprocessor.processor import load_data_for_group, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import (
     extract_dependent_timeseries_defs,
     extract_unique_timeseries_defs,
     group_by_date_site_id,
+    group_timeseries_to_process,
 )
 from metadata_manager.models.common import (
     build_column_query_parameter,
@@ -41,6 +32,13 @@ setup_logging()
 # Setup metrics
 # -------------
 metrics.setup_metrics()
+
+# Setup s3
+# --------
+if app_config.environment == "local":
+    s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
+else:
+    s3_client = boto3.client("s3")
 
 
 # Parse and validate arguments
@@ -83,14 +81,14 @@ start_date, end_date = parser.build_date_range(args.period, args.end_date, app_c
 # Extract timeseries IDs to build from user arguments
 # Validate and load API response metadata for each timeseries ID
 # Transform response into required structure
-timeseries_ids_to_process = load_datasets(
+user_timeseries_ids_metadata = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
     + column_query_parameter
     + processing_query_parameter
     + view_query_parameter
 )
-timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_process)
+user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_ids_metadata)
 
 
 # Step 2
@@ -100,8 +98,8 @@ timeseries_ids_to_process = extract_timeseries_id_metadata(timeseries_ids_to_pro
 # First extract all unique timeseries defs from the IDS to be processed
 # Then extract all the dependencies associated with each timeseries definition and
 # transform into required structure
-unique_timeseries_defs = extract_unique_timeseries_defs(timeseries_ids_to_process)
-timeseries_defs_for_processing = load_nested_timeseries_derivations(unique_timeseries_defs)
+unique_timeseries_defs = extract_unique_timeseries_defs(user_timeseries_ids_metadata)
+timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
 
 
 # Step 3
@@ -109,160 +107,93 @@ timeseries_defs_for_processing = load_nested_timeseries_derivations(unique_times
 # First extract all dependent timeseries definitions
 # Then call the dataset endpoint with site and ts def to get the metadata
 # Validate and transform response
-dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_for_processing)
+dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_derivation_map)
 timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
 
 # TODO remove the limit parameter once FW-692 has been implemented
-dependent_timeseries_ids_to_process = load_datasets(
+dependent_timeseries_ids = load_datasets(
     site_query_parameter + timeseries_def_parameter + view_query_parameter + [("_limit", 50)]
 )
-
-dependent_timeseries_ids_to_process = extract_timeseries_id_metadata(dependent_timeseries_ids_to_process)
+dependent_timeseries_ids = extract_timeseries_id_metadata(dependent_timeseries_ids)
 
 
 # Step 4
 # Combine all the metadata into a single object for processing
 # TODO (maybe) add method_type and inputs
-timeseries_ids_to_process = timeseries_ids_to_process | dependent_timeseries_ids_to_process
+all_timeseries_ids_metadata = user_timeseries_ids_metadata | dependent_timeseries_ids
 
 
-# Start processing
+# Process raw data
 # ----------------
-# TODO Input data to be processed by dataset (to discuss)
-# Get all the required data and merge into dataframes
-# Process altogether and then separate back into timeseries required for each timeseries ID
+# Group TS IDs into groups that can be processed together. Currently this is by site, resolution and periodicity
+grouped_timeseries_to_process = group_timeseries_to_process(all_timeseries_ids_metadata, timeseries_defs_derivation_map)
 
-# Currently just processing each raw input one by one
-for ts_id, metadata in timeseries_ids_to_process.items():
-    if metadata["processing_level"] == "raw":
-        DATASET = metadata["sourceDataset"]
-        COLUMNS = metadata["sourceColumnName"]
-        BUCKET = metadata["sourceBucket"]
-        SITES = metadata["sourceSite"]
+# TODO - We want to be able to process differing resolutions/periodicities and sites together: FW-687
 
-        logger.info(
-            f"Processing {DATASET} with columns {COLUMNS} for sites {SITES} between {start_date} and {end_date}"
-        )
+for ts_group_id, ts_group in grouped_timeseries_to_process.items():
+    logger.info(f"Processing group {ts_group_id} with {len(ts_group['timeseries_ids'])} timeseries IDs")
 
+    # For each timeseries ID in the group to process, extract the metadata required to load the data from S3
+    ts_group_metadata = {ts_id: all_timeseries_ids_metadata[ts_id] for ts_id in ts_group["timeseries_ids"]}
+
+    data = load_data_for_group(ts_group_metadata, ts_group["site_id"], start_date, end_date)
+
+    if data is not None:
         try:
-            # Setup s3
-            # --------
-            if app_config.environment == "local":
-                s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
-            else:
-                s3_client = boto3.client("s3")
-
-            # Ingress
-            # -------
-            data = data_manager.query_by_date_range(
-                bucket_name=BUCKET,
-                prefix=f"cosmos/dataset={DATASET}",
-                start_date=start_date,
-                end_date=end_date,
-                site_ids=[SITES],
-                columns=[COLUMNS],
+            ts = TimeSeries(
+                data,
+                "time",
+                ts_group["resolution"],
+                ts_group["periodicity"],
+                supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
             )
 
-            if data.shape[0] == 0:
-                metrics.record_no_data_run()
-                logger.info("No data returned from the query.")
-
-                # Push no data run metric
-                metrics.export_metrics_to_pushgateway(
-                    url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-                )
-
-            else:
-                logger.info(f"Retrieved data from s3: {data.shape}")
-
-                # Dummy some data that will force some qc checks to run
-                data = data.with_columns(
-                    [
-                        pl.Series([12 for i in range(len(data))]).alias("BATTV"),
-                        pl.Series(i * 2 for i in range(len(data))).alias("PRECIP"),
-                        pl.Series(i for i in range(len(data))).alias("SCANS"),
-                    ]
-                )
-
-                # Add a missing value
-                # data[-2, "TA"] = None
-
-                logger.info(f"Added dummy data, shape: {data.shape}")
-
-                # Initialise TimeSeries object
-                # ---------------------------
-                resolution = metadata["resolution"]
-                periodicity = metadata["periodicity"]
-                ts = TimeSeries(
-                    data, "time", resolution, periodicity, supplementary_columns=["SITE_ID", "BATTV", "SCANS"]
-                )
-
-                # Initialise core flags
-                ts = add_initial_core_flags(ts)
-
-                # Preprocessing
-                # ---------------
-                ts = run_preprocess(ts)
-                ts = update_preprocess_core_flags(ts)
-
-                logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
-
-                # Quality control
-                # ---------------
-                ts = run_quality_control(ts, ts_id, metadata, remove=True)
-                ts = update_quality_control_core_flags(ts)
-
-                # Calculate the number of flags added
-                qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
-                flags_count = len(qcflag_columns)
-
-                logger.info(f"Number of QC flag columns: {flags_count}")
-                metrics.increment_flags(flags_count)
-
-                # show first 100 rows to show how qc flags have been applied
-                with pl.Config(tbl_rows=100):
-                    logger.info(ts.df.limit(100))
-
-                # Infilling
-                # ---------
-                ts = run_infilling(ts, ts_id, metadata)
-                ts = update_infill_core_flags(ts)
-
-                # show first 100 rows to show how infill flags have been applied
-                with pl.Config(tbl_rows=100):
-                    logger.info(ts.df.limit(100))
-
-                # Writing
-                # -------
-                # TODO How do we write out when processing variables rather than whole dataset?
-                writer = S3Writer(s3_client)
-
-                # TODO (edits) Group data by date and site
-                # Currently only need to group by date but this will all change anyway
-                # Data to be split for individual timeseries ID after being grouped.
-                dataframes = group_by_date_site_id(ts.df)
-
-                writer.write(
-                    bucket_name=app_config.qc_bucket,
-                    dataset=DATASET,
-                    data=dataframes,
-                )
-
-                metrics.record_successful_run()
-                logger.info("Processing completed successfully")
-
-                # Push all metrics at the end of successful processing
-                metrics.export_metrics_to_pushgateway(
-                    url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-                )
-
+            ts = process_timeseries(ts, ts_group_metadata)
         except Exception as e:
             metrics.record_failed_run()
             logger.exception(f"An error occurred during processing: {str(e)}")
-
-            # Push all metrics even if an exception occurs
             metrics.export_metrics_to_pushgateway(
                 url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
             )
-
             raise
+
+# TODO Agregations and derivations here
+
+
+# Writing
+# -------
+# TODO We need to establish dataset names for the processed timeseries's
+# after they are processed. Therefore for now, removing the writing of data
+# writer = S3Writer(s3_client)
+
+
+# TODO How do we write out when processing variables rather than whole dataset?
+def write_timeseries(ts: TimeSeries, bucket_name: str, dataset: str, writer: S3Writer) -> None:
+    """Write the timeseries data to S3.
+
+    Args:
+        ts: The timeseries object to write.
+        bucket_name: The name of the S3 bucket.
+        dataset: The name of the dataset.
+        writer: The S3 writer object.
+
+    """
+    # TODO (edits) Group data by date and site
+    # Currently only need to group by date but this will all change anyway
+    # Data to be split for individual timeseries ID after being grouped.
+    dataframes = group_by_date_site_id(ts.df)
+
+    writer.write(
+        bucket_name=bucket_name,
+        dataset=dataset,
+        data=dataframes,
+    )
+
+
+metrics.record_successful_run()
+logger.info("Processing completed successfully")
+
+# Push all metrics at the end of successful processing
+metrics.export_metrics_to_pushgateway(
+    url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+)
