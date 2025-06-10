@@ -3,10 +3,8 @@ from datetime import datetime
 from typing import Dict, List, Union
 
 import polars as pl
-from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import (
-    add_initial_core_flags,
     update_infill_core_flags,
     update_preprocess_core_flags,
     update_quality_control_core_flags,
@@ -16,6 +14,7 @@ from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
+from dritimeseriesprocessor.utils import TimeSeriesGroupMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -145,20 +144,16 @@ def add_processing_dependencies(bucket_data: pl.DataFrame) -> pl.DataFrame:
     return bucket_data
 
 
-def process_timeseries(ts: TimeSeries, ts_metadata: Dict[str, Dict[str, str]]) -> TimeSeries:
+def process_timeseries(timeseries_groups: Dict[str, TimeSeriesGroupMetadata]) -> Dict[str, TimeSeriesGroupMetadata]:
     """
     Process the timeseries data.
 
     Args:
-        ts: The timeseries object to process.
-        ts_metadata: Metadata for timeseries IDs to process.
+        timeseries_groups: Dictionary containing timeseries groups with metadata and data.
 
     Returns:
-        TimeSeries: The processed timeseries object.
+        timeseries_groups: Dictionary containing processed timeseries objects.
     """
-    # Initalise core flag system
-    ts = add_initial_core_flags(ts)
-
     # Correction
     ts = run_preprocess(ts)
     ts = update_preprocess_core_flags(ts)

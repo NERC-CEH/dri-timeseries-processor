@@ -10,11 +10,12 @@ from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data_for_group, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
+from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.utils import (
     extract_dependent_timeseries_defs,
     extract_unique_timeseries_defs,
     group_by_date_site_id,
-    group_timeseries_to_process,
+    group_timeseries,
 )
 from metadata_manager.models.common import (
     build_column_query_parameter,
@@ -122,40 +123,60 @@ dependent_timeseries_ids = extract_timeseries_id_metadata(dependent_timeseries_i
 # TODO (maybe) add method_type and inputs
 all_timeseries_ids_metadata = user_timeseries_ids_metadata | dependent_timeseries_ids
 
+# We want to add the data location to this dictionary
 
-# Process raw data
-# ----------------
-# Group TS IDs into groups that can be processed together. Currently this is by site, resolution and periodicity
-grouped_timeseries_to_process = group_timeseries_to_process(all_timeseries_ids_metadata, timeseries_defs_derivation_map)
+# Group timeseries IDs by how they will be contained in TimeSeries objects, by site, resolution,
+# periodicity and process level
+ts_metadata_groups = group_timeseries(all_timeseries_ids_metadata)
 
-# TODO - We want to be able to process differing resolutions/periodicities and sites together: FW-687
+# Load raw data
+# -------------
+ts_objs = {}
+for ts_metadata_group in ts_metadata_groups.values():
+    if ts_metadata_group.process_level != "raw":
+        continue
 
-for ts_group_id, ts_group in grouped_timeseries_to_process.items():
-    logger.info(f"Processing group {ts_group_id} with {len(ts_group['timeseries_ids'])} timeseries IDs")
+    # Get metadata for the timeseries IDs in this group that must be loaded from S3
+    ts_group_to_load_metadata = {}
+    for ts_id, metadata in ts_metadata_group.timeseries_ids_metadata.items():
+        # Only add for timeseries ids with no derivation method (these are the ones to load).
+        if timeseries_defs_derivation_map[metadata["ts_def"]].get("method_type") is None:
+            ts_group_to_load_metadata[ts_id] = metadata
 
-    # For each timeseries ID in the group to process, extract the metadata required to load the data from S3
-    ts_group_metadata = {ts_id: all_timeseries_ids_metadata[ts_id] for ts_id in ts_group["timeseries_ids"]}
-
-    data = load_data_for_group(ts_group_metadata, ts_group["site_id"], start_date, end_date)
+    logger.info(f"Loading data for group {ts_metadata_group.id} with {len(ts_group_to_load_metadata)} timeseries IDs")
+    data = load_data_for_group(ts_group_to_load_metadata, ts_metadata_group.site_id, start_date, end_date)
 
     if data is not None:
-        try:
-            ts = TimeSeries(
-                data,
-                "time",
-                ts_group["resolution"],
-                ts_group["periodicity"],
-                supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
-            )
+        ts = TimeSeries(
+            data,
+            "time",
+            ts_metadata_group.resolution,
+            ts_metadata_group.periodicity,
+            supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
+            metadata={
+                "site_id": ts_metadata_group.site_id,
+                "process_level": ts_metadata_group.process_level,
+                "group_id": ts_metadata_group.id,
+            },
+            column_metadata=ts_metadata_group.column_metadata(keys=["ts_id", "ts_def"]),
+        )
+        ts = add_initial_core_flags(ts)
 
-            ts = process_timeseries(ts, ts_group_metadata)
-        except Exception as e:
-            metrics.record_failed_run()
-            logger.exception(f"An error occurred during processing: {str(e)}")
-            metrics.export_metrics_to_pushgateway(
-                url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-            )
-            raise
+        ts_objs[ts_metadata_group.id] = ts
+    else:
+        logger.warning(f"No data found for group {ts_metadata_group.id}")
+
+# Process data
+# ------------
+try:
+    timeseries_groups = process_timeseries(ts_objs)
+except Exception as e:
+    metrics.record_failed_run()
+    logger.exception(f"An error occurred during processing: {str(e)}")
+    metrics.export_metrics_to_pushgateway(
+        url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+    )
+    raise
 
 # TODO Agregations and derivations here
 
