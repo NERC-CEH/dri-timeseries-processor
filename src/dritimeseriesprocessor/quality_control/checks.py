@@ -191,3 +191,64 @@ def heat_flux_plate_check(
 
     # TODO: Fill in this placeholder
     return ts
+
+
+def pluvio_diagnostic_check(
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, gt: float
+) -> TimeSeries:
+    """Check the pluvio diagnostic values are no larger than given value.
+
+    Args:
+        ts: The input TimeSeries containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        gt: The maximum value for the diagnostic check.
+
+    Returns:
+        The TimeSeries with the quality control flag applied.
+    """
+    ts = column_threshold_check(ts, column, flag_column, gt, ">", flag_name)
+
+    return ts
+
+
+def snow_distance_signal_check(
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float
+) -> TimeSeries:
+    """Check the snow distance signal values are no smaller than given value.
+
+    Args:
+        ts: The input TimeSeries containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        lt: The minimum value for the snow distance signal.
+
+    Returns:
+        The TimeSeries with the quality control flag applied.
+    """
+    ts = column_threshold_check(ts, column, flag_column, lt, "<", flag_name)
+
+    return ts
+
+
+def tdt_soil_temp_check(
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float
+) -> TimeSeries:
+    """Check the TDT soil temperature values are no smaller than given value.
+
+    Args:
+        ts: The input TimeSeries containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        lt: The minimum temp for the soil.
+
+    Returns:
+         The TimeSeries with the quality control flag applied.
+    """
+    # TODO: Use alternative TDT if soil temperature is not available or incorrect.
+    ts = column_threshold_check(ts, column, flag_column, lt, "<", flag_name)
+
+    return ts
