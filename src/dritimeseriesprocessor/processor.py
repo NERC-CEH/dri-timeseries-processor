@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Union
 
 import polars as pl
+from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import (
     update_infill_core_flags,
@@ -14,7 +15,6 @@ from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
-from dritimeseriesprocessor.utils import TimeSeriesGroupMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -144,15 +144,16 @@ def add_processing_dependencies(bucket_data: pl.DataFrame) -> pl.DataFrame:
     return bucket_data
 
 
-def process_timeseries(timeseries_groups: Dict[str, TimeSeriesGroupMetadata]) -> Dict[str, TimeSeriesGroupMetadata]:
+def process_timeseries(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str, Dict[str, str]]) -> Dict[str, TimeSeries]:
     """
     Process the timeseries data.
 
     Args:
-        timeseries_groups: Dictionary containing timeseries groups with metadata and data.
+        data_groups: Dictionary containing timeseries data by group id.
+        ts_ids_metadata: Metadata about the timeseries ids
 
     Returns:
-        timeseries_groups: Dictionary containing processed timeseries objects.
+        data_groups: Dictionary containing processed timeseries objects.
     """
     # Correction
     ts = run_preprocess(ts)

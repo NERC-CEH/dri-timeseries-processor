@@ -190,75 +190,19 @@ def extract_dependent_timeseries_defs(
     return list({items for items in timeseries_defs_derivation_map.values() for items in items["inputs"]})
 
 
-class TimeSeriesGroupMetadata(object):
-    """Class to hold the metadata timeseries IDs that will be grouped together into a TimseSeries object"""
-    def __init__(self, id: str, site_id: str, resolution: str, periodicity: str, process_level: str,
-                 timeseries_ids_metadata: Dict[str, Dict[str, str]]={}):
-        """
-        Args:
-            id: The id of the group
-            site_id: The site ID for the timeseries group.
-            resolution: The resolution of the timeseries
-            periodicity: The periodicity of the timeseries
-            process_level: The processing level of the timeseries
-            timeseries_ids_metadata: Metadata for the timeseries IDs in the group
-        """
-        self.id = id
-        self.site_id = site_id
-        self.resolution = resolution
-        self.periodicity = periodicity
-        self.process_level = process_level
-        self.timeseries_ids_metadata = timeseries_ids_metadata
-
-    def column_metadata(self, keys=None) -> Dict[str, Dict[str, str]]:
-        """Return the metadata for the timeseries IDs in the group, keyed by column name.
-        This method is used to return a column metadata dictionary compatible with the
-        TimeSeries constructor.
-
-        Args:
-            keys: Optional list of keys to filter the metadata by. If None, all metadata is returned.
-
-        Returns:
-            A dictionary of column names and their metadata.
-        """
-        if keys is None:
-            keys = self.timeseries_ids_metadata.keys()
-
-        col_metadata = {}
-        for ts_id, metadata in self.timeseries_ids_metadata.items():
-            col_name = metadata["sourceColumnName"]
-            if col_name in col_metadata:
-                raise ValueError(f"Duplicate column name found: {col_name}")
-
-            col_metadata[col_name] = {}
-            if "ts_id" in keys:
-                col_metadata[col_name] = {"ts_id": ts_id}
-
-            for key in keys:
-                if key not in ("ts_id", "sourceColumnName"):
-                    if key in metadata:
-                        col_metadata[col_name][key] = metadata[key]
-                    else:
-                        logger.warning(f"Key {key} not found in metadata for timeseries ID {ts_id}")
-
-        return col_metadata
-
-
-def group_timeseries(
-    timeseries_ids_metadata: Dict[str, Dict[str, str]],
-) -> Dict[str, TimeSeriesGroupMetadata]:
+def group_timeseries(ts_ids_metadata: Dict[str, Dict[str, str]]) -> Dict[str, Union[str, Dict[str, str]]]:
     """Group the timeseries ids by site, resolution, periodicity and process level, i.e. IDs that will be contained
     in the same TimeSeries object. Create a unique key for each group and add it to the metadata.
 
     Args:
-        timeseries_ids_metadata: metadata about the timeseries ids to process
+        ts_ids_metadata: Metadata about the timeseries ids
 
     Returns:
         A dictionary of timeseries ids for each set of site_id, resolution and periodicity.
     """
     timeseries_groups = {}
 
-    for timeseries_id, metadata in timeseries_ids_metadata.items():
+    for timeseries_id, metadata in ts_ids_metadata.items():
         site_id = metadata["sourceSite"]
         resolution = metadata["resolution"]
         periodicity = metadata["periodicity"]
@@ -268,19 +212,19 @@ def group_timeseries(
         group_id = f"{site_id}_{resolution}_{periodicity}_{process_level}"
 
         # Add this key to the metadata
-        metadata["ts_group_id"] = group_id
+        metadata["group_id"] = group_id
 
         if group_id not in timeseries_groups:
-            timeseries_groups[group_id] = TimeSeriesGroupMetadata(
-                id = group_id,
-                site_id = site_id,
-                resolution = resolution,
-                periodicity = periodicity,
-                process_level = process_level,
-                timeseries_ids_metadata = {}
-            )
+            timeseries_groups[group_id] = {
+                "id": group_id,
+                "site_id": site_id,
+                "resolution": resolution,
+                "periodicity": periodicity,
+                "process_level": process_level,
+                "timeseries_ids_metadata": {}
+            }
 
         # Add the timeseries id metadata to the group
-        timeseries_groups[group_id].timeseries_ids_metadata[timeseries_id] = metadata
+        timeseries_groups[group_id]["timeseries_ids_metadata"][timeseries_id] = metadata
 
     return timeseries_groups

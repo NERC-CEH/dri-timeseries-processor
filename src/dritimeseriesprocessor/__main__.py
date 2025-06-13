@@ -82,14 +82,14 @@ start_date, end_date = parser.build_date_range(args.period, args.end_date, app_c
 # Extract timeseries IDs to build from user arguments
 # Validate and load API response metadata for each timeseries ID
 # Transform response into required structure
-user_timeseries_ids_metadata = load_datasets(
+user_timeseries_ids_response = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
     + column_query_parameter
     + processing_query_parameter
     + view_query_parameter
 )
-user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_ids_metadata)
+user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_ids_response)
 
 
 # Step 2
@@ -112,64 +112,64 @@ dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_de
 timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
 
 # TODO remove the limit parameter once FW-692 has been implemented
-dependent_timeseries_ids = load_datasets(
+dependent_timeseries_ids_response = load_datasets(
     site_query_parameter + timeseries_def_parameter + view_query_parameter + [("_limit", 50)]
 )
-dependent_timeseries_ids = extract_timeseries_id_metadata(dependent_timeseries_ids)
+dependent_timeseries_ids_metadata = extract_timeseries_id_metadata(dependent_timeseries_ids_response)
 
 
 # Step 4
 # Combine all the metadata into a single object for processing
 # TODO (maybe) add method_type and inputs
-all_timeseries_ids_metadata = user_timeseries_ids_metadata | dependent_timeseries_ids
+ts_ids_metadata = user_timeseries_ids_metadata | dependent_timeseries_ids_metadata
 
 # We want to add the data location to this dictionary
 
 # Group timeseries IDs by how they will be contained in TimeSeries objects, by site, resolution,
-# periodicity and process level
-ts_metadata_groups = group_timeseries(all_timeseries_ids_metadata)
+# periodicity and process level.
+# Note, this function also adds group IDs into ts_ids_metadata
+metadata_groups = group_timeseries(ts_ids_metadata)
 
 # Load raw data
 # -------------
-ts_objs = {}
-for ts_metadata_group in ts_metadata_groups.values():
-    if ts_metadata_group.process_level != "raw":
+data_groups = {}
+for ts_metadata_group in metadata_groups.values():
+    if ts_metadata_group["process_level"] != "raw":
         continue
 
     # Get metadata for the timeseries IDs in this group that must be loaded from S3
     ts_group_to_load_metadata = {}
-    for ts_id, metadata in ts_metadata_group.timeseries_ids_metadata.items():
+    for ts_id, metadata in ts_metadata_group["timeseries_ids_metadata"].items():
         # Only add for timeseries ids with no derivation method (these are the ones to load).
         if timeseries_defs_derivation_map[metadata["ts_def"]].get("method_type") is None:
             ts_group_to_load_metadata[ts_id] = metadata
 
-    logger.info(f"Loading data for group {ts_metadata_group.id} with {len(ts_group_to_load_metadata)} timeseries IDs")
-    data = load_data_for_group(ts_group_to_load_metadata, ts_metadata_group.site_id, start_date, end_date)
+    logger.info(f"Loading data for group {ts_metadata_group["id"]} with {len(ts_group_to_load_metadata)} timeseries IDs")
+    data = load_data_for_group(ts_group_to_load_metadata, ts_metadata_group["site_id"], start_date, end_date)
 
     if data is not None:
         ts = TimeSeries(
             data,
             "time",
-            ts_metadata_group.resolution,
-            ts_metadata_group.periodicity,
+            ts_metadata_group['resolution'],
+            ts_metadata_group['periodicity'],
             supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
             metadata={
-                "site_id": ts_metadata_group.site_id,
-                "process_level": ts_metadata_group.process_level,
-                "group_id": ts_metadata_group.id,
+                "site_id": ts_metadata_group['site_id'],
+                "process_level": ts_metadata_group['process_level'],
+                "group_id": ts_metadata_group['id'],
             },
-            column_metadata=ts_metadata_group.column_metadata(keys=["ts_id", "ts_def"]),
         )
         ts = add_initial_core_flags(ts)
 
-        ts_objs[ts_metadata_group.id] = ts
+        data_groups[ts_metadata_group['id']] = ts
     else:
-        logger.warning(f"No data found for group {ts_metadata_group.id}")
+        logger.warning(f"No data found for group {ts_metadata_group['id']}")
 
 # Process data
 # ------------
 try:
-    timeseries_groups = process_timeseries(ts_objs)
+    data_groups = process_timeseries(data_groups, ts_ids_metadata)
 except Exception as e:
     metrics.record_failed_run()
     logger.exception(f"An error occurred during processing: {str(e)}")
