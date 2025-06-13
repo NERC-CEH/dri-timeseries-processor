@@ -4,6 +4,7 @@ from typing import Dict
 
 from time_stream import TimeSeries
 
+from dritimeseriesprocessor.flagging.flagger import infill_flag_column_name, update_infill_core_flags
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -18,27 +19,14 @@ def get_infill_methods() -> Dict:
     return load_methods("infilling")
 
 
-def infill_flag_column_name(column: str) -> str:
-    """
-    Return column name of infill flag column for a given variable column.
-
-    Args:
-        column (str): The name of the original variable column.
-
-    Returns:
-        str: The name of the corresponding infill flag column, formatted as '{column}_INFILL_FLAG'.
-    """
-    return f"{column}_INFILL_FLAG"
-
-
-def run_infilling(ts: TimeSeries, metadata: Dict[str, Dict[str, str]]) -> TimeSeries:
+def run_infilling(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str, Dict[str, str]]) -> TimeSeries:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.
 
     Args:
-        ts: The input TimeSeries containing the data to be infilled.
-        metadata: The metadata for the TimeSeries IDs.
+        data_groups: Dictionary containing timeseries data by group id.
+        ts_ids_metadata: The metadata for the TimeSeries IDs.
 
     Returns:
         The TimeSeries with infilling and infill flags applied.
@@ -47,17 +35,35 @@ def run_infilling(ts: TimeSeries, metadata: Dict[str, Dict[str, str]]) -> TimeSe
 
     # Initialise infilling flag system within TimeSeries object
     infill_flags_dict = {method: method_config.method_id for method, method_config in infill_methods.items()}
-    if infill_flags_dict:
-        ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
-    else:
+    if not infill_flags_dict:
         logger.warning("No infill methods given in config.")
-        return ts
+        return data_groups
 
-    for ts_id, ts_metadata in metadata.items():
-        column = ts_metadata["sourceColumnName"]
+    for ts_id, ts_metadata in ts_ids_metadata.items():
+        group_id = ts_metadata["group_id"]
+        # Check there is data availble for this ts_id
+        ts = data_groups.get(group_id)
+        if ts is None:
+            continue
+
         infill_configs = load_config("infilling", ts_id)
         if not infill_configs:
             logger.info(f"No infilling config found for Time Series ID: {ts_id}")
+            continue
+
+        # Set up the flag system if it doesn't already exist
+        if INFILL_FLAG_SYS_NAME not in ts.flag_systems:
+            ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
+
+        column = ts_metadata["sourceColumnName"]
+        if not column:
+            # TODO: We should not be using the sourceColumnName here as we may be QC-ing a derived column. FPM-403
+            logger.warning(f"No source column name provided for TimeSeries ID: {ts_id}")
+            continue
+
+        # Check the target variable exists in the TimeSeries DataFrame
+        if column not in ts.data_columns:
+            logger.warning(f"Variable {column} not in DataFrame for TimeSeries ID: {ts_id}")
             continue
 
         # Order by priority
@@ -75,4 +81,8 @@ def run_infilling(ts: TimeSeries, metadata: Dict[str, Dict[str, str]]) -> TimeSe
                 logger.info(f"Infilling {column} with method: {method.name}. Constraints: {method.parameters}")
                 ts = infill_func(ts, column, infill_flag_col, method.name, **method.parameters)
 
-    return ts
+    for group_id, ts in data_groups.items():
+        data_groups[group_id] = update_infill_core_flags(ts)
+        logger.info(f"Ran infilling successfully for {group_id}. Shape: {ts.df.shape}")
+
+    return data_groups

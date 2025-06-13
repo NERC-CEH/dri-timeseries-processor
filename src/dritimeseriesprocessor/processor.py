@@ -5,11 +5,6 @@ from typing import Dict, List, Union
 import polars as pl
 from time_stream import TimeSeries
 
-from dritimeseriesprocessor.flagging.flagger import (
-    update_infill_core_flags,
-    update_preprocess_core_flags,
-    update_quality_control_core_flags,
-)
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
@@ -144,7 +139,9 @@ def add_processing_dependencies(bucket_data: pl.DataFrame) -> pl.DataFrame:
     return bucket_data
 
 
-def process_timeseries(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str, Dict[str, str]]) -> Dict[str, TimeSeries]:
+def process_timeseries(
+    data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str, Dict[str, str]]
+) -> Dict[str, TimeSeries]:
     """
     Process the timeseries data.
 
@@ -156,26 +153,12 @@ def process_timeseries(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict
         data_groups: Dictionary containing processed timeseries objects.
     """
     # Correction
-    ts = run_preprocess(ts)
-    ts = update_preprocess_core_flags(ts)
-    logger.info(f"Ran preprocessor successfully, shape: {ts.df.shape}")
+    data_groups = run_preprocess(data_groups)
 
     # Quality control
-    ts = run_quality_control(ts, ts_metadata, remove=True)
-    ts = update_quality_control_core_flags(ts)
-    qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
-    flags_count = len(qcflag_columns)
-    logger.info(f"Number of QC flag columns: {flags_count}")
-    metrics.increment_flags(flags_count)
-
-    with pl.Config(tbl_rows=100):
-        logger.info(ts.df.limit(100))
+    data_groups = run_quality_control(data_groups, ts_ids_metadata, remove=True)
 
     # Infilling
-    ts = run_infilling(ts, ts_metadata)
-    ts = update_infill_core_flags(ts)
+    data_groups = run_infilling(data_groups, ts_ids_metadata)
 
-    with pl.Config(tbl_rows=100):
-        logger.info(ts.df.limit(100))
-
-    return ts
+    return data_groups

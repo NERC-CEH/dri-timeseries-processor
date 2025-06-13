@@ -7,8 +7,6 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from time_stream import TimeSeries
-
 logger = logging.getLogger(__name__)
 
 
@@ -221,7 +219,7 @@ def group_timeseries(ts_ids_metadata: Dict[str, Dict[str, str]]) -> Dict[str, Un
                 "resolution": resolution,
                 "periodicity": periodicity,
                 "process_level": process_level,
-                "timeseries_ids_metadata": {}
+                "timeseries_ids_metadata": {},
             }
 
         # Add the timeseries id metadata to the group

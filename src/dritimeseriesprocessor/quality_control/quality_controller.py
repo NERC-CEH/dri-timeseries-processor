@@ -5,6 +5,7 @@ from typing import Dict
 import polars as pl
 from time_stream import TimeSeries
 
+from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
 from metadata_manager.models.service import load_config, load_methods
 
@@ -18,11 +19,6 @@ QC_FLAG_SYS_NAME = "qc_flags"
 def get_qc_methods() -> Dict:
     """Load the qc methods and cache the results."""
     return load_methods("quality_control")
-
-
-def qc_flag_column_name(column: str) -> str:
-    """Return column name of QC flag column for a given variable column."""
-    return f"{column}_QC_FLAG"
 
 
 def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataFrame:
@@ -42,15 +38,17 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 
 @metrics.track_qc_time()
-def run_quality_control(ts: TimeSeries, metadata: Dict[str, Dict[str, str]], remove: bool = False) -> TimeSeries:
+def run_quality_control(
+    data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str, Dict[str, str]], remove: bool = False
+) -> TimeSeries:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on
     the configuration specified in the qc_config module.
 
     Args:
-        ts: The input TimeSeries containing the data to be quality controlled.
-        metadata: The metadata for the TimeSeries IDs.
+        data_groups: Dictionary containing timeseries data by group id.
+        ts_ids_metadata: The metadata for the TimeSeries IDs.
         remove: Whether to remove any QC'd data.
 
     Returns:
@@ -60,18 +58,36 @@ def run_quality_control(ts: TimeSeries, metadata: Dict[str, Dict[str, str]], rem
 
     # Initialise quality control flag system within TimeSeries object
     qc_flags_dict = {method: method_config.method_id for method, method_config in qc_methods.items()}
-    if qc_flags_dict:
-        ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
-    else:
+    if not qc_flags_dict:
         logger.warning("No QC methods given in config.")
-        return ts
+        return data_groups
 
-    for ts_id, ts_metadata in metadata.items():
-        column = ts_metadata["sourceColumnName"]
+    for ts_id, ts_metadata in ts_ids_metadata.items():
+        group_id = ts_metadata["group_id"]
+        # Check there is data availble for this ts_id
+        ts = data_groups.get(group_id)
+        if ts is None:
+            continue
+
         qc_configs = load_config("quality_control", ts_id)
         if not qc_configs:
             logger.info(f"No quality control config found for Time Series ID: {ts_id}")
-            return ts
+            continue
+
+        # Set up the flag system if it doesn't already exist
+        if QC_FLAG_SYS_NAME not in ts.flag_systems:
+            ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
+
+        column = ts_metadata["sourceColumnName"]
+        if not column:
+            # TODO: We should not be using the sourceColumnName here as we may be QC-ing a derived column. FPM-403
+            logger.warning(f"No source column name provided for TimeSeries ID: {ts_id}")
+            continue
+
+        # Check the target variable exists in the TimeSeries DataFrame
+        if column not in ts.data_columns:
+            logger.warning(f"Variable {column} not in DataFrame for TimeSeries ID: {ts_id}")
+            continue
 
         for config in qc_configs:
             qc_flag_col = qc_flag_column_name(column)
@@ -91,4 +107,13 @@ def run_quality_control(ts: TimeSeries, metadata: Dict[str, Dict[str, str]], rem
                 if remove:
                     ts.df = remove_qcd_data(ts.df, column, qc_flag_col)
 
-    return ts
+    for group_id, ts in data_groups.items():
+        data_groups[group_id] = update_quality_control_core_flags(ts)
+        logger.info(f"Ran quality control successfully for {group_id}. Shape: {ts.df.shape}")
+
+        qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
+        flags_count = len(qcflag_columns)
+        logger.info(f"Number of QC flag columns: {flags_count}")
+        metrics.increment_flags(flags_count)
+
+    return data_groups

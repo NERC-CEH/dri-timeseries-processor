@@ -6,11 +6,11 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data_for_group, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.utils import (
     extract_dependent_timeseries_defs,
     extract_unique_timeseries_defs,
@@ -144,25 +144,27 @@ for ts_metadata_group in metadata_groups.values():
         if timeseries_defs_derivation_map[metadata["ts_def"]].get("method_type") is None:
             ts_group_to_load_metadata[ts_id] = metadata
 
-    logger.info(f"Loading data for group {ts_metadata_group["id"]} with {len(ts_group_to_load_metadata)} timeseries IDs")
+    logger.info(
+        f"Loading data for group {ts_metadata_group['id']} with {len(ts_group_to_load_metadata)} timeseries IDs"
+    )
     data = load_data_for_group(ts_group_to_load_metadata, ts_metadata_group["site_id"], start_date, end_date)
 
     if data is not None:
         ts = TimeSeries(
             data,
             "time",
-            ts_metadata_group['resolution'],
-            ts_metadata_group['periodicity'],
+            ts_metadata_group["resolution"],
+            ts_metadata_group["periodicity"],
             supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
             metadata={
-                "site_id": ts_metadata_group['site_id'],
-                "process_level": ts_metadata_group['process_level'],
-                "group_id": ts_metadata_group['id'],
+                "site_id": ts_metadata_group["site_id"],
+                "process_level": ts_metadata_group["process_level"],
+                "group_id": ts_metadata_group["id"],
             },
         )
         ts = add_initial_core_flags(ts)
 
-        data_groups[ts_metadata_group['id']] = ts
+        data_groups[ts_metadata_group["id"]] = ts
     else:
         logger.warning(f"No data found for group {ts_metadata_group['id']}")
 
