@@ -31,7 +31,8 @@ def battery_voltage_check(
     Returns:
         The TimeSeries with the quality control flag applied.
     """
-    # TODO: use dep_ts to get the "BATTV" column
+    # TODO: use dep_ts to get the "BATTV" column. To do this we need BATTV to be loaded
+    # as dependant ts_id in the metadata. FPM-359
     ts = column_threshold_check(ts, "BATTV", flag_column, lt, "<", flag_name)
 
     return ts
@@ -194,7 +195,7 @@ def heat_flux_plate_check(
 
 
 def pluvio_diagnostic_check(
-    ts: TimeSeries, column: str, flag_column: str, flag_name: str, gt: float
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, gt: float, dep_ts: str
 ) -> TimeSeries:
     """Check the pluvio diagnostic values are no larger than given value.
 
@@ -208,13 +209,15 @@ def pluvio_diagnostic_check(
     Returns:
         The TimeSeries with the quality control flag applied.
     """
-    ts = column_threshold_check(ts, column, flag_column, gt, ">", flag_name)
+    # TODO: use dep_ts to get the "PRECIP_DIAG" column. To do this we need PRECIP_DIAG to be loaded
+    # as dependant ts_id in the metadata. FPM-359
+    ts = column_threshold_check(ts, "PRECIP_DIAG", flag_column, gt, ">", flag_name)
 
     return ts
 
 
 def snow_distance_signal_check(
-    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float, dep_ts: str
 ) -> TimeSeries:
     """Check the snow distance signal values are no smaller than given value.
 
@@ -228,15 +231,18 @@ def snow_distance_signal_check(
     Returns:
         The TimeSeries with the quality control flag applied.
     """
-    ts = column_threshold_check(ts, column, flag_column, lt, "<", flag_name)
+    # TODO: use dep_ts to get the "SNOWD_SIGNALQUALITY" column. To do this we need SNOWD_SIGNALQUALITY to be loaded
+    # as dependant ts_id in the metadata. FPM-359
+    ts = column_threshold_check(ts, "SNOWD_SIGNALQUALITY", flag_column, lt, "<", flag_name)
 
     return ts
 
 
 def tdt_soil_temp_check(
-    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float, dep_ts: str
 ) -> TimeSeries:
-    """Check the TDT soil temperature values are no smaller than given value.
+    """Check the TDT soil temperature values are no smaller than given value and flag VWC readings
+    if so.
 
     Args:
         ts: The input TimeSeries containing the data to be tested.
@@ -249,6 +255,8 @@ def tdt_soil_temp_check(
          The TimeSeries with the quality control flag applied.
     """
     # TODO: Use alternative TDT if soil temperature is not available or incorrect.
-    ts = column_threshold_check(ts, column, flag_column, lt, "<", flag_name)
+    # TODO: use dep_ts to get the "TDT#_TSOIL" column. To do this we need TDT#_TSOIL to be loaded
+    # as dependant ts_id in the metadata. FPM-359
+    ts = column_threshold_check(ts, "TDT1_TSOIL", flag_column, lt, "<", flag_name)
 
     return ts
