@@ -1,6 +1,6 @@
 import logging
 from functools import lru_cache
-from typing import Dict
+from typing import Dict, Union
 
 import polars as pl
 from time_stream import TimeSeries
@@ -39,20 +39,19 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 @metrics.track_qc_time()
 def run_quality_control(
-    data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str, Dict[str, str]], remove: bool = False
-) -> TimeSeries:
+    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]], remove: bool = False
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on
     the configuration specified in the qc_config module.
 
     Args:
-        data_groups: Dictionary containing timeseries data by group id.
-        ts_ids_metadata: The metadata for the TimeSeries IDs.
-        remove: Whether to remove any QC'd data.
+        ts_ids: Metadata and data for timeseries ids
+        remove: Whether to remove any QC'd data
 
     Returns:
-        The TimeSeries with quality control flags applied.
+        ts_ids: Metadata and quality controlled data for timeseries ids
     """
     qc_methods = get_qc_methods()
 
@@ -60,14 +59,14 @@ def run_quality_control(
     qc_flags_dict = {method: method_config.method_id for method, method_config in qc_methods.items()}
     if not qc_flags_dict:
         logger.warning("No QC methods given in config.")
-        return data_groups
+        return ts_ids
 
-    for ts_id, ts_metadata in ts_ids_metadata.items():
-        group_id = ts_metadata["group_id"]
-        # Check there is data availble for this ts_id
-        ts = data_groups.get(group_id)
-        if ts is None:
+    for ts_id, ts_dict in ts_ids.items():
+        # Check data is available for this ts_id
+        if "data" not in ts_dict:
             continue
+
+        ts = ts_dict["data"]
 
         qc_configs = load_config("quality_control", ts_id)
         if not qc_configs:
@@ -78,16 +77,7 @@ def run_quality_control(
         if QC_FLAG_SYS_NAME not in ts.flag_systems:
             ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
 
-        column = ts_metadata["sourceColumnName"]
-        if not column:
-            # TODO: We should not be using the sourceColumnName here as we may be QC-ing a derived column. FPM-403
-            logger.warning(f"No source column name provided for TimeSeries ID: {ts_id}")
-            continue
-
-        # Check the target variable exists in the TimeSeries DataFrame
-        if column not in ts.data_columns:
-            logger.warning(f"Variable {column} not in DataFrame for TimeSeries ID: {ts_id}")
-            continue
+        column = list(ts.data_columns.keys())[0]
 
         for config in qc_configs:
             qc_flag_col = qc_flag_column_name(column)
@@ -99,21 +89,17 @@ def run_quality_control(
             #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
             for method in config.configs:
                 qc_func = qc_methods[method.name]
-                logger.info(
-                    f"Quality controlling {column} with method: {method.name}. Constraints: {method.parameters}"
-                )
+                logger.info(f"Quality controlling {ts_id}: {method.name}. Constraints: {method.parameters}")
                 ts = qc_func(ts, column, qc_flag_col, method.name, **method.parameters)
 
                 if remove:
                     ts.df = remove_qcd_data(ts.df, column, qc_flag_col)
 
-    for group_id, ts in data_groups.items():
-        data_groups[group_id] = update_quality_control_core_flags(ts)
-        logger.info(f"Ran quality control successfully for {group_id}. Shape: {ts.df.shape}")
+        ts = update_quality_control_core_flags(ts)
 
         qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
         flags_count = len(qcflag_columns)
         logger.info(f"Number of QC flag columns: {flags_count}")
         metrics.increment_flags(flags_count)
 
-    return data_groups
+    return ts_ids

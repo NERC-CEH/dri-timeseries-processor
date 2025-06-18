@@ -1,6 +1,6 @@
 import logging
 from functools import lru_cache
-from typing import Dict
+from typing import Dict, Union
 
 from time_stream import TimeSeries
 
@@ -19,17 +19,16 @@ def get_infill_methods() -> Dict:
     return load_methods("infilling")
 
 
-def run_infilling(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str, Dict[str, str]]) -> TimeSeries:
+def run_infilling(ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.
 
     Args:
-        data_groups: Dictionary containing timeseries data by group id.
-        ts_ids_metadata: The metadata for the TimeSeries IDs.
+        ts_ids: Metadata and data for timeseries ids
 
     Returns:
-        The TimeSeries with infilling and infill flags applied.
+        ts_ids: Metadata and infilled data for timeseries ids
     """
     infill_methods = get_infill_methods()
 
@@ -37,14 +36,14 @@ def run_infilling(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str,
     infill_flags_dict = {method: method_config.method_id for method, method_config in infill_methods.items()}
     if not infill_flags_dict:
         logger.warning("No infill methods given in config.")
-        return data_groups
+        return ts_ids
 
-    for ts_id, ts_metadata in ts_ids_metadata.items():
-        group_id = ts_metadata["group_id"]
-        # Check there is data availble for this ts_id
-        ts = data_groups.get(group_id)
-        if ts is None:
+    for ts_id, ts_dict in ts_ids.items():
+        # Check data is available for this ts_id
+        if "data" not in ts_dict:
             continue
+
+        ts = ts_dict["data"]
 
         infill_configs = load_config("infilling", ts_id)
         if not infill_configs:
@@ -55,16 +54,7 @@ def run_infilling(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str,
         if INFILL_FLAG_SYS_NAME not in ts.flag_systems:
             ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
 
-        column = ts_metadata["sourceColumnName"]
-        if not column:
-            # TODO: We should not be using the sourceColumnName here as we may be QC-ing a derived column. FPM-403
-            logger.warning(f"No source column name provided for TimeSeries ID: {ts_id}")
-            continue
-
-        # Check the target variable exists in the TimeSeries DataFrame
-        if column not in ts.data_columns:
-            logger.warning(f"Variable {column} not in DataFrame for TimeSeries ID: {ts_id}")
-            continue
+        column = list(ts.data_columns.keys())[0]
 
         # Order by priority
         sorted_infillers = sorted(infill_configs, key=lambda x: x.annotations["data-processing-configuration-priority"])
@@ -81,8 +71,6 @@ def run_infilling(data_groups: Dict[str, TimeSeries], ts_ids_metadata: Dict[str,
                 logger.info(f"Infilling {column} with method: {method.name}. Constraints: {method.parameters}")
                 ts = infill_func(ts, column, infill_flag_col, method.name, **method.parameters)
 
-    for group_id, ts in data_groups.items():
-        data_groups[group_id] = update_infill_core_flags(ts)
-        logger.info(f"Ran infilling successfully for {group_id}. Shape: {ts.df.shape}")
+        ts = update_infill_core_flags(ts)
 
-    return data_groups
+    return ts_ids
