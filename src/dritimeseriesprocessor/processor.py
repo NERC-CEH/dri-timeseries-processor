@@ -59,7 +59,11 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
         "time",
         ts_metadata["resolution"],
         ts_metadata["periodicity"],
-        metadata={"site_id": ts_metadata["sourceSite"], "processing_level": ts_metadata["processing_level"]},
+        metadata={
+            "site_id": ts_metadata["sourceSite"],
+            "column_name": ts_metadata["sourceColumnName"],
+            "processing_level": ts_metadata["processing_level"],
+        },
     )
 
 

@@ -77,10 +77,8 @@ def run_quality_control(
         if QC_FLAG_SYS_NAME not in ts.flag_systems:
             ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
 
-        column = list(ts.data_columns.keys())[0]
-
         for config in qc_configs:
-            qc_flag_col = qc_flag_column_name(column)
+            qc_flag_col = qc_flag_column_name(ts.column_name)
             if qc_flag_col not in ts.flag_columns:
                 ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
@@ -90,10 +88,11 @@ def run_quality_control(
             for method in config.configs:
                 qc_func = qc_methods[method.name]
                 logger.info(f"Quality controlling {ts_id}: {method.name}. Constraints: {method.parameters}")
-                ts = qc_func(ts, column, qc_flag_col, method.name, **method.parameters)
+                ts_ids = qc_func(ts_ids, ts_id, qc_flag_col, method.name, **method.parameters)
 
                 if remove:
-                    ts.df = remove_qcd_data(ts.df, column, qc_flag_col)
+                    ts.df = remove_qcd_data(ts.df, ts.column_name, qc_flag_col)
+                    ts_ids[ts_id]["data"] = ts
 
         ts = update_quality_control_core_flags(ts)
 

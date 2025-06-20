@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def column_threshold_check(
     ts: TimeSeries,
-    check_column: str,
+    check_ts: TimeSeries,
     flag_column: str,
     threshold: float,
     operator: str,
@@ -23,9 +23,9 @@ def column_threshold_check(
     this check are flagged
 
     Args:
-        ts: TimeSeries object containing the data to be checked.
-        check_column: The column of data that is being checked against the threshold
-        flag_column: The column to which flag value should be added
+        ts: TimeSeries object containing the data to be flagged.
+        check_ts: TimeSeries object that is being checked against the threshold
+        flag_column: The column in ts to which flag value should be added
         threshold: Threshold value
         operator: What comparison to make
         flag_id: The integer ID or the flag name, of the quality control flag that should be applied to data that
@@ -38,16 +38,13 @@ def column_threshold_check(
     """
 
     operator_map = {
-        ">": pl.col(check_column).gt(threshold),
-        ">=": pl.col(check_column).ge(threshold),
-        "<": pl.col(check_column).lt(threshold),
-        "<=": pl.col(check_column).le(threshold),
-        "==": pl.col(check_column).eq(threshold),
-        "!=": pl.col(check_column).ne(threshold),
+        ">": pl.col(check_ts.column_name).gt(threshold),
+        ">=": pl.col(check_ts.column_name).ge(threshold),
+        "<": pl.col(check_ts.column_name).lt(threshold),
+        "<=": pl.col(check_ts.column_name).le(threshold),
+        "==": pl.col(check_ts.column_name).eq(threshold),
+        "!=": pl.col(check_ts.column_name).ne(threshold),
     }
-
-    if check_column not in ts.columns:
-        raise UserWarning(f"Can not run column threshold check. No {check_column} data provided")
 
     if flag_column not in ts.columns:
         raise UserWarning(f"Can not run column threshold check. No {flag_column} flag column in dataframe")
@@ -58,10 +55,10 @@ def column_threshold_check(
     # Get the operator expression
     operator_expr = operator_map[operator]
     if flag_na:
-        operator_expr = operator_expr | pl.col(check_column).is_null()
+        operator_expr = operator_expr | pl.col(check_ts.column_name).is_null()
 
     # Apply the flags based on comparing requested column to the threshold
-    ts.add_flag(flag_column, flag_id, operator_expr)
+    ts.add_flag(flag_column, flag_id, check_ts.df.select(operator_expr))
 
     return ts
 

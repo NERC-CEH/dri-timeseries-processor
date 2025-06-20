@@ -92,6 +92,24 @@ user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_id
 
 
 # Step 2
+# Get processing dependancies for the timeseries IDs to be processed
+# TODO: Determine these by looking at processing config dependancies in metadata
+column_query_parameter = build_column_query_parameter(["BATTV", "SCANS"])
+processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/raw")]
+processing_dep_timeseries_ids_response = load_datasets(
+    site_query_parameter
+    + periodicity_query_parameter
+    + column_query_parameter
+    + processing_query_parameter
+    + view_query_parameter
+)
+processing_dep_timeseries_ids_metadata = extract_timeseries_id_metadata(processing_dep_timeseries_ids_response)
+
+# Combine user and processing dependancies metadata
+user_timeseries_ids_metadata = user_timeseries_ids_metadata | processing_dep_timeseries_ids_metadata
+
+
+# Step 3
 # Get derivation metadata for the timeseries IDs to be built
 # Every timeseries ID will be dependent on another (raw or processed)
 # Derivation metadata is held with the timeseries definition rather than the ID
@@ -102,7 +120,7 @@ unique_timeseries_defs = extract_unique_timeseries_defs(user_timeseries_ids_meta
 timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
 
 
-# Step 3
+# Step 4
 # Get timeseries ID metadata for all dependencies
 # First extract all dependent timeseries definitions
 # Then call the dataset endpoint with site and ts def to get the metadata
@@ -117,7 +135,7 @@ dependent_timeseries_ids_response = load_datasets(
 dependent_timeseries_ids_metadata = extract_timeseries_id_metadata(dependent_timeseries_ids_response)
 
 
-# Step 4
+# Step 5
 # Combine all the metadata into a single object for processing
 # TODO (maybe) add method_type and inputs
 ts_ids = user_timeseries_ids_metadata | dependent_timeseries_ids_metadata
