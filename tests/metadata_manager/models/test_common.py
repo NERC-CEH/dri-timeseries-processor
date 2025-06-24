@@ -9,7 +9,9 @@ from metadata_manager.models.common import (
     build_site_query_parameter,
     build_periodicity_query_parameter,
     build_column_query_parameter,
-    build_timeseries_def_query_parameter
+    build_timeseries_def_query_parameter,
+    build_view_query_parameter,
+    build_processing_query_parameter
 )
 
 class TestUriIdExtractRegex(TestCase):
@@ -187,5 +189,29 @@ class TestBuildTimeseriesDefQueryParameter(TestCase):
         expected = [('type', 'ts_def_a'), ('type', 'ts_def_b')]
         
         result = build_timeseries_def_query_parameter(timeseries_defs)
+
+        assert result == expected
+
+
+class TestBuildProcessingQueryParameter(TestCase):
+    """Tests the build_processing_query_parameter."""
+
+    def test_processing_level(self) -> None:
+        """Test string built with a processing level"""
+        expected = [("type.processingLevel", f"http://fdri.ceh.ac.uk/ref/common/processing-level/raw")]
+        
+        result = build_processing_query_parameter(level="raw")
+
+        assert result == expected
+
+
+class TestBuildViewQueryParameter(TestCase):
+    """Tests the build_view_query_parameter."""
+
+    def test_processing_level(self) -> None:
+        """Test string built with a view"""
+        expected = [("_view", "timeseries")]
+        
+        result = build_view_query_parameter(view="timeseries")
 
         assert result == expected
