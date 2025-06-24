@@ -127,7 +127,7 @@ def build_view_query_parameter(view: str) -> List[Tuple | None]:
         view: The response view
 
     Returns:
-        A list of tuples with query parameter string and the processing level.
+        A list of tuples with query parameter string and the view.
     """
     return [("_view", f"{view}")]
 
@@ -140,8 +140,8 @@ def get_interval_dates(interval: Optional[Dict[str, Union[str, datetime]]]) -> T
 
     Args:
         interval: A dictionary containing at minimum a 'startDate' key with a datetime value,
-                 and optionally an 'endDate' key with a datetime value. If None, a default
-                 start date is used.
+                and optionally an 'endDate' key with a datetime value. If None, a default
+                start date is used.
 
     Returns:
         A tuple containing:
