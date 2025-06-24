@@ -31,7 +31,6 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
         f"Bucket:{ts_metadata['sourceBucket']}."
         f"Column:{ts_metadata['sourceColumnName']} "
         f"Site:{ts_metadata['sourceSite']}."
-        ""
         f"Dates:{start_date} to {end_date}"
     )
     bucket_data = data_manager.query_by_date_range(
@@ -43,15 +42,15 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
         columns=[ts_metadata["sourceColumnName"]],
     )
 
+    if bucket_data is None:
+        return None
+
     if bucket_data.shape[0] == 0:
         metrics.record_no_data_run()
         logger.info("No data returned from the query.")
         metrics.export_metrics_to_pushgateway(
             url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
         )
-        return None
-
-    if bucket_data is None:
         return None
 
     return TimeSeries(

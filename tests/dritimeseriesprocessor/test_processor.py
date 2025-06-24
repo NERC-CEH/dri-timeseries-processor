@@ -6,9 +6,7 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import (
-    load_data_for_group,
-    prepare_data_to_load,
-    merge_data,
+    load_data,
     process_timeseries,
 )
 
@@ -20,7 +18,6 @@ metrics.setup_metrics()
 def mock_query_by_date_range(bucket_name, prefix, start_date, end_date, site_ids, columns):
     # Mocking the query to return a DataFrame with dummy data
     data = {
-        "SITE_ID": [site_ids[0]] * 3,
         "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
     }
     for column in columns:
@@ -30,64 +27,52 @@ def mock_query_by_date_range(bucket_name, prefix, start_date, end_date, site_ids
     return pl.DataFrame(data)
 
 
+def mock_query_by_date_range_no_cols(bucket_name, prefix, start_date, end_date, site_ids, columns):
+    # Return an empty DataFrame when no valid columns are provided
+    return pl.DataFrame({})
+
+
 class TestLoadData(unittest.TestCase):
     def setUp(self):
-        self.all_timeseries_ids_metadata = {
-            "ts1": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
-            "ts2": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col2"},
-            "ts3": {"sourceDataset": "dataset1", "sourceBucket": "bucket2", "sourceColumnName": "col3"},
-            "ts4": {"sourceDataset": "dataset2", "sourceBucket": "bucket1", "sourceColumnName": "col4"},
-            "ts5": {"sourceDataset": "dataset2", "sourceBucket": "bucket2", "sourceColumnName": "col5"},
+        self.ts_metadata = {
+            "sourceDataset": "dataset1",
+            "sourceBucket": "bucket1",
+            "sourceColumnName": "col1",
+            "sourceSite": "site1",
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "processing_level": "raw",
         }
 
         self.start_date = datetime(2023, 1, 1)
         self.end_date = datetime(2023, 1, 31)
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    @patch("dritimeseriesprocessor.processor.add_processing_dependencies")
-    def test_load_data_for_single_dataset_and_bucket(self, mock_deps, mock_query):
-        """Test the load_data_for_group where ts_ids are from the same dataset and bucket.
+    def test_load_data_success(self, mock_query):
+        """Test the load_data with valid ts_id.
         """
-        ts_ids = ["ts1", "ts2"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        site_id = "site1"
-
         mock_query.side_effect = mock_query_by_date_range
-        mock_deps.side_effect = lambda x: x
 
-        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
-        self.assertIsInstance(result, pl.DataFrame)
-        self.assertEqual(result.shape, (3, 4))
+        result = load_data(self.ts_metadata, self.start_date, self.end_date)
+        self.assertIsInstance(result, TimeSeries)
+        self.assertEqual(result.df.shape, (3, 2))
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    @patch("dritimeseriesprocessor.processor.add_processing_dependencies")
-    def test_load_data_for_multi_datasets_and_buckets(self, mock_deps, mock_query):
-        """Test the load_data_for_group where ts_ids are from multiple datasets and buckets.
+    def test_load_data_for_no_cols(self, mock_query):
+        """Test the load_data when there are no valid columns.
         """
-        ts_ids = ["ts1", "ts2", "ts3", "ts4", "ts5"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        site_id = "site1"
+        mock_query.side_effect = mock_query_by_date_range_no_cols
 
-        mock_query.side_effect = mock_query_by_date_range
-        mock_deps.side_effect = lambda x: x
-
-        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
-        self.assertIsInstance(result, pl.DataFrame)
-        self.assertEqual(result.shape, (3, 7))
+        result = load_data(self.ts_metadata, self.start_date, self.end_date)
+        self.assertEqual(result, None)
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    @patch("dritimeseriesprocessor.processor.add_processing_dependencies")
-    def test_no_data(self, mock_deps, mock_query):
+    def test_no_data(self, mock_query):
         """Test when no data is returned from the query.
         """
-        ts_ids = ["ts1", "ts2"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        site_id = "site1"
+        mock_query.return_value = None
 
-        mock_query.return_value = pl.DataFrame()
-        mock_deps.side_effect = lambda x: x
-
-        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
+        result = load_data(self.ts_metadata, self.start_date, self.end_date)
         self.assertEqual(result, None)
 
 
