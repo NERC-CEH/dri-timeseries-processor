@@ -77,26 +77,24 @@ class TestLoadData(unittest.TestCase):
 
 
 class TestProcessTimeseries(unittest.TestCase):
-    @patch("dritimeseriesprocessor.processor.add_initial_core_flags")
+
     @patch("dritimeseriesprocessor.processor.run_preprocess")
     @patch("dritimeseriesprocessor.processor.run_quality_control")
     @patch("dritimeseriesprocessor.processor.run_infilling")
     def test_process_timeseries(
-        self, mock_run_infilling, mock_run_quality_control, mock_run_preprocess, mock_add_initial_core_flags
+        self, mock_run_infilling, mock_run_quality_control, mock_run_preprocess
     ):
         """Test the process_timeseries function.
         """
         ts = MagicMock(spec=TimeSeries)
         ts_metadata = {"ts1": {}, "ts2": {}}
 
-        mock_add_initial_core_flags.return_value = ts
         mock_run_preprocess.return_value = ts
         mock_run_quality_control.return_value = ts
         mock_run_infilling.return_value = ts
 
-        result = process_timeseries(ts, ts_metadata)
+        result = process_timeseries(ts_metadata)
         self.assertEqual(result, ts)
-        mock_add_initial_core_flags.assert_called_once()
         mock_run_preprocess.assert_called_once()
         mock_run_quality_control.assert_called_once()
         mock_run_infilling.assert_called_once()
