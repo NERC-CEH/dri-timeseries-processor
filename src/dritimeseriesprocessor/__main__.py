@@ -157,8 +157,6 @@ for ts_id, ts_metadata in ts_ids.items():
 
             # Add the data into the ts_ids dict
             ts_ids[ts_id]["data"] = ts
-        else:
-            logger.warning(f"No data found for {ts_id}")
 
 
 # Process data
