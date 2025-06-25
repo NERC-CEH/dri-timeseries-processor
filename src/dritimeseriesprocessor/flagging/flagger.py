@@ -27,17 +27,41 @@ def core_flag_column_name(column: str) -> str:
 
 
 def pr_flag_column_name(column: str) -> str:
-    """Return column name of preprocess flag column for a given variable column."""
+    """
+    Return column name of preprocess flag column for a given variable column.
+
+    Args:
+        column: Data column name
+
+    Returns:
+        Flag column name
+    """
     return f"{column}_PR_FLAG"
 
 
 def qc_flag_column_name(column: str) -> str:
-    """Return column name of QC flag column for a given variable column."""
+    """
+    Return column name of QC flag column for a given variable column.
+
+    Args:
+        column: Data column name
+
+    Returns:
+        Flag column name
+    """
     return f"{column}_QC_FLAG"
 
 
 def infill_flag_column_name(column: str) -> str:
-    """Return column name of infill flag column for a given variable column."""
+    """
+    Return column name of infill flag column for a given variable column.
+
+    Args:
+        column: Data column name
+
+    Returns:
+        Flag column name
+    """
     return f"{column}_INFILL_FLAG"
 
 
