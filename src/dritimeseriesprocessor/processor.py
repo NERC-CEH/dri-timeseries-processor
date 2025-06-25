@@ -27,12 +27,16 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
         pl.DataFrame: A Polars DataFrame containing the loaded data.
     """
     logger.info(
-        f"Dataset:{ts_metadata['sourceDataset']}."
-        f"Bucket:{ts_metadata['sourceBucket']}."
-        f"Column:{ts_metadata['sourceColumnName']} "
-        f"Site:{ts_metadata['sourceSite']}."
-        f"Dates:{start_date} to {end_date}"
+        {
+            "dataset": ts_metadata["sourceDataset"],
+            "bucket": ts_metadata["sourceBucket"],
+            "column": ts_metadata["sourceColumnName"],
+            "site": ts_metadata["sourceSite"],
+            "start_date": start_date,
+            "end_date": end_date,
+        }
     )
+
     bucket_data = data_manager.query_by_date_range(
         bucket_name=ts_metadata["sourceBucket"],
         prefix=f"cosmos/dataset={ts_metadata['sourceDataset']}",
