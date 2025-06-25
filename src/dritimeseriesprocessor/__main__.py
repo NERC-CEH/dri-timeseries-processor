@@ -19,8 +19,10 @@ from dritimeseriesprocessor.utils import (
 from metadata_manager.models.common import (
     build_column_query_parameter,
     build_periodicity_query_parameter,
+    build_processing_query_parameter,
     build_site_query_parameter,
     build_timeseries_def_query_parameter,
+    build_view_query_parameter,
 )
 from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations, load_sites
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
@@ -63,12 +65,10 @@ columns = parser.validate_columns(args.columns)
 column_query_parameter = build_column_query_parameter(columns)
 
 # Processing level
-# TODO extract to build_processing_query_parameter
-processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/processed")]
+processing_query_parameter = build_processing_query_parameter(level="processed")
 
 # View
-# TODO extract to build_view_query_parameter
-view_query_parameter = [("_view", "timeseries")]
+view_query_parameter = build_view_query_parameter(view="timeseries")
 
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
@@ -95,7 +95,7 @@ user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_id
 # Get processing dependancies for the timeseries IDs to be processed
 # TODO: Determine these by looking at processing config dependancies in metadata
 column_query_parameter = build_column_query_parameter(["BATTV", "SCANS"])
-processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/raw")]
+processing_query_parameter = build_processing_query_parameter(level="raw")
 processing_dep_timeseries_ids_response = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
