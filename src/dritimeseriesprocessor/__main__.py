@@ -15,6 +15,7 @@ from dritimeseriesprocessor.utils import (
     extract_dependent_timeseries_defs,
     extract_unique_timeseries_defs,
     group_by_date_site_id,
+    merge_ts_def_metadata,
 )
 from metadata_manager.models.common import (
     build_column_query_parameter,
@@ -137,29 +138,27 @@ dependent_timeseries_ids_metadata = extract_timeseries_id_metadata(dependent_tim
 
 # Step 5
 # Combine all the metadata into a single object for processing
-# TODO (maybe) add method_type and inputs
 ts_ids = user_timeseries_ids_metadata | dependent_timeseries_ids_metadata
+
+
+# Step 6
+# Add TS definition metadata to each timeseries ID
+ts_ids = merge_ts_def_metadata(ts_ids, timeseries_defs_derivation_map)
 
 
 # Load raw data
 # -------------
 for ts_id, ts_metadata in ts_ids.items():
-    if ts_metadata["processing_level"] != "raw":
-        continue
+    if ts_metadata["load"] is True:
+        logger.info(f"Loading data for {ts_id}")
+        ts = load_data(ts_metadata, start_date, end_date)
+        if ts is not None:
+            ts = add_initial_core_flags(ts)
 
-    # Can only load data for timeseries ids with no derivation method.
-    if timeseries_defs_derivation_map[ts_metadata["ts_def"]].get("method_type") is not None:
-        continue
-
-    logger.info(f"Loading data for {ts_id}")
-    ts = load_data(ts_metadata, start_date, end_date)
-    if ts is not None:
-        ts = add_initial_core_flags(ts)
-
-        # Add the data into the ts_ids dict
-        ts_ids[ts_id]["data"] = ts
-    else:
-        logger.warning(f"No data found for {ts_id}")
+            # Add the data into the ts_ids dict
+            ts_ids[ts_id]["data"] = ts
+        else:
+            logger.warning(f"No data found for {ts_id}")
 
 
 # Process data

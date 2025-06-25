@@ -186,3 +186,32 @@ def extract_dependent_timeseries_defs(
     """
 
     return list({items for items in timeseries_defs_derivation_map.values() for items in items["inputs"]})
+
+
+def merge_ts_def_metadata(
+    ts_ids: Dict[str, Dict[str, str]],
+    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
+) -> Dict[str, Dict[str, str]]:
+    """Merge timeseries definitions metadata into the timeseries ids metadata and add whether to load the data.
+
+    Args:
+        ts_ids: Metadata for timeseries ids to process
+        timeseries_defs_derivation_map: A map of timeseries definitions and their metadata
+
+    Returns:
+        A dictionary with the merged metadata.
+    """
+    for ts_id, ts_metadata in ts_ids.items():
+        ts_def = ts_metadata["ts_def"]
+        if ts_def in timeseries_defs_derivation_map:
+            ts_metadata.update(timeseries_defs_derivation_map[ts_def])
+
+            # Raw timeseries ids with no derivation method is data that must be loaded.
+            if ts_metadata["processing_level"] == "raw" and ts_metadata.get("method_type") is None:
+                ts_metadata["load"] = True
+            else:
+                ts_metadata["load"] = False
+        else:
+            logger.warning(f"Timeseries definition {ts_def} not found in derivation map for {ts_id}")
+
+    return ts_ids
