@@ -305,3 +305,67 @@ class TestExtractDependentTimeseriesDefs(unittest.TestCase):
     result = utils.extract_dependent_timeseries_defs(test_timeseries_defs_for_processing)
 
     assert sorted(result) == sorted(expected)
+
+
+class TestMergeTsDefMetadata(unittest.TestCase):
+    """Test the merge_ts_def_metadata function."""
+
+    test_ts_ids = {
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw":
+        {
+            "ts_def": "test_a",
+            "processing_level": "raw"
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
+        {
+            "ts_def": "test_b",
+            "processing_level": "processed"
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_30min_raw":
+        {
+            "ts_def": "test_b",
+            "processing_level": "raw"
+        }
+    }
+
+    test_timeseries_defs_derivation_map = {
+        "test_a":
+        {
+            "inputs": []
+        },
+        "test_b":
+        {
+            "method_type": "calculate",
+            "inputs": ["input_a", "input_b"]
+        }
+    }
+
+    expected = {
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw":
+        {
+            "ts_def": "test_a",
+            "processing_level": "raw",
+            "inputs": [],
+            "load": True
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
+        {
+            "ts_def": "test_b",
+            "processing_level": "processed",
+            "method_type": "calculate",
+            "inputs": ["input_a", "input_b"],
+            "load": False
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_30min_raw":
+        {
+            "ts_def": "test_b",
+            "processing_level": "raw",
+            "method_type": "calculate",
+            "inputs": ["input_a", "input_b"],
+            "load": False
+        }
+    }
+
+    result = utils.merge_ts_def_metadata(test_ts_ids, test_timeseries_defs_derivation_map)
+
+    assert result == expected
