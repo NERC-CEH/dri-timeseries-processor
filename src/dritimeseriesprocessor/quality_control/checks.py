@@ -70,7 +70,7 @@ def range_check(
         lt: The maximum value for the range.
 
     Returns:
-         ts_ids: Metadata and data for TimeSeries with the quality control flag applied.
+        ts_ids: Metadata and data for TimeSeries with the quality control flag applied.
     """
     # Get data
     ts = ts_ids[ts_id]["data"]
