@@ -62,10 +62,6 @@ def run_quality_control(
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
-        # Check data is available for this ts_id
-        if "data" not in ts_dict:
-            continue
-
         ts = ts_dict["data"]
 
         qc_configs = load_config("quality_control", ts_id)

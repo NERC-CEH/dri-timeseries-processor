@@ -79,13 +79,20 @@ def process_timeseries(
     Returns:
         ts_ids: Metadata and processed data for timeseries ids
     """
+    # Subset entries with a "data" key
+    ts_ids_with_data = {k: v for k, v in ts_ids.items() if "data" in v}
+
     # Correction
-    ts_ids = run_preprocess(ts_ids)
+    ts_ids_with_data = run_preprocess(ts_ids_with_data)
 
     # Quality control
-    ts_ids = run_quality_control(ts_ids, remove=True)
+    ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)
 
     # Infilling
-    ts_ids = run_infilling(ts_ids)
+    ts_ids_with_data = run_infilling(ts_ids_with_data)
+
+    # Update only those entries in the original dict
+    for k in ts_ids_with_data:
+        ts_ids[k] = ts_ids_with_data[k]
 
     return ts_ids

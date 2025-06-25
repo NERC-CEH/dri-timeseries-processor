@@ -39,10 +39,6 @@ def run_infilling(ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]) -> Dict[
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
-        # Check data is available for this ts_id
-        if "data" not in ts_dict:
-            continue
-
         ts = ts_dict["data"]
 
         infill_configs = load_config("infilling", ts_id)

@@ -66,21 +66,9 @@ class TestRunPreprocessing(unittest.TestCase):
         self.ts_ids = {
             self.ta_ts_id: {
                 "data": ta_ts,
-                # "sourceSite": "site1",
-                # "sourceColumnName": "temperature",
-                # "sourceDataset": "dataset1",
-                # "sourceBucket": "bucket1",
-                # "resolution": resolution,
-                # "periodicity": periodicity,
             },
             self.rh_ts_id: {
                 "data": rh_ts,
-                # "sourceSite": "site1",
-                # "sourceColumnName": "humidity",
-                # "sourceDataset": "dataset1",
-                # "sourceBucket": "bucket1",
-                # "resolution": resolution,
-                # "periodicity": periodicity,
             }
         }
 

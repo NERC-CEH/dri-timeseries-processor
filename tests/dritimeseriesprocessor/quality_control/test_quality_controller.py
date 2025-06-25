@@ -99,6 +99,7 @@ class TestRunQualityControl(unittest.TestCase):
                 "data": ts,
             },
             self.pa_ts_id: {
+                "data": ts,
             }
         }
 

@@ -36,10 +36,6 @@ def run_preprocess(
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
-        # Check data is available for this ts_id
-        if "data" not in ts_dict:
-            continue
-
         ts = ts_dict["data"]
 
         for correction_config in preprocessing_config.corrections:

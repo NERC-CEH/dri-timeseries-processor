@@ -77,15 +77,16 @@ class TestProcessTimeseries(unittest.TestCase):
     ):
         """Test the process_timeseries function.
         """
-        ts = MagicMock(spec=TimeSeries)
-        ts_metadata = {"ts1": {}, "ts2": {}}
+        ts_metadata = {"ts1": {"data": [1]}, "ts2": {}}
+        return_ts_metadata = {"ts1": {"data": [2]}}
+        expected = {"ts1": {"data": [2]}, "ts2": {}}
 
-        mock_run_preprocess.return_value = ts
-        mock_run_quality_control.return_value = ts
-        mock_run_infilling.return_value = ts
+        mock_run_preprocess.return_value = return_ts_metadata
+        mock_run_quality_control.return_value = return_ts_metadata
+        mock_run_infilling.return_value = return_ts_metadata
 
         result = process_timeseries(ts_metadata)
-        self.assertEqual(result, ts)
+        self.assertEqual(result, expected)
         mock_run_preprocess.assert_called_once()
         mock_run_quality_control.assert_called_once()
         mock_run_infilling.assert_called_once()
