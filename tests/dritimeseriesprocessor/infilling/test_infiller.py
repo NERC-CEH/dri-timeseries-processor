@@ -5,7 +5,8 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import polars as pl
 
-from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name, run_infilling
+from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
+from dritimeseriesprocessor.infilling.infiller import run_infilling
 from time_stream import Period, TimeSeries
 
 
@@ -19,36 +20,37 @@ def mock_infill_method2(ts, _, flag_column, *args, **kwargs):
     return ts
 
 
-class TestInfillFlagColumnName(unittest.TestCase):
-    """Unit tests for the infill_flag_column_name function.
-    """
-    def test_standard_column_name(self):
-        """
-        Test that the function correctly appends '_INFILL_FLAG' to a standard column name.
-        """
-        self.assertEqual(infill_flag_column_name('data'), 'data_INFILL_FLAG')
-
-
 class TestRunInfilling(unittest.TestCase):
     def setUp(self):
         """
         Set up common test data and mocks.
         """
-        data = pl.DataFrame({
+        ta_data = pl.DataFrame({
             "time": pd.date_range(start="2023-01-01", periods=10, freq="H"),
             "temperature": [20.0, 21.0, None, None, 22.0, 23.0, None, 24.0, 25.0, 26.0],
         })
+        pa_data = pl.DataFrame({
+            "time": pd.date_range(start="2023-01-01", periods=10, freq="H"),
+            "pressure": [1010.0, 1011.0, 1012.0, None, 1013.0, None, 1014.0, 1015.0, None, 1016.0],
+        })
         resolution = Period.of_hours(1)
         periodicity = Period.of_hours(1)
-        self.ts = TimeSeries(data, "time", resolution, periodicity)
-        self.ts_ids = ["ta_30min_raw", "pa_30min_raw"]
+        ta_ts = TimeSeries(ta_data, "time", resolution, periodicity)
+        ta_ts = add_initial_core_flags(ta_ts)
+
+        pa_ts = TimeSeries(pa_data, "time", resolution, periodicity)
+        pa_ts = add_initial_core_flags(pa_ts)
+
         site_id = "SITE1"
-        self.metadata = {
-            "ta_30min_raw": {
-                "sourceColumnName": "temperature",
+        self.ta_ts_id = f"{site_id}_ta_30min_raw"
+        self.pa_ts_id = f"{site_id}_pa_30min_raw"
+
+        self.ts_ids = {
+            self.ta_ts_id: {
+                "data": ta_ts,
             },
-            "pa_30min_raw": {
-                "sourceColumnName": "pressure",
+            self.pa_ts_id: {
+                "data": pa_ts,
             }
         }
 
@@ -77,7 +79,7 @@ class TestRunInfilling(unittest.TestCase):
         # Set up infilling configs
         self.infill_config1 = type("DummyInfillConfig", (), {
             "site_id": site_id,
-            "ts_id": self.ts_ids[0],
+            "ts_id": self.ta_ts_id,
             "configs": [type("DummyMethodConfig", (), {
                 "name": "method1",
                 "interval": (datetime(2000, 1, 1), None),
@@ -91,7 +93,7 @@ class TestRunInfilling(unittest.TestCase):
 
         self.infill_config2 = type("DummyInfillConfig", (), {
             "site_id": site_id,
-            "ts_id": self.ts_ids[1],
+            "ts_id": self.ta_ts_id,
             "configs": [type("DummyMethodConfig", (), {
                 "name": "method2",
                 "interval": (datetime(2000, 1, 1), None),
@@ -109,9 +111,9 @@ class TestRunInfilling(unittest.TestCase):
         """Test run_infilling when no infill methods are defined."""
         mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
-        result = run_infilling(self.ts, self.metadata)
+        result = run_infilling(self.ts_ids)
 
-        self.assertEqual(result, self.ts)
+        self.assertEqual(result, self.ts_ids)
 
     @patch('dritimeseriesprocessor.infilling.infiller.load_config')
     @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
@@ -122,14 +124,14 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_infilling(self.ts, self.metadata)
+        result = run_infilling(self.ts_ids)
 
         # Check flag system added
-        self.assertIn('infill_flags', result.flag_systems)
+        self.assertIn('infill_flags', result[self.ta_ts_id]["data"].flag_systems)
         # Check columns added
-        self.assertIn('temperature_INFILL_FLAG', result.columns)
+        self.assertIn('temperature_INFILL_FLAG', result[self.ta_ts_id]["data"].columns)
         # Check flag values (from mock functions) have been added
-        self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_INFILL_FLAG'].to_list(), [1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
     @patch('dritimeseriesprocessor.infilling.infiller.load_config')
     @patch('dritimeseriesprocessor.infilling.infiller.get_infill_methods')
@@ -141,11 +143,11 @@ class TestRunInfilling(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_infilling(self.ts, self.metadata)
+        result = run_infilling(self.ts_ids)
 
         # Check flag system added
-        self.assertIn('infill_flags', result.flag_systems)
+        self.assertIn('infill_flags', result[self.ta_ts_id]["data"].flag_systems)
         # Check columns added
-        self.assertIn('temperature_INFILL_FLAG', result.columns)
-        # Check flag values (from both mock functions) have been added
-        self.assertEqual(result.df['temperature_INFILL_FLAG'].to_list(), [3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+        self.assertIn('temperature_INFILL_FLAG', result[self.ta_ts_id]["data"].columns)
+        # Check flag values (from mock functions) have been added
+        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_INFILL_FLAG'].to_list(), [3, 3, 3, 3, 3, 3, 3, 3, 3, 3])

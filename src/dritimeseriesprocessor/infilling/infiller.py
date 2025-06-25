@@ -1,9 +1,10 @@
 import logging
 from functools import lru_cache
-from typing import Dict
+from typing import Dict, Union
 
 from time_stream import TimeSeries
 
+from dritimeseriesprocessor.flagging.flagger import infill_flag_column_name, update_infill_core_flags
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -18,47 +19,38 @@ def get_infill_methods() -> Dict:
     return load_methods("infilling")
 
 
-def infill_flag_column_name(column: str) -> str:
-    """
-    Return column name of infill flag column for a given variable column.
-
-    Args:
-        column (str): The name of the original variable column.
-
-    Returns:
-        str: The name of the corresponding infill flag column, formatted as '{column}_INFILL_FLAG'.
-    """
-    return f"{column}_INFILL_FLAG"
-
-
-def run_infilling(ts: TimeSeries, metadata: Dict[str, Dict[str, str]]) -> TimeSeries:
+def run_infilling(ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.
 
     Args:
-        ts: The input TimeSeries containing the data to be infilled.
-        metadata: The metadata for the TimeSeries IDs.
+        ts_ids: Metadata and data for timeseries ids
 
     Returns:
-        The TimeSeries with infilling and infill flags applied.
+        ts_ids: Metadata and infilled data for timeseries ids
     """
     infill_methods = get_infill_methods()
 
     # Initialise infilling flag system within TimeSeries object
     infill_flags_dict = {method: method_config.method_id for method, method_config in infill_methods.items()}
-    if infill_flags_dict:
-        ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
-    else:
+    if not infill_flags_dict:
         logger.warning("No infill methods given in config.")
-        return ts
+        return ts_ids
 
-    for ts_id, ts_metadata in metadata.items():
-        column = ts_metadata["sourceColumnName"]
+    for ts_id, ts_dict in ts_ids.items():
+        ts = ts_dict["data"]
+
         infill_configs = load_config("infilling", ts_id)
         if not infill_configs:
             logger.info(f"No infilling config found for Time Series ID: {ts_id}")
             continue
+
+        # Set up the flag system if it doesn't already exist
+        if INFILL_FLAG_SYS_NAME not in ts.flag_systems:
+            ts.add_flag_system(INFILL_FLAG_SYS_NAME, infill_flags_dict)
+
+        column = list(ts.data_columns.keys())[0]
 
         # Order by priority
         sorted_infillers = sorted(infill_configs, key=lambda x: x.annotations["data-processing-configuration-priority"])
@@ -75,4 +67,6 @@ def run_infilling(ts: TimeSeries, metadata: Dict[str, Dict[str, str]]) -> TimeSe
                 logger.info(f"Infilling {column} with method: {method.name}. Constraints: {method.parameters}")
                 ts = infill_func(ts, column, infill_flag_col, method.name, **method.parameters)
 
-    return ts
+        ts = update_infill_core_flags(ts)
+
+    return ts_ids

@@ -63,7 +63,6 @@ class TestReadByDateRange(BaseTestCase):
         cols = ['col1']
         start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 10))
 
-        expected_site_ids = ['site1']
         expected_datetimes = pl.datetime_range(start=start_date, end=end_date, interval="1h", eager=True).to_list()
         
         result = query_by_date_range(
@@ -74,14 +73,12 @@ class TestReadByDateRange(BaseTestCase):
             site_ids=['site1'],
             columns=cols
         )
-        result_site_ids = result['SITE_ID'].unique().to_list()
         result_datetimes = result['time'].unique().to_list()
 
         self.assertIsInstance(result, pl.DataFrame)
-        self.assertEqual(result.shape, (480, 3))
-        self.assertEqual(sorted(result_site_ids), expected_site_ids)
+        self.assertEqual(result.shape, (480, 2))
         self.assertEqual(sorted(result_datetimes), expected_datetimes)
-        self.assertEqual(result.columns, ['time', 'SITE_ID', 'col1'])
+        self.assertEqual(result.columns, ['time', 'col1'])
 
 if __name__ == "__main__":
     unittest.main()

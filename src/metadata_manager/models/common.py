@@ -104,6 +104,34 @@ def build_timeseries_def_query_parameter(ts_defs: List[str]) -> List[Tuple | Non
     return [("type", ts_def) for ts_def in ts_defs]
 
 
+def build_processing_query_parameter(level: str) -> List[Tuple | None]:
+    """Build the processing level query parameter for the dataset endpoint.
+
+    As we use the same key for multiple processing levels, it needs to be a list of tuples.
+
+    Args:
+        level: The processing level
+
+    Returns:
+        A list of tuples with query parameter string and the processing level.
+    """
+    return [("type.processingLevel", f"http://fdri.ceh.ac.uk/ref/common/processing-level/{level}")]
+
+
+def build_view_query_parameter(view: str) -> List[Tuple | None]:
+    """Build the view query parameter for the dataset endpoint.
+
+    As we use the same key for multiple processing levels, it needs to be a list of tuples.
+
+    Args:
+        view: The response view
+
+    Returns:
+        A list of tuples with query parameter string and the view.
+    """
+    return [("_view", f"{view}")]
+
+
 def get_interval_dates(interval: Optional[Dict[str, Union[str, datetime]]]) -> Tuple[datetime, Optional[datetime]]:
     """Extract and validate start and end dates from an interval dictionary.
 
@@ -112,8 +140,8 @@ def get_interval_dates(interval: Optional[Dict[str, Union[str, datetime]]]) -> T
 
     Args:
         interval: A dictionary containing at minimum a 'startDate' key with a datetime value,
-                 and optionally an 'endDate' key with a datetime value. If None, a default
-                 start date is used.
+                and optionally an 'endDate' key with a datetime value. If None, a default
+                start date is used.
 
     Returns:
         A tuple containing:
