@@ -66,15 +66,6 @@ class TestLoadData(unittest.TestCase):
         result = load_data(self.ts_metadata, self.start_date, self.end_date)
         self.assertEqual(result, None)
 
-    @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    def test_no_data(self, mock_query):
-        """Test when no data is returned from the query.
-        """
-        mock_query.return_value = None
-
-        result = load_data(self.ts_metadata, self.start_date, self.end_date)
-        self.assertEqual(result, None)
-
 
 class TestProcessTimeseries(unittest.TestCase):
 

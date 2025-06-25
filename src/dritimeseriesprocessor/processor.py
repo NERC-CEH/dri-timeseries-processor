@@ -42,9 +42,6 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
         columns=[ts_metadata["sourceColumnName"]],
     )
 
-    if bucket_data is None:
-        return None
-
     if bucket_data.shape[0] == 0:
         metrics.record_no_data_run()
         logger.info("No data returned from the query.")
