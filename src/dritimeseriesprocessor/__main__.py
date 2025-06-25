@@ -149,7 +149,7 @@ ts_ids = merge_ts_def_metadata(ts_ids, timeseries_defs_derivation_map)
 # Load raw data
 # -------------
 for ts_id, ts_metadata in ts_ids.items():
-    if ts_metadata["load"] is True:
+    if ts_metadata["load"]:
         logger.info(f"Loading data for {ts_id}")
         ts = load_data(ts_metadata, start_date, end_date)
         if ts is not None:

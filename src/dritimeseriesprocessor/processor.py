@@ -81,6 +81,7 @@ def process_timeseries(
     """
     # Subset entries with a "data" key
     ts_ids_with_data = {k: v for k, v in ts_ids.items() if "data" in v}
+    ts_ids_with_no_data = {k: v for k, v in ts_ids.items() if "data" not in v}
 
     # Correction
     ts_ids_with_data = run_preprocess(ts_ids_with_data)
@@ -91,8 +92,4 @@ def process_timeseries(
     # Infilling
     ts_ids_with_data = run_infilling(ts_ids_with_data)
 
-    # Update only those entries in the original dict
-    for k in ts_ids_with_data:
-        ts_ids[k] = ts_ids_with_data[k]
-
-    return ts_ids
+    return ts_ids_with_data | ts_ids_with_no_data
