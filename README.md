@@ -35,30 +35,30 @@ docker compose up -d
 ```
 Then call the app which can take several command-line arguments:
 
-period (required): The period of time you want to build data for.\
+**period (required)**: The period of time you want to build data for.\
     - Must be a valid ISO8601 duration\
     - Must not have a time component\
     - Can be a combination of days, weeks, months and years
 
 e.g. P1D: previous days data; P1M: previous months data; P1M14D: previous month + 14 days data; PT4: invalid
 
-end_date (optional): The date to start building from.\
+**end_date (optional)**: The date to start building from.\
     - Must be of the format YYYY-MM-DD\
     - If not provided then todays date is used\
     - If running locally, the value is overwritten by 2024-03-10 to ensure data is always built.
 
-sites (optional): The sites to build data from.\
+**sites (optional)**: The sites to build data from.\
     - If empty then all sites will be built\
     - Entered sites are checked against available sites in the metadata store and removed if not found\
     - sites must be seperated by a comma, by 5 characters long and not contain special characters\
     - sites can be lower or upper case\
 
-columns (optional): The columns to build data from.\
+**columns (optional)**: The columns to build data from.\
     - If empty then all columns will be built\
     - Columns must be seperated by a comma (no spaces)\
     - Columns can be upper or lower case\
 
-periodicity (optional): The periodicity of the timeseries to be built.\
+**periodicity (optional)**: The periodicity of the timeseries to be built.\
     - Must be a valid ISO8601 string\
     - Multiple periodicities must be seperated by a comma\
     - Can be upper or lower case\
@@ -108,6 +108,11 @@ Testing is done using pytest and tests are in the /tests directory.
 pytest
 ```
 
+For testing the processor with data, a few days worth are loading into the level 0 bucket by default when the localstack container is initialised ([see localstack section](#localstack)).
+
+If you want to test with more data then the `local_testing` directory contains a script to copy data from the S3 level0 bucket into the localstack level0 bucket.
+
+
 ## Pre commit hooks
 Run below to setup the pre-commit hooks.
 ```
@@ -117,7 +122,7 @@ git config --local core.hooksPath .githooks/
 ## Metrics
 Metrics are collected using prometheus. The app is run as a cron job and the metrics are pushed to the prometheus [pushgateway](https://prometheus.io/docs/practices/pushing/). These can be accessed locally via `localhost:9091`
 
-## localstack
+## Localstack
 Local stack is used to create local AWS resources for testing the app locally. `localstack-setup.sh` is run when the container is initialised which creates the buckets and loads the sample parquet files.
 
 Run ```docker compose up``` to build.

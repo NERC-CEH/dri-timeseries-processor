@@ -18,7 +18,7 @@ SITES = ['ALIC1', 'BUNNY']
 START_DATE = datetime.datetime(2025, 1, 1, 0, tzinfo=datetime.timezone.utc)
 END_DATE = datetime.datetime(2025, 6, 30, 0, tzinfo=datetime.timezone.utc)
 
-# CReate the required prefixes
+# Create the required prefixes
 PREFIXES = [f"cosmos/dataset={DATASET}"]
 
 if SITES:
