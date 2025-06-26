@@ -87,7 +87,7 @@ def build_date_range(period: str, end_date: str, environment: str) -> Tuple[str,
     # When running locally, we just need a date that has been loaded into the
     # `parquet-data` folder.
     if environment == "local":
-        end_date = "1988-03-10"
+        end_date = "2024-03-10"
 
     end_date = validate_end_date(end_date)
 
