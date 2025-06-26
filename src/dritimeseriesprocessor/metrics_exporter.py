@@ -25,7 +25,7 @@ class Metrics:
 
         # Counters for successful/no data/failed runs
         self.successful_runs = Counter("successful_runs_total", "Number of successful runs")
-        self.no_data_runs = Counter("no_data_runs_total", "Number of no_data runs")
+        self.no_data = Counter("no_data_total", "Number of queries with no data")
         self.failed_runs = Counter("failed_runs_total", "Number of failed runs")
 
     def setup_metrics(self) -> None:
@@ -36,7 +36,7 @@ class Metrics:
         self.registry.register(self.s3_write_time)
         self.registry.register(self.flags_added)
         self.registry.register(self.successful_runs)
-        self.registry.register(self.no_data_runs)
+        self.registry.register(self.no_data)
         self.registry.register(self.failed_runs)
 
     def get_pushgateway_url(self) -> str:
@@ -79,8 +79,8 @@ class Metrics:
     def record_failed_run(self) -> None:
         self.failed_runs.inc()
 
-    def record_no_data_run(self) -> None:
-        self.no_data_runs.inc()
+    def record_no_data(self) -> None:
+        self.no_data.inc()
 
 
 metrics = Metrics()

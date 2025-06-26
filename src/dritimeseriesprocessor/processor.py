@@ -47,12 +47,11 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
     )
 
     if bucket_data.shape[0] == 0:
-        metrics.record_no_data_run()
-        logger.info("No data returned from the query.")
+        metrics.record_no_data()
+        logger.warning("No data returned from the query.")
         metrics.export_metrics_to_pushgateway(
             url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
         )
-        return None
 
     return TimeSeries(
         bucket_data,
