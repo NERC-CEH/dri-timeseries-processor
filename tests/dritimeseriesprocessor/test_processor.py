@@ -27,9 +27,16 @@ def mock_query_by_date_range(bucket_name, prefix, start_date, end_date, site_ids
     return pl.DataFrame(data)
 
 
-def mock_query_by_date_range_no_cols(bucket_name, prefix, start_date, end_date, site_ids, columns):
-    # Return an empty DataFrame when no valid columns are provided
-    return pl.DataFrame({})
+def mock_query_by_date_range_no_data(bucket_name, prefix, start_date, end_date, site_ids, columns):
+    # An empty dataframe with the specified columns should be returned.
+    data = {"time": []}
+    schema = {"time": pl.Datetime(time_unit='us', time_zone="UTC")}
+    
+    for column in columns:
+        data[column] = []
+        schema[column] = pl.Int64
+
+    return pl.DataFrame(data, schema)
 
 
 class TestLoadData(unittest.TestCase):
@@ -58,13 +65,14 @@ class TestLoadData(unittest.TestCase):
         self.assertEqual(result.df.shape, (3, 2))
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    def test_load_data_for_no_cols(self, mock_query):
-        """Test the load_data when there are no valid columns.
+    def test_load_data_for_no_data(self, mock_query):
+        """Test the load_data when there is no data.
         """
-        mock_query.side_effect = mock_query_by_date_range_no_cols
+        mock_query.side_effect = mock_query_by_date_range_no_data
 
         result = load_data(self.ts_metadata, self.start_date, self.end_date)
-        self.assertEqual(result, None)
+        self.assertIsInstance(result, TimeSeries)
+        self.assertEqual(result.df.shape, (0, 2))
 
 
 class TestProcessTimeseries(unittest.TestCase):

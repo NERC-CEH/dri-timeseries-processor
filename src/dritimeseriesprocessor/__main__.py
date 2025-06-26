@@ -152,7 +152,7 @@ for ts_id, ts_metadata in ts_ids.items():
     if ts_metadata["load"]:
         logger.info(f"Loading data for {ts_id}")
         ts = load_data(ts_metadata, start_date, end_date)
-        if ts is not None:
+        if not ts.df.is_empty():
             ts = add_initial_core_flags(ts)
 
             # Add the data into the ts_ids dict
