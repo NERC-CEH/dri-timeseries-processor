@@ -64,6 +64,7 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
             "column_name": ts_metadata["sourceColumnName"],
             "processing_level": ts_metadata["processing_level"],
         },
+        on_duplicates="keep_first",
     )
 
 
