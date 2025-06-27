@@ -5,27 +5,18 @@ from unittest.mock import patch, MagicMock
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name, remove_qcd_data, run_quality_control
+from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
+from dritimeseriesprocessor.quality_control.quality_controller import remove_qcd_data, run_quality_control
 from time_stream import TimeSeries, Period
 
 
-def mock_range_check(ts, column, flag_column, flag_name, *args, **kwargs):
-    ts.add_flag(flag_column, flag_name)
-    return ts
+def mock_range_check(ts_ids, ts_id, flag_column, flag_name, *args, **kwargs):
+    ts_ids[ts_id]["data"].add_flag(flag_column, flag_name)
+    return ts_ids
 
-def mock_spike_check(ts, column, flag_column, flag_name, *args, **kwargs):
-    ts.add_flag(flag_column, flag_name)
-    return ts
-
-
-class TestQCFlagColumnName(unittest.TestCase):
-    """Unit tests for the qc_flag_column_name function.
-    """
-    def test_standard_column_name(self):
-        """
-        Test that the function correctly appends '_QC_FLAG' to a standard column name.
-        """
-        self.assertEqual(qc_flag_column_name('data'), 'data_QC_FLAG')
+def mock_spike_check(ts_ids, ts_id, flag_column, flag_name, *args, **kwargs):
+    ts_ids[ts_id]["data"].add_flag(flag_column, flag_name)
+    return ts_ids
 
 
 class TestRemoveQCdData(unittest.TestCase):
@@ -96,16 +87,19 @@ class TestRunQualityControl(unittest.TestCase):
 
         resolution = Period.of_days(1)
         periodicity = Period.of_days(1)
-        self.ts = TimeSeries(data, "time", resolution, periodicity)
+        ts = TimeSeries(data, "time", resolution, periodicity, metadata={"site_id": "SITE1", "column_name": "value"})
+        ts = add_initial_core_flags(ts)
 
-        self.ts_ids = ["ta_30min_raw", "pa_30min_raw"]
+        self.ta_ts_id = "SITE1_ta_30min_raw"
+        self.pa_ts_id = "SITE1_pa_30min_raw"
+
         site_id = "SITE1"
-        self.metadata = {
-            "ta_30min_raw": {
-                "sourceColumnName": "temperature",
+        self.ts_ids = {
+            self.ta_ts_id: {
+                "data": ts,
             },
-            "pa_30min_raw": {
-                "sourceColumnName": "pressure",
+            self.pa_ts_id: {
+                "data": ts,
             }
         }
 
@@ -136,7 +130,7 @@ class TestRunQualityControl(unittest.TestCase):
         # Set up quality_control configs
         self.QC_config1 = type("DummyQCConfig", (), {
             "site_id": site_id,
-            "ts_id": self.ts_ids[0],
+            "ts_id": self.ta_ts_id,
             "configs": [type("DummyMethodConfig", (), {
                 "name": "range_check",
                 "interval": (datetime(2000, 1, 1), None),
@@ -151,7 +145,7 @@ class TestRunQualityControl(unittest.TestCase):
 
         self.QC_config2 = type("DummyQCConfig", (), {
             "site_id": site_id,
-            "ts_id": self.ts_ids[1],
+            "ts_id": self.pa_ts_id,
             "configs": [type("DummyMethodConfig", (), {
                 "name": "spike_check",
                 "interval": (datetime(2000, 1, 1), None),
@@ -169,9 +163,9 @@ class TestRunQualityControl(unittest.TestCase):
         """Test run_quality_control when no QC methods are defined."""
         mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
-        result = run_quality_control(self.ts, self.metadata)
+        result = run_quality_control(self.ts_ids)
 
-        self.assertEqual(result, self.ts)
+        self.assertEqual(result, self.ts_ids)
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
@@ -182,14 +176,14 @@ class TestRunQualityControl(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_quality_control(self.ts, self.metadata)
+        result = run_quality_control(self.ts_ids)
 
         # Check flag system added
-        self.assertIn('qc_flags', result.flag_systems)
+        self.assertIn('qc_flags', result[self.ta_ts_id]["data"].flag_systems)
         # Check columns added
-        self.assertIn('temperature_QC_FLAG', result.columns)
+        self.assertIn('value_QC_FLAG', result[self.ta_ts_id]["data"].columns)
         # Check flag values (from mock functions) have been added
-        self.assertEqual(result.df['temperature_QC_FLAG'].to_list(), [1, 1, 1, 1, 1, 1])
+        self.assertEqual(result[self.ta_ts_id]["data"].df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1, 1])
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
@@ -201,11 +195,11 @@ class TestRunQualityControl(unittest.TestCase):
         mock_get_methods.return_value = self.mock_methods_dict
 
         # Call function
-        result = run_quality_control(self.ts, self.metadata)
+        result = run_quality_control(self.ts_ids)
 
         # Check flag system added
-        self.assertIn('qc_flags', result.flag_systems)
+        self.assertIn('qc_flags', result[self.ta_ts_id]["data"].flag_systems)
         # Check columns added
-        self.assertIn('temperature_QC_FLAG', result.columns)
+        self.assertIn('value_QC_FLAG', result[self.ta_ts_id]["data"].columns)
         # Check flag values (from both mock functions) have been added
-        self.assertEqual(result.df['temperature_QC_FLAG'].to_list(), [3, 3, 3, 3, 3, 3])
+        self.assertEqual(result[self.ta_ts_id]["data"].df['value_QC_FLAG'].to_list(), [3, 3, 3, 3, 3, 3])

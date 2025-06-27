@@ -56,7 +56,6 @@ class DuckDbParquetReader(ParquetReaderInterface):
             INSTALL httpfs;
             LOAD httpfs;
             SET force_download = true;
-            SET enable_profiling = query_tree;
         """)
 
         if app_config.environment == "local":

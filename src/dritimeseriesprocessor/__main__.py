@@ -6,21 +6,24 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.processor import load_data_for_group, process_timeseries
+from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import (
     extract_dependent_timeseries_defs,
     extract_unique_timeseries_defs,
     group_by_date_site_id,
-    group_timeseries_to_process,
+    merge_ts_def_metadata,
 )
 from metadata_manager.models.common import (
     build_column_query_parameter,
     build_periodicity_query_parameter,
+    build_processing_query_parameter,
     build_site_query_parameter,
     build_timeseries_def_query_parameter,
+    build_view_query_parameter,
 )
 from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations, load_sites
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
@@ -63,12 +66,10 @@ columns = parser.validate_columns(args.columns)
 column_query_parameter = build_column_query_parameter(columns)
 
 # Processing level
-# TODO extract to build_processing_query_parameter
-processing_query_parameter = [("type.processingLevel", "http://fdri.ceh.ac.uk/ref/common/processing-level/processed")]
+processing_query_parameter = build_processing_query_parameter(level="processed")
 
 # View
-# TODO extract to build_view_query_parameter
-view_query_parameter = [("_view", "timeseries")]
+view_query_parameter = build_view_query_parameter(view="timeseries")
 
 # Dates
 start_date, end_date = parser.build_date_range(args.period, args.end_date, app_config.environment)
@@ -81,17 +82,35 @@ start_date, end_date = parser.build_date_range(args.period, args.end_date, app_c
 # Extract timeseries IDs to build from user arguments
 # Validate and load API response metadata for each timeseries ID
 # Transform response into required structure
-user_timeseries_ids_metadata = load_datasets(
+user_timeseries_ids_response = load_datasets(
     site_query_parameter
     + periodicity_query_parameter
     + column_query_parameter
     + processing_query_parameter
     + view_query_parameter
 )
-user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_ids_metadata)
+user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_ids_response)
 
 
 # Step 2
+# Get processing dependencies for the timeseries IDs to be processed
+# TODO: Determine these by looking at processing config dependencies in metadata
+column_query_parameter = build_column_query_parameter(["BATTV", "SCANS"])
+processing_query_parameter = build_processing_query_parameter(level="raw")
+processing_dep_timeseries_ids_response = load_datasets(
+    site_query_parameter
+    + periodicity_query_parameter
+    + column_query_parameter
+    + processing_query_parameter
+    + view_query_parameter
+)
+processing_dep_timeseries_ids_metadata = extract_timeseries_id_metadata(processing_dep_timeseries_ids_response)
+
+# Combine user and processing dependencies metadata
+user_timeseries_ids_metadata = user_timeseries_ids_metadata | processing_dep_timeseries_ids_metadata
+
+
+# Step 3
 # Get derivation metadata for the timeseries IDs to be built
 # Every timeseries ID will be dependent on another (raw or processed)
 # Derivation metadata is held with the timeseries definition rather than the ID
@@ -102,7 +121,7 @@ unique_timeseries_defs = extract_unique_timeseries_defs(user_timeseries_ids_meta
 timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
 
 
-# Step 3
+# Step 4
 # Get timeseries ID metadata for all dependencies
 # First extract all dependent timeseries definitions
 # Then call the dataset endpoint with site and ts def to get the metadata
@@ -111,51 +130,46 @@ dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_de
 timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
 
 # TODO remove the limit parameter once FW-692 has been implemented
-dependent_timeseries_ids = load_datasets(
+dependent_timeseries_ids_response = load_datasets(
     site_query_parameter + timeseries_def_parameter + view_query_parameter + [("_limit", 50)]
 )
-dependent_timeseries_ids = extract_timeseries_id_metadata(dependent_timeseries_ids)
+dependent_timeseries_ids_metadata = extract_timeseries_id_metadata(dependent_timeseries_ids_response)
 
 
-# Step 4
+# Step 5
 # Combine all the metadata into a single object for processing
-# TODO (maybe) add method_type and inputs
-all_timeseries_ids_metadata = user_timeseries_ids_metadata | dependent_timeseries_ids
+ts_ids = user_timeseries_ids_metadata | dependent_timeseries_ids_metadata
 
 
-# Process raw data
-# ----------------
-# Group TS IDs into groups that can be processed together. Currently this is by site, resolution and periodicity
-grouped_timeseries_to_process = group_timeseries_to_process(all_timeseries_ids_metadata, timeseries_defs_derivation_map)
+# Step 6
+# Add TS definition metadata to each timeseries ID
+ts_ids = merge_ts_def_metadata(ts_ids, timeseries_defs_derivation_map)
 
-# TODO - We want to be able to process differing resolutions/periodicities and sites together: FW-687
 
-for ts_group_id, ts_group in grouped_timeseries_to_process.items():
-    logger.info(f"Processing group {ts_group_id} with {len(ts_group['timeseries_ids'])} timeseries IDs")
+# Load raw data
+# -------------
+for ts_id, ts_metadata in ts_ids.items():
+    if ts_metadata["load"]:
+        logger.info(f"Loading data for {ts_id}")
+        ts = load_data(ts_metadata, start_date, end_date)
+        if not ts.df.is_empty():
+            ts = add_initial_core_flags(ts)
 
-    # For each timeseries ID in the group to process, extract the metadata required to load the data from S3
-    ts_group_metadata = {ts_id: all_timeseries_ids_metadata[ts_id] for ts_id in ts_group["timeseries_ids"]}
+            # Add the data into the ts_ids dict
+            ts_ids[ts_id]["data"] = ts
 
-    data = load_data_for_group(ts_group_metadata, ts_group["site_id"], start_date, end_date)
 
-    if data is not None:
-        try:
-            ts = TimeSeries(
-                data,
-                "time",
-                ts_group["resolution"],
-                ts_group["periodicity"],
-                supplementary_columns=["SITE_ID", "BATTV", "SCANS"],
-            )
-
-            ts = process_timeseries(ts, ts_group_metadata)
-        except Exception as e:
-            metrics.record_failed_run()
-            logger.exception(f"An error occurred during processing: {str(e)}")
-            metrics.export_metrics_to_pushgateway(
-                url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-            )
-            raise
+# Process data
+# ------------
+try:
+    ts_ids = process_timeseries(ts_ids)
+except Exception as e:
+    metrics.record_failed_run()
+    logger.exception(f"An error occurred during processing: {str(e)}")
+    metrics.export_metrics_to_pushgateway(
+        url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+    )
+    raise
 
 # TODO Agregations and derivations here
 

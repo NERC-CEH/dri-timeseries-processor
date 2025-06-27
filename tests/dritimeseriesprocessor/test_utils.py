@@ -307,132 +307,65 @@ class TestExtractDependentTimeseriesDefs(unittest.TestCase):
     assert sorted(result) == sorted(expected)
 
 
-class TestGroupTimeseriesToProcess(unittest.TestCase):
+class TestMergeTsDefMetadata(unittest.TestCase):
+    """Test the merge_ts_def_metadata function."""
 
-    def test_group_timeseries_to_process(self):
-        """Test the group_timeseries_to_process function returns grouped timeseries ids that
-        do not have a method_type."""
-
-        test_timeseries_ids_metadata = {
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw":
-            {
-                "sourceSite": "alic1",
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "ts_def": "pa_30min_raw"
-            },
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw":
-            {
-                "sourceSite": "alic1",
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "ts_def": "ta_30min_raw"
-            },
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed":
-            {
-                "sourceSite": "alic1",
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "ts_def": "pa_30min_processed"
-            },
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
-            {
-                "sourceSite": "alic1",
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "ts_def": "ta_30min_processed"
-            },
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_1min_raw":
-            {
-                "sourceSite": "alic1",
-                "resolution": "PT1M",
-                "periodicity": "PT1M",
-                "ts_def": "precip_1min_raw"
-            },
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-finch-ta_max_1day_processed":
-            {
-                "sourceSite": "finch",
-                "resolution": "PT30M",
-                "periodicity": "P1D",
-                "ts_def": "ta_max_1day_processed"
-            },
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-pa_30min_raw":
-            {
-                "sourceSite": "bunny",
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "ts_def": "pa_30min_raw"
-            },
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed":
-            {
-                "sourceSite": "bunny",
-                "resolution": "PT30M",
-                "periodicity": "PT30M",
-                "ts_def": "ta_30min_processed"
-            }
+    test_ts_ids = {
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw":
+        {
+            "ts_def": "test_a",
+            "processing_level": "raw"
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
+        {
+            "ts_def": "test_b",
+            "processing_level": "processed"
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_30min_raw":
+        {
+            "ts_def": "test_b",
+            "processing_level": "raw"
         }
+    }
 
-        test_timeseries_defs_derivation_map = {
-            'precip_1min_raw':
-            {
-                'method_type': None,
-                'inputs': []
-            },
-            'pa_30min_raw':
-            {
-                'method_type': None,
-                'inputs': []
-            },
-            'ta_30min_raw':
-            {
-                'method_type': None,
-                'inputs': []
-            },
-            'pa_30min_processed':
-            {
-                'method_type': 'process',
-                'inputs': ['pa_30min_raw']
-            },
-            'ta_30min_processed':
-            {
-                'method_type': 'process',
-                'inputs': ['ta_30min_raw']
-            },
-            'ta_max_1day_processed':
-            {
-                'method_type': 'calculate',
-                'inputs': ['ta_30min_processed']
-            },
+    test_timeseries_defs_derivation_map = {
+        "test_a":
+        {
+            "inputs": []
+        },
+        "test_b":
+        {
+            "method_type": "calculate",
+            "inputs": ["input_a", "input_b"]
         }
+    }
 
-        expected = {
-            'alic1_PT1M_PT1M': {
-                "site_id": 'alic1',
-                "resolution": 'PT1M',
-                "periodicity": 'PT1M',
-                "timeseries_ids": [
-                    'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_1min_raw'
-                ]
-            },
-            'alic1_PT30M_PT30M': {
-                "site_id": 'alic1',
-                "resolution": 'PT30M',
-                "periodicity": 'PT30M',
-                "timeseries_ids": [
-                    'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw',
-                    'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw'
-                ]
-            },
-            'bunny_PT30M_PT30M': {
-                "site_id": 'bunny',
-                "resolution": 'PT30M',
-                "periodicity": 'PT30M',
-                "timeseries_ids": [
-                    'http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-pa_30min_raw'
-                ]
-            },
+    expected = {
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw":
+        {
+            "ts_def": "test_a",
+            "processing_level": "raw",
+            "inputs": [],
+            "load": True
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
+        {
+            "ts_def": "test_b",
+            "processing_level": "processed",
+            "method_type": "calculate",
+            "inputs": ["input_a", "input_b"],
+            "load": False
+        },
+        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_30min_raw":
+        {
+            "ts_def": "test_b",
+            "processing_level": "raw",
+            "method_type": "calculate",
+            "inputs": ["input_a", "input_b"],
+            "load": False
         }
+    }
 
-        result = utils.group_timeseries_to_process(test_timeseries_ids_metadata, test_timeseries_defs_derivation_map)
+    result = utils.merge_ts_def_metadata(test_ts_ids, test_timeseries_defs_derivation_map)
 
-        self.assertDictEqual(result, expected)
+    assert result == expected

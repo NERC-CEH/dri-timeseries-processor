@@ -6,9 +6,7 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import (
-    load_data_for_group,
-    prepare_data_to_load,
-    merge_data,
+    load_data,
     process_timeseries,
 )
 
@@ -20,7 +18,6 @@ metrics.setup_metrics()
 def mock_query_by_date_range(bucket_name, prefix, start_date, end_date, site_ids, columns):
     # Mocking the query to return a DataFrame with dummy data
     data = {
-        "SITE_ID": [site_ids[0]] * 3,
         "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
     }
     for column in columns:
@@ -30,233 +27,74 @@ def mock_query_by_date_range(bucket_name, prefix, start_date, end_date, site_ids
     return pl.DataFrame(data)
 
 
-class TestLoadDataForGroup(unittest.TestCase):
+def mock_query_by_date_range_no_data(bucket_name, prefix, start_date, end_date, site_ids, columns):
+    # An empty dataframe with the specified columns should be returned.
+    data = {"time": []}
+    schema = {"time": pl.Datetime(time_unit='us', time_zone="UTC")}
+    
+    for column in columns:
+        data[column] = []
+        schema[column] = pl.Int64
+
+    return pl.DataFrame(data, schema)
+
+
+class TestLoadData(unittest.TestCase):
     def setUp(self):
-        self.all_timeseries_ids_metadata = {
-            "ts1": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
-            "ts2": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col2"},
-            "ts3": {"sourceDataset": "dataset1", "sourceBucket": "bucket2", "sourceColumnName": "col3"},
-            "ts4": {"sourceDataset": "dataset2", "sourceBucket": "bucket1", "sourceColumnName": "col4"},
-            "ts5": {"sourceDataset": "dataset2", "sourceBucket": "bucket2", "sourceColumnName": "col5"},
+        self.ts_metadata = {
+            "sourceDataset": "dataset1",
+            "sourceBucket": "bucket1",
+            "sourceColumnName": "col1",
+            "sourceSite": "site1",
+            "resolution": "PT30M",
+            "periodicity": "PT30M",
+            "processing_level": "raw",
         }
 
         self.start_date = datetime(2023, 1, 1)
         self.end_date = datetime(2023, 1, 31)
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    @patch("dritimeseriesprocessor.processor.add_processing_dependencies")
-    def test_load_data_for_single_dataset_and_bucket(self, mock_deps, mock_query):
-        """Test the load_data_for_group where ts_ids are from the same dataset and bucket.
+    def test_load_data_success(self, mock_query):
+        """Test the load_data with valid ts_id.
         """
-        ts_ids = ["ts1", "ts2"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        site_id = "site1"
-
         mock_query.side_effect = mock_query_by_date_range
-        mock_deps.side_effect = lambda x: x
 
-        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
-        self.assertIsInstance(result, pl.DataFrame)
-        self.assertEqual(result.shape, (3, 4))
+        result = load_data(self.ts_metadata, self.start_date, self.end_date)
+        self.assertIsInstance(result, TimeSeries)
+        self.assertEqual(result.df.shape, (3, 2))
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    @patch("dritimeseriesprocessor.processor.add_processing_dependencies")
-    def test_load_data_for_multi_datasets_and_buckets(self, mock_deps, mock_query):
-        """Test the load_data_for_group where ts_ids are from multiple datasets and buckets.
+    def test_load_data_for_no_data(self, mock_query):
+        """Test the load_data when there is no data.
         """
-        ts_ids = ["ts1", "ts2", "ts3", "ts4", "ts5"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        site_id = "site1"
+        mock_query.side_effect = mock_query_by_date_range_no_data
 
-        mock_query.side_effect = mock_query_by_date_range
-        mock_deps.side_effect = lambda x: x
-
-        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
-        self.assertIsInstance(result, pl.DataFrame)
-        self.assertEqual(result.shape, (3, 7))
-
-    @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    @patch("dritimeseriesprocessor.processor.add_processing_dependencies")
-    def test_no_data(self, mock_deps, mock_query):
-        """Test when no data is returned from the query.
-        """
-        ts_ids = ["ts1", "ts2"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        site_id = "site1"
-
-        mock_query.return_value = pl.DataFrame()
-        mock_deps.side_effect = lambda x: x
-
-        result = load_data_for_group(ts_metadata, site_id, self.start_date, self.end_date)
-        self.assertEqual(result, None)
-        
-
-class TestPrepareDataToLoad(unittest.TestCase):
-    def setUp(self):
-        self.all_timeseries_ids_metadata = {
-            "ts1": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
-            "ts2": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col2"},
-            "ts3": {"sourceDataset": "dataset1", "sourceBucket": "bucket2", "sourceColumnName": "col1"},
-            "ts4": {"sourceDataset": "dataset2", "sourceBucket": "bucket1", "sourceColumnName": "col2"},
-            "ts5": {"sourceDataset": "dataset2", "sourceBucket": "bucket2", "sourceColumnName": "col2"},
-        }
-
-    def test_single_bucket_and_dataset(self):
-        """Test the prepare_data_to_load function with a single dataset and bucket."""
-        ts_ids = ["ts1", "ts2"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        result = prepare_data_to_load(ts_metadata)
-
-        expected = {
-            "dataset1": {
-                "bucket1": {"col1", "col2"}
-            }
-        }
-        self.assertEqual(result, expected)
-    
-    def test_multiple_buckets_and_datasets(self):
-        """Test the prepare_data_to_load function with multiple datasets and buckets."""
-        ts_ids = ["ts1", "ts2", "ts3", "ts4", "ts5"]
-        ts_metadata = {ts_id: self.all_timeseries_ids_metadata[ts_id] for ts_id in ts_ids}
-        result = prepare_data_to_load(ts_metadata)
-
-        expected = {
-            "dataset1": {
-                "bucket1": {"col1", "col2"},
-                "bucket2": {"col1"}
-            },
-            "dataset2": {
-                "bucket1": {"col2"},
-                "bucket2": {"col2"}
-            }
-        }
-        self.assertEqual(result, expected)
-
-    def test_repeated_columns(self):
-        """Test the prepare_data_to_load function with repeated columns."""
-        ts_metadata = {
-            "ts1": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
-            "ts2": {"sourceDataset": "dataset1", "sourceBucket": "bucket1", "sourceColumnName": "col1"},
-        }
-
-        result = prepare_data_to_load(ts_metadata)
-        expected = {
-            "dataset1": {
-                "bucket1": {"col1"}
-            }
-        }
-        self.assertEqual(result, expected)
-
-
-class TestMergeData(unittest.TestCase):
-    def setUp(self):
-        self.existing_data = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
-            "col1": [1, 2],
-            "col2": [3, 4]
-        })
-
-    def test_simple_merge(self):
-        """Test the merge_data function with a simple case."""
-        new_data = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
-            "col1": [1, 2],
-            "col3": [5, 6]
-        })
-        result = merge_data([self.existing_data, new_data])
-        expected = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
-            "col1": [1, 2],
-            "col2": [3, 4],
-            "col3": [5, 6]
-        })
-        self.assertTrue(result.equals(expected))
-
-    def test_single_dataframe(self):
-        """Test the merge_data function with a single dataframe."""
-        result = merge_data([self.existing_data])
-        expected = self.existing_data
-        self.assertTrue(result.equals(expected))
-
-    def test_larger_new_data(self):
-        """Test the merge_data function with larger new data."""
-        new_data = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
-            "col4": [7, 8, 9]
-        })
-        result = merge_data([self.existing_data, new_data])
-        expected = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
-            "col1": [1, 2, None],
-            "col2": [3, 4, None],
-            "col4": [7, 8, 9]
-        })
-        self.assertTrue(result.equals(expected))
-
-    def test_with_new_rows(self):
-        """Test the merge_data function with differing rows."""
-        new_data = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 3)],
-            "col1": [1, 3],
-            "col2": [3, 5]
-        })
-        result = merge_data([self.existing_data, new_data])
-        expected = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
-            "col1": [1, 2, 3],
-            "col2": [3, 4, 5]
-        })
-        self.assertTrue(result.equals(expected))
-
-    def test_differing_column_data(self):
-        """Test the merge_data function adds duplicated time rows.
-        Note, ultimately we don't want this but the detection of duplicated time rows falls
-        outside the scope of this function."""
-        new_data = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
-            "col1": [10, 2]
-        })
-        result = merge_data([self.existing_data, new_data])
-        expected = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 1), datetime(2023, 1, 2)],
-            "col1": [1, 10, 2],
-            "col2": [3, None, 4]
-        })
-        self.assertTrue(result.equals(expected))
-
-    def test_no_data(self):
-        """Test the merge_data function with no data."""
-        new_data = pl.DataFrame()
-        result = merge_data([self.existing_data, new_data])
-        expected = pl.DataFrame({
-            "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
-            "col1": [1, 2],
-            "col2": [3, 4]
-        })
-        self.assertTrue(result.equals(expected))
+        result = load_data(self.ts_metadata, self.start_date, self.end_date)
+        self.assertIsInstance(result, TimeSeries)
+        self.assertEqual(result.df.shape, (0, 2))
 
 
 class TestProcessTimeseries(unittest.TestCase):
-    @patch("dritimeseriesprocessor.processor.add_initial_core_flags")
+
     @patch("dritimeseriesprocessor.processor.run_preprocess")
     @patch("dritimeseriesprocessor.processor.run_quality_control")
     @patch("dritimeseriesprocessor.processor.run_infilling")
     def test_process_timeseries(
-        self, mock_run_infilling, mock_run_quality_control, mock_run_preprocess, mock_add_initial_core_flags
+        self, mock_run_infilling, mock_run_quality_control, mock_run_preprocess
     ):
         """Test the process_timeseries function.
         """
-        ts = MagicMock(spec=TimeSeries)
-        ts_metadata = {"ts1": {}, "ts2": {}}
+        ts_metadata = {"ts1": {"data": [1]}, "ts2": {}}
+        return_ts_metadata = {"ts1": {"data": [2]}}
+        expected = {"ts1": {"data": [2]}, "ts2": {}}
 
-        mock_add_initial_core_flags.return_value = ts
-        mock_run_preprocess.return_value = ts
-        mock_run_quality_control.return_value = ts
-        mock_run_infilling.return_value = ts
+        mock_run_preprocess.return_value = return_ts_metadata
+        mock_run_quality_control.return_value = return_ts_metadata
+        mock_run_infilling.return_value = return_ts_metadata
 
-        result = process_timeseries(ts, ts_metadata)
-        self.assertEqual(result, ts)
-        mock_add_initial_core_flags.assert_called_once()
+        result = process_timeseries(ts_metadata)
+        self.assertEqual(result, expected)
         mock_run_preprocess.assert_called_once()
         mock_run_quality_control.assert_called_once()
         mock_run_infilling.assert_called_once()

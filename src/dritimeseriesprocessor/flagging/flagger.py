@@ -6,9 +6,6 @@ import polars as pl
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
-from dritimeseriesprocessor.infilling.infiller import infill_flag_column_name
-from dritimeseriesprocessor.preprocessing.preprocessor import pr_flag_column_name
-from dritimeseriesprocessor.quality_control.quality_controller import qc_flag_column_name
 from dritimeseriesprocessor.utils import missing_expr, not_missing_expr
 
 logger = logging.getLogger(__name__)
@@ -27,6 +24,45 @@ def core_flag_column_name(column: str) -> str:
         Flag column name
     """
     return f"{column}_CORE_FLAG"
+
+
+def pr_flag_column_name(column: str) -> str:
+    """
+    Return column name of preprocess flag column for a given variable column.
+
+    Args:
+        column: Data column name
+
+    Returns:
+        Flag column name
+    """
+    return f"{column}_PR_FLAG"
+
+
+def qc_flag_column_name(column: str) -> str:
+    """
+    Return column name of QC flag column for a given variable column.
+
+    Args:
+        column: Data column name
+
+    Returns:
+        Flag column name
+    """
+    return f"{column}_QC_FLAG"
+
+
+def infill_flag_column_name(column: str) -> str:
+    """
+    Return column name of infill flag column for a given variable column.
+
+    Args:
+        column: Data column name
+
+    Returns:
+        Flag column name
+    """
+    return f"{column}_INFILL_FLAG"
 
 
 def initialise_core_flag_system(ts: TimeSeries) -> TimeSeries:

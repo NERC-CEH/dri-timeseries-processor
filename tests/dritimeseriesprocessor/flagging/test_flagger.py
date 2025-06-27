@@ -10,6 +10,9 @@ from dritimeseriesprocessor.flagging.flagger import (
     update_quality_control_core_flags,
     update_infill_core_flags,
     core_flag_column_name,
+    pr_flag_column_name,
+    qc_flag_column_name,
+    infill_flag_column_name,
 )
 
 
@@ -18,6 +21,37 @@ class TestCoreFlagColumnName(unittest.TestCase):
         """Test the generation of core flag column names."""
         self.assertEqual(core_flag_column_name("value"), "value_CORE_FLAG")
         self.assertEqual(core_flag_column_name("temperature"), "temperature_CORE_FLAG")
+
+
+
+class TestPRFlagColumnName(unittest.TestCase):
+    """Unit tests for the pr_flag_column_name function.
+    """
+    def test_standard_column_name(self):
+        """
+        Test that the function correctly appends '_PR_FLAG' to a standard column name.
+        """
+        self.assertEqual(pr_flag_column_name('data'), 'data_PR_FLAG')
+
+
+class TestQCFlagColumnName(unittest.TestCase):
+    """Unit tests for the qc_flag_column_name function.
+    """
+    def test_standard_column_name(self):
+        """
+        Test that the function correctly appends '_QC_FLAG' to a standard column name.
+        """
+        self.assertEqual(qc_flag_column_name('data'), 'data_QC_FLAG')
+
+
+class TestInfillFlagColumnName(unittest.TestCase):
+    """Unit tests for the infill_flag_column_name function.
+    """
+    def test_standard_column_name(self):
+        """
+        Test that the function correctly appends '_INFILL_FLAG' to a standard column name.
+        """
+        self.assertEqual(infill_flag_column_name('data'), 'data_INFILL_FLAG')
 
 
 class TestFlagger(unittest.TestCase):

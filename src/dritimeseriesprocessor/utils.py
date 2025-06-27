@@ -188,43 +188,30 @@ def extract_dependent_timeseries_defs(
     return list({items for items in timeseries_defs_derivation_map.values() for items in items["inputs"]})
 
 
-def group_timeseries_to_process(
-    timeseries_ids_metadata: Dict[str, Dict[str, str]],
+def merge_ts_def_metadata(
+    ts_ids: Dict[str, Dict[str, str]],
     timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
-) -> Dict[str, Union[str, List[str]]]:
-    """Return timeseries ids that are to be processed.
-    This function will group the timeseries ids by their site, resolution and periodicity.
+) -> Dict[str, Dict[str, str]]:
+    """Merge timeseries definitions metadata into the timeseries ids metadata and add whether to load the data.
 
     Args:
-        timeseries_ids_metadata: metadata about the timeseries ids to process
-        timeseries_defs_derivation_map: An object with all the dependencies
+        ts_ids: Metadata for timeseries ids to process
+        timeseries_defs_derivation_map: A map of timeseries definitions and their metadata
 
     Returns:
-        A dictionary of timeseries ids for each set of site_id, resolution and periodicity.
+        A dictionary with the merged metadata.
     """
-    grouped_timeseries = {}
+    for ts_id, ts_metadata in ts_ids.items():
+        ts_def = ts_metadata["ts_def"]
+        if ts_def in timeseries_defs_derivation_map:
+            ts_metadata.update(timeseries_defs_derivation_map[ts_def])
 
-    for timeseries_id, metadata in timeseries_ids_metadata.items():
-        # Only add the timeseries ids with no derivation method.
-        # These are the TS that are to be processed.
-        process_method = timeseries_defs_derivation_map[metadata["ts_def"]].get("method_type")
-        if process_method is None:
-            site_id = metadata["sourceSite"]
-            resolution = metadata["resolution"]
-            periodicity = metadata["periodicity"]
+            # Raw timeseries ids with no derivation method is data that must be loaded.
+            if ts_metadata["processing_level"] == "raw" and ts_metadata.get("method_type") is None:
+                ts_metadata["load"] = True
+            else:
+                ts_metadata["load"] = False
+        else:
+            logger.warning(f"Timeseries definition {ts_def} not found in derivation map for {ts_id}")
 
-            # Create a unique key for the group based on site_id, resolution and periodicity
-            group_key = f"{site_id}_{resolution}_{periodicity}"
-
-            # Add the timeseries id to the group
-            if group_key not in grouped_timeseries:
-                grouped_timeseries[group_key] = {
-                    "site_id": site_id,
-                    "resolution": resolution,
-                    "periodicity": periodicity,
-                    "timeseries_ids": [],
-                }
-
-            grouped_timeseries[group_key]["timeseries_ids"].append(timeseries_id)
-
-    return grouped_timeseries
+    return ts_ids
