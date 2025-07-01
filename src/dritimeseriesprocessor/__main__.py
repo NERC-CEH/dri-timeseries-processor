@@ -95,7 +95,7 @@ user_timeseries_ids_metadata = extract_timeseries_id_metadata(user_timeseries_id
 # Step 2
 # Get processing dependencies for the timeseries IDs to be processed
 # TODO: Determine these by looking at processing config dependencies in metadata
-column_query_parameter = build_column_query_parameter(["BATTV", "SCANS"])
+column_query_parameter = build_column_query_parameter(["BATTV", "SCANS", "TNR01C"])
 processing_query_parameter = build_processing_query_parameter(level="raw")
 processing_dep_timeseries_ids_response = load_datasets(
     site_query_parameter

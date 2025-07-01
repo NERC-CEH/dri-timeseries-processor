@@ -11,6 +11,7 @@ from dritimeseriesprocessor.quality_control.checks import (
     soilmet_scans_check,
     spike_check,
     pluvio_diagnostic_check,
+    radiometer_ta_check,
     snow_distance_signal_check,
     tdt_soil_temp_check
 )
@@ -332,8 +333,82 @@ class TestSpikeCheck(unittest.TestCase):
 
 
 class TestRadiometerTaCheck(unittest.TestCase):
-    # Place holder
-    pass
+    def setUp(self):
+        self.flag_name = "nr01_temp"
+
+        lwin_data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+                datetime(2023, 8, 15),
+            ],
+            'lwin': list([2, 3, 4, 5, 4, 3]),
+        })
+
+        nr01_data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+                datetime(2023, 8, 15),
+            ],
+            'nr01': list(range(6)),
+        })
+
+        self.lwin_ts = TimeSeries(lwin_data, "time", metadata={"column_name": "lwin"})
+        self.lwin_ts.add_flag_system("qc_flags", {self.flag_name: 1})
+        self.lwin_ts.init_flag_column("qc_flags", "lwin_QC_FLAG")
+
+        self.nr01_ts = TimeSeries(nr01_data, "time", metadata={"column_name": "nr01"})
+
+        self.lwin_ts_id = "site1_lwin"
+        self.nr01_ts_id = "site1_nr01"
+
+        self.ts_ids = {
+            self.lwin_ts_id: {
+                "data": self.lwin_ts
+            },
+            self.nr01_ts_id: {
+                "data": self.nr01_ts
+            }
+        }
+
+    def test_radiometer_temp_check(self):
+        """ Test that the check returns expected results when some values outside of nr01 temp
+        """
+        gt = 3.5
+        lt = 0.5
+        result = radiometer_ta_check(self.ts_ids, self.lwin_ts_id, "lwin_QC_FLAG", self.flag_name, gt, lt, self.nr01_ts_id)
+        self.assertEqual(result[self.lwin_ts_id]["data"].df['lwin_QC_FLAG'].to_list(), [1, 0, 0, 0, 1, 1])
+
+    def test_radiometer_temp_check_all_within(self):
+        """ Test that the check returns expected results when all values within nr01 temp
+        """
+        gt = 10.
+        lt = -1.
+        result = radiometer_ta_check(self.ts_ids, self.lwin_ts_id, "lwin_QC_FLAG", self.flag_name, gt, lt, self.nr01_ts_id)
+        self.assertEqual(result[self.lwin_ts_id]["data"].df['lwin_QC_FLAG'].to_list(), [0, 0, 0, 0, 0, 0])
+
+    def test_radiometer_temp_check_all_outside(self):
+        """ Test that the check returns expected results when all values within nr01 temp
+        """
+        gt = 100.
+        lt = 90.
+        result = radiometer_ta_check(self.ts_ids, self.lwin_ts_id, "lwin_QC_FLAG", self.flag_name, gt, lt, self.nr01_ts_id)
+        self.assertEqual(result[self.lwin_ts_id]["data"].df['lwin_QC_FLAG'].to_list(), [1, 1, 1, 1, 1, 1])
+
+    def test_radiometer_temp_check_at_boundaries(self):
+        """ Test that the check returns expected results when values at boundaries
+        """
+        gt = 5.
+        lt = 0.
+        result = radiometer_ta_check(self.ts_ids, self.lwin_ts_id, "lwin_QC_FLAG", self.flag_name, gt, lt, self.nr01_ts_id)
+        self.assertEqual(result[self.lwin_ts_id]["data"].df['lwin_QC_FLAG'].to_list(), [0, 0, 0, 0, 0, 0])
 
 
 class TestHeatFluxPlateCheck(unittest.TestCase):

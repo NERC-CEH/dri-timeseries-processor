@@ -38,6 +38,7 @@ def battery_voltage_check(
     """
     # Get data
     ts = ts_ids[ts_id]["data"]
+
     # Check if the dependent time series exists
     if dep_ts not in ts_ids:
         raise ValueError(f"Dependent Battery Voltage time series '{dep_ts}' not found in ts_ids.")
@@ -107,7 +108,8 @@ def soilmet_scans_check(
     """
     # Get data
     ts = ts_ids[ts_id]["data"]
-    # Get the dependent time series for scans
+
+    # Check if the dependent time series exists
     if dep_ts not in ts_ids:
         raise ValueError(f"Dependent Scans time series '{dep_ts}' not found in ts_ids.")
     scans_ts = ts_ids[dep_ts]["data"]
@@ -203,19 +205,19 @@ def radiometer_ta_check(
     lt: float,
     dep_ts: str,
 ) -> TimeSeries:
-    """Check radiometer temperature values falls between min and max range, applying a quality control flag if
-    outside of range.
+    """Check radiometer temperature values falls between min and max range, applying a quality control flag to
+    given timeseries if outside of range.
 
     Min and max range values are defined per site, per variable and per time resolution.
 
     Args:
         ts_ids: Metadata and data for TimeSeries ids.
-        ts_id: The ID of the TimeSeries to check.
+        ts_id: The ID of the TimeSeries to flag.
         flag_column: The column to which flag value should be added.
         flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
         gt: The minimum value for the range.
         lt: The maximum value for the range.
-        dep_ts: The name of the dependent time series to use for the radiometer temperature check.
+        dep_ts: The name of the radiometer temperature time series used for the check.
 
     Returns:
          ts_ids: Metadata and data for TimeSeries with the quality control flag applied.
@@ -223,7 +225,18 @@ def radiometer_ta_check(
     # Get data
     ts = ts_ids[ts_id]["data"]
 
-    # TODO: Fill in this placeholder for radiometer temperature check
+    # Check if the dependent time series exists
+    if dep_ts not in ts_ids:
+        raise ValueError(f"Dependent TNR01C time series '{dep_ts}' not found in ts_ids.")
+    tnr01c_ts = ts_ids[dep_ts]["data"]
+
+    # Get True/False expression for tnr01c values that are out of range
+    expr = pl.col(tnr01c_ts.column_name).lt(lt) | pl.col(tnr01c_ts.column_name).gt(gt)
+    bool_expr = tnr01c_ts.df.select(expr)
+
+    # Use the boolean expression to flag original time series
+    ts.add_flag(flag_column, flag_name, bool_expr)
+
     ts_ids[ts_id]["data"] = ts
 
     return ts_ids
@@ -263,7 +276,7 @@ def pluvio_diagnostic_check(
     flag_column: str,
     flag_name: str,
     gt: float,
-    dep_ts: str
+    dep_ts: str,
 ) -> TimeSeries:
     """Check the pluvio diagnostic values are no larger than given value.
 
@@ -295,7 +308,7 @@ def snow_distance_signal_check(
     flag_column: str,
     flag_name: str,
     lt: float,
-    dep_ts: str
+    dep_ts: str,
 ) -> TimeSeries:
     """Check the snow distance signal values are no smaller than given value.
 
@@ -321,26 +334,25 @@ def snow_distance_signal_check(
     return ts_ids
 
 
-# def tdt_soil_temp_check(
-#     ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float, dep_ts: str
-# ) -> TimeSeries:
-#     """Check the TDT soil temperature values are no smaller than given value and flag VWC readings
-#     if so.
+def tdt_soil_temp_check(
+    ts: TimeSeries, column: str, flag_column: str, flag_name: str, lt: float, dep_ts: str
+) -> TimeSeries:
+    """Check the TDT soil temperature values are no smaller than given value and flag VWC readings
+    if so.
 
-#     Args:
-#         ts: The input TimeSeries containing the data to be tested.
-#         column: The name of the column to which the quality control flag will be applied.
-#         flag_column: The column to which flag value should be added.
-#         flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
-#         lt: The minimum temp for the soil.
+    Args:
+        ts: The input TimeSeries containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        lt: The minimum temp for the soil.
 
-#     Returns:
-#          The TimeSeries with the quality control flag applied.
-#     """
-#     # TODO: Use alternative TDT if soil temperature is not available or incorrect.
-#     # TODO: use dep_ts to get the "TDT#_TSOIL" column. To do this we need TDT#_TSOIL to be loaded
-#     # as dependant ts_id in the metadata. FPM-359
-#     ts = column_threshold_check(ts, "TDT1_TSOIL", flag_column, lt, "<", flag_name)
+    Returns:
+         The TimeSeries with the quality control flag applied.
+    """
+    # TODO: Use alternative TDT if soil temperature is not available or incorrect.
+    # TODO: use dep_ts to get the "TDT#_TSOIL" column. To do this we need TDT#_TSOIL to be loaded
+    # as dependant ts_id in the metadata. FPM-359
+    ts = column_threshold_check(ts, "TDT1_TSOIL", flag_column, lt, "<", flag_name)
 
-#     return ts
-
+    return ts
