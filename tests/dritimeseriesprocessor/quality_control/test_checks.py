@@ -558,7 +558,7 @@ class TestSnowDistanceSignalCheck(unittest.TestCase):
         """
         self.ts_ids.pop(self.sig_ts_id)
         with self.assertRaises(ValueError):
-            pluvio_diagnostic_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 0., self.sig_ts_id)
+            snow_distance_signal_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 0., self.sig_ts_id)
 
 
 class TestTDTSoilTempCheck(unittest.TestCase):
@@ -575,36 +575,59 @@ class TestTDTSoilTempCheck(unittest.TestCase):
                 datetime(2023, 8, 13),
                 datetime(2023, 8, 14),
             ],
-            "TDT1_TSOIL": [0.1, 0.5, 1., 1.5, 2.1],
             "TDT1_VWC": [41., 52., 43., 54., 45.],
+        })
+
+        tsoil_data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+            ],
+            "TDT1_TSOIL": [0.1, 0.5, 1., 1.5, 2.1],
         })
 
         self.ts = TimeSeries(data, "time")
         self.ts.add_flag_system("qc_flags", {self.flag_name: 1})
         self.ts.init_flag_column("qc_flags", "TDT1_VWC_QC_FLAG")
 
+        tsoil_ts = TimeSeries(tsoil_data, "time", metadata={"column_name": "TDT1_TSOIL"})
+
+        self.value_ts_id = "site1_value"
+        self.tsoil_ts_id = "site1_tsoil_raw"
+
+        self.ts_ids = {
+            self.value_ts_id: {
+                "data": self.ts
+            },
+            self.tsoil_ts_id: {
+                "data": tsoil_ts
+            }
+        } 
+
     def test_tdt_tsoil_below_threshold(self):
         """ Test that correct flags applied to values that match where TDT1_TSOIL is above threshold
         """
-        result = tdt_soil_temp_check(self.ts, "TDT1_VWC", "TDT1_VWC_QC_FLAG", self.flag_name, 1., "")
-        self.assertEqual(result.df['TDT1_VWC_QC_FLAG'].to_list(), [1, 1, 0, 0, 0])
+        result = tdt_soil_temp_check(self.ts_ids, self.value_ts_id, "TDT1_VWC_QC_FLAG", self.flag_name, 1., self.tsoil_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['TDT1_VWC_QC_FLAG'].to_list(), [1, 1, 0, 0, 0])
 
     def test_tdt_tsoil_none_below_threshold(self):
         """ Test that no flags applied because tsoil all above threshold
         """
-        result = tdt_soil_temp_check(self.ts, "TDT1_VWC", "TDT1_VWC_QC_FLAG", self.flag_name, 0., "")
-        self.assertEqual(result.df['TDT1_VWC_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
+        result = tdt_soil_temp_check(self.ts_ids, self.value_ts_id, "TDT1_VWC_QC_FLAG", self.flag_name, 0., self.tsoil_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['TDT1_VWC_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
 
     def test_tdt_tsoil_all_below_threshold(self):
         """ Test that flags applied to all TDT1_VWCs because tsoil all below threshold
         """
-        result = tdt_soil_temp_check(self.ts, "TDT1_VWC", "TDT1_VWC_QC_FLAG", self.flag_name, 5., "")
-        self.assertEqual(result.df['TDT1_VWC_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
+        result = tdt_soil_temp_check(self.ts_ids, self.value_ts_id, "TDT1_VWC_QC_FLAG", self.flag_name, 5., self.tsoil_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['TDT1_VWC_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
 
     def test_no_precip_diag_column(self):
         """ Test terror raised when 'TDT1_TSOIL' column is missing.
         """
-        self.ts.df = self.ts.df.drop(["TDT1_TSOIL"])
-        with self.assertRaises(UserWarning):
-            tdt_soil_temp_check(self.ts, "TDT1_TSOIL", "TDT1_VWC_QC_FLAG", self.flag_name, 0., "")
-
+        self.ts_ids.pop(self.tsoil_ts_id)
+        with self.assertRaises(ValueError):
+            tdt_soil_temp_check(self.ts_ids, self.value_ts_id, "TDT1_VWC_QC_FLAG", self.flag_name, 0., self.tsoil_ts_id)
