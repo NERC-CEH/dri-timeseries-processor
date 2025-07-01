@@ -266,8 +266,13 @@ def heat_flux_plate_check(
     # Get data
     ts = ts_ids[ts_id]["data"]
 
-    # TODO: Fill in this placeholder
-    return ts
+    # Create expression to filter out the times
+    expr = (pl.col(ts.time_name).dt.time() >= time_ge) & (pl.col(ts.time_name).dt.time() <= time_le)
+    ts.add_flag(flag_column, flag_name, expr)
+
+    ts_ids[ts_id]["data"] = ts
+
+    return ts_ids
 
 
 def pluvio_diagnostic_check(
@@ -320,7 +325,7 @@ def snow_distance_signal_check(
         flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
         lt: The minimum value for the snow distance signal.
         dep_ts: The name of the snow sensor signal time series used for the check.
-        
+
     Returns:
         The TimeSeries with the quality control flag applied.
     """
@@ -369,4 +374,3 @@ def tdt_soil_temp_check(
     ts_ids[ts_id]["data"] = column_threshold_check(ts, tsoil_ts, flag_column, lt, "<", flag_name)
 
     return ts_ids
-

@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, time
 
 import polars as pl
 from time_stream import TimeSeries
@@ -11,6 +11,7 @@ from dritimeseriesprocessor.quality_control.checks import (
     soilmet_scans_check,
     spike_check,
     pluvio_diagnostic_check,
+    heat_flux_plate_check,
     radiometer_ta_check,
     snow_distance_signal_check,
     tdt_soil_temp_check
@@ -412,8 +413,56 @@ class TestRadiometerTaCheck(unittest.TestCase):
 
 
 class TestHeatFluxPlateCheck(unittest.TestCase):
-    # Place holder
-    pass
+    def setUp(self):
+        self.flag_name = "hfp_removal"
+
+        data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10, 0, 0),
+                datetime(2023, 8, 10, 0, 30),
+                datetime(2023, 8, 10, 1, 0),
+                datetime(2023, 8, 10, 1, 30),
+                datetime(2023, 8, 10, 2, 0),
+                datetime(2023, 8, 10, 2, 30),
+            ],
+            'value1': list(range(6)),
+        })
+
+        self.ts = TimeSeries(data, "time", metadata={"column_name": "value1"})
+        self.ts.add_flag_system("qc_flags", {self.flag_name: 1})
+        self.ts.init_flag_column("qc_flags", "value1_QC_FLAG")
+
+        self.value_ts_id = "site1_value1"
+
+        self.ts_ids = {
+            self.value_ts_id: {
+                "data": self.ts
+            }
+        }
+
+    def test_hfp_removal_check(self):
+        """ Test that the hfp removal check flags expected values within time range
+        """
+        time_ge = time(0, 30)
+        time_le = time(1, 30)
+        result = heat_flux_plate_check(self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, time_ge, time_le)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [0, 1, 1, 1, 0, 0])
+
+    def test_hfp_removal_check_all_within(self):
+        """ Test that the hfp removal check flags all.
+        """
+        time_ge = time(0, 0)
+        time_le = time(4, 30)
+        result = heat_flux_plate_check(self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, time_ge, time_le)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [1, 1, 1, 1, 1, 1])
+
+    def test_hfp_removal_check_all_outside(self):
+        """ Test that the hfp removal check flags none
+        """
+        time_ge = time(5, 0)
+        time_le = time(7, 30)
+        result = heat_flux_plate_check(self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, time_ge, time_le)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [0, 0, 0, 0, 0, 0])
 
 
 class TestPluvioDiagnosticCheck(unittest.TestCase):
