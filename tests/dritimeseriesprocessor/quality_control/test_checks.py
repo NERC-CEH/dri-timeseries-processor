@@ -430,38 +430,62 @@ class TestPluvioDiagnosticCheck(unittest.TestCase):
                 datetime(2023, 8, 13),
                 datetime(2023, 8, 14),
             ],
-            "PRECIP_DIAG": [0., 0., 1., 20., -1],
             "value": [1., 2., 3., 4., 5.],
+        })
+
+        precip_diag_data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+            ],
+            "PRECIP_DIAG": [0., 0., 1., 20., -1],
         })
 
         self.ts = TimeSeries(data, "time")
         self.ts.add_flag_system("qc_flags", {self.flag_name: 1})
         self.ts.init_flag_column("qc_flags", "value_QC_FLAG")
 
+        diag_ts = TimeSeries(precip_diag_data, "time", metadata={"column_name": "PRECIP_DIAG"})
+
+        self.value_ts_id = "site1_value"
+        self.diag_ts_id = "site1_diag_raw"
+
+        self.ts_ids = {
+            self.value_ts_id: {
+                "data": self.ts
+            },
+            self.diag_ts_id: {
+                "data": diag_ts
+            }
+        }
+
     def test_pluvio_diag_below_threshold(self):
         """ Test that correct flags applied to values that match where PRECIP_DIAG is above threshold
         """
-        result = pluvio_diagnostic_check(self.ts, "value", "value_QC_FLAG", self.flag_name, 0., "")
-        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [0, 0, 1, 1, 0])
+        result = pluvio_diagnostic_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 0., self.diag_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 1, 1, 0])
 
     def test_pluvio_diag_none_below_threshold(self):
         """ Test that all flags applied because precip diag values all above threshold
         """
-        result = pluvio_diagnostic_check(self.ts, "value", "value_QC_FLAG", self.flag_name, -10., "")
-        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
+        result = pluvio_diagnostic_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, -10., self.diag_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
 
     def test_pluvio_diag_all_below_threshold(self):
         """ Test that no flags applied to all values because precip diag values all below threshold
         """
-        result = pluvio_diagnostic_check(self.ts, "value", "value_QC_FLAG", self.flag_name, 100., "")
-        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
+        result = pluvio_diagnostic_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 100., self.diag_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
 
     def test_no_precip_diag_column(self):
         """ Test terror raised when 'PRECIP_DIAG' column is missing.
         """
-        self.ts.df = self.ts.df.drop(["PRECIP_DIAG"])
-        with self.assertRaises(UserWarning):
-            pluvio_diagnostic_check(self.ts, "value", "value_QC_FLAG", self.flag_name, 0., "")
+        self.ts_ids.pop(self.diag_ts_id)
+        with self.assertRaises(ValueError):
+            pluvio_diagnostic_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 10., self.diag_ts_id)
 
 
 class TestSnowDistanceSignalCheck(unittest.TestCase):
