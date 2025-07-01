@@ -502,38 +502,63 @@ class TestSnowDistanceSignalCheck(unittest.TestCase):
                 datetime(2023, 8, 13),
                 datetime(2023, 8, 14),
             ],
-            "SNOWD_SIGNALQUALITY": [160., 170., 1., 20., -1],
             "value": [1., 2., 3., 4., 5.],
+        })
+
+        sig_data = pl.DataFrame({
+            'time': [
+                datetime(2023, 8, 10),
+                datetime(2023, 8, 11),
+                datetime(2023, 8, 12),
+                datetime(2023, 8, 13),
+                datetime(2023, 8, 14),
+            ],
+            "SNOWD_SIGNALQUALITY": [160., 170., 1., 20., -1],
         })
 
         self.ts = TimeSeries(data, "time")
         self.ts.add_flag_system("qc_flags", {self.flag_name: 1})
         self.ts.init_flag_column("qc_flags", "value_QC_FLAG")
 
+        sig_ts = TimeSeries(sig_data, "time", metadata={"column_name": "SNOWD_SIGNALQUALITY"})
+
+        self.value_ts_id = "site1_value"
+        self.sig_ts_id = "site1_sig_raw"
+
+        self.ts_ids = {
+            self.value_ts_id: {
+                "data": self.ts
+            },
+            self.sig_ts_id: {
+                "data": sig_ts
+            }
+        } 
+
+
     def test_snowd_signal_below_threshold(self):
         """ Test that correct flags applied to values that match where SNOWD_SIGNALQUALITY is above threshold
         """
-        result = snow_distance_signal_check(self.ts, "value", "value_QC_FLAG", self.flag_name, 152., "")
-        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [0, 0, 1, 1, 1])
+        result = snow_distance_signal_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 152., self.sig_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 1, 1, 1])
 
     def test_snowd_signal_none_below_threshold(self):
         """ Test that no flags applied because snowd signal all above threshold
         """
-        result = snow_distance_signal_check(self.ts, "value", "value_QC_FLAG", self.flag_name, -10., "")
-        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
+        result = snow_distance_signal_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, -10., self.sig_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
 
     def test_snowd_signal_all_below_threshold(self):
         """ Test that flags applied to all values because snowd signal all below threshold
         """
-        result = snow_distance_signal_check(self.ts, "value", "value_QC_FLAG", self.flag_name, 300., "")
-        self.assertEqual(result.df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
+        result = snow_distance_signal_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 300., self.sig_ts_id)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
 
     def test_no_snowd_signal_column(self):
         """ Test terror raised when 'SNOWD_SIGNALQUALITY' column is missing.
         """
-        self.ts.df = self.ts.df.drop(["SNOWD_SIGNALQUALITY"])
-        with self.assertRaises(UserWarning):
-            snow_distance_signal_check(self.ts, "value", "value_QC_FLAG", self.flag_name, 0., "")
+        self.ts_ids.pop(self.sig_ts_id)
+        with self.assertRaises(ValueError):
+            pluvio_diagnostic_check(self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, 0., self.sig_ts_id)
 
 
 class TestTDTSoilTempCheck(unittest.TestCase):
