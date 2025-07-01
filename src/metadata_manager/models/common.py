@@ -1,5 +1,13 @@
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+
+class ComponentType(Enum):
+    CORRECTION = "correction"
+    INFILLING = "infilling"
+    QUALITY_CONTROL = "quality_control"
+
 
 # To get the last bit of a uri string, after the last trailing slash.
 #   Allows for alpha characters, underscore and hyphen.

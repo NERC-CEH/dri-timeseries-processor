@@ -1,11 +1,14 @@
 import logging
 from datetime import date, datetime
+from functools import lru_cache
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
+
+from metadata_manager.models.service import load_methods
 
 logger = logging.getLogger(__name__)
 
@@ -215,3 +218,23 @@ def merge_ts_def_metadata(
             logger.warning(f"Timeseries definition {ts_def} not found in derivation map for {ts_id}")
 
     return ts_ids
+
+
+@lru_cache(maxsize=1)
+def get_methods(stage_name: str) -> Dict | None:
+    """Get the methods associated with each processing stage.
+
+    Args:
+        stage_name: The name of the processing stage.
+
+    Returns
+        A dict of the methods if they exist, None otherwise.
+    """
+    methods = load_methods(stage_name)
+    if not methods:
+        logger.warning(f"No methods found for {stage_name}.")
+        return None
+
+    methods = {method: method_config.method_id for method, method_config in methods.items()}
+
+    return methods

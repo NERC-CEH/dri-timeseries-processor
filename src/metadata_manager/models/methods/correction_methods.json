@@ -1,0 +1,38 @@
+{
+    "corection-add": {
+        "name": "ADD",
+        "description": "Sum the data point and correction value. E.g. y=x+ C, where x is the data point and C is the change factor.",
+        "id": 1,
+        "function_name": "add" 
+    },
+    "correction-lw_corr": {
+        "name": "LW_CORR",
+        "description": "Correction for long wave radiation where calibration values are incorrect.",
+        "id": 2,
+        "function_name": "lw"
+    },
+    "correction-scalar": {
+        "name": "SCALAR",
+        "description": "Multiply the data point by a correction factor. E.g. y=Cx where x is the data point and C is the correction factor.",
+        "id": 4,
+        "function_name": "multiply"
+    },
+    "correction-pa_corr": {
+        "name": "PA_CORR",
+        "description": "Correction for pressure where adjust has been calculated from mean sea level pressure.",
+        "id": 8,
+        "function_name": "pa"
+    },
+    "correction-power": {
+        "name": "POWER",
+        "description": "Raise the data point to a power. E.g. y=x^C, x is the data point and C is the change factor.",
+        "id": 16,
+        "function_name": "power"
+    },
+    "correction-wd": {
+        "name": "WD",
+        "description": "Correction for wind direction orientation.",
+        "id": 32,
+        "function_name": "wd"
+    }
+}

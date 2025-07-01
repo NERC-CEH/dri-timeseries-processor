@@ -1,21 +1,25 @@
 import logging
-from datetime import datetime
+from functools import lru_cache
 from typing import Dict, Union
 
 import polars as pl
 import pytz
 from time_stream import TimeSeries
 
-from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
 from dritimeseriesprocessor.flagging.flagger import pr_flag_column_name, update_preprocess_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.preprocessing.operations import CORRECTION_METHODS
 from dritimeseriesprocessor.utils import not_missing_expr
+from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
 
-
 PR_FLAG_SYS_NAME = "pr_flags"
+
+
+@lru_cache(maxsize=1)
+def get_correction_methods() -> Dict:
+    """Load the correction methods and cache the results."""
+    return load_methods("correction")
 
 
 @metrics.track_preprocessing_time()
@@ -30,57 +34,56 @@ def run_preprocess(
     Returns:
         ts_ids: Metadata and corrected data for timeseries ids
     """
-    pr_flags_dict = {method.method_id: method.id for method in preprocessing_config.correction_methods}
-    if not pr_flags_dict:
-        logger.warning("No correction methods given in config.")
+    correction_methods = get_correction_methods()
+
+    # Initialise quality control flag system within TimeSeries object
+    correction_flags_dict = {method: method_config.method_id for method, method_config in correction_methods.items()}
+    if not correction_flags_dict:
+        logger.warning("No QC methods given in config.")
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
         ts = ts_dict["data"]
 
-        for correction_config in preprocessing_config.corrections:
-            if correction_config.site_id != ts.site_id:
-                continue
+        correction_config = load_config("correction", ts_id)
+        if not correction_config:
+            logger.info(f"No correction config found for Time Series ID: {ts_id}")
+            continue
 
-            # Check the target variable exists in the TimeSeries DataFrame
-            if correction_config.variable not in ts.data_columns:
-                continue
+        # Initialise preprocessing flag system within TimeSeries object.
+        if PR_FLAG_SYS_NAME not in ts.flag_systems:
+            ts.add_flag_system(PR_FLAG_SYS_NAME, correction_flags_dict)
 
-            # Check if the correction method is implemented
-            correction_fn = CORRECTION_METHODS.get(correction_config.method_id)
-            if not correction_fn:
-                logger.warning(f"Unimplemented method: {correction_config.method_id}")
-                continue
-
-            # Initialise preprocessing flag system within TimeSeries object.
-            if PR_FLAG_SYS_NAME not in ts.flag_systems:
-                ts.add_flag_system(PR_FLAG_SYS_NAME, pr_flags_dict)
-
+        for config in correction_config:
             # Add a flag column for the correction method
-            pr_flag_col = pr_flag_column_name(correction_config.variable)
+            pr_flag_col = pr_flag_column_name(ts.column_name)
             if pr_flag_col not in ts.columns:
                 ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
 
-            # Ensure the end datetime is set; default to the current time if not provided
-            if correction_config.end_datetime is None:
-                correction_config.end_datetime = datetime.now()
+            # Run the corrections on the timeseries
+            for method in config.configs:
+                logger.info(
+                    f"Applying correction for {ts_id}: {method.name} between "
+                    f"{method.observation_interval[0].strftime("%Y-%m-%d %H:%M:%S")} and "
+                    f"{method.observation_interval[1].strftime("%Y-%m-%d %H:%M:%S")}"
+                )
 
-            # Create a mask to filter rows based on SITE_ID and the time range
-            mask = (pl.col(ts.time_name) >= correction_config.start_datetime.replace(tzinfo=pytz.UTC)) & (
-                pl.col(ts.time_name) <= correction_config.end_datetime.replace(tzinfo=pytz.UTC)
-            )
+                # Create a mask to filter rows based on SITE_ID and the time range
+                mask = (pl.col(ts.time_name) >= method.observation_interval[0].replace(tzinfo=pytz.UTC)) & (
+                    pl.col(ts.time_name) <= method.observation_interval[1].replace(tzinfo=pytz.UTC)
+                )
 
-            # Apply the specified correction function to the DataFrame
-            logger.info(
-                f"Applying correction for {ts_id}: {correction_config.method_id} "
-                f"{correction_config.start_datetime} to {correction_config.end_datetime}"
-            )
-            ts.df = correction_fn(ts.df, correction_config.variable, correction_config.correction_factor, mask)
+                # Apply the specified correction function to the DataFrame
+                correction_function = correction_methods[method.name]
+                ts.df = correction_function(ts.df, ts.column_name, method.parameters["correction_factor"], mask)
 
-            # Apply flagging to the DataFrame.
-            expr = mask & not_missing_expr(correction_config.variable)
-            ts.add_flag(pr_flag_col, correction_config.method_id, expr)
+                # Apply flagging to the DataFrame.
+                expr = mask & not_missing_expr(ts.column_name)
+                ts.add_flag(pr_flag_col, method.name, expr)
 
-        ts = update_preprocess_core_flags(ts)
+            ts = update_preprocess_core_flags(ts)
+
+            # Reassign corrected dataframe
+            ts_dict["data"] = ts
 
     return ts_ids

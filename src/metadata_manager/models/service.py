@@ -1,12 +1,12 @@
 import asyncio
 import json
-from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
-from metadata_manager.models.methods.method_registry import InfillingMethods, QcMethods
+from metadata_manager.models.common import ComponentType
+from metadata_manager.models.methods.method_registry import CorrectionMethods, InfillingMethods, QcMethods
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.sites import SitesResponse
@@ -16,13 +16,7 @@ from metadata_manager.transformers import extract_timeseries_definition_metadata
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
-class ConfigType(Enum):
-    INFILLING = "infilling"
-    QC = "quality_control"
-    CORRECTION = "correction"  # placeholder for moving other configs across
-
-
-def load_config(config_type: Union[ConfigType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:
+def load_config(config_type: Union[ComponentType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:
     """Load configuration data based on the given configuration type.
 
     Args:
@@ -33,23 +27,28 @@ def load_config(config_type: Union[ConfigType, str], ts_id: str) -> Optional[Dat
         The parsed configurations.
     """
     if isinstance(config_type, str):
-        config_type = ConfigType(config_type)
+        config_type = ComponentType(config_type)
 
-    if config_type == ConfigType.INFILLING:
+    if config_type == ComponentType.INFILLING:
         data = asyncio.run(METADATA_CONNECTION.fetch_infill_config(ts_id))
         infill_config = DataProcessingConfigurations.model_validate(data)
         return infill_config
 
-    elif config_type == ConfigType.QC:
+    elif config_type == ComponentType.QUALITY_CONTROL:
         data = asyncio.run(METADATA_CONNECTION.fetch_qc_config(ts_id))
         qc_config = DataProcessingConfigurations.model_validate(data)
         return qc_config
+
+    elif config_type == ComponentType.CORRECTION:
+        data = asyncio.run(METADATA_CONNECTION.fetch_correction_config(ts_id))
+        correction_config = DataProcessingConfigurations.model_validate(data)
+        return correction_config
 
     else:
         return None
 
 
-def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMethods | QcMethods]:
+def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMethods | QcMethods | CorrectionMethods]:
     """Load method definitions based on the given configuration type.
 
     Args:
@@ -59,15 +58,19 @@ def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMetho
         The parsed methods.
     """
     if isinstance(config_type, str):
-        config_type = ConfigType(config_type)
+        config_type = ComponentType(config_type)
 
-    if config_type == ConfigType.INFILLING:
+    if config_type == ComponentType.INFILLING:
         methods_json_file = Path(__file__).parent.absolute() / "methods" / "infilling_methods.json"
         registry = InfillingMethods
 
-    elif config_type == ConfigType.QC:
+    elif config_type == ComponentType.QUALITY_CONTROL:
         methods_json_file = Path(__file__).parent.absolute() / "methods" / "qc_methods.json"
         registry = QcMethods
+
+    elif config_type == ComponentType.CORRECTION:
+        methods_json_file = Path(__file__).parent.absolute() / "methods" / "correction_methods.json"
+        registry = CorrectionMethods
 
     else:
         return None
