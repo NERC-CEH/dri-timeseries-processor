@@ -328,8 +328,8 @@ class TestSpikeCheck(unittest.TestCase):
             pl.Series([1., 9999., 3., 4., 999999999., 6.])
             .alias("value1")
         )
-        result = spike_check(self.ts, "value1", "value1_QC_FLAG", self.flag_name, 10.)
-        self.assertEqual(result.df['value1_QC_FLAG'].to_list(), [0, 1, 0, 0, 1, 0])
+        result = spike_check(self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, 10.)
+        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [0, 1, 0, 0, 1, 0])
 
 
 class TestRadiometerTaCheck(unittest.TestCase):
