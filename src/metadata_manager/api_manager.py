@@ -105,6 +105,7 @@ class MetadataAPIManager:
 
         Args:
             ts_id: The time series ID to load correction configurations for.
+
         Returns:
             JSON response containing correction configurations.
 

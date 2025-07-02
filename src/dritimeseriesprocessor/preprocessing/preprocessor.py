@@ -69,8 +69,8 @@ def run_preprocess(
 
                 logger.info(
                     f"Applying correction for {ts_id}: {method.name} between "
-                    f"{method.observation_interval[0].strftime("%Y-%m-%d %H:%M:%S")} and "
-                    f"{method.observation_interval[1].strftime("%Y-%m-%d %H:%M:%S")}"
+                    f"{method.observation_interval[0].strftime('%Y-%m-%d %H:%M:%S')} and "
+                    f"{method.observation_interval[1].strftime('%Y-%m-%d %H:%M:%S')}"
                 )
 
                 # Create a mask to filter rows based on SITE_ID and the time range
