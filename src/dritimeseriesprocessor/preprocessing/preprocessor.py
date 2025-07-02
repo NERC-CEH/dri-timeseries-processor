@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from functools import lru_cache
 from typing import Dict, Union
 
@@ -62,6 +63,10 @@ def run_preprocess(
 
             # Run the corrections on the timeseries
             for method in config.configs:
+                # Ensure the end datetime is set; default to the current time if not provided
+                if method.observation_interval[1] is None:
+                    method.observation_interval = (method.observation_interval[0], datetime.now())
+
                 logger.info(
                     f"Applying correction for {ts_id}: {method.name} between "
                     f"{method.observation_interval[0].strftime("%Y-%m-%d %H:%M:%S")} and "
