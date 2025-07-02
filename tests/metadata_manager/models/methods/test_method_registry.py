@@ -4,10 +4,11 @@ from unittest.mock import patch, MagicMock
 
 from metadata_manager.models.methods.method_registry import (
     Method,
-    MethodType,
     InfillingMethods,
     QcMethods
 )
+
+from metadata_manager.models.common import ComponentType
 
 
 class TestMethod(unittest.TestCase):
@@ -25,7 +26,7 @@ class TestMethod(unittest.TestCase):
         method = Method.model_validate(self.method_dict)
 
         self.assertEqual(method.method_id, 1)
-        self.assertEqual(method.method_type, MethodType.INFILLING)
+        self.assertEqual(method.method_type, ComponentType.INFILLING)
         self.assertEqual(method.name, "method name")
         self.assertEqual(method.description, "description")
         self.assertEqual(method.function_name, "a_function_name")
@@ -69,8 +70,8 @@ class TestMethod(unittest.TestCase):
 
 class TestMethodRegisters(unittest.TestCase):
     @parameterized.expand([
-        (InfillingMethods, MethodType.INFILLING),
-        (QcMethods, MethodType.QC),
+        (InfillingMethods, ComponentType.INFILLING),
+        (QcMethods, ComponentType.QUALITY_CONTROL),
     ])
     def test_model_validate(self, registry_class, method_type):
         """Test that model_validate correctly transforms and registers methods."""
