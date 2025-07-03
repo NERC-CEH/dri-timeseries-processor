@@ -99,6 +99,12 @@ def extract_timeseries_definition_metadata(
             URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.configuration_type
         ).group(1)
         metadata["inputs"] = derivation_metadata.methodology.uses
+
+        if metadata["method_type"] == "process" and len(metadata["inputs"]) != 1:
+            raise ValueError(
+                f"Processed timeseries definition {derivation_metadata.timeseries_def} should have exactly one input."
+            )
+
     else:
         # If no methodology section then there will be no further dependencies
         metadata["inputs"] = []

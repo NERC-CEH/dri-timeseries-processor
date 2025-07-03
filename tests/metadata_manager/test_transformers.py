@@ -191,3 +191,37 @@ class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
         result = extract_timeseries_definition_metadata(model_output)
 
         assert result == expected
+
+    def test_process_meth_with_no_inputs(self):
+        """Test the extract_timeseries_definition_metadata function raises an error when the
+        response contains a methodology section with a process method type but no inputs.
+        """
+        # Set the methodology section to a process method type
+        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
+        # Remove inputs from the methodology section
+        self.sample_dataset_response['items'][0]['methodology']['uses'] = []
+
+        # Load the data into the pyantic model
+        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+
+        with self.assertRaises(ValueError) as context:
+            extract_timeseries_definition_metadata(model_output)
+
+    def test_process_meth_with_more_than_one_inputs(self):
+        """Test the extract_timeseries_definition_metadata function raises an error when the
+        response contains a methodology section with a process method type but no inputs.
+        """
+        # Set the methodology section to a process method type
+        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
+        # Remove inputs from the methodology section
+        self.sample_dataset_response['items'][0]['methodology']['uses'] = [
+            {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed'},
+            {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'}
+        ]
+
+        # Load the data into the pyantic model
+        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+
+        with self.assertRaises(ValueError) as context:
+            extract_timeseries_definition_metadata(model_output)
+        
