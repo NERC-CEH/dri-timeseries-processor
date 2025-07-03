@@ -7,6 +7,7 @@ from time_stream import TimeSeries
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import (
     load_data,
+    shift_processed_data,
     process_timeseries,
 )
 
@@ -75,6 +76,33 @@ class TestLoadData(unittest.TestCase):
         self.assertEqual(result.df.shape, (0, 2))
 
 
+class TestShiftProcessedData(unittest.TestCase):
+    def test_expected_shift(self):
+        ts_ids = {
+            "ts1_raw": {
+                "data": [1],
+            },
+            "ts2_processed": {
+                "method_type": "process",
+                "inputs": ["ts1_raw"]
+            }
+        }
+
+        expected = {
+            "ts1_raw": {
+            },
+            "ts2_processed": {
+                "data": [1],
+                "method_type": "process",
+                "inputs": ["ts1_raw"]
+            }
+        }
+
+        result = shift_processed_data(ts_ids)
+        self.assertEqual(result, expected)
+
+
+
 class TestProcessTimeseries(unittest.TestCase):
 
     @patch("dritimeseriesprocessor.processor.run_preprocess")
@@ -85,9 +113,33 @@ class TestProcessTimeseries(unittest.TestCase):
     ):
         """Test the process_timeseries function.
         """
-        ts_metadata = {"ts1": {"data": [1]}, "ts2": {}}
-        return_ts_metadata = {"ts1": {"data": [2]}}
-        expected = {"ts1": {"data": [2]}, "ts2": {}}
+        ts_metadata = {
+            "ts1_raw": {
+                "data": [1],
+            },
+            "ts2_processed": {
+                "method_type": "process",
+                "inputs": ["ts1_raw"]
+            }
+        }
+        return_ts_metadata = {
+            "ts1_raw": {
+                "data": [2],
+            },
+            "ts2_processed": {
+                "method_type": "process",
+                "inputs": ["ts1_raw"]
+            }
+        }
+        expected = {
+            "ts1_raw": {
+            },
+            "ts2_processed": {
+                "data": [2],
+                "method_type": "process",
+                "inputs": ["ts1_raw"]
+            }
+        }
 
         mock_run_preprocess.return_value = return_ts_metadata
         mock_run_quality_control.return_value = return_ts_metadata
