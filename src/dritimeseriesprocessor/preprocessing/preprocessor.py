@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Dict, Union
 
 import polars as pl
-import pytz
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
@@ -66,8 +65,8 @@ def run_preprocess(
                 correction_config.end_datetime = datetime.now()
 
             # Create a mask to filter rows based on SITE_ID and the time range
-            mask = (pl.col(ts.time_name) >= correction_config.start_datetime.replace(tzinfo=pytz.UTC)) & (
-                pl.col(ts.time_name) <= correction_config.end_datetime.replace(tzinfo=pytz.UTC)
+            mask = (pl.col(ts.time_name) >= correction_config.start_datetime) & (
+                pl.col(ts.time_name) <= correction_config.end_datetime
             )
 
             # Apply the specified correction function to the DataFrame
