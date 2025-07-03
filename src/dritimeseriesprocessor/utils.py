@@ -203,8 +203,7 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, Dict[str, str]]) 
     for check_ts_id, check_metadata in ts_ids.items():
         if check_metadata.get("ts_def") == ts_def and check_metadata.get("sourceSite") == site_id:
             return check_ts_id
-    else:
-        raise ValueError(f"Could not find TS ID for TS definition {ts_def} and sourceSite {site_id}")
+    raise ValueError(f"Could not find TS ID for TS definition {ts_def} and sourceSite {site_id}")
 
 
 def merge_ts_def_metadata(
