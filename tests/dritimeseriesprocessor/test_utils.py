@@ -307,65 +307,146 @@ class TestExtractDependentTimeseriesDefs(unittest.TestCase):
     assert sorted(result) == sorted(expected)
 
 
+class TestMapDefToId(unittest.TestCase):
+    """Test the map_def_to_id function."""
+    def setUp(self):
+        self.test_ts_ids = {
+            "alic1-precip_30min_raw":
+            {
+                "ts_def": "precip_30min_raw",
+                "processing_level": "raw",
+                "sourceSite": "ALIC1",
+            },
+            "alic1-ta_30min_raw":
+            {
+                "ts_def": "ta_30min_raw",
+                "processing_level": "raw",
+                "sourceSite": "ALIC1",
+            },
+        }
+
+    def test_map_def_to_id(self):
+        """Test that the correct ts_id is returned for a given ts_def and site_id."""
+        result = utils.map_def_to_id("ta_30min_raw", "ALIC1", self.test_ts_ids)
+        self.assertEqual(result, "alic1-ta_30min_raw")
+
+    def test_no_matching_ts_def(self):
+        """Test that a ValueError is raised when no matching ts_def is found."""
+        with self.assertRaises(ValueError) as err:
+            utils.map_def_to_id("non_existent_def", "ALIC1", self.test_ts_ids)
+
+
 class TestMergeTsDefMetadata(unittest.TestCase):
     """Test the merge_ts_def_metadata function."""
-
-    test_ts_ids = {
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw":
-        {
-            "ts_def": "test_a",
-            "processing_level": "raw"
-        },
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
-        {
-            "ts_def": "test_b",
-            "processing_level": "processed"
-        },
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_30min_raw":
-        {
-            "ts_def": "test_b",
-            "processing_level": "raw"
+    def setUp(self):
+        self.test_ts_ids = {
+            "alic1-precip_30min_raw":
+            {
+                "ts_def": "precip_30min_raw",
+                "processing_level": "raw",
+                "sourceSite": "ALIC1",
+            },
+            "alic1-ta_30min_raw":
+            {
+                "ts_def": "ta_30min_raw",
+                "processing_level": "raw",
+                "sourceSite": "ALIC1",
+            },
+            "alic1-ta_30min_processed":
+            {
+                "ts_def": "ta_30min_processed",
+                "processing_level": "processed",
+                "sourceSite": "ALIC1",
+            },
+            "alic1-ta_max_1day_processed":
+            {
+                "ts_def": "ta_max_1day_processed",
+                "processing_level": "processed",
+                "sourceSite": "ALIC1",
+            },
         }
-    }
 
-    test_timeseries_defs_derivation_map = {
-        "test_a":
-        {
-            "inputs": []
-        },
-        "test_b":
-        {
-            "method_type": "calculate",
-            "inputs": ["input_a", "input_b"]
+        self.test_timeseries_defs_derivation_map = {
+            "precip_30min_raw":
+            {
+                "inputs": []
+            },
+            "ta_30min_raw":
+            {
+                "inputs": []
+            },
+            "ta_30min_processed":
+            {
+                "method_type": "process",
+                "inputs": ["ta_30min_raw"]
+            },
+            "ta_max_1day_processed":
+            {
+                "method_type": "calculate",
+                "inputs": ["ta_30min_processed"]
+            },
         }
-    }
 
-    expected = {
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw":
-        {
-            "ts_def": "test_a",
+    def test_with_correct_input(self):
+        """Test that the metadata is merged correctly."""
+        expected = {
+            "alic1-precip_30min_raw":
+            {
+                "ts_def": "precip_30min_raw",
+                "processing_level": "raw",
+                "sourceSite": "ALIC1",
+                "method_type": None,
+                "inputs": [],
+                "load": True
+            },
+            "alic1-ta_30min_raw":
+            {
+                "ts_def": "ta_30min_raw",
+                "processing_level": "raw",
+                "sourceSite": "ALIC1",
+                "method_type": None,
+                "inputs": [],
+                "load": True
+            },
+            "alic1-ta_30min_processed":
+            {
+                "ts_def": "ta_30min_processed",
+                "processing_level": "processed",
+                "sourceSite": "ALIC1",
+                "method_type": "process",
+                "inputs": ["alic1-ta_30min_raw"],
+                "load": False
+            },
+            "alic1-ta_max_1day_processed":
+            {
+                "ts_def": "ta_max_1day_processed",
+                "processing_level": "processed",
+                "sourceSite": "ALIC1",
+                "method_type": "calculate",
+                "inputs": ["alic1-ta_30min_processed"],
+                "load": False
+            }
+        }
+
+        result = utils.merge_ts_def_metadata(self.test_ts_ids, self.test_timeseries_defs_derivation_map)
+        self.assertEqual(result, expected)
+
+    def test_no_mapped_ts_def(self):
+        """Test when there is no ts_id for a ts_def in the derivation map."""
+        self.test_ts_ids["alic1-swin_30min_raw"] = {
+            "ts_def": "bad_30min_raw",
             "processing_level": "raw",
-            "inputs": [],
-            "load": True
-        },
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
-        {
-            "ts_def": "test_b",
-            "processing_level": "processed",
-            "method_type": "calculate",
-            "inputs": ["input_a", "input_b"],
-            "load": False
-        },
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-precip_30min_raw":
-        {
-            "ts_def": "test_b",
-            "processing_level": "raw",
-            "method_type": "calculate",
-            "inputs": ["input_a", "input_b"],
-            "load": False
+            "sourceSite": "ALIC1",
         }
-    }
 
-    result = utils.merge_ts_def_metadata(test_ts_ids, test_timeseries_defs_derivation_map)
+        # Should raise a value error
+        with self.assertRaises(ValueError) as err:
+            utils.merge_ts_def_metadata(self.test_ts_ids, self.test_timeseries_defs_derivation_map)
 
-    assert result == expected
+    def test_no_mapped_site_id(self):
+        """Test when there is no site_id for a ts_def in the derivation map."""
+        self.test_ts_ids["alic1-ta_30min_processed"]["sourceSite"] = "BAD_SITE"
+
+        # Should raise a value error
+        with self.assertRaises(ValueError) as err:
+            utils.merge_ts_def_metadata(self.test_ts_ids, self.test_timeseries_defs_derivation_map)
