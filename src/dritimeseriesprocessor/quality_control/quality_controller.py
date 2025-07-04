@@ -7,6 +7,7 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.quality_control.checks import run_qc_check
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -79,12 +80,19 @@ def run_quality_control(
                 ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
             # Run QC methods on time series
-            # TODO: Will have to add in start and end dates so that QC only applied to specific part of time
-            #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
             for method in config.configs:
-                qc_func = qc_methods[method.name]
                 logger.info(f"Quality controlling {ts_id}: {method.name}. Constraints: {method.parameters}")
-                ts_ids = qc_func(ts_ids, ts_id, qc_flag_col, method.name, **method.parameters)
+
+                func = qc_methods[method.name].function_name
+                ts_ids = run_qc_check(
+                    func,
+                    ts_ids=ts_ids,
+                    ts_id=ts_id,
+                    flag_column=qc_flag_col,
+                    flag_name=method.name,
+                    observation_interval=method.observation_interval,
+                    **method.parameters,
+                )
 
                 if remove:
                     ts.df = remove_qcd_data(ts.df, ts.column_name, qc_flag_col)
