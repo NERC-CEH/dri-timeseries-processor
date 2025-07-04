@@ -31,7 +31,8 @@ class BatteryVoltageCheck(BaseCheck):
             pl.Expr: Boolean expression that is True where battery voltage < lt.
         """
         battv_ts = self.get_dependent_ts(self.dep_ts)
-        return self.create_threshold_expression(battv_ts, self.lt, "<")
+        expr = self.create_threshold_expression(battv_ts, self.lt, "<")
+        return self.resolve_dependent_expression(self.dep_ts, expr)
 
 
 class RangeCheck(BaseCheck):
@@ -81,7 +82,8 @@ class SoilmetScansCheck(BaseCheck):
             pl.Expr: Boolean expression that is True where scan_count < lt.
         """
         scans_ts = self.get_dependent_ts(self.dep_ts)
-        return self.create_threshold_expression(scans_ts, self.lt, "<")
+        expr = self.create_threshold_expression(scans_ts, self.lt, "<")
+        return self.resolve_dependent_expression(self.dep_ts, expr)
 
 
 class ErrorCodesCheck(BaseCheck):
@@ -183,7 +185,8 @@ class RadiometerTACheck(BaseCheck):
             pl.Expr: Boolean expression that is True where temperature < lt OR temperature > gt.
         """
         dep_ts = self.get_dependent_ts(self.dep_ts)
-        return pl.col(dep_ts.column_name).lt(self.lt) | pl.col(dep_ts.column_name).gt(self.gt)
+        expr = pl.col(dep_ts.column_name).lt(self.lt) | pl.col(dep_ts.column_name).gt(self.gt)
+        return self.resolve_dependent_expression(self.dep_ts, expr)
 
 
 class HeatFluxPlateCheck(BaseCheck):
@@ -236,7 +239,8 @@ class PluvioDiagnosticCheck(BaseCheck):
             pl.Expr: Boolean expression that is True where diagnostic_value > gt.
         """
         dep_ts = self.get_dependent_ts(self.dep_ts)
-        return self.create_threshold_expression(dep_ts, self.gt, ">")
+        expr = self.create_threshold_expression(dep_ts, self.gt, ">")
+        return self.resolve_dependent_expression(self.dep_ts, expr)
 
 
 class SnowDistanceSignalCheck(BaseCheck):
@@ -260,7 +264,8 @@ class SnowDistanceSignalCheck(BaseCheck):
             pl.Expr: Boolean expression that is True where signal_strength < lt.
         """
         sig_ts = self.get_dependent_ts(self.dep_ts)
-        return self.create_threshold_expression(sig_ts, self.lt, "<")
+        expr = self.create_threshold_expression(sig_ts, self.lt, "<")
+        return self.resolve_dependent_expression(self.dep_ts, expr)
 
 
 class TDTSoilTempCheck(BaseCheck):
@@ -288,7 +293,8 @@ class TDTSoilTempCheck(BaseCheck):
         """
         # TODO: Consider using alternative TDT sensors if primary soil temperature is not available or incorrect.
         tsoil_ts = self.get_dependent_ts(self.dep_ts)
-        return self.create_threshold_expression(tsoil_ts, self.lt, "<")
+        expr = self.create_threshold_expression(tsoil_ts, self.lt, "<")
+        return self.resolve_dependent_expression(self.dep_ts, expr)
 
 
 class QCCheckFactory:

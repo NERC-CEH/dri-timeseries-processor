@@ -74,14 +74,6 @@ class BaseCheck(ABC):
             raise ValueError(f"Dependent time series '{dep_ts}' not found in ts_ids.")
         return self.ts_ids[dep_ts]["data"]
 
-    def update_ts(self, ts: TimeSeries) -> None:
-        """Update the main time series in the ts_ids dictionary.
-
-        Args:
-            ts: The updated TimeSeries object to store.
-        """
-        self.ts_ids[self.ts_id]["data"] = ts
-
     def get_date_filter(self, ts: TimeSeries) -> pl.Expr:
         """Get Polars expression for observation date interval filtering.
 
@@ -152,6 +144,22 @@ class BaseCheck(ABC):
 
         return operator_expr
 
+    def resolve_dependent_expression(self, dep_ts: str, expr: pl.Expr) -> pl.Expr:
+        """For checks that use a dependent time series, we need to resolve the expression against that TimeSeries
+        data, as the dependent time series data is not available in the main TimeSeries obejct.
+
+        Resolve into a Polars literal series, which acts as a boolean expression for the downstream flagging process.
+
+        Args:
+            dep_ts: The ID of the time series containing dependent data.
+            expr: The Polars expression to resolve against dep_ts.
+
+        Returns:
+            pl.Expr: Literal boolean series of the resolved expression on the dependent time series data.
+        """
+        dep_ts = self.get_dependent_ts(dep_ts)
+        return pl.lit(dep_ts.df.select(expr).to_series())
+
     def run(self) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
         """Execute the quality control check and return updated ts_ids.
 
@@ -174,6 +182,8 @@ class BaseCheck(ABC):
 
         # Add the flag
         self.main_ts.add_flag(self.flag_column, self.flag_name, final_expr)
-        self.update_ts(self.main_ts)
+
+        # Save the result back to the ts dictionary
+        self.ts_ids[self.ts_id]["data"] = self.main_ts
 
         return self.ts_ids
