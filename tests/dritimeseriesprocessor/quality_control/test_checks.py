@@ -4,223 +4,218 @@ from datetime import datetime, time
 import polars as pl
 from time_stream import TimeSeries
 
-from dritimeseriesprocessor.quality_control.checks import run_qc_check 
+from dritimeseriesprocessor.quality_control.checks import BatteryVoltageCheck, RangeCheck, SoilmetScansCheck
 
 
 class TestBatteryVoltageCheck(unittest.TestCase):
     def setUp(self):
+        self.value_name = "value"
         self.flag_name = "battery_v"
+        self.flag_col_name = f"{self.value_name}_QC_FLAG"
 
-        data = pl.DataFrame({
-            'time': [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13),
-                datetime(2023, 8, 14),
-            ],
-            "value": [1., 2., 3., 4., 5.],
-        })
-        battv_data = pl.DataFrame({
-            'time': [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13),
-                datetime(2023, 8, 14),
-            ],
-            "BATTV": [12., 11., 9., 13., 8.],
-        })
+        times = [
+            datetime(2023, 8, 10),
+            datetime(2023, 8, 11),
+            datetime(2023, 8, 12),
+            datetime(2023, 8, 13),
+            datetime(2023, 8, 14),
+        ]
 
-        self.ts = TimeSeries(data, "time", metadata={"column_name": "value"})
+        self.battv_ts = TimeSeries(
+            pl.DataFrame({'time': times, "BATTV": [12., 11., 9., 13., 8.]}),
+            "time", metadata={"column_name": "BATTV"}
+        )
+
+        self.ts = TimeSeries(
+            pl.DataFrame({'time': times, self.value_name: [1., 2., 3., 4., 5.]}),
+            "time", metadata={"column_name": self.value_name}
+        )
         self.ts.add_flag_system("qc_flags", {self.flag_name: 1})
-        self.ts.init_flag_column("qc_flags", "value_QC_FLAG")
-
-        battv_ts = TimeSeries(battv_data, "time", metadata={"column_name": "BATTV"})
-
-        self.value_ts_id = "site1_value"
-        self.battv_ts_id = "site1_battv_raw"
-
-        self.ts_ids = {
-            self.value_ts_id: {
-                "data": self.ts
-            },
-            self.battv_ts_id: {
-                "data": battv_ts
-            }
-        }
+        self.ts.init_flag_column("qc_flags", self.flag_col_name)
 
     def test_battery_voltage_below_threshold(self):
         """ Test that correct flags applied to values that match where BATTV is below threshold
         """
-        result = run_qc_check("battery_voltage_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=10., dep_ts=self.battv_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 1, 0, 1])
+        check = BatteryVoltageCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.battv_ts.column_name, lt=10.
+        )
+        result = check.run(self.ts, dep_ts=self.battv_ts)
+
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [0, 0, 1, 0, 1])
 
     def test_battery_voltage_none_below_threshold(self):
         """ Test that no flags applied because battery voltage all above threshold
         """
-        result = run_qc_check("battery_voltage_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=0.5, dep_ts=self.battv_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
+        check = BatteryVoltageCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.battv_ts.column_name, lt=0.5
+        )
+        result = check.run(self.ts, dep_ts=self.battv_ts)
+
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [0, 0, 0, 0, 0])
 
     def test_battery_voltage_all_below_threshold(self):
         """ Test that flags applied to all values because battery voltage all below threshold
         """
-        result = run_qc_check("battery_voltage_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=100., dep_ts=self.battv_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
+        check = BatteryVoltageCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.battv_ts.column_name, lt=100.
+        )
+        result = check.run(self.ts, dep_ts=self.battv_ts)
+
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [1, 1, 1, 1, 1])
 
     def test_battery_voltage_all_at_threshold(self):
         """ Test that no flags applied because battery voltage exactly at threshold
         """
-        self.ts_ids[self.battv_ts_id]["data"].df = self.ts_ids[self.battv_ts_id]["data"].df.with_columns(pl.Series([10., 10., 10., 10., 10.]).alias("BATTV"))
-        result = run_qc_check("battery_voltage_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=10., dep_ts=self.battv_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
+        self.battv_ts.df = self.battv_ts.df.with_columns(pl.Series([10., 10., 10., 10., 10.]).alias("BATTV"))
+
+        check = BatteryVoltageCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.battv_ts.column_name, lt=10.
+        )
+        result = check.run(self.ts, dep_ts=self.battv_ts)
+
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [0, 0, 0, 0, 0])
 
     def test_no_battv_data(self):
         """ Test terror raised when 'BATTV' data is missing.
         """
-        self.ts_ids.pop(self.battv_ts_id)
-        with self.assertRaises(ValueError):
-            run_qc_check("battery_voltage_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=10., dep_ts=self.battv_ts_id)
+        self.battv_ts.df = self.battv_ts.df.drop("BATTV")
+
+        check = BatteryVoltageCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.battv_ts.column_name, lt=10.
+        )
+        with self.assertRaises(UserWarning):
+            check.run(self.ts, dep_ts=self.battv_ts)
+
 
 
 class TestRangeCheck(unittest.TestCase):
     def setUp(self):
+        self.value_name = "value"
         self.flag_name = "range"
+        self.flag_col_name = f"{self.value_name}_QC_FLAG"
 
-        data = pl.DataFrame({
-            'time': [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13),
-                datetime(2023, 8, 14),
-                datetime(2023, 8, 15),
-            ],
-            'value1': list(range(6)),
-        })
+        times = [
+            datetime(2023, 8, 10),
+            datetime(2023, 8, 11),
+            datetime(2023, 8, 12),
+            datetime(2023, 8, 13),
+            datetime(2023, 8, 14),
+            datetime(2023, 8, 15),
+        ]
 
-        self.ts = TimeSeries(data, "time", metadata={"column_name": "value1"})
+        self.ts = TimeSeries(
+            pl.DataFrame({'time': times, self.value_name: list(range(6))}),
+            "time", metadata={"column_name": self.value_name}
+        )
         self.ts.add_flag_system("qc_flags", {self.flag_name: 1})
-        self.ts.init_flag_column("qc_flags", "value1_QC_FLAG")
-
-        self.value_ts_id = "site1_value1"
-
-        self.ts_ids = {
-            self.value_ts_id: {
-                "data": self.ts
-            }
-        }
+        self.ts.init_flag_column("qc_flags", self.flag_col_name)
 
     def test_range_check(self):
         """ Test that the range check returns expected results when some values outside of range
         """
-        gt = 3.5
-        lt = 0.5
-        result = run_qc_check("range_check", self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, gt=gt, lt=lt)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [1, 0, 0, 0, 1, 1])
+        check = RangeCheck(self.value_name, self.flag_col_name, self.flag_name, lt=0.5, gt=3.5)
+        result = check.run(self.ts)
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [1, 0, 0, 0, 1, 1])
 
     def test_range_check_all_within(self):
         """ Test that the range check returns expected results when all values within range
         """
-        gt = 10.
-        lt = -1.
-        result = run_qc_check("range_check", self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, gt=gt, lt=lt)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [0, 0, 0, 0, 0, 0])
+        check = RangeCheck(self.value_name, self.flag_col_name, self.flag_name, lt=-1., gt=10.)
+        result = check.run(self.ts)
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [0, 0, 0, 0, 0, 0])
 
     def test_range_check_all_outside(self):
         """ Test that the range check returns expected results when all values within range
         """
-        gt = 100.
-        lt = 90.
-        result = run_qc_check("range_check", self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, gt=gt, lt=lt)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [1, 1, 1, 1, 1, 1])
+        check = RangeCheck(self.value_name, self.flag_col_name, self.flag_name, lt=90., gt=100.)
+        result = check.run(self.ts)
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [1, 1, 1, 1, 1, 1])
 
     def test_range_check_at_boundaries(self):
         """ Test that the range check returns expected results when values at boundaries
         """
-        gt = 5.
-        lt = 0.
-        result = run_qc_check("range_check", self.ts_ids, self.value_ts_id, "value1_QC_FLAG", self.flag_name, gt=gt, lt=lt)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value1_QC_FLAG'].to_list(), [0, 0, 0, 0, 0, 0])
+        check = RangeCheck(self.value_name, self.flag_col_name, self.flag_name, lt=0., gt=5.)
+        result = check.run(self.ts)
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [0, 0, 0, 0, 0, 0])
 
 
 class TestSoilmetScansCheck(unittest.TestCase):
     def setUp(self):
+        self.value_name = "value"
         self.flag_name = "samples"
+        self.flag_col_name = f"{self.value_name}_QC_FLAG"
 
-        data = pl.DataFrame({
-            'time': [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13),
-                datetime(2023, 8, 14),
-            ],
-            "value": [1., 2., 3., 4., 5.],
-        })
-        scans_data = pl.DataFrame({
-            'time': [
-                datetime(2023, 8, 10),
-                datetime(2023, 8, 11),
-                datetime(2023, 8, 12),
-                datetime(2023, 8, 13),
-                datetime(2023, 8, 14),
-            ],
-            "SCANS": [20, 61, 100, 200, 59],
-        })
+        times = [
+            datetime(2023, 8, 10),
+            datetime(2023, 8, 11),
+            datetime(2023, 8, 12),
+            datetime(2023, 8, 13),
+            datetime(2023, 8, 14),
+        ]
 
-        self.ts = TimeSeries(data, "time", metadata={"column_name": "value"})
+        self.scans_ts = TimeSeries(
+            pl.DataFrame({'time': times, "SCANS": [20, 61, 100, 200, 59]}),
+            "time", metadata={"column_name": "SCANS"}
+        )
+
+        self.ts = TimeSeries(
+            pl.DataFrame({'time': times, self.value_name: list(range(5))}),
+            "time", metadata={"column_name": self.value_name}
+        )
         self.ts.add_flag_system("qc_flags", {self.flag_name: 1})
-        self.ts.init_flag_column("qc_flags", "value_QC_FLAG")
-
-        scans_ts = TimeSeries(scans_data, "time", metadata={"column_name": "SCANS"})
-
-        self.value_ts_id = "site1_value"
-        self.scans_ts_id = "site1_scans_raw"
-
-        self.ts_ids = {
-            self.value_ts_id: {
-                "data": self.ts
-            },
-            self.scans_ts_id: {
-                "data": scans_ts
-            }
-        }
-
-
+        self.ts.init_flag_column("qc_flags", self.flag_col_name)
 
     def test_scans_below_threshold(self):
         """ Test that correct flags applied to values that match where SCANS is below threshold
         """
-        result = run_qc_check("soilmet_scans_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=60., dep_ts=self.scans_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [1, 0, 0, 0, 1])
+        check = SoilmetScansCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.scans_ts.column_name, lt=60.
+        )
+        result = check.run(self.ts, dep_ts=self.scans_ts)
+
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [1, 0, 0, 0, 1])
 
     def test_scans_none_below_threshold(self):
         """ Test that no flags applied because SCANS all above threshold
         """
-        result = run_qc_check("soilmet_scans_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=1., dep_ts=self.scans_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
+        check = SoilmetScansCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.scans_ts.column_name, lt=1.
+        )
+        result = check.run(self.ts, dep_ts=self.scans_ts)
+
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [0, 0, 0, 0, 0])
 
     def test_scans_all_below_threshold(self):
         """ Test that flags applied to all values because SCANS all below threshold
         """
-        result = run_qc_check("soilmet_scans_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=1000., dep_ts=self.scans_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [1, 1, 1, 1, 1])
+        check = SoilmetScansCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.scans_ts.column_name, lt=1000.
+        )
+        result = check.run(self.ts, dep_ts=self.scans_ts)
+
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [1, 1, 1, 1, 1])
 
     def test_scans_all_at_threshold(self):
         """ Test that no flags applied because SCANS exactly at threshold
         """
-        self.ts_ids[self.scans_ts_id]["data"].df = self.ts_ids[self.scans_ts_id]["data"].df.with_columns(pl.Series([60., 60., 60., 60., 60.]).alias("SCANS"))
+        self.scans_ts.df = self.scans_ts.df.with_columns(pl.Series([60., 60., 60., 60., 60.]).alias("SCANS"))
+        check = SoilmetScansCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.scans_ts.column_name, lt=60.
+        )
+        result = check.run(self.ts, dep_ts=self.scans_ts)
 
-        result = run_qc_check("soilmet_scans_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=60., dep_ts=self.scans_ts_id)
-        self.assertEqual(result[self.value_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 0, 0, 0, 0])
+        self.assertEqual(result.df[self.flag_col_name].to_list(), [0, 0, 0, 0, 0])
 
     def test_no_scans_column(self):
         """ Test error raised when 'SCANS' column is missing.
         """
-        self.ts_ids.pop(self.scans_ts_id)
-        with self.assertRaises(ValueError):
-            run_qc_check("soilmet_scans_check", self.ts_ids, self.value_ts_id, "value_QC_FLAG", self.flag_name, lt=60., dep_ts=self.scans_ts_id)
+        self.scans_ts.df = self.scans_ts.df.drop("SCANS")
+
+        check = SoilmetScansCheck(
+            self.value_name, self.flag_col_name, self.flag_name, self.scans_ts.column_name, lt=60.
+        )
+        with self.assertRaises(UserWarning):
+            check.run(self.ts, dep_ts=self.scans_ts)
 
 
 class TestErrorCodesCheck(unittest.TestCase):
