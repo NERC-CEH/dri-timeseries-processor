@@ -7,7 +7,7 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
+from dritimeseriesprocessor.corrections.corrections import run_corrections
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 
@@ -82,8 +82,8 @@ def process_timeseries(
     ts_ids_with_data = {k: v for k, v in ts_ids.items() if "data" in v}
     ts_ids_with_no_data = {k: v for k, v in ts_ids.items() if "data" not in v}
 
-    # Correction
-    ts_ids_with_data = run_preprocess(ts_ids_with_data)
+    # Corrections
+    ts_ids_with_data = run_corrections(ts_ids_with_data)
 
     # Quality control
     ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)

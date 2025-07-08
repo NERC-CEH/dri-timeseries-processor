@@ -6,12 +6,12 @@ from polars.testing import assert_frame_equal
 
 from time_stream import TimeSeries, Period
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
+from dritimeseriesprocessor.corrections.corrections import run_corrections
 
 
-class TestRunPreprocessing(unittest.TestCase):
+class TestRunCorrections(unittest.TestCase):
     """
-    Test suite for the run_preprocessing function.
+    Test suite for the run_corrections function.
     """
 
     def setUp(self):
@@ -84,10 +84,10 @@ class TestRunPreprocessing(unittest.TestCase):
         ]
 
 
-    @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
-    def test_run_preprocessing_basic(self, mock_preprocessing_config):
+    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    def test_run_corrections_basic(self, mock_corrections_config):
         """
-        Test basic functionality of run_preprocessing.
+        Test basic functionality of run_corrections.
         Checks if the function adds the flag system, adds the flag columns, and runs the correction method.
         """
         correction_config = [Mock(
@@ -99,37 +99,37 @@ class TestRunPreprocessing(unittest.TestCase):
             correction_factor=10.
         )]
 
-        mock_preprocessing_config.correction_methods = self.mock_methods
-        mock_preprocessing_config.corrections = correction_config
+        mock_corrections_config.correction_methods = self.mock_methods
+        mock_corrections_config.corrections = correction_config
 
-        result = run_preprocess(self.ts_ids)
+        result = run_corrections(self.ts_ids)
 
         # Check flag system added
-        self.assertIn('pr_flags', result[self.ta_ts_id]["data"].flag_systems)
+        self.assertIn('corrs_flags', result[self.ta_ts_id]["data"].flag_systems)
         # Check columns added
-        self.assertIn('temperature_PR_FLAG', result[self.ta_ts_id]["data"].columns)
+        self.assertIn('temperature_CORRS_FLAG', result[self.ta_ts_id]["data"].columns)
         # Check the correction method has been applied
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature'].to_list(), [20.0, 32.0, 31.0, 30.0, 19.0])
         # Check flag values have been added
-        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_PR_FLAG'].to_list(), [0, 1, 1, 1, 0])
+        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [0, 1, 1, 1, 0])
 
-    @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
-    def test_run_preprocessing_no_config(self, mock_preprocessing_config):
+    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    def test_run_corrections_no_config(self, mock_corrections_config):
         """
-        Test run_preprocessing when no preprocessing config is available.
+        Test run_corrections when no corrections config is available.
         Checks if the function returns the original DataFrame unchanged.
         """
-        mock_preprocessing_config.correction_methods = self.mock_methods
-        mock_preprocessing_config.corrections = []
+        mock_corrections_config.correction_methods = self.mock_methods
+        mock_corrections_config.corrections = []
 
-        result = run_preprocess(self.ts_ids)
+        result = run_corrections(self.ts_ids)
 
         self.assertEqual(result, self.ts_ids)
 
-    @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
-    def test_run_preprocessing_no_methods(self, mock_preprocessing_config):
+    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    def test_run_corrections_no_methods(self, mock_corrections_config):
         """
-        Test run_preprocessing when preprocessing config exists but no methods are specified.
+        Test run_corrections when corrections config exists but no methods are specified.
         Checks if the function returns the original DataFrame unchanged.
         """
         correction_config = Mock(
@@ -141,17 +141,17 @@ class TestRunPreprocessing(unittest.TestCase):
             correction_factor=10.
         )
 
-        mock_preprocessing_config.correction_methods = []
-        mock_preprocessing_config.corrections = [correction_config]
+        mock_corrections_config.correction_methods = []
+        mock_corrections_config.corrections = [correction_config]
 
-        result = run_preprocess(self.ts_ids)
+        result = run_corrections(self.ts_ids)
 
         self.assertEqual(result, self.ts_ids)
 
-    @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
-    def test_run_preprocessing_multiple_methods(self, mock_preprocessing_config):
+    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    def test_run_corrections_multiple_methods(self, mock_corrections_config):
         """
-        Test run_preprocessing with multiple preprocessing methods for a single column.
+        Test run_corrections with multiple corrections methods for a single column.
         Checks if the method flags are all applied.
         """
         correction_config = [
@@ -173,18 +173,18 @@ class TestRunPreprocessing(unittest.TestCase):
             ),
         ]
 
-        mock_preprocessing_config.correction_methods = self.mock_methods
-        mock_preprocessing_config.corrections = correction_config
+        mock_corrections_config.correction_methods = self.mock_methods
+        mock_corrections_config.corrections = correction_config
 
-        result = run_preprocess(self.ts_ids)
+        result = run_corrections(self.ts_ids)
 
         # Check the correction method has been applied
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature'].to_list(), [40.0, 64.0, 62.0, 30.0, 19.0])
         # Check flag values have been added
-        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_PR_FLAG'].to_list(), [2, 3, 3, 1, 0])
+        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [2, 3, 3, 1, 0])
 
-    @patch("dritimeseriesprocessor.preprocessing.preprocessor.preprocessing_config")
-    def test_run_preprocessing_end_date_is_none(self, mock_preprocessing_config):
+    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    def test_run_corrections_end_date_is_none(self, mock_corrections_config):
         """
         Test end_date is None in config leads to all dates after start dat being corrected.
 
@@ -198,12 +198,12 @@ class TestRunPreprocessing(unittest.TestCase):
             correction_factor=10.
         )]
 
-        mock_preprocessing_config.correction_methods = self.mock_methods
-        mock_preprocessing_config.corrections = correction_config
+        mock_corrections_config.correction_methods = self.mock_methods
+        mock_corrections_config.corrections = correction_config
 
-        result = run_preprocess(self.ts_ids)
+        result = run_corrections(self.ts_ids)
 
         # Check the correction method has been applied
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature'].to_list(), [20.0, 32.0, 31.0, 30.0, 29.0])
         # Check flag values have been added
-        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_PR_FLAG'].to_list(), [0, 1, 1, 1, 1])
+        self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [0, 1, 1, 1, 1])
