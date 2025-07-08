@@ -262,18 +262,20 @@ class TDTSoilTempCheck(BaseCheck):
 class ErrorCodesCheck(BaseCheck):
     """Flag data based on specific error codes in the time series."""
 
-    def __init__(self, qc_column: str, flag_column: str, flag_name: str, value: List[int | float | str]) -> None:
+    fdri_param_aliases = {"value": "error_codes"}
+
+    def __init__(self, qc_column: str, flag_column: str, flag_name: str, error_codes: List[int | float | str]) -> None:
         """Initialize the error codes check.
 
         Args:
             qc_column: The name of the column being quality controlled.
             flag_column: The column to which flag values should be added.
             flag_name: The name of the flag to be added.
-            value: List of error codes to flag. Can be numeric or string values
+            error_codes: List of error codes to flag. Can be numeric or string values
                          depending on the data type of the time series.
         """
         super().__init__(qc_column=qc_column, flag_column=flag_column, flag_name=flag_name)
-        self.error_codes = value
+        self.error_codes = error_codes
 
     def _check_expression(self, ts: TimeSeries, dep_ts: DepTS = None) -> pl.Expr:
         """Create expression for error codes check."""
