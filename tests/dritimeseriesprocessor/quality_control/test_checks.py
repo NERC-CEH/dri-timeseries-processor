@@ -2,11 +2,12 @@ import unittest
 from datetime import datetime, time
 
 import polars as pl
+from parameterized import parameterized
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.quality_control.checks import (
     BatteryVoltageCheck, RangeCheck, SoilmetScansCheck, ErrorCodesCheck, SpikeCheck, RadiometerTaCheck,
-    HeatFluxPlateCheck, PluvioDiagnosticCheck, SnowDistanceSignalCheck, TDTSoilTempCheck
+    HeatFluxPlateCheck, PluvioDiagnosticCheck, SnowDistanceSignalCheck, TDTSoilTempCheck, get_qc_class
 )
 
 
@@ -623,3 +624,31 @@ class TestTDTSoilTempCheck(unittest.TestCase):
         )
         with self.assertRaises(UserWarning):
             check.run(self.ts, dep_ts=self.soil_temp_ts)
+
+
+class TestGetQcClass(unittest.TestCase):
+    @parameterized.expand([
+        ("BatteryVoltageCheck", BatteryVoltageCheck),
+        ("RangeCheck", RangeCheck),
+        ("SoilmetScansCheck", SoilmetScansCheck),
+        ("ErrorCodesCheck", ErrorCodesCheck),
+        ("SpikeCheck", SpikeCheck),
+        ("RadiometerTaCheck", RadiometerTaCheck),
+        ("HeatFluxPlateCheck", HeatFluxPlateCheck),
+        ("PluvioDiagnosticCheck", PluvioDiagnosticCheck),
+        ("SnowDistanceSignalCheck", SnowDistanceSignalCheck),
+        ("TDTSoilTempCheck", TDTSoilTempCheck)
+    ])
+    def test_get_class_from_name(self, name, expected):
+        result = get_qc_class(name)
+        self.assertEqual(result, expected)
+
+    @parameterized.expand([
+        ("lowercase", "batteryvoltagecheck"),
+        ("uppercase", "RANGECHECK"),
+        ("mixedcase", "soilmetSCANSCheck"),
+        ("non_existent", "FakeCheck"),
+    ])
+    def test_class_name_incorrect(self, _, name):
+        with self.assertRaises(ValueError):
+            get_qc_class(name)

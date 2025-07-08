@@ -304,6 +304,6 @@ def get_qc_class(qc_class_name: str) -> type[BaseCheck]:
     """
     module = sys.modules[__name__]
     cls = getattr(module, qc_class_name, None)
-    if issubclass(cls, BaseCheck):
+    if cls and issubclass(cls, BaseCheck):
         return cls
     raise ValueError(f"No class named '{qc_class_name}' found in module '{__name__}'.")
