@@ -6,7 +6,7 @@ from polars.testing import assert_frame_equal
 
 from time_stream import TimeSeries, Period
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from dritimeseriesprocessor.corrections.corrections import run_corrections
+from dritimeseriesprocessor.correcting.correcter import run_corrections
 
 
 class TestRunCorrections(unittest.TestCase):
@@ -84,7 +84,7 @@ class TestRunCorrections(unittest.TestCase):
         ]
 
 
-    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    @patch("dritimeseriesprocessor.correcting.correcter.corrections_config")
     def test_run_corrections_basic(self, mock_corrections_config):
         """
         Test basic functionality of run_corrections.
@@ -113,7 +113,7 @@ class TestRunCorrections(unittest.TestCase):
         # Check flag values have been added
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [0, 1, 1, 1, 0])
 
-    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    @patch("dritimeseriesprocessor.correcting.correcter.corrections_config")
     def test_run_corrections_no_config(self, mock_corrections_config):
         """
         Test run_corrections when no corrections config is available.
@@ -126,7 +126,7 @@ class TestRunCorrections(unittest.TestCase):
 
         self.assertEqual(result, self.ts_ids)
 
-    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    @patch("dritimeseriesprocessor.correcting.correcter.corrections_config")
     def test_run_corrections_no_methods(self, mock_corrections_config):
         """
         Test run_corrections when corrections config exists but no methods are specified.
@@ -148,7 +148,7 @@ class TestRunCorrections(unittest.TestCase):
 
         self.assertEqual(result, self.ts_ids)
 
-    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    @patch("dritimeseriesprocessor.correcting.correcter.corrections_config")
     def test_run_corrections_multiple_methods(self, mock_corrections_config):
         """
         Test run_corrections with multiple corrections methods for a single column.
@@ -183,7 +183,7 @@ class TestRunCorrections(unittest.TestCase):
         # Check flag values have been added
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [2, 3, 3, 1, 0])
 
-    @patch("dritimeseriesprocessor.corrections.corrections.corrections_config")
+    @patch("dritimeseriesprocessor.correcting.correcter.corrections_config")
     def test_run_corrections_end_date_is_none(self, mock_corrections_config):
         """
         Test end_date is None in config leads to all dates after start dat being corrected.

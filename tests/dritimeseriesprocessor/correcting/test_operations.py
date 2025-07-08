@@ -3,7 +3,7 @@ import unittest
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.corrections.operations import add, multiply, power
+from dritimeseriesprocessor.correcting.operations import add, multiply, power
 
 
 def create_test_data():
