@@ -65,6 +65,8 @@ class RangeCheck(BaseCheck):
 class SoilmetScansCheck(BaseCheck):
     """Check that the soilmet scan count is above an acceptable threshold."""
 
+    fdri_param_aliases = {"dep_ts": "scans_col"}
+
     def __init__(self, qc_column: str, flag_column: str, flag_name: str, scans_col: str, lt: float) -> None:
         """Initialize the soilmet scans check.
 
@@ -134,6 +136,8 @@ class RadiometerTaCheck(BaseCheck):
     acceptable operating ranges, as extreme temperatures can affect radiometer measurement accuracy.
     """
 
+    fdri_param_aliases = {"dep_ts": "rad_col"}
+
     def __init__(self, qc_column: str, flag_column: str, flag_name: str, rad_col: str, gt: float, lt: float) -> None:
         """Initialize the radiometer temperature check.
 
@@ -187,6 +191,8 @@ class HeatFluxPlateCheck(BaseCheck):
 class PluvioDiagnosticCheck(BaseCheck):
     """Check that pluvio precipitation gauge diagnostic values are within limits."""
 
+    fdri_param_aliases = {"dep_ts": "diagnostic_col"}
+
     def __init__(self, qc_column: str, flag_column: str, flag_name: str, diagnostic_col: str, gt: float) -> None:
         """Initialize the pluvio diagnostic check.
 
@@ -210,6 +216,8 @@ class PluvioDiagnosticCheck(BaseCheck):
 
 class SnowDistanceSignalCheck(BaseCheck):
     """Check that snow distance sensor signal strength is adequate."""
+
+    fdri_param_aliases = {"dep_ts": "signal_col"}
 
     def __init__(self, qc_column: str, flag_column: str, flag_name: str, signal_col: str, lt: float) -> None:
         """Initialize the snow distance signal check.
@@ -237,6 +245,8 @@ class TDTSoilTempCheck(BaseCheck):
     temperature from TDT sensors falls below acceptable levels, as low temperatures can affect the accuracy of
     VWC measurements.
     """
+
+    fdri_param_aliases = {"dep_ts": "soil_temp_col"}
 
     def __init__(self, qc_column: str, flag_column: str, flag_name: str, soil_temp_col: str, lt: float) -> None:
         """Initialize the TDT soil temperature check.
