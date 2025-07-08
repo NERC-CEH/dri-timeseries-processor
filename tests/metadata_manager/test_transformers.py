@@ -212,7 +212,7 @@ class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
 
     def test_no_method_with_calc_method_type(self):
         """Test the extract_timeseries_definition_metadata function raises an error when the
-        response contains method type 'aggregate' but no method.
+        response contains method type 'calculate' but no method.
         """
         # Set the methodology section to a aggregate method type
         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate'
