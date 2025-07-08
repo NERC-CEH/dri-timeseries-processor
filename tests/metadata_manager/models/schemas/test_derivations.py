@@ -84,6 +84,7 @@ class TestMethodology(unittest.TestCase):
         self.assertEqual(methodology.uses,["http://fdri.ceh.ac.uk/ref/cosmos/time-series/use_1",
                         "http://fdri.ceh.ac.uk/ref/cosmos/time-series/use_2"])
         self.assertEqual(methodology.configuration_type, "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate")
+        self.assertEqual(methodology.method, "http://fdri.ceh.ac.uk/ref/common/method/calculate-calc_daily_pe")
 
 
     @parameterized.expand([
