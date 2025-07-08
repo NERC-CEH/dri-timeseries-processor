@@ -98,7 +98,15 @@ def extract_timeseries_definition_metadata(
         metadata["method_type"] = re.match(
             URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.configuration_type
         ).group(1)
+        if derivation_metadata.methodology.method:
+            metadata["method"] = re.match(URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.method).group(1)
+        else:
+            metadata["method"] = None
         metadata["inputs"] = derivation_metadata.methodology.uses
+
+        if metadata["method_type"] in ("aggregate", "calculate") and not metadata["method"]:
+            raise ValueError(f"Method type '{metadata['method_type']}' requires a method to be specified.")
+
     else:
         # If no methodology section then there will be no further dependencies
         metadata["inputs"] = []

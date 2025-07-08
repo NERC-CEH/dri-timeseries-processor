@@ -170,7 +170,10 @@ class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
         # Load the data into the pyantic model
         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        expected = {'method_type': 'calculate', 'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed']}
+        expected = {
+            'method_type': 'calculate',
+            'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'],
+            'method': 'calculate-calc_daily_pe'}
         
         result = extract_timeseries_definition_metadata(model_output)
 
@@ -191,3 +194,33 @@ class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
         result = extract_timeseries_definition_metadata(model_output)
 
         assert result == expected
+
+    def test_no_method_with_agg_method_type(self):
+        """Test the extract_timeseries_definition_metadata function raises an error when the
+        response contains method type 'aggregate' but no method.
+        """
+        # Set the methodology section to a aggregate method type
+        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate'
+        # Remove the method
+        del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
+
+        # Load the data into the pyantic model
+        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+
+        with self.assertRaises(ValueError) as context:
+            extract_timeseries_definition_metadata(model_output)
+
+    def test_no_method_with_calc_method_type(self):
+        """Test the extract_timeseries_definition_metadata function raises an error when the
+        response contains method type 'aggregate' but no method.
+        """
+        # Set the methodology section to a aggregate method type
+        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate'
+        # Remove the method
+        del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
+
+        # Load the data into the pyantic model
+        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+
+        with self.assertRaises(ValueError) as context:
+            extract_timeseries_definition_metadata(model_output)
