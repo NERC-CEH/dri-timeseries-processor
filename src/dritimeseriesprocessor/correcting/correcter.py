@@ -15,10 +15,12 @@ logger = logging.getLogger(__name__)
 
 CORRS_FLAG_SYS_NAME = "corrs_flags"
 
+
 @lru_cache(maxsize=1)
 def get_correction_methods() -> Dict:
     """Load the correction methods and cache the results."""
     return load_methods("correction")
+
 
 @metrics.track_corrections_time()
 def run_corrections(

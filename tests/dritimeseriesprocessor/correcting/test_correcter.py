@@ -138,8 +138,8 @@ class TestRunCorrections(unittest.TestCase):
         })()
 
 
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.load_config')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.get_correction_methods')
+    @patch('dritimeseriesprocessor.correcting.correcter.load_config')
+    @patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
     def test_run_corrections_basic(self, mock_get_methods, mock_get_configs):
         """
         Test basic functionality of run_corrections.
@@ -162,8 +162,8 @@ class TestRunCorrections(unittest.TestCase):
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORE_FLAG'].to_list(), [32, 33, 33, 33, 32])
 
 
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.load_config')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.get_correction_methods')
+    @patch('dritimeseriesprocessor.correcting.correcter.load_config')
+    @patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
     def test_run_corrections_no_config(self, mock_get_methods, mock_get_configs):
         """
         Test run_corrections when no corrections config is available.
@@ -177,8 +177,8 @@ class TestRunCorrections(unittest.TestCase):
         self.assertEqual(result, self.ts_ids)
 
 
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.load_config')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.get_correction_methods')
+    @patch('dritimeseriesprocessor.correcting.correcter.load_config')
+    @patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
     def test_run_corrections_no_methods(self, mock_get_methods, mock_get_configs):
         """
         Test run_corrections when corrections config exists but no methods are specified.
@@ -192,8 +192,8 @@ class TestRunCorrections(unittest.TestCase):
         self.assertEqual(result, self.ts_ids)
 
 
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.load_config')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.get_correction_methods')
+    @patch('dritimeseriesprocessor.correcting.correcter.load_config')
+    @patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
     def test_run_corrections_multiple_methods(self, mock_get_methods, mock_get_configs):
         """
         Test run_corrections with multiple corrections methods for a single column.
@@ -217,8 +217,8 @@ class TestRunCorrections(unittest.TestCase):
         self.assertEqual(result[self.rh_ts_id]["data"].df['humidity_CORRS_FLAG'].to_list(), [2, 3, 0, 0, 0])
 
 
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.load_config')
-    @patch('dritimeseriesprocessor.preprocessing.preprocessor.get_correction_methods')
+    @patch('dritimeseriesprocessor.correcting.correcter.load_config')
+    @patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
     def test_run_corrections_end_date_is_none(self, mock_get_methods, mock_get_configs):
         """
         Test end_date is None in config leads to all dates after start date being corrected.
