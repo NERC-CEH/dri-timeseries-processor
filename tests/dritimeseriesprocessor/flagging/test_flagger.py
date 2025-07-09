@@ -6,11 +6,11 @@ from datetime import datetime
 from dritimeseriesprocessor.flagging.flagger import (
     initialise_core_flag_system,
     add_initial_core_flags,
-    update_preprocess_core_flags,
+    update_corrections_core_flags,
     update_quality_control_core_flags,
     update_infill_core_flags,
     core_flag_column_name,
-    pr_flag_column_name,
+    corrs_flag_column_name,
     qc_flag_column_name,
     infill_flag_column_name,
 )
@@ -24,14 +24,14 @@ class TestCoreFlagColumnName(unittest.TestCase):
 
 
 
-class TestPRFlagColumnName(unittest.TestCase):
-    """Unit tests for the pr_flag_column_name function.
+class TestCorrsFlagColumnName(unittest.TestCase):
+    """Unit tests for the corrs_flag_column_name function.
     """
     def test_standard_column_name(self):
         """
-        Test that the function correctly appends '_PR_FLAG' to a standard column name.
+        Test that the function correctly appends '_CORRS_FLAG' to a standard column name.
         """
-        self.assertEqual(pr_flag_column_name('data'), 'data_PR_FLAG')
+        self.assertEqual(corrs_flag_column_name('data'), 'data_CORRS_FLAG')
 
 
 class TestQCFlagColumnName(unittest.TestCase):
@@ -70,8 +70,8 @@ class TestFlagger(unittest.TestCase):
             pl.DataFrame(data),
             time_name="timestamp",
         )
-        self.sample_timeseries.add_flag_system("pr_flags", {"ADD": 1})
-        self.sample_timeseries.init_flag_column("pr_flags", "value_PR_FLAG", [1, 0, 0, 0, 1])
+        self.sample_timeseries.add_flag_system("corrs_flags", {"ADD": 1})
+        self.sample_timeseries.init_flag_column("corrs_flags", "value_CORRS_FLAG", [1, 0, 0, 0, 1])
         self.sample_timeseries.add_flag_system("qc_flags", {"RANGE": 1})
         self.sample_timeseries.init_flag_column("qc_flags", "value_QC_FLAG", [0, 1, 0, 1, 0])
         self.sample_timeseries.add_flag_system("infill_flags", {"INTERP": 1})
@@ -94,18 +94,18 @@ class TestAddInitialCoreFlags(TestFlagger):
         self.assertEqual(list(ts.df[flag_col]), [32, 36, 32, 36, 32])
 
 
-class TestUpdatePreprocessCoreFlags(TestFlagger):
-    def test_update_preprocess_core_flags(self):
+class TestUpdateCorrectionsCoreFlags(TestFlagger):
+    def test_update_corrections_core_flags(self):
         """Test the the core flag column is updated with 'corrected' core flag (1)."""
         ts = add_initial_core_flags(self.sample_timeseries)
-        ts = update_preprocess_core_flags(self.sample_timeseries)
+        ts = update_corrections_core_flags(self.sample_timeseries)
         flag_col = core_flag_column_name("value")
         self.assertEqual(list(ts.df[flag_col]), [33, 36, 32, 36, 33])
     
     def test_no_core_flag_column(self):
         """Test that an error is raised if the core flag column is not found."""
         with self.assertRaises(ValueError):
-            update_preprocess_core_flags(self.sample_timeseries)
+            update_corrections_core_flags(self.sample_timeseries)
 
 
 class TestUpdateQualityControlCoreFlags(TestFlagger):

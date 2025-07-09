@@ -5,23 +5,23 @@ from typing import Dict, Union
 import polars as pl
 from time_stream import TimeSeries
 
-from dritimeseriesprocessor.__metadata__.config_preprocessing import preprocessing_config
-from dritimeseriesprocessor.flagging.flagger import pr_flag_column_name, update_preprocess_core_flags
+from dritimeseriesprocessor.__metadata__.config_corrections import corrections_config
+from dritimeseriesprocessor.correcting.operations import CORRECTION_METHODS
+from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.preprocessing.operations import CORRECTION_METHODS
 from dritimeseriesprocessor.utils import not_missing_expr
 
 logger = logging.getLogger(__name__)
 
 
-PR_FLAG_SYS_NAME = "pr_flags"
+CORRS_FLAG_SYS_NAME = "corrs_flags"
 
 
-@metrics.track_preprocessing_time()
-def run_preprocess(
+@metrics.track_corrections_time()
+def run_corrections(
     ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
 ) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
-    """Preprocesses the data by applying a series of corrections based on predefined configurations.
+    """Corrects the data by applying a series of corrections based on predefined configurations.
 
     Args:
         ts_ids: Metadata and data for timeseries ids
@@ -29,15 +29,15 @@ def run_preprocess(
     Returns:
         ts_ids: Metadata and corrected data for timeseries ids
     """
-    pr_flags_dict = {method.method_id: method.id for method in preprocessing_config.correction_methods}
-    if not pr_flags_dict:
+    corrs_flags_dict = {method.method_id: method.id for method in corrections_config.correction_methods}
+    if not corrs_flags_dict:
         logger.warning("No correction methods given in config.")
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
         ts = ts_dict["data"]
 
-        for correction_config in preprocessing_config.corrections:
+        for correction_config in corrections_config.corrections:
             if correction_config.site_id != ts.site_id:
                 continue
 
@@ -51,14 +51,14 @@ def run_preprocess(
                 logger.warning(f"Unimplemented method: {correction_config.method_id}")
                 continue
 
-            # Initialise preprocessing flag system within TimeSeries object.
-            if PR_FLAG_SYS_NAME not in ts.flag_systems:
-                ts.add_flag_system(PR_FLAG_SYS_NAME, pr_flags_dict)
+            # Initialise corrections flag system within TimeSeries object.
+            if CORRS_FLAG_SYS_NAME not in ts.flag_systems:
+                ts.add_flag_system(CORRS_FLAG_SYS_NAME, corrs_flags_dict)
 
             # Add a flag column for the correction method
-            pr_flag_col = pr_flag_column_name(correction_config.variable)
-            if pr_flag_col not in ts.columns:
-                ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
+            corrs_flag_col = corrs_flag_column_name(correction_config.variable)
+            if corrs_flag_col not in ts.columns:
+                ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
             # Ensure the end datetime is set; default to the current time if not provided
             if correction_config.end_datetime is None:
@@ -78,8 +78,8 @@ def run_preprocess(
 
             # Apply flagging to the DataFrame.
             expr = mask & not_missing_expr(correction_config.variable)
-            ts.add_flag(pr_flag_col, correction_config.method_id, expr)
+            ts.add_flag(corrs_flag_col, correction_config.method_id, expr)
 
-        ts = update_preprocess_core_flags(ts)
+        ts = update_corrections_core_flags(ts)
 
     return ts_ids

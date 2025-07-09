@@ -16,7 +16,7 @@ class Metrics:
         """Initialize the Metrics"""
 
         # Histograms
-        self.preprocessing_time = Histogram("preprocessing_time", "Time spent on preprocessing")
+        self.corrections_time = Histogram("corrections_time", "Time spent on corrections")
         self.qc_time = Histogram("qc_time", "Time spent on quality control")
         self.s3_write_time = Histogram("s3_write_time", "Time spent writing to S3")
 
@@ -31,7 +31,7 @@ class Metrics:
     def setup_metrics(self) -> None:
         """Setup metrics."""
         self.registry = CollectorRegistry()
-        self.registry.register(self.preprocessing_time)
+        self.registry.register(self.corrections_time)
         self.registry.register(self.qc_time)
         self.registry.register(self.s3_write_time)
         self.registry.register(self.flags_added)
@@ -61,8 +61,8 @@ class Metrics:
         """
         push_to_gateway(gateway=url, job=job, registry=registry)
 
-    def track_preprocessing_time(self) -> float:
-        return self.preprocessing_time.time()
+    def track_corrections_time(self) -> float:
+        return self.corrections_time.time()
 
     def track_qc_time(self) -> float:
         return self.qc_time.time()
