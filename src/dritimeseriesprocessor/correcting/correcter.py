@@ -6,27 +6,25 @@ from typing import Dict, Union
 import polars as pl
 from time_stream import TimeSeries
 
-from dritimeseriesprocessor.flagging.flagger import pr_flag_column_name, update_preprocess_core_flags
+from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.utils import not_missing_expr
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
 
-PR_FLAG_SYS_NAME = "pr_flags"
-
+CORRS_FLAG_SYS_NAME = "corrs_flags"
 
 @lru_cache(maxsize=1)
 def get_correction_methods() -> Dict:
     """Load the correction methods and cache the results."""
     return load_methods("correction")
 
-
-@metrics.track_preprocessing_time()
-def run_preprocess(
+@metrics.track_corrections_time()
+def run_corrections(
     ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
 ) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
-    """Preprocesses the data by applying a series of corrections based on predefined configurations.
+    """Corrects the data by applying a series of corrections based on predefined configurations.
 
     Args:
         ts_ids: Metadata and data for timeseries ids
@@ -51,14 +49,14 @@ def run_preprocess(
             continue
 
         # Initialise preprocessing flag system within TimeSeries object.
-        if PR_FLAG_SYS_NAME not in ts.flag_systems:
-            ts.add_flag_system(PR_FLAG_SYS_NAME, correction_flags_dict)
+        if CORRS_FLAG_SYS_NAME not in ts.flag_systems:
+            ts.add_flag_system(CORRS_FLAG_SYS_NAME, correction_flags_dict)
 
         for config in correction_config:
             # Add a flag column for the correction method
-            pr_flag_col = pr_flag_column_name(ts.column_name)
+            pr_flag_col = corrs_flag_column_name(ts.column_name)
             if pr_flag_col not in ts.columns:
-                ts.init_flag_column(PR_FLAG_SYS_NAME, pr_flag_col)
+                ts.init_flag_column(CORRS_FLAG_SYS_NAME, pr_flag_col)
 
             # Run the corrections on the timeseries
             for method in config.configs:
@@ -85,7 +83,7 @@ def run_preprocess(
                 expr = mask & not_missing_expr(ts.column_name)
                 ts.add_flag(pr_flag_col, method.name, expr)
 
-            ts = update_preprocess_core_flags(ts)
+            ts = update_corrections_core_flags(ts)
 
             # Reassign corrected dataframe
             ts_dict["data"] = ts

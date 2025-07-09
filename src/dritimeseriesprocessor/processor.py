@@ -1,13 +1,14 @@
 import logging
+import os
 from datetime import datetime
 from typing import Dict, Union
 
 import polars as pl
 from time_stream import TimeSeries
 
+from dritimeseriesprocessor.correcting.correcter import run_corrections
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.preprocessing.preprocessor import run_preprocess
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 
@@ -53,7 +54,7 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
             url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
         )
 
-    return TimeSeries(
+    ts = TimeSeries(
         bucket_data,
         "time",
         ts_metadata["resolution"],
@@ -64,6 +65,14 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
             "processing_level": ts_metadata["processing_level"],
         },
     )
+
+    # To help test the processor with large amounts of data, we bypass any errors
+    # raised by duplicate timestamps when running locally. In production we want
+    # the default behaviour which is too raise the error.
+    if "environment" not in os.environ:
+        ts.on_duplicates = "keep_first"
+
+    return ts
 
 
 def process_timeseries(
@@ -82,8 +91,8 @@ def process_timeseries(
     ts_ids_with_data = {k: v for k, v in ts_ids.items() if "data" in v}
     ts_ids_with_no_data = {k: v for k, v in ts_ids.items() if "data" not in v}
 
-    # Correction
-    ts_ids_with_data = run_preprocess(ts_ids_with_data)
+    # Corrections
+    ts_ids_with_data = run_corrections(ts_ids_with_data)
 
     # Quality control
     ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)

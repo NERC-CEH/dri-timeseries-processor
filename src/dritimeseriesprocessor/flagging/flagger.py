@@ -26,9 +26,9 @@ def core_flag_column_name(column: str) -> str:
     return f"{column}_CORE_FLAG"
 
 
-def pr_flag_column_name(column: str) -> str:
+def corrs_flag_column_name(column: str) -> str:
     """
-    Return column name of preprocess flag column for a given variable column.
+    Return column name of corrections flag column for a given variable column.
 
     Args:
         column: Data column name
@@ -36,7 +36,7 @@ def pr_flag_column_name(column: str) -> str:
     Returns:
         Flag column name
     """
-    return f"{column}_PR_FLAG"
+    return f"{column}_CORRS_FLAG"
 
 
 def qc_flag_column_name(column: str) -> str:
@@ -104,9 +104,8 @@ def add_initial_core_flags(ts: TimeSeries) -> TimeSeries:
     return ts
 
 
-def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
-    """Add 'corrected' flag where data has been corrected in preprocessing. This is
-    determined by where there is a preprocessing flag.
+def update_corrections_core_flags(ts: TimeSeries) -> TimeSeries:
+    """Add 'corrected' flag where data has been corrected. This is determined by where there is a corrections flag.
 
     Args:
         ts: The input TimeSeries object.
@@ -116,17 +115,17 @@ def update_preprocess_core_flags(ts: TimeSeries) -> TimeSeries:
     """
     for data_col_name in ts.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
-        pr_flag_col_name = pr_flag_column_name(data_col_name)
+        corrs_flag_col_name = corrs_flag_column_name(data_col_name)
 
         if core_flag_col_name not in ts.flag_columns:
             raise ValueError(f"Core flag column {core_flag_col_name} not found in TimeSeries.")
 
-        # Do nothing if there is no preprocess flag column.
-        if pr_flag_col_name not in ts.flag_columns:
+        # Do nothing if there is no corrections flag column.
+        if corrs_flag_col_name not in ts.flag_columns:
             continue
 
-        # Add corrected core flag where preprocess flag is not 0.
-        expr = pl.col(pr_flag_col_name) != 0
+        # Add corrected core flag where corrections flag is not 0.
+        expr = pl.col(corrs_flag_col_name) != 0
         ts.add_flag(core_flag_col_name, "corrected", expr)
 
     return ts
