@@ -1,9 +1,10 @@
 """Helpers to transform metadata API responses."""
 
 import re
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Union
 
-from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX, get_property
+from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.models.schemas.derivations import DerivationMetadata
 from metadata_manager.models.schemas.sites import SitesResponse
 
@@ -45,38 +46,40 @@ def extract_site_ids(site_list: List[str], network: str) -> list:
         raise ValueError(f"Network {network} not supported.")
 
 
-def extract_timeseries_id_metadata(response: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+def extract_timeseries_id_metadata(response: TimeseriesDatasetResponse) -> Dict[str, Dict[str, str]]:
     """Extract the metadata required for processing timeseries IDs from the dataset endpoint.
-
     Args:
-        response: The response from the metadata store dataset request.
-
+        response: The TimeseriesDatasetResponse object from the metadata store dataset request.
     Returns:
         A dict of the required metadata for processing.
     """
     metadata = {}
-    for item in response["items"]:
+
+    for item in response.items:
         ts_id_metadata = {}
 
-        ts_id_metadata["ts_def"] = get_property("@id", get_property("type", item))
-        ts_id_metadata["resolution"] = get_property(
-            "resolution", get_property("aggregation", get_property("measure", get_property("type", item)))
-        )
-        ts_id_metadata["periodicity"] = get_property(
-            "periodicity", get_property("aggregation", get_property("measure", get_property("type", item)))
-        )
-        ts_id_metadata["processing_level"] = re.match(
-            URI_ID_EXTRACT_REGEX, get_property("@id", get_property("processingLevel", get_property("type", item)))
-        ).group(1)
+        # Get the first type definition (assuming there's at least one)
+        type_def = item.type[0] if item.type else None
+        if not type_def:
+            continue
 
-        ts_id_metadata["sourceBucket"] = get_property("sourceBucket", item)
-        ts_id_metadata["sourceDataset"] = get_property("sourceDataset", item)
-        ts_id_metadata["sourceColumnName"] = get_property("sourceColumnName", item)
-        ts_id_metadata["sourceSite"] = (
-            re.match(SITE_ID_EXTRACT_REGEX, get_property("@id", get_property("originatingSite", item))).group(1).upper()
-        )
+        ts_id_metadata["ts_def"] = type_def.id
+        ts_id_metadata["resolution"] = type_def.measure.aggregation.resolution
+        ts_id_metadata["periodicity"] = type_def.measure.aggregation.periodicity
 
-        metadata[get_property("@id", item)] = ts_id_metadata
+        # Extract processing level ID using regex
+        ts_id_metadata["processing_level"] = re.match(URI_ID_EXTRACT_REGEX, type_def.processing_level.id).group(1)
+
+        ts_id_metadata["sourceBucket"] = item.source_bucket
+        ts_id_metadata["sourceDataset"] = item.source_dataset
+        ts_id_metadata["sourceColumnName"] = item.source_column_name
+
+        # Get the first originating site (assuming there's at least one)
+        originating_site = item.originating_site[0] if item.originating_site else None
+        if originating_site:
+            ts_id_metadata["sourceSite"] = re.match(SITE_ID_EXTRACT_REGEX, originating_site.id).group(1).upper()
+
+        metadata[item.id] = ts_id_metadata
 
     return metadata
 

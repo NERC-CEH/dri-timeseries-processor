@@ -2,12 +2,13 @@ import asyncio
 import json
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.methods.method_registry import InfillingMethods, QcMethods
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
+from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
@@ -89,7 +90,7 @@ def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataRe
     return TimeSeriesMetadataResponse.model_validate(data)
 
 
-def load_datasets(parameters: Dict) -> Any:
+def load_datasets(parameters: Dict) -> TimeseriesDatasetResponse:
     """Load dataset metadata from the API.
 
     Args:
@@ -99,10 +100,7 @@ def load_datasets(parameters: Dict) -> Any:
         The parsed dataset metadata.
     """
     data = asyncio.run(METADATA_CONNECTION.fetch_dataset_metadata(parameters))
-    # TODO build and test pydantic model for dataset return FW-696
-    # NOTE The Pydantic model may need to vary depending on the view used in the API call.
-    # Add as return annotation
-    return data
+    return TimeseriesDatasetResponse.model_validate(data)
 
 
 def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationResponse:
