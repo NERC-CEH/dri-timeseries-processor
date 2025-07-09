@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import logging
+import re
 from argparse import ArgumentParser
 from datetime import date, timedelta
 from typing import List, Tuple
@@ -14,6 +15,8 @@ from time_stream.period import Period
 from dritimeseriesprocessor.utils import remove_sites_not_in_store
 
 logger = logging.getLogger(__name__)
+
+COLUMN_NAME_VALID_REGEX = "^[A-Za-z0-9_-]*$"
 
 
 def parse_args(args: list) -> ArgumentParser:
@@ -227,8 +230,8 @@ def validate_columns(columns: str) -> List[str | None]:
         for column in column_list:
             if column == "":
                 raise ValueError("Column cannot be empty.")
-            elif not column.isalnum():
-                raise ValueError(f"Column {column} should only contain letters and numbers.")
+            elif not bool(re.match(COLUMN_NAME_VALID_REGEX, column)):
+                raise ValueError(f"Column {column} should only contain letters, numbers and underscores.")
             elif column in checked_columns:
                 raise ValueError(f"Column {column} is duplicated in the arguments.")
             else:

@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from typing import Dict, Union
 
@@ -53,7 +54,7 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
             url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
         )
 
-    return TimeSeries(
+    ts = TimeSeries(
         bucket_data,
         "time",
         ts_metadata["resolution"],
@@ -64,6 +65,14 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
             "processing_level": ts_metadata["processing_level"],
         },
     )
+
+    # To help test the processor with large amounts of data, we bypass any errors
+    # raised by duplicate timestamps when running locally. In production we want
+    # the default behaviour which is too raise the error.
+    if "environment" not in os.environ:
+        ts.on_duplicates = "keep_first"
+
+    return ts
 
 
 def process_timeseries(
