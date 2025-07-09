@@ -19,7 +19,7 @@ def battery_voltage_check(
     flag_name: str,
     lt: float,
     dep_ts: str,
-) -> TimeSeries:
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Check that the battery voltage level is above the threshold.
 
     This function checks if the battery voltage ('BATTV' column) is below a certain threshold
@@ -38,6 +38,7 @@ def battery_voltage_check(
     """
     # Get data
     ts = ts_ids[ts_id]["data"]
+
     # Check if the dependent time series exists
     if dep_ts not in ts_ids:
         raise ValueError(f"Dependent Battery Voltage time series '{dep_ts}' not found in ts_ids.")
@@ -56,7 +57,7 @@ def range_check(
     flag_name: str,
     gt: float,
     lt: float,
-) -> TimeSeries:
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Check values falls between min and max range, applying a quality control flag if outside of range.
 
     Min and max range values are defined per site, per variable and per time resolution.
@@ -91,7 +92,7 @@ def soilmet_scans_check(
     flag_name: str,
     lt: float,
     dep_ts: str,
-) -> TimeSeries:
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Check the soilmet scans value is above an acceptable threshold.
 
     Args:
@@ -107,7 +108,8 @@ def soilmet_scans_check(
     """
     # Get data
     ts = ts_ids[ts_id]["data"]
-    # Get the dependent time series for scans
+
+    # Check if the dependent time series exists
     if dep_ts not in ts_ids:
         raise ValueError(f"Dependent Scans time series '{dep_ts}' not found in ts_ids.")
     scans_ts = ts_ids[dep_ts]["data"]
@@ -119,7 +121,7 @@ def soilmet_scans_check(
 
 def error_codes_check(
     ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]], ts_id: str, flag_column: str, flag_name: str, value: List
-) -> TimeSeries:
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Add QC flag for expected error codes.
 
     Args:
@@ -143,7 +145,7 @@ def error_codes_check(
 
 def spike_check(
     ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]], ts_id: str, flag_column: str, flag_name: str, gt: float
-) -> TimeSeries:
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Assess the total difference between a value and its neighbours and remove any skew in the size of the
     differences with each neighbour.
 
@@ -202,20 +204,20 @@ def radiometer_ta_check(
     gt: float,
     lt: float,
     dep_ts: str,
-) -> TimeSeries:
-    """Check radiometer temperature values falls between min and max range, applying a quality control flag if
-    outside of range.
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    """Check radiometer temperature values falls between min and max range, applying a quality control flag to
+    given timeseries if outside of range.
 
     Min and max range values are defined per site, per variable and per time resolution.
 
     Args:
         ts_ids: Metadata and data for TimeSeries ids.
-        ts_id: The ID of the TimeSeries to check.
+        ts_id: The ID of the TimeSeries to flag.
         flag_column: The column to which flag value should be added.
         flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
         gt: The minimum value for the range.
         lt: The maximum value for the range.
-        dep_ts: The name of the dependent time series to use for the radiometer temperature check.
+        dep_ts: The name of the radiometer temperature time series used for the check.
 
     Returns:
          ts_ids: Metadata and data for TimeSeries with the quality control flag applied.
@@ -223,7 +225,18 @@ def radiometer_ta_check(
     # Get data
     ts = ts_ids[ts_id]["data"]
 
-    # TODO: Fill in this placeholder for radiometer temperature check
+    # Check if the dependent time series exists
+    if dep_ts not in ts_ids:
+        raise ValueError(f"Dependent TNR01C time series '{dep_ts}' not found in ts_ids.")
+    tnr01c_ts = ts_ids[dep_ts]["data"]
+
+    # Get True/False expression for tnr01c values that are out of range
+    expr = pl.col(tnr01c_ts.column_name).lt(lt) | pl.col(tnr01c_ts.column_name).gt(gt)
+    bool_expr = tnr01c_ts.df.select(expr)
+
+    # Use the boolean expression to flag original time series
+    ts.add_flag(flag_column, flag_name, bool_expr)
+
     ts_ids[ts_id]["data"] = ts
 
     return ts_ids
@@ -236,7 +249,7 @@ def heat_flux_plate_check(
     flag_name: str,
     time_ge: time,
     time_le: time,
-) -> TimeSeries:
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
     """Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate
 
     Args:
@@ -253,7 +266,111 @@ def heat_flux_plate_check(
     # Get data
     ts = ts_ids[ts_id]["data"]
 
-    # TODO: Fill in this placeholder
+    # Create expression to filter out the times
+    expr = (pl.col(ts.time_name).dt.time() >= time_ge) & (pl.col(ts.time_name).dt.time() <= time_le)
+    ts.add_flag(flag_column, flag_name, expr)
+
     ts_ids[ts_id]["data"] = ts
+
+    return ts_ids
+
+
+def pluvio_diagnostic_check(
+    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
+    ts_id: str,
+    flag_column: str,
+    flag_name: str,
+    gt: float,
+    dep_ts: str,
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    """Check the pluvio diagnostic values are no larger than given value.
+
+    Args:
+        ts_ids: Metadata and data for TimeSeries ids.
+        ts_id: The ID of the TimeSeries to check.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        gt: The maximum value for the diagnostic check.
+        dep_ts: The name of the pluvio diagnostic time series used for the check.
+
+    Returns:
+        The TimeSeries with the quality control flag applied.
+    """
+    ts = ts_ids[ts_id]["data"]
+
+    # Check if the dependent time series exists
+    if dep_ts not in ts_ids:
+        raise ValueError(f"Dependent Precip Diag time series '{dep_ts}' not found in ts_ids.")
+    diag_ts = ts_ids[dep_ts]["data"]
+
+    ts_ids[ts_id]["data"] = column_threshold_check(ts, diag_ts, flag_column, gt, ">", flag_name)
+
+    return ts_ids
+
+
+def snow_distance_signal_check(
+    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
+    ts_id: str,
+    flag_column: str,
+    flag_name: str,
+    lt: float,
+    dep_ts: str,
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    """Check the snow distance signal values are no smaller than given value.
+
+    Args:
+        ts_ids: Metadata and data for TimeSeries ids.
+        ts_id: The ID of the TimeSeries to check.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        lt: The minimum value for the snow distance signal.
+        dep_ts: The name of the snow sensor signal time series used for the check.
+
+    Returns:
+        The TimeSeries with the quality control flag applied.
+    """
+    ts = ts_ids[ts_id]["data"]
+
+    # Check if the dependent time series exists
+    if dep_ts not in ts_ids:
+        raise ValueError(f"Dependent Snow Signal time series '{dep_ts}' not found in ts_ids.")
+    sig_ts = ts_ids[dep_ts]["data"]
+
+    ts_ids[ts_id]["data"] = column_threshold_check(ts, sig_ts, flag_column, lt, "<", flag_name)
+
+    return ts_ids
+
+
+def tdt_soil_temp_check(
+    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
+    ts_id: str,
+    flag_column: str,
+    flag_name: str,
+    lt: float,
+    dep_ts: str,
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    """Check the TDT soil temperature values are no smaller than given value and flag VWC readings
+    if so.
+
+    Args:
+        ts: The input TimeSeries containing the data to be tested.
+        column: The name of the column to which the quality control flag will be applied.
+        flag_column: The column to which flag value should be added.
+        flag_name: The name of the flag to be added to the TimeSeries. This is the method name in the qc config.
+        lt: The minimum temp for the soil.
+        dep_ts: The name of the TDT soil temperature time series used for the check.
+
+    Returns:
+         The TimeSeries with the quality control flag applied.
+    """
+    # TODO: Use alternative TDT if soil temperature is not available or incorrect.
+    ts = ts_ids[ts_id]["data"]
+
+    # Check if the dependent time series exists
+    if dep_ts not in ts_ids:
+        raise ValueError(f"Dependent TDT soil temperature time series '{dep_ts}' not found in ts_ids.")
+    tsoil_ts = ts_ids[dep_ts]["data"]
+
+    ts_ids[ts_id]["data"] = column_threshold_check(ts, tsoil_ts, flag_column, lt, "<", flag_name)
 
     return ts_ids

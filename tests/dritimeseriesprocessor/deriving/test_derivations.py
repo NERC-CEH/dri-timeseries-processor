@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import unittest
 
 import polars as pl
@@ -18,9 +18,6 @@ from dritimeseriesprocessor.deriving.derivations import (
     WindSpeedHeightCorrection,
 )
 from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
-
-
-TZ_UTC = timezone.utc
 
 
 def init_timeseries():
@@ -54,9 +51,9 @@ class TestDerive(unittest.TestCase):
 
         expected_df = pl.DataFrame({
             "time": [
-                datetime(2024, 1, 1, tzinfo=TZ_UTC),
-                datetime(2024, 1, 2, tzinfo=TZ_UTC),
-                datetime(2024, 1, 3, tzinfo=TZ_UTC)
+                datetime(2024, 1, 1),
+                datetime(2024, 1, 2),
+                datetime(2024, 1, 3)
             ],
             "data_col1": [1, 2, 3],
             "data_col2": [4, 5, 6],

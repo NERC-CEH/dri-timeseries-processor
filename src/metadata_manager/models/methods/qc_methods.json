@@ -40,5 +40,23 @@
         "description": "Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate",
         "id": 64,
         "function_name": "heat_flux_plate_check"
+    },
+    "pluvio_diag": {
+        "name": "Pluvio Diagnostic",
+        "description": "Removes precip where pluvio diagnostic value > 0",
+        "id": 128,
+        "function_name": "pluvio_diagnostic_check"
+    },
+    "snowd_signal": {
+        "name": "Snow distance signal",
+        "description": "Removes snow depth where signal value too low",
+        "id": 256,
+        "function_name": "snow_distance_signal_check"
+    },
+    "tdt_tsoil": {
+        "name": "TDT soil temp",
+        "description": "Removes TDT VWC where TDT soil temperature too low",
+        "id": 512,
+        "function_name": "tdt_soil_temp_check"
     }
 }

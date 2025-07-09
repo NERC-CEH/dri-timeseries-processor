@@ -4,7 +4,6 @@ from functools import lru_cache
 from typing import Dict, Union
 
 import polars as pl
-import pytz
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import pr_flag_column_name, update_preprocess_core_flags
@@ -74,8 +73,8 @@ def run_preprocess(
                 )
 
                 # Create a mask to filter rows based on SITE_ID and the time range
-                mask = (pl.col(ts.time_name) >= method.observation_interval[0].replace(tzinfo=pytz.UTC)) & (
-                    pl.col(ts.time_name) <= method.observation_interval[1].replace(tzinfo=pytz.UTC)
+                mask = (pl.col(ts.time_name) >= method.observation_interval[0]) & (
+                    pl.col(ts.time_name) <= method.observation_interval[1]
                 )
 
                 # Apply the specified correction function to the DataFrame

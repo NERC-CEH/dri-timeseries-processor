@@ -40,6 +40,7 @@ class Methodology(BaseModel):
     derivation_id: str
     uses: list
     configuration_type: str
+    method: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -61,6 +62,9 @@ class Methodology(BaseModel):
             uses.append(get_property("@id", items))
         result["uses"] = uses
         result["configuration_type"] = get_property("@id", get_property("type", get_property("configuration", data)))
+        result["method"] = get_property(
+            "@id", get_property("method", get_property("hasCurrentConfiguration", get_property("configuration", data)))
+        )
 
         return result
 
