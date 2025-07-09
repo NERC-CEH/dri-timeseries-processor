@@ -5,9 +5,9 @@ from typing import Dict, Union
 import polars as pl
 from time_stream import TimeSeries
 
+from dritimeseriesprocessor.correcting.correcter import run_corrections
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.correcting.correcter import run_corrections
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 
