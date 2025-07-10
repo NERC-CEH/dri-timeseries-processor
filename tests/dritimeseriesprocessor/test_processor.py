@@ -105,11 +105,11 @@ class TestShiftProcessedData(unittest.TestCase):
 
 class TestProcessTimeseries(unittest.TestCase):
 
-    @patch("dritimeseriesprocessor.processor.run_preprocess")
+    @patch("dritimeseriesprocessor.processor.run_corrections")
     @patch("dritimeseriesprocessor.processor.run_quality_control")
     @patch("dritimeseriesprocessor.processor.run_infilling")
     def test_process_timeseries(
-        self, mock_run_infilling, mock_run_quality_control, mock_run_preprocess
+        self, mock_run_infilling, mock_run_quality_control, mock_run_corrections
     ):
         """Test the process_timeseries function.
         """
@@ -141,13 +141,13 @@ class TestProcessTimeseries(unittest.TestCase):
             }
         }
 
-        mock_run_preprocess.return_value = return_ts_metadata
+        mock_run_corrections.return_value = return_ts_metadata
         mock_run_quality_control.return_value = return_ts_metadata
         mock_run_infilling.return_value = return_ts_metadata
 
         result = process_timeseries(ts_metadata)
         self.assertEqual(result, expected)
-        mock_run_preprocess.assert_called_once()
+        mock_run_corrections.assert_called_once()
         mock_run_quality_control.assert_called_once()
         mock_run_infilling.assert_called_once()
 

@@ -1,10 +1,10 @@
 """
-Config required for preprocessing.
+Config required for corrections.
 This is a placeholder while a proper metadata store is being built.
 
 The configs are built using dictionaries (update these when adding to them) and
 validated with Pydantic.
-Import preprocessing_config from this file to have all verified config data in
+Import corrections_config from this file to have all verified config data in
 a single object.
 """
 
@@ -137,9 +137,9 @@ class Correction(BaseModel):
         return values
 
 
-class PreprocessingConfig(BaseModel):
+class CorrectionsConfig(BaseModel):
     """
-    A model representing the preprocessing configuration.
+    A model representing the Corrections configuration.
 
     Attributes:
         correction_methods (List[CorrectionMethod]): A list of correction methods.
@@ -157,6 +157,6 @@ with open(Path(__file__).parent / "config_files" / "corrections.json", "r") as f
     correction_methods_data = content["methods"]
     corrections_data = content["data"]
 
-    preprocessing_config = PreprocessingConfig(correction_methods=correction_methods_data, corrections=corrections_data)
+    corrections_config = CorrectionsConfig(correction_methods=correction_methods_data, corrections=corrections_data)
 
     del content

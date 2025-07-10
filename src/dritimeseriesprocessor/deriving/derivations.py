@@ -316,7 +316,6 @@ def derive(
         time_name=ts.time_name,
         resolution=ts.resolution,
         periodicity=ts.periodicity,
-        time_zone=ts.time_zone,
         supplementary_columns=ts.supplementary_columns,
         flag_columns=ts.flag_columns,
         flag_systems=ts.flag_systems,

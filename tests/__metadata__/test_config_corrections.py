@@ -2,11 +2,11 @@ import pytest
 from datetime import datetime
 from pydantic import ValidationError
 
-from dritimeseriesprocessor.__metadata__.config_preprocessing import (
+from dritimeseriesprocessor.__metadata__.config_corrections import (
     get_valid_method_ids,
     CorrectionMethod,
     Correction,
-    PreprocessingConfig,
+    CorrectionsConfig,
     correction_methods_data,
 )
 
@@ -147,12 +147,12 @@ def test_correction_pa_corr_invalid():
             description="Test correction"
         )
 
-def test_preprocessing_config():
+def test_corrections_config():
     """
-    Test the `PreprocessingConfig` model to ensure it can be instantiated with
+    Test the `CorrectionsConfig` model to ensure it can be instantiated with
     valid correction methods and corrections.
     """
-    config = PreprocessingConfig(
+    config = CorrectionsConfig(
         correction_methods=[
             CorrectionMethod(method_id="ADD", description="Add method", id=1),
             CorrectionMethod(method_id="MULTIPLY", description="Multiply method", id=2)
