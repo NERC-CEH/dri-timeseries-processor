@@ -36,7 +36,7 @@ def run_corrections(
     """
     correction_methods = get_correction_methods()
 
-    # Initialise quality control flag system within TimeSeries object
+    # Initialise corrections flag system within TimeSeries object
     correction_flags_dict = {method: method_config.method_id for method, method_config in correction_methods.items()}
     if not correction_flags_dict:
         logger.warning("No QC methods given in config.")
@@ -50,15 +50,15 @@ def run_corrections(
             logger.info(f"No correction config found for Time Series ID: {ts_id}")
             continue
 
-        # Initialise preprocessing flag system within TimeSeries object.
+        # Initialise correction flag system within TimeSeries object.
         if CORRS_FLAG_SYS_NAME not in ts.flag_systems:
             ts.add_flag_system(CORRS_FLAG_SYS_NAME, correction_flags_dict)
 
         for config in correction_config:
             # Add a flag column for the correction method
-            pr_flag_col = corrs_flag_column_name(ts.column_name)
-            if pr_flag_col not in ts.columns:
-                ts.init_flag_column(CORRS_FLAG_SYS_NAME, pr_flag_col)
+            corrs_flag_col = corrs_flag_column_name(ts.column_name)
+            if corrs_flag_col not in ts.columns:
+                ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
             # Run the corrections on the timeseries
             for method in config.configs:
@@ -83,11 +83,8 @@ def run_corrections(
 
                 # Apply flagging to the DataFrame.
                 expr = mask & not_missing_expr(ts.column_name)
-                ts.add_flag(pr_flag_col, method.name, expr)
+                ts.add_flag(corrs_flag_col, method.name, expr)
 
-            ts = update_corrections_core_flags(ts)
-
-            # Reassign corrected dataframe
-            ts_dict["data"] = ts
+        ts = update_corrections_core_flags(ts)
 
     return ts_ids
