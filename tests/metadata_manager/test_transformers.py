@@ -1,5 +1,6 @@
 import unittest
 import json
+from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.transformers import (
     extract_cosmos_site_ids,
     extract_site_ids,
@@ -150,7 +151,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
         expected = {"http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed": item_one,
                     "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed": item_two}
 
-        result = extract_timeseries_id_metadata(self.sample_dataset_response)
+        result = extract_timeseries_id_metadata(TimeseriesDatasetResponse.model_validate(self.sample_dataset_response))
 
         assert result == expected
 
