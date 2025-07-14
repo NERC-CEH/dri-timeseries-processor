@@ -156,7 +156,7 @@ class TestRunCorrections(unittest.TestCase):
         self.assertIn('temperature_CORRS_FLAG', result[self.ta_ts_id]["data"].columns)
         # Check the correction method has been applied
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature'].to_list(), [20.0, 32.0, 31.0, 30.0, 19.0])
-        # Check PR flag values have been added
+        # Check CORRS flag values have been added
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [0, 1, 1, 1, 0])
         # Check core flag values updated
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORE_FLAG'].to_list(), [32, 33, 33, 33, 32])
@@ -212,7 +212,7 @@ class TestRunCorrections(unittest.TestCase):
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORE_FLAG'].to_list(), [33, 33, 33, 33, 32])
         self.assertEqual(result[self.rh_ts_id]["data"].df['humidity_CORE_FLAG'].to_list(), [33, 33, 36, 36, 32])
 
-        # Check PR flags updated
+        # Check CORRS flags updated
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [2, 3, 3, 1, 0])
         self.assertEqual(result[self.rh_ts_id]["data"].df['humidity_CORRS_FLAG'].to_list(), [2, 3, 0, 0, 0])
 
@@ -232,7 +232,7 @@ class TestRunCorrections(unittest.TestCase):
 
         # Check the correction method has been applied
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature'].to_list(), [20.0, 32.0, 31.0, 30.0, 29.0])
-        # Check PR flag values have been added
+        # Check CORRS flag values have been added
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [0, 1, 1, 1, 1])
         # Check CORE flag values have been added
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORE_FLAG'].to_list(), [32, 33, 33, 33, 33])

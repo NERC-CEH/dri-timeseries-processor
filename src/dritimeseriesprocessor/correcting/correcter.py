@@ -54,12 +54,12 @@ def run_corrections(
         if CORRS_FLAG_SYS_NAME not in ts.flag_systems:
             ts.add_flag_system(CORRS_FLAG_SYS_NAME, correction_flags_dict)
 
-        for config in correction_config:
-            # Add a flag column for the correction method
-            corrs_flag_col = corrs_flag_column_name(ts.column_name)
-            if corrs_flag_col not in ts.columns:
-                ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
+        # Add a flag column for the correction method
+        corrs_flag_col = corrs_flag_column_name(ts.column_name)
+        if corrs_flag_col not in ts.columns:
+            ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
+        for config in correction_config:
             # Run the corrections on the timeseries
             for method in config.configs:
                 # Ensure the end datetime is set; default to the current time if not provided

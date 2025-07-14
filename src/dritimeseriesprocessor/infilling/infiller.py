@@ -52,13 +52,14 @@ def run_infilling(ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]) -> Dict[
 
         column = list(ts.data_columns.keys())[0]
 
+        # Add a flag column for the infill method
+        infill_flag_col = infill_flag_column_name(column)
+        if infill_flag_col not in ts.flag_columns:
+            ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
+
         # Order by priority
         sorted_infillers = sorted(infill_configs, key=lambda x: x.annotations["data-processing-configuration-priority"])
         for config in sorted_infillers:
-            infill_flag_col = infill_flag_column_name(column)
-            if infill_flag_col not in ts.flag_columns:
-                ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
-
             # Run infill methods on time series
             # TODO: Will have to add in start and end dates so that infilling only applied to specific part of time
             #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
