@@ -224,26 +224,24 @@ def merge_ts_def_metadata(
 
         if ts_def in timeseries_defs_derivation_map:
             # Add the method and method type
-            method_type = timeseries_defs_derivation_map[ts_def].get('method_type')
-            method = timeseries_defs_derivation_map[ts_def].get('method')
+            method_type = timeseries_defs_derivation_map[ts_def].get("method_type")
+            method = timeseries_defs_derivation_map[ts_def].get("method")
 
             # timeseries_defs_derivation_map contains the dependency TS definitions (inputs). Here we want the
             # specific dependancy TS IDs (instead of defs). Map the defs to their corresponding TS IDs.
             site_id = ts_metadata["sourceSite"]
-            inputs = [map_def_to_id(input_def, site_id, ts_ids) for input_def in timeseries_defs_derivation_map[ts_def]['inputs']]
+            inputs = [
+                map_def_to_id(input_def, site_id, ts_ids)
+                for input_def in timeseries_defs_derivation_map[ts_def]["inputs"]
+            ]
 
         else:
             raise ValueError(f"Timeseries definition {ts_def} not found in derivation map for {ts_id}")
 
         # Raw timeseries ids with no derivation method is data that must be loaded.
-        load = True if (ts_metadata["processing_level"] == "raw") and (ts_metadata.get("method_type") is None) else False
+        load = True if ts_metadata["processing_level"] == "raw" and method_type is None else False
 
-        ts_def_dict = {
-            "method_type": method_type,
-            "method": method,
-            "inputs": inputs,
-            "load": load
-        }
+        ts_def_dict = {"method_type": method_type, "method": method, "inputs": inputs, "load": load}
 
         ts_metadata.update(ts_def_dict)
 

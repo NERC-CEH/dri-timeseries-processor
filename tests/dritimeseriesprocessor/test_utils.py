@@ -396,6 +396,7 @@ class TestMergeTsDefMetadata(unittest.TestCase):
                 "processing_level": "raw",
                 "sourceSite": "ALIC1",
                 "method_type": None,
+                "method": None,
                 "inputs": [],
                 "load": True
             },
@@ -405,6 +406,7 @@ class TestMergeTsDefMetadata(unittest.TestCase):
                 "processing_level": "raw",
                 "sourceSite": "ALIC1",
                 "method_type": None,
+                "method": None,
                 "inputs": [],
                 "load": True
             },
@@ -414,6 +416,7 @@ class TestMergeTsDefMetadata(unittest.TestCase):
                 "processing_level": "processed",
                 "sourceSite": "ALIC1",
                 "method_type": "process",
+                "method": None,
                 "inputs": ["alic1-ta_30min_raw"],
                 "load": False
             },
@@ -423,6 +426,7 @@ class TestMergeTsDefMetadata(unittest.TestCase):
                 "processing_level": "processed",
                 "sourceSite": "ALIC1",
                 "method_type": "calculate",
+                "method": None,
                 "inputs": ["alic1-ta_30min_processed"],
                 "load": False
             }
