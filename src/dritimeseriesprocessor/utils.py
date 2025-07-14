@@ -222,33 +222,29 @@ def merge_ts_def_metadata(
     for ts_id, ts_metadata in ts_ids.items():
         ts_def = ts_metadata["ts_def"]
 
-        ts_def_dict = {
-            "method_type": None,
-            "inputs": [],
-        }
-
         if ts_def in timeseries_defs_derivation_map:
-            # Add the method type
-            ts_def_dict["method_type"] = timeseries_defs_derivation_map[ts_def].get("method_type", None)
+            # Add the method and method type
+            method_type = timeseries_defs_derivation_map[ts_def].get('method_type')
+            method = timeseries_defs_derivation_map[ts_def].get('method')
 
-            # timeseries_defs_derivation_map contains the dependancy TS definitions (inputs). Here we want the
+            # timeseries_defs_derivation_map contains the dependency TS definitions (inputs). Here we want the
             # specific dependancy TS IDs (instead of defs). Map the defs to their corresponding TS IDs.
-            input_defs = timeseries_defs_derivation_map[ts_def].get("inputs", [])
-            input_ids = []
-            site_id = ts_metadata.get("sourceSite")
-            for input_def in input_defs:
-                input_ids.append(map_def_to_id(input_def, site_id, ts_ids))
-            ts_def_dict["inputs"] = input_ids
+            site_id = ts_metadata["sourceSite"]
+            inputs = [map_def_to_id(input_def, site_id, ts_ids) for input_def in timeseries_defs_derivation_map[ts_def]['inputs']]
 
         else:
             raise ValueError(f"Timeseries definition {ts_def} not found in derivation map for {ts_id}")
 
-        ts_metadata.update(ts_def_dict)
-
         # Raw timeseries ids with no derivation method is data that must be loaded.
-        if ts_metadata["processing_level"] == "raw" and ts_metadata["method_type"] is None:
-            ts_metadata["load"] = True
-        else:
-            ts_metadata["load"] = False
+        load = True if (ts_metadata["processing_level"] == "raw") and (ts_metadata.get("method_type") is None) else False
+
+        ts_def_dict = {
+            "method_type": method_type,
+            "method": method,
+            "inputs": inputs,
+            "load": load
+        }
+
+        ts_metadata.update(ts_def_dict)
 
     return ts_ids
