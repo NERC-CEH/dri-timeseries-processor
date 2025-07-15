@@ -100,6 +100,28 @@ class MetadataAPIManager:
 
         return response
 
+    async def fetch_correction_config(self, ts_id: str) -> Dict[str, Any]:
+        """Fetch correction configurations for a given time series ID.
+
+        Args:
+            ts_id: The time series ID to load correction configurations for.
+
+        Returns:
+            JSON response containing correction configurations.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
+        url = (
+            f"{self.host}/id/data-processing-configuration.json?"
+            f"type={self.service_base_uri}/ref/common/configuration-type/correction"
+            f"&appliesToTimeSeries={ts_id}"
+        )
+
+        response = await self._make_api_call(url)
+
+        return response
+
     async def fetch_timeseries_metadata(self, timeseries_id: str = None) -> Dict[str, Any]:
         """Fetch metadata for a specific time series.
 
