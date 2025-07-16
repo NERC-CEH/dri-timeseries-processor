@@ -1,13 +1,12 @@
-from datetime import datetime
 import unittest
+from datetime import datetime
 
 import polars as pl
 from polars.testing import assert_frame_equal
-
 from time_stream import Period, TimeSeries
+
 from dritimeseriesprocessor.deriving.calculation import Calculation
 from dritimeseriesprocessor.deriving.derivations import (
-    derive,
     ActualVapourPressureFao56Eq54,
     LatentHeatOfVaporization,
     NetRadiation,
@@ -16,6 +15,7 @@ from dritimeseriesprocessor.deriving.derivations import (
     SaturationVapourPressure,
     VapourPressureCurveSlope,
     WindSpeedHeightCorrection,
+    derive,
 )
 from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
 

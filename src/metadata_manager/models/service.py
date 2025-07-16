@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
-from metadata_manager.models.methods.method_registry import InfillingMethods, QcMethods
+from metadata_manager.models.methods.method_registry import DerivationMethods, InfillingMethods, QcMethods
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
@@ -20,6 +20,7 @@ METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_ap
 class ConfigType(Enum):
     INFILLING = "infilling"
     QC = "quality_control"
+    DERIVATION = "calculate"
     CORRECTION = "correction"  # placeholder for moving other configs across
 
 
@@ -62,13 +63,19 @@ def load_methods(config_type: Union[ConfigType, str]) -> Optional[InfillingMetho
     if isinstance(config_type, str):
         config_type = ConfigType(config_type)
 
+    config_dir = Path(__file__).parent.absolute() / "methods"
+
     if config_type == ConfigType.INFILLING:
-        methods_json_file = Path(__file__).parent.absolute() / "methods" / "infilling_methods.json"
+        methods_json_file = config_dir / "infilling_methods.json"
         registry = InfillingMethods
 
     elif config_type == ConfigType.QC:
-        methods_json_file = Path(__file__).parent.absolute() / "methods" / "qc_methods.json"
+        methods_json_file = config_dir / "qc_methods.json"
         registry = QcMethods
+
+    elif config_type == ConfigType.DERIVATION:
+        methods_json_file = config_dir / "derivation_methods.json"
+        registry = DerivationMethods
 
     else:
         return None

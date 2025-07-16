@@ -92,7 +92,7 @@ def process_timeseries(
     ts_ids_with_no_data = {k: v for k, v in ts_ids.items() if "data" not in v}
 
     # Corrections
-    ts_ids_with_data = run_corrections(ts_ids_with_data)
+    # ts_ids_with_data = run_corrections(ts_ids_with_data)
 
     # Quality control
     ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)

@@ -1,5 +1,5 @@
 import math
-from typing import Optional, Type, Union
+from typing import Dict, Optional, Type, Union
 
 import polars as pl
 from time_stream import TimeSeries

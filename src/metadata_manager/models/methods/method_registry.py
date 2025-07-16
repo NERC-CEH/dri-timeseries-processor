@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from pydantic import BaseModel, field_validator, model_validator
 
+from dritimeseriesprocessor.deriving import derivations as derivation_functions
 from dritimeseriesprocessor.infilling import methods as infilling_functions
 from dritimeseriesprocessor.quality_control import checks as qc_functions
 
@@ -10,6 +11,7 @@ from dritimeseriesprocessor.quality_control import checks as qc_functions
 class MethodType(Enum):
     INFILLING = "infilling"
     QC = "quality_control"
+    DERIVATION = "calculate"
 
 
 class Method(BaseModel):
@@ -71,6 +73,8 @@ class Method(BaseModel):
             module = infilling_functions
         elif self.method_type == MethodType.QC:
             module = qc_functions
+        elif self.method_type == MethodType.DERIVATION:
+            module=derivation_functions
         else:
             raise UserWarning(f"Unknown method type: {self.method_type}")
 
@@ -120,6 +124,28 @@ class QcMethods(Dict[str, Method]):
 
         for method_key, method_data in data.items():
             method_data["method_type"] = "quality_control"
+            result[method_key] = Method.model_validate(method_data)
+
+        return result
+
+
+class DerivationMethods(Dict[str, Method]):
+    """Registry of all QC methods."""
+
+    @classmethod
+    def model_validate(cls, data: Dict[str, Dict]) -> "QcMethods":
+        """Extract QC method data.
+
+        Args:
+            data: Dictionary mapping method keys to method details
+
+        Returns:
+            Dictionary mapping method keys to Method objects
+        """
+        result = cls()
+
+        for method_key, method_data in data.items():
+            method_data["method_type"] = "calculate"
             result[method_key] = Method.model_validate(method_data)
 
         return result
