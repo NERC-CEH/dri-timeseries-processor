@@ -3,7 +3,7 @@ from typing import Dict, Union
 import pytest
 from time_stream import TimeSeries
 
-from dritimeseriesprocessor.deriving.process_derivations import process_derivations
+from dritimeseriesprocessor.deriving.process_derivations import DerivationProcessor
 
 
 @pytest.fixture

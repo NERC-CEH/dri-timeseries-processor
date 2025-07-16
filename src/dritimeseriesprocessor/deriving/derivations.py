@@ -11,7 +11,8 @@ class PotentialEvapotranspiration30Min(Calculation):
     def __init__(
         self,
         rn: Union[str, pl.Expr],
-        g: Union[str, pl.Expr],
+        g1: Union[str, pl.Expr],
+        g2: Union[str, pl.Expr],
         ta: Union[str, pl.Expr],
         rh: Union[str, pl.Expr],
         ws: Union[str, pl.Expr],
@@ -33,7 +34,8 @@ class PotentialEvapotranspiration30Min(Calculation):
 
         Args:
             rn: Net radiation [MJ m-2 30min-1]
-            g: Soil heat flux density [MJ m-2 30min-1]
+            g1: Soil heat flux density [MJ m-2 30min-1]
+            g2: Soil heat flux density [MJ m-2 30min-1]
             ta: Air temperature [degC]
             rh: Relative humidity [%]
             ws: Wind speed at 2m height [ms-1]
@@ -43,11 +45,12 @@ class PotentialEvapotranspiration30Min(Calculation):
             Potential evapotranspiration [mm 30min-1]
         """
         super().__init__("Potential Evapotranspiration", column_name, "mm")
-        (self._rn, self._g, self._ta, self._rh, self._ws, self._pa) = self._columns_to_expressions(
-            rn, g, ta, rh, ws, pa
+        (self._rn, self._g1, self._g2, self._ta, self._rh, self._ws, self._pa) = self._columns_to_expressions(
+            rn, g1, g2, ta, rh, ws, pa
         )
 
         # Define dependencies
+        self._g = pl.mean_horizontal(self._g1, self._g2)
         self._es = SaturationVapourPressure(self._ta)
         self._ea = ActualVapourPressureFao56Eq54(self._rh, self._ta)
         self._gamma = PsychrometricConstant(self._pa, self._ta)

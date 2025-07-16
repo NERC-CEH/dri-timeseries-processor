@@ -6,16 +6,19 @@ import polars as pl
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.deriving.derivations import derive
-from metadata_manager.models.methods.method_registry import MethodType
+from dritimeseriesprocessor.utils import map_def_to_id
+from metadata_manager.models.common import ComponentType
 from metadata_manager.models.service import load_methods
 
 logger = logging.getLogger(__name__)
+
+TIME_COLUMN = "time"
 
 
 @lru_cache(maxsize=1)
 def get_derivation_methods() -> Dict:
     """Load the infill methods and cache the results."""
-    return load_methods(MethodType.DERIVATION.value)
+    return load_methods(ComponentType.DERIVATION.value)
 
 
 class DerivationProcessor:
@@ -27,7 +30,7 @@ class DerivationProcessor:
         for ts_id, ts_metadata in self.ts_ids.items():
             # Skip any time series which don't have a derivation method defined
             if ts_metadata.get("method_type") != "calculate":
-                print(f"Skipping: {ts_id}") ## DEBUGGING - DELETE LATER
+                print(f"Skipping: {ts_id}")  ## DEBUGGING - DELETE LATER
                 continue
 
             # Skip any time series which have already been calculated
@@ -41,28 +44,32 @@ class DerivationProcessor:
     def calculate_derivation(self, ts_id: str, ts_metadata: Dict[str, Union[str, TimeSeries]]) -> None:
         derivation_method = self.derivation_methods[ts_metadata["method"]]
 
-        input_ids = [convert_ts_def_to_ts_id(ts_def, ts_metadata["sourceSite"]) for ts_def in ts_metadata["inputs"]]
-        inputs = {input_id: self.ts_ids[input_id] for input_id in input_ids}
-
         input_data = {}
-        for input_ts_id, input_ts_metadata in inputs.items():
+        for input_ts_id in ts_metadata["inputs"]:
+            input_ts_metadata = self.ts_ids[input_ts_id]
             if not input_ts_metadata.get("data") and input_ts_metadata.get("method_type") == "calculate":
                 self.calculate_derivation(input_ts_id, input_ts_metadata)
 
-            ts_data = self.ts_ids[input_ts_id].get("data")
-            if not ts_data:
+            ts = self.ts_ids[input_ts_id].get("data")
+            if not ts:
                 raise ValueError(
                     f"Unable to process derivation for {ts_id}, required input {input_ts_id} has no available data."
                 )
 
-            input_data[input_ts_metadata['sourceColumnName']] = ts_data
+            # If the time column hasn't been added to input_data, add it in so it's available in the final TimeSeries
+            # object used for calculation the derivation
+            if TIME_COLUMN not in input_data.keys():
+                input_data[TIME_COLUMN] = ts.df[TIME_COLUMN]
+
+            source_column_name = input_ts_metadata["sourceColumnName"]
+            input_data[source_column_name] = ts.df[source_column_name]
 
         # Construct the input time series object from the input data columns
         ts = TimeSeries(
-            df = pl.from_dict(input_data),
-            time_name = "time",
-            resolution = ts_metadata["resolution"],
-            periodicity = ts_metadata["periodicity"],
+            df=pl.from_dict(input_data),
+            time_name=TIME_COLUMN,
+            resolution=ts_metadata["resolution"],
+            periodicity=ts_metadata["periodicity"],
             metadata={
                 "site_id": ts_metadata["sourceSite"],
                 "column_name": ts_metadata["sourceColumnName"],
@@ -70,14 +77,14 @@ class DerivationProcessor:
             },
         )
 
+        # Pass in the column name mapping as kwargs 
+        kwargs = {column_name.lower(): column_name for column_name in (input_data.keys() - {"time"})}
+
         derived_data = derive(
-            ts = ts,
-            calc = derivation_method,
-            column_name = ts_metadata["sourceColumnName"],
+            ts,
+            derivation_method,
+            ts_metadata["sourceColumnName"],
+            **kwargs
         )
 
         self.ts_ids[ts_id]["data"] = derived_data
-
-
-def convert_ts_def_to_ts_id(ts_def: str, site_id: str) -> str:
-    return f"http://fdri.ceh.ac.uk/id/dataset/cosmos-{site_id.lower()}-{ts_def.split('/')[-1]}"

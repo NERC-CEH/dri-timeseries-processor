@@ -6,7 +6,12 @@ from typing import Dict, List, Optional, Union
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.common import ComponentType
-from metadata_manager.models.methods.method_registry import CorrectionMethods, DerivationMethods, InfillingMethods, QcMethods
+from metadata_manager.models.methods.method_registry import (
+    CorrectionMethods,
+    DerivationMethods,
+    InfillingMethods,
+    QcMethods,
+)
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
