@@ -75,6 +75,33 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
     return ts
 
 
+def shift_processed_data(
+    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
+) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    """Move the processed data within raw timeseries ids to the processed timeseries ids
+
+    Args:
+        ts_ids: Metadata and data for timeseries ids
+
+    Returns:
+        A dictionary with the updated metadata.
+    """
+    for ts_id, ts_metadata in ts_ids.items():
+        if ts_metadata.get("method_type") == "process":
+            # All processed timeseries IDs should have one input, the raw timeseries ID they are derived from.
+            if len(ts_metadata["inputs"]) != 1:
+                raise ValueError(f"Processed timeseries ID {ts_id} should have exactly one input.")
+
+            raw_ts_id = ts_metadata["inputs"][0]
+
+            if "data" in ts_ids[raw_ts_id]:
+                # Move the data object from raw_ts_id to (processed) ts_id
+                logger.info(f"Moving data from {raw_ts_id} to {ts_id}")
+                ts_ids[ts_id]["data"] = ts_ids[raw_ts_id].pop("data")
+
+    return ts_ids
+
+
 def process_timeseries(
     ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
 ) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
@@ -100,4 +127,11 @@ def process_timeseries(
     # Infilling
     ts_ids_with_data = run_infilling(ts_ids_with_data)
 
-    return ts_ids_with_data | ts_ids_with_no_data
+    # Join back together
+    ts_ids = ts_ids_with_data | ts_ids_with_no_data
+
+    # Processed data is now in the ts_ids dict within the raw timeseries IDs.
+    # Shift them to the processed timeseries IDs.
+    ts_ids = shift_processed_data(ts_ids)
+
+    return ts_ids
