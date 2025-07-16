@@ -107,6 +107,11 @@ def extract_timeseries_definition_metadata(
             metadata["method"] = None
         metadata["inputs"] = derivation_metadata.methodology.uses
 
+        if metadata["method_type"] == "process" and len(metadata["inputs"]) != 1:
+            raise ValueError(
+                f"Processed timeseries definition {derivation_metadata.timeseries_def} should have exactly one input."
+            )
+
         if metadata["method_type"] in ("aggregate", "calculate") and not metadata["method"]:
             raise ValueError(f"Method type '{metadata['method_type']}' requires a method to be specified.")
 
