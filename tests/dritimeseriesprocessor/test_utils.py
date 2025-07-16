@@ -156,7 +156,7 @@ class TestGroupByDateSiteID(unittest.TestCase):
         result = utils.group_by_date_site_id(df)
 
         # Should be 4 dataframes
-        assert(len(result), 4)
+        assert len(result) == 4
 
         for date, site, data in result:
             expected = df.filter((pl.col('time').dt.date() == date) & (pl.col('SITE_ID') == site))
@@ -199,7 +199,7 @@ class TestSplitDataForProcessing(unittest.TestCase):
         result = utils.split_data_for_processing(df, metadata)
 
         # Should be 3 dataframes
-        assert(len(result), 3)
+        assert len(result) == 3
 
         for site, data, metadata in result:
             expected = df.filter((pl.col('SITE_ID') == site))
