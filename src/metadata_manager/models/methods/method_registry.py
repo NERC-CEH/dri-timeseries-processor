@@ -71,7 +71,7 @@ class Method(BaseModel):
         elif self.method_type == ComponentType.CORRECTION:
             module = correction_functions
         elif self.method_type == ComponentType.DERIVATION:
-            module=derivation_functions
+            module = derivation_functions
         else:
             raise UserWarning(f"Unknown method type: {self.method_type}")
 

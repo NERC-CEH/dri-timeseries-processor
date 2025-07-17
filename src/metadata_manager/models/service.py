@@ -22,7 +22,6 @@ from metadata_manager.transformers import extract_timeseries_definition_metadata
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
-
 def load_config(config_type: Union[ComponentType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:
     """Load configuration data based on the given configuration type.
 

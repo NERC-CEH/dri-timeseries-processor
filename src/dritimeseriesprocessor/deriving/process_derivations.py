@@ -75,14 +75,9 @@ class DerivationProcessor:
             },
         )
 
-        # Pass in the column name mapping as kwargs 
+        # Pass in the column name mapping as kwargs
         kwargs = {column_name.lower(): column_name for column_name in (input_data.keys() - {"time"})}
 
-        derived_data = derive(
-            ts,
-            derivation_method,
-            ts_metadata["sourceColumnName"],
-            **kwargs
-        )
+        derived_data = derive(ts, derivation_method, ts_metadata["sourceColumnName"], **kwargs)
 
         self.ts_ids[ts_id]["data"] = derived_data
