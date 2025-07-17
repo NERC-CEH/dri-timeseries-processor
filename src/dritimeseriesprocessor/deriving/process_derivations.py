@@ -6,7 +6,6 @@ import polars as pl
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.deriving.derivations import derive
-from dritimeseriesprocessor.utils import map_def_to_id
 from metadata_manager.models.common import ComponentType
 from metadata_manager.models.service import load_methods
 
@@ -30,7 +29,6 @@ class DerivationProcessor:
         for ts_id, ts_metadata in self.ts_ids.items():
             # Skip any time series which don't have a derivation method defined
             if ts_metadata.get("method_type") != "calculate":
-                print(f"Skipping: {ts_id}")  ## DEBUGGING - DELETE LATER
                 continue
 
             # Skip any time series which have already been calculated
