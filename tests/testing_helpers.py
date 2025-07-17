@@ -42,7 +42,8 @@ class TestHelper(unittest.TestCase):
     def reset_temp_dir(self) -> None:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir)
-            self.temp_dir.mkdir(parents=True, exist_ok=True)
+
+        self.temp_dir.mkdir(parents=True, exist_ok=True)
 
     def load_ts_ids_from_json_file(self, json_path: str) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
         with open(json_path) as json_file:
