@@ -7,7 +7,7 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from dritimeseriesprocessor.typing import TimeseriesMetadata
+from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesMetadata, TimeseriesMetadataWithDerivations
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +176,7 @@ def extract_unique_timeseries_defs(timeseries_ids_metadata: Dict[str, Timeseries
 
 
 def extract_dependent_timeseries_defs(
-    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
+    timeseries_defs_derivation_map: Dict[str, DerivationMetadata],
 ) -> List[str]:
     """Extract a list of dependent timeseries definitions.
 
@@ -190,7 +190,7 @@ def extract_dependent_timeseries_defs(
     return list({items for items in timeseries_defs_derivation_map.values() for items in items["inputs"]})
 
 
-def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesMetadata]) -> Dict[str, str]:
+def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesMetadata]) -> str:
     """Map timeseries definition to its corresponding timeseries id given the site id.
 
     Args:
@@ -210,8 +210,8 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesMetadat
 
 def merge_ts_def_metadata(
     ts_ids: Dict[str, TimeseriesMetadata],
-    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
-) -> Dict[str, TimeseriesMetadata]:
+    timeseries_defs_derivation_map: Dict[str, DerivationMetadata],
+) -> Dict[str, TimeseriesMetadataWithDerivations]:
     """Merge timeseries definitions metadata into the timeseries ids metadata and add whether to load the data.
 
     Args:
