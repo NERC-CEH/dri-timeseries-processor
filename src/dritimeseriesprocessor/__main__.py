@@ -109,7 +109,6 @@ processing_dep_timeseries_ids_metadata = extract_timeseries_id_metadata(processi
 # Combine user and processing dependencies metadata
 user_timeseries_ids_metadata = user_timeseries_ids_metadata | processing_dep_timeseries_ids_metadata
 
-
 # Step 3
 # Get derivation metadata for the timeseries IDs to be built
 # Every timeseries ID will be dependent on another (raw or processed)
