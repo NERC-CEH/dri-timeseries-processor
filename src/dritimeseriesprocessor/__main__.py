@@ -1,4 +1,5 @@
 import logging
+import re
 import sys
 
 import boto3
@@ -18,14 +19,22 @@ from dritimeseriesprocessor.utils import (
     merge_ts_def_metadata,
 )
 from metadata_manager.models.common import (
+    URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
     build_periodicity_query_parameter,
     build_processing_query_parameter,
     build_site_query_parameter,
     build_timeseries_def_query_parameter,
+    build_timeseries_id_query_parameter,
     build_view_query_parameter,
 )
-from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations, load_sites
+from metadata_manager.models.service import (
+    handle_derivation_response,
+    load_datasets,
+    load_dependent_datasets,
+    load_nested_timeseries_derivations,
+    load_sites,
+)
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
@@ -109,31 +118,22 @@ processing_dep_timeseries_ids_metadata = extract_timeseries_id_metadata(processi
 # Combine user and processing dependencies metadata
 user_timeseries_ids_metadata = user_timeseries_ids_metadata | processing_dep_timeseries_ids_metadata
 
+# ============================================= NEW CODE =================================================
 
-# Step 3
-# Get derivation metadata for the timeseries IDs to be built
-# Every timeseries ID will be dependent on another (raw or processed)
-# Derivation metadata is held with the timeseries definition rather than the ID
-# First extract all unique timeseries defs from the IDS to be processed
-# Then extract all the dependencies associated with each timeseries definition and
-# transform into required structure
-unique_timeseries_defs = extract_unique_timeseries_defs(user_timeseries_ids_metadata)
-timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
+dependent_timeseries_defs = []
+for ts_id in user_timeseries_ids_metadata.keys():
+    ts_name = re.match(URI_ID_EXTRACT_REGEX, ts_id).group(1)
+    dependent_timeseries_list = load_dependent_datasets(ts_name)
+    dependent_timeseries_defs.extend([dependent_ts.ts_id for dependent_ts in dependent_timeseries_list])
 
-
-# Step 4
-# Get timeseries ID metadata for all dependencies
-# First extract all dependent timeseries definitions
-# Then call the dataset endpoint with site and ts def to get the metadata
-# Validate and transform response
-dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_derivation_map)
-timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
+timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_defs)
 
 # TODO remove the limit parameter once FW-692 has been implemented
 dependent_timeseries_ids_response = load_datasets(
-    site_query_parameter + timeseries_def_parameter + view_query_parameter + [("_limit", 50)]
+    site_query_parameter + timeseries_id_parameter + view_query_parameter + [("_limit", 50)]
 )
 dependent_timeseries_ids_metadata = extract_timeseries_id_metadata(dependent_timeseries_ids_response)
+
 
 
 # Step 5
@@ -141,10 +141,56 @@ dependent_timeseries_ids_metadata = extract_timeseries_id_metadata(dependent_tim
 ts_ids = user_timeseries_ids_metadata | dependent_timeseries_ids_metadata
 
 
+# Step 3
+# Get derivation metadata for the timeseries IDs to be built
+ts_def_metadata = {ts_id['ts_def']: handle_derivation_response(ts_id['ts_def']) for ts_id in ts_ids.values()}
+
 # Step 6
 # Add TS definition metadata to each timeseries ID
-ts_ids = merge_ts_def_metadata(ts_ids, timeseries_defs_derivation_map)
+# timeseries_defs
+ts_ids = merge_ts_def_metadata(ts_ids, ts_def_metadata)
 
+# # ========================================== ORIGINAL CODE ===============================================
+
+# # Step 3
+# # Get derivation metadata for the timeseries IDs to be built
+# # Every timeseries ID will be dependent on another (raw or processed)
+# # Derivation metadata is held with the timeseries definition rather than the ID
+# # First extract all unique timeseries defs from the IDS to be processed
+# # Then extract all the dependencies associated with each timeseries definition and
+# # transform into required structure
+# unique_timeseries_defs = extract_unique_timeseries_defs(user_timeseries_ids_metadata)
+# timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
+
+
+# # Step 4
+# # Get timeseries ID metadata for all dependencies
+# # First extract all dependent timeseries definitions
+# # Then call the dataset endpoint with site and ts def to get the metadata
+# # Validate and transform response
+# dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_derivation_map)
+# timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
+
+# # TODO remove the limit parameter once FW-692 has been implemented
+# dependent_timeseries_ids_response = load_datasets(
+#     site_query_parameter + timeseries_def_parameter + view_query_parameter + [("_limit", 50)]
+# )
+# dependent_timeseries_ids_metadata = extract_timeseries_id_metadata(dependent_timeseries_ids_response)
+
+
+
+
+# # Step 5
+# # Combine all the metadata into a single object for processing
+# ts_ids = user_timeseries_ids_metadata | dependent_timeseries_ids_metadata
+
+
+# # Step 6
+# # Add TS definition metadata to each timeseries ID
+# # timeseries_defs
+# ts_ids = merge_ts_def_metadata(ts_ids, timeseries_defs_derivation_map)
+
+# =================================================================================================================
 
 # Load raw data
 # -------------

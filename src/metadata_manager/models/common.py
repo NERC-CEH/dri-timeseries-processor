@@ -112,6 +112,20 @@ def build_timeseries_def_query_parameter(ts_defs: List[str]) -> List[Tuple | Non
     return [("type", ts_def) for ts_def in ts_defs]
 
 
+def build_timeseries_id_query_parameter(ts_ids: List[str]) -> List[Tuple | None]:
+    """Build the timeseries id query parameters for the dataset endpoint.
+
+    As we use the same key for multiple timeseries id, it needs to be a list of tuples.
+
+    Args:
+        ts_defs: A list of the timeseries definitions to query.
+
+    Returns:
+        A list of tuples with query parameter string and the timeseries definition.
+    """
+    return [("id", ts_id) for ts_id in ts_ids]
+
+
 def build_processing_query_parameter(level: str) -> List[Tuple | None]:
     """Build the processing level query parameter for the dataset endpoint.
 

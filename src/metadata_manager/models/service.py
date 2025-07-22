@@ -1,5 +1,6 @@
 import asyncio
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -11,7 +12,11 @@ from metadata_manager.models.schemas.data_processing_configurations import DataP
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.sites import SitesResponse
-from metadata_manager.models.schemas.time_series import TimeSeriesMetadataResponse
+from metadata_manager.models.schemas.time_series import (
+    DependentTimeSeriesMetadata,
+    DependentTimeSeriesMetadataResponse,
+    TimeSeriesMetadataResponse,
+)
 from metadata_manager.transformers import extract_timeseries_definition_metadata
 
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
@@ -106,6 +111,35 @@ def load_datasets(parameters: Dict) -> TimeseriesDatasetResponse:
     return TimeseriesDatasetResponse.model_validate(data)
 
 
+def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetadata]:
+    """Recursively load dataset metadata from the API for all input dependencies of the provided timeseries id.
+
+    Args:
+        parameters: API query parameters for the dataset endpoint
+
+    Returns:
+        The parsed dataset metadata.
+    """
+
+    data = asyncio.run(METADATA_CONNECTION.fetch_dependent_dataset_metadata(timeseries_id))
+
+    # Use a separate list for storing the final output to prevent it being extended in situ when recursively checking
+    # for sub dependencies#
+    ts_dependency_list = []
+
+    dependent_timeseries = DependentTimeSeriesMetadataResponse.model_validate(data)
+    ts_dependency_list.extend(dependent_timeseries)
+
+    # Iterate through the list of DependentTimeSeriesMetadata objects, checking to see if any have sub dependencies
+    # before fetching them
+    for dependent_ts in dependent_timeseries:
+        if dependent_ts.processing_level_id != "raw":
+            sub_dependencies = load_dependent_datasets(dependent_ts.name)
+            ts_dependency_list.extend(sub_dependencies)
+
+    return ts_dependency_list
+
+
 def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationResponse:
     """Load the derivation metadata for a particular timeseries definition.
 
@@ -118,7 +152,7 @@ def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationRespo
     data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_derivation_metadata(timeseries_def))
     return TimeseriesDerivationResponse.model_validate(data)
 
-
+@lru_cache(maxsize=100)
 def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[str, List[str | None]]]:
     """Wrapper to handle the timeseries derivation service and transformation functionality
 
