@@ -23,6 +23,24 @@
             "justMyCode": false
         },
         {
+            "name": "Pipeline ALIC1 PE",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "dritimeseriesprocessor",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": "--sites=alic1 --columns=PE --periodicity=PT30M P2D",
+        },
+        {
+            "name": "Pipeline ALIC1 PRECIP",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "dritimeseriesprocessor",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": "--sites=alic1 --columns=PRECIP --periodicity=PT30M P2D",
+        },
+        {
             "name": "Pipeline",
             "type": "debugpy",
             "request": "launch",
@@ -33,4 +51,6 @@
         }
     ]
 }
+
+
 
