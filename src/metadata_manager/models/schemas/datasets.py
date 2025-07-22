@@ -1,9 +1,6 @@
-import re
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
-
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX
 
 
 class IDModel(BaseModel):
@@ -139,11 +136,3 @@ class TimeseriesDatasetResponse(BaseModel):
 
     meta: Meta
     items: List[TimeSeriesDataset]
-
-
-
-# class TimeSeriesIDMetadata(IDModel):
-#     ts_def: str
-#     processing_type: ProcessingLevel
-
-    # ['ts_def', 'resolution', 'periodicity', 'processing_level', 'sourceBucket', 'sourceDataset', 'sourceColumnName', 'sourceSite']

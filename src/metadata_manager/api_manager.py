@@ -157,7 +157,7 @@ class MetadataAPIManager:
 
         return response
 
-    async def fetch_dependent_dataset_metadata(self, timeseries_def: str): 
+    async def fetch_dependent_dataset_metadata(self, timeseries_def: str) -> Dict[str, Any]:
         """Fetch the metadata of any dependencies for a specific dataset
 
         Args:

@@ -133,6 +133,12 @@ def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetad
     # Iterate through the list of DependentTimeSeriesMetadata objects, checking to see if any have sub dependencies
     # before fetching them
     for dependent_ts in dependent_timeseries:
+        """ NOTES - DELETE LATER
+
+        CHANGE THIS - raw can have dependencies, previously the lack of dependencies was identified by the absence of
+        a method, change the logic below to search until no further dependencies are found.
+
+        """
         if dependent_ts.processing_level_id != "raw":
             sub_dependencies = load_dependent_datasets(dependent_ts.name)
             ts_dependency_list.extend(sub_dependencies)
@@ -151,6 +157,7 @@ def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationRespo
     """
     data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_derivation_metadata(timeseries_def))
     return TimeseriesDerivationResponse.model_validate(data)
+
 
 @lru_cache(maxsize=100)
 def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[str, List[str | None]]]:
@@ -172,54 +179,6 @@ def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[str, List
     metadata = extract_timeseries_definition_metadata(derivation_metadata)
 
     return metadata
-
-
-def load_nested_timeseries_derivations(ts_defs: List[str]) -> Dict[str, Dict[str, Union[str, List[str | None]]]]:
-    """Recursively loads all timeseries derivation metadata for timeseries definitions.
-
-    Each timeseries definition will have a dataset(s) that that need to be
-    processed before it can be built. In turn, these datasets could be dependent
-    on other datasets. And so on. Extract all derivation metadata for every dependent
-    dataset.
-
-    Args:
-        ts_defs: A list of timeseries definitions to extract metadata for
-
-    Returns:
-        A dict containing transformed metadata from the response
-    """
-    # Somewhere to store all ts_defs and their inputs (uses)
-    derivations = {}
-
-    for ts_def in ts_defs:
-        # Create the first set of inputs to check.
-        # We will check one parent ts_def at a time.
-        # As its only one, we need to make this a list.
-        # This will be replaced by new_inputs_to_check at the end of
-        # every iteration
-        inputs_to_check = [ts_def]
-
-        # Keep checking until inputs_to_check contains no values
-        while len(inputs_to_check) != 0:
-            # Reset the new inputs
-            new_inputs_to_check = []
-
-            for item in inputs_to_check:
-                # Extract the required metadata
-                metadata = handle_derivation_response(item)
-
-                # Build dict for defs map (if it doesnt already exist)
-                if item not in derivations:
-                    # Transform the response
-                    derivations[item] = metadata
-
-                    # Add the dependencies to the list to be check next time
-                    new_inputs_to_check += derivations[item]["inputs"]
-
-            # Update the inputs to be checked to the ones extracted in this loop
-            inputs_to_check = new_inputs_to_check
-
-    return derivations
 
 
 def load_sites() -> SitesResponse:

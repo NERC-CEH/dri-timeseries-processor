@@ -164,4 +164,3 @@ class DependentTimeSeriesMetadataResponse(BaseModel):
                 )
             )
         return dependent_time_series_metadata
-

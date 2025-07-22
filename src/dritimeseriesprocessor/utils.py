@@ -159,35 +159,6 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
 
 
-def extract_unique_timeseries_defs(timeseries_ids_metadata: Dict[str, Dict[str, str]]) -> List[str]:
-    """Extract a unique list of timeseries definitions from the timeseries ids to be processed.
-
-    Args:
-        timeseries_ids_metadata: metadata about the timeseries ids to process
-
-    Returns:
-        A list of unique timeseries definitions
-    """
-    unique_timeseries_defs = {value["ts_def"] for value in timeseries_ids_metadata.values()}
-
-    return list(unique_timeseries_defs)
-
-
-def extract_dependent_timeseries_defs(
-    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
-) -> List[str]:
-    """Extract a list of dependent timeseries definitions.
-
-    Args:
-        timeseries_defs_derivation_map: An object with all the dependencies
-
-    Returns:
-        A list of all dependent timeseries definitions.
-    """
-
-    return list({items for items in timeseries_defs_derivation_map.values() for items in items["inputs"]})
-
-
 def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, Dict[str, str]]) -> Dict[str, str]:
     """Map timeseries definition to its corresponding timeseries id given the site id.
 
