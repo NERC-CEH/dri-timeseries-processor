@@ -127,11 +127,11 @@ class QcMethods(Dict[str, Method]):
 
 
 class DerivationMethods(Dict[str, Method]):
-    """Registry of all QC methods."""
+    """Registry of all derivation methods."""
 
     @classmethod
-    def model_validate(cls, data: Dict[str, Dict]) -> "QcMethods":
-        """Extract QC method data.
+    def model_validate(cls, data: Dict[str, Dict]) -> "DerivationMethods":
+        """Extract derivation method data.
 
         Args:
             data: Dictionary mapping method keys to method details

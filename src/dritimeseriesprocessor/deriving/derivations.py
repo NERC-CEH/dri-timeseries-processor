@@ -323,6 +323,7 @@ def derive(
         flag_columns=ts.flag_columns,
         flag_systems=ts.flag_systems,
         column_metadata=new_column_metadata,
+        metadata=ts.metadata(),
     )
 
     return new_ts
