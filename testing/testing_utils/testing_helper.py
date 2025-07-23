@@ -14,12 +14,18 @@ from time_stream import TimeSeries
 class ComparisonError(Exception):
     pass
 
+def load_json(json_path: str) -> Dict[str, Any]:
+    with open(json_path) as json_file:
+        return json.load(json_file)
+
 
 class TestHelper(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.data_dir = Path(__file__).parent.joinpath("data")
+        self.data_dir = Path(__file__).parents[1].joinpath("data")
+        self.input_dir = self.data_dir.joinpath("inputs")
+        self.output_dir = self.data_dir.joinpath("outputs")
         self.temp_dir = self.data_dir.joinpath("temp")
 
         self.original_cwd = os.getcwd()
@@ -44,6 +50,20 @@ class TestHelper(unittest.TestCase):
             shutil.rmtree(self.temp_dir)
 
         self.temp_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def metadata_api_data(self) -> Dict[str, Dict[str, Any]]:
+        return {
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/network/cosmos": load_json(
+                self.input_dir.joinpath("mock_metadata_api", "sites_metadata.json")
+            ),
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset": load_json(
+                self.input_dir.joinpath("mock_metadata_api", "ts_id_metadata_alic1.json")
+            ),
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/time-series-definition": load_json(
+                self.input_dir.joinpath("mock_metadata_api", "ts_def_metadata.json")
+            ),
+        }
 
     def load_ts_ids_from_json_file(self, json_path: str) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
         with open(json_path) as json_file:
