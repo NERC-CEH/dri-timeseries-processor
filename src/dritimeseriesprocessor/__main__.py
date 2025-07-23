@@ -47,7 +47,7 @@ class TimeSeriesProcessor:
         periodicity: str,
         end_date: datetime.date,
         period: str,
-        network: str = "cosmos",
+        network: str = DEFAULT_NETWORK,
     ):
         # Setup s3
         if app_config.environment == "local":
@@ -60,7 +60,7 @@ class TimeSeriesProcessor:
         self.network = network
 
         # Construct query parameters which are consistent across all metadata API calls
-        self.site_query_parameter = self.construct_site_query_parameter(sites)
+        self.site_query_parameter = self.construct_site_query_parameter(sites=sites)
         self.periodicity_query_parameter = self.construct_periodicity_query_parameter(periodicity)
         self.view_query_parameter = build_view_query_parameter(view="timeseries")
         self.start_date, self.end_date = parser.build_date_range(period, end_date, app_config.environment)
@@ -189,13 +189,12 @@ class TimeSeriesProcessor:
 
         self.ts_ids = self.ts_ids | ts_ids_metadata
 
-    @staticmethod
-    def construct_site_query_parameter(sites: List[str]) -> List[Tuple[str, str]]:
+    def construct_site_query_parameter(self, sites: List[str]) -> List[Tuple[str, str]]:
         metadata_sites = load_sites()
-        metadata_sites = extract_site_ids(metadata_sites, network=DEFAULT_NETWORK)
+        metadata_sites = extract_site_ids(metadata_sites, network=self.network)
 
         sites = parser.validate_sites(sites, metadata_sites)
-        site_query_parameter = build_site_query_parameter(sites)
+        site_query_parameter = build_site_query_parameter(sites=sites, network=self.network)
 
         return site_query_parameter
 
