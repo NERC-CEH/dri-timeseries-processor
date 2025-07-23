@@ -7,9 +7,11 @@ from testing.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.testing_utils.testing_helper import TestHelper
 
 
+@mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestTimeSeriesProcessor(TestHelper):
-    def test_initialisation(self) -> None:
+    def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
         """Test query parameters are constructed correctly."""
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
 
         expected_site_query_parameter = sorted(
             [
@@ -37,7 +39,6 @@ class TestTimeSeriesProcessor(TestHelper):
         assert ts_processor.start_date == expected_start_date
         assert ts_processor.end_date == expected_end_date
 
-    @mock.patch.object(MetadataAPIManager, "_make_api_call")
     def test_get_user_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
 
@@ -52,7 +53,6 @@ class TestTimeSeriesProcessor(TestHelper):
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    @mock.patch.object(MetadataAPIManager, "_make_api_call")
     def test_get_processing_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
 
@@ -67,7 +67,6 @@ class TestTimeSeriesProcessor(TestHelper):
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    @mock.patch.object(MetadataAPIManager, "_make_api_call")
     def test_get_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
 
