@@ -14,7 +14,7 @@ permissions:
 jobs:
 
   test-python:
-    uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@uv-action
+    uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
     with:
       use_uv: true
       coverage_threshold: 90
@@ -22,7 +22,7 @@ jobs:
 
   build-test-deploy-docker:
     needs: [test-python]
-    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@uv-action
+    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
       package_name: dritimeseriesprocessor
