@@ -4,26 +4,16 @@
 
 ### Requirements
 
-#### Python 3.12
-```commandline
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.12
-```
-or
-```commandline
-brew install python@3.12
-```
+#### uv
+
+[uv](https://docs.astral.sh/uv/getting-started/installation/), which
+will fetch and manage Python on its own.
 
 ### Setting up and activating a virtual environment
+
 ```commandline
-python -m venv .venv
+uv sync
 source .venv/bin/activate
-```
-
-### Installing the App
-
-```commandline
-pip install -e '.[dev]'
 ```
 
 ## Running the app
