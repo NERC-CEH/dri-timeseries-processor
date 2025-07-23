@@ -40,6 +40,8 @@ PROCESSING_COLUMNS = ["BATTV", "SCANS", "TNR01C"]
 
 
 class TimeSeriesProcessor:
+    """Main class for processing time series data."""
+
     def __init__(
         self,
         sites: str,
@@ -69,6 +71,7 @@ class TimeSeriesProcessor:
         self.ts_ids = {}
 
     def run(self) -> None:
+        """The main run function to process time series data."""
         logger.info("Collecting timeseries IDs")
         self.get_timeseries_ids()
 
@@ -96,15 +99,17 @@ class TimeSeriesProcessor:
         )
 
     def get_timeseries_ids(self) -> None:
+        """Collect all relevant time series metadata from the metadata API."""
         self.get_user_timeseries_ids()
         self.get_processing_timeseries_ids()
         self.get_dependent_timeseries_ids()
 
     def get_user_timeseries_ids(self) -> None:
-        # Extract timeseries IDs to build from user arguments
-        # Validate and load API response metadata for each timeseries ID
-        # Transform response into required structure
+        """
+        Using the user provided columns argument, extract and validate the relevant timeseries ID metadata from the
+        metadata API service before transforming the response into the required structure.
 
+        """
         column_query_parameter = build_column_query_parameter(self.columns)
 
         # For fetching the user specified timeseries id metadata, only the 'processed' ID data should be requested
@@ -119,8 +124,9 @@ class TimeSeriesProcessor:
         )
 
     def get_processing_timeseries_ids(self) -> None:
-        # Step 2
-        # Get processing dependencies for the timeseries IDs to be processed
+        """
+        Fetch the time series metadata for the processing dependencies of the time series IDs to be processed.
+        """
         # TODO: Determine these by looking at processing config dependencies in metadata
         column_query_parameter = build_column_query_parameter(PROCESSING_COLUMNS)
 
@@ -135,6 +141,9 @@ class TimeSeriesProcessor:
         )
 
     def get_dependent_timeseries_ids(self) -> None:
+        """
+        Fetch the derivation metadata for the timeseries IDs to be built and combine with the main time series metadata.
+        """
         # Get derivation metadata for the timeseries IDs to be built
         # Every timeseries ID will be dependent on another (raw or processed)
         # Derivation metadata is held with the timeseries definition rather than the ID
@@ -144,7 +153,6 @@ class TimeSeriesProcessor:
         unique_timeseries_defs = extract_unique_timeseries_defs(self.ts_ids)
         timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
 
-        # Step 4
         # Get timeseries ID metadata for all dependencies
         # First extract all dependent timeseries definitions
         # Then call the dataset endpoint with site and ts def to get the metadata
@@ -157,11 +165,11 @@ class TimeSeriesProcessor:
             self.site_query_parameter + timeseries_def_parameter + self.view_query_parameter + [("_limit", 50)]
         )
 
-        # Step 6
         # Add TS definition metadata to each timeseries ID
         self.ts_ids = merge_ts_def_metadata(self.ts_ids, timeseries_defs_derivation_map)
 
     def load_raw_data(self) -> None:
+        """Load the raw data for each time series."""
         for ts_id, ts_metadata in self.ts_ids.items():
             if ts_metadata["load"]:
                 logger.info(f"Loading data for {ts_id}")
@@ -173,6 +181,7 @@ class TimeSeriesProcessor:
                     self.ts_ids[ts_id]["data"] = ts
 
     def process_data(self) -> None:
+        """Run the time series processing function."""
         try:
             self.ts_ids = process_timeseries(self.ts_ids)
         except Exception as e:
@@ -184,12 +193,17 @@ class TimeSeriesProcessor:
             raise
 
     def get_ts_id_metadata(self, query_parameters: List[Tuple[str, str]]) -> None:
+        """
+        Retrieve time series metadata from the metadata API and transform into the expected format, before updating
+        the central dictionary of time series metadata.
+        """
         response = load_datasets(query_parameters)
         ts_ids_metadata = extract_timeseries_id_metadata(response)
 
         self.ts_ids = self.ts_ids | ts_ids_metadata
 
     def construct_site_query_parameter(self, sites: List[str]) -> List[Tuple[str, str]]:
+        """Construct the site query parameter."""
         metadata_sites = load_sites()
         metadata_sites = extract_site_ids(metadata_sites, network=self.network)
 
@@ -200,6 +214,7 @@ class TimeSeriesProcessor:
 
     @staticmethod
     def construct_periodicity_query_parameter(periodicity: str) -> List[Tuple[str, str]]:
+        """Construct the periodicity query parameter."""
         periodicities = parser.validate_periodicity(periodicity)
         periodicity_query_parameter = build_periodicity_query_parameter(periodicities)
 
@@ -229,6 +244,11 @@ class TimeSeriesProcessor:
 
 
 def main() -> None:
+    """
+    The initial function run when this file is called via the command line.
+
+    Parses the CLI args, before initialising and running the TimeSeriesProcessor class.
+    """
     args = parser.parse_args(sys.argv[1:])
 
     time_series_processor = TimeSeriesProcessor(
