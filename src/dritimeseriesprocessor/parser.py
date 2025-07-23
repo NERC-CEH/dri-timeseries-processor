@@ -33,6 +33,12 @@ def parse_args(args: list) -> ArgumentParser:
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
+        "--network",
+        help=("The network to process. Must be either cosmos or fdri."),
+        required=True,
+        choices=["cosmos", "fdri"],
+    )
+    parser.add_argument(
         "--sites",
         help=(
             """The sites to extract. Must be a string of sites (upper or lower case) seperated by a comma
@@ -61,7 +67,7 @@ def parse_args(args: list) -> ArgumentParser:
         default=date.today().strftime("%Y-%m-%d"),
     )
     parser.add_argument(
-        "period",
+        "--period",
         help=(
             """A valid ISO8601 period to build the timeseries for. Should be a combination of
             days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
