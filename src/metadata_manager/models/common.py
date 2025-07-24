@@ -110,7 +110,7 @@ def build_timeseries_id_query_parameter(ts_ids: List[str]) -> List[Tuple | None]
     Returns:
         A list of tuples with query parameter string and the timeseries definition.
     """
-    return [("id", ts_id) for ts_id in ts_ids]
+    return [("@id", ts_id) for ts_id in ts_ids]
 
 
 def build_processing_query_parameter(level: str) -> List[Tuple | None]:
