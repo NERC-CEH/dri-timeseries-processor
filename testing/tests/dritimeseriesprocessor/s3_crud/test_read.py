@@ -2,7 +2,7 @@ import duckdb
 import polars as pl
 
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
-from tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
+from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 
 def get_unique_dates(df: pl.DataFrame):

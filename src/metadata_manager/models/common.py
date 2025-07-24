@@ -56,18 +56,19 @@ def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
     return values
 
 
-def build_site_query_parameter(sites: List[str]) -> List[Tuple | None]:
+def build_site_query_parameter(sites: List[str], network: str) -> List[Tuple | None]:
     """Build the site query parameters for the dataset endpoint.
 
     As we use the same key for multiple sites, it needs to be a list of tuples.
 
     Args:
         sites: A list of the sites to query.
+        network: The network to query.
 
     Returns:
         A list of tuples with query parameter string and site.
     """
-    return [("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}") for site in sites]
+    return [("originatingSite", f"http://fdri.ceh.ac.uk/id/site/{network}-{site.lower()}") for site in sites]
 
 
 def build_column_query_parameter(columns: List[str]) -> List[Tuple | None]:

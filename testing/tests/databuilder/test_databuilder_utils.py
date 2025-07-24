@@ -1,15 +1,17 @@
-import unittest
-from unittest.mock import patch
-from pathlib import Path
-from databuilder import utils
-from tempfile import TemporaryDirectory
 import os
+import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
+from databuilder import utils
+
 
 class DataCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data_dir = Path(__file__).parents[2] / "parquet-data"
+        cls.data_dir = Path(__file__).parents[3] / "parquet-data"
         cls.cosmos_data = cls.data_dir / "cosmos"
         cls.cosmos_precip = cls.cosmos_data / "LIVE_PRECIP_1MIN"
         cls.cosmos_soilmet = cls.cosmos_data / "LIVE_SOILMET_30MIN"

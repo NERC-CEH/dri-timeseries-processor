@@ -1,0 +1,32 @@
+{
+  "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw": {
+    "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/tnr01c_30min_raw",
+    "resolution": "PT30M",
+    "periodicity": "PT30M",
+    "processing_level": "raw",
+    "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
+    "sourceDataset": "LIVE_SOILMET_30MIN",
+    "sourceColumnName": "TNR01C",
+    "sourceSite": "ALIC1"
+  },
+  "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw": {
+    "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/battv_30min_raw",
+    "resolution": "PT30M",
+    "periodicity": "PT30M",
+    "processing_level": "raw",
+    "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
+    "sourceDataset": "LIVE_SOILMET_30MIN",
+    "sourceColumnName": "BATTV",
+    "sourceSite": "ALIC1"
+  },
+  "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw": {
+    "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/scans_30min_raw",
+    "resolution": "PT30M",
+    "periodicity": "PT30M",
+    "processing_level": "raw",
+    "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
+    "sourceDataset": "LIVE_SOILMET_30MIN",
+    "sourceColumnName": "SCANS",
+    "sourceSite": "ALIC1"
+  }
+}

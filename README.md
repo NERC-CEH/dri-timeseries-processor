@@ -4,26 +4,16 @@
 
 ### Requirements
 
-#### Python 3.12
-```commandline
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.12
-```
-or
-```commandline
-brew install python@3.12
-```
+#### uv
+
+[uv](https://docs.astral.sh/uv/getting-started/installation/), which
+will fetch and manage Python on its own.
 
 ### Setting up and activating a virtual environment
+
 ```commandline
-python -m venv .venv
+uv sync
 source .venv/bin/activate
-```
-
-### Installing the App
-
-```commandline
-pip install -e '.[dev]'
 ```
 
 ## Running the app
@@ -34,6 +24,9 @@ Build the docker container to access local data
 docker compose up -d
 ```
 Then call the app which can take several command-line arguments:
+
+**network (required)**: The network to run processing for \
+    - Must be cosmos or fdri
 
 **period (required)**: The period of time you want to build data for.\
     - Must be a valid ISO8601 duration\
@@ -67,27 +60,27 @@ When running locally, the default `end_date` value is overwritten by `2024-03-10
 
 Get the last two days data for all sites, columns and periodicities
 ```commandline
-python -m dritimeseriesprocessor P2D
+python -m dritimeseriesprocessor --period=P2D --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for all sites, columns and periodicities
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for ALCI and BUNNY sites and all columns and periodicities
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --sites=alic1,bunny --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for ALCI and BUNNY sites, variables TA and PA and all periodicities
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny --columns=TA,PA
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --sites=alic1,bunny --columns=TA,PA --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for ALCI and BUNNY sites, variables TA and PA and a periodicity of 30 mins
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny --periodicity=PT30M
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --sites=alic1,bunny --periodicity=PT30M --network=cosmos
 ```
 
 ## Linting

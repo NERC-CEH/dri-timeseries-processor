@@ -1,11 +1,11 @@
+import unittest
 from datetime import date
 
 import polars as pl
-import unittest
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.utils import steralize_dates
-from tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
+from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 
 class TestReadByDateRange(BaseTestCase):
