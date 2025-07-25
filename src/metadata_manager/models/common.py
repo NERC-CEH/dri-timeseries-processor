@@ -7,6 +7,7 @@ class ComponentType(Enum):
     CORRECTION = "correction"
     INFILLING = "infilling"
     QUALITY_CONTROL = "quality_control"
+    DERIVATION = "calculate"
 
 
 # To get the last bit of a uri string, after the last trailing slash.

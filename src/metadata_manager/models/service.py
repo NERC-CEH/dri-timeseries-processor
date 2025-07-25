@@ -7,7 +7,12 @@ from typing import Dict, List, Optional, Union
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.common import ComponentType
-from metadata_manager.models.methods.method_registry import CorrectionMethods, InfillingMethods, QcMethods
+from metadata_manager.models.methods.method_registry import (
+    CorrectionMethods,
+    DerivationMethods,
+    InfillingMethods,
+    QcMethods,
+)
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
@@ -66,17 +71,23 @@ def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMe
     if isinstance(config_type, str):
         config_type = ComponentType(config_type)
 
+    config_dir = Path(__file__).parent.absolute() / "methods"
+
     if config_type == ComponentType.INFILLING:
-        methods_json_file = Path(__file__).parent.absolute() / "methods" / "infilling_methods.json"
+        methods_json_file = config_dir / "infilling_methods.json"
         registry = InfillingMethods
 
     elif config_type == ComponentType.QUALITY_CONTROL:
-        methods_json_file = Path(__file__).parent.absolute() / "methods" / "qc_methods.json"
+        methods_json_file = config_dir / "qc_methods.json"
         registry = QcMethods
 
     elif config_type == ComponentType.CORRECTION:
-        methods_json_file = Path(__file__).parent.absolute() / "methods" / "correction_methods.json"
+        methods_json_file = config_dir / "correction_methods.json"
         registry = CorrectionMethods
+
+    elif config_type == ComponentType.DERIVATION:
+        methods_json_file = config_dir / "derivation_methods.json"
+        registry = DerivationMethods
 
     else:
         return None
