@@ -6,6 +6,7 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.deriving.process_derivations import DerivationProcessor
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
@@ -171,7 +172,12 @@ except Exception as e:
     )
     raise
 
-# TODO Agregations and derivations here
+# TODO Aggregations here
+
+# Create derived data
+# -------------------
+derivation_processor = DerivationProcessor(ts_ids)
+ts_ids = derivation_processor.run()
 
 
 # Writing
