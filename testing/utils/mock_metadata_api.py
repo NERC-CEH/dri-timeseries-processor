@@ -161,7 +161,7 @@ def filter_by_periodicity(param_values: List[str], api_data: Dict[str, Any]) -> 
 
     Iterate through the provided api data searching for any entries which have a matching periodicity code (e.g. PT30M)
     to any of the values in the provided parameter values list. The periodicity code is located deeply nested within the
-    main `type` section of a metadata api item. It is assumed that only the first item within the `type` list is 
+    main `type` section of a metadata api item. It is assumed that only the first item within the `type` list is
     relevant for filtering purposes.
 
     Args:
@@ -204,8 +204,8 @@ def filter_by_processing_level(param_values: List[str], api_data: Dict[str, Any]
     """Filter the api_data by one or more processing level ids.
 
     Iterate through the provided api data searching for any entries which have a matching processingLevel @id attribute
-    to any of the values in the provided parameter values list. The processingLevel @id attribute is located deeply 
-    nested within the main `type` section of a metadata api item. It is assumed that only the first item within the 
+    to any of the values in the provided parameter values list. The processingLevel @id attribute is located deeply
+    nested within the main `type` section of a metadata api item. It is assumed that only the first item within the
     `type` list is relevant for filtering purposes.
 
     Args:
@@ -226,7 +226,7 @@ def filter_by_type(param_values: List[str], api_data: Dict[str, Any]) -> Dict[st
     """Filter the api_data by one or more type ids.
 
     Iterate through the provided api data searching for any entries which have a matching type @id attribute to
-    any of the values in the provided parameter values list. It is assumed that only the first item within the 
+    any of the values in the provided parameter values list. It is assumed that only the first item within the
     `type` list is relevant for filtering purposes.
 
     Args:

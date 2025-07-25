@@ -16,12 +16,31 @@ class ComparisonError(Exception):
 
 
 def load_json(json_path: str) -> Dict[str, Any]:
+    """
+    Generic json reading function used for loading test data from file.
+
+    Args:
+        json_path: Path to read the json data from.
+
+    Returns:
+        Dict[str, Any]: Dictionary containing the json data read from file.
+
+    """
     with open(json_path) as json_file:
         return json.load(json_file)
 
 
 class TestHelper(unittest.TestCase):
     def setUp(self) -> None:
+        """Sets up the testing environment.
+
+        Creates a temp directory within the main test data folder to use as the current working directory for all tests
+        The temp directory is deleted and recreated if it already exists.
+
+        Identifies the data directory and stores it alongside a number of useful directories, such as the input and
+        output subdirectories.
+
+        """
         super().setUp()
 
         self.data_dir = Path(__file__).parents[1].joinpath("data")
@@ -35,10 +54,14 @@ class TestHelper(unittest.TestCase):
 
         # Set the current working directory to be the temp dir so that all test outputs are written there
         os.chdir(self.temp_dir)
-        print()
-        pass
 
     def tearDown(self) -> None:
+        """Tears down the testing environment
+
+        Resets the temporary directory, deleting and recreating it.
+        Resets the current working directory back to it's original value.
+
+        """
         super().tearDown()
 
         self.reset_temp_dir()
@@ -54,6 +77,14 @@ class TestHelper(unittest.TestCase):
 
     @property
     def metadata_api_data(self) -> Dict[str, Dict[str, Any]]:
+        """Default metadata api data dictionary.
+
+        Loads the metadata response json data for the following data:
+            - list all available cosmos sites
+            - ts id metadata for all variables for cosmos site ALIC1
+            - ts definition metadata for all variables for cosmos site ALIC1
+
+        """
         return {
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/network/cosmos": load_json(
                 self.input_dir.joinpath("mock_metadata_api", "sites_metadata.json")
@@ -67,6 +98,17 @@ class TestHelper(unittest.TestCase):
         }
 
     def load_ts_ids_from_json_file(self, json_path: str) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+        """
+        Loads time series id metadata (to be converted to a TimeSeriesContainer object) from a json file, iterating
+        over each item to create the relevant TimeSeries objects for any items which contain data attributes.
+
+        Args:
+            json_path: Path to load the time series id metadata dictionaries from.
+
+        Returns:
+            Dict[str, Dict[str, Union[str, TimeSeries]]]: Dictionary of time series ids and their metadata
+
+        """
         with open(json_path) as json_file:
             json_data = json.load(json_file)
 
@@ -78,6 +120,17 @@ class TestHelper(unittest.TestCase):
     def load_ts_ids_from_dict(
         ts_ids: Dict[str, Dict[str, Any]],
     ) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+        """
+        Loads time series id metadata (to be converted to a TimeSeriesContainer object) from a dictionary, iterating
+        over each item to create the relevant TimeSeries objects for any items which contain data attributes.
+
+        Args:
+            json_path: Path to load the time series id metadata dictionaries from.
+
+        Returns:
+            Dict[str, Dict[str, Union[str, TimeSeries]]]: Dictionary of time series ids and their metadata
+
+        """
         processed_ts_ids = {}
         for ts_id, ts_metadata in ts_ids.items():
             if ts_metadata.get("data"):
@@ -102,6 +155,17 @@ class TestHelper(unittest.TestCase):
 
     @staticmethod
     def convert_ts_ids_to_dict(ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]) -> Dict[str, Dict[str, Any]]:
+        """
+        Convert a dictionary of timeseries ids (containing TimeSeries data objects) into a dictionary that is easily
+        written to a json file.
+
+        Args:
+            ts_ids (Dict[str, Dict[str, Union[str, TimeSeries]]]): Dictionary of time series id metadata.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Reformatted dictionary of timeseries id metadata.
+
+        """
         # Copy the ts_ids to ensure the source dictionary isn't accidentally modified
         ts_ids = ts_ids.copy()
 
@@ -127,6 +191,12 @@ class TestHelper(unittest.TestCase):
         expected_ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
         actual_ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
     ) -> None:
+        """Compares two time series id metadata objects.
+
+        Iterates through the dictionary of expected time series id metadata objects, comparing each key value pair
+        to the actual data provided, raising an error if the comparison fails.
+
+        """
         for expected_ts_id, expected_ts_dict in expected_ts_ids.items():
             actual_ts_dict = actual_ts_ids.get(expected_ts_id)
             if not actual_ts_dict:
@@ -157,6 +227,12 @@ class TestHelper(unittest.TestCase):
 
     @staticmethod
     def compare_timeseries_objects(expected_timeseries: TimeSeries, actual_timeseries: TimeSeries) -> None:
+        """Compares two TimeSeries objects
+
+        Iterates through the available TimeSeries attributes comparing the values from the expected and actual
+        TimeSeries objects for each, raising an error if they don't match.
+
+        """
         # Check the polars dataframes match
         assert_frame_equal(expected_timeseries.df, actual_timeseries.df)
 

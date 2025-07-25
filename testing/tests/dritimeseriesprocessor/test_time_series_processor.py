@@ -3,8 +3,8 @@ from unittest import mock
 
 from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from metadata_manager.api_manager import MetadataAPIManager
-from testing.testing_utils.mock_metadata_api import MockMetadataAPI
-from testing.testing_utils.testing_helper import TestHelper
+from testing.utils.mock_metadata_api import MockMetadataAPI
+from testing.utils.testing_helper import TestHelper
 
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")

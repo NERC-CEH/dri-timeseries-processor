@@ -70,7 +70,15 @@ class TimeSeriesProcessor:
         self.ts_ids = {}
 
     def run(self) -> None:
-        """The main run function to process time series data."""
+        """The main run function to process time series data.
+
+        First collates metadata from the Metadata API for all user defined columns, any supporting processing time
+        series (e.g. battery voltage), and any dependent time series data (e.g. processed precipitation is dependent
+        on raw precipitation data).
+
+        Then the initial processing is run before aggregated and derived data is calculated.
+
+        """
         logger.info("Collecting timeseries IDs")
         self._collate_timeseries_id_metadata_to_process()
 
@@ -84,6 +92,7 @@ class TimeSeriesProcessor:
 
         # Create derived data
         # -------------------
+        logger.info("Calculating derived data")
         derivation_processor = DerivationProcessor(self.ts_ids)
         self.ts_ids = derivation_processor.run()
 
@@ -103,15 +112,25 @@ class TimeSeriesProcessor:
         )
 
     def _collate_timeseries_id_metadata_to_process(self) -> None:
-        """Collect all relevant time series metadata from the metadata API."""
+        """Collect all relevant time series metadata from the metadata API.
+
+        This includes the processed timeseries defined by the user specified `columns` argument, any separate
+        processing dependencies, and any dependent time series (e.g. the raw versions of any processed timeseries,
+        any derivation / aggregation dependencies etc).
+
+        """
         self._get_user_timeseries_ids()
         self._get_processing_timeseries_ids()
         self._get_dependent_timeseries_ids()
 
     def _get_user_timeseries_ids(self) -> None:
-        """
-        Using the user provided columns argument, extract and validate the relevant timeseries ID metadata from the
-        metadata API service before transforming the response into the required structure.
+        """Collect the timeseries id metadata for user specified processed variables.
+
+        The metadata api service is queried for the timeseries id metadata for the processed variables requested by the
+        user using the `columns` parameter, in combination with the requested site(s) and periodicities.
+
+        The relevant response data is then extracted and added to the list of timeseries id metadata stored in
+        self.ts_ids.
 
         """
         column_query_parameter = build_column_query_parameter(self.columns)
@@ -128,8 +147,13 @@ class TimeSeriesProcessor:
         )
 
     def _get_processing_timeseries_ids(self) -> None:
-        """
-        Fetch the time series metadata for the processing dependencies of the time series IDs to be processed.
+        """Collect the timeseries id metadata for any processing dependencies.
+
+        In a similar way to `_get_user_timeseries_ids()` the metadata api service is queried and the extracted results
+        are added to `self.ts_ids`. However, in this instance, the raw processing timeseries id metadata is requested
+        for the current site(s) and periodicities instead. Currently this is a hard coded list of variables: "BATTV",
+        "SCANS"and "TNR01C".
+
         """
         # TODO: Determine these by looking at processing config dependencies in metadata
         column_query_parameter = build_column_query_parameter(PROCESSING_COLUMNS)
@@ -185,7 +209,11 @@ class TimeSeriesProcessor:
                     self.ts_ids[ts_id]["data"] = ts
 
     def _process_data(self) -> None:
-        """Run the time series processing function."""
+        """Run the time series processing function.
+
+        This is a wrapper function within which corrections, quality control and infilling are applied.
+
+        """
         try:
             self.ts_ids = process_timeseries(self.ts_ids)
         except Exception as e:
@@ -207,7 +235,21 @@ class TimeSeriesProcessor:
         self.ts_ids = self.ts_ids | ts_ids_metadata
 
     def _construct_site_query_parameter(self, sites: List[str]) -> List[Tuple[str, str]]:
-        """Construct the site query parameter."""
+        """Construct the site query parameter.
+
+        Queries the metadata api for the list of available sites, and extracts then into a single list of strings
+        before using this to validate the user provided list of sites required for processing. For example checking
+        that all user requested sites are available etc.)
+
+        The site query parameter is a list of tuples providing the IDs of all sites to be queried by the metadata api
+        service, and the corresponding source key within the metadata to search by. For example:
+
+            [
+                ('originatingSite', 'http://fdri.ceh.ac.uk/id/site/cosmos-alic1'),
+                ('originatingSite', 'http://fdri.ceh.ac.uk/id/site/cosmos-bunny')
+            ]
+
+        """
         metadata_sites = load_sites()
         metadata_sites = extract_site_ids(metadata_sites, network=self.network)
 
@@ -218,7 +260,16 @@ class TimeSeriesProcessor:
 
     @staticmethod
     def _construct_periodicity_query_parameter(periodicity: str) -> List[Tuple[str, str]]:
-        """Construct the periodicity query parameter."""
+        """Construct the periodicity query parameter.
+
+        The periodicity query parameter is a list of tuples providing the periodicity IDs to be queried by the metadata
+        api service and the correspoinding source key within the metadata to search by. For example:
+
+            [
+                ('type.measure.aggregation.periodicity', 'PT30M')
+            ]
+
+        """
         periodicities = parser.validate_periodicity(periodicity)
         periodicity_query_parameter = build_periodicity_query_parameter(periodicities)
 
