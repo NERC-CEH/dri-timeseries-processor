@@ -1,7 +1,7 @@
 import datetime
 from unittest import mock
 
-from dritimeseriesprocessor.__main__ import TimeSeriesProcessor
+from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.testing_utils.testing_helper import TestHelper
@@ -49,7 +49,7 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor = TimeSeriesProcessor(
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
-        ts_processor.get_user_timeseries_ids()
+        ts_processor._get_user_timeseries_ids()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
@@ -63,7 +63,7 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor = TimeSeriesProcessor(
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
-        ts_processor.get_processing_timeseries_ids()
+        ts_processor._get_processing_timeseries_ids()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
@@ -77,6 +77,6 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor = TimeSeriesProcessor(
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
-        ts_processor.get_timeseries_ids()
+        ts_processor._collate_timeseries_id_metadata_to_process()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
