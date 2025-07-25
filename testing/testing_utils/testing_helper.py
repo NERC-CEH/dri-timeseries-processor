@@ -14,6 +14,7 @@ from time_stream import TimeSeries
 class ComparisonError(Exception):
     pass
 
+
 def load_json(json_path: str) -> Dict[str, Any]:
     with open(json_path) as json_file:
         return json.load(json_file)
@@ -159,10 +160,25 @@ class TestHelper(unittest.TestCase):
         # Check the polars dataframes match
         assert_frame_equal(expected_timeseries.df, actual_timeseries.df)
 
-        timeseries_attributes = []
+        timeseries_attributes = [
+            "time_name",
+            "resolution",
+            "periodicity",
+            "supplementary_columns",
+            "flag_systems",
+            "flag_columns",
+            "metadata",
+        ]
         for attribute_name in timeseries_attributes:
-            expected_value = getattr(expected_timeseries, "resolution")
-            actual_value = getattr(actual_timeseries, "resolution")
+            expected_value = getattr(expected_timeseries, attribute_name)
+            actual_value = getattr(actual_timeseries, attribute_name)
+
+            # metadata and column_metadata are stored as functions which need to be called to extract their values
+            # before they can be compared.
+            if callable(expected_value):
+                expected_value = expected_value()
+                actual_value = actual_value()
+
             if expected_value != actual_value:
                 raise ComparisonError(
                     f"The expected TimeSeries attribute value for `{attribute_name}` does not match. "
