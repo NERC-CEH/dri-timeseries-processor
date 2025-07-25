@@ -91,7 +91,7 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor = TimeSeriesProcessor(
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
-        ts_processor.get_user_timeseries_ids()
+        ts_processor._get_user_timeseries_ids()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
@@ -105,12 +105,11 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor = TimeSeriesProcessor(
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
-        ts_processor.get_processing_timeseries_ids()
+        ts_processor._get_processing_timeseries_ids()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    # def test_get_timeseries_ids(self) -> None:
-    def test_get_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
+    def test_collate_timeseries_id_metadata_to_process(self, mock_api_manager: mock.MagicMock) -> None:
         api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
@@ -121,6 +120,6 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor = TimeSeriesProcessor(
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
-        ts_processor.get_timeseries_ids()
+        ts_processor._collate_timeseries_id_metadata_to_process()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)

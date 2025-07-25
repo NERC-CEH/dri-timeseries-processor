@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 from typing import List, Tuple
 
@@ -14,20 +15,24 @@ from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import (
-    extract_dependent_timeseries_defs,
-    extract_unique_timeseries_defs,
     group_by_date_site_id,
     merge_ts_def_metadata,
 )
 from metadata_manager.models.common import (
+    URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
     build_periodicity_query_parameter,
     build_processing_query_parameter,
     build_site_query_parameter,
-    build_timeseries_def_query_parameter,
+    build_timeseries_id_query_parameter,
     build_view_query_parameter,
 )
-from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations, load_sites
+from metadata_manager.models.service import (
+    handle_derivation_response,
+    load_datasets,
+    load_dependent_datasets,
+    load_sites,
+)
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
@@ -172,29 +177,33 @@ class TimeSeriesProcessor:
         """
         Fetch the derivation metadata for the timeseries IDs to be built and combine with the main time series metadata.
         """
-        # Get derivation metadata for the timeseries IDs to be built
-        # Every timeseries ID will be dependent on another (raw or processed)
-        # Derivation metadata is held with the timeseries definition rather than the ID
-        # First extract all unique timeseries defs from the IDS to be processed
-        # Then extract all the dependencies associated with each timeseries definition and
-        # transform into required structure
-        unique_timeseries_defs = extract_unique_timeseries_defs(self.ts_ids)
-        timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
+        dependent_timeseries_ids = self._identify_dependent_ts_ids()
 
-        # Get timeseries ID metadata for all dependencies
-        # First extract all dependent timeseries definitions
-        # Then call the dataset endpoint with site and ts def to get the metadata
-        # Validate and transform response
-        dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_derivation_map)
-        timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
+        # Fetch the corresponding timeseries metadata for the list of dependent time series IDs identified previously.
+        timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_ids)
 
         # TODO remove the limit parameter once FW-692 has been implemented
         self._get_ts_id_metadata(
-            self.site_query_parameter + timeseries_def_parameter + self.view_query_parameter + [("_limit", 50)]
+            self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )
 
+        # Get the derivation metadata for the timeseries IDs to be built
+        ts_def_metadata = {
+            ts_id["ts_def"]: handle_derivation_response(ts_id["ts_def"]) for ts_id in self.ts_ids.values()
+        }
+
         # Add TS definition metadata to each timeseries ID
-        self.ts_ids = merge_ts_def_metadata(self.ts_ids, timeseries_defs_derivation_map)
+        self.ts_ids = merge_ts_def_metadata(self.ts_ids, ts_def_metadata)
+
+    def _identify_dependent_ts_ids(self) -> List[str]:
+        """Build a list of the dependencies for any existing ts_ids."""
+        dependent_timeseries_ids = []
+        for ts_id in self.ts_ids.keys():
+            ts_name = re.match(URI_ID_EXTRACT_REGEX, ts_id).group(1)
+            dependent_timeseries_list = load_dependent_datasets(ts_name)
+            dependent_timeseries_ids.extend([dependent_ts.ts_id for dependent_ts in dependent_timeseries_list])
+
+        return dependent_timeseries_ids
 
     def _load_raw_data(self) -> None:
         """Load the raw data for each time series."""
