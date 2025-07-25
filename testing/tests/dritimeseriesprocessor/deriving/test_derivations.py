@@ -1,13 +1,12 @@
-from datetime import datetime
 import unittest
+from datetime import datetime
 
 import polars as pl
 from polars.testing import assert_frame_equal
-
 from time_stream import Period, TimeSeries
+
 from dritimeseriesprocessor.deriving.calculation import Calculation
 from dritimeseriesprocessor.deriving.derivations import (
-    derive,
     ActualVapourPressureFao56Eq54,
     LatentHeatOfVaporization,
     NetRadiation,
@@ -16,18 +15,22 @@ from dritimeseriesprocessor.deriving.derivations import (
     SaturationVapourPressure,
     VapourPressureCurveSlope,
     WindSpeedHeightCorrection,
+    derive,
 )
 from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
 
 
 def init_timeseries():
-    df = pl.DataFrame({
-        "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
-        "data_col1": [1, 2, 3],
-        "data_col2": [4, 5, 6]
-    })
+    df = pl.DataFrame(
+        {
+            "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+            "data_col1": [1, 2, 3],
+            "data_col2": [4, 5, 6],
+        }
+    )
     ts = TimeSeries(df, "time")
     return ts
+
 
 class MockCalculation(Calculation):
     # Zero dependencies
@@ -44,21 +47,19 @@ class MockCalculation(Calculation):
 
 class TestDerive(unittest.TestCase):
     def test_derive_calculation(self):
-        """ Test that a new timeseries is created when deriving a calculation, with appropriate metadata and data. """
+        """Test that a new timeseries is created when deriving a calculation, with appropriate metadata and data."""
         ts = init_timeseries()
         calc = MockCalculation
         result = derive(ts, calc)
 
-        expected_df = pl.DataFrame({
-            "time": [
-                datetime(2024, 1, 1),
-                datetime(2024, 1, 2),
-                datetime(2024, 1, 3)
-            ],
-            "data_col1": [1, 2, 3],
-            "data_col2": [4, 5, 6],
-            "mock_calc": [42, 42, 42],
-        })
+        expected_df = pl.DataFrame(
+            {
+                "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
+                "data_col1": [1, 2, 3],
+                "data_col2": [4, 5, 6],
+                "mock_calc": [42, 42, 42],
+            }
+        )
 
         self.assertIn("mock_calc", result.data_columns)
         self.assertEqual(result.mock_calc.metadata(), {"units": "mock_unit"})
@@ -129,7 +130,7 @@ class TestPsychrometricConstant(unittest.TestCase):
 class TestSaturationVapourPressure(unittest.TestCase):
     def test_calculation(self):
         # Taken from FAO56 EXAMPLE 3 https://www.fao.org/4/x0490e/x0490e07.htm
-        df = pl.DataFrame({"TA": [15., 24.5]})
+        df = pl.DataFrame({"TA": [15.0, 24.5]})
         expected = df.with_columns(pl.Series("ES", [1.705, 3.075]))
 
         calc = SaturationVapourPressure("TA", column_name="ES")
@@ -143,27 +144,36 @@ class TestPotentialEvapotranspiration30Min(unittest.TestCase):
         # Taken from COSMOS.LEVEL3_DATA_30MIN Oracle DB view:
         #   Site: CHOBH,
         #   Dates: [2015-03-14 04:30:00, 2017-05-30 16:30:00, 2022-01-18 09:30:00, 2023-08-21 11:00:00]
-        df = pl.DataFrame({
-            "RN": [-68.181, 302.85, 116.2, 364.6],
-            "G": [-29.6453, 32.23711, -23.7416, 16.64824],
-            "TA": [1.977, 19.62, -2.144, 20.54],
-            "RH": [72.5, 57.62, 95.6, 65.41],
-            "WS": [2.89954, 3.204, 0.214, 2.048],
-            "PA": [1024., 1011.365, 1033.649, 1020.695],
-        })
+
+        # Original G data = [-29.6453, 32.23711, -23.7416, 16.64824], for the purposes of this test, it has been
+        # duplicated for g1 and g2 values to allow both to be passed in
+        df = pl.DataFrame(
+            {
+                "RN": [-68.181, 302.85, 116.2, 364.6],
+                "G1": [-29.6453, 32.23711, -23.7416, 16.64824],
+                "G2": [-29.6453, 32.23711, -23.7416, 16.64824],
+                "TA": [1.977, 19.62, -2.144, 20.54],
+                "RH": [72.5, 57.62, 95.6, 65.41],
+                "WS": [2.89954, 3.204, 0.214, 2.048],
+                "PA": [1024.0, 1011.365, 1033.649, 1020.695],
+            }
+        )
 
         period = Period.of_minutes(30)
         original_ws_height = 2.6
 
         df = HpaToKpa("PA").evaluate(df, allow_override=True)
         df = WattsToMegajoules("RN", period, "RN_MJ").evaluate(df, allow_override=True)
-        df = WattsToMegajoules("G", period, "G_MJ").evaluate(df, allow_override=True)
+        df = WattsToMegajoules("G1", period, "G1_MJ").evaluate(df, allow_override=True)
+        df = WattsToMegajoules("G2", period, "G2_MJ").evaluate(df, allow_override=True)
         df = WindSpeedHeightCorrection("WS", original_ws_height, column_name="WS2m").evaluate(df)
 
         # PET results Taken from COSMOS.LEVEL3_DATA_30MIN Oracle DB view
         expected = df.with_columns(pl.Series("PET", [0.00573, 0.14733, 0.03617, 0.17283]))
 
-        calc = PotentialEvapotranspiration30Min("RN_MJ", "G_MJ", "TA", "RH", "WS2m", "PA", column_name="PET")
+        calc = PotentialEvapotranspiration30Min(
+            rn="RN_MJ", g1="G1_MJ", g2="G2_MJ", ta="TA", rh="RH", ws="WS2m", pa="PA", column_name="PET"
+        )
         result = calc.evaluate(df)
 
         assert_frame_equal(result, expected, check_exact=False, atol=0.00001)
@@ -171,12 +181,14 @@ class TestPotentialEvapotranspiration30Min(unittest.TestCase):
 
 class TestNetRadiation(unittest.TestCase):
     def test_calculation(self):
-        df = pl.DataFrame({
-            "SWIN": [22.9, 19.3, 14, 25.1],
-            "SWOUT": [4.9, 4.2, 3, 5.5],
-            "LWIN": [24.1, 26, 26.2, 23.1],
-            "LWOUT": [31.2, 31.9, 30.9, 30.8],
-        })
+        df = pl.DataFrame(
+            {
+                "SWIN": [22.9, 19.3, 14, 25.1],
+                "SWOUT": [4.9, 4.2, 3, 5.5],
+                "LWIN": [24.1, 26, 26.2, 23.1],
+                "LWOUT": [31.2, 31.9, 30.9, 30.8],
+            }
+        )
         expected = df.with_columns(pl.Series("RN", [10.9, 9.2, 6.3, 11.9]))
 
         calc = NetRadiation("SWIN", "SWOUT", "LWIN", "LWOUT", column_name="RN")
