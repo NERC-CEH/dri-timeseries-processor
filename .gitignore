@@ -163,4 +163,4 @@ cython_debug/
 .vscode/
 
 # Testing temp directory
-tests/data/temp/*
+testing/data/temp/*

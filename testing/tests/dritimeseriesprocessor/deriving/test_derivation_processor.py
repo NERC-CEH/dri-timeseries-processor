@@ -1,6 +1,5 @@
-from tests.testing_helpers import TestHelper
-
 from dritimeseriesprocessor.deriving.process_derivations import DerivationProcessor
+from testing.testing_utils.testing_helper import TestHelper
 
 
 class TestDerivationProcessor(TestHelper):
