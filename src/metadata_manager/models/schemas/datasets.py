@@ -61,14 +61,6 @@ class Measure(IDModel):
     aggregation: Aggregation
 
 
-# class ProcessingLevel(IDModel):
-#     processing_level = Field(..., alias="processingLevel")
-
-#     @property
-#     def processing_type(self) -> str:
-#         return re.match(URI_ID_EXTRACT_REGEX, self.processing_level_id).group(1)
-
-
 class TimeSeriesType(IDModel):
     """Type definition for time series data.
 
@@ -77,7 +69,6 @@ class TimeSeriesType(IDModel):
         measure: The measure definition for the time series.
     """
 
-    # processing_level: ProcessingLevel
     processing_level: IDModel = Field(..., alias="processingLevel")
     measure: Measure
 

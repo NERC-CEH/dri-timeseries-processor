@@ -144,18 +144,8 @@ def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetad
     # Iterate through the list of DependentTimeSeriesMetadata objects, checking to see if any have sub dependencies
     # before fetching them
     for dependent_ts in dependent_timeseries:
-        """ NOTES - DELETE LATER
-
-        CHANGE THIS - raw can have dependencies, previously the lack of dependencies was identified by the absence of
-        a method, change the logic below to search until no further dependencies are found.
-
-        """
         sub_dependencies = load_dependent_datasets(dependent_ts.name)
         ts_dependency_list.extend(sub_dependencies)
-
-        # if dependent_ts.processing_level_id != "raw":
-        #     sub_dependencies = load_dependent_datasets(dependent_ts.name)
-        #     ts_dependency_list.extend(sub_dependencies)
 
     return ts_dependency_list
 
