@@ -8,16 +8,10 @@
 
 [uv](https://docs.astral.sh/uv/getting-started/installation/), which
 will fetch and manage Python on its own.
-#### uv
-
-[uv](https://docs.astral.sh/uv/getting-started/installation/), which
-will fetch and manage Python on its own.
 
 ### Setting up and activating a virtual environment
 
-
 ```commandline
-uv sync
 uv sync
 source .venv/bin/activate
 ```
