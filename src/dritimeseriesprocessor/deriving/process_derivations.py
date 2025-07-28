@@ -63,6 +63,7 @@ class DerivationProcessor:
             ValueError: One of the required inputs does not have any associated data.
 
         """
+
         derivation_method_name = ts_metadata["method"]
         derivation_method = self.derivation_methods.get(derivation_method_name)
         if not derivation_method:
@@ -106,6 +107,8 @@ class DerivationProcessor:
 
         # Pass in the column name mapping as kwargs
         kwargs = {column_name.lower(): column_name for column_name in (input_data.keys() - {TIME_COLUMN})}
+
+        logger.debug(f"Calculating derivation for timeseries: {ts_id} using method: {derivation_method_name}")
 
         derived_data = derive(ts, derivation_method, ts_metadata["sourceColumnName"], **kwargs)
 

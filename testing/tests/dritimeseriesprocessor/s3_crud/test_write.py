@@ -5,11 +5,11 @@ from unittest.mock import patch
 import moto
 import polars.testing
 
-from tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
-from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
-from dritimeseriesprocessor.utils import steralize_dates, group_by_date_site_id
+from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
+from dritimeseriesprocessor.s3_crud.write import S3Writer
+from dritimeseriesprocessor.utils import group_by_date_site_id, steralize_dates
+from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 
 class TestS3Writer(BaseTestCase):
