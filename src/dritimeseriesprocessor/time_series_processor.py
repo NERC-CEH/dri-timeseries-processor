@@ -253,7 +253,7 @@ class TimeSeriesProcessor:
             sites: List of site IDs to build the site query for
 
         Returns:
-            List[Tuple[str, str]]: List of tuples, each containing a single parameter (key, value) pair.
+            The site query parameter comprising of a list of tuples, each containing a single (key, value) pair.
 
         """
         metadata_sites = load_sites()
@@ -279,7 +279,7 @@ class TimeSeriesProcessor:
             periodicity: Code representing the periodicity to validate and construct the periodicity query parameter for
 
         Returns:
-            List[Tuple[str, str]]: List of tuples, each containing a single parameter (key, value) pair.
+            The periodicity query parameter comprising of a list of tuples, each containing a single (key, value) pair.
 
         """
         periodicities = parser.validate_periodicity(periodicity)

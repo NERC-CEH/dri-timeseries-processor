@@ -23,7 +23,7 @@ def load_json(json_path: str) -> Dict[str, Any]:
         json_path: Path to read the json data from.
 
     Returns:
-        Dict[str, Any]: Dictionary containing the json data read from file.
+        Dictionary containing the json data read from file.
 
     """
     with open(json_path) as json_file:
@@ -84,6 +84,9 @@ class TestHelper(unittest.TestCase):
             - ts id metadata for all variables for cosmos site ALIC1
             - ts definition metadata for all variables for cosmos site ALIC1
 
+        Returns:
+            Dictionary of metadata url: loaded json data for url
+
         """
         return {
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/network/cosmos": load_json(
@@ -106,7 +109,7 @@ class TestHelper(unittest.TestCase):
             json_path: Path to load the time series id metadata dictionaries from.
 
         Returns:
-            Dict[str, Dict[str, Union[str, TimeSeries]]]: Dictionary of time series ids and their metadata
+            Dictionary of time series ids and their metadata
 
         """
         with open(json_path) as json_file:
@@ -128,7 +131,7 @@ class TestHelper(unittest.TestCase):
             ts_ids: Dictionary containing the time series metdata to reformat and create TimeSeriesObjects from.
 
         Returns:
-            Dict[str, Dict[str, Union[str, TimeSeries]]]: Dictionary of time series ids and their metadata
+            Dictionary of time series ids and their metadata.
 
         """
         processed_ts_ids = {}
@@ -163,7 +166,7 @@ class TestHelper(unittest.TestCase):
             ts_ids (Dict[str, Dict[str, Union[str, TimeSeries]]]): Dictionary of time series id metadata.
 
         Returns:
-            Dict[str, Dict[str, Any]]: Reformatted dictionary of timeseries id metadata.
+            Reformatted dictionary of timeseries id metadata.
 
         """
         # Copy the ts_ids to ensure the source dictionary isn't accidentally modified
