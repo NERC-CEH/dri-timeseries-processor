@@ -67,7 +67,24 @@ class TestTimeSeriesProcessor(TestHelper):
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_get_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
+    def test_get_dependent_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+
+        expected_ts_ids = self.load_ts_ids_from_json_file(
+            self.output_dir.joinpath("time_series_processor", "dependent_and_user_ts_ids_alic1_pe.json")
+        )
+
+        ts_processor = TimeSeriesProcessor(
+            sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
+        )
+        # Some ts_ids need to already exist in order to search through them to find any dependent timeseries metadata
+        # Therefore run _get_user_timeseries_ids() first
+        ts_processor._get_user_timeseries_ids()
+        ts_processor._get_dependent_timeseries_ids()
+
+        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+
+    def test_collate_timeseries_id_metadata_to_process(self, mock_api_manager: mock.MagicMock) -> None:
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(

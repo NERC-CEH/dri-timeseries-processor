@@ -125,7 +125,7 @@ class TestHelper(unittest.TestCase):
         over each item to create the relevant TimeSeries objects for any items which contain data attributes.
 
         Args:
-            json_path: Path to load the time series id metadata dictionaries from.
+            ts_ids: Dictionary containing the time series metdata to reformat and create TimeSeriesObjects from.
 
         Returns:
             Dict[str, Dict[str, Union[str, TimeSeries]]]: Dictionary of time series ids and their metadata

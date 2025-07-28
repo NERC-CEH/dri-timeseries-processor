@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator, List, Tuple
 
 
 class MockMetadataAPI:
-    def __init__(self, api_data: Dict[str, Any]):
+    def __init__(self, api_data: Dict[str, Any]) -> None:
         """
         Mock metadata API service designed to replace _make_api_call in MetadataAPIManager via a mock side effect.
         The data stored in api_data is used as a database of api response values. The structure is expected to be:
@@ -27,7 +27,7 @@ class MockMetadataAPI:
             "type": filter_by_type,
         }
 
-    def __call__(self, url: str, params: Dict[str, str] | List[Tuple[str, str]] = None):
+    def __call__(self, url: str, params: Dict[str, str] | List[Tuple[str, str]] = None) -> Dict[str, Any]:
         """
         Main call function, designed to replace _make_api_call in MetadataAPIManager via a mock side effect.
 
