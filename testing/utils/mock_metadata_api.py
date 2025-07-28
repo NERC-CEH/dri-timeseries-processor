@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator, List, Tuple
 
 
 class MockMetadataAPI:
-    def __init__(self, api_data: Dict[str, Any]):
+    def __init__(self, api_data: Dict[str, Any]) -> None:
         """
         Mock metadata API service designed to replace _make_api_call in MetadataAPIManager via a mock side effect.
         The data stored in api_data is used as a database of api response values. The structure is expected to be:
@@ -27,7 +27,7 @@ class MockMetadataAPI:
             "type": filter_by_type,
         }
 
-    def __call__(self, url: str, params: Dict[str, str] | List[Tuple[str, str]] = None):
+    def __call__(self, url: str, params: Dict[str, str] | List[Tuple[str, str]] = None) -> Dict[str, Any]:
         """
         Main call function, designed to replace _make_api_call in MetadataAPIManager via a mock side effect.
 
@@ -36,8 +36,8 @@ class MockMetadataAPI:
             params: Query parameters to use for filtering the mock api response. Defaults to None.
 
         Returns:
-            Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-                be a direct match for the equivalent API call to the main metadata api.
+            Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct
+            match for the equivalent API call to the main metadata api.
 
         """
         if params is None:
@@ -59,8 +59,8 @@ class MockMetadataAPI:
             params: Parameters to filter by.
 
         Returns:
-            Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-                be a direct match for the equivalent API call to the main metadata api.
+            Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct
+                match for the equivalent API call to the main metadata api.
         """
         filtered_data = self.api_data[url]["items"].copy()
         for param_key, param_value in params_iterator(params):
@@ -99,14 +99,14 @@ def convert_params_to_dict(params: List[Tuple[str, str]]) -> Dict[str, List[str]
     """Reformat the parameters to a standardised dictionary based structure.
 
     In order for the various filter functions to have consistent logic and input expectations, the parameters are
-    converted to the format of {parameter key, [parameter value 1, parameter value 2]} to allow filtering on
+    converted to the format of {parameter key: [parameter value 1, parameter value 2]} to allow filtering on
     multiple possible parameter values (e.g. multiple sites, or variable column names).
 
     Args:
         params: List of tuples in the format of (parameter key, parameter value)
 
     Returns:
-        Dict[str, List[str]]: Reformatted parameters.
+        List of reformatted parameter dictionaries.
 
     """
     params_dict = defaultdict(list)
@@ -128,8 +128,8 @@ def filter_by_id(param_values: List[str], api_data: Dict[str, Any]) -> Dict[str,
             to allow nested filtering (e.g. filter by id and by site)
 
     Returns:
-        Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-            be a direct match for the equivalent API call to the main metadata api.
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
 
     """
     filtered_data = [item for item in api_data if item["@id"] in param_values]
@@ -148,8 +148,8 @@ def filter_by_site(param_values: List[str], api_data: Dict[str, Any]) -> Dict[st
             to allow nested filtering (e.g. filter by id and by site)
 
     Returns:
-        Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-            be a direct match for the equivalent API call to the main metadata api.
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
 
     """
     filtered_data = [item for item in api_data if item["originatingSite"][0]["@id"] in param_values]
@@ -170,8 +170,8 @@ def filter_by_periodicity(param_values: List[str], api_data: Dict[str, Any]) -> 
             to allow nested filtering (e.g. filter by id and by site)
 
     Returns:
-        Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-            be a direct match for the equivalent API call to the main metadata api.
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
 
     """
     filtered_data = [
@@ -192,8 +192,8 @@ def filter_by_column(param_values: List[str], api_data: Dict[str, Any]) -> Dict[
             to allow nested filtering (e.g. filter by id and by site)
 
     Returns:
-        Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-            be a direct match for the equivalent API call to the main metadata api.
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
 
     """
     filtered_data = [item for item in api_data if item.get("sourceColumnName") in param_values]
@@ -214,8 +214,8 @@ def filter_by_processing_level(param_values: List[str], api_data: Dict[str, Any]
             to allow nested filtering (e.g. filter by id and by site)
 
     Returns:
-        Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-            be a direct match for the equivalent API call to the main metadata api.
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
 
     """
     filtered_data = [item for item in api_data if item["type"][0]["processingLevel"]["@id"] in param_values]
@@ -235,8 +235,8 @@ def filter_by_type(param_values: List[str], api_data: Dict[str, Any]) -> Dict[st
             to allow nested filtering (e.g. filter by id and by site)
 
     Returns:
-        Dict[str, Any]: Dictionary containing the filtered metadata value(s) from self.api_data. The contents should
-            be a direct match for the equivalent API call to the main metadata api.
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
 
     """
     filtered_data = [item for item in api_data if item["type"][0]["@id"] in param_values]

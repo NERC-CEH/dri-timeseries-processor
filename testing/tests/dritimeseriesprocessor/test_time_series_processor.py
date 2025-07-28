@@ -2,7 +2,7 @@ import datetime
 from typing import Any, Dict
 from unittest import mock
 
-from dritimeseriesprocessor.__main__ import TimeSeriesProcessor
+from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.testing_helper import TestHelper, load_json
@@ -106,6 +106,24 @@ class TestTimeSeriesProcessor(TestHelper):
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
         ts_processor._get_processing_timeseries_ids()
+
+        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+
+    def test_get_dependent_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
+        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
+
+        expected_ts_ids = self.load_ts_ids_from_json_file(
+            self.output_dir.joinpath("time_series_processor", "dependent_and_user_ts_ids_alic1_pe.json")
+        )
+
+        ts_processor = TimeSeriesProcessor(
+            sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
+        )
+        # Some ts_ids need to already exist in order to search through them to find any dependent timeseries metadata
+        # Therefore run _get_user_timeseries_ids() first
+        ts_processor._get_user_timeseries_ids()
+        ts_processor._get_dependent_timeseries_ids()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 

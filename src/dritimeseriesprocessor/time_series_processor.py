@@ -258,6 +258,12 @@ class TimeSeriesProcessor:
                 ('originatingSite', 'http://fdri.ceh.ac.uk/id/site/cosmos-bunny')
             ]
 
+        Args:
+            sites: List of site IDs to build the site query for
+
+        Returns:
+            The site query parameter comprising of a list of tuples, each containing a single (key, value) pair.
+
         """
         metadata_sites = load_sites()
         metadata_sites = extract_site_ids(metadata_sites, network=self.network)
@@ -277,6 +283,12 @@ class TimeSeriesProcessor:
             [
                 ('type.measure.aggregation.periodicity', 'PT30M')
             ]
+
+        Args:
+            periodicity: Code representing the periodicity to validate and construct the periodicity query parameter for
+
+        Returns:
+            The periodicity query parameter comprising of a list of tuples, each containing a single (key, value) pair.
 
         """
         periodicities = parser.validate_periodicity(periodicity)
