@@ -157,7 +157,7 @@ class MetadataAPIManager:
 
         return response
 
-    async def fetch_dependent_dataset_metadata(self, timeseries_def: str) -> Dict[str, Any]:
+    async def fetch_dependent_dataset_metadata(self, timeseries_id: str) -> Dict[str, Any]:
         """Fetch the metadata of any dependencies for a specific dataset
 
         Args:
@@ -169,7 +169,7 @@ class MetadataAPIManager:
         Raises:
             HTTPError: If the API request fails.
         """
-        url = f"{self.host}/id/dataset/{timeseries_def}/_dependencies"
+        url = f"{self.host}/id/dataset/{timeseries_id}/_dependencies"
         response = await self._make_api_call(url)
 
         return response
