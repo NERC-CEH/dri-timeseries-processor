@@ -155,7 +155,7 @@ for ts_id, ts_metadata in ts_ids.items():
             ts = add_initial_core_flags(ts)
 
             # Add the data into the ts_ids dict
-            ts_ids[ts_id]["data"] = ts
+            ts_ids[ts_id].data = ts
 
 
 # Process data

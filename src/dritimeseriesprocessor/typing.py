@@ -1,6 +1,8 @@
 """Types for processing."""
 
-from typing import List, TypedDict
+from typing import List, NotRequired, TypedDict
+
+from time_stream import TimeSeries
 
 
 class TimeseriesContainer(TypedDict):
@@ -15,6 +17,7 @@ class TimeseriesContainer(TypedDict):
         sourceDataset: The source dataset.
         sourceColumnName: The source column name.
         sourceSite: The source site.
+        data: The timeseries data.
     """
 
     ts_def: str
@@ -25,25 +28,11 @@ class TimeseriesContainer(TypedDict):
     sourceDataset: str
     sourceColumnName: str
     sourceSite: str
+    data: NotRequired[TimeSeries]
 
 
 class DerivationMetadata(TypedDict):
     """Derivation metadata.
-
-    Attributes:
-        method_type: The type of derivation method.
-        method: The derivation method.
-        inputs: A list of input timeseries IDs.
-    """
-
-    method_type: str | None
-    method: str | None
-    inputs: List[str]
-
-
-class TimeseriesMetadataWithDerivations(TimeseriesContainer):
-    """Timeseries metadata with derivation info.
-    TODO: rename this, also add the data!
 
     Attributes:
         method_type: The type of derivation method.
@@ -55,4 +44,13 @@ class TimeseriesMetadataWithDerivations(TimeseriesContainer):
     method_type: str | None
     method: str | None
     inputs: List[str]
-    load: bool
+    load: NotRequired[bool]
+
+
+class TimeseriesContainerWithDerivations(TimeseriesContainer, DerivationMetadata):
+    """Timeseries Container with derivation info.
+
+    Inherits all attributes from TimeseriesContainer and DerivationMetadata.
+    """
+
+    pass
