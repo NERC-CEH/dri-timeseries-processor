@@ -122,24 +122,8 @@ class MetadataAPIManager:
 
         return response
 
-    async def fetch_timeseries_metadata(self, timeseries_id: str = None) -> Dict[str, Any]:
-        """Fetch metadata for a specific time series.
-
-        Args:
-            timeseries_id: Identifier for the time series to fetch metadata for.
-
-        Returns:
-            JSON response containing time series metadata.
-
-        Raises:
-            HTTPError: If the API request fails.
-        """
-        url = f"{self.host}/id/dataset.json?@id={self.service_base_uri}/id/dataset/{timeseries_id}&_view=timeseries"
-        response = await self._make_api_call(url)
-        return response
-
-    async def fetch_dataset_metadata(self, parameters: Dict) -> Dict[str, Any]:
-        """Fetch metadata for a specific dataset
+    async def fetch_timeseries_metadata(self, parameters: Dict) -> Dict[str, Any]:
+        """Fetch metadata for timeseries id(s)
 
         Args:
             parameters: API query parameters for the dataset endpoint
