@@ -120,19 +120,21 @@ class TestBuildSiteQueryParameter(TestCase):
     def test_multiple_sites(self) -> None:
         """Test string built with multiple sites"""
         sites =["test1", "test2"]
+        network = "cosmos"
         expected = [('originatingSite', f"http://fdri.ceh.ac.uk/id/site/cosmos-test1"),
                     ('originatingSite', f"http://fdri.ceh.ac.uk/id/site/cosmos-test2")]
         
-        result = build_site_query_parameter(sites)
+        result = build_site_query_parameter(sites, network)
 
         assert result == expected
 
     def test_no_sites(self) -> None:
         """Test empty list if no sites."""
         sites = []
+        network = "cosmos"
         expected = []
         
-        result = build_periodicity_query_parameter(sites)
+        result = build_site_query_parameter(sites, network)
 
         assert result == expected
 

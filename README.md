@@ -4,26 +4,16 @@
 
 ### Requirements
 
-#### Python 3.12
-```commandline
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.12
-```
-or
-```commandline
-brew install python@3.12
-```
+#### uv
+
+[uv](https://docs.astral.sh/uv/getting-started/installation/), which
+will fetch and manage Python on its own.
 
 ### Setting up and activating a virtual environment
+
 ```commandline
-python -m venv .venv
+uv sync
 source .venv/bin/activate
-```
-
-### Installing the App
-
-```commandline
-pip install -e '.[dev]'
 ```
 
 ## Running the app
@@ -33,77 +23,98 @@ Build the docker container to access local data
 ```commandline
 docker compose up -d
 ```
+
 Then call the app which can take several command-line arguments:
 
+**network (required)**: The network to run processing for \
+
+- Must be cosmos or fdri
+
 **period (required)**: The period of time you want to build data for.\
-    - Must be a valid ISO8601 duration\
-    - Must not have a time component\
-    - Can be a combination of days, weeks, months and years
+
+- Must be a valid ISO8601 duration\
+- Must not have a time component\
+- Can be a combination of days, weeks, months and years
 
 e.g. P1D: previous days data; P1M: previous months data; P1M14D: previous month + 14 days data; PT4: invalid
 
 **end_date (optional)**: The date to start building from.\
-    - Must be of the format YYYY-MM-DD\
-    - If not provided then todays date is used\
-    - If running locally, the value is overwritten by 2024-03-10 to ensure data is always built.
+
+- Must be of the format YYYY-MM-DD\
+- If not provided then todays date is used\
+- If running locally, the value is overwritten by 2024-03-10 to ensure data is always built.
 
 **sites (optional)**: The sites to build data from.\
-    - If empty then all sites will be built\
-    - Entered sites are checked against available sites in the metadata store and removed if not found\
-    - sites must be seperated by a comma, by 5 characters long and not contain special characters\
-    - sites can be lower or upper case\
+
+- If empty then all sites will be built\
+- Entered sites are checked against available sites in the metadata store and removed if not found\
+- sites must be seperated by a comma, by 5 characters long and not contain special characters\
+- sites can be lower or upper case\
 
 **columns (optional)**: The columns to build data from.\
-    - If empty then all columns will be built\
-    - Columns must be seperated by a comma (no spaces)\
-    - Columns can be upper or lower case\
+
+- If empty then all columns will be built\
+- Columns must be seperated by a comma (no spaces)\
+- Columns can be upper or lower case\
 
 **periodicity (optional)**: The periodicity of the timeseries to be built.\
-    - Must be a valid ISO8601 string\
-    - Multiple periodicities must be seperated by a comma\
-    - Can be upper or lower case\
+
+- Must be a valid ISO8601 string\
+- Multiple periodicities must be seperated by a comma\
+- Can be upper or lower case\
 
 When running locally, the default `end_date` value is overwritten by `2024-03-10` to ensure some local data is processed.
 
 Get the last two days data for all sites, columns and periodicities
+
 ```commandline
-python -m dritimeseriesprocessor P2D
+python -m dritimeseriesprocessor --period=P2D --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for all sites, columns and periodicities
+
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for ALCI and BUNNY sites and all columns and periodicities
+
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --sites=alic1,bunny --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for ALCI and BUNNY sites, variables TA and PA and all periodicities
+
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny --columns=TA,PA
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --sites=alic1,bunny --columns=TA,PA --network=cosmos
 ```
 
 Get the last two days data from 2024-03-05 for ALCI and BUNNY sites, variables TA and PA and a periodicity of 30 mins
+
 ```commandline
-python -m dritimeseriesprocessor P2D --end_date=2024-03-05 --sites=alic1,bunny --periodicity=PT30M
+python -m dritimeseriesprocessor --period=P2D --end_date=2024-03-05 --sites=alic1,bunny --periodicity=PT30M --network=cosmos
 ```
 
 ## Linting
+
 Linting uses ruff using the config in pyproject.toml
+
 ```
 ruff check --fix
 ```
 
 ## Formating
+
 Formating uses ruff using the config in pyproject.toml which follows the default black settings.
+
 ```
 ruff format .
 ```
 
 ## Testing
+
 Testing is done using pytest and tests are in the /tests directory.
+
 ```
 pytest
 ```
@@ -112,20 +123,31 @@ For testing the processor with data, a few days worth are loading into the level
 
 If you want to test with more data then the `local_testing` directory contains a script to copy data from the S3 level0 bucket into the localstack level0 bucket.
 
+### Detecting tests using VSCode.
+
+VSCode has a useful test runner, allowing running and debugging of all tests within the repository. To allow VSCode to
+detect the tests, use the `Configure Tests` option accessed either via the help menu (select "Show All Commands" and
+type "Configure Tests" in the search bar), or via the test runner panel and select the "Configure Tests" button if
+it is available. To configure the tests, select `pytest` as the test runner framework and `testing` as the directory
+containing the tests.
 
 ## Pre commit hooks
+
 Run below to setup the pre-commit hooks.
+
 ```
 git config --local core.hooksPath .githooks/
 ```
 
 ## Metrics
+
 Metrics are collected using prometheus. The app is run as a cron job and the metrics are pushed to the prometheus [pushgateway](https://prometheus.io/docs/practices/pushing/). These can be accessed locally via `localhost:9091`
 
 ## Localstack
+
 Local stack is used to create local AWS resources for testing the app locally. `localstack-setup.sh` is run when the container is initialised which creates the buckets and loads the sample parquet files.
 
-Run ```docker compose up``` to build.
+Run `docker compose up` to build.
 
 # How to Develop This App
 
@@ -135,16 +157,16 @@ Each test is represented by a "bit" in a binary number, with one bit for each te
 
 For 3 tests called "A", "B", "C" the outcomes of the tests are:
 
-|      | A | B | C | Result (decimal) |
-| ---- |---|---|----|-|
-| All passed | 0 | 0 | 0 | 0 |
-| A failed  | 1 | 0  | 0 |  1|
-| B failed  | 0 | 1  | 0 |  2|
-| C failed  | 0 | 0  | 1 |  4|
-| A+B failed  | 1 | 1  | 0 |  3|
-| A+C failed  | 1 | 0  | 1 |  5|
-| B+C failed  | 0 | 1  | 1 |  6|
-| A+B+C failed  | 1 | 1  | 1 |  7|
+|              | A   | B   | C   | Result (decimal) |
+| ------------ | --- | --- | --- | ---------------- |
+| All passed   | 0   | 0   | 0   | 0                |
+| A failed     | 1   | 0   | 0   | 1                |
+| B failed     | 0   | 1   | 0   | 2                |
+| C failed     | 0   | 0   | 1   | 4                |
+| A+B failed   | 1   | 1   | 0   | 3                |
+| A+C failed   | 1   | 0   | 1   | 5                |
+| B+C failed   | 0   | 1   | 1   | 6                |
+| A+B+C failed | 1   | 1   | 1   | 7                |
 
 In this scheme, any combination of failed tests will always have a unique identifier that can be stored in decimal, binary, or string format. We are likely to store the test QC_FLAG as a 64bit integer in the final database, this gives us 64 potential tests before we need to implement QC check versioning.
 
@@ -158,9 +180,59 @@ Make sure to also add the test to the `qc_test_map` in [quality_config.py](./src
 
 Do nothing! When a test is deprecated, that ID is "retired" and cannot be reused. We may add a attribute to mark them as deprecated, but for now that has not been implemented.
 
-If you want to create a new test with a clashing name, you can add a "_DEPRECATED" suffix to the deprecated test name.
+If you want to create a new test with a clashing name, you can add a "\_DEPRECATED" suffix to the deprecated test name.
 
 Make sure to also remove the test from the `qc_test_map` in [quality_config.py](./src/dritimeseriesprocessor/quality_control.py)
+
+## Useful Test Helpers / Utilities
+
+The `testing/utils` folder contains a number of helper functions and classes to aid testing.
+
+### TestHelper
+
+This class is designed to be a mixin to a main test class used in place of the usual `unittest.TestCase`, for example:
+
+```python
+class TestFunctionality(TestHelper):
+    def test_functionality(self):
+        pass
+```
+
+It sets up a temp working directory, overwriting the current working directory, enables easy access to the main test
+data directory and adds helper functions for reading, writing and comparing time series id metadata.
+
+### MockMetadataAPI
+
+The `MockMetadataAPI` class is designed to replace the `_make_api_call` from `MetadataAPIManager` allowing testing of
+functions which call the metadata api. It uses a provided dictionary of data mapping metadata urls to a list
+containing the metadata response dictionaries, in the same format that would be returned directly by the metadata api.
+
+Default values for the api dictionary to use for the response data can be found in `TestHelper.metadata_api_data`. This
+contains the following data:
+
+- A list of all available cosmos sites to be used for queries to `https://dri-metadata-api.staging.eds.ceh.ac.uk/id/network/cosmos`
+- The ts id metadata for all variables for cosmos site ALIC1 to be used for queries to `https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset`
+- The ts definition metadata for all dependent variables for cosmos site ALIC1 to be used for queries to `https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/time-series-definition`
+
+An example script for mocking the metadata api can be found below
+
+```python
+from unittest import mock
+from metadata_manager.api_manager import MetadataAPIManager
+from testing.utils.mock_metadata_api import MockMetadataAPI
+from testing.utils.testing_helper import TestHelper
+
+@mock.patch.object(MetadataAPIManager, "_make_api_call")
+class TestMetadataMocking(TestHelper):
+    def test_api_response(mock_api_manager: mock.MagicMock) -> None:
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+
+        pass
+```
+
+Note that in order for `_make_api_call` to be mocked effectively, the `side_effect` attribute of the mock object
+needs to be set rather than the return value. This allows the `__call__` function with `MockMetadataAPI` to replace
+calls to `_make_api_call` directly whilst still retaining the rest of the functionality available in `MetadataAPIManager`.
 
 # Making Gaps in the Parquet Data
 
@@ -170,9 +242,9 @@ To test the QC behaviour when there is missing data, and to test the infilling p
 
 The gaps were generated using file removal and `duckdb` manipulation and should be relatively repeatable:
 
-* Randomly removing rows
-* Randomly setting values to null
-* Removing rows before / after a time
+- Randomly removing rows
+- Randomly setting values to null
+- Removing rows before / after a time
 
 ## Use the databuilder package for making gaps
 
@@ -204,15 +276,18 @@ builder.build_all(
 # Write the output
 builder.write_output()
 ```
+
 This did the following:
-* Loaded `"mydata.parquet"` into the parameter `builder._dataframe`
-* Removed a random 30% of rows
-* Set 5% of of each column to `NULL` EXCEPT for columns "time", "SITE_ID", and "RECORD"
-* Removed all rows before `10:00`
-* Removed all rows after `19:23`
-* Wrote the output back to `"mydata.parquet"`
+
+- Loaded `"mydata.parquet"` into the parameter `builder._dataframe`
+- Removed a random 30% of rows
+- Set 5% of of each column to `NULL` EXCEPT for columns "time", "SITE_ID", and "RECORD"
+- Removed all rows before `10:00`
+- Removed all rows after `19:23`
+- Wrote the output back to `"mydata.parquet"`
 
 ### Manipulating Multiple Files
+
 Say you want to change 2 files sequentially:
 
 ```python
@@ -260,6 +335,7 @@ output = Path("output.parquet")
 
 builder = ParquetBuilder(target, output)
 ```
+
 ## Prebuilt Script for Managing our Existing Files
 
 There is a script at [./bin/build-gapped-dataset.py](./bin/build-gapped-dataset.py) that has been used to generate the files at [./parquet-data/cosmos-with-gaps](./parquet-data/cosmos-with-gaps) and the results committed to this repo. Because of the inherent randomness involved, running the script will change the files and show a git diff.

@@ -10,7 +10,8 @@ class TestParseArgs(unittest.TestCase):
     """Test the parser instance is correctly instantiated."""
 
     def test_instance_created(self):
-        args = parser.parse_args(['P1D', """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--columns=TA,PA""", """--periodicity=PT30M"""])
+        args = parser.parse_args(["""--period=P1D""", """--end_date=2024-03-10""", """--sites=alic1,bunny""", """--columns=TA,PA""", """--periodicity=PT30M""", """--network=cosmos"""])
+        assert args.network == 'cosmos'
         assert args.period == 'P1D'
         assert args.end_date == '2024-03-10'
         assert args.sites == 'alic1,bunny'
@@ -20,35 +21,35 @@ class TestParseArgs(unittest.TestCase):
     @freeze_time("2024-09-19")
     def test_no_end_date(self):
         """Test end_date is todays date (mocked) by default."""
-        args = parser.parse_args(['P1D'])
+        args = parser.parse_args(['--network=cosmos', '--period=P1D'])
         assert args.period == 'P1D'
         assert args.end_date == '2024-09-19'
 
     def test_no_sites(self):
         """Test site is None by default."""
-        args = parser.parse_args(['P1D'])
+        args = parser.parse_args(['--network=cosmos', '--period=P1D'])
         assert args.period == 'P1D'
         assert args.sites == None
 
     def test_no_periodicity(self):
         """Test period is None by default."""
-        args = parser.parse_args(['P1D'])
+        args = parser.parse_args(['--network=cosmos', '--period=P1D'])
         assert args.period == 'P1D'
         assert args.periodicity == None
 
     def test_no_columns(self):
         """Test columns is None by default."""
-        args = parser.parse_args(['P1D'])
+        args = parser.parse_args(['--network=cosmos', '--period=P1D'])
         assert args.period == 'P1D'
         assert args.columns == None
 
     def test_no_period(self):
         with self.assertRaises(SystemExit):
-            parser.parse_args(["--end_date=2024-03-10"])
+            parser.parse_args(["--network=cosmos --end_date=2024-03-10"])
 
     def test_incorrect_argument_name(self):
         with self.assertRaises(SystemExit):
-            parser.parse_args(['P1D', "--wrong_name=2024-03-10"])
+            parser.parse_args(['--network=cosmos --period=P1D', "--wrong_name=2024-03-10"])
 
 class TestBuildDateRange(unittest.TestCase):
     """Test the build_date_range function.
