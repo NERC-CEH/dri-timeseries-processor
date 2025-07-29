@@ -4,9 +4,9 @@
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
-# Disable Python downloads, because we want to use the system interpreter
-# across both images.
-ENV UV_PYTHON_DOWNLOADS=0
+ENV UV_PYTHON_INSTALL_DIR=/python UV_PYTHON_PREFERENCE=only-managed
+
+RUN uv python install 3.12
 
 RUN apt update && apt install -y --no-install-recommends git
 
@@ -24,6 +24,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Build production container
 FROM amazon/aws-lambda-python:3.12 AS prod
+
+COPY --from=builder --chown=python:python /python /python
 
 # Copy the application from the builder
 COPY --from=builder --chown=app:app /app /app
