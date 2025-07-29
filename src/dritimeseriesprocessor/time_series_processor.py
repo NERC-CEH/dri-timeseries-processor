@@ -126,7 +126,11 @@ class TimeSeriesProcessor:
         """
         self._get_user_timeseries_ids()
         self._get_processing_timeseries_ids()
-        self._get_dependent_timeseries_metadata()
+        self._get_dependent_timeseries_ids()
+
+        # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
+        # timeseries ID.
+        self._add_derivation_metadata()
 
     def _get_user_timeseries_ids(self) -> None:
         """Collect the timeseries id metadata for user specified processed variables.
@@ -173,9 +177,11 @@ class TimeSeriesProcessor:
             + self.view_query_parameter
         )
 
-    def _get_dependent_timeseries_metadata(self) -> None:
+    def _get_dependent_timeseries_ids(self) -> None:
         """
-        Fetch the derivation metadata for the timeseries IDs to be built and combine with the main time series metadata.
+        Recurisvely identify any time series dependencies and fetch the corresponding metadata, adding the new
+        time series id metadata entries into the main self.ts_ids dictionary.
+
         """
         dependent_timeseries_ids = self._identify_dependent_ts_ids()
 
@@ -187,6 +193,12 @@ class TimeSeriesProcessor:
             self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )
 
+    def _add_derivation_metadata(self) -> None:
+        """
+        For each time series id metadata object fetch and the corresponding the derivation metadata, storing it within
+        the main timeseries id metadata.
+
+        """
         # Get the derivation metadata for the timeseries IDs to be built
         ts_def_metadata = {
             ts_id["ts_def"]: handle_derivation_response(ts_id["ts_def"]) for ts_id in self.ts_ids.values()

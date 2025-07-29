@@ -121,9 +121,33 @@ class TestTimeSeriesProcessor(TestHelper):
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
         # Some ts_ids need to already exist in order to search through them to find any dependent timeseries metadata
-        # Therefore run _get_user_timeseries_ids() first
+        # and to ensure that self.ts_ids is extended and not completely overwritten.
+        # Therefore run _get_user_timeseries_ids() first to generate the initial self.ts_ids data.
         ts_processor._get_user_timeseries_ids()
-        ts_processor._get_dependent_timeseries_metadata()
+        ts_processor._get_dependent_timeseries_ids()
+
+        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+
+    def test_add_derivation_metadata(self, mock_api_manager: mock.MagicMock) -> None:
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+
+        initial_ts_ids = self.load_ts_ids_from_json_file(
+            self.input_dir.joinpath("time_series_processor", "dependent_and_user_ts_ids_alic1_pe_no_derivations.json")
+        )
+        expected_ts_ids = self.load_ts_ids_from_json_file(
+            self.output_dir.joinpath(
+                "time_series_processor", "dependent_and_user_ts_ids_alic1_pe_with_derivations.json"
+            )
+        )
+
+        ts_processor = TimeSeriesProcessor(
+            sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
+        )
+        # Set self.ts_ids to be the loaded initial data so there are some timeseries ids to fetch derivation metadata
+        # for. Use a copy to ensure the intiial data isn't modified in situ accidentally.
+        self.ts_ids = initial_ts_ids.copy()
+
+        ts_processor._add_derivation_metadata()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
