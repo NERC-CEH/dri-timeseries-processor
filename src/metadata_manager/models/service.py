@@ -20,7 +20,6 @@ from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.models.schemas.time_series import (
     DependentTimeSeriesMetadata,
     DependentTimeSeriesMetadataResponse,
-    TimeSeriesMetadataResponse,
 )
 from metadata_manager.transformers import extract_timeseries_definition_metadata
 
@@ -96,19 +95,6 @@ def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMe
         return registry.model_validate(json.load(f))
 
 
-def load_timeseries(timeseries_id: Optional[str] = None) -> TimeSeriesMetadataResponse:
-    """Load time series metadata from the API.
-
-    Args:
-        timeseries_id: Optional ID to fetch a specific time series
-
-    Returns:
-        The parsed time series metadata.
-    """
-    data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_metadata(timeseries_id=timeseries_id))
-    return TimeSeriesMetadataResponse.model_validate(data)
-
-
 def load_datasets(parameters: Dict) -> TimeseriesDatasetResponse:
     """Load dataset metadata from the API.
 
@@ -118,7 +104,7 @@ def load_datasets(parameters: Dict) -> TimeseriesDatasetResponse:
     Returns:
         The parsed dataset metadata.
     """
-    data = asyncio.run(METADATA_CONNECTION.fetch_dataset_metadata(parameters))
+    data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_metadata(parameters))
     return TimeseriesDatasetResponse.model_validate(data)
 
 
