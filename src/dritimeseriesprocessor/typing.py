@@ -3,8 +3,8 @@
 from typing import List, TypedDict
 
 
-class TimeseriesMetadata(TypedDict):
-    """Timeseries Metadata.
+class TimeseriesContainer(TypedDict):
+    """A container for timeseries metadata.
 
     Attributes:
         ts_def: The timeseries definition.
@@ -41,8 +41,9 @@ class DerivationMetadata(TypedDict):
     inputs: List[str]
 
 
-class TimeseriesMetadataWithDerivations(TimeseriesMetadata):
+class TimeseriesMetadataWithDerivations(TimeseriesContainer):
     """Timeseries metadata with derivation info.
+    TODO: rename this, also add the data!
 
     Attributes:
         method_type: The type of derivation method.

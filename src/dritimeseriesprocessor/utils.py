@@ -7,7 +7,7 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesMetadata, TimeseriesMetadataWithDerivations
+from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesContainer, TimeseriesMetadataWithDerivations
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +161,7 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
 
 
-def extract_unique_timeseries_defs(timeseries_ids_metadata: Dict[str, TimeseriesMetadata]) -> List[str]:
+def extract_unique_timeseries_defs(timeseries_ids_metadata: Dict[str, TimeseriesContainer]) -> List[str]:
     """Extract a unique list of timeseries definitions from the timeseries ids to be processed.
 
     Args:
@@ -190,7 +190,7 @@ def extract_dependent_timeseries_defs(
     return list({items for items in timeseries_defs_derivation_map.values() for items in items["inputs"]})
 
 
-def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesMetadata]) -> str:
+def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContainer]) -> str:
     """Map timeseries definition to its corresponding timeseries id given the site id.
 
     Args:
@@ -209,7 +209,7 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesMetadat
 
 
 def merge_ts_def_metadata(
-    ts_ids: Dict[str, TimeseriesMetadata],
+    ts_ids: Dict[str, TimeseriesContainer],
     timeseries_defs_derivation_map: Dict[str, DerivationMetadata],
 ) -> Dict[str, TimeseriesMetadataWithDerivations]:
     """Merge timeseries definitions metadata into the timeseries ids metadata and add whether to load the data.
