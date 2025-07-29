@@ -126,7 +126,7 @@ class TimeSeriesProcessor:
         """
         self._get_user_timeseries_ids()
         self._get_processing_timeseries_ids()
-        self._get_dependent_timeseries_ids()
+        self._get_dependent_timeseries_metadata()
 
     def _get_user_timeseries_ids(self) -> None:
         """Collect the timeseries id metadata for user specified processed variables.
@@ -173,7 +173,7 @@ class TimeSeriesProcessor:
             + self.view_query_parameter
         )
 
-    def _get_dependent_timeseries_ids(self) -> None:
+    def _get_dependent_timeseries_metadata(self) -> None:
         """
         Fetch the derivation metadata for the timeseries IDs to be built and combine with the main time series metadata.
         """

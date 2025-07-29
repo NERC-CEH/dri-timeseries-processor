@@ -109,7 +109,7 @@ class TestTimeSeriesProcessor(TestHelper):
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_get_dependent_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
+    def test_get_dependent_timeseries_metadata(self, mock_api_manager: mock.MagicMock) -> None:
         api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
@@ -123,7 +123,7 @@ class TestTimeSeriesProcessor(TestHelper):
         # Some ts_ids need to already exist in order to search through them to find any dependent timeseries metadata
         # Therefore run _get_user_timeseries_ids() first
         ts_processor._get_user_timeseries_ids()
-        ts_processor._get_dependent_timeseries_ids()
+        ts_processor._get_dependent_timeseries_metadata()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 

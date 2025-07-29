@@ -15,12 +15,12 @@ from metadata_manager.models.methods.method_registry import (
 )
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
-from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
-from metadata_manager.models.schemas.sites import SitesResponse
-from metadata_manager.models.schemas.time_series import (
+from metadata_manager.models.schemas.dependencies import (
     DependentTimeSeriesMetadata,
     DependentTimeSeriesMetadataResponse,
 )
+from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
+from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.transformers import extract_timeseries_definition_metadata
 
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
@@ -112,12 +112,12 @@ def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetad
     """Recursively load dataset metadata from the API for all input dependencies of the provided timeseries id.
 
     Args:
-        parameters: API query parameters for the dataset endpoint
+        timeseries_id: The id of the timeseries to identify dependent timeseries datasets for.
 
     Returns:
-        The parsed dataset metadata.
-    """
+        List of dependent time series metadata objects for the provided timeseries id
 
+    """
     data = asyncio.run(METADATA_CONNECTION.fetch_dependent_dataset_metadata(timeseries_id))
 
     # Use a separate list for storing the final output to prevent it being extended in situ when recursively checking
