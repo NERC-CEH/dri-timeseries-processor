@@ -223,8 +223,8 @@ class TestBuildViewQueryParameter(TestCase):
 class TestBuildTimeSeriesIDQueryParameter(TestCase):
     """Tests the build_timeseries_id_query_parameter."""
 
-    def test_multiple_timeseries_defs(self) -> None:
-        """Test string built with multiple timeseries defs"""
+    def test_multiple_timeseries_ids(self) -> None:
+        """Test string built with multiple timeseries ids"""
         ts_ids = ["ts_id_1", "ts_id_2"]
         expected = [("@id", "ts_id_1"), ("@id", "ts_id_2")]
 

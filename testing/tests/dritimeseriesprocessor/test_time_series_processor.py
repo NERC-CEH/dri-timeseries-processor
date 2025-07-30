@@ -144,7 +144,7 @@ class TestTimeSeriesProcessor(TestHelper):
             sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
         # Set self.ts_ids to be the loaded initial data so there are some timeseries ids to fetch derivation metadata
-        # for. Use a copy to ensure the intiial data isn't modified in situ accidentally.
+        # for. Use a copy to ensure the initial data isn't modified in situ accidentally.
         self.ts_ids = initial_ts_ids.copy()
 
         ts_processor._add_derivation_metadata()

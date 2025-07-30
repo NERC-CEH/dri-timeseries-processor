@@ -145,7 +145,7 @@ class MetadataAPIManager:
         """Fetch the metadata of any dependencies for a specific dataset
 
         Args:
-            parameters: API query parameters for the dataset endpoint
+            timeseries_id: The ID of the timeseries dataset to fetch dependencies for
 
         Returns:
             JSON response containing time series ID metadata.
@@ -162,7 +162,7 @@ class MetadataAPIManager:
         """Fetch metadata for derivations associated to a timeseries definition
 
         Args:
-            parameters: API query parameters for the timeseries definition endpoint
+            timeseries_def: The timeseries definition ID to fetch derivation metadata for.
 
         Returns:
             JSON response containing time series derivation metadata.
