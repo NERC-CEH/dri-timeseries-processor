@@ -1,5 +1,14 @@
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+
+class ComponentType(Enum):
+    CORRECTION = "correction"
+    INFILLING = "infilling"
+    QUALITY_CONTROL = "quality_control"
+    DERIVATION = "calculate"
+
 
 # To get the last bit of a uri string, after the last trailing slash.
 #   Allows for alpha characters, underscore and hyphen.
@@ -48,18 +57,19 @@ def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
     return values
 
 
-def build_site_query_parameter(sites: List[str]) -> List[Tuple | None]:
+def build_site_query_parameter(sites: List[str], network: str) -> List[Tuple | None]:
     """Build the site query parameters for the dataset endpoint.
 
     As we use the same key for multiple sites, it needs to be a list of tuples.
 
     Args:
         sites: A list of the sites to query.
+        network: The network to query.
 
     Returns:
         A list of tuples with query parameter string and site.
     """
-    return [("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-{site.lower()}") for site in sites]
+    return [("originatingSite", f"http://fdri.ceh.ac.uk/id/site/{network}-{site.lower()}") for site in sites]
 
 
 def build_column_query_parameter(columns: List[str]) -> List[Tuple | None]:
@@ -90,10 +100,10 @@ def build_periodicity_query_parameter(periodicities: List[str]) -> List[Tuple | 
     return [("type.measure.aggregation.periodicity", period) for period in periodicities]
 
 
-def build_timeseries_def_query_parameter(ts_defs: List[str]) -> List[Tuple | None]:
-    """Build the timeseries definition query parameters for the dataset endpoint.
+def build_timeseries_id_query_parameter(ts_ids: List[str]) -> List[Tuple | None]:
+    """Build the timeseries id query parameters for the dataset endpoint.
 
-    As we use the same key for multiple timeseries defs, it needs to be a list of tuples.
+    As we use the same key for multiple timeseries id, it needs to be a list of tuples.
 
     Args:
         ts_defs: A list of the timeseries definitions to query.
@@ -101,7 +111,7 @@ def build_timeseries_def_query_parameter(ts_defs: List[str]) -> List[Tuple | Non
     Returns:
         A list of tuples with query parameter string and the timeseries definition.
     """
-    return [("type", ts_def) for ts_def in ts_defs]
+    return [("@id", ts_id) for ts_id in ts_ids]
 
 
 def build_processing_query_parameter(level: str) -> List[Tuple | None]:

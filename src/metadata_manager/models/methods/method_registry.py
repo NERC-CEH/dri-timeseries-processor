@@ -1,14 +1,11 @@
-from enum import Enum
 from typing import Any, Dict
 
 from pydantic import BaseModel, field_validator, model_validator
 
+from dritimeseriesprocessor.correcting import operations as correction_functions
+from dritimeseriesprocessor.deriving import derivations as derivation_functions
 from dritimeseriesprocessor.infilling import methods as infilling_functions
-
-
-class MethodType(Enum):
-    INFILLING = "infilling"
-    QC = "quality_control"
+from metadata_manager.models.common import ComponentType
 
 
 class Method(BaseModel):
@@ -25,7 +22,7 @@ class Method(BaseModel):
     """
 
     method_id: int
-    method_type: MethodType
+    method_type: ComponentType
     name: str
     description: str
     function_name: str
@@ -61,7 +58,7 @@ class Method(BaseModel):
         """
         result = {
             "method_id": data["id"],
-            "method_type": MethodType(data["method_type"]),
+            "method_type": ComponentType(data["method_type"]),
             "name": data["name"],
             "description": data["description"],
             "function_name": data["function_name"],
@@ -71,24 +68,24 @@ class Method(BaseModel):
         return result
 
     def __call__(self, *args, **kwargs):
-        """Call the method function directly.
-
-        TODO: Only for infilling - temporary until qc-like refactor has been done.
-        """
-        if self.method_type == MethodType.INFILLING:
+        """Call the method function directly."""
+        if self.method_type == ComponentType.INFILLING:
             module = infilling_functions
-
-            func = getattr(module, self.function_name, None)
-            if func is None:
-                raise ValueError(f"Function '{self.function_name}' not found in module '{module}'")
-
-            return func(*args, **kwargs)
-
-        elif self.method_type == MethodType.QC:
-            return None
-
+        elif self.method_type == ComponentType.QUALITY_CONTROL:
+            # TODO: Changed how QC runs.  May think about refactor for the others.
+            raise UserWarning("QC checks not run directly from this config object.")
+        elif self.method_type == ComponentType.CORRECTION:
+            module = correction_functions
+        elif self.method_type == ComponentType.DERIVATION:
+            module = derivation_functions
         else:
             raise UserWarning(f"Unknown method type: {self.method_type}")
+
+        func = getattr(module, self.function_name, None)
+        if func is None:
+            raise ValueError(f"Function '{self.function_name}' not found in module '{module}'")
+
+        return func(*args, **kwargs)
 
 
 class InfillingMethods(Dict[str, Method]):
@@ -130,6 +127,50 @@ class QcMethods(Dict[str, Method]):
 
         for method_key, method_data in data.items():
             method_data["method_type"] = "quality_control"
+            result[method_key] = Method.model_validate(method_data)
+
+        return result
+
+
+class DerivationMethods(Dict[str, Method]):
+    """Registry of all derivation methods."""
+
+    @classmethod
+    def model_validate(cls, data: Dict[str, Dict]) -> "DerivationMethods":
+        """Extract derivation method data.
+
+        Args:
+            data: Dictionary mapping method keys to method details
+
+        Returns:
+            Dictionary mapping method keys to Method objects
+        """
+        result = cls()
+
+        for method_key, method_data in data.items():
+            method_data["method_type"] = "calculate"
+            result[method_key] = Method.model_validate(method_data)
+
+        return result
+
+
+class CorrectionMethods(Dict[str, Method]):
+    """Registry of all correction methods."""
+
+    @classmethod
+    def model_validate(cls, data: Dict[str, Dict]) -> "CorrectionMethods":
+        """Extract correction method data.
+
+        Args:
+            data: Dictionary mapping method keys to method details
+
+        Returns:
+            Dictionary mapping method keys to Method objects
+        """
+        result = cls()
+
+        for method_key, method_data in data.items():
+            method_data["method_type"] = "correction"
             result[method_key] = Method.model_validate(method_data)
 
         return result

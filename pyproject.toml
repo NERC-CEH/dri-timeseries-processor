@@ -1,6 +1,5 @@
 [build-system]
 requires = ["setuptools >= 61.0", "autosemver"]
-# build-backend = "setuptools.build_meta"
 
 [project]
 requires-python = ">=3.12"
@@ -19,7 +18,7 @@ dependencies = [
     "pandas",
     "tenacity",
     "prometheus-client",
-    "setuptools",
+    "setuptools < 81",
     "time-stream @ git+https://github.com/NERC-CEH/time-stream.git"
 ]
 name = "dritimeseriesprocessor"
@@ -36,11 +35,15 @@ description = "Timeseries processor service for FDRI."
 readme = "README.md"
 license = { text = "NO LICENSE" }
 
-[project.optional-dependencies]
+[dependency-groups]
 test = ["pytest", "pytest-cov", "parameterized", "freezegun", "pytest-benchmark", "pytest-benchmark[histogram]"]
 docs = ["sphinx", "sphinx-copybutton", "sphinx-rtd-theme", "nbsphinx"]
 lint = ["ruff"]
-dev = ["dritimeseriesprocessor[test,docs,lint]"]
+dev = [
+  { include-group = "test"},
+  { include-group = "docs"},
+  { include-group = "lint"},
+]
 
 [tool.setuptools.dynamic]
 version = { attr = "dritimeseriesprocessor.__version__" }

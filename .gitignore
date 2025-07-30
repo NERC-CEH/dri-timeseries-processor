@@ -158,3 +158,9 @@ cython_debug/
 
 # PyCharm
 .idea/
+
+# VSCode
+.vscode/
+
+# Testing temp directory
+testing/data/temp/*

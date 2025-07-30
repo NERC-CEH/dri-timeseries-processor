@@ -1,0 +1,12 @@
+{
+  "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed": {
+    "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed",
+    "resolution": "PT30M",
+    "periodicity": "PT30M",
+    "processing_level": "processed",
+    "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "PE",
+    "sourceSite": "ALIC1"
+  }
+}
