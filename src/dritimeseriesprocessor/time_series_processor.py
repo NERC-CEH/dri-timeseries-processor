@@ -151,8 +151,8 @@ class TimeSeriesProcessor:
 
         In a similar way to `_get_user_timeseries_ids()` the metadata api service is queried and the extracted results
         are added to `self.ts_ids`. However, in this instance, the raw processing timeseries id metadata is requested
-        for the current site(s) and periodicities instead. Currently this is a hard coded list of variables: "BATTV",
-        "SCANS"and "TNR01C".
+        for the current site(s) instead. Currently this is a hard coded list of variables: "BATTV",
+        "SCANS"and "TNR01C", using a periodicity of PT30M.
 
         """
         # TODO: Determine these by looking at processing config dependencies in metadata
@@ -160,9 +160,12 @@ class TimeSeriesProcessor:
 
         processing_query_parameter = build_processing_query_parameter(level="raw")
 
+        # Hardcode the periodicity to PT30M to ensure the correct raw data is fetched for the processing dependencies
+        periodicity_query_parameter = self._construct_periodicity_query_parameter("PT30M")
+
         self._get_ts_id_metadata(
             self.site_query_parameter
-            + self.periodicity_query_parameter
+            + periodicity_query_parameter
             + column_query_parameter
             + processing_query_parameter
             + self.view_query_parameter
