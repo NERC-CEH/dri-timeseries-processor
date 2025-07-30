@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed/_dependencies.json",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed/_dependencies.geojson",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed/_dependencies.rdf",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed/_dependencies.ttl",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed/_dependencies.csv",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed/_dependencies.json",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed/_dependencies.html"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_processed",
+      "@type": [
+        { "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset" }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin",
+              "prefLabel": ["Incoming shortwave radiation"]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": ["Wm-2"]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "SWIN",
+      "originatingFacility": [
+        { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
+      ],
+      "originatingSite": [
+        { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
+      "@type": [
+        { "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset" }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwout-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwout",
+              "prefLabel": ["Outgoing longwave radiation (corrected)"]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": ["Wm-2"]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "LWOUT",
+      "originatingFacility": [
+        { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
+      ],
+      "originatingSite": [
+        { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_processed",
+      "@type": [
+        { "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset" }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swout-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swout",
+              "prefLabel": ["Outgoing shortwave radiation"]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": ["Wm-2"]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "SWOUT",
+      "originatingFacility": [
+        { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
+      ],
+      "originatingSite": [
+        { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
+      "@type": [
+        { "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset" }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwin-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwin",
+              "prefLabel": ["Incoming longwave radiation (corrected)"]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": ["Wm-2"]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "LWIN",
+      "originatingFacility": [
+        { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
+      ],
+      "originatingSite": [
+        { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
+      ]
+    }
+  ]
+}

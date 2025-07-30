@@ -141,11 +141,28 @@ class MetadataAPIManager:
 
         return response
 
+    async def fetch_dependent_dataset_metadata(self, timeseries_id: str) -> Dict[str, Any]:
+        """Fetch the metadata of any dependencies for a specific dataset
+
+        Args:
+            timeseries_id: The ID of the timeseries dataset to fetch dependencies for
+
+        Returns:
+            JSON response containing time series ID metadata.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
+        url = f"{self.host}/id/dataset/{timeseries_id}/_dependencies"
+        response = await self._make_api_call(url)
+
+        return response
+
     async def fetch_timeseries_derivation_metadata(self, timeseries_def: str) -> Dict[str, Any]:
         """Fetch metadata for derivations associated to a timeseries definition
 
         Args:
-            parameters: API query parameters for the timeseries definition endpoint
+            timeseries_def: The timeseries definition ID to fetch derivation metadata for.
 
         Returns:
             JSON response containing time series derivation metadata.
