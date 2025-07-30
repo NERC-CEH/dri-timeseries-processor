@@ -100,7 +100,10 @@ def run_quality_control(
                         method.parameters[parameter] = value
 
                 qc_result = qc_ts.qc_check(
-                    method_metadata.function_name, check_column=qc_ts.column_name, **method.parameters
+                    method_metadata.function_name,
+                    check_column=qc_ts.column_name,
+                    observation_interval=method.observation_interval,
+                    **method.parameters,
                 )
 
                 # flag the primary time series with the results

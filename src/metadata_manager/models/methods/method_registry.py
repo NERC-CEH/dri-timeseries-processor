@@ -4,7 +4,6 @@ from typing import Any, Dict
 from pydantic import BaseModel, field_validator, model_validator
 
 from dritimeseriesprocessor.infilling import methods as infilling_functions
-from dritimeseriesprocessor.quality_control import checks as qc_functions
 
 
 class MethodType(Enum):
@@ -72,19 +71,24 @@ class Method(BaseModel):
         return result
 
     def __call__(self, *args, **kwargs):
-        """Call the method function directly."""
+        """Call the method function directly.
+
+        TODO: Only for infilling - temporary until qc-like refactor has been done.
+        """
         if self.method_type == MethodType.INFILLING:
             module = infilling_functions
+
+            func = getattr(module, self.function_name, None)
+            if func is None:
+                raise ValueError(f"Function '{self.function_name}' not found in module '{module}'")
+
+            return func(*args, **kwargs)
+
         elif self.method_type == MethodType.QC:
-            module = qc_functions
+            return None
+
         else:
             raise UserWarning(f"Unknown method type: {self.method_type}")
-
-        func = getattr(module, self.function_name, None)
-        if func is None:
-            raise ValueError(f"Function '{self.function_name}' not found in module '{module}'")
-
-        return func(*args, **kwargs)
 
 
 class InfillingMethods(Dict[str, Method]):

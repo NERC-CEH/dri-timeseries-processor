@@ -7,16 +7,17 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from dritimeseriesprocessor.quality_control.base import BaseCheck, DepTS
 from dritimeseriesprocessor.quality_control.quality_controller import remove_qcd_data, run_quality_control
 from time_stream import TimeSeries, Period
+from time_stream.qc import QCCheck
 
 
-class MockCheck(BaseCheck):
-    def __init__(self, qc_column: str, flag_column: str, flag_name: str, arg1: Any, arg2: Any) -> None:
-        super().__init__(qc_column=qc_column, flag_column=flag_column, flag_name=flag_name)
+class MockCheck(QCCheck):
+    name = "Mock"
+    def __init__(self, **kwargs: Any):
+        pass
 
-    def _check_expression(self, ts: TimeSeries, dep_ts: DepTS = None) -> pl.Expr:
+    def expr(self, check_column: str) -> pl.Expr:
         return pl.lit(True)
 
 
@@ -109,24 +110,30 @@ class TestRunQualityControl(unittest.TestCase):
             "method_id": 1,
             "name": "Mock Check 1",
             "description": "A mock qc check",
-            "function_name": "MockCheck",
-            "method_type": "quality_control"
+            "function_name": MockCheck,
+            "method_type": "quality_control",
+            "arg_mapping": {},
+            "arg_defaults": {}
         })()
 
         QC_method2 = type("DummyQCMethod", (), {
             "method_id": 2,
             "name": "Mock Check 2",
             "description": "Another mock qc check",
-            "function_name": "MockCheck",
+            "function_name": MockCheck,
             "method_type": "quality_control",
+            "arg_mapping": {},
+            "arg_defaults": {}
         })()
 
         QC_method3 = type("DummyQCMethod", (), {
             "method_id": 4,
             "name": "Mock Check 3",
             "description": "Another mock qc check",
-            "function_name": "MockCheck",
+            "function_name": MockCheck,
             "method_type": "quality_control",
+            "arg_mapping": {},
+            "arg_defaults": {}
         })()
 
         self.mock_methods_dict = {
@@ -193,13 +200,11 @@ class TestRunQualityControl(unittest.TestCase):
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
-    @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_class')
-    def test_run_quality_control_success(self, mock_get_qc_class, mock_get_methods, mock_get_configs):
+    def test_run_quality_control_success(self, mock_get_methods, mock_get_configs):
         """Test basic results of run_quality_control.
         """
         mock_get_configs.return_value = [self.QC_config1]
         mock_get_methods.return_value = self.mock_methods_dict
-        mock_get_qc_class.return_value = MockCheck
 
         # Call function
         result = run_quality_control(self.ts_ids)
@@ -213,14 +218,12 @@ class TestRunQualityControl(unittest.TestCase):
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
-    @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_class')
-    def test_run_quality_control_multiple_methods(self, mock_get_qc_class, mock_get_methods, mock_get_configs):
+    def test_run_quality_control_multiple_methods(self, mock_get_methods, mock_get_configs):
         """ Test run_quality_control with multiple QC methods for a single column.
         Checks if the methods are applied in the correct order (by priority).
         """
         mock_get_configs.return_value = [self.QC_config1, self.QC_config2]
         mock_get_methods.return_value = self.mock_methods_dict
-        mock_get_qc_class.return_value = MockCheck
 
         # Call function
         result = run_quality_control(self.ts_ids)
@@ -234,14 +237,12 @@ class TestRunQualityControl(unittest.TestCase):
 
     @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
     @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
-    @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_class')
-    def test_run_quality_control_observation_interval(self, mock_get_qc_class, mock_get_methods, mock_get_configs):
+    def test_run_quality_control_observation_interval(self, mock_get_methods, mock_get_configs):
         """ Test run_quality_control that has an observation interval - meaning that only data for a specific date
         range should be flagged
         """
         mock_get_configs.return_value = [self.QC_config3]
         mock_get_methods.return_value = self.mock_methods_dict
-        mock_get_qc_class.return_value = MockCheck
 
         # Call function
         result = run_quality_control(self.ts_ids)
