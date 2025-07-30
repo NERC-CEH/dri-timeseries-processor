@@ -20,7 +20,7 @@ dependencies = [
     "tenacity",
     "prometheus-client",
     "setuptools",
-    "time-stream @ git+https://github.com/NERC-CEH/time-stream.git"
+    "time-stream @ git+https://github.com/NERC-CEH/time-stream.git@feature/FPM-258-qc-methods"
 ]
 name = "dritimeseriesprocessor"
 dynamic = ["version"]

@@ -7,7 +7,6 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.quality_control.checks import get_qc_class
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -83,25 +82,31 @@ def run_quality_control(
             for method in config.configs:
                 logger.info(f"Quality controlling {ts_id}: {method.name}. Constraints: {method.parameters}")
 
-                qc_class_name = qc_methods[method.name].function_name
-                qc_class = get_qc_class(qc_class_name)
+                method_metadata = qc_methods[method.name]
 
-                # Get any dependent time series needed for this check
+                # Determine which time series we are running the qc test on
+                qc_ts = ts
                 if "dep_ts" in method.parameters:
-                    dep_ts = ts_ids[method.parameters["dep_ts"]]["data"]
-                    # The QC method will expect the name of the column, rather than the full metadata ID
-                    method.parameters["dep_ts"] = dep_ts.column_name
-                else:
-                    dep_ts = None
+                    qc_ts = ts_ids[method.parameters["dep_ts"]]["data"]
+                    # No longer need this key in the parameters once we've got the dependency time series
+                    method.parameters.pop("dep_ts")
 
-                # Get the specific QC check class
-                check = qc_class.from_fdri_params(
-                    qc_column=ts.column_name, flag_column=qc_flag_col, flag_name=method.name, params=method.parameters
+                if method_metadata.arg_mapping:
+                    for new_name, old_name in method_metadata.arg_mapping.items():
+                        method.parameters[new_name] = method.parameters.pop(old_name)
+
+                if method_metadata.arg_defaults:
+                    for parameter, value in method_metadata.arg_defaults.items():
+                        method.parameters[parameter] = value
+
+                qc_result = qc_ts.qc_check(
+                    method_metadata.function_name, check_column=qc_ts.column_name, **method.parameters
                 )
 
-                # Run the check!
-                ts = check.run(ts, observation_interval=method.observation_interval, dep_ts=dep_ts)
+                # flag the primary time series with the results
+                ts.add_flag(qc_flag_col, method.name, qc_result)
 
+                # remove the data that has been flagged if required
                 if remove:
                     ts.df = remove_qcd_data(ts.df, ts.column_name, qc_flag_col)
                     ts_ids[ts_id]["data"] = ts

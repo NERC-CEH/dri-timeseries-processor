@@ -21,6 +21,8 @@ class Method(BaseModel):
         name: Human-readable name of the method
         description: Detailed description of what the method does
         function_name: Name of the function that runs the method
+        arg_mapping: Mapping of function argument names to the property names from the metadata configuration
+        arg_defaults: Default value to use for any of the function arguments
     """
 
     method_id: int
@@ -28,6 +30,8 @@ class Method(BaseModel):
     name: str
     description: str
     function_name: str
+    arg_mapping: dict = {}
+    arg_defaults: dict = {}
 
     @field_validator("method_id")
     @classmethod
@@ -62,6 +66,8 @@ class Method(BaseModel):
             "name": data["name"],
             "description": data["description"],
             "function_name": data["function_name"],
+            "arg_mapping": data.get("arg_mapping", {}),
+            "arg_defaults": data.get("arg_defaults", {}),
         }
         return result
 
