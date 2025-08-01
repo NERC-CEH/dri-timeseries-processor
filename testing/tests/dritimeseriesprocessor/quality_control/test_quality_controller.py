@@ -1,6 +1,7 @@
 import unittest
 from datetime import datetime
 from unittest.mock import patch, MagicMock
+from typing import Any
 
 import polars as pl
 from polars.testing import assert_frame_equal
@@ -8,15 +9,16 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.quality_control.quality_controller import remove_qcd_data, run_quality_control
 from time_stream import TimeSeries, Period
+from time_stream.qc import QCCheck
 
 
-def mock_range_check(ts_ids, ts_id, flag_column, flag_name, *args, **kwargs):
-    ts_ids[ts_id]["data"].add_flag(flag_column, flag_name)
-    return ts_ids
+class MockCheck(QCCheck):
+    name = "Mock"
+    def __init__(self, **kwargs: Any):
+        pass
 
-def mock_spike_check(ts_ids, ts_id, flag_column, flag_name, *args, **kwargs):
-    ts_ids[ts_id]["data"].add_flag(flag_column, flag_name)
-    return ts_ids
+    def expr(self, check_column: str) -> pl.Expr:
+        return pl.lit(True)
 
 
 class TestRemoveQCdData(unittest.TestCase):
@@ -106,25 +108,38 @@ class TestRunQualityControl(unittest.TestCase):
         # Set up dummy QC methods
         QC_method1 = type("DummyQCMethod", (), {
             "method_id": 1,
-            "name": "Range Check",
-            "description": "Check if the value is within the specified range",
-            "function_name": "mock_range_check",
+            "name": "Mock Check 1",
+            "description": "A mock qc check",
+            "function_name": MockCheck,
             "method_type": "quality_control",
-            "__call__": lambda self, *args, **kwargs: mock_range_check(*args, **kwargs),
+            "arg_mapping": {},
+            "kwargs": {}
         })()
 
         QC_method2 = type("DummyQCMethod", (), {
             "method_id": 2,
-            "name": "Spike Check",
-            "description": "Check if the value is a spike",
-            "function_name": "mock_spike_check",
+            "name": "Mock Check 2",
+            "description": "Another mock qc check",
+            "function_name": MockCheck,
             "method_type": "quality_control",
-            "__call__": lambda self, *args, **kwargs: mock_spike_check(*args, **kwargs),
+            "arg_mapping": {},
+            "kwargs": {}
+        })()
+
+        QC_method3 = type("DummyQCMethod", (), {
+            "method_id": 4,
+            "name": "Mock Check 3",
+            "description": "Another mock qc check",
+            "function_name": MockCheck,
+            "method_type": "quality_control",
+            "arg_mapping": {},
+            "kwargs": {}
         })()
 
         self.mock_methods_dict = {
-            "range_check": QC_method1,
-            "spike_check": QC_method2,
+            "mock_check1": QC_method1,
+            "mock_check2": QC_method2,
+            "mock_check3": QC_method3,
         }
 
         # Set up quality_control configs
@@ -132,12 +147,12 @@ class TestRunQualityControl(unittest.TestCase):
             "site_id": site_id,
             "ts_id": self.ta_ts_id,
             "configs": [type("DummyMethodConfig", (), {
-                "name": "range_check",
+                "name": "mock_check1",
                 "interval": (datetime(2000, 1, 1), None),
                 "observation_interval": (datetime(2023, 1, 1), None),
                 "parameters": {
-                    "lt": -40,
-                    "gt": 40,
+                    "arg1": -40,
+                    "arg2": 40,
                 },
             })],
             "annotations": {}
@@ -147,11 +162,27 @@ class TestRunQualityControl(unittest.TestCase):
             "site_id": site_id,
             "ts_id": self.pa_ts_id,
             "configs": [type("DummyMethodConfig", (), {
-                "name": "spike_check",
+                "name": "mock_check2",
                 "interval": (datetime(2000, 1, 1), None),
                 "observation_interval": (datetime(2023, 1, 1), None),
                 "parameters": {
-                    "gt": 20
+                    "arg1": 20,
+                    "arg2": 400,
+                },
+            })],
+            "annotations": {}
+        })()
+
+        self.QC_config3 = type("DummyQCConfig", (), {
+            "site_id": site_id,
+            "ts_id": self.pa_ts_id,
+            "configs": [type("DummyMethodConfig", (), {
+                "name": "mock_check3",
+                "interval": (datetime(2000, 1, 1), None),
+                "observation_interval": (datetime(2023, 8, 11), datetime(2023, 8, 13)),
+                "parameters": {
+                    "arg1": 20,
+                    "arg2": 400,
                 },
             })],
             "annotations": {}
@@ -203,3 +234,22 @@ class TestRunQualityControl(unittest.TestCase):
         self.assertIn('value_QC_FLAG', result[self.ta_ts_id]["data"].columns)
         # Check flag values (from both mock functions) have been added
         self.assertEqual(result[self.ta_ts_id]["data"].df['value_QC_FLAG'].to_list(), [3, 3, 3, 3, 3, 3])
+
+    @patch('dritimeseriesprocessor.quality_control.quality_controller.load_config')
+    @patch('dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods')
+    def test_run_quality_control_observation_interval(self, mock_get_methods, mock_get_configs):
+        """ Test run_quality_control that has an observation interval - meaning that only data for a specific date
+        range should be flagged
+        """
+        mock_get_configs.return_value = [self.QC_config3]
+        mock_get_methods.return_value = self.mock_methods_dict
+
+        # Call function
+        result = run_quality_control(self.ts_ids)
+
+        # Check flag system added
+        self.assertIn('qc_flags', result[self.ta_ts_id]["data"].flag_systems)
+        # Check columns added
+        self.assertIn('value_QC_FLAG', result[self.ta_ts_id]["data"].columns)
+        # Check flag values (from both mock functions) have been added
+        self.assertEqual(result[self.ta_ts_id]["data"].df['value_QC_FLAG'].to_list(), [0, 4, 4, 4, 0, 0])
