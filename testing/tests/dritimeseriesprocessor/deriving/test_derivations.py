@@ -8,7 +8,7 @@ from time_stream import Period, TimeSeries
 from dritimeseriesprocessor.deriving.calculation import Calculation
 from dritimeseriesprocessor.deriving.derivations import (
     ActualVapourPressureFao56Eq54,
-    DailyRadiation,
+    DailyTotalRadiation,
     LatentHeatOfVaporization,
     NetRadiation,
     PotentialEvapotranspiration30Min,
@@ -199,7 +199,7 @@ class TestNetRadiation(unittest.TestCase):
         assert_frame_equal(result, expected, check_exact=False, atol=0.001)
 
 
-class TestDailyNetRadiation(TestHelper):
+class TestDailyTotalRadiation(TestHelper):
     def test_evaluate(self) -> None:
         df = pl.read_csv(
             self.input_dir.joinpath("derivations", "rn_pt30m_3_days.csv"),
@@ -231,7 +231,7 @@ class TestDailyNetRadiation(TestHelper):
             ),
         )
 
-        calc = DailyRadiation(column_name="SWOUT", kwargs={"SWOUT": "SWOUT"})
+        calc = DailyTotalRadiation(column_name="SWOUT", kwargs={"SWOUT": "SWOUT"})
         result = calc.evaluate(df)
 
         assert_frame_equal(expected, result)

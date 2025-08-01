@@ -283,24 +283,28 @@ class NetRadiation(Calculation):
         return rn
 
 
-class DailyRadiation(Calculation):
+class DailyTotalRadiation(Calculation):
     def __init__(self, column_name: str = None, **kwargs):
-        """Calculate net radiation.
+        """
+        Aggregate sub daily radiation, measured in W m-2, into total energy for the day, MJ m-2 day-1
+        Note, the sub daily values must be evenly spaced in time and each value must represent the average radiation
+        over its interval (not instantaneous).
 
-        Args:
-            rn: radiation at 30min resolution[W m-2]
+        The column to use to calculate the daily total radiation should be provided as a kwarg. This is to allow
+        flexibility in the expected input column structure.
 
         Returns:
-            Daily Net radiation [W m-2]
+            Daily total radiation [MJ m-2 day-1]
+
         """
-        super().__init__("Daily net radiation", column_name, "W m-2")
+        super().__init__("Daily total radiation", column_name, "MJ m-2 day-1")
 
         # In order to support data from multiple possible column sources
         _, self._rad_30min = kwargs.popitem()
 
     @property
     def default_column_name(self) -> str:
-        return "rn"
+        return "radiation"
 
     def evaluate(self, df: pl.DataFrame, **__) -> pl.DataFrame:
         # There should only be 2 columns provided, the time column and the one to calculate
