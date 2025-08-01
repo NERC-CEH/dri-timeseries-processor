@@ -1580,8 +1580,8 @@ wheels = [
 
 [[package]]
 name = "time-stream"
-version = "0.0.78"
-source = { git = "https://github.com/NERC-CEH/time-stream.git#70d8257a65d49157961b32704b298586ccba10ac" }
+version = "0.0.83"
+source = { git = "https://github.com/NERC-CEH/time-stream.git#a8d1fbb942dc43a5586c28e97b7e11f4f3df5316" }
 dependencies = [
     { name = "autosemver" },
     { name = "config" },

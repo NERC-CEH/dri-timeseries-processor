@@ -2,7 +2,7 @@ import math
 from typing import Optional, Type, Union
 
 import polars as pl
-from time_stream import TimeSeries
+from time_stream import Period, TimeSeries, aggregation  # noqa: F401
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
 
@@ -281,6 +281,53 @@ class NetRadiation(Calculation):
     def expr(self) -> pl.Expr:
         rn = self._swin - self._swout + self._lwin - self._lwout
         return rn
+
+
+class DailyRadiation(Calculation):
+    def __init__(self, column_name: str = None, **kwargs):
+        """Calculate net radiation.
+
+        Args:
+            rn: radiation at 30min resolution[W m-2]
+
+        Returns:
+            Daily Net radiation [W m-2]
+        """
+        super().__init__("Daily net radiation", column_name, "W m-2")
+
+        # In order to support data from multiple possible column sources
+        _, self._rad_30min = kwargs.popitem()
+
+    @property
+    def default_column_name(self) -> str:
+        return "rn"
+
+    def evaluate(self, df: pl.DataFrame, **__) -> pl.DataFrame:
+        # There should only be 2 columns provided, the time column and the one to calculate
+        # daily radiation from
+        time_column, radiation_column = df.columns
+        ts = TimeSeries(df=df, time_name=time_column)
+
+        aggregation_function = "mean_sum"
+        aggregated_ts = ts.aggregate(
+            aggregation_period=Period.of_iso_duration("P1D"),
+            aggregation_function=aggregation_function,
+            columns=radiation_column,
+        )
+        aggregated_column_name = f"{aggregation_function}_{self.column_name}"
+
+        self._aggregated = self._columns_to_expressions(aggregated_column_name)
+
+        expressions = {self.column_name: self.expr().alias(self.column_name)}
+
+        # Perform the evaluation(s)
+        lazy_df = aggregated_ts.df.lazy()
+        result = lazy_df.with_columns(list(expressions.values()))
+        return result.collect()
+
+    def expr(self) -> pl.Expr:
+        daily_radiation = self._aggregated * 0.0864
+        return daily_radiation
 
 
 def derive(

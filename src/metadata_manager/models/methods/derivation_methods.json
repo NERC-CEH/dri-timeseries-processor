@@ -1,15 +1,20 @@
 {
-    "calculate-calculate_pe": {
-        "name": "Potential evaporation 30 minutes",
-        "description": "Potential evaporation calculated at a 30 minute time resultion.",
-        "id": 1,
-        "function_name": "PotentialEvapotranspiration30Min"
-    },
-    "calculate-calculate_rn": {
-        "name": "Net Radiation",
-        "description": "Net radiation calculated at a 30 minute time resolution.",
-        "id": 2,
-        "function_name": "NetRadiation"
-    }
-    
+  "calculate-calculate_pe": {
+    "name": "Potential evaporation 30 minutes",
+    "description": "Potential evaporation calculated at a 30 minute time resultion.",
+    "id": 1,
+    "function_name": "PotentialEvapotranspiration30Min"
+  },
+  "calculate-calculate_rn": {
+    "name": "Net Radiation",
+    "description": "Net radiation calculated at a 30 minute time resolution.",
+    "id": 2,
+    "function_name": "NetRadiation"
+  },
+  "calculate-calc_daily_radiation": {
+    "name": "Daily Net Radiation",
+    "description": "Net radiation calculated at a 1 day time resolution.",
+    "id": 2,
+    "function_name": "DailyRadiation"
+  }
 }
