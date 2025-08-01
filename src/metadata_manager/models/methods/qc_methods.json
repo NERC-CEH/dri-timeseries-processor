@@ -17,7 +17,7 @@
         "arg_mapping": {
             "compare_to": "lt"
         },
-        "arg_defaults": {
+        "kwargs": {
             "operator": "<"
         }
     },
@@ -29,7 +29,7 @@
         "arg_mapping": {
             "compare_to": "lt"
         },
-        "arg_defaults": {
+        "kwargs": {
             "operator": "<"
         }
     },
@@ -41,7 +41,7 @@
         "arg_mapping": {
             "compare_to": "value"
         },
-        "arg_defaults": {
+        "kwargs": {
             "operator": "is_in"
         }
     },
@@ -73,7 +73,7 @@
             "min_value": "time_ge",
             "max_value": "time_le"
         },
-        "arg_defaults": {
+        "kwargs": {
             "within": true,
             "inclusive": true
         }
@@ -86,7 +86,7 @@
         "arg_mapping": {
             "compare_to": "gt"
         },
-        "arg_defaults": {
+        "kwargs": {
             "operator": ">"
         }
     },
@@ -98,7 +98,7 @@
         "arg_mapping": {
             "compare_to": "lt"
         },
-        "arg_defaults": {
+        "kwargs": {
             "operator": "<"
         }
     },
@@ -110,7 +110,7 @@
         "arg_mapping": {
             "compare_to": "lt"
         },
-        "arg_defaults": {
+        "kwargs": {
             "operator": "<"
         }
     }

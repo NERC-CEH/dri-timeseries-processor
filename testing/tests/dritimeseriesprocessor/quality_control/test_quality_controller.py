@@ -113,7 +113,7 @@ class TestRunQualityControl(unittest.TestCase):
             "function_name": MockCheck,
             "method_type": "quality_control",
             "arg_mapping": {},
-            "arg_defaults": {}
+            "kwargs": {}
         })()
 
         QC_method2 = type("DummyQCMethod", (), {
@@ -123,7 +123,7 @@ class TestRunQualityControl(unittest.TestCase):
             "function_name": MockCheck,
             "method_type": "quality_control",
             "arg_mapping": {},
-            "arg_defaults": {}
+            "kwargs": {}
         })()
 
         QC_method3 = type("DummyQCMethod", (), {
@@ -133,7 +133,7 @@ class TestRunQualityControl(unittest.TestCase):
             "function_name": MockCheck,
             "method_type": "quality_control",
             "arg_mapping": {},
-            "arg_defaults": {}
+            "kwargs": {}
         })()
 
         self.mock_methods_dict = {
