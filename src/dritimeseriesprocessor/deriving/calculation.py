@@ -40,7 +40,11 @@ class Calculation(ABC):
         return self._collect_dependencies()
 
     @property
-    def aggregation_method(self) -> str | None:
+    def preprocess_aggregation_method(self) -> str | None:
+        return None
+
+    @property
+    def postprocess_aggregation_method(self) -> str | None:
         return None
 
     @property
@@ -101,9 +105,37 @@ class Calculation(ABC):
         Returns:
             pl.DataFrame: DataFrame with the result of the calculation.
         """
-        if self.aggregation_method:
-            df = self._apply_aggregation(df)
+        if self.preprocess_aggregation_method:
+            df = self._apply_aggregation(df, self.preprocess_aggregation_method)
 
+        df = self._evaluate_expressions(
+            df=df,
+            include_dependency_columns=include_dependency_columns,
+            allow_override=allow_override,
+        )
+
+        if self.postprocess_aggregation_method:
+            df = self._apply_aggregation(df, self.postprocess_aggregation_method)
+
+        return df
+
+    def _apply_aggregation(self, df: pl.DataFrame, aggregation_method: str) -> pl.DataFrame:
+        time_column, aggregation_column = df.columns
+        ts = TimeSeries(df=df, time_name=time_column)
+
+        aggregated_ts = ts.aggregate(
+            aggregation_period=Period.of_iso_duration("P1D"),
+            aggregation_function=aggregation_method,
+            columns=aggregation_column,
+        )
+        aggregated_column_name = f"{aggregation_method}_{self.column_name}"
+
+        self._aggregated = self._columns_to_expressions(aggregated_column_name)
+        return aggregated_ts.df
+
+    def _evaluate_expressions(
+        self, df: pl.DataFrame, include_dependency_columns: bool = False, allow_override: bool = False
+    ) -> pl.DataFrame:
         # Collect the expressions that we want to evaluate
         if include_dependency_columns:
             expressions = self._collect_expressions()
@@ -119,20 +151,6 @@ class Calculation(ABC):
         lazy_df = df.lazy()
         result = lazy_df.with_columns(list(expressions.values()))
         return result.collect()
-
-    def _apply_aggregation(self, df: pl.DataFrame) -> pl.DataFrame:
-        time_column, aggregation_column = df.columns
-        ts = TimeSeries(df=df, time_name=time_column)
-
-        aggregated_ts = ts.aggregate(
-            aggregation_period=Period.of_iso_duration("P1D"),
-            aggregation_function=self.aggregation_function,
-            columns=aggregation_column,
-        )
-        aggregated_column_name = f"{self.aggregation_function}_{self.column_name}"
-
-        self._aggregated = self._columns_to_expressions(aggregated_column_name)
-        return aggregated_ts.df
 
     def _collect_expressions(self) -> dict[str, pl.Expr]:
         """Collect all expressions required for the calculation, including dependencies.

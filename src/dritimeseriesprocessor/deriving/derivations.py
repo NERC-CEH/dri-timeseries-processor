@@ -302,28 +302,9 @@ class DailyRadiation(Calculation):
     def default_column_name(self) -> str:
         return "rn"
 
-    def evaluate(self, df: pl.DataFrame, **__) -> pl.DataFrame:
-        # There should only be 2 columns provided, the time column and the one to calculate
-        # daily radiation from
-        time_column, radiation_column = df.columns
-        ts = TimeSeries(df=df, time_name=time_column)
-
-        aggregation_function = "mean_sum"
-        aggregated_ts = ts.aggregate(
-            aggregation_period=Period.of_iso_duration("P1D"),
-            aggregation_function=aggregation_function,
-            columns=radiation_column,
-        )
-        aggregated_column_name = f"{aggregation_function}_{self.column_name}"
-
-        self._aggregated = self._columns_to_expressions(aggregated_column_name)
-
-        expressions = {self.column_name: self.expr().alias(self.column_name)}
-
-        # Perform the evaluation(s)
-        lazy_df = aggregated_ts.df.lazy()
-        result = lazy_df.with_columns(list(expressions.values()))
-        return result.collect()
+    @property
+    def preprocess_aggregation_method(self) -> str:
+        return "mean_sum"
 
     def expr(self) -> pl.Expr:
         daily_radiation = self._aggregated * 0.0864
@@ -347,15 +328,19 @@ class DailyPotentialEvaporation(Calculation):
         """
         super().__init__("Daily potential evaporation", column_name, "mm day-l")
 
-        _, self._pe_30min = self._columns_to_expressions(pe)
+        self._pe_30min = self._columns_to_expressions(pe)
 
     @property
     def default_column_name(self) -> str:
         return "pe"
 
     @property
-    def aggregation_method(self) -> str:
+    def postprocess_aggregation_method(self) -> str:
         return "mean_sum"
+
+    def expr(self) -> pl.Expr:
+        filtered_pe = self._pe_30min.replace(self._pe_30min < 0, 0)
+        return filtered_pe
 
 
 def derive(
