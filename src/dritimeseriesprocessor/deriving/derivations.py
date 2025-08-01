@@ -2,7 +2,7 @@ import math
 from typing import Optional, Type, Union
 
 import polars as pl
-from time_stream import TimeSeries
+from time_stream import Period, TimeSeries, aggregation  # noqa: F401
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
 
@@ -281,6 +281,38 @@ class NetRadiation(Calculation):
     def expr(self) -> pl.Expr:
         rn = self._swin - self._swout + self._lwin - self._lwout
         return rn
+
+
+class DailyPotentialEvaporation(Calculation):
+    def __init__(
+        self,
+        pe: Union[str, pl.Expr],
+        column_name: str = None,
+    ):
+        """Calculate daily potential evaporation.
+
+        Args:
+            pe: potential evaporation at 30min resolution [mm 30min-l]
+
+        Returns:
+            Daily potential evaporation [mm day-l]
+
+        """
+        super().__init__("Daily potential evaporation", column_name, "mm day-l")
+
+        _, self._pe_30min = self._columns_to_expressions(pe)
+
+    @property
+    def default_column_name(self) -> str:
+        return "pe"
+
+    @property
+    def aggregation_method(self) -> str:
+        return "mean_sum"
+
+    def expr(self) -> pl.Expr:
+        daily_radiation = self._aggregated * 0.0864
+        return daily_radiation
 
 
 def derive(

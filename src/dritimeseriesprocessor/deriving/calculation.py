@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 import polars as pl
+from time_stream import Period, TimeSeries, aggregation  # noqa: F401
 
 
 class Calculation(ABC):
@@ -37,6 +38,10 @@ class Calculation(ABC):
     @property
     def dependencies(self) -> list["Calculation"]:
         return self._collect_dependencies()
+
+    @property
+    def aggregation_method(self) -> str | None:
+        return None
 
     @property
     @abstractmethod
@@ -96,6 +101,9 @@ class Calculation(ABC):
         Returns:
             pl.DataFrame: DataFrame with the result of the calculation.
         """
+        if self.aggregation_method:
+            df = self._apply_aggregation(df)
+
         # Collect the expressions that we want to evaluate
         if include_dependency_columns:
             expressions = self._collect_expressions()
@@ -111,6 +119,20 @@ class Calculation(ABC):
         lazy_df = df.lazy()
         result = lazy_df.with_columns(list(expressions.values()))
         return result.collect()
+
+    def _apply_aggregation(self, df: pl.DataFrame) -> pl.DataFrame:
+        time_column, aggregation_column = df.columns
+        ts = TimeSeries(df=df, time_name=time_column)
+
+        aggregated_ts = ts.aggregate(
+            aggregation_period=Period.of_iso_duration("P1D"),
+            aggregation_function=self.aggregation_function,
+            columns=aggregation_column,
+        )
+        aggregated_column_name = f"{self.aggregation_function}_{self.column_name}"
+
+        self._aggregated = self._columns_to_expressions(aggregated_column_name)
+        return aggregated_ts.df
 
     def _collect_expressions(self) -> dict[str, pl.Expr]:
         """Collect all expressions required for the calculation, including dependencies.
