@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
@@ -72,12 +72,12 @@ def sterilize_dates(
         raise UserWarning(f"Start date must come before end date: {start_date} > {end_date}")
 
     # If start_date is of type date, convert it to datetime with time at start of the day
-    if isinstance(start_date, date) and not isinstance(start_date, datetime):
-        start_date = datetime.combine(start_date, datetime.min.time())
+    if type(start_date) is date:
+        start_date = datetime.combine(start_date, time.min)
 
     # If end_date is of type date, convert it to datetime to include the entire day
-    if isinstance(end_date, date) and not isinstance(end_date, datetime):
-        end_date = datetime.combine(end_date, datetime.max.time())
+    if type(end_date) is date:
+        end_date = datetime.combine(end_date, time.max)
 
     return start_date, end_date
 
