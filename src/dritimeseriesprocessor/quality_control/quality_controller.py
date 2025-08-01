@@ -80,35 +80,35 @@ def run_quality_control(
 
         for config in qc_configs:
             # Run QC methods on time series
-            for method in config.configs:
-                logger.info(f"Quality controlling {ts_id}: {method.name}. Constraints: {method.parameters}")
+            for qc_check in config.configs:
+                logger.info(f"Quality controlling {ts_id}: {qc_check.name}. Constraints: {qc_check.parameters}")
 
-                method_metadata = qc_methods[method.name]
+                method_metadata = qc_methods[qc_check.name]
 
                 # Determine which time series we are running the qc test on
                 qc_ts = ts
-                if "dep_ts" in method.parameters:
-                    qc_ts = ts_ids[method.parameters["dep_ts"]]["data"]
+                if "dep_ts" in qc_check.parameters:
+                    qc_ts = ts_ids[qc_check.parameters["dep_ts"]]["data"]
                     # No longer need this key in the parameters once we've got the dependency time series
-                    method.parameters.pop("dep_ts")
+                    qc_check.parameters.pop("dep_ts")
 
                 if method_metadata.arg_mapping:
                     for new_name, old_name in method_metadata.arg_mapping.items():
-                        method.parameters[new_name] = method.parameters.pop(old_name)
+                        qc_check.parameters[new_name] = qc_check.parameters.pop(old_name)
 
-                if method_metadata.arg_defaults:
-                    for parameter, value in method_metadata.arg_defaults.items():
-                        method.parameters[parameter] = value
+                if method_metadata.kwargs:
+                    for parameter, value in method_metadata.kwargs.items():
+                        qc_check.parameters[parameter] = value
 
                 qc_result = qc_ts.qc_check(
                     method_metadata.function_name,
                     check_column=qc_ts.column_name,
-                    observation_interval=method.observation_interval,
-                    **method.parameters,
+                    observation_interval=qc_check.observation_interval,
+                    **qc_check.parameters,
                 )
 
                 # flag the primary time series with the results
-                ts.add_flag(qc_flag_col, method.name, qc_result)
+                ts.add_flag(qc_flag_col, qc_check.name, qc_result)
 
                 # remove the data that has been flagged if required
                 if remove:

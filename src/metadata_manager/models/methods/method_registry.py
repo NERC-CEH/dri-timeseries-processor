@@ -13,12 +13,12 @@ class Method(BaseModel):
 
     Attributes:
         method_id: Unique identifier for the method - should be a bitwise flag value.
-        method_type: Type of the method - e.g. Infill, QC.
+        method_type: Type of the method - e.g., Infill, QC.
         name: Human-readable name of the method
         description: Detailed description of what the method does
         function_name: Name of the function that runs the method
         arg_mapping: Mapping of function argument names to the property names from the metadata configuration
-        arg_defaults: Default value to use for any of the function arguments
+        kwargs: Keyword argument values for the method function not provided by metadata
     """
 
     method_id: int
@@ -27,7 +27,7 @@ class Method(BaseModel):
     description: str
     function_name: str
     arg_mapping: dict = {}
-    arg_defaults: dict = {}
+    kwargs: dict = {}
 
     @field_validator("method_id")
     @classmethod
@@ -63,7 +63,7 @@ class Method(BaseModel):
             "description": data["description"],
             "function_name": data["function_name"],
             "arg_mapping": data.get("arg_mapping", {}),
-            "arg_defaults": data.get("arg_defaults", {}),
+            "kwargs": data.get("kwargs", {}),
         }
         return result
 
