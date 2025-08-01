@@ -47,7 +47,7 @@ def remove_protocol_from_url(url: str) -> str:
     return endpoint_url
 
 
-def steralize_dates(
+def sterilize_dates(
     start_date: Union[date, datetime], end_date: Optional[Union[date, datetime]] = None
 ) -> Tuple[Union[date, datetime], datetime]:
     """
