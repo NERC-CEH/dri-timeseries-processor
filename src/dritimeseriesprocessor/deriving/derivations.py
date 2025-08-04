@@ -343,7 +343,7 @@ class DailyPotentialEvaporation(Calculation):
         return "mean_sum"
 
     def expr(self) -> pl.Expr:
-        filtered_pe = self._pe_30min.replace(self._pe_30min < 0, 0)
+        filtered_pe = pl.when(self._pe_30min < 0).then(0).otherwise(self._pe_30min)
         return filtered_pe
 
 
@@ -353,6 +353,8 @@ def derive(
     column_name: Optional[str] = None,
     units_meta_name: str = "units",
     include_dependencies: bool = False,
+    resolution: str = None,
+    periodicity: str = None,
     **kwargs,
 ) -> TimeSeries:
     """Derive a new TimeSeries from a given Calculation.
@@ -363,13 +365,28 @@ def derive(
         column_name: The name for the derived column.  If not provided, uses the default defined within the class.
         units_meta_name: Metadata key name for units. Defaults to "units".
         include_dependencies: Whether to include calculation dependencies in the final Time Series data.
+        resolution: The resolution to use for the output TimeSeries object. This is useful to provide if the derivation
+            calculation involves aggregation (e.g. calculating potential evaporation at 1 day resolution from 30 minute
+            data)
+        periodicity: The periodicity to use for the output TimeSeries object. This is useful to provide if the
+            derivation calculation involves aggregation.
         **kwargs: Arguments required for the calculation
 
     Returns:
         TimeSeries: The resulting TimeSeries after applying the calculation.
     """
     calc_instance = calc(**kwargs, column_name=column_name)
-    new_df = calc_instance.evaluate(ts.df, include_dependency_columns=include_dependencies)
+
+    # Where aggregation is required there is a possibility that the data to be aggregated has the same
+    # source column name as the output aggregated data. Check if the calculation instance has a default
+    # column name matching the timeseries source column name and enable the `allow_override` flag if required.
+    allow_override = True
+    if calc_instance.default_column_name in ts.df.columns:
+        allow_override = False
+
+    new_df = calc_instance.evaluate(
+        ts.df, include_dependency_columns=include_dependencies, allow_override=allow_override
+    )
 
     # TODO: this could use some work.
     new_column_metadata = (
@@ -381,8 +398,8 @@ def derive(
     new_ts = TimeSeries(
         df=new_df,
         time_name=ts.time_name,
-        resolution=ts.resolution,
-        periodicity=ts.periodicity,
+        resolution=resolution if not None else ts.resolution,
+        periodicity=periodicity if not None else ts.periodicity,
         supplementary_columns=ts.supplementary_columns,
         flag_columns=ts.flag_columns,
         flag_systems=ts.flag_systems,

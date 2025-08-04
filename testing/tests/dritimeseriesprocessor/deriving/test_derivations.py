@@ -8,6 +8,7 @@ from time_stream import Period, TimeSeries
 from dritimeseriesprocessor.deriving.calculation import Calculation
 from dritimeseriesprocessor.deriving.derivations import (
     ActualVapourPressureFao56Eq54,
+    DailyPotentialEvaporation,
     DailyTotalRadiation,
     LatentHeatOfVaporization,
     NetRadiation,
@@ -22,7 +23,7 @@ from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMe
 from testing.utils.testing_helper import TestHelper
 
 
-def init_timeseries():
+def init_timeseries() -> TimeSeries:
     df = pl.DataFrame(
         {
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
@@ -36,7 +37,7 @@ def init_timeseries():
 
 class MockCalculation(Calculation):
     # Zero dependencies
-    def __init__(self, column_name):
+    def __init__(self, column_name: str):
         super().__init__("Mock calculation", column_name, "mock_unit")
 
     @property
@@ -48,7 +49,7 @@ class MockCalculation(Calculation):
 
 
 class TestDerive(unittest.TestCase):
-    def test_derive_calculation(self):
+    def test_derive_calculation(self) -> None:
         """Test that a new timeseries is created when deriving a calculation, with appropriate metadata and data."""
         ts = init_timeseries()
         calc = MockCalculation
@@ -69,7 +70,7 @@ class TestDerive(unittest.TestCase):
 
 
 class TestLatentHeatOfVaporization(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         df = pl.DataFrame({"TA": [-20, 0, 20, 100]})
         expected = df.with_columns(pl.Series("LV", [2.54, 2.501, 2.45, 2.26]))
 
@@ -80,7 +81,7 @@ class TestLatentHeatOfVaporization(unittest.TestCase):
 
 
 class TestWindSpeedHeightCorrection(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         # Taken from FAO56 EXAMPLE 14 https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
         df = pl.DataFrame({"WS": [3.2]})
         original_height = 10
@@ -93,7 +94,7 @@ class TestWindSpeedHeightCorrection(unittest.TestCase):
 
 
 class TestActualVapourPressureFao56Eq54(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         # Taken from FAO56 EXAMPLE 19 https://www.fao.org/4/x0490e/x0490e08.htm
         df = pl.DataFrame({"RH": [90, 52], "TA": [28, 38]})
         expected = df.with_columns(pl.Series("EA", [3.402, 3.445]))
@@ -105,7 +106,7 @@ class TestActualVapourPressureFao56Eq54(unittest.TestCase):
 
 
 class TestVapourPressureCurveSlope(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         # Taken from FAO56 EXAMPLE 18, 19 and 20 https://www.fao.org/4/x0490e/x0490e08.htm
         df = pl.DataFrame({"TA": [16.9, 20.7, 28, 38]})
         expected = df.with_columns(pl.Series("DELTA", [0.122, 0.15, 0.22, 0.358]))
@@ -117,7 +118,7 @@ class TestVapourPressureCurveSlope(unittest.TestCase):
 
 
 class TestPsychrometricConstant(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         # Taken from FAO56 EXAMPLE 2 https://www.fao.org/4/x0490e/x0490e07.htm#psychrometric%20constant%20(g)
         # Taken from FAO56 EXAMPLE 18 https://www.fao.org/4/x0490e/x0490e08.htm
         df = pl.DataFrame({"TA": [16.9, 20], "PA": [100.1, 81.8]})
@@ -130,7 +131,7 @@ class TestPsychrometricConstant(unittest.TestCase):
 
 
 class TestSaturationVapourPressure(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         # Taken from FAO56 EXAMPLE 3 https://www.fao.org/4/x0490e/x0490e07.htm
         df = pl.DataFrame({"TA": [15.0, 24.5]})
         expected = df.with_columns(pl.Series("ES", [1.705, 3.075]))
@@ -142,7 +143,7 @@ class TestSaturationVapourPressure(unittest.TestCase):
 
 
 class TestPotentialEvapotranspiration30Min(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         # Taken from COSMOS.LEVEL3_DATA_30MIN Oracle DB view:
         #   Site: CHOBH,
         #   Dates: [2015-03-14 04:30:00, 2017-05-30 16:30:00, 2022-01-18 09:30:00, 2023-08-21 11:00:00]
@@ -182,7 +183,7 @@ class TestPotentialEvapotranspiration30Min(unittest.TestCase):
 
 
 class TestNetRadiation(unittest.TestCase):
-    def test_calculation(self):
+    def test_calculation(self) -> None:
         df = pl.DataFrame(
             {
                 "SWIN": [22.9, 19.3, 14, 25.1],
@@ -233,5 +234,41 @@ class TestDailyTotalRadiation(TestHelper):
 
         calc = DailyTotalRadiation(column_name="SWOUT", kwargs={"SWOUT": "SWOUT"})
         result = calc.evaluate(df)
+
+        assert_frame_equal(expected, result)
+
+
+class TestDailyPotentialEvaporation(TestHelper):
+    def test_evaluate(self) -> None:
+        df = pl.read_csv(
+            self.input_dir.joinpath("derivations", "pe_pt30m_3_days.csv"),
+            schema=pl.Schema({"time": pl.Datetime(time_zone=timezone.utc), "PE": pl.Float64}),
+        )
+
+        expected = pl.DataFrame(
+            {
+                "time": [
+                    datetime(2024, 3, 8, 0, 0, 0, tzinfo=timezone.utc),
+                    datetime(2024, 3, 9, 0, 0, 0, tzinfo=timezone.utc),
+                    datetime(2024, 3, 10, 0, 0, 0, tzinfo=timezone.utc),
+                ],
+                "mean_sum_PE": [145274473688.36975, 129098827732.21971, 102707247337.52173],
+                "count_PE": [48, 48, 48],
+                "expected_count_time": [86400000000, 86400000000, 86400000000],
+                "valid_PE": [True, True, True],
+            },
+            schema=pl.Schema(
+                {
+                    "time": pl.Datetime(time_zone=timezone.utc),
+                    "mean_sum_PE": pl.Float64,
+                    "count_PE": pl.UInt32,
+                    "expected_count_time": pl.Int64,
+                    "valid_PE": bool,
+                }
+            ),
+        )
+
+        calc = DailyPotentialEvaporation(pe="PE", column_name="PE")
+        result = calc.evaluate(df, allow_override=True)
 
         assert_frame_equal(expected, result)

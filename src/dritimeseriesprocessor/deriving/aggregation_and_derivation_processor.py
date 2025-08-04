@@ -143,7 +143,14 @@ class AggregationAndDerivationProcessor:
 
         logger.debug(f"Calculating derivation for timeseries: {ts_id} using method: {derivation_method_name}")
 
-        derived_data = derive(ts, derivation_method, ts_metadata["sourceColumnName"], **kwargs)
+        derived_data = derive(
+            ts=ts,
+            calc=derivation_method,
+            column_name=ts_metadata["sourceColumnName"],
+            resolution=ts_metadata["resolution"],
+            periodicity=ts_metadata["periodicity"],
+            **kwargs,
+        )
 
         self.ts_ids[ts_id]["data"] = derived_data
 

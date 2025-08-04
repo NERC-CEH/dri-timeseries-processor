@@ -43,3 +43,30 @@ class TestAggregationAndDerivationProcessor(TestHelper):
         self.compare_ts_ids(
             expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids, attributes_to_ignore=["metadata"]
         )
+
+    def test_aggregation_pe_1day(self) -> None:
+        """
+        Check aggregation for potential evaporation at 1 day resolution is calculated correctly.
+
+        This should involve calling both the derivation calculations to produce the net radiation and 30min potential
+        evaporation data, and the aggregation calculation to produce 1 day potential evaporation data.
+
+        """
+        input_json_path = self.data_dir.joinpath(
+            "inputs", "aggregation_and_derivation_processor", "input_ts_ids_pe_1day.json"
+        )
+        input_ts_ids = self.load_ts_ids_from_json_file(input_json_path)
+
+        expected_json_path = self.data_dir.joinpath(
+            "outputs", "aggregation_and_derivation_processor", "expected_ts_ids_pe_1day.json"
+        )
+        expected_ts_ids = self.load_ts_ids_from_json_file(expected_json_path)
+
+        aggregation_and_derivation_processor = AggregationAndDerivationProcessor(ts_ids=input_ts_ids)
+        actual_ts_ids = aggregation_and_derivation_processor.run()
+
+        # Depending on the version of time_stream installed, metadata may not be transferred through to the aggregated
+        # output. Therefore don't compare the metadata attribute for the time being.
+        self.compare_ts_ids(
+            expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids, attributes_to_ignore=["metadata"]
+        )
