@@ -2530,7 +2530,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_UNC",
       "originatingFacility": [
@@ -2614,7 +2614,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC65",
       "originatingFacility": [
@@ -2656,7 +2656,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WS",
       "originatingFacility": [
@@ -2698,7 +2698,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "Q",
       "originatingSite": [
@@ -2737,7 +2737,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP",
       "originatingFacility": [
@@ -2779,7 +2779,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "ALBEDO",
       "originatingSite": [
@@ -2818,7 +2818,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "HS",
       "originatingFacility": [
@@ -2860,7 +2860,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC15",
       "originatingFacility": [
@@ -2902,7 +2902,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TS",
       "originatingFacility": [
@@ -2944,7 +2944,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC40",
       "originatingFacility": [
@@ -2986,7 +2986,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SWIN",
       "originatingFacility": [
@@ -3028,7 +3028,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC15",
       "originatingFacility": [
@@ -3112,7 +3112,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WD",
       "originatingFacility": [
@@ -3154,7 +3154,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC40",
       "originatingFacility": [
@@ -3196,7 +3196,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_SOILPERM",
       "originatingFacility": [
@@ -3364,7 +3364,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_TEMP",
       "originatingFacility": [
@@ -3448,7 +3448,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RHO_A_MEAN",
       "originatingFacility": [
@@ -3490,7 +3490,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UY_UZ",
       "originatingFacility": [
@@ -3574,7 +3574,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL5",
       "originatingFacility": [
@@ -3658,7 +3658,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL20",
       "originatingFacility": [
@@ -3700,7 +3700,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL10",
       "originatingFacility": [
@@ -3784,7 +3784,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "G2",
       "originatingFacility": [
@@ -3868,7 +3868,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_PERIOD",
       "originatingFacility": [
@@ -3910,7 +3910,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PA",
       "originatingFacility": [
@@ -3952,7 +3952,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TA",
       "originatingFacility": [
@@ -3994,7 +3994,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UX",
       "originatingFacility": [
@@ -4036,7 +4036,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWIN",
       "originatingFacility": [
@@ -4162,7 +4162,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TNR01C",
       "originatingFacility": [
@@ -4243,7 +4243,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WS_RES",
       "originatingFacility": [
@@ -4285,7 +4285,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TAU",
       "originatingFacility": [
@@ -4327,7 +4327,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_SOILPERM",
       "originatingFacility": [
@@ -4369,7 +4369,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UY",
       "originatingFacility": [
@@ -4579,7 +4579,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SWOUT",
       "originatingFacility": [
@@ -4621,7 +4621,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UZ",
       "originatingFacility": [
@@ -4747,7 +4747,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_SOILEC",
       "originatingFacility": [
@@ -4789,7 +4789,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UX",
       "originatingFacility": [
@@ -4831,7 +4831,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "MSLP",
       "originatingSite": [
@@ -4870,7 +4870,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWOUT",
       "originatingFacility": [
@@ -4912,7 +4912,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_RH",
       "originatingFacility": [
@@ -5035,7 +5035,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP_TIPPING",
       "originatingFacility": [
@@ -5077,7 +5077,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RN",
       "originatingSite": [
@@ -5118,7 +5118,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_COR",
       "originatingFacility": [
@@ -5202,7 +5202,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC65",
       "originatingFacility": [
@@ -5283,7 +5283,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_SOILEC",
       "originatingFacility": [
@@ -5325,7 +5325,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_VWC",
       "originatingFacility": [
@@ -5367,7 +5367,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UY",
       "originatingFacility": [
@@ -5409,7 +5409,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UX_UY",
       "originatingFacility": [
@@ -5535,7 +5535,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "U_STAR",
       "originatingFacility": [
@@ -5577,7 +5577,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWIN_MULT",
       "originatingFacility": [
@@ -5619,7 +5619,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "G1",
       "originatingFacility": [
@@ -5661,7 +5661,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PE",
       "originatingSite": [
@@ -5700,7 +5700,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UZ",
       "originatingFacility": [
@@ -5742,7 +5742,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL50",
       "originatingFacility": [
@@ -5826,7 +5826,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_BARE",
       "originatingFacility": [
@@ -5910,7 +5910,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UX_UZ",
       "originatingFacility": [
@@ -5994,7 +5994,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_VWC",
       "originatingFacility": [
@@ -6075,7 +6075,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWOUT_MULT",
       "originatingFacility": [
@@ -6156,7 +6156,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_TSOIL",
       "originatingFacility": [
@@ -6240,7 +6240,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP_RAINE",
       "originatingFacility": [
@@ -6366,7 +6366,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL2",
       "originatingFacility": [
@@ -6534,7 +6534,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_TSOIL",
       "originatingFacility": [
@@ -6702,7 +6702,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "E_SAT_MEAN",
       "originatingFacility": [
@@ -6786,7 +6786,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD",
       "originatingFacility": [
@@ -6870,7 +6870,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RH",
       "originatingFacility": [

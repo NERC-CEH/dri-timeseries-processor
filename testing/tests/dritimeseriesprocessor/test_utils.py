@@ -139,27 +139,26 @@ class TestSteralizeDates(unittest.TestCase):
         self.assertEqual(result, (expected_start, end))
 
 
-class TestGroupByDateSiteID(unittest.TestCase):
-    """Test the group_by_date_site_id function."""
+class TestGroupByDate(unittest.TestCase):
+    """Test the group_by_date function."""
 
-    def test_group_by_date_site_id(self):
+    def test_group_by_date(self):
         """Test that df is split correctly."""
 
         data = {"time": [datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 2, 1, 10, 0),
                         datetime(2024, 1, 2, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0)],
-                "SITE_ID": ["site1", "site1", "site1", "site2", "site3", "site3"],
                 "value": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}
-        schema = {"time": pl.Datetime, "SITE_ID": pl.String, "value": pl.Float64}
+        schema = {"time": pl.Datetime, "value": pl.Float64}
 
         df = pl.DataFrame(data, schema)
 
-        result = utils.group_by_date_site_id(df)
+        result = utils.group_by_date(df)
 
-        # Should be 4 dataframes
-        assert len(result) == 4
+        # Should be 3 dataframes
+        assert len(result) == 3
 
-        for date, site, data in result:
-            expected = df.filter((pl.col('time').dt.date() == date) & (pl.col('SITE_ID') == site))
+        for date, data in result:
+            expected = df.filter((pl.col('time').dt.date() == date))
             polars.testing.assert_frame_equal(data, expected)
 
 

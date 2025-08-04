@@ -8,7 +8,7 @@ import polars.testing
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import group_by_date_site_id, steralize_dates
+from dritimeseriesprocessor.utils import group_by_date, steralize_dates
 from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 
@@ -44,7 +44,7 @@ class TestS3WriterWithData(BaseTestCase):
             prefix='cosmos/dataset=test_dataset',
             start_date=start_date,
             end_date=end_date,
-            site_ids=['site1', 'site2']
+            site_ids=['site1']
         )
 
     def test_polars_df_bytes_conversion(self):
@@ -73,7 +73,8 @@ class TestS3WriterWithData(BaseTestCase):
         writer.write(
             bucket_name=self.bucket_name,
             dataset="test_dataset",
-            data=[(datetime(2024, 1, 9, 1, 1, 1), 'site1', self.data)]
+            site_id="site1",
+            data=[(datetime(2024, 1, 9, 1, 1, 1), self.data)]
         )
 
         self.assertEqual(mock_get_bytes.called, 1)
@@ -83,19 +84,20 @@ class TestS3WriterWithData(BaseTestCase):
 
         writer = S3Writer(self.s3_client)
 
-        grouped_data = group_by_date_site_id(self.data)
+        grouped_data = group_by_date(self.data)
 
         writer.write(
             bucket_name=self.bucket_name,
             dataset="test_dataset",
+            site_id="site1",
             data=grouped_data)
 
         reader = DuckDbParquetReader()
 
         # For each dataset written get localstack df
-        for date, site, df in grouped_data:
+        for date, df in grouped_data:
 
-            key = f'cosmos/dataset=test_dataset/site={site}/date={date}/data.parquet'
+            key = f'cosmos/dataset=test_dataset/site=site1/date={date}/data.parquet'
             
             result = reader.read(
                 query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}');"
