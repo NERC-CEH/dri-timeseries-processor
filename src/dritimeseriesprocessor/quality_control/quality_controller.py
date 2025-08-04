@@ -80,13 +80,37 @@ def run_quality_control(
 
         for config in qc_configs:
             # Run QC methods on time series
-            # TODO: Will have to add in start and end dates so that QC only applied to specific part of time
-            #  series that config is valid for, based on observationInterval startDate and endDate - see ticket FW-740
-            for method in config.configs:
-                qc_func = qc_methods[method.name]
-                logger.info(f"Quality controlling {ts_id}: {method.name}. Constraints: {method.parameters}")
-                ts_ids = qc_func(ts_ids, ts_id, qc_flag_col, method.name, **method.parameters)
+            for qc_check in config.configs:
+                logger.info(f"Quality controlling {ts_id}: {qc_check.name}. Constraints: {qc_check.parameters}")
 
+                method_metadata = qc_methods[qc_check.name]
+
+                # Determine which time series we are running the qc test on
+                qc_ts = ts
+                if "dep_ts" in qc_check.parameters:
+                    qc_ts = ts_ids[qc_check.parameters["dep_ts"]]["data"]
+                    # No longer need this key in the parameters once we've got the dependency time series
+                    qc_check.parameters.pop("dep_ts")
+
+                if method_metadata.arg_mapping:
+                    for new_name, old_name in method_metadata.arg_mapping.items():
+                        qc_check.parameters[new_name] = qc_check.parameters.pop(old_name)
+
+                if method_metadata.kwargs:
+                    for parameter, value in method_metadata.kwargs.items():
+                        qc_check.parameters[parameter] = value
+
+                qc_result = qc_ts.qc_check(
+                    method_metadata.function_name,
+                    check_column=qc_ts.column_name,
+                    observation_interval=qc_check.observation_interval,
+                    **qc_check.parameters,
+                )
+
+                # flag the primary time series with the results
+                ts.add_flag(qc_flag_col, qc_check.name, qc_result)
+
+                # remove the data that has been flagged if required
                 if remove:
                     ts.df = remove_qcd_data(ts.df, ts.column_name, qc_flag_col)
                     ts_ids[ts_id]["data"] = ts

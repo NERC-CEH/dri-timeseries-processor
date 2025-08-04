@@ -3,60 +3,115 @@
         "name": "Range check",
         "description": "Checks if the value falls within a specified range",
         "id": 1,
-        "function_name": "range_check"
+        "function_name": "range",
+        "arg_mapping": {
+            "min_value": "lt",
+            "max_value": "gt"
+        }
     },
     "battery_v": {
         "name": "Battery voltage check",
         "description": "Checks that the battery voltage level is above the threshold",
         "id": 2,
-        "function_name": "battery_voltage_check"
+        "function_name": "comparison",
+        "arg_mapping": {
+            "compare_to": "lt"
+        },
+        "kwargs": {
+            "operator": "<"
+        }
     },
     "samples": {
         "name": "Samples check",
         "description": "Checks if the number of samples taken in measuring period are too low.",
         "id": 4,
-        "function_name": "soilmet_scans_check"
+        "function_name": "comparison",
+        "arg_mapping": {
+            "compare_to": "lt"
+        },
+        "kwargs": {
+            "operator": "<"
+        }
     },
     "error_code": {
         "name": "Error codes check",
         "description": "Check for specific error codes",
         "id": 8,
-        "function_name": "error_codes_check"
+        "function_name": "comparison",
+        "arg_mapping": {
+            "compare_to": "value"
+        },
+        "kwargs": {
+            "operator": "is_in"
+        }
     },
     "spike": {
         "name": "Spike check",
         "description": "Checks for individual spikes in data that exceed a threshold",
         "id": 16,
-        "function_name": "spike_check"
+        "function_name": "spike",
+        "arg_mapping": {
+            "threshold": "gt"
+        }
     },
     "nr01_temp": {
         "name": "Radiometer temperature check",
-        "description": "Removes LWIN and LWOUT where radiometer tempurature out of range",
+        "description": "Removes LWIN and LWOUT where radiometer temperature out of range",
         "id": 32,
-        "function_name": "radiometer_ta_check"
+        "function_name": "range",
+        "arg_mapping": {
+            "min_value": "lt",
+            "max_value": "gt"
+        }
     },
     "hfp_removal": {
         "name": "Heat flux plates check",
         "description": "Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate",
         "id": 64,
-        "function_name": "heat_flux_plate_check"
+        "function_name": "range",
+        "arg_mapping": {
+            "min_value": "time_ge",
+            "max_value": "time_le"
+        },
+        "kwargs": {
+            "within": true,
+            "inclusive": true
+        }
     },
     "pluvio_diag": {
         "name": "Pluvio Diagnostic",
         "description": "Removes precip where pluvio diagnostic value > 0",
         "id": 128,
-        "function_name": "pluvio_diagnostic_check"
+        "function_name": "comparison",
+        "arg_mapping": {
+            "compare_to": "gt"
+        },
+        "kwargs": {
+            "operator": ">"
+        }
     },
     "snowd_signal": {
         "name": "Snow distance signal",
         "description": "Removes snow depth where signal value too low",
         "id": 256,
-        "function_name": "snow_distance_signal_check"
+        "function_name": "comparison",
+        "arg_mapping": {
+            "compare_to": "lt"
+        },
+        "kwargs": {
+            "operator": "<"
+        }
     },
     "tdt_tsoil": {
         "name": "TDT soil temp",
         "description": "Removes TDT VWC where TDT soil temperature too low",
         "id": 512,
-        "function_name": "tdt_soil_temp_check"
+        "function_name": "comparison",
+        "arg_mapping": {
+            "compare_to": "lt"
+        },
+        "kwargs": {
+            "operator": "<"
+        }
     }
 }
