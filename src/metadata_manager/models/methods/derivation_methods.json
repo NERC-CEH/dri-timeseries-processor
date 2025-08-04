@@ -12,10 +12,10 @@
     "function_name": "NetRadiation"
   },
   "calculate-calc_daily_radiation": {
-    "name": "Daily Net Radiation",
-    "description": "Net radiation calculated at a 1 day time resolution.",
+    "name": "Daily Total Radiation",
+    "description": "Daily total radiation calculated at a 1 day time resolution.",
     "id": 3,
-    "function_name": "DailyRadiation"
+    "function_name": "DailyTotalRadiation"
   },
   "calculate-calc_daily_pe": {
     "name": "Daily Potential Evaporation",
