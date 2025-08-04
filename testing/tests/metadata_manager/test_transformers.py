@@ -131,7 +131,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "resolution": "PT30M",
             "periodicity": "PT30M",
             "processing_level": "processed",
-            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
             "sourceSite": "ALIC1"
@@ -142,7 +142,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "resolution": "PT30M",
             "periodicity": "PT30M",
             "processing_level": "processed",
-            "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+            "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
             "sourceDataset": "PROCESSED_DATA_30MIN",
             "sourceColumnName": "TA",
             "sourceSite": "BUNNY"

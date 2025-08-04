@@ -21,7 +21,7 @@ class WriterInterface(ABC):
 
     @abstractmethod
     def write(self, *args, **kwargs) -> None:
-        """Abstract method for read operations"""
+        """Abstract method for write operations"""
 
 
 class S3Writer(WriterInterface):
@@ -64,7 +64,7 @@ class S3Writer(WriterInterface):
         return buffer
 
     @metrics.track_s3_write_time()
-    def write(self, bucket_name: str, dataset: str, data: GroupBy) -> None:
+    def write(self, bucket_name: str, dataset: str, site_id: str, data: GroupBy) -> None:
         """Uploads objects to an S3 bucket.
 
         This function attempts to upload objects to a specified S3 bucket
@@ -74,13 +74,14 @@ class S3Writer(WriterInterface):
         Args:
             bucket_name: The name of the S3 bucket.
             dataset: The dataset which the data sits in.
+            site_id: The ID of the site
             data: data to write to s3 object
 
         Raises:
             RuntimeError, ClientError
         """
 
-        for date, site_id, df in data:
+        for date, df in data:
             s3_key = self._build_s3_key(dataset, site_id, date)
 
             body = self._get_bytes(df)

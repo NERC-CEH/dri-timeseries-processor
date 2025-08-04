@@ -80,19 +80,17 @@ def steralize_dates(
     return start_date, end_date
 
 
-def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
-    """Group a dataframe by the date and site_id column.
+def group_by_date(df: pl.DataFrame) -> List[GroupBy]:
+    """Group a dataframe by the date.
 
     Args:
         df: A polars dataframe
 
     Returns:
-        A list of dataframes grouped by date and site_id.
+        dataframes grouped by date.
     """
 
-    return [
-        (group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col("time").dt.date(), pl.col("SITE_ID")])
-    ]
+    return [(group[0][0], group[1]) for group in df.group_by([pl.col("time").dt.date()])]
 
 
 def missing_expr(column_name: str) -> pl.Expr:
