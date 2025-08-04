@@ -73,6 +73,8 @@ class DerivationProcessor:
             )
 
         input_data = {}
+        periodicity = None
+        resolution = None
         for input_ts_id in ts_metadata["inputs"]:
             input_ts_metadata = self.ts_ids[input_ts_id]
             if not input_ts_metadata.get("data") and input_ts_metadata.get("method_type") == "calculate":
@@ -85,9 +87,12 @@ class DerivationProcessor:
                 )
 
             # If the time column hasn't been added to input_data, add it in so it's available in the final TimeSeries
-            # object used for calculation the derivation
+            # object used for calculation of the derivation. At this point also set the periodicity and resolution
+            # values based on the input ts metadata.
             if TIME_COLUMN not in input_data.keys():
                 input_data[TIME_COLUMN] = input_ts.df[input_ts.time_name]
+                periodicity = input_ts_metadata["periodicity"]
+                resolution = input_ts_metadata["resolution"]
 
             source_column_name = input_ts_metadata["sourceColumnName"]
             input_data[source_column_name] = input_ts.df[source_column_name]
@@ -96,8 +101,8 @@ class DerivationProcessor:
         ts = TimeSeries(
             df=pl.from_dict(input_data),
             time_name=TIME_COLUMN,
-            resolution=ts_metadata["resolution"],
-            periodicity=ts_metadata["periodicity"],
+            resolution=resolution,
+            periodicity=periodicity,
             metadata={
                 "site_id": ts_metadata["sourceSite"],
                 "column_name": ts_metadata["sourceColumnName"],

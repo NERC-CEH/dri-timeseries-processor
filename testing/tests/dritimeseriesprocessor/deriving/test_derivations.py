@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 
 import polars as pl
 from polars.testing import assert_frame_equal
@@ -8,6 +8,7 @@ from time_stream import Period, TimeSeries
 from dritimeseriesprocessor.deriving.calculation import Calculation
 from dritimeseriesprocessor.deriving.derivations import (
     ActualVapourPressureFao56Eq54,
+    DailyTotalRadiation,
     LatentHeatOfVaporization,
     NetRadiation,
     PotentialEvapotranspiration30Min,
@@ -18,6 +19,7 @@ from dritimeseriesprocessor.deriving.derivations import (
     derive,
 )
 from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
+from testing.utils.testing_helper import TestHelper
 
 
 def init_timeseries():
@@ -195,3 +197,41 @@ class TestNetRadiation(unittest.TestCase):
         result = calc.evaluate(df)
 
         assert_frame_equal(result, expected, check_exact=False, atol=0.001)
+
+
+class TestDailyTotalRadiation(TestHelper):
+    def test_evaluate(self) -> None:
+        df = pl.read_csv(
+            self.input_dir.joinpath("derivations", "rn_pt30m_3_days.csv"),
+            schema=pl.Schema({"time": pl.Datetime(time_zone=timezone.utc), "SWOUT": pl.Float64}),
+        )
+
+        expected = pl.DataFrame(
+            {
+                "time": [
+                    datetime(2024, 3, 8, 0, 0, 0, tzinfo=timezone.utc),
+                    datetime(2024, 3, 9, 0, 0, 0, tzinfo=timezone.utc),
+                    datetime(2024, 3, 10, 0, 0, 0, tzinfo=timezone.utc),
+                ],
+                "mean_sum_SWOUT": [15162253356521.738, 12364617599999.998, 7960137182608.695],
+                "count_SWOUT": [23, 23, 23],
+                "expected_count_time": [86400000000, 86400000000, 86400000000],
+                "valid_SWOUT": [True, True, True],
+                "SWOUT": [1310018690003.4783, 1068302960639.9999, 687755852577.3914],
+            },
+            schema=pl.Schema(
+                {
+                    "time": pl.Datetime(time_zone=timezone.utc),
+                    "mean_sum_SWOUT": pl.Float64,
+                    "count_SWOUT": pl.UInt32,
+                    "expected_count_time": pl.Int64,
+                    "valid_SWOUT": bool,
+                    "SWOUT": pl.Float64,
+                }
+            ),
+        )
+
+        calc = DailyTotalRadiation(column_name="SWOUT", kwargs={"SWOUT": "SWOUT"})
+        result = calc.evaluate(df)
+
+        assert_frame_equal(expected, result)
