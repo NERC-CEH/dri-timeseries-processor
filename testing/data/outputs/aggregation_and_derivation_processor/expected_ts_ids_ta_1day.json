@@ -613,7 +613,7 @@
       "mean_TA": [6.047812499999998, 8.646312499999999, 8.044833333333335],
       "count_TA": [48, 48, 48],
       "expected_count_time": [48, 48, 48],
-      "valid": [true, true, true]
+      "valid_TA": [true, true, true]
     }
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed": {

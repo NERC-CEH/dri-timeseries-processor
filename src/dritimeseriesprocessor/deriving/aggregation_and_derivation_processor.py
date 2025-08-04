@@ -22,10 +22,17 @@ def get_derivation_methods() -> Dict:
     return load_methods(ComponentType.DERIVATION.value)
 
 
+@lru_cache(maxsize=1)
+def get_aggregation_methods() -> Dict:
+    """Load the aggregation methods and cache the results."""
+    return load_methods(ComponentType.AGGREGATION.value)
+
+
 class AggregationAndDerivationProcessor:
     """Calculates aggregated and derived data for any relevant TimeSeries."""
 
     def __init__(self, ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]):
+        self.aggregation_methods = get_aggregation_methods()
         self.derivation_methods = get_derivation_methods()
         self.ts_ids = ts_ids
 
@@ -39,6 +46,10 @@ class AggregationAndDerivationProcessor:
         for ts_id, ts_metadata in self.ts_ids.items():
             # Skip any time series which have already been calculated
             if ts_metadata.get("data"):
+                continue
+
+            # Skip any time series which don't need aggregation or derivation calculating
+            if ts_metadata.get("method_type") not in (DERIVATION_METHOD, AGGREGATION_METHOD):
                 continue
 
             self.calculate_derivation_or_aggregation_for_ts_id(ts_id, ts_metadata)
@@ -93,7 +104,13 @@ class AggregationAndDerivationProcessor:
         input_data = {}
         for input_ts_id in ts_metadata["inputs"]:
             input_ts_metadata = self.ts_ids[input_ts_id]
-            input_ts = self.get_input_ts(ts_id, ts_metadata, input_ts_id)
+            input_ts = self.get_ts_data(ts_id, input_ts_id)
+
+            if not input_ts:
+                raise ValueError(
+                    f"Unable to calculate derivation for {ts_id}. The required input {input_ts_id} has no available "
+                    "data."
+                )
 
             # If the time column hasn't been added to input_data, add it in so it's available in the final TimeSeries
             # object used for calculation the derivation
@@ -140,6 +157,7 @@ class AggregationAndDerivationProcessor:
 
         """
         aggregation_method_name = ts_metadata["method"]
+        aggregation_method = self.aggregation_methods.get(aggregation_method_name)
 
         # There should only be a single input to be aggregated. Any aggregations with multiple inputs should be
         # calculated using the derivation processor
@@ -147,30 +165,32 @@ class AggregationAndDerivationProcessor:
             raise ValueError(f"More than one input has been provided for aggregation for {ts_id}")
 
         input_ts_id = ts_metadata["inputs"][0]
-        input_ts = self.get_input_ts(ts_id, ts_metadata, input_ts_id)
+        input_ts = self.get_ts_data(ts_id, input_ts_id)
 
-        aggregation_function = aggregation_method_name.replace("aggregate-", "")
+        if not input_ts:
+            raise ValueError(
+                f"Unable to calculate aggregation for {ts_id}. The required input {input_ts_id} has no available data."
+            )
+
         aggregation_period = Period.of_iso_duration(ts_metadata["periodicity"])
 
         aggregated_ts = input_ts.aggregate(
             aggregation_period=aggregation_period,
-            aggregation_function=aggregation_function,
-            column_name=ts_metadata["sourceColumnName"],
+            aggregation_function=aggregation_method.function_name,
+            columns=ts_metadata["sourceColumnName"],
         )
 
         self.ts_ids[ts_id]["data"] = aggregated_ts
 
-    def get_input_ts(self, ts_id: str, ts_metadata: Dict[str, Any], input_ts_id: str) -> TimeSeries:
+    def get_ts_data(self, ts_id: str, input_ts_id: str) -> TimeSeries:
         """
-        Get the TimeSeries object for an input timeseries id.
+        Get the TimeSeries object for a timeseries id.
 
-        If the input timeseries doesn't have data available immediately, any applicable deriviation or aggregation
+        If the timeseries doesn't have data available immediately, any applicable deriviation or aggregation
         calculations will be run.
 
         Args:
-            ts_id: ID of the 'parent' time series for which the input timeseries id is required.
-            ts_metadata: Dictionary of metadata corresponding to the 'parent' timeseries ID.
-            input_ts_id: ID of the input time series required for the 'parent' timeseries.
+            ts_id: ID of the time series to fetch data for
 
         Raises:
             ValueError: No data available for the input timeseries id even after attempting to calculate aggregation
@@ -185,7 +205,5 @@ class AggregationAndDerivationProcessor:
             self.calculate_derivation_or_aggregation_for_ts_id(input_ts_id, input_ts_metadata)
 
         input_ts = self.ts_ids[input_ts_id].get("data")
-        if not input_ts:
-            raise ValueError(f"Unable to process {ts_id}. The required input {input_ts_id} has no available data.")
 
         return input_ts
