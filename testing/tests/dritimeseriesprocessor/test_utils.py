@@ -139,27 +139,26 @@ class TestSteralizeDates(unittest.TestCase):
         self.assertEqual(result, (expected_start, end))
 
 
-class TestGroupByDateSiteID(unittest.TestCase):
-    """Test the group_by_date_site_id function."""
+class TestGroupByDate(unittest.TestCase):
+    """Test the group_by_date function."""
 
-    def test_group_by_date_site_id(self):
+    def test_group_by_date(self):
         """Test that df is split correctly."""
 
         data = {"time": [datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 2, 1, 10, 0),
                         datetime(2024, 1, 2, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0)],
-                "SITE_ID": ["site1", "site1", "site1", "site2", "site3", "site3"],
                 "value": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}
-        schema = {"time": pl.Datetime, "SITE_ID": pl.String, "value": pl.Float64}
+        schema = {"time": pl.Datetime, "value": pl.Float64}
 
         df = pl.DataFrame(data, schema)
 
-        result = utils.group_by_date_site_id(df)
+        result = utils.group_by_date(df)
 
-        # Should be 4 dataframes
-        assert len(result) == 4
+        # Should be 3 dataframes
+        assert len(result) == 3
 
-        for date, site, data in result:
-            expected = df.filter((pl.col('time').dt.date() == date) & (pl.col('SITE_ID') == site))
+        for date, data in result:
+            expected = df.filter((pl.col('time').dt.date() == date))
             polars.testing.assert_frame_equal(data, expected)
 
 
@@ -227,84 +226,6 @@ class TestRemoveSitesNotInStore(unittest.TestCase):
             utils.remove_sites_not_in_store(sites, metadata_sites)
 
         self.assertEqual(str(err.exception), "The following sites ['B'] are not in the metadata store. Remove from '--sites' argument.")
-
-
-class TestExtractUniqueTimeseriesDefinitions(unittest.TestCase):
-    """Test the extract_unique_timeseries_definitions function."""
-    test_timeseries_ids = {
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed":
-        {
-            "ts_def": "test_a"
-        },
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed":
-        {
-            "ts_def": "test_b"
-        },
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-pa_30min_processed":
-        {
-            "ts_def": "test_a"
-        },
-        "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed":
-        {
-            "ts_def": "test_d",
-        }
-    }
-
-    expected = ["test_a", "test_b", "test_d"]
-
-    result = utils.extract_unique_timeseries_defs(test_timeseries_ids)
-
-    assert sorted(result) == sorted(expected)
-
-
-class TestExtractDependentTimeseriesDefs(unittest.TestCase):
-    """Test the extract_dependent_timeseries_defs function."""
-
-    test_timeseries_defs_for_processing = {
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed":
-        {
-            "method_type": "calculate",
-            "inputs":
-            [
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed",
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed",
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed",
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed",
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed"
-            ]
-        },
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed":
-        {
-            "method_type": "process",
-            "inputs":
-            [
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed", # duplicate
-                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_raw"
-            ]
-        },
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw":
-        {
-            "inputs":
-            []
-        }
-    }
-
-    expected = [
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed",
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed",
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed",
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed",
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed",
-        "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_raw"
-    ]
-
-    result = utils.extract_dependent_timeseries_defs(test_timeseries_defs_for_processing)
-
-    assert sorted(result) == sorted(expected)
 
 
 class TestMapDefToId(unittest.TestCase):

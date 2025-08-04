@@ -1,9 +1,9 @@
 import logging
+import re
 from datetime import datetime
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import boto3
-from time_stream import TimeSeries
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
@@ -14,20 +14,24 @@ from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import (
-    extract_dependent_timeseries_defs,
-    extract_unique_timeseries_defs,
-    group_by_date_site_id,
+    group_by_date,
     merge_ts_def_metadata,
 )
 from metadata_manager.models.common import (
+    URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
     build_periodicity_query_parameter,
     build_processing_query_parameter,
     build_site_query_parameter,
-    build_timeseries_def_query_parameter,
+    build_timeseries_id_query_parameter,
     build_view_query_parameter,
 )
-from metadata_manager.models.service import load_datasets, load_nested_timeseries_derivations, load_sites
+from metadata_manager.models.service import (
+    handle_derivation_response,
+    load_datasets,
+    load_dependent_datasets,
+    load_sites,
+)
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
 
 logger = logging.getLogger(__name__)
@@ -98,10 +102,8 @@ class TimeSeriesProcessor:
 
         # Writing
         # -------
-        # TODO We need to establish dataset names for the processed timeseries's
-        # after they are processed. Therefore for now, removing the writing of data
-        # writer = S3Writer(s3_client)
-        # TODO How do we write out when processing variables rather than whole dataset?
+        writer = S3Writer(self.s3_client)
+        self._write_timeseries(self.ts_ids, app_config.processed_bucket, writer)
 
         metrics.record_successful_run()
         logger.info("Processing completed successfully")
@@ -122,6 +124,10 @@ class TimeSeriesProcessor:
         self._get_user_timeseries_ids()
         self._get_processing_timeseries_ids()
         self._get_dependent_timeseries_ids()
+
+        # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
+        # timeseries ID.
+        self._add_derivation_metadata()
 
     def _get_user_timeseries_ids(self) -> None:
         """Collect the timeseries id metadata for user specified processed variables.
@@ -151,8 +157,8 @@ class TimeSeriesProcessor:
 
         In a similar way to `_get_user_timeseries_ids()` the metadata api service is queried and the extracted results
         are added to `self.ts_ids`. However, in this instance, the raw processing timeseries id metadata is requested
-        for the current site(s) and periodicities instead. Currently this is a hard coded list of variables: "BATTV",
-        "SCANS"and "TNR01C".
+        for the current site(s) instead. Currently this is a hard coded list of variables: "BATTV",
+        "SCANS"and "TNR01C", using a periodicity of PT30M.
 
         """
         # TODO: Determine these by looking at processing config dependencies in metadata
@@ -160,9 +166,15 @@ class TimeSeriesProcessor:
 
         processing_query_parameter = build_processing_query_parameter(level="raw")
 
+        # TODO: Once this information is available from the metadata service, remove the hardcoding of the periodicity
+        #   query parameter.
+
+        # Hardcode the periodicity to PT30M to ensure the correct raw data is fetched for the processing dependencies
+        periodicity_query_parameter = self._construct_periodicity_query_parameter("PT30M")
+
         self._get_ts_id_metadata(
             self.site_query_parameter
-            + self.periodicity_query_parameter
+            + periodicity_query_parameter
             + column_query_parameter
             + processing_query_parameter
             + self.view_query_parameter
@@ -170,31 +182,43 @@ class TimeSeriesProcessor:
 
     def _get_dependent_timeseries_ids(self) -> None:
         """
-        Fetch the derivation metadata for the timeseries IDs to be built and combine with the main time series metadata.
-        """
-        # Get derivation metadata for the timeseries IDs to be built
-        # Every timeseries ID will be dependent on another (raw or processed)
-        # Derivation metadata is held with the timeseries definition rather than the ID
-        # First extract all unique timeseries defs from the IDS to be processed
-        # Then extract all the dependencies associated with each timeseries definition and
-        # transform into required structure
-        unique_timeseries_defs = extract_unique_timeseries_defs(self.ts_ids)
-        timeseries_defs_derivation_map = load_nested_timeseries_derivations(unique_timeseries_defs)
+        Recurisvely identify any time series dependencies and fetch the corresponding metadata, adding the new
+        time series id metadata entries into the main self.ts_ids dictionary.
 
-        # Get timeseries ID metadata for all dependencies
-        # First extract all dependent timeseries definitions
-        # Then call the dataset endpoint with site and ts def to get the metadata
-        # Validate and transform response
-        dependent_timeseries_defs = extract_dependent_timeseries_defs(timeseries_defs_derivation_map)
-        timeseries_def_parameter = build_timeseries_def_query_parameter(dependent_timeseries_defs)
+        """
+        dependent_timeseries_ids = self._identify_dependent_ts_ids()
+
+        # Fetch the corresponding timeseries metadata for the list of dependent time series IDs identified previously.
+        timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_ids)
 
         # TODO remove the limit parameter once FW-692 has been implemented
         self._get_ts_id_metadata(
-            self.site_query_parameter + timeseries_def_parameter + self.view_query_parameter + [("_limit", 50)]
+            self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )
 
+    def _add_derivation_metadata(self) -> None:
+        """
+        For each time series id metadata object fetch and the corresponding the derivation metadata, storing it within
+        the main timeseries id metadata.
+
+        """
+        # Get the derivation metadata for the timeseries IDs to be built
+        ts_def_metadata = {
+            ts_id["ts_def"]: handle_derivation_response(ts_id["ts_def"]) for ts_id in self.ts_ids.values()
+        }
+
         # Add TS definition metadata to each timeseries ID
-        self.ts_ids = merge_ts_def_metadata(self.ts_ids, timeseries_defs_derivation_map)
+        self.ts_ids = merge_ts_def_metadata(self.ts_ids, ts_def_metadata)
+
+    def _identify_dependent_ts_ids(self) -> List[str]:
+        """Build a list of the dependencies for any existing ts_ids."""
+        dependent_timeseries_ids = []
+        for ts_id in self.ts_ids.keys():
+            ts_name = re.match(URI_ID_EXTRACT_REGEX, ts_id).group(1)
+            dependent_timeseries_list = load_dependent_datasets(ts_name)
+            dependent_timeseries_ids.extend([dependent_ts.ts_id for dependent_ts in dependent_timeseries_list])
+
+        return dependent_timeseries_ids
 
     def _load_raw_data(self) -> None:
         """Load the raw data for each time series."""
@@ -288,7 +312,7 @@ class TimeSeriesProcessor:
         return periodicity_query_parameter
 
     @staticmethod
-    def _write_timeseries(ts: TimeSeries, bucket_name: str, dataset: str, writer: S3Writer) -> None:
+    def _write_timeseries(ts_ids: Dict[str, Dict[str, str]], bucket_name: str, writer: S3Writer) -> None:
         """Write the timeseries data to S3.
 
         Args:
@@ -298,13 +322,15 @@ class TimeSeriesProcessor:
             writer: The S3 writer object.
 
         """
-        # TODO (edits) Group data by date and site
-        # Currently only need to group by date but this will all change anyway
-        # Data to be split for individual timeseries ID after being grouped.
-        dataframes = group_by_date_site_id(ts.df)
-
+        # Extracting some sample data to test write works to the new bucket
+        # Use the hard coded processing column as always included for the time being
+        # Proper write functionality to be implemented in FPM-494
+        # TODO update ts_ids type once FPM-474 merged
+        ts_id = ts_ids["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-tnr01c_30min_raw"]
+        dataframes = group_by_date(ts_id["data"].df)
         writer.write(
             bucket_name=bucket_name,
-            dataset=dataset,
+            dataset=ts_id["sourceDataset"],
+            site_id=ts_id["sourceSite"],
             data=dataframes,
         )
