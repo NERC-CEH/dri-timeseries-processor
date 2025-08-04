@@ -13,6 +13,7 @@ from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
+from dritimeseriesprocessor.typing import TimeseriesContainer
 from dritimeseriesprocessor.utils import (
     group_by_date,
     merge_ts_def_metadata,
@@ -44,6 +45,8 @@ PROCESSING_COLUMNS = ["BATTV", "SCANS", "TNR01C"]
 
 class TimeSeriesProcessor:
     """Main class for processing time series data."""
+
+    ts_ids: Dict[str, TimeseriesContainer]
 
     def __init__(
         self,
