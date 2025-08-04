@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from typing import Dict
 
-import polars as pl
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.correcting.correcter import run_corrections
