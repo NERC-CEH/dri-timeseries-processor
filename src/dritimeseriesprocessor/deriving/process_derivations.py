@@ -87,8 +87,8 @@ class DerivationProcessor:
                 )
 
             # If the time column hasn't been added to input_data, add it in so it's available in the final TimeSeries
-            # object used for calculation the derivation. At this point also set the periodicity and resolution values
-            # based on the input ts metadata.
+            # object used for calculation of the derivation. At this point also set the periodicity and resolution
+            # values based on the input ts metadata.
             if TIME_COLUMN not in input_data.keys():
                 input_data[TIME_COLUMN] = input_ts.df[input_ts.time_name]
                 periodicity = input_ts_metadata["periodicity"]
