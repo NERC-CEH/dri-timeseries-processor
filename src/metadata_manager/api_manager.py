@@ -114,7 +114,7 @@ class MetadataAPIManager:
         """
         url = (
             f"{self.host}/id/data-processing-configuration.json?"
-            f"type={self.service_base_uri}/ref/common/configuration-type/correction"
+            f"type={self.service_base_uri}/ref/common/configuration-type/correction-configuration"
             f"&appliesToTimeSeries={ts_id}"
         )
 

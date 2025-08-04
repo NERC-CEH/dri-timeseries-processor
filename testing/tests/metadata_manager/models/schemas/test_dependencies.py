@@ -58,7 +58,7 @@ class TestDependentTimeSeriesMetadataResponse(unittest.TestCase):
                             },
                         }
                     ],
-                    "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
+                    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
                     "sourceDataset": "PROCESSED_DATA_30MIN",
                     "sourceColumnName": "RN",
                     "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"}],
