@@ -2,7 +2,7 @@ import math
 from typing import Optional, Type, Union
 
 import polars as pl
-from time_stream import TimeSeries
+from time_stream import Period, TimeSeries, aggregation  # noqa: F401
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
 
@@ -281,6 +281,57 @@ class NetRadiation(Calculation):
     def expr(self) -> pl.Expr:
         rn = self._swin - self._swout + self._lwin - self._lwout
         return rn
+
+
+class DailyTotalRadiation(Calculation):
+    def __init__(self, column_name: str = None, **kwargs):
+        """
+        Aggregate sub daily radiation, measured in W m-2, into total energy for the day, MJ m-2 day-1
+        Note, the sub daily values must be evenly spaced in time and each value must represent the average radiation
+        over its interval (not instantaneous).
+
+        The column to use to calculate the daily total radiation should be provided as a kwarg. This is to allow
+        flexibility in the expected input column structure.
+
+        Returns:
+            Daily total radiation [MJ m-2 day-1]
+
+        """
+        super().__init__("Daily total radiation", column_name, "MJ m-2 day-1")
+
+        # In order to support data from multiple possible column sources
+        _, self._rad_30min = kwargs.popitem()
+
+    @property
+    def default_column_name(self) -> str:
+        return "radiation"
+
+    def evaluate(self, df: pl.DataFrame, **__) -> pl.DataFrame:
+        # There should only be 2 columns provided, the time column and the one to calculate
+        # daily radiation from
+        time_column, radiation_column = df.columns
+        ts = TimeSeries(df=df, time_name=time_column)
+
+        aggregation_function = "mean_sum"
+        aggregated_ts = ts.aggregate(
+            aggregation_period=Period.of_iso_duration("P1D"),
+            aggregation_function=aggregation_function,
+            columns=radiation_column,
+        )
+        aggregated_column_name = f"{aggregation_function}_{self.column_name}"
+
+        self._aggregated = self._columns_to_expressions(aggregated_column_name)
+
+        expressions = {self.column_name: self.expr().alias(self.column_name)}
+
+        # Perform the evaluation(s)
+        lazy_df = aggregated_ts.df.lazy()
+        result = lazy_df.with_columns(list(expressions.values()))
+        return result.collect()
+
+    def expr(self) -> pl.Expr:
+        daily_radiation = self._aggregated * 0.0864
+        return daily_radiation
 
 
 def derive(
