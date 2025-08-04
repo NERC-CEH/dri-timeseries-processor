@@ -5,7 +5,6 @@ from pydantic import BaseModel, field_validator, model_validator
 from dritimeseriesprocessor.correcting import operations as correction_functions
 from dritimeseriesprocessor.deriving import derivations as derivation_functions
 from dritimeseriesprocessor.infilling import methods as infilling_functions
-from dritimeseriesprocessor.quality_control import checks as qc_functions
 from metadata_manager.models.common import ComponentType
 
 
@@ -14,10 +13,12 @@ class Method(BaseModel):
 
     Attributes:
         method_id: Unique identifier for the method - should be a bitwise flag value.
-        method_type: Type of the method - e.g. Infill, QC.
+        method_type: Type of the method - e.g., Infill, QC.
         name: Human-readable name of the method
         description: Detailed description of what the method does
         function_name: Name of the function that runs the method
+        arg_mapping: Mapping of function argument names to the property names from the metadata configuration
+        kwargs: Keyword argument values for the method function not provided by metadata
     """
 
     method_id: int
@@ -25,6 +26,8 @@ class Method(BaseModel):
     name: str
     description: str
     function_name: str
+    arg_mapping: dict = {}
+    kwargs: dict = {}
 
     @field_validator("method_id")
     @classmethod
@@ -59,6 +62,8 @@ class Method(BaseModel):
             "name": data["name"],
             "description": data["description"],
             "function_name": data["function_name"],
+            "arg_mapping": data.get("arg_mapping", {}),
+            "kwargs": data.get("kwargs", {}),
         }
         return result
 
@@ -67,7 +72,8 @@ class Method(BaseModel):
         if self.method_type == ComponentType.INFILLING:
             module = infilling_functions
         elif self.method_type == ComponentType.QUALITY_CONTROL:
-            module = qc_functions
+            # TODO: Changed how QC runs.  May think about refactor for the others.
+            raise UserWarning("QC checks not run directly from this config object.")
         elif self.method_type == ComponentType.CORRECTION:
             module = correction_functions
         elif self.method_type == ComponentType.DERIVATION:
