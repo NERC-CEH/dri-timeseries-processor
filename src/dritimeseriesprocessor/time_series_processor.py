@@ -233,7 +233,7 @@ class TimeSeriesProcessor:
                     ts = add_initial_core_flags(ts)
 
                     # Add the data into the ts_ids dict
-                    self.ts_ids[ts_id].data = ts
+                    self.ts_ids[ts_id]["data"] = ts
 
     def _process_data(self) -> None:
         """Run the time series processing function.
