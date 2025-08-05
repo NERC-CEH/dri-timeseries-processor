@@ -104,13 +104,13 @@ class AggregationAndDerivationProcessor:
         input_data = {}
         periodicity = None
         resolution = None
-        for input_ts_id in ts_metadata["inputs"]:
-            input_ts_metadata = self.ts_ids[input_ts_id]
-            input_ts = self.get_ts_data(ts_id, input_ts_id)
+        for dependent_ts_id in ts_metadata["inputs"]:
+            dependent_ts_metadata = self.ts_ids[dependent_ts_id]
+            dependent_ts = self.get_ts_data(ts_id, dependent_ts_id)
 
-            if not input_ts:
+            if not dependent_ts:
                 raise ValueError(
-                    f"Unable to calculate derivation for {ts_id}. The required input {input_ts_id} has no available "
+                    f"Unable to calculate derivation for {ts_id}. The required dependent {dependent_ts_id} has no available "
                     "data."
                 )
 
@@ -118,15 +118,15 @@ class AggregationAndDerivationProcessor:
             # object used for calculation of the derivation. At this point also set the periodicity and resolution
             # values based on the input ts metadata.
             if TIME_COLUMN not in input_data.keys():
-                input_data[TIME_COLUMN] = input_ts.df[input_ts.time_name]
-                periodicity = input_ts_metadata["periodicity"]
-                resolution = input_ts_metadata["resolution"]
+                input_data[TIME_COLUMN] = dependent_ts.df[dependent_ts.time_name]
+                periodicity = dependent_ts_metadata["periodicity"]
+                resolution = dependent_ts_metadata["resolution"]
 
-            source_column_name = input_ts_metadata["sourceColumnName"]
-            input_data[source_column_name] = input_ts.df[source_column_name]
+            source_column_name = dependent_ts_metadata["sourceColumnName"]
+            input_data[source_column_name] = dependent_ts.df[source_column_name]
 
         # Construct the input time series object from the input data columns
-        ts = TimeSeries(
+        input_ts = TimeSeries(
             df=pl.from_dict(input_data),
             time_name=TIME_COLUMN,
             resolution=resolution,
@@ -143,8 +143,8 @@ class AggregationAndDerivationProcessor:
 
         logger.debug(f"Calculating derivation for timeseries: {ts_id} using method: {derivation_method_name}")
 
-        derived_data = derive(
-            ts=ts,
+        derived_ts = derive(
+            ts=input_ts,
             calc=derivation_method,
             column_name=ts_metadata["sourceColumnName"],
             resolution=ts_metadata["resolution"],
@@ -152,7 +152,7 @@ class AggregationAndDerivationProcessor:
             **kwargs,
         )
 
-        self.ts_ids[ts_id]["data"] = derived_data
+        self.ts_ids[ts_id]["data"] = derived_ts
 
     def calculate_aggregation(self, ts_id: str, ts_metadata: Dict[str, Union[str, TimeSeries]]) -> None:
         """
