@@ -6,6 +6,7 @@ import polars as pl
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.deriving.derivations import derive
+from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
 from metadata_manager.models.common import ComponentType
 from metadata_manager.models.service import load_methods
 
@@ -23,7 +24,7 @@ def get_derivation_methods() -> Dict:
 class DerivationProcessor:
     """Calculates derivation for any relevant TimeSeries."""
 
-    def __init__(self, ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]):
+    def __init__(self, ts_ids: Dict[str, TimeseriesContainerWithDerivations]):
         self.derivation_methods = get_derivation_methods()
         self.ts_ids = ts_ids
 
@@ -32,7 +33,7 @@ class DerivationProcessor:
         The main run method for the DerivationProcessor class.
 
         Returns:
-            Dict[str, Dict[str, Union[str, TimeSeries]]]: Updated timeseries with derived data added if applicable.
+            Updated timeseries with derived data added if applicable.
         """
         for ts_id, ts_metadata in self.ts_ids.items():
             # Skip any time series which don't have a derivation method defined
@@ -47,7 +48,7 @@ class DerivationProcessor:
 
         return self.ts_ids
 
-    def calculate_derivation(self, ts_id: str, ts_metadata: Dict[str, Union[str, TimeSeries]]) -> None:
+    def calculate_derivation(self, ts_id: str, ts_metadata: TimeseriesContainerWithDerivations) -> None:
         """
         Recursively calculates any derived data for a time series. The list of ts_ids is updated in situ, allowing a
         single recursive loop to be used to ensure any dependent derived data is calculated prior to the final

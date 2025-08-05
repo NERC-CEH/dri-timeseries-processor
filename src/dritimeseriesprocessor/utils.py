@@ -1,16 +1,15 @@
+import asyncio
+import functools
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-import asyncio
-import functools
-from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable, List
 from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesContainer, TimeseriesContainerWithDerivations
 
 logger = logging.getLogger(__name__)

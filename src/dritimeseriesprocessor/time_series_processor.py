@@ -13,11 +13,8 @@ from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.typing import TimeseriesContainer
-from dritimeseriesprocessor.utils import (
-    merge_ts_def_metadata,
-    call_method_async
-)
+from dritimeseriesprocessor.typing import TimeseriesContainer, TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.utils import call_method_async, merge_ts_def_metadata
 from metadata_manager.models.common import (
     URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
@@ -85,13 +82,20 @@ class TimeSeriesProcessor:
 
         Then the initial processing is run before aggregated and derived data is calculated.
 
+        Data is then written to s3.
         """
+        # Collate metadata
+        # ----------------
         logger.info("Collecting timeseries IDs")
         self._collate_timeseries_id_metadata_to_process()
 
+        # Load data
+        # ----------------
         logger.info("Loading raw data")
         self._load_raw_data()
 
+        # Process data
+        # ------------
         logger.info("Processing data")
         self._process_data()
 
@@ -103,21 +107,21 @@ class TimeSeriesProcessor:
         derivation_processor = DerivationProcessor(self.ts_ids)
         self.ts_ids = derivation_processor.run()
 
-        # Writing
-        # -------
+        # Write data
+        # ----------
         writer = S3Writer(self.s3_client)
 
         # We only want to write data that has been processed, and we dont require
         # the ts id anymore
-        processed_ts_ids = [metadata for metadata in self.ts_ids.values() if metadata["processing_level"] == 'processed']
+        processed_timeseries = [
+            metadata for metadata in self.ts_ids.values() if metadata["processing_level"] == "processed"
+        ]
+        self._write_timeseries(processed_timeseries, app_config.processed_bucket, self.network, writer)
 
-        self._write_timeseries(processed_ts_ids, app_config.processed_bucket, self.network, writer)
-
-
+        # Record a successful run of the pipeline and push all metrics to the pushgateway
         metrics.record_successful_run()
         logger.info("Processing completed successfully")
 
-        # Push all metrics at the end of successful processing
         metrics.export_metrics_to_pushgateway(
             url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
         )
@@ -321,21 +325,21 @@ class TimeSeriesProcessor:
         return periodicity_query_parameter
 
     @staticmethod
-    def _write_timeseries(processed_ts_ids: Dict[str, Dict[str, str]], bucket_name: str, network: str, writer: S3Writer) -> None:
+    def _write_timeseries(
+        processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str, writer: S3Writer
+    ) -> None:
         """Write the timeseries data to S3.
 
         Args:
-            processed_ts_ids: The timeseries ids to to write.
+            processed_timeseries: The processed timeseries to write.
             bucket_name: The name of the S3 bucket.
             dataset: The name of the dataset.
             writer: The S3 writer object.
 
         """
-        # TODO update ts_ids type once FPM-474 merged
-
         # Structure the time series data ready for writing
         # Data combined by resolution and site, and then split into days
-        data_to_write = writer.structure(processed_ts_ids, bucket_name, network)
+        data_to_write = writer.structure(processed_timeseries, bucket_name, network)
 
         # Write data to s3
         call_method_async(writer.write, data_to_write)

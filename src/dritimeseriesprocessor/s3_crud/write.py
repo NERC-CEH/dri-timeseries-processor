@@ -12,6 +12,7 @@ from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
 
 logger = logging.getLogger(__name__)
 
@@ -63,31 +64,35 @@ class S3Writer(WriterInterface):
 
         return buffer
 
-    def structure(self, processed_ts_ids: pl.DataFrame, bucket_name, network):
+    def structure(
+        self, processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str
+    ) -> List[List[List[Tuple[datetime, pl.DataFrame], str, str, str, str]]]:
         """
-        Group timestream dataframes by resolution before splitting them by site and day
+        Structure the processed data ready for writing.
+
+        First group the data by resolution, then split into days.
+
+        Args:
+            processed_timeseries: the timeseries that have been processed
+            bucket_name: the name of bucket to write to
+            network: the processing network
+
+        Returns:
+            Data and metadata required for asynchronous writing
         """
-        grouped_ts_ids = self._group_data_by_resolution(processed_ts_ids)
+        grouped_ts_ids = self._group_data_by_resolution(processed_timeseries)
 
         data_to_write = []
-        # functionalise this
         for data_object in grouped_ts_ids:
             resolution, site, data = data_object
-            data_to_write.append(
-                [
-                    [data for data in self._split_by_date_site_id(data)],
-                    site,
-                    resolution,
-                    bucket_name,
-                    network
-                ]
-            )
+            data_to_write.append([[data for data in self._split_by_date(data)], site, resolution, bucket_name, network])
 
         return data_to_write
 
-
     @metrics.track_s3_write_time()
-    def write(self, data, site_id: str, resolution: str, bucket_name: str, network: str) -> None:
+    def write(
+        self, data: List[Tuple[datetime, pl.DataFrame]], site_id: str, resolution: str, bucket_name: str, network: str
+    ) -> None:
         """Uploads objects to an S3 bucket.
 
         This function attempts to upload objects to a specified S3 bucket
@@ -133,10 +138,9 @@ class S3Writer(WriterInterface):
         day = date.strftime("%Y-%m-%d")
 
         return f"network={network}/date={day}/site={site_id}/resolution={resolution}/data.parquet"
-    
-    
+
     @staticmethod
-    def _split_by_date_site_id(df: pl.DataFrame) -> List[Tuple[str, str, DataFrame]]:
+    def _split_by_date(df: pl.DataFrame) -> List[Tuple[datetime, DataFrame]]:
         """Split a dataframe by the date.
 
         Args:
@@ -148,25 +152,29 @@ class S3Writer(WriterInterface):
 
         return [(group[0][0], group[1]) for group in df.group_by([pl.col("time").dt.date()])]
 
-
     @staticmethod
-    def _group_data_by_resolution(processed_ts_ids):
-        # Group by resolution (functionalise this)
-        # need to add site in as a column
-        # combine TS objects
-        empty_dict = {}
+    def _group_data_by_resolution(
+        processed_ts_ids: TimeseriesContainerWithDerivations,
+    ) -> List[Tuple[str, str, pl.DataFrame]]:
+        """Group the processed ts_ids by resolution and combine the timeseries objects.
 
-        # TODO replace with timestream method when developed
-        for ts_metadata in processed_ts_ids.values():
+        Args:
+            processed_ts_ids: The time series ids that have been processed.
+
+        Returns:
+            The site, resolution and combined timestream objects
+        """
+        resolutions = {}
+
+        for ts_metadata in processed_ts_ids:
             key = (ts_metadata["resolution"], ts_metadata["sourceSite"])
             data = ts_metadata["data"].df
 
-            if key not in empty_dict:
-                empty_dict[key] = [data]
+            if key not in resolutions:
+                resolutions[key] = [data]
             else:
-                empty_dict[key].append(data)
+                resolutions[key].append(data)
 
-    
         # combine timestream objects
-        return [(site_res[0], site_res[1], pl.concat(data, how="align")) for site_res, data in empty_dict.items()]
-
+        # TODO replace with timestream method when developed
+        return [(site_res[0], site_res[1], pl.concat(data, how="align")) for site_res, data in resolutions.items()]
