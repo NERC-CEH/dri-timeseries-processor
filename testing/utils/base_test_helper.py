@@ -82,6 +82,47 @@ class BaseTestHelper(unittest.TestCase):
             ),
         }
 
+    def create_ts_dependency_api_data(self) -> Dict[str, Any]:
+        base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos-alic1-"
+        ts_dependencies_dir = self.input_dir.joinpath("mock_metadata_api", "ts_dependencies_alic1")
+
+        dependency_suffixes = [
+            "pe_30min_processed",
+            "rn_30min_processed",
+            "swin_30min_processed",
+            "lwout_30min_processed",
+            "swout_30min_processed",
+            "lwin_30min_processed",
+            "pa_30min_processed",
+            "g1_30min_processed",
+            "g2_30min_processed",
+            "rh_30min_processed",
+            "ws_30min_processed",
+            "ta_30min_processed",
+            "tnr01c_30min_processed",
+            "tnr01c_30min_raw",
+            "battv_30min_raw",
+            "scans_30min_raw",
+            "swin_30min_raw",
+            "lwout_30min_raw",
+            "swout_30min_raw",
+            "lwin_30min_raw",
+            "pa_30min_raw",
+            "g2_30min_raw",
+            "rh_30min_raw",
+            "ws_30min_raw",
+            "ta_30min_raw",
+            "g1_30min_raw",
+        ]
+
+        api_data = {}
+        for dependency_suffix in dependency_suffixes:
+            api_data[f"{base_url}{dependency_suffix}/_dependencies"] = self.load_json(
+                ts_dependencies_dir.joinpath(f"{dependency_suffix}.json")
+            )
+
+        return api_data
+
     @staticmethod
     def load_json(json_path: str) -> Dict[str, Any]:
         """

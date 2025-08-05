@@ -10,47 +10,6 @@ from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestTimeSeriesProcessor(TimeSeriesTestHelper):
-    def create_ts_dependency_api_data(self) -> Dict[str, Any]:
-        base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos-alic1-"
-        ts_dependencies_dir = self.input_dir.joinpath("mock_metadata_api", "ts_dependencies_alic1")
-
-        dependency_suffixes = [
-            "pe_30min_processed",
-            "rn_30min_processed",
-            "swin_30min_processed",
-            "lwout_30min_processed",
-            "swout_30min_processed",
-            "lwin_30min_processed",
-            "pa_30min_processed",
-            "g1_30min_processed",
-            "g2_30min_processed",
-            "rh_30min_processed",
-            "ws_30min_processed",
-            "ta_30min_processed",
-            "tnr01c_30min_processed",
-            "tnr01c_30min_raw",
-            "battv_30min_raw",
-            "scans_30min_raw",
-            "swin_30min_raw",
-            "lwout_30min_raw",
-            "swout_30min_raw",
-            "lwin_30min_raw",
-            "pa_30min_raw",
-            "g2_30min_raw",
-            "rh_30min_raw",
-            "ws_30min_raw",
-            "ta_30min_raw",
-            "g1_30min_raw",
-        ]
-
-        api_data = {}
-        for dependency_suffix in dependency_suffixes:
-            api_data[f"{base_url}{dependency_suffix}/_dependencies"] = self.load_json(
-                ts_dependencies_dir.joinpath(f"{dependency_suffix}.json")
-            )
-
-        return api_data
-
     def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
         """Test query parameters are constructed correctly."""
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
@@ -129,7 +88,6 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_add_derivation_metadata(self, mock_api_manager: mock.MagicMock) -> None:
-        # mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
         api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 

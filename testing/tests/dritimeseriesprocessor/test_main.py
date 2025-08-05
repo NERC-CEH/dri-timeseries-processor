@@ -1,13 +1,19 @@
 import logging
+from unittest import mock
 
+from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.end_to_end_test_helper import EndToEndTestHelper
+from testing.utils.mock_metadata_api import MockMetadataAPI
 
 logger = logging.getLogger(__name__)
 
 
+@mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestMain(EndToEndTestHelper):
-    def test_main(self) -> None:
+    def test_main(self, mock_api_manager: mock.MagicMock) -> None:
         """End to end test of the timeseries processor."""
+        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         self.run_cli_test(
             cli_args=[
