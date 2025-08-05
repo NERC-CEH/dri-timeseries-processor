@@ -201,10 +201,8 @@ class AggregationAndDerivationProcessor:
             TimeSeries object containing data corresponding to the provided timeseries ID.
 
         """
-        input_ts_metadata = self.ts_ids[ts_id]
-        if not input_ts_metadata.get("data"):
-            self.calculate_derivation_or_aggregation_for_ts_id(ts_id, input_ts_metadata)
+        ts_metadata = self.ts_ids[ts_id]
+        if not ts_metadata.get("data"):
+            self.calculate_derivation_or_aggregation_for_ts_id(ts_id, ts_metadata)
 
-        input_ts = self.ts_ids[ts_id].get("data")
-
-        return input_ts
+        return self.ts_ids[ts_id].get("data")
