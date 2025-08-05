@@ -19,7 +19,7 @@ from dritimeseriesprocessor.deriving.derivations import (
     derive,
 )
 from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
-from testing.utils.testing_helper import TestHelper
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 def init_timeseries():
@@ -199,7 +199,7 @@ class TestNetRadiation(unittest.TestCase):
         assert_frame_equal(result, expected, check_exact=False, atol=0.001)
 
 
-class TestDailyTotalRadiation(TestHelper):
+class TestDailyTotalRadiation(TimeSeriesTestHelper):
     def test_evaluate(self) -> None:
         df = pl.read_csv(
             self.input_dir.joinpath("derivations", "rn_pt30m_3_days.csv"),

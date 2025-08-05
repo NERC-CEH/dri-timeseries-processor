@@ -1,8 +1,8 @@
 from dritimeseriesprocessor.deriving.process_derivations import DerivationProcessor
-from testing.utils.testing_helper import TestHelper
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
-class TestDerivationProcessor(TestHelper):
+class TestDerivationProcessor(TimeSeriesTestHelper):
     def test_derivation_processor(self) -> None:
         input_json_path = self.data_dir.joinpath("inputs", "derivation_processor", "input_ts_ids.json")
         input_ts_ids = self.load_ts_ids_from_json_file(input_json_path)

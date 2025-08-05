@@ -5,11 +5,11 @@ from unittest import mock
 from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
-from testing.utils.testing_helper import TestHelper, load_json
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestTimeSeriesProcessor(TestHelper):
+class TestTimeSeriesProcessor(TimeSeriesTestHelper):
     def create_ts_dependency_api_data(self) -> Dict[str, Any]:
         base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos-alic1-"
         ts_dependencies_dir = self.input_dir.joinpath("mock_metadata_api", "ts_dependencies_alic1")
@@ -45,7 +45,7 @@ class TestTimeSeriesProcessor(TestHelper):
 
         api_data = {}
         for dependency_suffix in dependency_suffixes:
-            api_data[f"{base_url}{dependency_suffix}/_dependencies"] = load_json(
+            api_data[f"{base_url}{dependency_suffix}/_dependencies"] = self.load_json(
                 ts_dependencies_dir.joinpath(f"{dependency_suffix}.json")
             )
 

@@ -326,7 +326,8 @@ class TimeSeriesProcessor:
         # Use the hard coded processing column as always included for the time being
         # Proper write functionality to be implemented in FPM-494
         # TODO update ts_ids type once FPM-474 merged
-        ts_id = ts_ids["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-tnr01c_30min_raw"]
+        first_key = list(ts_ids.keys())[0]
+        ts_id = ts_ids[first_key]
         dataframes = group_by_date(ts_id["data"].df)
         writer.write(
             bucket_name=bucket_name,

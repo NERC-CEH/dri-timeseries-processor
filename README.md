@@ -188,7 +188,7 @@ Make sure to also remove the test from the `qc_test_map` in [quality_config.py](
 
 The `testing/utils` folder contains a number of helper functions and classes to aid testing.
 
-### TestHelper
+### TimeSeriesTestHelper
 
 This class is designed to be a mixin to a main test class used in place of the usual `unittest.TestCase`, for example:
 
@@ -200,6 +200,12 @@ class TestFunctionality(TestHelper):
 
 It sets up a temp working directory, overwriting the current working directory, enables easy access to the main test
 data directory and adds helper functions for reading, writing and comparing time series id metadata.
+
+### EndToEndTestHelper
+
+This class is a counterpart to TimeSeriesTestHelper which is designed to aid running command line based end to end tests.
+Given a list of arguments, an output S3 bucket name and a directory containing expected data, it will run the timeseries
+processor from end to end, checking the contents written to S3 against the expected data. 
 
 ### MockMetadataAPI
 
@@ -220,10 +226,10 @@ An example script for mocking the metadata api can be found below
 from unittest import mock
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
-from testing.utils.testing_helper import TestHelper
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestMetadataMocking(TestHelper):
+class TestMetadataMocking(TimeSeriesTestHelper):
     def test_api_response(mock_api_manager: mock.MagicMock) -> None:
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
 
