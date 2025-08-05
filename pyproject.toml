@@ -100,4 +100,4 @@ select = [
 strict = true
 
 [tool.uv.sources]
-time-stream = { git = "https://github.com/NERC-CEH/time-stream.git", rev = "feature/add-name-to-bitwise-flag-class" }
+time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
