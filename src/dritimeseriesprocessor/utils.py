@@ -7,6 +7,8 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
+from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesContainer, TimeseriesContainerWithDerivations
+
 logger = logging.getLogger(__name__)
 
 
@@ -157,7 +159,7 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
 
 
-def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, Dict[str, str]]) -> Dict[str, str]:
+def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContainer]) -> Dict[str, str]:
     """Map timeseries definition to its corresponding timeseries id given the site id.
 
     Args:
@@ -176,9 +178,9 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, Dict[str, str]]) 
 
 
 def merge_ts_def_metadata(
-    ts_ids: Dict[str, Dict[str, str]],
-    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
-) -> Dict[str, Dict[str, str]]:
+    ts_ids: Dict[str, TimeseriesContainer],
+    timeseries_defs_derivation_map: Dict[str, DerivationMetadata],
+) -> Dict[str, TimeseriesContainerWithDerivations]:
     """Merge timeseries definitions metadata into the timeseries ids metadata and add whether to load the data.
 
     Args:
