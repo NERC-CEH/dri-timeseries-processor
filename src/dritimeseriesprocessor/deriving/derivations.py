@@ -300,7 +300,8 @@ class DailyTotalRadiation(Calculation):
         super().__init__("Daily total radiation", column_name, "MJ m-2 day-1")
 
         # In order to support data from multiple possible column sources
-        _, self._rad_30min = kwargs.popitem()
+        _, rad = kwargs.popitem()
+        self._rad = self._columns_to_expressions(rad)
 
     @property
     def default_column_name(self) -> str:
@@ -310,8 +311,12 @@ class DailyTotalRadiation(Calculation):
     def preprocess_aggregation_method(self) -> str:
         return "mean_sum"
 
+    @property
+    def preprocess_aggregation_period(self) -> str:
+        return Period.of_iso_duration("P1D")
+
     def expr(self) -> pl.Expr:
-        daily_radiation = self._aggregated * 0.0864
+        daily_radiation = self._rad * 0.0864
         return daily_radiation
 
 
@@ -341,6 +346,10 @@ class DailyPotentialEvaporation(Calculation):
     @property
     def postprocess_aggregation_method(self) -> str:
         return "mean_sum"
+
+    @property
+    def postprocess_aggregation_period(self) -> str:
+        return Period.of_iso_duration("P1D")
 
     def expr(self) -> pl.Expr:
         filtered_pe = pl.when(self._pe_30min < 0).then(0).otherwise(self._pe_30min)
@@ -384,27 +393,27 @@ def derive(
     if calc_instance.default_column_name in ts.df.columns:
         allow_override = False
 
-    new_df = calc_instance.evaluate(
-        ts.df, include_dependency_columns=include_dependencies, allow_override=allow_override
+    ts = calc_instance.evaluate(
+        ts, include_dependency_columns=include_dependencies, allow_override=allow_override
     )
 
     # TODO: this could use some work.
-    new_column_metadata = (
-        {col: ts.columns[col].metadata() for col in ts.columns}
-        | {calc_instance.column_name: {units_meta_name: calc_instance.units}}
-        | {dep_calc.column_name: {units_meta_name: dep_calc.units} for dep_calc in calc_instance.dependencies}
-    )
+    # new_column_metadata = (
+    #     {col: ts.columns[col].metadata() for col in ts.columns}
+    #     | {calc_instance.column_name: {units_meta_name: calc_instance.units}}
+    #     | {dep_calc.column_name: {units_meta_name: dep_calc.units} for dep_calc in calc_instance.dependencies}
+    # )
 
-    new_ts = TimeSeries(
-        df=new_df,
-        time_name=ts.time_name,
-        resolution=resolution if not None else ts.resolution,
-        periodicity=periodicity if not None else ts.periodicity,
-        supplementary_columns=ts.supplementary_columns,
-        flag_columns=ts.flag_columns,
-        flag_systems=ts.flag_systems,
-        column_metadata=new_column_metadata,
-        metadata=ts.metadata(),
-    )
+    # new_ts = TimeSeries(
+    #     df=new_df,
+    #     time_name=ts.time_name,
+    #     resolution=resolution if not None else ts.resolution,
+    #     periodicity=periodicity if not None else ts.periodicity,
+    #     supplementary_columns=ts.supplementary_columns,
+    #     flag_columns=ts.flag_columns,
+    #     flag_systems=ts.flag_systems,
+    #     column_metadata=new_column_metadata,
+    #     metadata=ts.metadata(),
+    # )
 
-    return new_ts
+    return ts
