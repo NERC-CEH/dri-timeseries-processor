@@ -59,16 +59,18 @@ class EndToEndTestHelper(BaseTestHelper):
         command.extend(cli_args)
 
         # Save the subprocess output to a variable so any error details are available for debugging
-        runner = subprocess.run(command, check=True, capture_output=True)
+        try:
+            runner = subprocess.run(command, check=True, capture_output=True)
+            # subprocess.run(command, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        except Exception as err:
+            raise Exception(err.stderr.decode())
 
         # Check that for every expected parquet file, the corresponding parquet has been generated with a matching
         # path structure (i.e. same s3 keys) and contents
         for expected_path in expected_base_dir.rglob("data.parquet"):
             expected_s3_key = str(expected_path.relative_to(expected_base_dir))
             actual_data = pl.read_parquet(self._get_s3_object(bucket_name=output_bucket_name, s3_key=expected_s3_key))
-            expected_data = self._read_expected_data(
-                s3_key=expected_s3_key, expected_base_dir=expected_base_dir
-            )
+            expected_data = self._read_expected_data(s3_key=expected_s3_key, expected_base_dir=expected_base_dir)
 
             assert_frame_equal(actual_data, expected_data)
 

@@ -1,6 +1,7 @@
 """Module for formatting log messages"""
 
 import logging
+import sys
 import traceback
 from datetime import datetime
 from typing import Tuple, Type
@@ -81,7 +82,7 @@ def setup_logging(level: int = logging.INFO) -> None:
     """
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(stream=sys.stdout)
     formatter = LogFormatter()
     handler.setFormatter(formatter)
 
