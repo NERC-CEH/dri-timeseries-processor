@@ -14,8 +14,8 @@ from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import (
-    group_by_date,
     merge_ts_def_metadata,
+    call_method_async
 )
 from metadata_manager.models.common import (
     URI_ID_EXTRACT_REGEX,
@@ -103,7 +103,13 @@ class TimeSeriesProcessor:
         # Writing
         # -------
         writer = S3Writer(self.s3_client)
-        self._write_timeseries(self.ts_ids, app_config.processed_bucket, writer)
+
+        # We only want to write data that has been processed, and we dont require
+        # the ts id anymore
+        processed_ts_ids = [metadata for metadata in self.ts_ids.values() if metadata["processing_level"] == 'processed']
+
+        self._write_timeseries(processed_ts_ids, app_config.processed_bucket, self.network, writer)
+
 
         metrics.record_successful_run()
         logger.info("Processing completed successfully")
@@ -312,25 +318,21 @@ class TimeSeriesProcessor:
         return periodicity_query_parameter
 
     @staticmethod
-    def _write_timeseries(ts_ids: Dict[str, Dict[str, str]], bucket_name: str, writer: S3Writer) -> None:
+    def _write_timeseries(processed_ts_ids: Dict[str, Dict[str, str]], bucket_name: str, network: str, writer: S3Writer) -> None:
         """Write the timeseries data to S3.
 
         Args:
-            ts: The timeseries object to write.
+            processed_ts_ids: The timeseries ids to to write.
             bucket_name: The name of the S3 bucket.
             dataset: The name of the dataset.
             writer: The S3 writer object.
 
         """
-        # Extracting some sample data to test write works to the new bucket
-        # Use the hard coded processing column as always included for the time being
-        # Proper write functionality to be implemented in FPM-494
         # TODO update ts_ids type once FPM-474 merged
-        ts_id = ts_ids["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-tnr01c_30min_raw"]
-        dataframes = group_by_date(ts_id["data"].df)
-        writer.write(
-            bucket_name=bucket_name,
-            dataset=ts_id["sourceDataset"],
-            site_id=ts_id["sourceSite"],
-            data=dataframes,
-        )
+
+        # Structure the time series data ready for writing
+        # Data combined by resolution and site, and then split into days
+        data_to_write = writer.structure(processed_ts_ids, bucket_name, network)
+
+        # Write data to s3
+        call_method_async(writer.write, data_to_write)
