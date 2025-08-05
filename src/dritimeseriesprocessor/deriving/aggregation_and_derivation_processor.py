@@ -110,8 +110,8 @@ class AggregationAndDerivationProcessor:
 
             if not dependent_ts:
                 raise ValueError(
-                    f"Unable to calculate derivation for {ts_id}. The required dependent {dependent_ts_id} has no available "
-                    "data."
+                    f"Unable to calculate derivation for {ts_id}. The required dependent {dependent_ts_id} "
+                    "has no available data."
                 )
 
             # If the time column hasn't been added to input_data, add it in so it's available in the final TimeSeries
@@ -144,11 +144,9 @@ class AggregationAndDerivationProcessor:
         logger.debug(f"Calculating derivation for timeseries: {ts_id} using method: {derivation_method_name}")
 
         derived_ts = derive(
-            ts=input_ts,
+            input_ts=input_ts,
             calc=derivation_method,
             column_name=ts_metadata["sourceColumnName"],
-            resolution=ts_metadata["resolution"],
-            periodicity=ts_metadata["periodicity"],
             **kwargs,
         )
 

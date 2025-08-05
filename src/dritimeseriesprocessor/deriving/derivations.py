@@ -337,7 +337,7 @@ class DailyPotentialEvaporation(Calculation):
         """
         super().__init__("Daily potential evaporation", column_name, "mm day-l")
 
-        self._pe_30min = self._columns_to_expressions(pe)
+        self._pe = self._columns_to_expressions(pe)
 
     @property
     def default_column_name(self) -> str:
@@ -352,18 +352,14 @@ class DailyPotentialEvaporation(Calculation):
         return Period.of_iso_duration("P1D")
 
     def expr(self) -> pl.Expr:
-        filtered_pe = pl.when(self._pe_30min < 0).then(0).otherwise(self._pe_30min)
+        filtered_pe = pl.when(self._pe < 0).then(0).otherwise(self._pe)
         return filtered_pe
 
 
 def derive(
-    ts: TimeSeries,
+    input_ts: TimeSeries,
     calc: Type[Calculation],
     column_name: Optional[str] = None,
-    units_meta_name: str = "units",
-    include_dependencies: bool = False,
-    resolution: str = None,
-    periodicity: str = None,
     **kwargs,
 ) -> TimeSeries:
     """Derive a new TimeSeries from a given Calculation.
@@ -372,13 +368,6 @@ def derive(
         ts: Input TimeSeries object.
         calc: The Calculation class to be instantiated and used.
         column_name: The name for the derived column.  If not provided, uses the default defined within the class.
-        units_meta_name: Metadata key name for units. Defaults to "units".
-        include_dependencies: Whether to include calculation dependencies in the final Time Series data.
-        resolution: The resolution to use for the output TimeSeries object. This is useful to provide if the derivation
-            calculation involves aggregation (e.g. calculating potential evaporation at 1 day resolution from 30 minute
-            data)
-        periodicity: The periodicity to use for the output TimeSeries object. This is useful to provide if the
-            derivation calculation involves aggregation.
         **kwargs: Arguments required for the calculation
 
     Returns:
@@ -386,34 +375,4 @@ def derive(
     """
     calc_instance = calc(**kwargs, column_name=column_name)
 
-    # Where aggregation is required there is a possibility that the data to be aggregated has the same
-    # source column name as the output aggregated data. Check if the calculation instance has a default
-    # column name matching the timeseries source column name and enable the `allow_override` flag if required.
-    allow_override = True
-    if calc_instance.default_column_name in ts.df.columns:
-        allow_override = False
-
-    ts = calc_instance.evaluate(
-        ts, include_dependency_columns=include_dependencies, allow_override=allow_override
-    )
-
-    # TODO: this could use some work.
-    # new_column_metadata = (
-    #     {col: ts.columns[col].metadata() for col in ts.columns}
-    #     | {calc_instance.column_name: {units_meta_name: calc_instance.units}}
-    #     | {dep_calc.column_name: {units_meta_name: dep_calc.units} for dep_calc in calc_instance.dependencies}
-    # )
-
-    # new_ts = TimeSeries(
-    #     df=new_df,
-    #     time_name=ts.time_name,
-    #     resolution=resolution if not None else ts.resolution,
-    #     periodicity=periodicity if not None else ts.periodicity,
-    #     supplementary_columns=ts.supplementary_columns,
-    #     flag_columns=ts.flag_columns,
-    #     flag_systems=ts.flag_systems,
-    #     column_metadata=new_column_metadata,
-    #     metadata=ts.metadata(),
-    # )
-
-    return ts
+    return calc_instance.evaluate(input_ts)
