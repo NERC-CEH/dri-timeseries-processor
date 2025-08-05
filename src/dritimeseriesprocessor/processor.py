@@ -122,7 +122,7 @@ def process_timeseries(
     ts_ids_with_data = run_corrections(ts_ids_with_data)
 
     # Quality control
-    ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)
+    # ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)
 
     # Infilling
     ts_ids_with_data = run_infilling(ts_ids_with_data)
