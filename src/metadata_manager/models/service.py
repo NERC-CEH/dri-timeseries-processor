@@ -108,6 +108,33 @@ def load_datasets(parameters: Dict) -> TimeseriesDatasetResponse:
     return TimeseriesDatasetResponse.model_validate(data)
 
 
+def load_processing_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetadata]:
+    """Recursively load dataset metadata from the API for all processing dependencies of the provided timeseries id.
+
+    Args:
+        timeseries_id: The id of the timeseries to identify processing dependent timeseries datasets for.
+
+    Returns:
+        List of dependent time series metadata objects for the provided timeseries id
+    """
+    data = asyncio.run(METADATA_CONNECTION.fetch_processing_dependent_dataset_metadata(timeseries_id))
+
+    # Use a separate list for storing the final output to prevent it being extended in situ when recursively checking
+    # for sub dependencies
+    ts_dependency_list = []
+
+    dependent_timeseries = DependentTimeSeriesMetadataResponse.model_validate(data)
+    ts_dependency_list.extend(dependent_timeseries)
+
+    # Iterate through the list of DependentTimeSeriesMetadata objects, checking to see if any have sub dependencies
+    # before fetching them
+    for dependent_ts in dependent_timeseries:
+        sub_dependencies = load_processing_dependent_datasets(dependent_ts.name)
+        ts_dependency_list.extend(sub_dependencies)
+
+    return ts_dependency_list
+
+
 def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetadata]:
     """Recursively load dataset metadata from the API for all input dependencies of the provided timeseries id.
 

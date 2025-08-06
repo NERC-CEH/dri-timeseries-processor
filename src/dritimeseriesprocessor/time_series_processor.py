@@ -30,6 +30,7 @@ from metadata_manager.models.service import (
     handle_derivation_response,
     load_datasets,
     load_dependent_datasets,
+    load_processing_dependent_datasets,
     load_sites,
 )
 from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
@@ -122,8 +123,8 @@ class TimeSeriesProcessor:
 
         """
         self._get_user_timeseries_ids()
-        self._get_processing_timeseries_ids()
-        self._get_dependent_timeseries_ids()
+        self._get_derived_dependent_ts_ids()
+        self._get_processing_dependent_ts_ids()
 
         # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
         # timeseries ID.
@@ -152,15 +153,12 @@ class TimeSeriesProcessor:
             + self.view_query_parameter
         )
 
-    def _get_processing_timeseries_ids(self) -> None:
+    def _get_processing_dependent_ts_ids(self) -> None:
         """Collect the timeseries id metadata for any processing dependencies.
 
-        In a similar way to `_get_user_timeseries_ids()` the metadata api service is queried and the extracted results
-        are added to `self.ts_ids`. However, in this instance, the raw processing timeseries id metadata is requested
-        for the current site(s) instead. Currently this is a hard coded list of variables: "BATTV",
-        "SCANS"and "TNR01C", using a periodicity of PT30M.
-
         """
+        dependent_timeseries_ids = self._identify_processing_dependent_ts_ids()
+
         # TODO: Determine these by looking at processing config dependencies in metadata
         column_query_parameter = build_column_query_parameter(PROCESSING_COLUMNS)
 
@@ -180,13 +178,13 @@ class TimeSeriesProcessor:
             + self.view_query_parameter
         )
 
-    def _get_dependent_timeseries_ids(self) -> None:
+    def _get_derived_dependent_ts_ids(self) -> None:
         """
-        Recurisvely identify any time series dependencies and fetch the corresponding metadata, adding the new
+        Recurisvely identify any time series derivation dependencies and fetch the corresponding metadata, adding the new
         time series id metadata entries into the main self.ts_ids dictionary.
 
         """
-        dependent_timeseries_ids = self._identify_dependent_ts_ids()
+        dependent_timeseries_ids = self._identify_derived_dependent_ts_ids()
 
         # Fetch the corresponding timeseries metadata for the list of dependent time series IDs identified previously.
         timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_ids)
@@ -210,8 +208,15 @@ class TimeSeriesProcessor:
         # Add TS definition metadata to each timeseries ID
         self.ts_ids = merge_ts_def_metadata(self.ts_ids, ts_def_metadata)
 
-    def _identify_dependent_ts_ids(self) -> List[str]:
-        """Build a list of the dependencies for any existing ts_ids."""
+    def _identify_processing_dependent_ts_ids(self) -> List[str]:
+        """Build a list of the processing dependencies for any existing ts_ids."""
+        dependent_timeseries_ids = []
+        for ts_id in self.ts_ids.keys():
+            dependent_timeseries_list = load_processing_dependent_datasets(ts_id)
+
+
+    def _identify_derived_dependent_ts_ids(self) -> List[str]:
+        """Build a list of the deriving dependencies for any existing ts_ids."""
         dependent_timeseries_ids = []
         for ts_id in self.ts_ids.keys():
             ts_name = re.match(URI_ID_EXTRACT_REGEX, ts_id).group(1)
