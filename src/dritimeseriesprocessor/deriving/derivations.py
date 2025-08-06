@@ -2,7 +2,7 @@ import math
 from typing import Optional, Type, Union
 
 import polars as pl
-from time_stream import Period, TimeSeries, aggregation  # noqa: F401
+from time_stream import Period, TimeSeries
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
 
@@ -80,11 +80,18 @@ class PotentialEvapotranspiration30Min(Calculation):
         reference_crop_type_denominator = 0.34
 
         vapour_pressure_deficit = self._es.expr() - self._ea.expr()
-        radiation_term = 0.408 * self._delta.expr() * ((self._rn * 0.0018) - (self._g * 0.0018)) # Convert rn and g from W to MJ/30min
+        radiation_term = (
+            0.408 * self._delta.expr() * ((self._rn * 0.0018) - (self._g * 0.0018))
+        )  # Convert rn and g from W to MJ/30min
         aerodynamic_term = (
-            self._gamma.expr() * (reference_crop_type_numerator / (self._ta + 273)) * self._ws.expr() * vapour_pressure_deficit
+            self._gamma.expr()
+            * (reference_crop_type_numerator / (self._ta + 273))
+            * self._ws.expr()
+            * vapour_pressure_deficit
         )
-        resistance_term = self._delta.expr() + (self._gamma.expr() * (1 + (reference_crop_type_denominator * self._ws.expr())))
+        resistance_term = self._delta.expr() + (
+            self._gamma.expr() * (1 + (reference_crop_type_denominator * self._ws.expr()))
+        )
 
         pet = (radiation_term + aerodynamic_term) / resistance_term
         return pet
@@ -285,14 +292,11 @@ class NetRadiation(Calculation):
 
 
 class DailyTotalRadiation(Calculation):
-    def __init__(self, column_name: str = None, **kwargs):
+    def __init__(self, column_name: str = None):
         """
         Aggregate sub daily radiation, measured in W m-2, into total energy for the day, MJ m-2 day-1
         Note, the sub daily values must be evenly spaced in time and each value must represent the average radiation
         over its interval (not instantaneous).
-
-        The column to use to calculate the daily total radiation should be provided as a kwarg. This is to allow
-        flexibility in the expected input column structure.
 
         Returns:
             Daily total radiation [MJ m-2 day-1]
@@ -300,9 +304,7 @@ class DailyTotalRadiation(Calculation):
         """
         super().__init__("Daily total radiation", column_name, "MJ m-2 day-1")
 
-        # In order to support data from multiple possible column sources
-        _, rad = kwargs.popitem()
-        self._rad = self._columns_to_expressions(rad)
+        self._rad = self._columns_to_expressions(column_name)
 
     @property
     def default_column_name(self) -> str:
