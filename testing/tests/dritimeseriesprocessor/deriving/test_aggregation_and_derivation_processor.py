@@ -1,0 +1,45 @@
+from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
+
+
+class TestAggregationAndDerivationProcessor(TimeSeriesTestHelper):
+    def test_derivation_pe_30min(self) -> None:
+        """
+        Check the derived potential evaporation is calculated correctly, including the dependent derived net radiation
+        data.
+        """
+        input_json_path = self.data_dir.joinpath(
+            "inputs", "aggregation_and_derivation_processor", "input_ts_ids_pe_30min.json"
+        )
+        input_ts_ids = self.load_ts_ids_from_json_file(input_json_path)
+
+        expected_json_path = self.data_dir.joinpath(
+            "outputs", "aggregation_and_derivation_processor", "expected_ts_ids_pe_30min.json"
+        )
+        expected_ts_ids = self.load_ts_ids_from_json_file(expected_json_path)
+
+        aggregation_and_derivation_processor = AggregationAndDerivationProcessor(ts_ids=input_ts_ids)
+        actual_ts_ids = aggregation_and_derivation_processor.run()
+
+        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids)
+
+    def test_aggregation_ta_1day(self) -> None:
+        """Check simple aggregation for temperature at 1 day resolution is calculated correctly."""
+        input_json_path = self.data_dir.joinpath(
+            "inputs", "aggregation_and_derivation_processor", "input_ts_ids_ta_1day.json"
+        )
+        input_ts_ids = self.load_ts_ids_from_json_file(input_json_path)
+
+        expected_json_path = self.data_dir.joinpath(
+            "outputs", "aggregation_and_derivation_processor", "expected_ts_ids_ta_1day.json"
+        )
+        expected_ts_ids = self.load_ts_ids_from_json_file(expected_json_path)
+
+        aggregation_and_derivation_processor = AggregationAndDerivationProcessor(ts_ids=input_ts_ids)
+        actual_ts_ids = aggregation_and_derivation_processor.run()
+
+        # Depending on the version of time_stream installed, metadata may not be transferred through to the aggregated
+        # output. Therefore don't compare the metadata attribute for the time being.
+        self.compare_ts_ids(
+            expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids, attributes_to_ignore=["metadata"]
+        )

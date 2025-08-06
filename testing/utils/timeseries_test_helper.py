@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 import polars as pl
 from polars.testing import assert_frame_equal
@@ -103,11 +103,14 @@ class TimeSeriesTestHelper(BaseTestHelper):
         self,
         expected_ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
         actual_ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
+        attributes_to_ignore: List | None = None,
     ) -> None:
         """Compares two time series id metadata objects.
 
         Iterates through the dictionary of expected time series id metadata objects, comparing each key value pair
         to the actual data provided, raising an error if the comparison fails.
+
+        If attributes_to_ignore is provided, any attributes named within the list will be ignored for the comparison.
 
         """
         for expected_ts_id, expected_ts_dict in expected_ts_ids.items():
@@ -124,7 +127,11 @@ class TimeSeriesTestHelper(BaseTestHelper):
 
                 # TimeSeries objects require custom comparison to ensure all attributes are compared correctly.
                 if isinstance(expected_value, TimeSeries):
-                    self.compare_timeseries_objects(expected_timeseries=expected_value, actual_timeseries=actual_value)
+                    self.compare_timeseries_objects(
+                        expected_timeseries=expected_value,
+                        actual_timeseries=actual_value,
+                        attributes_to_ignore=attributes_to_ignore,
+                    )
                     continue
 
                 # Sort any lists to be compared to ensure the comparison is consistent
@@ -139,15 +146,21 @@ class TimeSeriesTestHelper(BaseTestHelper):
                     )
 
     @staticmethod
-    def compare_timeseries_objects(expected_timeseries: TimeSeries, actual_timeseries: TimeSeries) -> None:
+    def compare_timeseries_objects(
+        expected_timeseries: TimeSeries, actual_timeseries: TimeSeries, attributes_to_ignore: List | None = None
+    ) -> None:
         """Compares two TimeSeries objects
 
         Iterates through the available TimeSeries attributes comparing the values from the expected and actual
         TimeSeries objects for each, raising an error if they don't match.
 
         """
-        # Check the polars dataframes match
-        assert_frame_equal(expected_timeseries.df, actual_timeseries.df)
+        if attributes_to_ignore is None:
+            attributes_to_ignore = []
+
+        # Check the polars dataframes match. Due to the way expected data may have been stored in json ignore the
+        # data types to avoid failures caused by data being loaded as Int64 instead of UInt32 for example.
+        assert_frame_equal(expected_timeseries.df, actual_timeseries.df, check_dtype=False)
 
         timeseries_attributes = [
             "time_name",
@@ -159,6 +172,10 @@ class TimeSeriesTestHelper(BaseTestHelper):
             "metadata",
         ]
         for attribute_name in timeseries_attributes:
+            # Skip any attributes which have been requested to ignore.
+            if attribute_name in attributes_to_ignore:
+                continue
+
             expected_value = getattr(expected_timeseries, attribute_name)
             actual_value = getattr(actual_timeseries, attribute_name)
 
