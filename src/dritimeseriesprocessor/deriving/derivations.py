@@ -309,7 +309,7 @@ class DailyTotalRadiation(Calculation):
         return "radiation"
 
     @property
-    def preprocess_aggregation_method(self) -> str:
+    def preprocess_aggregation_function(self) -> str:
         return "mean_sum"
 
     @property
@@ -345,7 +345,7 @@ class DailyPotentialEvaporation(Calculation):
         return "pe"
 
     @property
-    def postprocess_aggregation_method(self) -> str:
+    def postprocess_aggregation_function(self) -> str:
         return "mean_sum"
 
     @property
