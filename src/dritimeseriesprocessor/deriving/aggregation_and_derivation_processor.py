@@ -106,7 +106,7 @@ class AggregationAndDerivationProcessor:
         resolution = None
         for dependent_ts_id in ts_metadata["inputs"]:
             dependent_ts_metadata = self.ts_ids[dependent_ts_id]
-            dependent_ts = self.get_ts_data(ts_id, dependent_ts_id)
+            dependent_ts = self.get_ts_data(dependent_ts_id)
 
             if not dependent_ts:
                 raise ValueError(
