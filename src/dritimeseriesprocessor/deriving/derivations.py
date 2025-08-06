@@ -55,6 +55,7 @@ class PotentialEvapotranspiration30Min(Calculation):
         self._ea = ActualVapourPressureFao56Eq54(self._rh, self._ta)
         self._gamma = PsychrometricConstant(self._pa, self._ta)
         self._delta = VapourPressureCurveSlope(self._ta)
+        self._ws = WindSpeedHeightCorrection(self._ws, measured_height=2.6)
 
     @property
     def default_column_name(self) -> str:
@@ -79,11 +80,11 @@ class PotentialEvapotranspiration30Min(Calculation):
         reference_crop_type_denominator = 0.34
 
         vapour_pressure_deficit = self._es.expr() - self._ea.expr()
-        radiation_term = 0.408 * self._delta.expr() * (self._rn - self._g)
+        radiation_term = 0.408 * self._delta.expr() * ((self._rn * 0.0018) - (self._g * 0.0018)) # Convert rn and g from W to MJ/30min
         aerodynamic_term = (
-            self._gamma.expr() * (reference_crop_type_numerator / (self._ta + 273)) * self._ws * vapour_pressure_deficit
+            self._gamma.expr() * (reference_crop_type_numerator / (self._ta + 273)) * self._ws.expr() * vapour_pressure_deficit
         )
-        resistance_term = self._delta.expr() + (self._gamma.expr() * (1 + (reference_crop_type_denominator * self._ws)))
+        resistance_term = self._delta.expr() + (self._gamma.expr() * (1 + (reference_crop_type_denominator * self._ws.expr())))
 
         pet = (radiation_term + aerodynamic_term) / resistance_term
         return pet
@@ -139,7 +140,7 @@ class PsychrometricConstant(Calculation):
     def expr(self) -> pl.Expr:
         cp = 1.013e-3  # Specific heat at constant pressure
         e = 0.622  # Ratio molecular weight of water vapour/dry air
-        gamma = (cp * self._pa) / (e * self._lv.expr())
+        gamma = (cp * (self._pa / 10)) / (e * self._lv.expr())
         return gamma
 
 
@@ -247,7 +248,7 @@ class LatentHeatOfVaporization(Calculation):
         return "lv"
 
     def expr(self) -> pl.Expr:
-        lv = 2.501 - 2.361e-3 * self._ta
+        lv = 2.501 - (2.361e-3 * self._ta)
         return lv
 
 
