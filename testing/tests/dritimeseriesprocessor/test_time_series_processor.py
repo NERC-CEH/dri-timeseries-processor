@@ -12,7 +12,7 @@ from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 class TestTimeSeriesProcessor(TimeSeriesTestHelper):
     def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
         """Test query parameters are constructed correctly."""
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
 
         expected_site_query_parameter = sorted(
             [
@@ -41,7 +41,7 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
         assert ts_processor.end_date == expected_end_date
 
     def test_get_user_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
             self.output_dir.joinpath("time_series_processor", "user_ts_ids_alic1_pe.json")
@@ -55,7 +55,7 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_get_processing_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
             self.output_dir.joinpath("time_series_processor", "processing_ts_ids_alic1_pe.json")
@@ -69,7 +69,7 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_get_dependent_timeseries_metadata(self, mock_api_manager: mock.MagicMock) -> None:
-        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
@@ -88,7 +88,7 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_add_derivation_metadata(self, mock_api_manager: mock.MagicMock) -> None:
-        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         initial_ts_ids = self.load_ts_ids_from_json_file(
@@ -112,7 +112,7 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_collate_timeseries_id_metadata_to_process(self, mock_api_manager: mock.MagicMock) -> None:
-        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(

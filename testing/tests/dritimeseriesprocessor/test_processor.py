@@ -102,7 +102,6 @@ class TestShiftProcessedData(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-@unittest.skip("Skipped until FPM-510 is fixed")
 class TestProcessTimeseries(unittest.TestCase):
 
     @patch("dritimeseriesprocessor.processor.run_corrections")

@@ -9,8 +9,7 @@ from time_stream import TimeSeries
 from dritimeseriesprocessor.correcting.correcter import run_corrections
 from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.metrics_exporter import metrics
-
-# from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
+from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 
 logger = logging.getLogger(__name__)
@@ -123,7 +122,7 @@ def process_timeseries(
     ts_ids_with_data = run_corrections(ts_ids_with_data)
 
     # Quality control
-    # ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)
+    ts_ids_with_data = run_quality_control(ts_ids_with_data, remove=True)
 
     # Infilling
     ts_ids_with_data = run_infilling(ts_ids_with_data)

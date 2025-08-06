@@ -1,7 +1,6 @@
 """Extension of TestHelper with additional functionality for end to end testing."""
 
 import logging
-import subprocess
 from pathlib import Path
 from typing import List
 
@@ -10,6 +9,7 @@ import polars as pl
 from botocore.exceptions import ClientError
 from polars.testing import assert_frame_equal
 
+from dritimeseriesprocessor.__main__ import main
 from dritimeseriesprocessor.configuration import app_config
 from testing.utils.base_test_helper import BaseTestHelper
 
@@ -53,17 +53,7 @@ class EndToEndTestHelper(BaseTestHelper):
         # from a previous test run
         self._clear_bucket_data(output_bucket_name)
 
-        # Initialise the command with the path to __main__.py
-        path_to_main = str(Path(__file__).parents[2].joinpath("src", "dritimeseriesprocessor", "__main__.py"))
-        command = ["python", path_to_main]
-        command.extend(cli_args)
-
-        # Save the subprocess output to a variable so any error details are available for debugging
-        try:
-            runner = subprocess.run(command, check=True, capture_output=True)
-            # subprocess.run(command, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        except Exception as err:
-            raise Exception(err.stderr.decode())
+        main(cli_args)
 
         # Check that for every expected parquet file, the corresponding parquet has been generated with a matching
         # path structure (i.e. same s3 keys) and contents

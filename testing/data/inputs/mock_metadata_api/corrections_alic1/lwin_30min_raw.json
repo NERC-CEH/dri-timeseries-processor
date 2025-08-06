@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/leca28mlq7bmtjfmtr20i2l182fi48ei",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/1iefms91ee2j6g7fg7f1nv45oa7pcbr7",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/rv5uijk5qp28n3uh97s14s8ak4puoikm",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/rv5uijk5qp28n3uh97s14s8ak4puoikm#value",
+                "value": "COSMOS-ALIC1-TA_30MIN_RAW"
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/eo2n2039fqjmdkp665u2nmv7g0s3335g",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/eo2n2039fqjmdkp665u2nmv7g0s3335g#value",
+                "value": "COSMOS-ALIC1-LWIN_UNC_30MIN_RAW"
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/49aomfljsl56e4r32lvm64mi3rvam01b",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/49aomfljsl56e4r32lvm64mi3rvam01b#value",
+                "value": 0.02559
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/lw_corr"
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-07-28-15:00:00-2018-12-20-12:30:00",
+            "@type": [{ "@id": "http://purl.org/dc/terms/PeriodOfTime" }],
+            "endDate": "2018-12-20T12:30:00",
+            "startDate": "2016-07-28T15:00:00"
+          },
+          "@type": [
+            { "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem" }
+          ]
+        }
+      ],
+      "title": ["Correction Configuration for COSMOS-ALIC1-LWIN_30MIN_RAW"],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    }
+  ]
+}

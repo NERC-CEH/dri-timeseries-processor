@@ -213,7 +213,7 @@ The `MockMetadataAPI` class is designed to replace the `_make_api_call` from `Me
 functions which call the metadata api. It uses a provided dictionary of data mapping metadata urls to a list
 containing the metadata response dictionaries, in the same format that would be returned directly by the metadata api.
 
-Default values for the api dictionary to use for the response data can be found in `TestHelper.metadata_api_data`. This
+Default values for the api dictionary to use for the response data can be found in `TestHelper.default_metadata_api_data`. This
 contains the following data:
 
 - A list of all available cosmos sites to be used for queries to `https://dri-metadata-api.staging.eds.ceh.ac.uk/id/network/cosmos`
@@ -231,7 +231,7 @@ from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestMetadataMocking(TimeSeriesTestHelper):
     def test_api_response(mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
 
         pass
 ```

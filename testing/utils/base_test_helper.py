@@ -10,8 +10,6 @@ class ComparisonError(Exception):
     pass
 
 
-
-
 class BaseTestHelper(unittest.TestCase):
     def setUp(self) -> None:
         """Sets up the testing environment.
@@ -58,7 +56,7 @@ class BaseTestHelper(unittest.TestCase):
         self.temp_dir.mkdir(parents=True, exist_ok=True)
 
     @property
-    def metadata_api_data(self) -> Dict[str, Dict[str, Any]]:
+    def default_metadata_api_data(self) -> Dict[str, Dict[str, Any]]:
         """Default metadata api data dictionary.
 
         Loads the metadata response json data for the following data:
@@ -82,7 +80,21 @@ class BaseTestHelper(unittest.TestCase):
             ),
         }
 
+    def create_all_metadata_api_data(self) -> Dict[str, Any]:
+        """
+        Construct a dictionary containing all metadata api data, adding ts_dependency, corrections and infill
+        configuration api responses to the default api response data.
+        """
+        return (
+            self.default_metadata_api_data
+            | self.create_ts_dependency_api_data()
+            | self.create_corrections_api_data()
+            | self.create_infill_configurations_api_data()
+            | self.create_processing_configurations_api_data()
+        )
+
     def create_ts_dependency_api_data(self) -> Dict[str, Any]:
+        """Construct the timeseries dependency api data response."""
         base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos-alic1-"
         ts_dependencies_dir = self.input_dir.joinpath("mock_metadata_api", "ts_dependencies_alic1")
 
@@ -120,6 +132,64 @@ class BaseTestHelper(unittest.TestCase):
             api_data[f"{base_url}{dependency_suffix}/_dependencies"] = self.load_json(
                 ts_dependencies_dir.joinpath(f"{dependency_suffix}.json")
             )
+
+        return api_data
+
+    def create_corrections_api_data(self) -> Dict[str, Any]:
+        """Construct the corrections metadata api data response."""
+        base_url = (
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
+            "ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToTimeSeries=http://fdri.ceh.ac."
+            "uk/id/dataset/cosmos-alic1-"
+        )
+        corrections_dir = self.input_dir.joinpath("mock_metadata_api", "corrections_alic1")
+
+        return self._load_api_data_from_file(base_url, corrections_dir)
+
+    def create_infill_configurations_api_data(self) -> Dict[str, Any]:
+        """Construct the infill configurations api data response."""
+        base_url = (
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
+            "ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/"
+            "id/dataset/cosmos-alic1-"
+        )
+        base_dir = self.input_dir.joinpath("mock_metadata_api", "infill_configurations_alic1")
+
+        return self._load_api_data_from_file(base_url, base_dir)
+
+    def create_processing_configurations_api_data(self) -> Dict[str, Any]:
+        """Construct the processing configurations api data response."""
+        base_url = (
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
+            "ceh.ac.uk/ref/common/configuration-type/qc&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-"
+            "alic1-"
+        )
+        base_dir = self.input_dir.joinpath("mock_metadata_api", "processing_configurations_alic1")
+
+        return self._load_api_data_from_file(base_url, base_dir)
+
+    def _load_api_data_from_file(self, base_url: str, base_dir: Path) -> Dict[str, Any]:
+        """
+        Using the provided base directory, read every json file contained within it, using the filename to construct the
+        url to index the json data against in the output api data dictionary.
+
+        Args:
+            base_url: Base url to add the json filename to. The complete url should match the corresponding url that
+                would be used to query the same data against the Metadat API.
+            base_dir: Path to the directory containing all the json files to be read.
+
+        Returns:
+            Dictionary containing the api response data indexed by url.
+
+        """
+
+        # The name of the json file should be based on the remaining section of the base url, e.g. tnr01c_30min_raw.json
+        api_data = {}
+        for json_path in base_dir.glob("*.json"):
+            url = f"{base_url}{json_path.stem}"
+            with open(json_path) as json_file:
+                json_data = json.load(json_file)
+            api_data[url] = json_data
 
         return api_data
 

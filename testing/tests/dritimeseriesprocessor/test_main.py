@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class TestMain(EndToEndTestHelper):
     def test_main(self, mock_api_manager: mock.MagicMock) -> None:
         """End to end test of the timeseries processor."""
-        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        api_data = self.create_all_metadata_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         self.run_cli_test(
