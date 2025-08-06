@@ -4,7 +4,7 @@ from datetime import date
 import polars as pl
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
-from dritimeseriesprocessor.utils import steralize_dates
+from dritimeseriesprocessor.utils import sterilize_dates
 from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 
@@ -14,8 +14,8 @@ class TestReadByDateRange(BaseTestCase):
 
         This means all sites are read.
         """
-        start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 4))
-        
+        start_date, end_date = sterilize_dates(date(2024, 1, 1), date(2024, 1, 4))
+
         expected_site_ids = ['site1', 'site2']
         expected_datetimes = pl.datetime_range(start=start_date, end=end_date, interval="1h", eager=True).to_list()
 
@@ -37,7 +37,7 @@ class TestReadByDateRange(BaseTestCase):
     def test_read_by_date_range_with_site_ids(self):
         """Test reading data when specifying site IDs.
         """
-        start_date, end_date = steralize_dates(date(2024, 1, 3), date(2024, 1, 7))
+        start_date, end_date = sterilize_dates(date(2024, 1, 3), date(2024, 1, 7))
 
         expected_site_ids = ['site1']
         expected_datetimes = pl.datetime_range(start=start_date, end=end_date, interval="1h", eager=True).to_list()
@@ -61,10 +61,10 @@ class TestReadByDateRange(BaseTestCase):
         """Test reading data when specifying specific columns
         """
         cols = ['col1']
-        start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 10))
+        start_date, end_date = sterilize_dates(date(2024, 1, 1), date(2024, 1, 10))
 
         expected_datetimes = pl.datetime_range(start=start_date, end=end_date, interval="1h", eager=True).to_list()
-        
+
         result = query_by_date_range(
             bucket_name=self.bucket_name,
             prefix='cosmos/dataset=test_dataset',

@@ -106,7 +106,7 @@ class AggregationAndDerivationProcessor:
         resolution = None
         for input_ts_id in ts_metadata["inputs"]:
             input_ts_metadata = self.ts_ids[input_ts_id]
-            input_ts = self.get_ts_data(ts_id, input_ts_id)
+            input_ts = self.get_ts_data(input_ts_id)
 
             if not input_ts:
                 raise ValueError(
@@ -177,7 +177,7 @@ class AggregationAndDerivationProcessor:
             raise ValueError(f"More than one input has been provided for aggregation for {ts_id}")
 
         input_ts_id = ts_metadata["inputs"][0]
-        input_ts = self.get_ts_data(ts_id, input_ts_id)
+        input_ts = self.get_ts_data(input_ts_id)
 
         if not input_ts:
             raise ValueError(
@@ -194,7 +194,7 @@ class AggregationAndDerivationProcessor:
 
         self.ts_ids[ts_id]["data"] = aggregated_ts
 
-    def get_ts_data(self, ts_id: str, input_ts_id: str) -> TimeSeries:
+    def get_ts_data(self, ts_id: str) -> TimeSeries:
         """
         Get the TimeSeries object for a timeseries id.
 
@@ -204,18 +204,12 @@ class AggregationAndDerivationProcessor:
         Args:
             ts_id: ID of the time series to fetch data for
 
-        Raises:
-            ValueError: No data available for the input timeseries id even after attempting to calculate aggregation
-                or derivation.
-
         Returns:
-            TimeSeries object containing data corresponding to the provided input timeseries ID.
+            TimeSeries object containing data corresponding to the provided timeseries ID.
 
         """
-        input_ts_metadata = self.ts_ids[input_ts_id]
-        if not input_ts_metadata.get("data"):
-            self.calculate_derivation_or_aggregation_for_ts_id(input_ts_id, input_ts_metadata)
+        ts_metadata = self.ts_ids[ts_id]
+        if not ts_metadata.get("data"):
+            self.calculate_derivation_or_aggregation_for_ts_id(ts_id, ts_metadata)
 
-        input_ts = self.ts_ids[input_ts_id].get("data")
-
-        return input_ts
+        return self.ts_ids[ts_id].get("data")

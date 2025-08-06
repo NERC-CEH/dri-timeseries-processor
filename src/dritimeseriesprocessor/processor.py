@@ -1,9 +1,8 @@
 import logging
 import os
 from datetime import datetime
-from typing import Dict, Union
+from typing import Dict
 
-import polars as pl
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.correcting.correcter import run_corrections
@@ -11,40 +10,41 @@ from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
+from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
 
 logger = logging.getLogger(__name__)
 
 
-def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_date: datetime) -> pl.DataFrame:
+def load_data(ts_container: TimeseriesContainerWithDerivations, start_date: datetime, end_date: datetime) -> TimeSeries:
     """
     Load in data for the given timeseries from S3 using the data_manager.
 
     Args:
-        ts_metadata: Metadata for timeseries ID to load
+        ts_container: Container for timeseries data to load
         start_date: The start date of the data
         end_date: The end date of the data
 
     Returns:
-        pl.DataFrame: A Polars DataFrame containing the loaded data.
+        TimeSeries: A timeseries instance containing the loaded data.
     """
     logger.info(
         {
-            "dataset": ts_metadata["sourceDataset"],
-            "bucket": ts_metadata["sourceBucket"],
-            "column": ts_metadata["sourceColumnName"],
-            "site": ts_metadata["sourceSite"],
+            "dataset": ts_container["sourceDataset"],
+            "bucket": ts_container["sourceBucket"],
+            "column": ts_container["sourceColumnName"],
+            "site": ts_container["sourceSite"],
             "start_date": start_date,
             "end_date": end_date,
         }
     )
 
     bucket_data = data_manager.query_by_date_range(
-        bucket_name=ts_metadata["sourceBucket"],
-        prefix=f"cosmos/dataset={ts_metadata['sourceDataset']}",
+        bucket_name=ts_container["sourceBucket"],
+        prefix=f"cosmos/dataset={ts_container['sourceDataset']}",
         start_date=start_date,
         end_date=end_date,
-        site_ids=[ts_metadata["sourceSite"]],
-        columns=[ts_metadata["sourceColumnName"]],
+        site_ids=[ts_container["sourceSite"]],
+        columns=[ts_container["sourceColumnName"]],
     )
 
     if bucket_data.shape[0] == 0:
@@ -57,12 +57,12 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
     ts = TimeSeries(
         bucket_data,
         "time",
-        ts_metadata["resolution"],
-        ts_metadata["periodicity"],
+        ts_container["resolution"],
+        ts_container["periodicity"],
         metadata={
-            "site_id": ts_metadata["sourceSite"],
-            "column_name": ts_metadata["sourceColumnName"],
-            "processing_level": ts_metadata["processing_level"],
+            "site_id": ts_container["sourceSite"],
+            "column_name": ts_container["sourceColumnName"],
+            "processing_level": ts_container["processing_level"],
         },
     )
 
@@ -76,8 +76,8 @@ def load_data(ts_metadata: Dict[str, Dict[str, str]], start_date: datetime, end_
 
 
 def shift_processed_data(
-    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
-) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    ts_ids: Dict[str, TimeseriesContainerWithDerivations],
+) -> Dict[str, TimeseriesContainerWithDerivations]:
     """Move the processed data within raw timeseries ids to the processed timeseries ids
 
     Args:
@@ -103,8 +103,8 @@ def shift_processed_data(
 
 
 def process_timeseries(
-    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
-) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    ts_ids: Dict[str, TimeseriesContainerWithDerivations],
+) -> Dict[str, TimeseriesContainerWithDerivations]:
     """
     Process the timeseries data.
 

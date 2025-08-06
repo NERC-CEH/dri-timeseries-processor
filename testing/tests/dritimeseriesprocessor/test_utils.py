@@ -85,14 +85,14 @@ class TestRemoveProtocolFromUrl(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-class TestSteralizeDates(unittest.TestCase):
+class TestSterilizeDates(unittest.TestCase):
     def test_start_date_only(self):
         """Test with only start_date provided as date that datetimes of start and end of that date are returned
         """
         start = date(2023, 8, 1)
         expected_start = datetime.combine(start, datetime.min.time())
         expected_end = datetime.combine(start, datetime.max.time())
-        result = utils.steralize_dates(start)
+        result = utils.sterilize_dates(start)
         self.assertEqual(result, (expected_start, expected_end))
 
     def test_start_date_and_end_date_as_dates(self):
@@ -102,7 +102,7 @@ class TestSteralizeDates(unittest.TestCase):
         end = date(2023, 8, 10)
         expected_start = datetime.combine(start, datetime.min.time())
         expected_end = datetime.combine(end, datetime.max.time())
-        result = utils.steralize_dates(start, end)
+        result = utils.sterilize_dates(start, end)
         self.assertEqual(result, (expected_start, expected_end))
 
     def test_start_date_after_end_date_error(self):
@@ -111,7 +111,7 @@ class TestSteralizeDates(unittest.TestCase):
         start = date(2023, 8, 10)
         end = date(2023, 8, 1)
         with self.assertRaises(UserWarning):
-            utils.steralize_dates(start, end)
+            utils.sterilize_dates(start, end)
 
     def test_start_date_equals_end_date(self):
         """Test with start_date equal to end_date that datetimes of start and end of that date are returned.
@@ -120,14 +120,14 @@ class TestSteralizeDates(unittest.TestCase):
         end = date(2023, 8, 1)
         expected_start = datetime.combine(start, datetime.min.time())
         expected_end = datetime.combine(end, datetime.max.time())
-        result = utils.steralize_dates(start, end)
+        result = utils.sterilize_dates(start, end)
         self.assertEqual(result, (expected_start, expected_end))
 
     def test_datetime_input(self):
         """Test with datetime inputs for both start_date and end_date."""
         start = datetime(2023, 8, 1, 12, 0)
         end = datetime(2023, 8, 10, 18, 0)
-        result = utils.steralize_dates(start, end)
+        result = utils.sterilize_dates(start, end)
         self.assertEqual(result, (start, end))
 
     def test_mixed_date_and_datetime(self):
@@ -135,7 +135,7 @@ class TestSteralizeDates(unittest.TestCase):
         start = date(2023, 8, 1)
         end = datetime(2023, 8, 10, 18, 0)
         expected_start = datetime.combine(start, datetime.min.time())
-        result = utils.steralize_dates(expected_start, end)
+        result = utils.sterilize_dates(expected_start, end)
         self.assertEqual(result, (expected_start, end))
 
 
@@ -217,7 +217,7 @@ class TestRemoveSitesNotInStore(unittest.TestCase):
         result = utils.remove_sites_not_in_store(sites, metadata_sites)
 
         self.assertEqual(sorted(result), sorted(['A', 'B']))
-    
+
     def test_one_site_not_in_store(self):
         sites = ['A', 'B']
         metadata_sites = ['A']

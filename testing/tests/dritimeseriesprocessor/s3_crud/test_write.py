@@ -8,7 +8,7 @@ import polars.testing
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import group_by_date, steralize_dates
+from dritimeseriesprocessor.utils import group_by_date, sterilize_dates
 from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 
@@ -21,14 +21,14 @@ class TestS3Writer(BaseTestCase):
         writer = S3Writer(self.s3_client)
 
         # Bad path
-        
+
         with self.assertRaises(TypeError):
             S3Writer("not an s3 client")
 
 
     def test_s3_key_builder(self, dataset='test', site_id='BUNNY', date=datetime(2024, 2, 22, 1, 32, 14)):
         """Tests that the _build_s3_key method returns correctly"""
-        
+
         result = S3Writer._build_s3_key(dataset, site_id, date)
         expected = f'cosmos/dataset={dataset}/site={site_id}/date=2024-02-22/data.parquet'
         self.assertEqual(result, expected)
@@ -37,8 +37,8 @@ class TestS3Writer(BaseTestCase):
 class TestS3WriterWithData(BaseTestCase):
     def setUp(self):
 
-        start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 4))
-        
+        start_date, end_date = sterilize_dates(date(2024, 1, 1), date(2024, 1, 4))
+
         self.data = query_by_date_range(
             bucket_name=self.bucket_name,
             prefix='cosmos/dataset=test_dataset',
@@ -78,7 +78,7 @@ class TestS3WriterWithData(BaseTestCase):
         )
 
         self.assertEqual(mock_get_bytes.called, 1)
-        
+
     def test_objects_written(self):
         """Tests that the write() method writes to S3"""
 
@@ -98,7 +98,7 @@ class TestS3WriterWithData(BaseTestCase):
         for date, df in grouped_data:
 
             key = f'cosmos/dataset=test_dataset/site=site1/date={date}/data.parquet'
-            
+
             result = reader.read(
                 query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}');"
             )
