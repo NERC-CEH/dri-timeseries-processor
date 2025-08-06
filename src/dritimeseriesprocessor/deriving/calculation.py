@@ -1,8 +1,11 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 import polars as pl
 from time_stream import Period, TimeSeries, aggregation  # noqa: F401
+
+logger = logging.getLogger(__name__)
 
 
 class Calculation(ABC):
@@ -40,11 +43,19 @@ class Calculation(ABC):
         return self._collect_dependencies()
 
     @property
-    def preprocess_aggregation_method(self) -> str | None:
+    def preprocess_aggregation_function(self) -> str | None:
         return None
 
     @property
-    def postprocess_aggregation_method(self) -> str | None:
+    def preprocess_aggregation_period(self) -> str | None:
+        return None
+
+    @property
+    def postprocess_aggregation_function(self) -> str | None:
+        return None
+
+    @property
+    def postprocess_aggregation_period(self) -> str | None:
         return None
 
     @property
@@ -91,89 +102,78 @@ class Calculation(ABC):
         """
         return column_name or self.default_column_name
 
-    def evaluate(
-        self, df: pl.DataFrame, include_dependency_columns: bool = False, allow_override: bool = False
-    ) -> pl.DataFrame:
-        """Evaluate the calculation, adding the result as a new column in the DataFrame.
+    def evaluate(self, ts: TimeSeries) -> pl.DataFrame:
+        """Evaluate the expression and perform any pre and post aggregations
 
         Args:
-            df: Input DataFrame.
-            include_dependency_columns: Whether to include results of dependent calculations of this
-                                        calculation as columns in output df.
-            allow_override: Whether to allow columns to be overridden by the calculation.
+            ts: Input TimeSeries.
 
         Returns:
-            pl.DataFrame: DataFrame with the result of the calculation.
+            TimeSeries: TimeSeries with the result of the calculation.
         """
-        if self.preprocess_aggregation_method:
-            df = self._apply_aggregation(df, self.preprocess_aggregation_method)
 
-        df = self._evaluate_expressions(
-            df=df,
-            include_dependency_columns=include_dependency_columns,
-            allow_override=allow_override,
-        )
+        if self.preprocess_aggregation_function:
+            ts = self._apply_aggregation(ts, self.preprocess_aggregation_period, self.preprocess_aggregation_function)
 
-        if self.postprocess_aggregation_method:
-            df = self._apply_aggregation(df, self.postprocess_aggregation_method)
+        ts = self._evaluate_expression(ts=ts)
 
-        return df
+        if self.postprocess_aggregation_function:
+            ts = self._apply_aggregation(ts, self.postprocess_aggregation_period, self.postprocess_aggregation_function)
 
-    def _apply_aggregation(self, df: pl.DataFrame, aggregation_method: str) -> pl.DataFrame:
-        time_column, aggregation_column = df.columns
-        ts = TimeSeries(df=df, time_name=time_column)
+        # Pull out time and self.column_name from the result
+        ts.df = ts.df.select([ts.time_name, self.column_name])
+
+        # Add the units metadata to the column
+        # TODO: Waiting for a method to be added to do this in TimeSeries
+        ts.__getattr__(self.column_name)._metadata.update({"units": self.units})
+
+        return ts
+
+    def _apply_aggregation(self, ts: TimeSeries, aggregation_period: Period, aggregation_function: str) -> pl.DataFrame:
+        """Apply aggregation to the TimeSeries DataFrame.
+
+        Args:
+            ts: Input TimeSeries object.
+            aggregation_period: Period over which to aggregate.
+            aggregation_function: Method to use for aggregation.
+
+        Returns:
+            TimeSeries: TimeSeries with aggregated results.
+        """
 
         aggregated_ts = ts.aggregate(
-            aggregation_period=Period.of_iso_duration("P1D"),
-            aggregation_function=aggregation_method,
-            columns=aggregation_column,
+            aggregation_period=aggregation_period, aggregation_function=aggregation_function, columns=self.column_name
         )
-        aggregated_column_name = f"{aggregation_method}_{self.column_name}"
 
-        self._aggregated = self._columns_to_expressions(aggregated_column_name)
-        return aggregated_ts.df
+        # Rename to the original column name
+        aggregated_column_name = f"{aggregation_function}_{self.column_name}"
+        aggregated_ts.df = aggregated_ts.df.rename({aggregated_column_name: self.column_name})
 
-    def _evaluate_expressions(
-        self, df: pl.DataFrame, include_dependency_columns: bool = False, allow_override: bool = False
-    ) -> pl.DataFrame:
-        # Collect the expressions that we want to evaluate
-        if include_dependency_columns:
-            expressions = self._collect_expressions()
-        else:
-            expressions = {self.column_name: self.expr().alias(self.column_name)}
+        return aggregated_ts
 
-        # Check for existing columns in the DataFrame
-        existing_columns = set(expressions.keys()) & set(df.columns)
-        if existing_columns and not allow_override:
-            raise UserWarning(f"Columns already exist in DataFrame: {existing_columns}")
+    def _evaluate_expression(self, ts: TimeSeries) -> TimeSeries:
+        """
+        Evaluate the expressions for the calculation, returning a new TimeSeries with the results.
 
-        # Perform the evaluation(s)
-        lazy_df = df.lazy()
-        result = lazy_df.with_columns(list(expressions.values()))
-        return result.collect()
-
-    def _collect_expressions(self) -> dict[str, pl.Expr]:
-        """Collect all expressions required for the calculation, including dependencies.
+        Args:
+            ts: Input TimeSeries.
 
         Returns:
-            A dictionary mapping column names to their corresponding Polars expressions.
+            TimeSeries: TimeSeries with the results of the calculation.
         """
-        expressions = {}
 
-        def __collect_expressions(calc: "Calculation") -> None:
-            """Recursive method for getting expressions from dependencies"""
-            if calc in expressions:
-                return
+        # Perform the evaluation(s)
+        lazy_df = ts.df.lazy()
+        result = lazy_df.with_columns(self.expr().alias(self.column_name))
+        result_df = result.collect()
 
-            # Add the calc expression to the dict
-            expressions[calc.column_name] = calc.expr().alias(calc.column_name)
-
-            # Collect from dependencies
-            for dep in calc._collect_dependencies():
-                __collect_expressions(dep)
-
-        __collect_expressions(self)
-        return expressions
+        return TimeSeries(
+            df=result_df,
+            time_name=ts.time_name,
+            resolution=ts.resolution,
+            periodicity=ts.periodicity,
+            metadata=ts.metadata(),
+        )
 
     def _collect_dependencies(self) -> list["Calculation"]:
         """Automatically discover dependencies by introspecting attributes that are instances of Calculation.
