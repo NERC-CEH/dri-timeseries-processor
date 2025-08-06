@@ -4,7 +4,7 @@ from typing import Optional, Type, Union
 import polars as pl
 from time_stream import Period, TimeSeries
 
-from dritimeseriesprocessor.deriving.calculation import Calculation
+from dritimeseriesprocessor.deriving.calculation import AggregationConfig, Calculation
 
 
 class PotentialEvapotranspiration30Min(Calculation):
@@ -311,12 +311,8 @@ class DailyTotalRadiation(Calculation):
         return "radiation"
 
     @property
-    def preprocess_aggregation_function(self) -> str:
-        return "mean_sum"
-
-    @property
-    def preprocess_aggregation_period(self) -> str:
-        return Period.of_iso_duration("P1D")
+    def preprocess_aggregation_config(self) -> AggregationConfig:
+        return AggregationConfig(function_name="mean_sum", period=Period.of_iso_duration("P1D"))
 
     def expr(self) -> pl.Expr:
         daily_radiation = self._rad * 0.0864
@@ -347,12 +343,8 @@ class DailyPotentialEvaporation(Calculation):
         return "pe"
 
     @property
-    def postprocess_aggregation_function(self) -> str:
-        return "mean_sum"
-
-    @property
-    def postprocess_aggregation_period(self) -> str:
-        return Period.of_iso_duration("P1D")
+    def postprocess_aggregation_config(self) -> AggregationConfig:
+        return AggregationConfig(function_name="mean_sum", period=Period.of_iso_duration("P1D"))
 
     def expr(self) -> pl.Expr:
         filtered_pe = pl.when(self._pe < 0).then(0).otherwise(self._pe)

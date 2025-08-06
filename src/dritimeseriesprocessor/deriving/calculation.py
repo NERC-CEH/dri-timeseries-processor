@@ -3,9 +3,17 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 import polars as pl
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
 from time_stream import Period, TimeSeries, aggregation  # noqa: F401
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+class AggregationConfig:
+    function_name: str
+    period: Period
 
 
 class Calculation(ABC):
@@ -43,19 +51,11 @@ class Calculation(ABC):
         return self._collect_dependencies()
 
     @property
-    def preprocess_aggregation_function(self) -> str | None:
+    def preprocess_aggregation_config(self) -> AggregationConfig | None:
         return None
 
     @property
-    def preprocess_aggregation_period(self) -> str | None:
-        return None
-
-    @property
-    def postprocess_aggregation_function(self) -> str | None:
-        return None
-
-    @property
-    def postprocess_aggregation_period(self) -> str | None:
+    def postprocess_aggregation_config(self) -> AggregationConfig | None:
         return None
 
     @property
@@ -112,13 +112,13 @@ class Calculation(ABC):
             TimeSeries: TimeSeries with the result of the calculation.
         """
 
-        if self.preprocess_aggregation_function:
-            ts = self._apply_aggregation(ts, self.preprocess_aggregation_period, self.preprocess_aggregation_function)
+        if self.preprocess_aggregation_config:
+            ts = self._apply_aggregation(ts, self.preprocess_aggregation_config)
 
         ts = self._evaluate_expression(ts=ts)
 
-        if self.postprocess_aggregation_function:
-            ts = self._apply_aggregation(ts, self.postprocess_aggregation_period, self.postprocess_aggregation_function)
+        if self.postprocess_aggregation_config:
+            ts = self._apply_aggregation(ts, self.postprocess_aggregation_config)
 
         # Pull out time and self.column_name from the result
         ts.df = ts.df.select([ts.time_name, self.column_name])
@@ -129,7 +129,7 @@ class Calculation(ABC):
 
         return ts
 
-    def _apply_aggregation(self, ts: TimeSeries, aggregation_period: Period, aggregation_function: str) -> pl.DataFrame:
+    def _apply_aggregation(self, ts: TimeSeries, aggregation_config: AggregationConfig) -> pl.DataFrame:
         """Apply aggregation to the TimeSeries DataFrame.
 
         Args:
@@ -139,14 +139,16 @@ class Calculation(ABC):
 
         Returns:
             TimeSeries: TimeSeries with aggregated results.
-        """
 
+        """
         aggregated_ts = ts.aggregate(
-            aggregation_period=aggregation_period, aggregation_function=aggregation_function, columns=self.column_name
+            aggregation_period=aggregation_config.period,
+            aggregation_function=aggregation_config.function_name,
+            columns=self.column_name,
         )
 
         # Rename to the original column name
-        aggregated_column_name = f"{aggregation_function}_{self.column_name}"
+        aggregated_column_name = f"{aggregation_config.function_name}_{self.column_name}"
         aggregated_ts.df = aggregated_ts.df.rename({aggregated_column_name: self.column_name})
 
         return aggregated_ts

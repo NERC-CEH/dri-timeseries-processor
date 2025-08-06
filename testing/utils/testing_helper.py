@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Union
 
 import polars as pl
 from polars.testing import assert_frame_equal
-from time_stream import TimeSeries, Period
+from time_stream import Period, TimeSeries
 
 
 class ComparisonError(Exception):
