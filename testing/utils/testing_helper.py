@@ -2,13 +2,13 @@ import json
 import os
 import shutil
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
 import polars as pl
 from polars.testing import assert_frame_equal
-from time_stream import TimeSeries
+from time_stream import TimeSeries, Period
 
 
 class ComparisonError(Exception):
@@ -28,6 +28,29 @@ def load_json(json_path: str) -> Dict[str, Any]:
     """
     with open(json_path) as json_file:
         return json.load(json_file)
+
+
+def df_to_ts(df: pl.DataFrame) -> "TimeSeries":
+    """Convert a Polars DataFrame to a TimeSeries object."""
+
+    # Add time column according to the length of the DataFrame
+    time_name = "time"
+    date_list = [datetime(2023, 1, 1) + timedelta(days=i) for i in range(len(df))]
+    df = df.with_columns(pl.Series(name="time", values=date_list))
+
+    # Reorder columns to put "time" first
+    df = df.select(["time"] + [col for col in df.columns if col != "time"])
+
+    # Set resolution and periodicity
+    resolution = Period.of_iso_duration("P1D")
+
+    return TimeSeries(
+        df=df,
+        time_name=time_name,
+        resolution=resolution,
+        periodicity=resolution,
+        metadata={},
+    )
 
 
 class TestHelper(unittest.TestCase):
