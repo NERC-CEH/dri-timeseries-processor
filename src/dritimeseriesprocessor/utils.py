@@ -7,7 +7,11 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesContainer, TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.dri_typing import (
+    DerivationMetadata,
+    TimeseriesContainer,
+    TimeseriesContainerWithDerivations,
+)
 
 logger = logging.getLogger(__name__)
 

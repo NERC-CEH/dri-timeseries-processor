@@ -2,8 +2,8 @@ import logging
 from functools import lru_cache
 from typing import Dict
 
+from dritimeseriesprocessor.dri_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.flagging.flagger import infill_flag_column_name, update_infill_core_flags
-from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ def run_infilling(
                 method_metadata = infill_methods[infill_method.name]
 
                 # TODO: Unsure whether this parameter is actually needed.  Not used in any method currently.
-                infill_method.parameters.pop("window")
+                infill_method.parameters.pop("window", None)
 
                 logger.info(
                     f"Infilling {ts.column_name} with method: {infill_method.name}. "
@@ -89,5 +89,6 @@ def run_infilling(
                 ts.add_flag(infill_flag_col, infill_method.name, null_mask_before.ne(null_mask_after))
 
         ts = update_infill_core_flags(ts)
+        ts_ids[ts_id]["data"] = ts
 
     return ts_ids

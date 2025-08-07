@@ -4,7 +4,6 @@ from pydantic import BaseModel, field_validator, model_validator
 
 from dritimeseriesprocessor.correcting import operations as correction_functions
 from dritimeseriesprocessor.deriving import derivations as derivation_functions
-from dritimeseriesprocessor.infilling import methods as infilling_functions
 from metadata_manager.models.common import ComponentType
 
 
@@ -70,7 +69,8 @@ class Method(BaseModel):
     def __call__(self, *args, **kwargs):
         """Call the method function directly."""
         if self.method_type == ComponentType.INFILLING:
-            module = infilling_functions
+            # TODO: Changed how infill runs.  May think about refactor for the others.
+            raise UserWarning("Infill methods not run directly from this config object.")
         elif self.method_type == ComponentType.QUALITY_CONTROL:
             # TODO: Changed how QC runs.  May think about refactor for the others.
             raise UserWarning("QC checks not run directly from this config object.")

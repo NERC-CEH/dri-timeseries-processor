@@ -8,12 +8,12 @@ import boto3
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
+from dritimeseriesprocessor.dri_typing import TimeseriesContainer
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.typing import TimeseriesContainer
 from dritimeseriesprocessor.utils import (
     group_by_date,
     merge_ts_def_metadata,
