@@ -5,8 +5,8 @@ from typing import Dict
 
 import polars as pl
 
-from dritimeseriesprocessor.dri_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
+from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.utils import not_missing_expr
 from metadata_manager.models.service import load_config, load_methods

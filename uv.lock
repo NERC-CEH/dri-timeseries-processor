@@ -515,13 +515,13 @@ requires-dist = [
     { name = "isodate" },
     { name = "moto", specifier = ">=5.0.10" },
     { name = "pandas" },
-    { name = "polars", specifier = "==1.31.0" },
+    { name = "polars", specifier = ">=1.1.0" },
     { name = "prometheus-client" },
     { name = "pyarrow", specifier = ">=17.0.0" },
     { name = "pydantic", specifier = ">=2.8.2" },
     { name = "setuptools", specifier = "<81" },
     { name = "tenacity" },
-    { name = "time-stream", git = "https://github.com/NERC-CEH/time-stream.git?rev=feature%2Fadd-name-to-bitwise-flag-class" },
+    { name = "time-stream", git = "https://github.com/NERC-CEH/time-stream.git" },
 ]
 
 [package.metadata.requires-dev]
@@ -2000,8 +2000,8 @@ wheels = [
 
 [[package]]
 name = "time-stream"
-version = "0.0.85"
-source = { git = "https://github.com/NERC-CEH/time-stream.git#183e0e1b21c9d23882c86fed78ae54940ba61310" }
+version = "0.0.86"
+source = { git = "https://github.com/NERC-CEH/time-stream.git#48ac5eb2245cb10d0011d5b13ce5f1fd709c78f1" }
 dependencies = [
     { name = "altair" },
     { name = "autosemver" },

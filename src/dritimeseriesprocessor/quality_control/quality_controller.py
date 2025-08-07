@@ -4,8 +4,8 @@ from typing import Dict
 
 import polars as pl
 
-from dritimeseriesprocessor.dri_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
+from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.metrics_exporter import metrics
 from metadata_manager.models.service import load_config, load_methods
 
