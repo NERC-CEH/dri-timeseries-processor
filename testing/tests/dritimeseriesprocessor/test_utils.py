@@ -139,29 +139,6 @@ class TestSteralizeDates(unittest.TestCase):
         self.assertEqual(result, (expected_start, end))
 
 
-class TestGroupByDate(unittest.TestCase):
-    """Test the group_by_date function."""
-
-    def test_group_by_date(self):
-        """Test that df is split correctly."""
-
-        data = {"time": [datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 1, 1, 10, 0), datetime(2024, 1, 2, 1, 10, 0),
-                        datetime(2024, 1, 2, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0), datetime(2024, 1, 3, 1, 10, 0)],
-                "value": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}
-        schema = {"time": pl.Datetime, "value": pl.Float64}
-
-        df = pl.DataFrame(data, schema)
-
-        result = utils.group_by_date(df)
-
-        # Should be 3 dataframes
-        assert len(result) == 3
-
-        for date, data in result:
-            expected = df.filter((pl.col('time').dt.date() == date))
-            polars.testing.assert_frame_equal(data, expected)
-
-
 class TestMissingExpr(unittest.TestCase):
     def test_missing_expr(self):
         """Test the expression for detecting missing values."""

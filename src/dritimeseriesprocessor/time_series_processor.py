@@ -110,13 +110,7 @@ class TimeSeriesProcessor:
         # Write data
         # ----------
         writer = S3Writer(self.s3_client)
-
-        # We only want to write data that has been processed, and we dont require
-        # the ts id anymore
-        processed_timeseries = [
-            metadata for metadata in self.ts_ids.values() if metadata["processing_level"] == "processed"
-        ]
-        self._write_timeseries(processed_timeseries, app_config.processed_bucket, self.network, writer)
+        self._write_timeseries(self.ts_ids, app_config.processed_bucket, self.network, writer)
 
         # Record a successful run of the pipeline and push all metrics to the pushgateway
         metrics.record_successful_run()
@@ -326,7 +320,7 @@ class TimeSeriesProcessor:
 
     @staticmethod
     def _write_timeseries(
-        processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str, writer: S3Writer
+        ts_ids: Dict[str, TimeseriesContainerWithDerivations], bucket_name: str, network: str, writer: S3Writer
     ) -> None:
         """Write the timeseries data to S3.
 
@@ -337,6 +331,10 @@ class TimeSeriesProcessor:
             writer: The S3 writer object.
 
         """
+        # We only want to write data that has been processed, and we dont require
+        # the ts id anymore
+        processed_timeseries = [metadata for metadata in ts_ids.values() if metadata["processing_level"] == "processed"]
+
         # Structure the time series data ready for writing
         # Data combined by resolution and site, and then split into days
         data_to_write = writer.structure(processed_timeseries, bucket_name, network)

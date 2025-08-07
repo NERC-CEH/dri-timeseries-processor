@@ -66,7 +66,7 @@ class S3Writer(WriterInterface):
 
     def structure(
         self, processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str
-    ) -> List[List[List[Tuple[datetime, pl.DataFrame], str, str, str, str]]]:
+    ) -> List[List[List[Tuple[datetime, pl.DataFrame] | str]]]:
         """
         Structure the processed data ready for writing.
 
@@ -80,7 +80,7 @@ class S3Writer(WriterInterface):
         Returns:
             Data and metadata required for asynchronous writing
         """
-        grouped_ts_ids = self._group_data_by_resolution(processed_timeseries)
+        grouped_ts_ids = self._group_data_by_resolution_and_site(processed_timeseries)
 
         data_to_write = []
         for data_object in grouped_ts_ids:
@@ -123,7 +123,7 @@ class S3Writer(WriterInterface):
     def _build_s3_key(network: str, site_id: str, resolution: str, date: datetime) -> str:
         """Builds a S3 key.
 
-        network=<network>/site=<site_id>/date=<date>/data.parquet
+        network=<network>/date=<date>site=<site_id>/resolution=<resolution>/data.parquet
 
         Args:
             network: The name of the network
@@ -153,10 +153,10 @@ class S3Writer(WriterInterface):
         return [(group[0][0], group[1]) for group in df.group_by([pl.col("time").dt.date()])]
 
     @staticmethod
-    def _group_data_by_resolution(
+    def _group_data_by_resolution_and_site(
         processed_ts_ids: TimeseriesContainerWithDerivations,
     ) -> List[Tuple[str, str, pl.DataFrame]]:
-        """Group the processed ts_ids by resolution and combine the timeseries objects.
+        """Group the processed ts_ids by resolution and site and combine the timeseries objects.
 
         Args:
             processed_ts_ids: The time series ids that have been processed.

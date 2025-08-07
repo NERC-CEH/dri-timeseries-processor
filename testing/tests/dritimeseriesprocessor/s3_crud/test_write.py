@@ -3,16 +3,19 @@ from io import BytesIO
 from unittest.mock import patch
 
 import moto
+import polars as pl
 import polars.testing
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import group_by_date, steralize_dates
+from dritimeseriesprocessor.utils import sterilize_dates
 from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
 
 
 class TestS3Writer(BaseTestCase):
+    """Test the s3 writer class"""
+
     def test_s3_client_type(self):
         """Returns an object if s3_client is of type `boto3.client.s3`, otherwise
         raises an error"""
@@ -21,24 +24,23 @@ class TestS3Writer(BaseTestCase):
         writer = S3Writer(self.s3_client)
 
         # Bad path
-        
         with self.assertRaises(TypeError):
             S3Writer("not an s3 client")
 
 
-    def test_s3_key_builder(self, dataset='test', site_id='BUNNY', date=datetime(2024, 2, 22, 1, 32, 14)):
+    def test_s3_key_builder(self, network='network', dataset='test', site_id='BUNNY', date=datetime(2024, 2, 22, 1, 32, 14)):
         """Tests that the _build_s3_key method returns correctly"""
         
-        result = S3Writer._build_s3_key(dataset, site_id, date)
-        expected = f'cosmos/dataset={dataset}/site={site_id}/date=2024-02-22/data.parquet'
+        result = S3Writer._build_s3_key(network, dataset, site_id, date)
+        expected = f'network={network}/dataset={dataset}/site={site_id}/date=2024-02-22/data.parquet'
         self.assertEqual(result, expected)
 
 
 class TestS3WriterWithData(BaseTestCase):
     def setUp(self):
 
-        start_date, end_date = steralize_dates(date(2024, 1, 1), date(2024, 1, 4))
-        
+        start_date, end_date = sterilize_dates(date(2024, 1, 1), date(2024, 1, 4))
+
         self.data = query_by_date_range(
             bucket_name=self.bucket_name,
             prefix='cosmos/dataset=test_dataset',
@@ -46,6 +48,7 @@ class TestS3WriterWithData(BaseTestCase):
             end_date=end_date,
             site_ids=['site1']
         )
+
 
     def test_polars_df_bytes_conversion(self):
         """Tests that a polars dataframe can be converted to bytes"""
@@ -72,35 +75,29 @@ class TestS3WriterWithData(BaseTestCase):
 
         writer.write(
             bucket_name=self.bucket_name,
-            dataset="test_dataset",
+            resolution="test_resolution",
+            network="test_network",
             site_id="site1",
             data=[(datetime(2024, 1, 9, 1, 1, 1), self.data)]
         )
 
         self.assertEqual(mock_get_bytes.called, 1)
-        
-    def test_objects_written(self):
-        """Tests that the write() method writes to S3"""
+
+    def test_objects_grouped_by_resolution():
+        """"""
+        pass
+
+    def test_objects_split_by_day(self):
+        """Test that df is split correctly."""
 
         writer = S3Writer(self.s3_client)
 
-        grouped_data = group_by_date(self.data)
+        result = writer._split_by_date(self.data)
 
-        writer.write(
-            bucket_name=self.bucket_name,
-            dataset="test_dataset",
-            site_id="site1",
-            data=grouped_data)
+        # Should be 4 dataframes
+        assert len(result) == 4
 
-        reader = DuckDbParquetReader()
+        for date, data in result:
+            expected = self.data.filter((pl.col('time').dt.date() == date))
+            polars.testing.assert_frame_equal(data, expected)
 
-        # For each dataset written get localstack df
-        for date, df in grouped_data:
-
-            key = f'cosmos/dataset=test_dataset/site=site1/date={date}/data.parquet'
-            
-            result = reader.read(
-                query = f"SELECT * FROM read_parquet('s3://{self.bucket_name}/{key}');"
-            )
-
-            polars.testing.assert_frame_equal(result, df)

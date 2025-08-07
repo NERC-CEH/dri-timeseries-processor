@@ -1,12 +1,15 @@
 import datetime
+import polars as pl
+from polars.testing import assert_frame_equal
 from typing import Any, Dict
 from unittest import mock
 
+from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
+from dritimeseriesprocessor.s3_crud.write import S3Writer
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.testing_helper import TestHelper, load_json
-
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestTimeSeriesProcessor(TestHelper):
@@ -167,3 +170,39 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor._collate_timeseries_id_metadata_to_process()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+
+
+    def test_write_timeseries(self, mock_api_manager: mock.MagicMock) -> None:
+        """Test data is correctly written to the processed bucket."""
+    
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        ts_processor = TimeSeriesProcessor(
+            sites="alic1,bunny,chimn,morly", columns="RN,PA,TA", periodicity="PT30M,PT1M", end_date="2024-03-10", period="P2D", network="cosmos"
+        )
+        s3_bucket = app_config.processed_bucket
+        s3_client = ts_processor.s3_client
+    
+        # We dont really care about any loading or processing so just using our own generated ts_ids object
+        # The processed ts ids contain two different resolutions (PT30M and PT1M) each with two different
+        # sites. Within each permutation of resolution and site are multiple columns.
+        # This structure ensures all functionality tested.
+        ts_ids = self.load_ts_ids_from_json_file(
+            self.input_dir.joinpath(
+                "write", "processed_ts_ids.json"
+            )
+        )
+        writer = S3Writer(s3_client)
+        ts_processor._write_timeseries(ts_ids, s3_bucket, "cosmos", writer)
+
+        # To check the data, loop through the processed bucket contents, extract
+        # the key and then read in the equivalent parquet file from the oputputs folder.
+        processed_bucket_contents = ts_processor.s3_client.list_objects(Bucket=s3_bucket)['Contents']
+        for parquet in processed_bucket_contents:
+            s3_key = parquet['Key']
+            result = pl.read_parquet(
+                s3_client.get_object(Bucket=s3_bucket, Key=s3_key)["Body"].read()
+            )
+
+            expected = pl.read_parquet(self.output_dir.joinpath("write", s3_key))
+
+            assert_frame_equal(result, expected)
