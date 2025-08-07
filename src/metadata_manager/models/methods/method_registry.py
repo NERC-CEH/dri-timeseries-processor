@@ -174,3 +174,25 @@ class CorrectionMethods(Dict[str, Method]):
             result[method_key] = Method.model_validate(method_data)
 
         return result
+
+
+class AggregationMethods(Dict[str, Method]):
+    """Registry of all aggregation methods."""
+
+    @classmethod
+    def model_validate(cls, data: Dict[str, Dict]) -> "AggregationMethods":
+        """Extract aggregation method data.
+
+        Args:
+            data: Dictionary mapping method keys to method details
+
+        Returns:
+            Dictionary mapping method keys to Method objects
+        """
+        result = cls()
+
+        for method_key, method_data in data.items():
+            method_data["method_type"] = "aggregate"
+            result[method_key] = Method.model_validate(method_data)
+
+        return result

@@ -8,6 +8,7 @@ from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
 from metadata_manager.models.common import ComponentType
 from metadata_manager.models.methods.method_registry import (
+    AggregationMethods,
     CorrectionMethods,
     DerivationMethods,
     InfillingMethods,
@@ -87,6 +88,10 @@ def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMe
     elif config_type == ComponentType.DERIVATION:
         methods_json_file = config_dir / "derivation_methods.json"
         registry = DerivationMethods
+
+    elif config_type == ComponentType.AGGREGATION:
+        methods_json_file = config_dir / "aggregation_methods.json"
+        registry = AggregationMethods
 
     else:
         return None

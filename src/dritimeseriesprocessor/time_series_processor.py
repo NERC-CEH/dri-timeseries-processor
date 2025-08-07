@@ -1,21 +1,21 @@
 import logging
 import re
 from datetime import datetime
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import boto3
-from time_stream import TimeSeries
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.deriving.process_derivations import DerivationProcessor
+from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
+from dritimeseriesprocessor.typing import TimeseriesContainer
 from dritimeseriesprocessor.utils import (
-    group_by_date_site_id,
+    group_by_date,
     merge_ts_def_metadata,
 )
 from metadata_manager.models.common import (
@@ -45,6 +45,8 @@ PROCESSING_COLUMNS = ["BATTV", "SCANS", "TNR01C"]
 
 class TimeSeriesProcessor:
     """Main class for processing time series data."""
+
+    ts_ids: Dict[str, TimeseriesContainer]
 
     def __init__(
         self,
@@ -93,20 +95,14 @@ class TimeSeriesProcessor:
         logger.info("Processing data")
         self._process_data()
 
-        # TODO Aggregations here
-
-        # Create derived data
-        # -------------------
-        logger.info("Calculating derived data")
-        derivation_processor = DerivationProcessor(self.ts_ids)
-        self.ts_ids = derivation_processor.run()
+        logger.info("Calculating aggregated and derived data")
+        aggregation_and_derivation_processor = AggregationAndDerivationProcessor(self.ts_ids)
+        self.ts_ids = aggregation_and_derivation_processor.run()
 
         # Writing
         # -------
-        # TODO We need to establish dataset names for the processed timeseries's
-        # after they are processed. Therefore for now, removing the writing of data
-        # writer = S3Writer(s3_client)
-        # TODO How do we write out when processing variables rather than whole dataset?
+        writer = S3Writer(self.s3_client)
+        self._write_timeseries(self.ts_ids, app_config.processed_bucket, writer)
 
         metrics.record_successful_run()
         logger.info("Processing completed successfully")
@@ -315,7 +311,7 @@ class TimeSeriesProcessor:
         return periodicity_query_parameter
 
     @staticmethod
-    def _write_timeseries(ts: TimeSeries, bucket_name: str, dataset: str, writer: S3Writer) -> None:
+    def _write_timeseries(ts_ids: Dict[str, Dict[str, str]], bucket_name: str, writer: S3Writer) -> None:
         """Write the timeseries data to S3.
 
         Args:
@@ -325,13 +321,15 @@ class TimeSeriesProcessor:
             writer: The S3 writer object.
 
         """
-        # TODO (edits) Group data by date and site
-        # Currently only need to group by date but this will all change anyway
-        # Data to be split for individual timeseries ID after being grouped.
-        dataframes = group_by_date_site_id(ts.df)
-
+        # Extracting some sample data to test write works to the new bucket
+        # Use the hard coded processing column as always included for the time being
+        # Proper write functionality to be implemented in FPM-494
+        # TODO update ts_ids type once FPM-474 merged
+        ts_id = ts_ids["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-tnr01c_30min_raw"]
+        dataframes = group_by_date(ts_id["data"].df)
         writer.write(
             bucket_name=bucket_name,
-            dataset=dataset,
+            dataset=ts_id["sourceDataset"],
+            site_id=ts_id["sourceSite"],
             data=dataframes,
         )

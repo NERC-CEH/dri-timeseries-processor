@@ -1,11 +1,13 @@
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
+
+from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesContainer, TimeseriesContainerWithDerivations
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +47,7 @@ def remove_protocol_from_url(url: str) -> str:
     return endpoint_url
 
 
-def steralize_dates(
+def sterilize_dates(
     start_date: Union[date, datetime], end_date: Optional[Union[date, datetime]] = None
 ) -> Tuple[Union[date, datetime], datetime]:
     """
@@ -70,29 +72,27 @@ def steralize_dates(
         raise UserWarning(f"Start date must come before end date: {start_date} > {end_date}")
 
     # If start_date is of type date, convert it to datetime with time at start of the day
-    if isinstance(start_date, date) and not isinstance(start_date, datetime):
-        start_date = datetime.combine(start_date, datetime.min.time())
+    if type(start_date) is date:
+        start_date = datetime.combine(start_date, time.min)
 
     # If end_date is of type date, convert it to datetime to include the entire day
-    if isinstance(end_date, date) and not isinstance(end_date, datetime):
-        end_date = datetime.combine(end_date, datetime.max.time())
+    if type(end_date) is date:
+        end_date = datetime.combine(end_date, time.max)
 
     return start_date, end_date
 
 
-def group_by_date_site_id(df: pl.DataFrame) -> List[GroupBy]:
-    """Group a dataframe by the date and site_id column.
+def group_by_date(df: pl.DataFrame) -> List[GroupBy]:
+    """Group a dataframe by the date.
 
     Args:
         df: A polars dataframe
 
     Returns:
-        A list of dataframes grouped by date and site_id.
+        dataframes grouped by date.
     """
 
-    return [
-        (group[0][0], group[0][1], group[1]) for group in df.group_by([pl.col("time").dt.date(), pl.col("SITE_ID")])
-    ]
+    return [(group[0][0], group[1]) for group in df.group_by([pl.col("time").dt.date()])]
 
 
 def missing_expr(column_name: str) -> pl.Expr:
@@ -159,7 +159,7 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
 
 
-def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, Dict[str, str]]) -> Dict[str, str]:
+def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContainer]) -> Dict[str, str]:
     """Map timeseries definition to its corresponding timeseries id given the site id.
 
     Args:
@@ -178,9 +178,9 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, Dict[str, str]]) 
 
 
 def merge_ts_def_metadata(
-    ts_ids: Dict[str, Dict[str, str]],
-    timeseries_defs_derivation_map: Dict[str, Dict[str, Union[str, List[str | None]]]],
-) -> Dict[str, Dict[str, str]]:
+    ts_ids: Dict[str, TimeseriesContainer],
+    timeseries_defs_derivation_map: Dict[str, DerivationMetadata],
+) -> Dict[str, TimeseriesContainerWithDerivations]:
     """Merge timeseries definitions metadata into the timeseries ids metadata and add whether to load the data.
 
     Args:
