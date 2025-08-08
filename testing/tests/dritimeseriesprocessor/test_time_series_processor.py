@@ -203,6 +203,6 @@ class TestTimeSeriesProcessor(TestHelper):
                 s3_client.get_object(Bucket=s3_bucket, Key=s3_key)["Body"].read()
             )
 
-            expected = pl.read_parquet(self.output_dir.joinpath("write", s3_key))
+            expected = pl.read_parquet(self.output_dir.joinpath("write", "full_process", s3_key))
 
             assert_frame_equal(result, expected)

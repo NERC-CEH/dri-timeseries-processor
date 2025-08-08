@@ -1,16 +1,18 @@
 from datetime import date, datetime
 from io import BytesIO
+from pathlib import Path
 from unittest.mock import patch
 
 import moto
 import polars as pl
-import polars.testing
+from time_stream import TimeSeries
+from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
-from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import sterilize_dates
 from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
+from testing.utils.testing_helper import TestHelper
 
 
 class TestS3Writer(BaseTestCase):
@@ -84,17 +86,53 @@ class TestS3WriterWithData(BaseTestCase):
         self.assertEqual(mock_get_bytes.called, 1)
 
 
-    def test_objects_split_by_day(self):
-        """Test that df is split correctly."""
+    def test_group_data_by_resolution_and_site(self):
+        """Test data correctly grouped by site and resolution."""
+        input_filepath = Path(Path(__file__).parents[3], "data", "inputs", "write")
+        output_filepath = Path(Path(__file__).parents[3], "data", "outputs", "write", "group_res_site")
+
+        # Load test data into ts_ids structure
+        # Test data consists of
+        # - Data of the same site and resolution but with different columns and different times
+        # (to test dataframes correctly merged)
+        # - Data of the same resolution but different sites (to test they are correctly separated)
+        test_helper = TestHelper()
+        test_ts_ids = test_helper.load_ts_ids_from_json_file(input_filepath.joinpath("processed_ts_ids.json"))
+
+        # For write methods we only need processed datasets and their metadata
+        processed_timeseries = [
+            metadata for metadata in test_ts_ids.values() if metadata["processing_level"] == "processed"]
 
         writer = S3Writer(self.s3_client)
+        result = writer._group_data_by_resolution_and_site(processed_timeseries)
 
-        result = writer._split_by_date(self.data)
-
-        # Should be 4 dataframes
+        # should be 4 entries in result
         assert len(result) == 4
 
-        for date, data in result:
-            expected = self.data.filter((pl.col('time').dt.date() == date))
-            polars.testing.assert_frame_equal(data, expected)
+        # compare dataframes for each output
+        for item in result:
+            key = f"{item[0]}_{item[1]}.parquet"
 
+            expected = pl.read_parquet(output_filepath.joinpath(key))
+            assert_frame_equal(item[2], expected)
+
+
+    def test_split_by_day(self):
+        """Test that data is split correctly."""
+
+        # Use an output from the group_data_by_resolution_and_site test as inputs
+        input_filepath = Path(Path(__file__).parents[3], "data", "outputs", "write", "group_res_site")
+
+        # Load test data
+        # Just need to test on one dataframe with multiple dates
+        test_timeseries = pl.read_parquet(input_filepath.joinpath("PT30M_ALIC1.parquet"))
+        
+        writer = S3Writer(self.s3_client)
+        result = writer._split_by_date(test_timeseries)
+
+        # Should be 2 dataframes
+        assert len(result) == 2
+
+        for date, data in result:
+            expected = test_timeseries.filter((pl.col('time').dt.date() == date))
+            assert_frame_equal(data, expected)
