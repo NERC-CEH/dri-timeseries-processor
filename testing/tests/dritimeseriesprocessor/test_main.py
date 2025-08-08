@@ -18,11 +18,11 @@ class TestMain(EndToEndTestHelper):
         self.run_cli_test(
             cli_args=[
                 "--sites",
-                "alic1",
+                "alic1,bunny",
                 "--columns",
-                "PE",
+                "PE,TA",
                 "--periodicity",
-                "PT30M",
+                "PT30M,P1D",
                 "--period",
                 "P2D",
                 "--network",
@@ -31,3 +31,5 @@ class TestMain(EndToEndTestHelper):
             expected_base_dir=self.output_dir.joinpath("end_to_end", "basic"),
             output_bucket_name="ukceh-fdri-staging-timeseries-processed",
         )
+
+        print()

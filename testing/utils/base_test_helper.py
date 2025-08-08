@@ -73,7 +73,7 @@ class BaseTestHelper(unittest.TestCase):
                 self.input_dir.joinpath("mock_metadata_api", "sites_metadata.json")
             ),
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset": self.load_json(
-                self.input_dir.joinpath("mock_metadata_api", "ts_id_metadata_alic1.json")
+                self.input_dir.joinpath("mock_metadata_api", "ts_id_metadata_alic1_bunny.json")
             ),
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/time-series-definition": self.load_json(
                 self.input_dir.joinpath("mock_metadata_api", "ts_def_metadata.json")
@@ -90,59 +90,25 @@ class BaseTestHelper(unittest.TestCase):
             | self.create_ts_dependency_api_data()
             | self.create_corrections_api_data()
             | self.create_infill_configurations_api_data()
-            | self.create_processing_configurations_api_data()
+            | self.create_qc_configurations_api_data()
         )
 
     def create_ts_dependency_api_data(self) -> Dict[str, Any]:
         """Construct the timeseries dependency api data response."""
-        base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos-alic1-"
-        ts_dependencies_dir = self.input_dir.joinpath("mock_metadata_api", "ts_dependencies_alic1")
+        base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos"
+        base_dir = self.input_dir.joinpath("mock_metadata_api", "ts_dependencies")
+        base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos-"
 
-        dependency_suffixes = [
-            "pe_30min_processed",
-            "rn_30min_processed",
-            "swin_30min_processed",
-            "lwout_30min_processed",
-            "swout_30min_processed",
-            "lwin_30min_processed",
-            "pa_30min_processed",
-            "g1_30min_processed",
-            "g2_30min_processed",
-            "rh_30min_processed",
-            "ws_30min_processed",
-            "ta_30min_processed",
-            "tnr01c_30min_processed",
-            "tnr01c_30min_raw",
-            "battv_30min_raw",
-            "scans_30min_raw",
-            "swin_30min_raw",
-            "lwout_30min_raw",
-            "swout_30min_raw",
-            "lwin_30min_raw",
-            "pa_30min_raw",
-            "g2_30min_raw",
-            "rh_30min_raw",
-            "ws_30min_raw",
-            "ta_30min_raw",
-            "g1_30min_raw",
-        ]
-
-        api_data = {}
-        for dependency_suffix in dependency_suffixes:
-            api_data[f"{base_url}{dependency_suffix}/_dependencies"] = self.load_json(
-                ts_dependencies_dir.joinpath(f"{dependency_suffix}.json")
-            )
-
-        return api_data
+        return self._load_api_data_from_file(base_url, base_dir, url_suffix="/_dependencies")
 
     def create_corrections_api_data(self) -> Dict[str, Any]:
         """Construct the corrections metadata api data response."""
         base_url = (
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
             "ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToTimeSeries=http://fdri.ceh.ac."
-            "uk/id/dataset/cosmos-alic1-"
+            "uk/id/dataset/cosmos-"
         )
-        corrections_dir = self.input_dir.joinpath("mock_metadata_api", "corrections_alic1")
+        corrections_dir = self.input_dir.joinpath("mock_metadata_api", "correction_configurations")
 
         return self._load_api_data_from_file(base_url, corrections_dir)
 
@@ -151,24 +117,24 @@ class BaseTestHelper(unittest.TestCase):
         base_url = (
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
             "ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/"
-            "id/dataset/cosmos-alic1-"
+            "id/dataset/cosmos-"
         )
-        base_dir = self.input_dir.joinpath("mock_metadata_api", "infill_configurations_alic1")
+        base_dir = self.input_dir.joinpath("mock_metadata_api", "infill_configurations")
 
         return self._load_api_data_from_file(base_url, base_dir)
 
-    def create_processing_configurations_api_data(self) -> Dict[str, Any]:
-        """Construct the processing configurations api data response."""
+    def create_qc_configurations_api_data(self) -> Dict[str, Any]:
+        """Construct the qc configurations api data response."""
         base_url = (
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
             "ceh.ac.uk/ref/common/configuration-type/qc&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-"
-            "alic1-"
         )
-        base_dir = self.input_dir.joinpath("mock_metadata_api", "processing_configurations_alic1")
+
+        base_dir = self.input_dir.joinpath("mock_metadata_api", "qc_configurations")
 
         return self._load_api_data_from_file(base_url, base_dir)
 
-    def _load_api_data_from_file(self, base_url: str, base_dir: Path) -> Dict[str, Any]:
+    def _load_api_data_from_file(self, base_url: str, base_dir: Path, url_suffix: str = None) -> Dict[str, Any]:
         """
         Using the provided base directory, read every json file contained within it, using the filename to construct the
         url to index the json data against in the output api data dictionary.
@@ -177,18 +143,24 @@ class BaseTestHelper(unittest.TestCase):
             base_url: Base url to add the json filename to. The complete url should match the corresponding url that
                 would be used to query the same data against the Metadat API.
             base_dir: Path to the directory containing all the json files to be read.
+            url_suffix: Any suffix to add to the
 
         Returns:
             Dictionary containing the api response data indexed by url.
 
         """
+        if url_suffix is None:
+            url_suffix = ""
 
         # The name of the json file should be based on the remaining section of the base url, e.g. tnr01c_30min_raw.json
         api_data = {}
         for json_path in base_dir.glob("*.json"):
-            url = f"{base_url}{json_path.stem}"
+            url = f"{base_url}{json_path.stem}{url_suffix}"
             with open(json_path) as json_file:
-                json_data = json.load(json_file)
+                try:
+                    json_data = json.load(json_file)
+                except:
+                    print()
             api_data[url] = json_data
 
         return api_data

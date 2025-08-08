@@ -19,8 +19,8 @@ from dritimeseriesprocessor.deriving.derivations import (
     WindSpeedHeightCorrection,
     derive,
 )
-from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
-from testing.utils.testing_helper import TestHelper
+from testing.utils.testing_utils import df_to_ts
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 def init_timeseries() -> TimeSeries:
