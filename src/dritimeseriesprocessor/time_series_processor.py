@@ -325,9 +325,9 @@ class TimeSeriesProcessor:
         """Write the timeseries data to S3.
 
         Args:
-            processed_timeseries: The processed timeseries to write.
+            ts_ids: The processed tiimeseries ids
             bucket_name: The name of the S3 bucket.
-            dataset: The name of the dataset.
+            network: The name of the network
             writer: The S3 writer object.
 
         """

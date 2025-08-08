@@ -70,7 +70,7 @@ class S3Writer(WriterInterface):
         """
         Structure the processed data ready for writing.
 
-        First group the data by resolution, then split into days.
+        First group the data by resolution and site, then split into days.
 
         Args:
             processed_timeseries: the timeseries that have been processed
@@ -115,8 +115,7 @@ class S3Writer(WriterInterface):
 
             body = self._get_bytes(df)
 
-            # TODO Handle overwriting if object already exists
-            # Add log messages as well
+            # TODO Handle overwriting if object already exists FPM-515
             self.s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=body)
 
     @staticmethod
@@ -147,7 +146,7 @@ class S3Writer(WriterInterface):
             df: A polars dataframe
 
         Returns:
-            dataframes grouped by date.
+            dataframes split by date.
         """
 
         return [(group[0][0], group[1]) for group in df.group_by([pl.col("time").dt.date()])]
