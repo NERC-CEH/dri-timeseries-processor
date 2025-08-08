@@ -8,6 +8,7 @@ class ComponentType(Enum):
     INFILLING = "infilling"
     QUALITY_CONTROL = "quality_control"
     DERIVATION = "calculate"
+    AGGREGATION = "aggregate"
 
 
 # To get the last bit of a uri string, after the last trailing slash.

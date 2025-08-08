@@ -1,0 +1,26 @@
+{
+  "aggregate-sum": {
+    "name": "Aggregate Sum",
+    "description": "Aggregate to the total value for the required time resolution",
+    "id": 1,
+    "function_name": "sum"
+  },
+  "aggregate-mean": {
+    "name": "Aggregate Mean",
+    "description": "Aggregate to the mean value for the required time resolution",
+    "id": 2,
+    "function_name": "mean"
+  },
+  "aggregate-max": {
+    "name": "Aggregate Max",
+    "description": "Aggregate to the maximum value for the required time resolution",
+    "id": 3,
+    "function_name": "max"
+  },
+  "aggregate-min": {
+    "name": "Aggregate Min",
+    "description": "Aggregate to the minimum value for the required time resolution",
+    "id": 4,
+    "function_name": "min"
+  }
+}

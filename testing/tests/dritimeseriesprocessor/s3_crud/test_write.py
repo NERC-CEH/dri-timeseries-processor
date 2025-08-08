@@ -28,11 +28,11 @@ class TestS3Writer(BaseTestCase):
             S3Writer("not an s3 client")
 
 
-    def test_s3_key_builder(self, network='network', dataset='test', site_id='BUNNY', date=datetime(2024, 2, 22, 1, 32, 14)):
+    def test_s3_key_builder(self, network='network', site_id='BUNNY', resolution = "PT1M", date=datetime(2024, 2, 22, 1, 32, 14)):
         """Tests that the _build_s3_key method returns correctly"""
         
-        result = S3Writer._build_s3_key(network, dataset, site_id, date)
-        expected = f'network={network}/dataset={dataset}/site={site_id}/date=2024-02-22/data.parquet'
+        result = S3Writer._build_s3_key(network, site_id, resolution, date)
+        expected = f'network={network}/date=2024-02-22/site={site_id}/resolution={resolution}/data.parquet'
         self.assertEqual(result, expected)
 
 
@@ -83,9 +83,6 @@ class TestS3WriterWithData(BaseTestCase):
 
         self.assertEqual(mock_get_bytes.called, 1)
 
-    def test_objects_grouped_by_resolution():
-        """"""
-        pass
 
     def test_objects_split_by_day(self):
         """Test that df is split correctly."""
