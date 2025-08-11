@@ -310,8 +310,7 @@ class TimeSeriesProcessor:
 
         return periodicity_query_parameter
 
-    @staticmethod
-    def _write_timeseries(ts_ids: Dict[str, Dict[str, str]], bucket_name: str, writer: S3Writer) -> None:
+    def _write_timeseries(self, ts_ids: Dict[str, Dict[str, str]], bucket_name: str, writer: S3Writer) -> None:
         """Write the timeseries data to S3.
 
         Args:
@@ -325,11 +324,17 @@ class TimeSeriesProcessor:
         # Use the hard coded processing column as always included for the time being
         # Proper write functionality to be implemented in FPM-494
         # TODO update ts_ids type once FPM-474 merged
-        ts_id = ts_ids["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-tnr01c_30min_raw"]
-        dataframes = group_by_date(ts_id["data"].df)
-        writer.write(
-            bucket_name=bucket_name,
-            dataset=ts_id["sourceDataset"],
-            site_id=ts_id["sourceSite"],
-            data=dataframes,
-        )
+        for ts_id, ts_metadata in self.ts_ids.items():
+            if not ts_metadata.get("data"):
+                continue
+
+            if ts_metadata["sourceColumnName"] not in self.columns:
+                continue
+
+            dataframes = group_by_date(ts_metadata["data"].df)
+            writer.write(
+                bucket_name=bucket_name,
+                dataset=ts_metadata["sourceDataset"],
+                site_id=ts_metadata["sourceSite"],
+                data=dataframes,
+            )
