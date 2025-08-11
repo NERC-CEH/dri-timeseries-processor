@@ -31,5 +31,3 @@ class TestMain(EndToEndTestHelper):
             expected_base_dir=self.output_dir.joinpath("end_to_end", "basic"),
             output_bucket_name="ukceh-fdri-staging-timeseries-processed",
         )
-
-        print()

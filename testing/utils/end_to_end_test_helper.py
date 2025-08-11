@@ -20,17 +20,16 @@ class EndToEndTestHelper(BaseTestHelper):
     def setUp(self) -> None:
         super().setUp()
 
-        # Don't allow tests to be run unless the environment is set to localstack in order to
+        # Don't allow tests to be run unless the environment is set to local in order to
         # prevent accidental changes to the staging or production environments
         if not app_config.environment == "local":
             raise RuntimeError("Localstack must be used to run tests that access S3")
 
         self.s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
-        print()
 
     def run_cli_test(self, cli_args: List[str], expected_base_dir: str, output_bucket_name: str) -> None:
         """
-        Run a CLI based test for the timseries processor and compare the outputs against a series of expected parquet
+        Run a CLI based test for the timeseries processor and compare the outputs against a series of expected parquet
         files.
 
         This is designed to test running the dritimeseriesprocessor end to end calling __main__.py from the command line
@@ -44,7 +43,7 @@ class EndToEndTestHelper(BaseTestHelper):
             expected_base_dir: Path to the base directory containing the expected data. This should be the equivalent
                 of the output bucket used for generating the data during the test. It is assumed that all folders
                 within this directory when combined match the structure of the s3 used to store the generated data.
-                For example, `expected_base_directory/network/dataset/site/date/data.parquet`
+                For example, `expected_base_directory/network/date/site/resolution/data.parquet`
             output_bucket_name: Name of the output bucket to store any data generated during the test. This will be
                 cleared before the test starts.
 
@@ -75,7 +74,7 @@ class EndToEndTestHelper(BaseTestHelper):
             List of S3 Keys
 
         """
-        s3_items = self.s3_client.list_objects_v2(Bucket="ukceh-fdri-staging-timeseries-processed").get("Contents", [])
+        s3_items = self.s3_client.list_objects_v2(Bucket=bucket_name).get("Contents", [])
         return [item["Key"] for item in s3_items]
 
     def _get_s3_object(self, bucket_name: str, s3_key: str) -> bytes:
@@ -106,7 +105,7 @@ class EndToEndTestHelper(BaseTestHelper):
         Read the expected parquet data for the provided s3_key and base directory.
 
         It is assumed that the structure of the expected data matches that of the s3 store, therefore the expected
-        data path will have the following structure: `expected_base_directory/network/dataset/site/date/data.parquet`
+        data path will have the following structure: `expected_base_directory/network/date/site/resolution/data.parquet`
 
         Args:
             s3_key: Name of the s3 key used to store the data on s3 created during the test.
