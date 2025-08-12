@@ -105,6 +105,9 @@ class TimeSeriesProcessor:
 
         # Write data
         # ----------
+        # TODO
+        # Do we need to write out the processing columns?
+        # Do we keep the extra aggregation columns?
         writer = S3Writer(self.s3_client)
         self._write_timeseries(self.ts_ids, app_config.processed_bucket, self.network, writer)
 
@@ -321,7 +324,7 @@ class TimeSeriesProcessor:
         """Write the timeseries data to S3.
 
         Args:
-            ts_ids: The processed tiimeseries ids
+            ts_ids: The processed timeseries ids
             bucket_name: The name of the S3 bucket.
             network: The name of the network
             writer: The S3 writer object.

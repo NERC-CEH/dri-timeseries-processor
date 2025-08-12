@@ -2,6 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from datetime import datetime
 from io import BytesIO
 from typing import List, Tuple
@@ -163,16 +164,13 @@ class S3Writer(WriterInterface):
         Returns:
             The site, resolution and combined timestream objects
         """
-        resolutions = {}
+        resolutions = defaultdict(list)
 
         for ts_metadata in processed_ts_ids:
             key = (ts_metadata["resolution"], ts_metadata["sourceSite"])
             data = ts_metadata["data"].df
 
-            if key not in resolutions:
-                resolutions[key] = [data]
-            else:
-                resolutions[key].append(data)
+            resolutions[key].append(data)
 
         # combine timestream objects
         # TODO replace with timestream method when developed

@@ -1,21 +1,16 @@
-from datetime import date, datetime
+from datetime import datetime
 from io import BytesIO
-from pathlib import Path
 from unittest.mock import patch
 
 import moto
 import polars as pl
-from time_stream import TimeSeries
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import sterilize_dates
-from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
-from testing.utils.testing_helper import TestHelper
+from testing.utils.s3_test_helper import s3TestHelper
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
-
-class TestS3Writer(BaseTestCase):
+class TestS3Writer(s3TestHelper):
     """Test the s3 writer class"""
 
     def test_s3_client_type(self):
@@ -38,19 +33,13 @@ class TestS3Writer(BaseTestCase):
         self.assertEqual(result, expected)
 
 
-class TestS3WriterWithData(BaseTestCase):
+class TestS3WriterWithData(s3TestHelper, TimeSeriesTestHelper):
+    """Test write module with data."""
     def setUp(self):
+        super().setUp()
 
-        start_date, end_date = sterilize_dates(date(2024, 1, 1), date(2024, 1, 4))
-
-        self.data = query_by_date_range(
-            bucket_name=self.bucket_name,
-            prefix='cosmos/dataset=test_dataset',
-            start_date=start_date,
-            end_date=end_date,
-            site_ids=['site1']
-        )
-
+        self.bucket_name = "ukceh-fdri-staging-timeseries-level-0"
+        self.data = self._create_test_data(self.bucket_name)
 
     def test_polars_df_bytes_conversion(self):
         """Tests that a polars dataframe can be converted to bytes"""
@@ -88,16 +77,15 @@ class TestS3WriterWithData(BaseTestCase):
 
     def test_group_data_by_resolution_and_site(self):
         """Test data correctly grouped by site and resolution."""
-        input_filepath = Path(Path(__file__).parents[3], "data", "inputs", "write")
-        output_filepath = Path(Path(__file__).parents[3], "data", "outputs", "write", "group_res_site")
+        input_filepath = self.input_dir.joinpath("write")
+        output_filepath = self.output_dir.joinpath("write", "group_res_site")
 
         # Load test data into ts_ids structure
         # Test data consists of
         # - Data of the same site and resolution but with different columns and different times
         # (to test dataframes correctly merged)
         # - Data of the same resolution but different sites (to test they are correctly separated)
-        test_helper = TestHelper()
-        test_ts_ids = test_helper.load_ts_ids_from_json_file(input_filepath.joinpath("processed_ts_ids.json"))
+        test_ts_ids = self.load_ts_ids_from_json_file(input_filepath.joinpath("processed_ts_ids.json"))
 
         # For write methods we only need processed datasets and their metadata
         processed_timeseries = [
@@ -121,7 +109,7 @@ class TestS3WriterWithData(BaseTestCase):
         """Test that data is split correctly."""
 
         # Use an output from the group_data_by_resolution_and_site test as inputs
-        input_filepath = Path(Path(__file__).parents[3], "data", "outputs", "write", "group_res_site")
+        input_filepath = self.output_dir.joinpath("write", "group_res_site")
 
         # Load test data
         # Just need to test on one dataframe with multiple dates

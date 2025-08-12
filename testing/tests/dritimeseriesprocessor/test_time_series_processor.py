@@ -1,7 +1,6 @@
 import datetime
 import polars as pl
 from polars.testing import assert_frame_equal
-from typing import Any, Dict
 from unittest import mock
 
 from dritimeseriesprocessor.configuration import app_config
@@ -9,10 +8,11 @@ from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
+from testing.utils.s3_test_helper import s3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestTimeSeriesProcessor(TimeSeriesTestHelper):
+class TestTimeSeriesProcessor(s3TestHelper, TimeSeriesTestHelper):
     def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
         """Test query parameters are constructed correctly."""
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
@@ -133,9 +133,10 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
     def test_write_timeseries(self, mock_api_manager: mock.MagicMock) -> None:
         """Test data is correctly written to the processed bucket."""
     
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
         ts_processor = TimeSeriesProcessor(
-            sites="alic1,bunny,chimn,morly", columns="RN,PA,TA", periodicity="PT30M,PT1M", end_date="2024-03-10", period="P2D", network="cosmos"
+            sites="alic1,bunny,chimn,morly", columns="RN,PA,TA", periodicity="PT30M,PT1M",
+            end_date="2024-03-10", period="P2D", network="cosmos"
         )
         s3_bucket = app_config.processed_bucket
         s3_client = ts_processor.s3_client
@@ -154,13 +155,9 @@ class TestTimeSeriesProcessor(TimeSeriesTestHelper):
 
         # To check the data, loop through the processed bucket contents, extract
         # the key and then read in the equivalent parquet file from the oputputs folder.
-        processed_bucket_contents = ts_processor.s3_client.list_objects(Bucket=s3_bucket)['Contents']
-        for parquet in processed_bucket_contents:
-            s3_key = parquet['Key']
-            result = pl.read_parquet(
-                s3_client.get_object(Bucket=s3_bucket, Key=s3_key)["Body"].read()
-            )
-
-            expected = pl.read_parquet(self.output_dir.joinpath("write", "full_process", s3_key))
+        processed_bucket_contents = self._list_s3_keys(s3_bucket)
+        for s3_key in processed_bucket_contents:
+            result = pl.read_parquet(self._get_s3_object(s3_bucket, s3_key))
+            expected = self._read_expected_data(s3_key, self.output_dir.joinpath("write", "full_process"))
 
             assert_frame_equal(result, expected)

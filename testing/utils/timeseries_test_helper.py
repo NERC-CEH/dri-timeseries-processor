@@ -48,7 +48,6 @@ class TimeSeriesTestHelper(BaseTestHelper):
 
         Returns:
             Dictionary of time series ids and their metadata.
-
         """
         processed_ts_ids = {}
         for ts_id, ts_metadata in ts_ids.items():
