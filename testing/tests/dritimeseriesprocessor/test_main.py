@@ -4,17 +4,17 @@ from unittest import mock
 
 from dritimeseriesprocessor.__main__ import main
 from metadata_manager.api_manager import MetadataAPIManager
-from testing.utils.s3_test_helper import s3TestHelper
+from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.mock_metadata_api import MockMetadataAPI
 
-from polars.testing import assert_frame_equal
+
 
 
 logger = logging.getLogger(__name__)
 
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestMain(s3TestHelper):
+class TestMain(S3TestHelper):
     def test_main(self, mock_api_manager: mock.MagicMock) -> None:
         """End to end test of the timeseries processor.
 
@@ -53,11 +53,5 @@ class TestMain(s3TestHelper):
         # run the processor
         main(cli_args)
 
-        # Check that for every expected parquet file, the corresponding parquet has been generated with a matching
-        # path structure (i.e. same s3 keys) and contents
-        for expected_path in expected_base_dir.rglob("data.parquet"):
-            expected_s3_key = str(expected_path.relative_to(expected_base_dir))
-            actual_data = pl.read_parquet(self._get_s3_object(bucket_name=output_bucket_name, s3_key=expected_s3_key))
-            expected_data = self._read_expected_data(s3_key=expected_s3_key, expected_base_dir=expected_base_dir)
-
-            assert_frame_equal(actual_data, expected_data)
+        # check the outputs
+        self._check_expected_parquet_files_exist_in_bucket(expected_base_dir, output_bucket_name)

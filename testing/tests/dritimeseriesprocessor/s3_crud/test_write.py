@@ -7,10 +7,11 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from testing.utils.s3_test_helper import s3TestHelper
+from testing.utils.testing_utils import create_hourly_test_data
+from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
-class TestS3Writer(s3TestHelper):
+class TestS3Writer(S3TestHelper):
     """Test the s3 writer class"""
 
     def test_s3_client_type(self):
@@ -33,13 +34,14 @@ class TestS3Writer(s3TestHelper):
         self.assertEqual(result, expected)
 
 
-class TestS3WriterWithData(s3TestHelper, TimeSeriesTestHelper):
+class TestS3WriterWithData(S3TestHelper, TimeSeriesTestHelper):
     """Test write module with data."""
     def setUp(self):
         super().setUp()
 
         self.bucket_name = "ukceh-fdri-staging-timeseries-level-0"
-        self.data = self._create_test_data(self.bucket_name)
+        self.data = create_hourly_test_data(datetime(2024, 1, 1), datetime(2024, 1, 10))
+
 
     def test_polars_df_bytes_conversion(self):
         """Tests that a polars dataframe can be converted to bytes"""

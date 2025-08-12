@@ -1,9 +1,9 @@
 """Extension of TestHelper with additional functionality for test that require s3."""
 
-import io
+import glob
 import logging
-from datetime import datetime, timedelta
 from pathlib import Path
+from polars.testing import assert_frame_equal
 from typing import List
 
 import boto3
@@ -16,7 +16,7 @@ from testing.utils.base_test_helper import BaseTestHelper
 logger = logging.getLogger(__name__)
 
 
-class s3TestHelper(BaseTestHelper):
+class S3TestHelper(BaseTestHelper):
     def setUp(self) -> None:
         super().setUp()
 
@@ -42,6 +42,22 @@ class s3TestHelper(BaseTestHelper):
         """
         s3_items = self.s3_client.list_objects_v2(Bucket=bucket_name).get("Contents", [])
         return [item["Key"] for item in s3_items]
+
+    def _count_s3_keys(self, bucket_name: str) -> List[str]:
+        """
+        Count the objects in S3 for the provided bucket.
+
+        Never > 1000 objects whilst testing (I hope!) so not using paginators.
+
+        Args:
+            bucket_name: Name of the bucket to list objects for.
+
+        Returns:
+            List of S3 Keys
+
+        """
+        s3_items = self.s3_client.list_objects_v2(Bucket=bucket_name).get("Contents", [])
+        return len(s3_items)
 
     def _get_s3_object(self, bucket_name: str, s3_key: str) -> bytes:
         """
@@ -97,24 +113,25 @@ class s3TestHelper(BaseTestHelper):
         for s3_key in self._list_s3_keys(bucket_name):
             self.s3_client.delete_object(Bucket=bucket_name, Key=s3_key)
 
-    def _create_test_data(self, bucket_name: str):
-        # Create sample data that we have more control over for doing specific tests
-        start_date = datetime(2024, 1, 1)
-        end_date = datetime(2024, 1, 10)
-        current_date = start_date
-
-        data = {}
-
-        while current_date <= end_date:
-            for site in ['site1', 'site2']:
-                # Create hourly data for the current date
-                data = data | {
-                    'time': [current_date + timedelta(hours=i) for i in range(24)] * 2,
-                    'SITE_ID': [site] * 48,
-                    'col1': list(range(48)),
-                    'col2': list(range(48, 96))
-                }
-
-            current_date += timedelta(days=1)
+    def _check_expected_parquet_files_exist_in_bucket(self, expected_base_dir: str, output_bucket_name: str) -> None:
+        """Check the s3 bucket contains only the expected outputs
         
-        return pl.DataFrame(data)
+        Check that for every expected parquet file, the corresponding parquet has been
+        generated with a matching path structure (i.e. same s3 keys) and contents, and no
+        other parquet files have been generated
+        
+        Args:
+            expected_base_dir: The base directory where the expected outputs are stored
+            output_bucket_name: The s3 bucket name where processor outputs are written
+        """
+        number_of_s3_objects = self._count_s3_keys(output_bucket_name)
+        number_of_expected_outputs = len([output for output in expected_base_dir.rglob("data.parquet")])
+
+        assert number_of_s3_objects == number_of_expected_outputs
+
+        for expected_path in expected_base_dir.rglob("data.parquet"):
+            expected_s3_key = str(expected_path.relative_to(expected_base_dir))
+            actual_data = pl.read_parquet(self._get_s3_object(bucket_name=output_bucket_name, s3_key=expected_s3_key))
+            expected_data = self._read_expected_data(s3_key=expected_s3_key, expected_base_dir=expected_base_dir)
+
+            assert_frame_equal(actual_data, expected_data)

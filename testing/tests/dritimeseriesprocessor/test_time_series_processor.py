@@ -1,6 +1,4 @@
 import datetime
-import polars as pl
-from polars.testing import assert_frame_equal
 from unittest import mock
 
 from dritimeseriesprocessor.configuration import app_config
@@ -8,11 +6,11 @@ from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
-from testing.utils.s3_test_helper import s3TestHelper
+from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestTimeSeriesProcessor(s3TestHelper, TimeSeriesTestHelper):
+class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
     def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
         """Test query parameters are constructed correctly."""
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
@@ -153,11 +151,10 @@ class TestTimeSeriesProcessor(s3TestHelper, TimeSeriesTestHelper):
         writer = S3Writer(s3_client)
         ts_processor._write_timeseries(ts_ids, s3_bucket, "cosmos", writer)
 
-        # To check the data, loop through the processed bucket contents, extract
-        # the key and then read in the equivalent parquet file from the oputputs folder.
-        processed_bucket_contents = self._list_s3_keys(s3_bucket)
-        for s3_key in processed_bucket_contents:
-            result = pl.read_parquet(self._get_s3_object(s3_bucket, s3_key))
-            expected = self._read_expected_data(s3_key, self.output_dir.joinpath("write", "full_process"))
-
-            assert_frame_equal(result, expected)
+        # To check the data:
+        # 1) Check the number of items in the bucket matches the number of
+        # expected items
+        # 2) loop through the expected outputs and check they match the processor output
+        self._check_expected_parquet_files_exist_in_bucket(
+            self.output_dir.joinpath("write", "full_process"), s3_bucket
+        )
