@@ -1,8 +1,8 @@
 from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
-from testing.utils.testing_helper import TestHelper
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
-class TestAggregationAndDerivationProcessor(TestHelper):
+class TestAggregationAndDerivationProcessor(TimeSeriesTestHelper):
     def test_derivation_pe_30min(self) -> None:
         """
         Check the derived potential evaporation is calculated correctly, including the dependent derived net radiation

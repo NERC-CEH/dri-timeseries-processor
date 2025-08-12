@@ -10,7 +10,7 @@ class MockMetadataAPI:
 
             {url: dictionary of metadata responses for the url}
 
-        Default values for the api_data can be found in TestHelper.metadata_api_data
+        Default values for the api_data can be found in TestHelper.default_metadata_api_data
 
         Args:
             api_data: Dictionary of data used to extract metadata responses

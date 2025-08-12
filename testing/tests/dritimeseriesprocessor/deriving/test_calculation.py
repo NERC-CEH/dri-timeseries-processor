@@ -5,7 +5,7 @@ from parameterized import parameterized
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.deriving.derivations import Calculation
-from testing.utils.testing_helper import df_to_ts
+from testing.utils.testing_utils import df_to_ts
 
 
 # Define some test Calculation classes that have a mix of dependencies in their calculation operations
