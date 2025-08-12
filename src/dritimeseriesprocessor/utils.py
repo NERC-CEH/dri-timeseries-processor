@@ -1,6 +1,9 @@
+import asyncio
+import functools
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import isodate
@@ -80,19 +83,6 @@ def sterilize_dates(
         end_date = datetime.combine(end_date, time.max)
 
     return start_date, end_date
-
-
-def group_by_date(df: pl.DataFrame) -> List[GroupBy]:
-    """Group a dataframe by the date.
-
-    Args:
-        df: A polars dataframe
-
-    Returns:
-        dataframes grouped by date.
-    """
-
-    return [(group[0][0], group[1]) for group in df.group_by([pl.col("time").dt.date()])]
 
 
 def missing_expr(column_name: str) -> pl.Expr:
@@ -217,3 +207,57 @@ def merge_ts_def_metadata(
         ts_metadata.update(ts_def_dict)
 
     return ts_ids
+
+
+def call_method_async(method: Callable, arg_list: List[Any]) -> List[Any]:
+    """
+    Execute a single method asynchronously with multiple sets of arguments.
+
+    This function uses a ThreadPoolExecutor to run the given method concurrently
+    with different sets of arguments.
+
+    Args:
+        method (callable): The method to be executed asynchronously.
+        arg_list (list): A list of argument tuples. Each tuple contains the arguments
+                         for one call to the method.
+
+    Returns:
+        list: A list of results from the executed method calls.
+
+    Example:
+        results = call_method_async(my_method, [(1, 'a'), (2, 'b'), (3, 'c')])
+    """
+
+    async def run_in_executor(
+        executor: ThreadPoolExecutor, method: Callable, loop: asyncio.AbstractEventLoop, args: Any
+    ) -> asyncio.Future:
+        """
+        Run a method in the provided executor with the given arguments.
+
+        Args:
+            executor: The executor to run the method in.
+            method: The method to be executed.
+            loop: Event loop
+            args: Arguments to be passed to the method.
+
+        Returns:
+            The result of the method execution.
+        """
+        if not hasattr(args, "__iter__"):
+            args = [args]
+
+        return await loop.run_in_executor(executor, functools.partial(method, *args))
+
+    async def main(loop: asyncio.AbstractEventLoop) -> List[Any]:
+        """
+        Main coroutine that sets up and runs all tasks.
+
+        Returns:
+            list: Results from all executed method calls.
+        """
+        with ThreadPoolExecutor() as executor:
+            tasks = [run_in_executor(executor, method, loop, args) for args in arg_list]
+            return await asyncio.gather(*tasks)
+
+    loop = asyncio.new_event_loop()
+    return loop.run_until_complete(main(loop))

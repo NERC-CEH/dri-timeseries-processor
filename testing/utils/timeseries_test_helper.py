@@ -1,10 +1,12 @@
 import json
 import os
+import subprocess
 import shutil
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
+from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
 
 import polars as pl
 from polars.testing import assert_frame_equal
@@ -14,7 +16,7 @@ from testing.utils.base_test_helper import BaseTestHelper, ComparisonError
 
 
 class TimeSeriesTestHelper(BaseTestHelper):
-    def load_ts_ids_from_json_file(self, json_path: str) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    def load_ts_ids_from_json_file(self, json_path: str) -> Dict[str, TimeseriesContainerWithDerivations]:
         """
         Loads time series id metadata (to be converted to a TimeSeriesContainer object) from a json file, iterating
         over each item to create the relevant TimeSeries objects for any items which contain data attributes.
@@ -36,7 +38,7 @@ class TimeSeriesTestHelper(BaseTestHelper):
     @staticmethod
     def load_ts_ids_from_dict(
         ts_ids: Dict[str, Dict[str, Any]],
-    ) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    ) -> Dict[str, TimeseriesContainerWithDerivations]:
         """
         Loads time series id metadata (to be converted to a TimeSeriesContainer object) from a dictionary, iterating
         over each item to create the relevant TimeSeries objects for any items which contain data attributes.
@@ -46,7 +48,6 @@ class TimeSeriesTestHelper(BaseTestHelper):
 
         Returns:
             Dictionary of time series ids and their metadata.
-
         """
         processed_ts_ids = {}
         for ts_id, ts_metadata in ts_ids.items():
@@ -71,13 +72,13 @@ class TimeSeriesTestHelper(BaseTestHelper):
         return processed_ts_ids
 
     @staticmethod
-    def convert_ts_ids_to_dict(ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]) -> Dict[str, Dict[str, Any]]:
+    def convert_ts_ids_to_dict(ts_ids: Dict[str, TimeseriesContainerWithDerivations]) -> Dict[str, Dict[str, Any]]:
         """
         Convert a dictionary of timeseries ids (containing TimeSeries data objects) into a dictionary that is easily
         written to a json file.
 
         Args:
-            ts_ids (Dict[str, Dict[str, Union[str, TimeSeries]]]): Dictionary of time series id metadata.
+            ts_ids: Dictionary of time series id metadata.
 
         Returns:
             Reformatted dictionary of timeseries id metadata.
@@ -105,8 +106,8 @@ class TimeSeriesTestHelper(BaseTestHelper):
 
     def compare_ts_ids(
         self,
-        expected_ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
-        actual_ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]],
+        expected_ts_ids: Dict[str, TimeseriesContainerWithDerivations],
+        actual_ts_ids: Dict[str, TimeseriesContainerWithDerivations],
         attributes_to_ignore: List | None = None,
     ) -> None:
         """Compares two time series id metadata objects.

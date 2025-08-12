@@ -61,8 +61,8 @@ class BaseTestHelper(unittest.TestCase):
 
         Loads the metadata response json data for the following data:
             - list all available cosmos sites
-            - ts id metadata for all variables for cosmos site ALIC1
-            - ts definition metadata for all variables for cosmos site ALIC1
+            - ts id metadata for all variables for cosmos site ALIC1 and BUNNY
+            - ts definition metadata for all variables for cosmos
 
         Returns:
             Dictionary of metadata url: loaded json data for url
