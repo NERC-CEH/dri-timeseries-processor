@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import io
 import polars as pl
 from time_stream import Period, TimeSeries
 
@@ -25,25 +26,3 @@ def df_to_ts(df: pl.DataFrame) -> "TimeSeries":
         periodicity=resolution,
         metadata={},
     )
-
-
-def create_hourly_test_data(start_date: datetime, end_date: datetime) -> None:
-    """Create sample data that we have more control over for doing specific tests"""
-
-    current_date = start_date
-
-    data = {}
-
-    while current_date <= end_date:
-        for site in ['site1', 'site2']:
-            # Create hourly data for the current date
-            data = data | {
-                'time': [current_date + timedelta(hours=i) for i in range(24)] * 2,
-                'SITE_ID': [site] * 48,
-                'col1': list(range(48)),
-                'col2': list(range(48, 96))
-            }
-
-        current_date += timedelta(days=1)
-    
-    return pl.DataFrame(data)

@@ -1,7 +1,9 @@
 """Extension of TestHelper with additional functionality for test that require s3."""
 
-import glob
+import datetime
+import io
 import logging
+from datetime import timedelta
 from pathlib import Path
 from polars.testing import assert_frame_equal
 from typing import List
@@ -82,6 +84,26 @@ class S3TestHelper(BaseTestHelper):
             logger.exception(err)
             raise err
 
+    def _put_object(self, bucket_name: str, s3_key: str, body: bytes) -> None:
+        """Uploads an object to an S3 bucket.
+
+        Args:
+            bucket_name: The name of the S3 bucket.
+            s3_key: The key (path) of the object within the bucket.
+            body: data to write to s3 object
+
+        Raises:
+            RuntimeError, ClientError: If there's any error
+            in putting the object, error is logged and re raised
+
+        """
+        try:
+            self.s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=body)
+        except (RuntimeError, ClientError) as e:
+            logger.error(f"Failed to put {s3_key} in {bucket_name}")
+            logger.exception(e)
+            raise e
+
     def _read_expected_data(self, s3_key: str, expected_base_dir: Path) -> pl.DataFrame:
         """
         Read the expected parquet data for the provided s3_key and base directory.
@@ -135,3 +157,43 @@ class S3TestHelper(BaseTestHelper):
             expected_data = self._read_expected_data(s3_key=expected_s3_key, expected_base_dir=expected_base_dir)
 
             assert_frame_equal(actual_data, expected_data)
+
+    def _create_hourly_test_data(self, start_date: datetime, end_date: datetime, upload: bool = False) -> None:
+        """Create sample data that we have more control over for doing specific tests.
+        
+        Upload to level 0 bucket with the expected partition structure if requested
+        """
+
+        current_date = start_date
+
+        all_data = {}
+
+        while current_date <= end_date:
+            for site in ['site1', 'site2']:
+                # Create hourly data for the current date
+                data = {
+                    'time': [current_date + timedelta(hours=i) for i in range(24)] * 2,
+                    'SITE_ID': [site] * 48,
+                    'col1': list(range(48)),
+                    'col2': list(range(48, 96))
+                }
+
+                # upload to s3
+                if upload:
+                    # convert dataframe to parquet
+                    df = pl.DataFrame(data)
+                    parquet_buffer = io.BytesIO()
+                    df.write_parquet(parquet_buffer)
+                    parquet_buffer.seek(0)
+
+                    # set the key
+                    key = f"cosmos/dataset=test_dataset/site={site}/date={current_date.strftime('%Y-%m-%d')}/data.parquet"
+                    bucket_name = "ukceh-fdri-staging-timeseries-level-0"
+
+                    self._put_object(bucket_name, key, parquet_buffer.getvalue())
+
+                all_data = all_data | data
+
+            current_date += timedelta(days=1)
+        
+        return pl.DataFrame(all_data)

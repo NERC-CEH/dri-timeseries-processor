@@ -7,7 +7,6 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from testing.utils.testing_utils import create_hourly_test_data
 from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
@@ -40,7 +39,7 @@ class TestS3WriterWithData(S3TestHelper, TimeSeriesTestHelper):
         super().setUp()
 
         self.bucket_name = "ukceh-fdri-staging-timeseries-level-0"
-        self.data = create_hourly_test_data(datetime(2024, 1, 1), datetime(2024, 1, 10))
+        self.data = self._create_hourly_test_data(datetime(2024, 1, 1), datetime(2024, 1, 10))
 
 
     def test_polars_df_bytes_conversion(self):
