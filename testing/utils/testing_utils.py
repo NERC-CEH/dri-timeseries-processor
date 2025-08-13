@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-import io
 import polars as pl
 from time_stream import Period, TimeSeries
 
