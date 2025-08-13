@@ -158,12 +158,16 @@ class S3TestHelper(BaseTestHelper):
 
             assert_frame_equal(actual_data, expected_data)
 
-    def _create_hourly_test_data(self, start_date: datetime, end_date: datetime, upload: bool = False) -> None:
+    def _create_hourly_test_data(self, start_date: datetime, end_date: datetime, upload: bool = False) -> pl.DataFrame:
         """Create sample data that we have more control over for doing specific tests.
         
-        Upload to level 0 bucket with the expected partition structure if requested
-        """
+        Upload data to level 0 bucket with the expected partition structure if requested
 
+        Args:
+            start_date: The start date for the data
+            end_date: The end date for the data
+            upload: upload to the level 0 bucket
+        """
         current_date = start_date
 
         all_data = {}
