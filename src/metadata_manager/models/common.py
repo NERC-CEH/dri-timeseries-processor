@@ -157,7 +157,7 @@ def build_processing_query_parameter(level: str) -> List[Tuple | None]:
     Returns:
         A list of tuples with query parameter string and the processing level.
     """
-    return [("type.processingLevel", f"http://fdri.ceh.ac.uk/ref/common/processing-level/{level}")]
+    return [("type.processingLevel", f"{SERVICE_BASE_URI}/ref/common/processing-level/{level}")]
 
 
 def build_view_query_parameter(view: str) -> List[Tuple | None]:

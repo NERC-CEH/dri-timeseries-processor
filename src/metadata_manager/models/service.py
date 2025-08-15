@@ -2,7 +2,7 @@ import asyncio
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
@@ -26,7 +26,9 @@ from metadata_manager.transformers import extract_timeseries_definition_metadata
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
-def load_config(config_type: Union[ComponentType, str], parameters: List[Tuple[str, str]]) -> Optional[DataProcessingConfigurations]:
+def load_config(
+    config_type: Union[ComponentType, str], parameters: List[Tuple[str, str]]
+) -> Optional[DataProcessingConfigurations]:
     """Load configuration data based on the given configuration type.
 
     Args:
@@ -40,20 +42,20 @@ def load_config(config_type: Union[ComponentType, str], parameters: List[Tuple[s
         config_type = ComponentType(config_type)
 
     if config_type == ComponentType.INFILLING:
-        parameters += build_processing_config_type_query_parameter("infill-configuration")
-        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(parameters))
+        params = parameters + build_processing_config_type_query_parameter("infill-configuration")
+        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
         infill_config = DataProcessingConfigurations.model_validate(data)
         return infill_config
 
     elif config_type == ComponentType.QUALITY_CONTROL:
-        parameters += build_processing_config_type_query_parameter("qc")
-        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(parameters))
+        params = parameters + build_processing_config_type_query_parameter("qc")
+        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
         qc_config = DataProcessingConfigurations.model_validate(data)
         return qc_config
 
     elif config_type == ComponentType.CORRECTION:
-        parameters += build_processing_config_type_query_parameter("correction-configuration")
-        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(parameters))
+        params = parameters + build_processing_config_type_query_parameter("correction-configuration")
+        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
         correction_config = DataProcessingConfigurations.model_validate(data)
         return correction_config
 
@@ -109,33 +111,6 @@ def load_datasets(parameters: List[Tuple[str, str]]) -> TimeseriesDatasetRespons
     """
     data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_metadata(parameters))
     return TimeseriesDatasetResponse.model_validate(data)
-
-
-def load_processing_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetadata]:
-    """Recursively load dataset metadata from the API for all processing dependencies of the provided timeseries id.
-
-    Args:
-        timeseries_id: The id of the timeseries to identify processing dependent timeseries datasets for.
-
-    Returns:
-        List of dependent time series metadata objects for the provided timeseries id
-    """
-    data = asyncio.run(METADATA_CONNECTION.fetch_processing_dependent_dataset_metadata(timeseries_id))
-
-    # Use a separate list for storing the final output to prevent it being extended in situ when recursively checking
-    # for sub dependencies
-    ts_dependency_list = []
-
-    dependent_timeseries = DependentTimeSeriesMetadataResponse.model_validate(data)
-    ts_dependency_list.extend(dependent_timeseries)
-
-    # Iterate through the list of DependentTimeSeriesMetadata objects, checking to see if any have sub dependencies
-    # before fetching them
-    for dependent_ts in dependent_timeseries:
-        sub_dependencies = load_processing_dependent_datasets(dependent_ts.name)
-        ts_dependency_list.extend(sub_dependencies)
-
-    return ts_dependency_list
 
 
 def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetadata]:
