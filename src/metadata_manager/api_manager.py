@@ -1,7 +1,7 @@
 """Module to handle calls to the metadata API."""
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 from httpx import AsyncClient, HTTPError
 
@@ -20,7 +20,6 @@ class MetadataAPIManager:
         """
         self.host = host
         self.network = network
-        self.service_base_uri = "http://fdri.ceh.ac.uk"
 
     async def _make_api_call(self, url: str, params: Dict[str, str] = None) -> Dict[str, Any]:
         """Make a call to the metadata API.
@@ -56,6 +55,23 @@ class MetadataAPIManager:
             HTTPError: If the API request fails.
         """
         response = await self._make_api_call(f"{self.host}/id/network/{self.network}")
+        return response
+
+    async def fetch_processing_configs(self, parameters: List[Tuple[str, str]]) -> Dict[str, Any]:
+        """Fetch processing configurations. This can be for infill, QC, and/or correction.
+
+        Args:
+            parameters: API query parameters for the processing configuration endpoint.
+
+        Returns:
+            JSON response containing processing configurations.
+
+        Raises:
+            HTTPError: If the API request fails.
+        """
+        url = f"{self.host}/id/data-processing-configuration.json"
+        response = await self._make_api_call(url, parameters)
+
         return response
 
     async def fetch_infill_config(self, ts_id: str) -> Dict[str, Any]:
@@ -122,7 +138,7 @@ class MetadataAPIManager:
 
         return response
 
-    async def fetch_timeseries_metadata(self, parameters: Dict) -> Dict[str, Any]:
+    async def fetch_timeseries_metadata(self, parameters: List[Tuple[str, str]]) -> Dict[str, Any]:
         """Fetch metadata for timeseries id(s)
 
         Args:

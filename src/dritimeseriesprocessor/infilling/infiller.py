@@ -5,6 +5,7 @@ from typing import Dict, Union
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import infill_flag_column_name, update_infill_core_flags
+from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -41,7 +42,8 @@ def run_infilling(ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]]) -> Dict[
     for ts_id, ts_dict in ts_ids.items():
         ts = ts_dict["data"]
 
-        infill_configs = load_config("infilling", ts_id)
+        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
+        infill_configs = load_config("infilling", ts_id_query_param)
         if not infill_configs:
             logger.info(f"No infilling config found for Time Series ID: {ts_id}")
             continue

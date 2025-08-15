@@ -2,11 +2,11 @@ import asyncio
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Tuple
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager import api_manager
-from metadata_manager.models.common import ComponentType
+from metadata_manager.models.common import ComponentType, build_processing_config_type_query_parameter
 from metadata_manager.models.methods.method_registry import (
     CorrectionMethods,
     DerivationMethods,
@@ -26,12 +26,12 @@ from metadata_manager.transformers import extract_timeseries_definition_metadata
 METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
-def load_config(config_type: Union[ComponentType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:
+def load_config(config_type: Union[ComponentType, str], parameters: List[Tuple[str, str]]) -> Optional[DataProcessingConfigurations]:
     """Load configuration data based on the given configuration type.
 
     Args:
         config_type: The type of configuration to load.
-        ts_id: The time series ID to load configurations for.
+        parameters: API query parameters for the processing configuration endpoint.
 
     Returns:
         The parsed configurations.
@@ -40,17 +40,20 @@ def load_config(config_type: Union[ComponentType, str], ts_id: str) -> Optional[
         config_type = ComponentType(config_type)
 
     if config_type == ComponentType.INFILLING:
-        data = asyncio.run(METADATA_CONNECTION.fetch_infill_config(ts_id))
+        parameters += build_processing_config_type_query_parameter("infill-configuration")
+        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(parameters))
         infill_config = DataProcessingConfigurations.model_validate(data)
         return infill_config
 
     elif config_type == ComponentType.QUALITY_CONTROL:
-        data = asyncio.run(METADATA_CONNECTION.fetch_qc_config(ts_id))
+        parameters += build_processing_config_type_query_parameter("qc")
+        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(parameters))
         qc_config = DataProcessingConfigurations.model_validate(data)
         return qc_config
 
     elif config_type == ComponentType.CORRECTION:
-        data = asyncio.run(METADATA_CONNECTION.fetch_correction_config(ts_id))
+        parameters += build_processing_config_type_query_parameter("correction-configuration")
+        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(parameters))
         correction_config = DataProcessingConfigurations.model_validate(data)
         return correction_config
 
@@ -95,7 +98,7 @@ def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMe
         return registry.model_validate(json.load(f))
 
 
-def load_datasets(parameters: Dict) -> TimeseriesDatasetResponse:
+def load_datasets(parameters: List[Tuple[str, str]]) -> TimeseriesDatasetResponse:
     """Load dataset metadata from the API.
 
     Args:

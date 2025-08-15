@@ -7,6 +7,7 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
+from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -64,7 +65,8 @@ def run_quality_control(
     for ts_id, ts_dict in ts_ids.items():
         ts = ts_dict["data"]
 
-        qc_configs = load_config("quality_control", ts_id)
+        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
+        qc_configs = load_config("quality_control", ts_id_query_param)
         if not qc_configs:
             logger.info(f"No quality control config found for Time Series ID: {ts_id}")
             continue
