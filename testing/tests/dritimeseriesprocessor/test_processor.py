@@ -102,7 +102,6 @@ class TestShiftProcessedData(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-
 class TestProcessTimeseries(unittest.TestCase):
 
     @patch("dritimeseriesprocessor.processor.run_corrections")

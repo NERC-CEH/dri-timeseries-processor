@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from dritimeseriesprocessor.configuration import app_config
-from metadata_manager import api_manager
+from metadata_manager.api_manager import MetadataAPIManager
 from metadata_manager.models.common import ComponentType
 from metadata_manager.models.methods.method_registry import (
     AggregationMethods,
@@ -24,7 +24,7 @@ from metadata_manager.models.schemas.derivations import TimeseriesDerivationResp
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.transformers import extract_timeseries_definition_metadata
 
-METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
+METADATA_CONNECTION = MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
 def load_config(config_type: Union[ComponentType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:

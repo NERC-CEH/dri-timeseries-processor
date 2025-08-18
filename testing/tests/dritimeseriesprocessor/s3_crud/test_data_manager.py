@@ -1,14 +1,21 @@
 import unittest
-from datetime import date
+from datetime import date, datetime
 
 import polars as pl
 
 from dritimeseriesprocessor.s3_crud.data_manager import query_by_date_range
 from dritimeseriesprocessor.utils import sterilize_dates
-from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
+from testing.utils.s3_test_helper import S3TestHelper
 
 
-class TestReadByDateRange(BaseTestCase):
+class TestReadByDateRange(S3TestHelper):
+    """Test the data is read correctly."""
+    def setUp(self):
+        super().setUp()
+
+        self.bucket_name = "ukceh-fdri-staging-timeseries-level-0"
+        self.data = self._create_hourly_test_data(datetime(2024, 1, 1), datetime(2024, 1, 10), upload = True)
+
     def test_read_by_date_range_no_site_ids(self):
         """Test reading data when no site_ids added to command line.
 

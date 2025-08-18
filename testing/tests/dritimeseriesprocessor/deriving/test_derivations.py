@@ -19,8 +19,8 @@ from dritimeseriesprocessor.deriving.derivations import (
     WindSpeedHeightCorrection,
     derive,
 )
-from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
-from testing.utils.testing_helper import TestHelper, df_to_ts
+from testing.utils.testing_utils import df_to_ts
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 def init_timeseries() -> TimeSeries:
@@ -190,7 +190,7 @@ class TestNetRadiation(unittest.TestCase):
         assert_frame_equal(result.df, expected.df, check_exact=False, atol=0.001)
 
 
-class TestDailyTotalRadiation(TestHelper):
+class TestDailyTotalRadiation(TimeSeriesTestHelper):
     def test_evaluate(self) -> None:
         df = pl.read_csv(
             self.input_dir.joinpath("derivations", "rn_pt30m_3_days.csv"),
@@ -220,7 +220,7 @@ class TestDailyTotalRadiation(TestHelper):
         assert_frame_equal(expected.df, result.df)
 
 
-class TestDailyPotentialEvaporation(TestHelper):
+class TestDailyPotentialEvaporation(TimeSeriesTestHelper):
     def test_evaluate(self) -> None:
         df = pl.read_csv(
             self.input_dir.joinpath("derivations", "pe_pt30m_3_days.csv"),

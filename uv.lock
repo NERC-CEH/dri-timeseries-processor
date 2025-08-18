@@ -69,6 +69,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/7a/e5/17db0f85ee5045c2c9cb620ebd5e212e7045d511a98cfaec10099422cea3/autosemver-1.0.0.tar.gz", hash = "sha256:6dec39e5099382998b8c6864961f8314374368535e799bdd311d93721cde0810", size = 14393, upload-time = "2020-11-13T09:57:47.606Z" }
 
 [[package]]
+name = "awscli-local"
+version = "0.22.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "localstack-client" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/25/f9/023c80ea27d67b0930f116597fd55a93f84de9b05d18b38c7d2d5d75c1c9/awscli-local-0.22.0.tar.gz", hash = "sha256:3807cf2ee4bbdd4df4dfc8bef027f25bde523dcaf8119720f677ed95ebba66a4", size = 11373, upload-time = "2023-12-28T09:57:45.36Z" }
+
+[[package]]
 name = "babel"
 version = "2.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -476,6 +485,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "awscli-local" },
     { name = "freezegun" },
     { name = "nbsphinx" },
     { name = "parameterized" },
@@ -497,6 +507,7 @@ lint = [
     { name = "ruff" },
 ]
 test = [
+    { name = "awscli-local" },
     { name = "freezegun" },
     { name = "parameterized" },
     { name = "pytest" },
@@ -526,6 +537,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "awscli-local", specifier = "==0.22.0" },
     { name = "freezegun" },
     { name = "nbsphinx" },
     { name = "parameterized" },
@@ -546,6 +558,7 @@ docs = [
 ]
 lint = [{ name = "ruff" }]
 test = [
+    { name = "awscli-local", specifier = "==0.22.0" },
     { name = "freezegun" },
     { name = "parameterized" },
     { name = "pytest" },
@@ -866,6 +879,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d9/d4/3c9735faa36ac591a4afcc2980d2691000506050b7a7e80bcfe44048daa7/kiwisolver-1.4.8-cp313-cp313t-musllinux_1_2_s390x.whl", hash = "sha256:577facaa411c10421314598b50413aa1ebcf5126f704f1e5d72d7e4e9f020d90", size = 2546710, upload-time = "2024-12-24T18:30:37.281Z" },
     { url = "https://files.pythonhosted.org/packages/4c/fa/be89a49c640930180657482a74970cdcf6f7072c8d2471e1babe17a222dc/kiwisolver-1.4.8-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:be4816dc51c8a471749d664161b434912eee82f2ea66bd7628bd14583a833e85", size = 2349213, upload-time = "2024-12-24T18:30:40.019Z" },
 ]
+
+[[package]]
+name = "localstack-client"
+version = "2.10"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "boto3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/22/11/4f10b87d634edd616d8063dd0ed1193be747e524e28801f826d72828b98f/localstack_client-2.10.tar.gz", hash = "sha256:732a07e23fffd6a581af2714bbe006ad6f884ac4f8ac955211a8a63321cdc409", size = 11302, upload-time = "2025-04-02T12:10:57.554Z" }
 
 [[package]]
 name = "markupsafe"

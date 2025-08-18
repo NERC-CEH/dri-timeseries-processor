@@ -1,16 +1,17 @@
 import sys
+from typing import List
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 
 
-def main() -> None:
+def main(args: List[str]) -> None:
     """
     The initial function run when this file is called via the command line.
 
     Parses the CLI args, before initialising and running the TimeSeriesProcessor class.
     """
-    args = parser.parse_args(sys.argv[1:])
+    args = parser.parse_args(args)
 
     time_series_processor = TimeSeriesProcessor(
         sites=args.sites,
@@ -24,4 +25,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
