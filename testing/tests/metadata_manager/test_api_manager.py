@@ -109,6 +109,7 @@ class TestPaginatedAPICall(IsolatedAsyncioTestCase):
         self.api = MetadataAPIManager(host=self.host_url, network="cosmos")
 
     async def test_no_pagination_required_limit_field_not_present(self, mock_metadata_api: MagicMock) -> None:
+        """Check the entire API response is returned if no pagination is required."""
         expected_response = {"meta": {}, "items": [{"key_1": "value_1"}]}
         mock_api_data = {self.host_url: expected_response}
         mock_metadata_api.side_effect = MockMetadataAPI(api_data=mock_api_data)
@@ -119,6 +120,7 @@ class TestPaginatedAPICall(IsolatedAsyncioTestCase):
         assert mock_metadata_api.call_count == 1
 
     async def test_no_pagination_required_num_items_below_limit(self, mock_metadata_api: MagicMock) -> None:
+        """Check no extra pagination calls are made if fewer items than the page size limit are returned."""
         expected_response = {"meta": {"limit": 2}, "items": [{"key_1": "value_1"}]}
         mock_api_data = {self.host_url: expected_response}
         mock_metadata_api.side_effect = MockMetadataAPI(api_data=mock_api_data)
@@ -129,8 +131,7 @@ class TestPaginatedAPICall(IsolatedAsyncioTestCase):
         assert mock_metadata_api.call_count == 1
 
     async def test_pagination_required(self, mock_metadata_api: MagicMock) -> None:
-        # In this instance, because the MockMetadataAPI will return the full value of the mock api response initially,
-        # then go onto fetching the paginated response, the final key, value pair will be duplicated.
+        """Check the pagination logic is called when required."""
         expected_response = {
             "meta": {"limit": 2},
             "items": [{"key_1": "value_1"}, {"key_2": "value_2"}, {"key_3", "value_3"}],
