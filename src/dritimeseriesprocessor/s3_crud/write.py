@@ -9,6 +9,7 @@ from typing import List, Tuple
 
 import polars as pl
 from botocore.client import BaseClient
+from botocore.exceptions import ClientError
 from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
@@ -114,11 +115,30 @@ class S3Writer(WriterInterface):
         for date, df in data:
             s3_key = self._build_s3_key(network, site_id, resolution, date)
 
-            body = self._get_bytes(df)
+            buffer = BytesIO()
 
-            # TODO Handle overwriting if object already exists FPM-515
-            self.s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=body)
+            try:
+                # Try to get the existing object
+                existing_data = self.s3_client.get_object(Bucket=bucket_name, Key=s3_key)
 
+                # If file exists, read it, append new data, and write back
+                existing_df = pl.read_parquet(existing_data["Body"].read())
+                combined_df = existing_df.join(df, on=existing_df.columns, how="full", coalesce=True)
+                combined_df.write_parquet(buffer)
+            except Exception as e:
+                if isinstance(e, ClientError) and e.response["Error"]["Code"] == "NoSuchKey":
+                    logger.warning(f"Failed to get {s3_key} from {bucket_name}")
+                    # If file doesn't exist, write new file
+                    df.write_parquet(buffer)
+                else:
+                    logger.error(f"Unexpected error when writing to parquet: {e}")
+                    logger.exception(e)
+
+            buffer.seek(0)
+            self.s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=buffer.getvalue())
+            
+            logger.info(f"Data for date {date} site {site_id} and resolution {resolution} written to s3://{bucket_name}/{s3_key}")
+    
     @staticmethod
     def _build_s3_key(network: str, site_id: str, resolution: str, date: datetime) -> str:
         """Builds a S3 key.
