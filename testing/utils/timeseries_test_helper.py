@@ -6,7 +6,7 @@ import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
-from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
 
 import polars as pl
 from polars.testing import assert_frame_equal
