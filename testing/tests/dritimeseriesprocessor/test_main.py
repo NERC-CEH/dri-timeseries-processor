@@ -47,7 +47,7 @@ class TestMain(S3TestHelper):
             "--network", "cosmos"
         ]
 
-        # load some data into the bucket to mimic the update process
+        # load some data into the bucket to mimic the update process when writing
         # - data for a column not in the test data (STP_TSOIL2) and one that is (TA)
         # - resolution PT30M
         # - no data for 2024-03-10

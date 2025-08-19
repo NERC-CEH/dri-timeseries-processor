@@ -46,27 +46,6 @@ class S3Writer(WriterInterface):
         self.s3_client = s3_client
 
     @staticmethod
-    def _get_bytes(obj: DataFrame) -> bytes:
-        """Converts an object to bytes
-
-        Args:
-            obj: The object to convert.
-        Returns:
-            bytes representation of the object.
-        """
-
-        buffer = BytesIO()
-
-        if isinstance(obj, pl.dataframe.DataFrame):
-            obj.write_parquet(buffer)
-        else:
-            raise TypeError(f"Bytes conversion not supported for type: '{type(obj)}'")
-
-        buffer.seek(0)
-
-        return buffer
-
-    @staticmethod
     def _build_s3_key(network: str, site_id: str, resolution: str, date: datetime) -> str:
         """Builds a S3 key.
 
@@ -149,30 +128,36 @@ class S3Writer(WriterInterface):
         return data_to_write
 
     def _merge_dataframes(self, existing_df: pl.DataFrame, current_df: pl.DataFrame) -> pl.DataFrame:
+        """Combine an existing processed dataframe with new processed data.
+
+        Data to merge will always have the same resolution and date, but each
+        dataframe could have different columns and/or times.
+
+        Args:
+            existing_df: the existing processed data
+            current_df: the current processed data
+
+        Returns:
+            the existing data updated, where applicable, with the current data
         """
-        Data to merge will always be the same resolution and date, but each dataframe could have different columns and/or timestamps"""
+        # The dataframes, which are taken from the timestream objects, are not
+        # padded, so first do an outer join to make sure we get all the times.
+        # Fold (coalesce) any of the same same columns from left to right
+        # Make sure to keep non matched columns from both dataframes
 
-
-        # Do a full outer join to make sure we get all the timestamps
-        # Coalesce any columns that exist in both
-        # Make sure to keep columns from both dataframes
         common_columns = set(existing_df.columns) & set(current_df.columns)
         update_columns = {col for col in common_columns if col != "time"}
-        extra_right_columns = set(current_df.columns) - common_columns
-        extra_left_columns = set(existing_df.columns) - common_columns
+        extra_current_columns = set(current_df.columns) - common_columns
+        extra_existing_columns = set(existing_df.columns) - common_columns
 
-        combined_df = (
-            existing_df.join(current_df, on="time", how="full", suffix="_current", coalesce=True)
-            .select(
-                "time",
-                *extra_left_columns,
-                *[pl.coalesce(f"{col}_current", col).alias(col) for col in update_columns],
-                *extra_right_columns
-            )
+        combined_df = existing_df.join(current_df, on="time", how="full", suffix="_current", coalesce=True).select(
+            "time",
+            *extra_current_columns,
+            *[pl.coalesce(f"{col}_current", col).alias(col) for col in update_columns],
+            *extra_existing_columns,
         )
 
-        print(combined_df)
-
+        return combined_df
 
     @metrics.track_s3_write_time()
     def write(
@@ -219,5 +204,7 @@ class S3Writer(WriterInterface):
 
             buffer.seek(0)
             self.s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=buffer.getvalue())
-            
-            logger.info(f"Data for date {date} site {site_id} and resolution {resolution} written to s3://{bucket_name}/{s3_key}")
+
+            logger.info(
+                f"Data for date {date} site {site_id} and resolution {resolution} written to s3://{bucket_name}/{s3_key}"
+            )
