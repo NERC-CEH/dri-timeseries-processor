@@ -84,7 +84,7 @@ class S3TestHelper(BaseTestHelper):
             logger.exception(err)
             raise err
 
-    def _put_object(self, bucket_name: str, s3_key: str, body: bytes) -> None:
+    def _put_object(self, bucket_name: str, s3_key: str, body: bytes | Path) -> None:
         """Uploads an object to an S3 bucket.
 
         Args:
