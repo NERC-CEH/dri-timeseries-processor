@@ -1,5 +1,6 @@
 import logging
 import re
+from collections import namedtuple
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -39,6 +40,8 @@ metrics.setup_metrics()
 
 PROCESSING_COLUMNS = ["BATTV", "SCANS", "TNR01C"]
 
+UserTsID = namedtuple("UserTsID", ["site", "column", "periodicity"])
+
 
 class TimeSeriesProcessor:
     """Main class for processing time series data."""
@@ -47,13 +50,21 @@ class TimeSeriesProcessor:
 
     def __init__(
         self,
-        sites: str,
-        columns: List[str],
-        periodicity: str,
-        end_date: datetime.date,
-        period: str,
         network: str,
+        period: str,
+        user_ts_ids: List[str] = None,
+        sites: str | None = None,
+        columns: List[str] | None = None,
+        periodicity: str | None = None,
+        end_date: datetime.date = None,
     ):
+        # Validate inputs as user_ts_ids is mutually exclusive to the combination of [sites, columns or periodicity]
+        if user_ts_ids and (sites or columns or periodicity):
+            raise ValueError(
+                "Requesting a combination of specific timeseries ids and one or more of sites, columns and periodicies "
+                "is not supported."
+            )
+
         # Setup s3
         if app_config.environment == "local":
             self.s3_client = boto3.client("s3", endpoint_url=app_config.endpoint_url)
@@ -63,6 +74,11 @@ class TimeSeriesProcessor:
         # Store arguments used for constructing more dynamic query parameters within the main run()
         self.columns = parser.validate_columns(columns)
         self.network = network
+
+        self.user_ts_ids = []
+        if user_ts_ids:
+            self._construct_user_ts_id_objects(user_ts_ids)
+            sites = ",".join(sorted(set(user_ts_id.site for user_ts_id in self.user_ts_ids)))
 
         # Construct query parameters which are consistent across all metadata API calls
         self.site_query_parameter = self._construct_site_query_parameter(sites=sites)
@@ -127,7 +143,11 @@ class TimeSeriesProcessor:
         any derivation / aggregation dependencies etc).
 
         """
-        self._get_user_timeseries_ids()
+        if self.user_ts_ids:
+            self._get_specific_user_timeseries_ids()
+        else:
+            self._get_generic_user_timeseries_ids()
+
         self._get_processing_timeseries_ids()
         self._get_dependent_timeseries_ids()
 
@@ -135,7 +155,31 @@ class TimeSeriesProcessor:
         # timeseries ID.
         self._add_derivation_metadata()
 
-    def _get_user_timeseries_ids(self) -> None:
+    def _get_specific_user_timeseries_ids(self) -> None:
+        """Collect the timeseries ID metadata for any specific ts-ids provided by the user.
+
+        Each ts id to be fetched is defined by the parameters within a single UserTsID object. The combination
+        of the site, column name and periodicity, alongside the configured network and an assumed processing level
+        of 'processed' should point to a single timeseries ID. To avoid fetching any more timeseries than requested,
+        each UserTsID object is processed separately, with the fetched data being appended to self.ts_ids.
+
+        """
+        processing_query_parameter = build_processing_query_parameter(level="processed")
+
+        for user_ts_id in self.user_ts_ids:
+            site_query_parameter = self._construct_site_query_parameter(sites=user_ts_id.site)
+            column_query_parameter = build_column_query_parameter([user_ts_id.column])
+            periodicity_query_parameter = self._construct_periodicity_query_parameter(user_ts_id.periodicity)
+
+            self._get_ts_id_metadata(
+                site_query_parameter
+                + periodicity_query_parameter
+                + column_query_parameter
+                + processing_query_parameter
+                + self.view_query_parameter
+            )
+
+    def _get_generic_user_timeseries_ids(self) -> None:
         """Collect the timeseries id metadata for user specified processed variables.
 
         The metadata api service is queried for the timeseries id metadata for the processed variables requested by the
@@ -264,6 +308,37 @@ class TimeSeriesProcessor:
 
         self.ts_ids = self.ts_ids | ts_ids_metadata
 
+    def _construct_user_ts_id_objects(self, user_ts_ids: List[List[str]]) -> None:
+        """
+        Convert the user provided list of [site, column, periodicity] to a named tuple, validating each parameter
+        before storing the UserTsID objects in self.user_ts_ids.
+
+        """
+        self.user_ts_ids = []
+        for site, column, periodicity in user_ts_ids:
+            validated_site = self._validate_sites(site)[0]
+            validated_column = parser.validate_columns(column)[0]
+            validated_periodicity = parser.validate_periodicity(periodicity)[0]
+
+            self.user_ts_ids.append(
+                UserTsID(site=validated_site, column=validated_column, periodicity=validated_periodicity)
+            )
+
+    def _validate_sites(self, sites: List[str] | str) -> List[str]:
+        """Check that all provided site IDs can be found within the metadata API for the current network.
+
+        Args:
+            sites: Either a list of site ids, or a comma separated list of site ids to be validated.
+
+        Returns:
+            validated list of sites
+
+        """
+        metadata_sites = load_sites()
+        metadata_sites = extract_site_ids(metadata_sites, network=self.network)
+
+        return parser.validate_sites(sites, metadata_sites)
+
     def _construct_site_query_parameter(self, sites: List[str]) -> List[Tuple[str, str]]:
         """Construct the site query parameter.
 
@@ -286,10 +361,7 @@ class TimeSeriesProcessor:
             The site query parameter comprising of a list of tuples, each containing a single (key, value) pair.
 
         """
-        metadata_sites = load_sites()
-        metadata_sites = extract_site_ids(metadata_sites, network=self.network)
-
-        sites = parser.validate_sites(sites, metadata_sites)
+        sites = self._validate_sites(sites)
         site_query_parameter = build_site_query_parameter(sites=sites, network=self.network)
 
         return site_query_parameter
