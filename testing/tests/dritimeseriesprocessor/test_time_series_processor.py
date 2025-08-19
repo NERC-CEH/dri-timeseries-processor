@@ -95,17 +95,21 @@ class TestTimeSeriesProcessor(TestHelper):
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_get_processing_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
+    def test_get_processing_dependent_ts_ids(self, mock_api_manager: mock.MagicMock) -> None:
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
-            self.output_dir.joinpath("time_series_processor", "processing_ts_ids_alic1_pe.json")
+            self.output_dir.joinpath("time_series_processor", "processing_ts_ids_alic1_swout.json")
         )
 
         ts_processor = TimeSeriesProcessor(
-            sites="alic1", columns="PE", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
+            sites="alic1", columns="LWOUT", periodicity="PT30M", end_date="2024-03-10", period="P2D", network="cosmos"
         )
-        ts_processor._get_processing_timeseries_ids()
+        # Some ts_ids need to already exist in order to search through them to find any dependent timeseries metadata
+        # and to ensure that self.ts_ids is extended and not completely overwritten.
+        # Therefore run _get_user_timeseries_ids() first to generate the initial self.ts_ids data.
+        ts_processor._get_user_timeseries_ids()
+        ts_processor._get_processing_dependent_ts_ids()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
@@ -124,7 +128,7 @@ class TestTimeSeriesProcessor(TestHelper):
         # and to ensure that self.ts_ids is extended and not completely overwritten.
         # Therefore run _get_user_timeseries_ids() first to generate the initial self.ts_ids data.
         ts_processor._get_user_timeseries_ids()
-        ts_processor._get_dependent_timeseries_ids()
+        ts_processor._get_derived_dependent_ts_ids()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 

@@ -239,5 +239,5 @@ def filter_by_type(param_values: List[str], api_data: Dict[str, Any]) -> Dict[st
             for the equivalent API call to the main metadata api.
 
     """
-    filtered_data = [item for item in api_data if item["type"][0]["@id"] in param_values]
+    filtered_data = [item for item in api_data if item["type"]["@id"] in param_values]
     return filtered_data

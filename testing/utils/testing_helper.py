@@ -98,6 +98,9 @@ class TestHelper(unittest.TestCase):
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/time-series-definition": load_json(
                 self.input_dir.joinpath("mock_metadata_api", "ts_def_metadata.json")
             ),
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json": load_json(
+                self.input_dir.joinpath("mock_metadata_api", "processing_configs_alic1.json")
+            ),
         }
 
     def load_ts_ids_from_json_file(self, json_path: str) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:

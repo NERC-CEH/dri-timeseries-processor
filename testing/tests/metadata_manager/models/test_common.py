@@ -6,11 +6,14 @@ from parameterized import parameterized
 from metadata_manager.models.common import (
     SITE_ID_EXTRACT_REGEX,
     URI_ID_EXTRACT_REGEX,
+    SERVICE_BASE_URI,
     build_column_query_parameter,
     build_periodicity_query_parameter,
     build_processing_query_parameter,
     build_site_query_parameter,
     build_timeseries_id_query_parameter,
+    build_processing_config_timeseries_id_query_parameter,
+    build_processing_config_type_query_parameter,
     build_view_query_parameter,
     get_property,
 )
@@ -50,8 +53,8 @@ class TestUriIdExtractRegex(TestCase):
 class TestSiteIdExtractRegex(TestCase):
     @parameterized.expand(
         [
-            ("all_string", "http://fdri.ceh.ac.uk/id/site/cosmos-chimn", "chimn"),
-            ("with_numbers", "http://fdri.ceh.ac.uk/id/site/cosmos-alic1", "alic1"),
+            ("all_string", f"{SERVICE_BASE_URI}/id/site/cosmos-chimn", "chimn"),
+            ("with_numbers", f"{SERVICE_BASE_URI}/id/site/cosmos-alic1", "alic1"),
         ]
     )
     def test_parsing_success(self, _, string, expected):
@@ -133,8 +136,8 @@ class TestBuildSiteQueryParameter(TestCase):
         sites = ["test1", "test2"]
         network = "cosmos"
         expected = [
-            ("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-test1"),
-            ("originatingSite", f"http://fdri.ceh.ac.uk/id/site/cosmos-test2"),
+            ("originatingSite", f"{SERVICE_BASE_URI}/id/site/cosmos-test1"),
+            ("originatingSite", f"{SERVICE_BASE_URI}/id/site/cosmos-test2"),
         ]
 
         result = build_site_query_parameter(sites, network)
@@ -201,7 +204,7 @@ class TestBuildProcessingQueryParameter(TestCase):
 
     def test_processing_level(self) -> None:
         """Test string built with a processing level"""
-        expected = [("type.processingLevel", f"http://fdri.ceh.ac.uk/ref/common/processing-level/raw")]
+        expected = [("type.processingLevel", f"{SERVICE_BASE_URI}/ref/common/processing-level/raw")]
 
         result = build_processing_query_parameter(level="raw")
 
@@ -229,5 +232,31 @@ class TestBuildTimeSeriesIDQueryParameter(TestCase):
         expected = [("@id", "ts_id_1"), ("@id", "ts_id_2")]
 
         result = build_timeseries_id_query_parameter(ts_ids)
+
+        assert result == expected
+
+
+class TestBuildProcessingConfigTimeseriesIDQueryParameter(TestCase):
+    """Tests the build_processing_config_timeseries_id_query_parameter."""
+
+    def test_multiple_timeseries_ids(self) -> None:
+        """Test string built with multiple timeseries ids"""
+        ts_ids = ["ts_id_1", "ts_id_2"]
+        expected = [("appliesToTimeSeries", "ts_id_1"), ("appliesToTimeSeries", "ts_id_2")]
+
+        result = build_processing_config_timeseries_id_query_parameter(ts_ids)
+
+        assert result == expected
+
+
+class TestBuildProcessingConfigTypeQueryParameter(TestCase):
+    """Tests the build_processing_config_type_query_parameter."""
+
+    def test_processing_config_type(self) -> None:
+        """Test string built with a processing config type"""
+        config_type = "test-config-type"
+        expected = [("type", f"{SERVICE_BASE_URI}/ref/common/configuration-type/{config_type}")]
+
+        result = build_processing_config_type_query_parameter(config_type)
 
         assert result == expected
