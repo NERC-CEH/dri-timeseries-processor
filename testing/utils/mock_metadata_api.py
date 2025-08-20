@@ -27,6 +27,13 @@ class MockMetadataAPI:
             "type": filter_by_type,
         }
 
+        self.limit = None
+        self.offset = None
+        self.pagination_mapping = {
+            "_offset": self.set_offset,
+            "_limit": self.set_limit,
+        }
+
     def __call__(self, url: str, params: Dict[str, str] | List[Tuple[str, str]] = None) -> Dict[str, Any]:
         """
         Main call function, designed to replace _make_api_call in MetadataAPIManager via a mock side effect.
@@ -43,12 +50,12 @@ class MockMetadataAPI:
         if params is None:
             return self.api_data[url]
 
-        return self.filter_data(url, params)
+        return self.filter_and_paginate_data(url, params)
 
-    def filter_data(self, url: str, params: Dict[str, str] | List[Tuple[str, str]]) -> Dict[str, Any]:
+    def filter_and_paginate_data(self, url: str, params: Dict[str, str] | List[Tuple[str, str]]) -> Dict[str, Any]:
         """
         Filter self.api_data by the provided url and parameters as if the main metadata api was processing a query
-        with parameters.
+        with parameters. Then apply any pagination parameters (if applicable).
 
         Due to the nested structure of the metadata api's data, and corresponding query parameeter keys
         (e.g. type.measure.aggregation.periodicity, custom filter functions per parameter key are used. If the parameter
@@ -65,12 +72,60 @@ class MockMetadataAPI:
         filtered_data = self.api_data[url]["items"].copy()
         for param_key, param_value in params_iterator(params):
             filter_func = self.filter_func_mapping.get(param_key)
+            pagination_func = self.pagination_mapping.get(param_key)
+
+            if pagination_func:
+                pagination_func(param_value[0])
+
             if not filter_func:
                 continue
 
             filtered_data = filter_func(param_value, filtered_data)
 
+        if self.limit or self.offset:
+            filtered_data = self.paginate_response(filtered_data)
+
         return {"meta": self.api_data[url]["meta"], "items": filtered_data}
+
+    def set_limit(self, limit: int, *args, **kwargs) -> None:
+        """Set the pagination per-page limit value.
+
+        Args:
+            limit: The limit to set. This will be used to restrict the number of items to be returned.
+
+        """
+        self.limit = limit
+
+    def set_offset(self, offset: int, *args, **kwargs) -> None:
+        """Set the pagination offset value.
+
+        Args:
+            offset: The offset to set. This will be used to restrict the number of items to be returned.
+
+        """
+        self.offset = offset
+
+    def paginate_response(self, response_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Apply pagination to the response data. This involves removing the first n items (specified by the offset) to
+        clip any previously returned data, and then restricting the returned data to the size of the 'limit' parameter
+
+        For example for list of response data with 10 items, and an offset of 2 and a limit of 5, items 3 to 7 would be
+        returned.
+
+        Args:
+            response_data: The response data to paginate. This is assumed to be the 'items' part of the final response.
+
+        Returns:
+            'Paginated' response data.
+        """
+        if self.offset:
+            response_data = response_data[self.offset :]
+
+        if self.limit:
+            response_data = response_data[: self.limit]
+
+        return response_data
 
 
 def params_iterator(params: Dict[str, str] | List[Tuple[str, str]]) -> Generator[Tuple[str, str], Any, Any]:
