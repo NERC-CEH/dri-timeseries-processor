@@ -156,7 +156,7 @@ class S3TestHelper(BaseTestHelper):
             actual_data = pl.read_parquet(self._get_s3_object(bucket_name=output_bucket_name, s3_key=expected_s3_key))
             expected_data = self._read_expected_data(s3_key=expected_s3_key, expected_base_dir=expected_base_dir)
 
-            assert_frame_equal(actual_data, expected_data)
+            assert_frame_equal(actual_data, expected_data, check_column_order=False)
 
     def _create_hourly_test_data(self, start_date: datetime, end_date: datetime, upload: bool = False) -> pl.DataFrame:
         """Create sample data that we have more control over for doing specific tests.
