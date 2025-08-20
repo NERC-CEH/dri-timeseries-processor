@@ -73,11 +73,14 @@ class TestMain(S3TestHelper):
         keys = ["network=cosmos/date=2024-03-08/site=ALIC1/resolution=PT30M/data.parquet",
                 "network=cosmos/date=2024-03-09/site=ALIC1/resolution=PT30M/data.parquet",
                 "network=cosmos/date=2024-03-09/site=BUNNY/resolution=PT30M/data.parquet"]
-
+        
         for key in keys:
+            buffer = BytesIO()
             input_filepath = base_input_dir.joinpath(key)
-            subprocess.run(["awslocal", "s3api", "put-object", "--bucket", f"{output_bucket_name}",
-                            "--key", f"{key}", "--body", f"{input_filepath}"])
+            data = pl.read_parquet(input_filepath)
+            data.write_parquet(buffer)
+            buffer.seek(0)
+            self.s3_client.put_object(Bucket=output_bucket_name, Key=key, Body=buffer.getvalue())
 
 
         # create mock api responses
