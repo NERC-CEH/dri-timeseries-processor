@@ -113,7 +113,7 @@ class TestMergeDataframes(S3TestHelper):
         assert_frame_equal(result, expected_df)
 
     def test_additional_column(self):
-        """Test both unchanged columns from existing df and the new column from new df are
+        """Test unchanged columns from the existing df, and the new column from new df are
         in the output."""
         existing_df_data = {
             "time": [datetime(2023, 1, 1, 10, 0, 0), datetime(2023, 1, 1, 11, 0, 0), datetime(2023, 1, 1, 12, 0, 0)],
