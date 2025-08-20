@@ -25,7 +25,6 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
                 ("originatingSite", "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"),
             ]
         )
-        expected_periodicity_query_parameter = [("type.measure.aggregation.periodicity", "PT30M")]
         expected_view_query_parameter = [("_view", "timeseries")]
         expected_start_date = datetime.date(2024, 3, 8)
         expected_end_date = datetime.date(2024, 3, 10)
@@ -40,7 +39,6 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         )
 
         assert sorted(ts_processor.site_query_parameter) == sorted(expected_site_query_parameter)
-        assert ts_processor.periodicity_query_parameter == expected_periodicity_query_parameter
         assert ts_processor.view_query_parameter == expected_view_query_parameter
         assert ts_processor.start_date == expected_start_date
         assert ts_processor.end_date == expected_end_date
