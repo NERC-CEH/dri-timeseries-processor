@@ -9,12 +9,15 @@ from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
+from dritimeseriesprocessor.local_typing import TimeseriesContainer, TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.typing import TimeseriesContainer, TimeseriesContainerWithDerivations
-from dritimeseriesprocessor.utils import call_method_async, merge_ts_def_metadata
+from dritimeseriesprocessor.utils import (
+    call_method_async,
+    merge_ts_def_metadata,
+)
 from metadata_manager.models.common import (
     URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
