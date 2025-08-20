@@ -13,8 +13,8 @@ from botocore.exceptions import ClientError
 from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
+from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
 
 logger = logging.getLogger(__name__)
 
