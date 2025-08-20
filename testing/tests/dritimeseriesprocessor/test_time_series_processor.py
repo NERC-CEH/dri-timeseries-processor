@@ -146,8 +146,12 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_write_timeseries(self, mock_api_manager: mock.MagicMock) -> None:
-        """Test data is correctly written to the processed bucket."""
-
+        """Test data is correctly written to the processed bucket.
+        
+        There is no existing data for this test. The end to end test tests
+        the write functionality when there is existing data.
+        """
+    
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
         ts_processor = TimeSeriesProcessor(
             sites="alic1,bunny,chimn,morly",
@@ -172,6 +176,7 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         # 1) Check the number of items in the bucket matches the number of
         # expected items
         # 2) loop through the expected outputs and check they match the processor output
+        self._check_expected_parquet_files_exist_in_bucket(self.output_dir.joinpath("write", "full_process"), s3_bucket)
         self._check_expected_parquet_files_exist_in_bucket(self.output_dir.joinpath("write", "full_process"), s3_bucket)
 
     @parameterized.expand(
