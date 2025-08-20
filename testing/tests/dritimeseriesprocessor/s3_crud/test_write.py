@@ -1,8 +1,4 @@
 from datetime import datetime
-from io import BytesIO
-from unittest.mock import patch
-
-import moto
 import polars as pl
 from polars.testing import assert_frame_equal
 
