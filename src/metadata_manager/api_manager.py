@@ -88,8 +88,8 @@ class MetadataAPIManager:
         # offset should never be reached.
         maximum_offset = 100000000000
 
-        # The initial response meta value can be used for the final response  the core contents (excluding limit and
-        # offset) should be the same across all pages
+        # The initial response meta value can be used for the final response. The core contents (excluding limit and
+        # offset) should be the same across all pages.
         response_meta = initial_response["meta"]
         response_items = initial_response["items"]
 
@@ -104,8 +104,7 @@ class MetadataAPIManager:
             response_items.extend(current_items)
 
             # Break the loop once the response data doesn't contain as many items as the page size, as this indicates
-            # all values have been fetched. By temporarily converting to a set, it ensures that any accidentally
-            # duplicated entries are removed
+            # all values have been fetched.
             if len(current_items) < page_size:
                 return {"meta": response_meta, "items": response_items}
 

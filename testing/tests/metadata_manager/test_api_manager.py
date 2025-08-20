@@ -90,20 +90,6 @@ class TestMetadataApiManager(IsolatedAsyncioTestCase):
 
 @patch.object(MetadataAPIManager, "_make_api_call")
 class TestPaginatedAPICall(IsolatedAsyncioTestCase):
-    """NOTES - DELETE LATER
-
-    - limit not in api response
-    - limit in api response
-        - num items < limit stated
-        - num items > limit stated
-        - num items == limit stated
-
-    - Need a way to mock pagination calls
-        - at least 2 loops, second returns items < limit
-    - parameter for page size? <- makes for easier testing
-
-    """
-
     def setUp(self) -> None:
         self.host_url = "test_url.com"
         self.api = MetadataAPIManager(host=self.host_url, network="cosmos")
