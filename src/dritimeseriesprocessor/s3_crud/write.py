@@ -102,32 +102,8 @@ class S3Writer(WriterInterface):
         # TODO replace with timestream method when developed
         return [(site_res[0], site_res[1], pl.concat(data, how="align")) for site_res, data in resolutions.items()]
 
-    def structure(
-        self, processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str
-    ) -> List[List[List[Tuple[datetime, pl.DataFrame] | str]]]:
-        """
-        Structure the processed data ready for writing.
-
-        First group the data by resolution and site, then split into days.
-
-        Args:
-            processed_timeseries: the timeseries that have been processed
-            bucket_name: the name of bucket to write to
-            network: the processing network
-
-        Returns:
-            Data and metadata required for asynchronous writing
-        """
-        grouped_ts_ids = self._group_data_by_resolution_and_site(processed_timeseries)
-
-        data_to_write = []
-        for data_object in grouped_ts_ids:
-            resolution, site, data = data_object
-            data_to_write.append([[data for data in self._split_by_date(data)], site, resolution, bucket_name, network])
-
-        return data_to_write
-
-    def _merge_dataframes(self, existing_df: pl.DataFrame, current_df: pl.DataFrame) -> pl.DataFrame:
+    @staticmethod
+    def _merge_dataframes(existing_df: pl.DataFrame, current_df: pl.DataFrame) -> pl.DataFrame:
         """Combine an existing processed dataframe with new processed data.
 
         Data to merge will always have the same resolution and date, but each
@@ -158,6 +134,31 @@ class S3Writer(WriterInterface):
         )
 
         return combined_df
+
+    def structure(
+        self, processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str
+    ) -> List[List[List[Tuple[datetime, pl.DataFrame] | str]]]:
+        """
+        Structure the processed data ready for writing.
+
+        First group the data by resolution and site, then split into days.
+
+        Args:
+            processed_timeseries: the timeseries that have been processed
+            bucket_name: the name of bucket to write to
+            network: the processing network
+
+        Returns:
+            Data and metadata required for asynchronous writing
+        """
+        grouped_ts_ids = self._group_data_by_resolution_and_site(processed_timeseries)
+
+        data_to_write = []
+        for data_object in grouped_ts_ids:
+            resolution, site, data = data_object
+            data_to_write.append([[data for data in self._split_by_date(data)], site, resolution, bucket_name, network])
+
+        return data_to_write
 
     @metrics.track_s3_write_time()
     def write(
