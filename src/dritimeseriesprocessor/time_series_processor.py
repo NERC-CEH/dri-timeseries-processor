@@ -131,9 +131,9 @@ class TimeSeriesProcessor:
         self._get_processing_timeseries_ids()
         self._get_dependent_timeseries_ids()
 
-        # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
-        # timeseries ID.
-        self._add_derivation_metadata()
+        # # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
+        # # timeseries ID.
+        # self._add_derivation_metadata()
 
     def _get_user_timeseries_ids(self) -> None:
         """Collect the timeseries id metadata for user specified processed variables.

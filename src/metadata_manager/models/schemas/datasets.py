@@ -1,6 +1,8 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+from metadata_manager.models.common import get_property
 
 
 class IDModel(BaseModel):
@@ -61,6 +63,31 @@ class Measure(IDModel):
     aggregation: Aggregation
 
 
+class Methodology(IDModel):
+    configuration_type: str
+    method: Optional[str] = None
+    uses: list
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_methodology_metadata_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        result = {}
+        uses = []
+
+        result['@id'] = data['@id']
+
+        dependencies = data["uses"]
+        for items in dependencies:
+            uses.append(get_property("@id", items))
+
+        result["uses"] = uses
+        result["configuration_type"] = get_property("@id", get_property("type", get_property("configuration", data)))
+        result["method"] = get_property(
+            "@id", get_property("method", get_property("hasCurrentConfiguration", get_property("configuration", data)))
+        )
+
+        return result
+
 class TimeSeriesType(IDModel):
     """Type definition for time series data.
 
@@ -71,6 +98,7 @@ class TimeSeriesType(IDModel):
 
     processing_level: IDModel = Field(..., alias="processingLevel")
     measure: Measure
+    methodology: Optional[Methodology] = None
 
 
 class TimeSeriesDataset(IDModel):
@@ -93,6 +121,7 @@ class TimeSeriesDataset(IDModel):
     source_column_name: Optional[str] = Field(None, alias="sourceColumnName")
     originating_facility: Optional[List[IDModel]] = Field(None, alias="originatingFacility")
     originating_site: List[IDModel] = Field(..., alias="originatingSite")
+    load: bool = False
 
 
 class Meta(IDModel):

@@ -28,9 +28,14 @@ class TimeseriesContainer(TypedDict):
     sourceDataset: str
     sourceColumnName: str
     sourceSite: str
+    method_type: NotRequired[str]
+    method: NotRequired[str]
+    inputs: NotRequired[List[str]]
+    load: NotRequired[bool]
     data: NotRequired[TimeSeries]
 
 
+# --------------------------------- OBSOLETE ------------------------------
 class DerivationMetadata(TypedDict):
     """Derivation metadata.
 
@@ -45,6 +50,7 @@ class DerivationMetadata(TypedDict):
     method: str | None
     inputs: List[str]
     load: NotRequired[bool]
+
 
 
 class TimeseriesContainerWithDerivations(TimeseriesContainer, DerivationMetadata):

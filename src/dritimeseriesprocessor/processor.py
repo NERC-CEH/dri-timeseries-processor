@@ -11,6 +11,7 @@ from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
 from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.utils import map_def_to_id
 
 logger = logging.getLogger(__name__)
 
@@ -92,8 +93,8 @@ def shift_processed_data(
             if len(ts_metadata["inputs"]) != 1:
                 raise ValueError(f"Processed timeseries ID {ts_id} should have exactly one input.")
 
-            raw_ts_id = ts_metadata["inputs"][0]
-
+            raw_ts_id = map_def_to_id(ts_metadata["inputs"][0], ts_metadata['sourceSite'], ts_ids)
+            
             if "data" in ts_ids[raw_ts_id]:
                 # Move the data object from raw_ts_id to (processed) ts_id
                 logger.info(f"Moving data from {raw_ts_id} to {ts_id}")
