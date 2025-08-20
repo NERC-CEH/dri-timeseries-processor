@@ -2,12 +2,13 @@ import datetime
 from unittest import mock
 
 from dritimeseriesprocessor.configuration import app_config
-from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.s3_crud.write import S3Writer
+from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
+
 
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
@@ -105,8 +106,12 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_write_timeseries(self, mock_api_manager: mock.MagicMock) -> None:
-        """Test data is correctly written to the processed bucket."""
-
+        """Test data is correctly written to the processed bucket.
+        
+        There is no existing data for this test. The end to end test tests
+        the write functionality when there is existing data.
+        """
+    
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
         ts_processor = TimeSeriesProcessor(
             sites="alic1,bunny,chimn,morly",

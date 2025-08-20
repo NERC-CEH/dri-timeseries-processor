@@ -14,7 +14,7 @@ from metadata_manager.models.common import ComponentType
 class TestMethod(unittest.TestCase):
     def setUp(self):
         self.method_dict = {
-            "method_type": "infilling",
+            "method_type": "correction",
             "name": "method name",
             "description": "description",
             "id": 1,
@@ -26,7 +26,7 @@ class TestMethod(unittest.TestCase):
         method = Method.model_validate(self.method_dict)
 
         self.assertEqual(method.method_id, 1)
-        self.assertEqual(method.method_type, ComponentType.INFILLING)
+        self.assertEqual(method.method_type, ComponentType.CORRECTION)
         self.assertEqual(method.name, "method name")
         self.assertEqual(method.description, "description")
         self.assertEqual(method.function_name, "a_function_name")
@@ -52,10 +52,10 @@ class TestMethod(unittest.TestCase):
     def test_call_method(self):
         """Test calling the method invokes the correct function with correct arguments."""
         method_dict = self.method_dict.copy()
-        method_dict["function_name"] = "linear_interpolation"
+        method_dict["function_name"] = "multiply"
         
         mock_function = MagicMock(return_value="test_result")
-        with patch('dritimeseriesprocessor.infilling.methods.linear_interpolation', mock_function):
+        with patch('dritimeseriesprocessor.correcting.operations.multiply', mock_function):
             method = Method.model_validate(method_dict)
             result = method(arg1="value1", arg2="value2")
             mock_function.assert_called_once_with(arg1="value1", arg2="value2")

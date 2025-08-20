@@ -3,7 +3,7 @@
 import re
 from typing import Dict, List, Union
 
-from dritimeseriesprocessor.typing import TimeseriesContainer
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
