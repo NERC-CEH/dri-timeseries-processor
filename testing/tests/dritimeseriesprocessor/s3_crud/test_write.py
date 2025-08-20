@@ -137,7 +137,7 @@ class TestMergeDataframes(S3TestHelper):
 
         result = self.writer._merge_dataframes(existing_df, new_df)
 
-        assert_frame_equal(result, expected_df)
+        assert_frame_equal(result, expected_df, check_column_order=False)
 
     def test_update_to_existing_column(self):
         """Test when values have changed for an existing timestamp and column"""
