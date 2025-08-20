@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import Dict
 
 from dritimeseriesprocessor.flagging.flagger import infill_flag_column_name, update_infill_core_flags
-from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.typing import TimeseriesContainer
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -19,8 +19,8 @@ def get_infill_methods() -> Dict:
 
 
 def run_infilling(
-    ts_ids: Dict[str, TimeseriesContainerWithDerivations],
-) -> Dict[str, TimeseriesContainerWithDerivations]:
+    ts_ids: Dict[str, TimeseriesContainer],
+) -> Dict[str, TimeseriesContainer]:
     """Run data through Infilling.
 
     Reads and applies infill methods for each variable from config.

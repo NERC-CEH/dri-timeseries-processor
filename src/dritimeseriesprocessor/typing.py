@@ -34,29 +34,3 @@ class TimeseriesContainer(TypedDict):
     load: NotRequired[bool]
     data: NotRequired[TimeSeries]
 
-
-# --------------------------------- OBSOLETE ------------------------------
-class DerivationMetadata(TypedDict):
-    """Derivation metadata.
-
-    Attributes:
-        method_type: The type of derivation method.
-        method: The derivation method.
-        inputs: A list of input timeseries IDs.
-        load: Whether to load the data for this timeseries.
-    """
-
-    method_type: str | None
-    method: str | None
-    inputs: List[str]
-    load: NotRequired[bool]
-
-
-
-class TimeseriesContainerWithDerivations(TimeseriesContainer, DerivationMetadata):
-    """Timeseries Container with derivation info.
-
-    Inherits all attributes from TimeseriesContainer and DerivationMetadata.
-    """
-
-    pass

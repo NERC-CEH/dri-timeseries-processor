@@ -5,9 +5,8 @@ from metadata_manager.transformers import (
     extract_cosmos_site_ids,
     extract_site_ids,
     extract_timeseries_id_metadata,
-    extract_timeseries_definition_metadata
+    # extract_timeseries_definition_metadata
 )
-from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.sites import SitesResponse
 from unittest.mock import patch
 from pathlib import Path
@@ -156,105 +155,105 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
         assert result == expected
 
 
-class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
-    """Test the extract_timeseries_definition_metadata function."""
+# class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
+#     """Test the extract_timeseries_definition_metadata function."""
 
-    def setUp(self):
-        self.sample_dataset_response = (
-            load_json(Path(Path(__file__).parents[0], "sample_test_data", "timeseries_definition_response.json"))
-        )
+#     def setUp(self):
+#         self.sample_dataset_response = (
+#             load_json(Path(Path(__file__).parents[0], "sample_test_data", "timeseries_definition_response.json"))
+#         )
     
-    def test_extract_ts_def_metadata_with_methodology(self):
-        """Test the extract_timeseries_definition_metadata function when the response
-        contains a methodology section.
-        """
-        # Load the data into the pyantic model
-        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+#     def test_extract_ts_def_metadata_with_methodology(self):
+#         """Test the extract_timeseries_definition_metadata function when the response
+#         contains a methodology section.
+#         """
+#         # Load the data into the pyantic model
+#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        expected = {
-            'method_type': 'calculate',
-            'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'],
-            'method': 'calculate-calc_daily_pe'}
+#         expected = {
+#             'method_type': 'calculate',
+#             'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'],
+#             'method': 'calculate-calc_daily_pe'}
         
-        result = extract_timeseries_definition_metadata(model_output)
+#         result = extract_timeseries_definition_metadata(model_output)
 
-        assert result == expected
+#         assert result == expected
 
-    def test_extract_ts_def_metadata_with_no_methodology(self):
-        """Test the extract_timeseries_definition_metadata function when the response
-        doesnt contain a methodology section.
-        """
-        # Remove methodology section
-        del self.sample_dataset_response['items'][0]['methodology']
+#     def test_extract_ts_def_metadata_with_no_methodology(self):
+#         """Test the extract_timeseries_definition_metadata function when the response
+#         doesnt contain a methodology section.
+#         """
+#         # Remove methodology section
+#         del self.sample_dataset_response['items'][0]['methodology']
 
-        # Load the data into the pyantic model
-        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+#         # Load the data into the pyantic model
+#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        expected = {'inputs': []}
+#         expected = {'inputs': []}
         
-        result = extract_timeseries_definition_metadata(model_output)
+#         result = extract_timeseries_definition_metadata(model_output)
 
-        assert result == expected
+#         assert result == expected
 
-    def test_process_meth_with_no_inputs(self):
-        """Test the extract_timeseries_definition_metadata function raises an error when the
-        response contains a methodology section with a process method type but no inputs.
-        """
-        # Set the methodology section to a process method type
-        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
-        # Remove inputs from the methodology section
-        self.sample_dataset_response['items'][0]['methodology']['uses'] = []
+#     def test_process_meth_with_no_inputs(self):
+#         """Test the extract_timeseries_definition_metadata function raises an error when the
+#         response contains a methodology section with a process method type but no inputs.
+#         """
+#         # Set the methodology section to a process method type
+#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
+#         # Remove inputs from the methodology section
+#         self.sample_dataset_response['items'][0]['methodology']['uses'] = []
 
-        # Load the data into the pyantic model
-        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+#         # Load the data into the pyantic model
+#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        with self.assertRaises(ValueError) as context:
-            extract_timeseries_definition_metadata(model_output)
+#         with self.assertRaises(ValueError) as context:
+#             extract_timeseries_definition_metadata(model_output)
 
-    def test_process_meth_with_more_than_one_inputs(self):
-        """Test the extract_timeseries_definition_metadata function raises an error when the
-        response contains a methodology section with a process method type but no inputs.
-        """
-        # Set the methodology section to a process method type
-        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
-        # Remove inputs from the methodology section
-        self.sample_dataset_response['items'][0]['methodology']['uses'] = [
-            {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed'},
-            {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'}
-        ]
+#     def test_process_meth_with_more_than_one_inputs(self):
+#         """Test the extract_timeseries_definition_metadata function raises an error when the
+#         response contains a methodology section with a process method type but no inputs.
+#         """
+#         # Set the methodology section to a process method type
+#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
+#         # Remove inputs from the methodology section
+#         self.sample_dataset_response['items'][0]['methodology']['uses'] = [
+#             {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed'},
+#             {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'}
+#         ]
 
-        # Load the data into the pyantic model
-        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+#         # Load the data into the pyantic model
+#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        with self.assertRaises(ValueError) as context:
-            extract_timeseries_definition_metadata(model_output)
+#         with self.assertRaises(ValueError) as context:
+#             extract_timeseries_definition_metadata(model_output)
 
-    def test_no_method_with_agg_method_type(self):
-        """Test the extract_timeseries_definition_metadata function raises an error when the
-        response contains method type 'aggregate' but no method.
-        """
-        # Set the methodology section to a aggregate method type
-        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate'
-        # Remove the method
-        del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
+#     def test_no_method_with_agg_method_type(self):
+#         """Test the extract_timeseries_definition_metadata function raises an error when the
+#         response contains method type 'aggregate' but no method.
+#         """
+#         # Set the methodology section to a aggregate method type
+#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate'
+#         # Remove the method
+#         del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
 
-        # Load the data into the pyantic model
-        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+#         # Load the data into the pyantic model
+#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        with self.assertRaises(ValueError) as context:
-            extract_timeseries_definition_metadata(model_output)
+#         with self.assertRaises(ValueError) as context:
+#             extract_timeseries_definition_metadata(model_output)
 
-    def test_no_method_with_calc_method_type(self):
-        """Test the extract_timeseries_definition_metadata function raises an error when the
-        response contains method type 'calculate' but no method.
-        """
-        # Set the methodology section to a aggregate method type
-        self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate'
-        # Remove the method
-        del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
+#     def test_no_method_with_calc_method_type(self):
+#         """Test the extract_timeseries_definition_metadata function raises an error when the
+#         response contains method type 'calculate' but no method.
+#         """
+#         # Set the methodology section to a aggregate method type
+#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate'
+#         # Remove the method
+#         del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
 
-        # Load the data into the pyantic model
-        model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+#         # Load the data into the pyantic model
+#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
 
-        with self.assertRaises(ValueError) as context:
-            extract_timeseries_definition_metadata(model_output)
+#         with self.assertRaises(ValueError) as context:
+#             extract_timeseries_definition_metadata(model_output)

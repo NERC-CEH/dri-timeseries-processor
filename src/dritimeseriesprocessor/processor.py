@@ -10,13 +10,13 @@ from dritimeseriesprocessor.infilling.infiller import run_infilling
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
-from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.typing import TimeseriesContainer
 from dritimeseriesprocessor.utils import map_def_to_id
 
 logger = logging.getLogger(__name__)
 
 
-def load_data(ts_container: TimeseriesContainerWithDerivations, start_date: datetime, end_date: datetime) -> TimeSeries:
+def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date: datetime) -> TimeSeries:
     """
     Load in data for the given timeseries from S3 using the data_manager.
 
@@ -77,8 +77,8 @@ def load_data(ts_container: TimeseriesContainerWithDerivations, start_date: date
 
 
 def shift_processed_data(
-    ts_ids: Dict[str, TimeseriesContainerWithDerivations],
-) -> Dict[str, TimeseriesContainerWithDerivations]:
+    ts_ids: Dict[str, TimeseriesContainer],
+) -> Dict[str, TimeseriesContainer]:
     """Move the processed data within raw timeseries ids to the processed timeseries ids
 
     Args:
@@ -93,8 +93,8 @@ def shift_processed_data(
             if len(ts_metadata["inputs"]) != 1:
                 raise ValueError(f"Processed timeseries ID {ts_id} should have exactly one input.")
 
-            raw_ts_id = map_def_to_id(ts_metadata["inputs"][0], ts_metadata['sourceSite'], ts_ids)
-            
+            raw_ts_id = map_def_to_id(ts_metadata["inputs"][0], ts_metadata["sourceSite"], ts_ids)
+
             if "data" in ts_ids[raw_ts_id]:
                 # Move the data object from raw_ts_id to (processed) ts_id
                 logger.info(f"Moving data from {raw_ts_id} to {ts_id}")
@@ -104,8 +104,8 @@ def shift_processed_data(
 
 
 def process_timeseries(
-    ts_ids: Dict[str, TimeseriesContainerWithDerivations],
-) -> Dict[str, TimeseriesContainerWithDerivations]:
+    ts_ids: Dict[str, TimeseriesContainer],
+) -> Dict[str, TimeseriesContainer]:
     """
     Process the timeseries data.
 

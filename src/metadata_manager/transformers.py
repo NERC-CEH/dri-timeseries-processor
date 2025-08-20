@@ -6,7 +6,6 @@ from typing import Dict, List, Union
 from dritimeseriesprocessor.typing import TimeseriesContainer
 from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
-from metadata_manager.models.schemas.derivations import DerivationMetadata
 from metadata_manager.models.schemas.sites import SitesResponse
 
 
@@ -129,43 +128,3 @@ def extract_timeseries_methodology_metadata(
 
     return metadata
 
-
-# -------------------------------------------- OBSOLETE ----------------------------------------
-
-
-def extract_timeseries_definition_metadata(
-    derivation_metadata: DerivationMetadata,
-) -> Dict[str, Dict[str, Union[str, List[str | None]]]]:
-    """Extract the metadata required for deriving timeseries definitions.
-
-    Args:
-        derivation_metadata: The validated DerivationMetadata model from the response
-
-    Returns:
-        The required derivation metadata for processing.
-    """
-    metadata = {}
-
-    if derivation_metadata.methodology:
-        metadata["method_type"] = re.match(
-            URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.configuration_type
-        ).group(1)
-        if derivation_metadata.methodology.method:
-            metadata["method"] = re.match(URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.method).group(1)
-        else:
-            metadata["method"] = None
-        metadata["inputs"] = derivation_metadata.methodology.uses
-
-        if metadata["method_type"] == "process" and len(metadata["inputs"]) != 1:
-            raise ValueError(
-                f"Processed timeseries definition {derivation_metadata.timeseries_def} should have exactly one input."
-            )
-
-        if metadata["method_type"] in ("aggregate", "calculate") and not metadata["method"]:
-            raise ValueError(f"Method type '{metadata['method_type']}' requires a method to be specified.")
-
-    else:
-        # If no methodology section then there will be no further dependencies
-        metadata["inputs"] = []
-
-    return metadata

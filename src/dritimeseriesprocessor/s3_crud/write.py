@@ -13,7 +13,7 @@ from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.typing import TimeseriesContainer
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class S3Writer(WriterInterface):
         return buffer
 
     def structure(
-        self, processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str
+        self, processed_timeseries: TimeseriesContainer, bucket_name: str, network: str
     ) -> List[List[List[Tuple[datetime, pl.DataFrame] | str]]]:
         """
         Structure the processed data ready for writing.
@@ -154,7 +154,7 @@ class S3Writer(WriterInterface):
 
     @staticmethod
     def _group_data_by_resolution_and_site(
-        processed_ts_ids: TimeseriesContainerWithDerivations,
+        processed_ts_ids: TimeseriesContainer,
     ) -> List[Tuple[str, str, pl.DataFrame]]:
         """Group the processed ts_ids by resolution and site and combine the timeseries objects.
 

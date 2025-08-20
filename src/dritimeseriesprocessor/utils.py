@@ -10,7 +10,7 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from dritimeseriesprocessor.typing import DerivationMetadata, TimeseriesContainer, TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.typing import TimeseriesContainer
 
 logger = logging.getLogger(__name__)
 
@@ -166,47 +166,6 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContain
             return check_ts_id
     raise ValueError(f"Could not find TS ID for TS definition {ts_def} and sourceSite {site_id}")
 
-
-def merge_ts_def_metadata(
-    ts_ids: Dict[str, TimeseriesContainer],
-    timeseries_defs_derivation_map: Dict[str, DerivationMetadata],
-) -> Dict[str, TimeseriesContainerWithDerivations]:
-    """Merge timeseries definitions metadata into the timeseries ids metadata and add whether to load the data.
-
-    Args:
-        ts_ids: Metadata for timeseries ids to process
-        timeseries_defs_derivation_map: A map of timeseries definitions and their metadata
-
-    Returns:
-        A dictionary with the merged metadata.
-    """
-    for ts_id, ts_metadata in ts_ids.items():
-        ts_def = ts_metadata["ts_def"]
-
-        if ts_def in timeseries_defs_derivation_map:
-            # Add the method and method type
-            method_type = timeseries_defs_derivation_map[ts_def].get("method_type")
-            method = timeseries_defs_derivation_map[ts_def].get("method")
-
-            # timeseries_defs_derivation_map contains the dependency TS definitions (inputs). Here we want the
-            # specific dependancy TS IDs (instead of defs). Map the defs to their corresponding TS IDs.
-            site_id = ts_metadata["sourceSite"]
-            inputs = [
-                map_def_to_id(input_def, site_id, ts_ids)
-                for input_def in timeseries_defs_derivation_map[ts_def]["inputs"]
-            ]
-
-        else:
-            raise ValueError(f"Timeseries definition {ts_def} not found in derivation map for {ts_id}")
-
-        # Raw timeseries ids with no derivation method is data that must be loaded.
-        load = True if ts_metadata["processing_level"] == "raw" and method_type is None else False
-
-        ts_def_dict = {"method_type": method_type, "method": method, "inputs": inputs, "load": load}
-
-        ts_metadata.update(ts_def_dict)
-
-    return ts_ids
 
 
 def call_method_async(method: Callable, arg_list: List[Any]) -> List[Any]:
