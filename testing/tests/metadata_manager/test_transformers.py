@@ -2,15 +2,17 @@ import json
 import unittest
 from pathlib import Path
 from typing import Any, Dict
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
+import pytest
+
+from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.transformers import (
     extract_cosmos_site_ids,
     extract_site_ids,
     extract_timeseries_id_metadata,
-    # extract_timeseries_definition_metadata
+    extract_timeseries_methodology_metadata,
 )
 
 
@@ -40,14 +42,14 @@ class TestExtractCOSMOSSiteIds(unittest.TestCase):
             ]
         }
 
-    def test_extract_site_ids_cosmos_uri(self):
+    def test_extract_site_ids_cosmos_uri(self) -> None:
         """Test extracting site IDs from cosmos URI"""
 
         validated_data = SitesResponse.model_validate(self.sample_raw_data)
         result = extract_cosmos_site_ids(validated_data)
         self.assertEqual(result, ["SITE123", "SITE456"])
 
-    def test_extract_site_ids_cosmos_uri_fail(self):
+    def test_extract_site_ids_cosmos_uri_fail(self) -> None:
         """Test extracting site IDs from cosmos URI where one fails."""
 
         self.sample_raw_data["items"][0]["contains"][1]["@id"] = "http://fdri.ceh.ac.uk/id/site/fdri-site456"
@@ -59,7 +61,7 @@ class TestExtractCOSMOSSiteIds(unittest.TestCase):
 class TestExtractSiteIds(unittest.TestCase):
     """Test the extract_site_ids function"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test cases"""
 
         self.sample_site1 = {
@@ -77,13 +79,13 @@ class TestExtractSiteIds(unittest.TestCase):
         self.sample_raw_data = {"items": [{"contains": [self.sample_site1, self.sample_site2]}]}
 
     @patch("metadata_manager.transformers.extract_cosmos_site_ids")
-    def test_extract_site_ids_valid_network(self, mock_extract_cosmos_site_ids):
+    def test_extract_site_ids_valid_network(self, mock_extract_cosmos_site_ids: MagicMock) -> None:
         """Test extracting site IDs from cosmos network"""
         mock_extract_cosmos_site_ids.return_value = ["SITE123", "SITE456"]
         result = extract_site_ids(self.sample_raw_data, "cosmos")
         self.assertEqual(result, ["SITE123", "SITE456"])
 
-    def test_extract_site_ids_unsupported_network(self):
+    def test_extract_site_ids_unsupported_network(self) -> None:
         """Test extracting site IDs from an unsupported network"""
 
         with self.assertRaises(ValueError) as context:
@@ -94,12 +96,12 @@ class TestExtractSiteIds(unittest.TestCase):
 class TestExtractTimeseriesIDMetadata(unittest.TestCase):
     """Test the extract_timeseries_id_metadata function."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.sample_dataset_response = load_json(
             Path(Path(__file__).parents[0], "sample_test_data", "dataset_response.json")
         )
 
-    def test_extract_two_items(self):
+    def test_extract_two_items(self) -> None:
         """Test two items are correctly extracted."""
 
         item_one = {
@@ -136,105 +138,171 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
         assert result == expected
 
 
-# class TestExtractTimeseriesDefinitionMetadata(unittest.TestCase):
-#     """Test the extract_timeseries_definition_metadata function."""
+class TestExtractTimeseriesMethodologyMetadata(unittest.TestCase):
+    def test_extract_timeseries_methodology_metadata(self) -> None:
+        input_data = TimeSeriesType(
+            **{
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed",
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"},
+                "measure": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pe-mm-total_prec-pt30m-pt30m",
+                    "variable": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pe",
+                        "prefLabel": ["Potential Evaporation"],
+                    },
+                    "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/mm", "prefLabel": ["mm"]},
+                    "aggregation": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total_prec-pt30m-pt30m",
+                        "valueStatistic": {"@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"},
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                    },
+                },
+                "methodology": {
+                    "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-pe_30min_processed-derivation",
+                    "uses": [
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed"},
+                    ],
+                    "configuration": {
+                        "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/pe_30min_processed",
+                        "type": {"@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"},
+                        "hasCurrentConfiguration": [
+                            {
+                                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pe_30min_processed-current",
+                                "method": {"@id": "http://fdri.ceh.ac.uk/ref/common/method/calculate-calculate_pe"},
+                            }
+                        ],
+                    },
+                },
+            }
+        )
 
-#     def setUp(self):
-#         self.sample_dataset_response = (
-#             load_json(Path(Path(__file__).parents[0], "sample_test_data", "timeseries_definition_response.json"))
-#         )
+        expected = {
+            "method_type": "calculate",
+            "method": "calculate-calculate_pe",
+            "inputs": [
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed",
+                "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed",
+            ],
+        }
 
-#     def test_extract_ts_def_metadata_with_methodology(self):
-#         """Test the extract_timeseries_definition_metadata function when the response
-#         contains a methodology section.
-#         """
-#         # Load the data into the pyantic model
-#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+        actual = extract_timeseries_methodology_metadata(input_data)
 
-#         expected = {
-#             'method_type': 'calculate',
-#             'inputs': ['http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed', 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'],
-#             'method': 'calculate-calc_daily_pe'}
+        assert actual == expected
 
-#         result = extract_timeseries_definition_metadata(model_output)
+    def test_no_methodology(self) -> None:
+        input_data = TimeSeriesType(
+            **{
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed",
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"},
+                "measure": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pe-mm-total_prec-pt30m-pt30m",
+                    "variable": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pe",
+                        "prefLabel": ["Potential Evaporation"],
+                    },
+                    "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/mm", "prefLabel": ["mm"]},
+                    "aggregation": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total_prec-pt30m-pt30m",
+                        "valueStatistic": {"@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"},
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                    },
+                },
+            }
+        )
 
-#         assert result == expected
+        expected = {"inputs": []}
 
-#     def test_extract_ts_def_metadata_with_no_methodology(self):
-#         """Test the extract_timeseries_definition_metadata function when the response
-#         doesnt contain a methodology section.
-#         """
-#         # Remove methodology section
-#         del self.sample_dataset_response['items'][0]['methodology']
+        actual = extract_timeseries_methodology_metadata(input_data)
 
-#         # Load the data into the pyantic model
-#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+        assert actual == expected
 
-#         expected = {'inputs': []}
+    def test_error_when_no_inputs_for_processed_data(self) -> None:
+        input_data = TimeSeriesType(
+            **{
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_30min_processed",
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"},
+                "measure": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/measure/precipitation-mm-total_prec-pt30m-pt30m",
+                    "variable": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation",
+                        "prefLabel": ["Precipitation"],
+                    },
+                    "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/mm", "prefLabel": ["mm"]},
+                    "aggregation": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total_prec-pt30m-pt30m",
+                        "valueStatistic": {"@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"},
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                    },
+                },
+                "methodology": {
+                    "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-precip_30min_processed-derivation",
+                    "uses": [],
+                    "configuration": {
+                        "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/precip_30min_processed",
+                        "type": {"@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"},
+                        "hasCurrentConfiguration": [
+                            {"@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_processed-current"}
+                        ],
+                    },
+                },
+            }
+        )
 
-#         result = extract_timeseries_definition_metadata(model_output)
+        expected_error = (
+            "Processed timeseries definition http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_30min_processed "
+            "should have exactly one input."
+        )
 
-#         assert result == expected
+        with pytest.raises(ValueError, match=expected_error):
+            extract_timeseries_methodology_metadata(input_data)
 
-#     def test_process_meth_with_no_inputs(self):
-#         """Test the extract_timeseries_definition_metadata function raises an error when the
-#         response contains a methodology section with a process method type but no inputs.
-#         """
-#         # Set the methodology section to a process method type
-#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
-#         # Remove inputs from the methodology section
-#         self.sample_dataset_response['items'][0]['methodology']['uses'] = []
+    def test_error_when_no_method_type_for_aggregate_or_calculate(self) -> None:
+        input_data = TimeSeriesType(
+            **{
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"},
+                "measure": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rn-wm-2-mean_prec-pt30m-pt30m",
+                    "variable": {"@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn", "prefLabel": ["Net radiation"]},
+                    "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2", "prefLabel": ["Wm-2"]},
+                    "aggregation": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+                        "valueStatistic": {"@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"},
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                    },
+                },
+                "methodology": {
+                    "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-rn_30min_processed-derivation",
+                    "uses": [
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_30min_processed"},
+                        {"@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_30min_processed"},
+                    ],
+                    "configuration": {
+                        "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_30min_processed",
+                        "type": {"@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"},
+                    },
+                },
+            }
+        )
 
-#         # Load the data into the pyantic model
-#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
+        expected_error = "Method type 'calculate' requires a method to be specified."
 
-#         with self.assertRaises(ValueError) as context:
-#             extract_timeseries_definition_metadata(model_output)
-
-#     def test_process_meth_with_more_than_one_inputs(self):
-#         """Test the extract_timeseries_definition_metadata function raises an error when the
-#         response contains a methodology section with a process method type but no inputs.
-#         """
-#         # Set the methodology section to a process method type
-#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/process'
-#         # Remove inputs from the methodology section
-#         self.sample_dataset_response['items'][0]['methodology']['uses'] = [
-#             {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/pe_30min_processed'},
-#             {'@id': 'http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed'}
-#         ]
-
-#         # Load the data into the pyantic model
-#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
-
-#         with self.assertRaises(ValueError) as context:
-#             extract_timeseries_definition_metadata(model_output)
-
-#     def test_no_method_with_agg_method_type(self):
-#         """Test the extract_timeseries_definition_metadata function raises an error when the
-#         response contains method type 'aggregate' but no method.
-#         """
-#         # Set the methodology section to a aggregate method type
-#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate'
-#         # Remove the method
-#         del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
-
-#         # Load the data into the pyantic model
-#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
-
-#         with self.assertRaises(ValueError) as context:
-#             extract_timeseries_definition_metadata(model_output)
-
-#     def test_no_method_with_calc_method_type(self):
-#         """Test the extract_timeseries_definition_metadata function raises an error when the
-#         response contains method type 'calculate' but no method.
-#         """
-#         # Set the methodology section to a aggregate method type
-#         self.sample_dataset_response["items"][0]["methodology"]["configuration"]["type"]["@id"] = 'http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate'
-#         # Remove the method
-#         del self.sample_dataset_response['items'][0]['methodology']['configuration']["hasCurrentConfiguration"][0]["method"]["@id"]
-
-#         # Load the data into the pyantic model
-#         model_output = TimeseriesDerivationResponse.model_validate(self.sample_dataset_response)
-
-#         with self.assertRaises(ValueError) as context:
-#             extract_timeseries_definition_metadata(model_output)
+        with pytest.raises(ValueError, match=expected_error):
+            extract_timeseries_methodology_metadata(input_data)

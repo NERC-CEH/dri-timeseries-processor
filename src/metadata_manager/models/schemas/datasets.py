@@ -134,7 +134,7 @@ class Meta(IDModel):
         license_name: The license name.
         comment: Additional comments about the data.
         version: The version of the data.
-        has_format: List of available formats.
+        has_format: List of available formats.D
         limit: The limit on number of items returned.
     """
 
