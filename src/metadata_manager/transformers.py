@@ -127,4 +127,3 @@ def extract_timeseries_methodology_metadata(
         metadata["inputs"] = []
 
     return metadata
-

@@ -33,4 +33,3 @@ class TimeseriesContainer(TypedDict):
     inputs: NotRequired[List[str]]
     load: NotRequired[bool]
     data: NotRequired[TimeSeries]
-

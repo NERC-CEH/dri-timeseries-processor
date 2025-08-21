@@ -5,9 +5,8 @@ from typing import Dict
 import polars as pl
 
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.typing import TimeseriesContainer
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -39,9 +38,7 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 
 @metrics.track_qc_time()
-def run_quality_control(
-    ts_ids: Dict[str, TimeseriesContainer], remove: bool = False
-) -> Dict[str, TimeseriesContainer]:
+def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = False) -> Dict[str, TimeseriesContainer]:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on

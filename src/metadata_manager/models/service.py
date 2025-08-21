@@ -1,6 +1,5 @@
 import asyncio
 import json
-from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -137,7 +136,6 @@ def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetad
         ts_dependency_list.extend(sub_dependencies)
 
     return ts_dependency_list
-
 
 
 def load_sites() -> SitesResponse:

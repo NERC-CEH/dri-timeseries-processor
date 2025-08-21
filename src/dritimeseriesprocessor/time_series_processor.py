@@ -9,12 +9,11 @@ from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer, TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.typing import TimeseriesContainer
 from dritimeseriesprocessor.utils import call_method_async
 from metadata_manager.models.common import (
     URI_ID_EXTRACT_REGEX,
@@ -197,7 +196,6 @@ class TimeSeriesProcessor:
         self._get_ts_id_metadata(
             self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )
-
 
     def _identify_dependent_ts_ids(self) -> List[str]:
         """Build a list of the dependencies for any existing ts_ids."""

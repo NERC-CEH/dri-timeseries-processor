@@ -10,7 +10,7 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from dritimeseriesprocessor.typing import TimeseriesContainer
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +165,6 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContain
         if check_metadata.get("ts_def") == ts_def and check_metadata.get("sourceSite") == site_id:
             return check_ts_id
     raise ValueError(f"Could not find TS ID for TS definition {ts_def} and sourceSite {site_id}")
-
 
 
 def call_method_async(method: Callable, arg_list: List[Any]) -> List[Any]:

@@ -7,10 +7,10 @@ from time_stream import TimeSeries
 
 from dritimeseriesprocessor.correcting.correcter import run_corrections
 from dritimeseriesprocessor.infilling.infiller import run_infilling
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
-from dritimeseriesprocessor.typing import TimeseriesContainer
 from dritimeseriesprocessor.utils import map_def_to_id
 
 logger = logging.getLogger(__name__)

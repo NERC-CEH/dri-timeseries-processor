@@ -10,7 +10,6 @@ from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
-
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
     def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
@@ -107,11 +106,11 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
 
     def test_write_timeseries(self, mock_api_manager: mock.MagicMock) -> None:
         """Test data is correctly written to the processed bucket.
-        
+
         There is no existing data for this test. The end to end test tests
         the write functionality when there is existing data.
         """
-    
+
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
         ts_processor = TimeSeriesProcessor(
             sites="alic1,bunny,chimn,morly",

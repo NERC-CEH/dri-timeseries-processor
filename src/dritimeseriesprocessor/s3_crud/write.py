@@ -13,9 +13,8 @@ from botocore.exceptions import ClientError
 from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
-from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.typing import TimeseriesContainer
 
 logger = logging.getLogger(__name__)
 
@@ -45,81 +44,6 @@ class S3Writer(WriterInterface):
             raise TypeError(f"`s3_client` must be a `S3Client` not `{type(s3_client)}`")
 
         self.s3_client = s3_client
-
-    @staticmethod
-    def _get_bytes(obj: DataFrame) -> bytes:
-        """Converts an object to bytes
-
-        Args:
-            obj: The object to convert.
-        Returns:
-            bytes representation of the object.
-        """
-
-        buffer = BytesIO()
-
-        if isinstance(obj, pl.dataframe.DataFrame):
-            obj.write_parquet(buffer)
-        else:
-            raise TypeError(f"Bytes conversion not supported for type: '{type(obj)}'")
-
-        buffer.seek(0)
-
-        return buffer
-
-    def structure(
-        self, processed_timeseries: TimeseriesContainer, bucket_name: str, network: str
-    ) -> List[List[List[Tuple[datetime, pl.DataFrame] | str]]]:
-        """
-        Structure the processed data ready for writing.
-
-        First group the data by resolution and site, then split into days.
-
-        Args:
-            processed_timeseries: the timeseries that have been processed
-            bucket_name: the name of bucket to write to
-            network: the processing network
-
-        Returns:
-            Data and metadata required for asynchronous writing
-        """
-        grouped_ts_ids = self._group_data_by_resolution_and_site(processed_timeseries)
-
-        data_to_write = []
-        for data_object in grouped_ts_ids:
-            resolution, site, data = data_object
-            data_to_write.append([[data for data in self._split_by_date(data)], site, resolution, bucket_name, network])
-
-        return data_to_write
-
-    @metrics.track_s3_write_time()
-    def write(
-        self, data: List[Tuple[datetime, pl.DataFrame]], site_id: str, resolution: str, bucket_name: str, network: str
-    ) -> None:
-        """Uploads objects to an S3 bucket.
-
-        This function attempts to upload objects to a specified S3 bucket
-        using the provided S3 client. Objects are converted to bytes.
-        If the upload fails, it logs an error message and re-raises the exception.
-
-        Args:
-            data: The data to write
-            site_id: The ID of the site
-            resolution: The resolution of the data
-            bucket_name: The name of the S3 bucket.
-            network: The name of the network
-
-        Raises:
-            RuntimeError, ClientError
-        """
-
-        for date, df in data:
-            s3_key = self._build_s3_key(network, site_id, resolution, date)
-
-            body = self._get_bytes(df)
-
-            # TODO Handle overwriting if object already exists FPM-515
-            self.s3_client.put_object(Bucket=bucket_name, Key=s3_key, Body=body)
 
     @staticmethod
     def _build_s3_key(network: str, site_id: str, resolution: str, date: datetime) -> str:
@@ -212,7 +136,7 @@ class S3Writer(WriterInterface):
         return combined_df
 
     def structure(
-        self, processed_timeseries: TimeseriesContainerWithDerivations, bucket_name: str, network: str
+        self, processed_timeseries: TimeseriesContainer, bucket_name: str, network: str
     ) -> List[List[List[Tuple[datetime, pl.DataFrame] | str]]]:
         """
         Structure the processed data ready for writing.

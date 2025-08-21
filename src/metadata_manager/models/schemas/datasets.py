@@ -74,7 +74,7 @@ class Methodology(IDModel):
         result = {}
         uses = []
 
-        result['@id'] = data['@id']
+        result["@id"] = data["@id"]
 
         dependencies = data["uses"]
         for items in dependencies:
@@ -87,6 +87,7 @@ class Methodology(IDModel):
         )
 
         return result
+
 
 class TimeSeriesType(IDModel):
     """Type definition for time series data.
