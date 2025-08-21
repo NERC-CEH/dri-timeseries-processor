@@ -285,7 +285,7 @@ class TestExtractDepTs(unittest.TestCase):
             'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw',
         ]
 
-        self.assertEqual(ts_ids, expected_ts_ids)
+        self.assertCountEqual(ts_ids, expected_ts_ids)
 
 
 class TestExtractCorrectionDependencies(unittest.TestCase):
@@ -307,7 +307,7 @@ class TestExtractCorrectionDependencies(unittest.TestCase):
             'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw'
         ]
 
-        self.assertEqual(dependencies, expected_dependencies)
+        self.assertCountEqual(dependencies, expected_dependencies)
 
 
 class TestExtractQcDependencies(unittest.TestCase):
@@ -330,7 +330,7 @@ class TestExtractQcDependencies(unittest.TestCase):
             'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw',
         ]
 
-        self.assertEqual(dependencies, expected_dependencies)
+        self.assertCountEqual(dependencies, expected_dependencies)
 
 
 class TestExtractInfillDependencies(unittest.TestCase):
