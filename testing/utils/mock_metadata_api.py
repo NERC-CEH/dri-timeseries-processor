@@ -35,6 +35,13 @@ class MockMetadataAPI:
             "_limit": self.set_limit,
         }
 
+        self.limit = None
+        self.offset = None
+        self.pagination_mapping = {
+            "_offset": self.set_offset,
+            "_limit": self.set_limit,
+        }
+
     def __call__(self, url: str, params: Dict[str, str] | List[Tuple[str, str]] = None) -> Dict[str, Any]:
         """
         Main call function, designed to replace _make_api_call in MetadataAPIManager via a mock side effect.
