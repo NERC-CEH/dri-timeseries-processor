@@ -1,59 +1,20 @@
 import datetime
-from typing import Any, Dict
 from unittest import mock
 
+from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
 from metadata_manager.api_manager import MetadataAPIManager
 from testing.utils.mock_metadata_api import MockMetadataAPI
-from testing.utils.testing_helper import TestHelper, load_json
+from testing.utils.s3_test_helper import S3TestHelper
+from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestTimeSeriesProcessor(TestHelper):
-    def create_ts_dependency_api_data(self) -> Dict[str, Any]:
-        base_url = "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/cosmos-alic1-"
-        ts_dependencies_dir = self.input_dir.joinpath("mock_metadata_api", "ts_dependencies_alic1")
-
-        dependency_suffixes = [
-            "pe_30min_processed",
-            "rn_30min_processed",
-            "swin_30min_processed",
-            "lwout_30min_processed",
-            "swout_30min_processed",
-            "lwin_30min_processed",
-            "pa_30min_processed",
-            "g1_30min_processed",
-            "g2_30min_processed",
-            "rh_30min_processed",
-            "ws_30min_processed",
-            "ta_30min_processed",
-            "tnr01c_30min_processed",
-            "tnr01c_30min_raw",
-            "battv_30min_raw",
-            "scans_30min_raw",
-            "swin_30min_raw",
-            "lwout_30min_raw",
-            "swout_30min_raw",
-            "lwin_30min_raw",
-            "pa_30min_raw",
-            "g2_30min_raw",
-            "rh_30min_raw",
-            "ws_30min_raw",
-            "ta_30min_raw",
-            "g1_30min_raw",
-        ]
-
-        api_data = {}
-        for dependency_suffix in dependency_suffixes:
-            api_data[f"{base_url}{dependency_suffix}/_dependencies"] = load_json(
-                ts_dependencies_dir.joinpath(f"{dependency_suffix}.json")
-            )
-
-        return api_data
-
+class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
     def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
         """Test query parameters are constructed correctly."""
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
 
         expected_site_query_parameter = sorted(
             [
@@ -82,7 +43,7 @@ class TestTimeSeriesProcessor(TestHelper):
         assert ts_processor.end_date == expected_end_date
 
     def test_get_user_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
             self.output_dir.joinpath("time_series_processor", "user_ts_ids_alic1_pe.json")
@@ -96,7 +57,7 @@ class TestTimeSeriesProcessor(TestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_get_processing_dependent_ts_ids(self, mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
             self.output_dir.joinpath("time_series_processor", "processing_ts_ids_alic1_swout.json")
@@ -114,7 +75,7 @@ class TestTimeSeriesProcessor(TestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_get_dependent_timeseries_metadata(self, mock_api_manager: mock.MagicMock) -> None:
-        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
@@ -133,8 +94,7 @@ class TestTimeSeriesProcessor(TestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_add_derivation_metadata(self, mock_api_manager: mock.MagicMock) -> None:
-        # mock_api_manager.side_effect = MockMetadataAPI(api_data=self.metadata_api_data)
-        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         initial_ts_ids = self.load_ts_ids_from_json_file(
@@ -158,7 +118,7 @@ class TestTimeSeriesProcessor(TestHelper):
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
     def test_collate_timeseries_id_metadata_to_process(self, mock_api_manager: mock.MagicMock) -> None:
-        api_data = self.metadata_api_data | self.create_ts_dependency_api_data()
+        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
         expected_ts_ids = self.load_ts_ids_from_json_file(
@@ -171,3 +131,36 @@ class TestTimeSeriesProcessor(TestHelper):
         ts_processor._collate_timeseries_id_metadata_to_process()
 
         self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+
+    def test_write_timeseries(self, mock_api_manager: mock.MagicMock) -> None:
+        """Test data is correctly written to the processed bucket.
+        
+        There is no existing data for this test. The end to end test tests
+        the write functionality when there is existing data.
+        """
+    
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+        ts_processor = TimeSeriesProcessor(
+            sites="alic1,bunny,chimn,morly",
+            columns="RN,PA,TA",
+            periodicity="PT30M,PT1M",
+            end_date="2024-03-10",
+            period="P2D",
+            network="cosmos",
+        )
+        s3_bucket = app_config.processed_bucket
+        s3_client = ts_processor.s3_client
+
+        # We dont really care about any loading or processing so just using our own generated ts_ids object
+        # The processed ts ids contain two different resolutions (PT30M and PT1M) each with two different
+        # sites. Within each permutation of resolution and site are multiple columns.
+        # This structure ensures all functionality tested.
+        ts_ids = self.load_ts_ids_from_json_file(self.input_dir.joinpath("write", "processed_ts_ids.json"))
+        writer = S3Writer(s3_client)
+        ts_processor._write_timeseries(ts_ids, s3_bucket, "cosmos", writer)
+
+        # To check the data:
+        # 1) Check the number of items in the bucket matches the number of
+        # expected items
+        # 2) loop through the expected outputs and check they match the processor output
+        self._check_expected_parquet_files_exist_in_bucket(self.output_dir.joinpath("write", "full_process"), s3_bucket)

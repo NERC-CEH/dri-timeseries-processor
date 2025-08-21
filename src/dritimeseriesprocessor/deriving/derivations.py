@@ -2,9 +2,9 @@ import math
 from typing import Optional, Type, Union
 
 import polars as pl
-from time_stream import Period, TimeSeries, aggregation  # noqa: F401
+from time_stream import Period, TimeSeries
 
-from dritimeseriesprocessor.deriving.calculation import Calculation
+from dritimeseriesprocessor.deriving.calculation import AggregationConfig, Calculation
 
 
 class PotentialEvapotranspiration30Min(Calculation):
@@ -55,6 +55,7 @@ class PotentialEvapotranspiration30Min(Calculation):
         self._ea = ActualVapourPressureFao56Eq54(self._rh, self._ta)
         self._gamma = PsychrometricConstant(self._pa, self._ta)
         self._delta = VapourPressureCurveSlope(self._ta)
+        self._ws = WindSpeedHeightCorrection(self._ws, measured_height=2.6)
 
     @property
     def default_column_name(self) -> str:
@@ -79,11 +80,18 @@ class PotentialEvapotranspiration30Min(Calculation):
         reference_crop_type_denominator = 0.34
 
         vapour_pressure_deficit = self._es.expr() - self._ea.expr()
-        radiation_term = 0.408 * self._delta.expr() * (self._rn - self._g)
+        radiation_term = (
+            0.408 * self._delta.expr() * ((self._rn * 0.0018) - (self._g * 0.0018))
+        )  # Convert rn and g from W to MJ/30min
         aerodynamic_term = (
-            self._gamma.expr() * (reference_crop_type_numerator / (self._ta + 273)) * self._ws * vapour_pressure_deficit
+            self._gamma.expr()
+            * (reference_crop_type_numerator / (self._ta + 273))
+            * self._ws.expr()
+            * vapour_pressure_deficit
         )
-        resistance_term = self._delta.expr() + (self._gamma.expr() * (1 + (reference_crop_type_denominator * self._ws)))
+        resistance_term = self._delta.expr() + (
+            self._gamma.expr() * (1 + (reference_crop_type_denominator * self._ws.expr()))
+        )
 
         pet = (radiation_term + aerodynamic_term) / resistance_term
         return pet
@@ -139,7 +147,7 @@ class PsychrometricConstant(Calculation):
     def expr(self) -> pl.Expr:
         cp = 1.013e-3  # Specific heat at constant pressure
         e = 0.622  # Ratio molecular weight of water vapour/dry air
-        gamma = (cp * self._pa) / (e * self._lv.expr())
+        gamma = (cp * (self._pa / 10)) / (e * self._lv.expr())
         return gamma
 
 
@@ -247,7 +255,7 @@ class LatentHeatOfVaporization(Calculation):
         return "lv"
 
     def expr(self) -> pl.Expr:
-        lv = 2.501 - 2.361e-3 * self._ta
+        lv = 2.501 - (2.361e-3 * self._ta)
         return lv
 
 
@@ -284,14 +292,11 @@ class NetRadiation(Calculation):
 
 
 class DailyTotalRadiation(Calculation):
-    def __init__(self, column_name: str = None, **kwargs):
+    def __init__(self, column_name: str = None):
         """
         Aggregate sub daily radiation, measured in W m-2, into total energy for the day, MJ m-2 day-1
         Note, the sub daily values must be evenly spaced in time and each value must represent the average radiation
         over its interval (not instantaneous).
-
-        The column to use to calculate the daily total radiation should be provided as a kwarg. This is to allow
-        flexibility in the expected input column structure.
 
         Returns:
             Daily total radiation [MJ m-2 day-1]
@@ -299,47 +304,57 @@ class DailyTotalRadiation(Calculation):
         """
         super().__init__("Daily total radiation", column_name, "MJ m-2 day-1")
 
-        # In order to support data from multiple possible column sources
-        _, self._rad_30min = kwargs.popitem()
+        self._rad = self._columns_to_expressions(column_name)
 
     @property
     def default_column_name(self) -> str:
         return "radiation"
 
-    def evaluate(self, df: pl.DataFrame, **__) -> pl.DataFrame:
-        # There should only be 2 columns provided, the time column and the one to calculate
-        # daily radiation from
-        time_column, radiation_column = df.columns
-        ts = TimeSeries(df=df, time_name=time_column)
-
-        aggregation_function = "mean_sum"
-        aggregated_ts = ts.aggregate(
-            aggregation_period=Period.of_iso_duration("P1D"),
-            aggregation_function=aggregation_function,
-            columns=radiation_column,
-        )
-        aggregated_column_name = f"{aggregation_function}_{self.column_name}"
-
-        self._aggregated = self._columns_to_expressions(aggregated_column_name)
-
-        expressions = {self.column_name: self.expr().alias(self.column_name)}
-
-        # Perform the evaluation(s)
-        lazy_df = aggregated_ts.df.lazy()
-        result = lazy_df.with_columns(list(expressions.values()))
-        return result.collect()
+    @property
+    def preprocess_aggregation_config(self) -> AggregationConfig:
+        return AggregationConfig(function_name="mean_sum", period=Period.of_iso_duration("P1D"))
 
     def expr(self) -> pl.Expr:
-        daily_radiation = self._aggregated * 0.0864
+        daily_radiation = self._rad * 0.0864
         return daily_radiation
 
 
+class DailyPotentialEvaporation(Calculation):
+    def __init__(
+        self,
+        pe: Union[str, pl.Expr],
+        column_name: str = None,
+    ):
+        """Calculate daily potential evaporation.
+
+        Args:
+            pe: potential evaporation at 30min resolution [mm 30min-l]
+
+        Returns:
+            Daily potential evaporation [mm day-l]
+
+        """
+        super().__init__("Daily potential evaporation", column_name, "mm day-l")
+
+        self._pe = self._columns_to_expressions(pe)
+
+    @property
+    def default_column_name(self) -> str:
+        return "pe"
+
+    @property
+    def postprocess_aggregation_config(self) -> AggregationConfig:
+        return AggregationConfig(function_name="mean_sum", period=Period.of_iso_duration("P1D"))
+
+    def expr(self) -> pl.Expr:
+        filtered_pe = pl.when(self._pe < 0).then(0).otherwise(self._pe)
+        return filtered_pe
+
+
 def derive(
-    ts: TimeSeries,
+    input_ts: TimeSeries,
     calc: Type[Calculation],
     column_name: Optional[str] = None,
-    units_meta_name: str = "units",
-    include_dependencies: bool = False,
     **kwargs,
 ) -> TimeSeries:
     """Derive a new TimeSeries from a given Calculation.
@@ -348,33 +363,11 @@ def derive(
         ts: Input TimeSeries object.
         calc: The Calculation class to be instantiated and used.
         column_name: The name for the derived column.  If not provided, uses the default defined within the class.
-        units_meta_name: Metadata key name for units. Defaults to "units".
-        include_dependencies: Whether to include calculation dependencies in the final Time Series data.
         **kwargs: Arguments required for the calculation
 
     Returns:
         TimeSeries: The resulting TimeSeries after applying the calculation.
     """
     calc_instance = calc(**kwargs, column_name=column_name)
-    new_df = calc_instance.evaluate(ts.df, include_dependency_columns=include_dependencies)
 
-    # TODO: this could use some work.
-    new_column_metadata = (
-        {col: ts.columns[col].metadata() for col in ts.columns}
-        | {calc_instance.column_name: {units_meta_name: calc_instance.units}}
-        | {dep_calc.column_name: {units_meta_name: dep_calc.units} for dep_calc in calc_instance.dependencies}
-    )
-
-    new_ts = TimeSeries(
-        df=new_df,
-        time_name=ts.time_name,
-        resolution=ts.resolution,
-        periodicity=ts.periodicity,
-        supplementary_columns=ts.supplementary_columns,
-        flag_columns=ts.flag_columns,
-        flag_systems=ts.flag_systems,
-        column_metadata=new_column_metadata,
-        metadata=ts.metadata(),
-    )
-
-    return new_ts
+    return calc_instance.evaluate(input_ts)

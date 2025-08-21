@@ -10,7 +10,7 @@ class MockMetadataAPI:
 
             {url: dictionary of metadata responses for the url}
 
-        Default values for the api_data can be found in TestHelper.metadata_api_data
+        Default values for the api_data can be found in TestHelper.default_metadata_api_data
 
         Args:
             api_data: Dictionary of data used to extract metadata responses
@@ -25,6 +25,14 @@ class MockMetadataAPI:
             "sourceColumnName": filter_by_column,
             "type.processingLevel": filter_by_processing_level,
             "type": filter_by_type,
+            "appliesToTimeSeries": filter_by_applies_to_ts_id,
+        }
+
+        self.limit = None
+        self.offset = None
+        self.pagination_mapping = {
+            "_offset": self.set_offset,
+            "_limit": self.set_limit,
         }
 
     def __call__(self, url: str, params: Dict[str, str] | List[Tuple[str, str]] = None) -> Dict[str, Any]:
@@ -43,12 +51,12 @@ class MockMetadataAPI:
         if params is None:
             return self.api_data[url]
 
-        return self.filter_data(url, params)
+        return self.filter_and_paginate_data(url, params)
 
-    def filter_data(self, url: str, params: Dict[str, str] | List[Tuple[str, str]]) -> Dict[str, Any]:
+    def filter_and_paginate_data(self, url: str, params: Dict[str, str] | List[Tuple[str, str]]) -> Dict[str, Any]:
         """
         Filter self.api_data by the provided url and parameters as if the main metadata api was processing a query
-        with parameters.
+        with parameters. Then apply any pagination parameters (if applicable).
 
         Due to the nested structure of the metadata api's data, and corresponding query parameeter keys
         (e.g. type.measure.aggregation.periodicity, custom filter functions per parameter key are used. If the parameter
@@ -65,12 +73,60 @@ class MockMetadataAPI:
         filtered_data = self.api_data[url]["items"].copy()
         for param_key, param_value in params_iterator(params):
             filter_func = self.filter_func_mapping.get(param_key)
+            pagination_func = self.pagination_mapping.get(param_key)
+
+            if pagination_func:
+                pagination_func(param_value[0])
+
             if not filter_func:
                 continue
 
             filtered_data = filter_func(param_value, filtered_data)
 
+        if self.limit or self.offset:
+            filtered_data = self.paginate_response(filtered_data)
+
         return {"meta": self.api_data[url]["meta"], "items": filtered_data}
+
+    def set_limit(self, limit: int, *args, **kwargs) -> None:
+        """Set the pagination per-page limit value.
+
+        Args:
+            limit: The limit to set. This will be used to restrict the number of items to be returned.
+
+        """
+        self.limit = limit
+
+    def set_offset(self, offset: int, *args, **kwargs) -> None:
+        """Set the pagination offset value.
+
+        Args:
+            offset: The offset to set. This will be used to restrict the number of items to be returned.
+
+        """
+        self.offset = offset
+
+    def paginate_response(self, response_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Apply pagination to the response data. This involves removing the first n items (specified by the offset) to
+        clip any previously returned data, and then restricting the returned data to the size of the 'limit' parameter
+
+        For example for list of response data with 10 items, and an offset of 2 and a limit of 5, items 3 to 7 would be
+        returned.
+
+        Args:
+            response_data: The response data to paginate. This is assumed to be the 'items' part of the final response.
+
+        Returns:
+            'Paginated' response data.
+        """
+        if self.offset:
+            response_data = response_data[self.offset :]
+
+        if self.limit:
+            response_data = response_data[: self.limit]
+
+        return response_data
 
 
 def params_iterator(params: Dict[str, str] | List[Tuple[str, str]]) -> Generator[Tuple[str, str], Any, Any]:
@@ -240,4 +296,30 @@ def filter_by_type(param_values: List[str], api_data: Dict[str, Any]) -> Dict[st
 
     """
     filtered_data = [item for item in api_data if item["type"]["@id"] in param_values]
+    return filtered_data
+
+
+def filter_by_applies_to_ts_id(param_values: List[str], api_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Filter the api_data by one or more timeseries ids.
+
+    Iterate through the provided api data searching for any entries which have a matching appliesToTimeSeries @id
+    attribute to any of the values in the provided parameter values list.
+
+    Args:
+        param_values: List of values to search for within the provided api data
+        api_data (Dict[str, Any]): Dictionary of api data to filter. This is provided rather than using self.api_data
+            to allow nested filtering (e.g. filter by id and by site)
+
+    Returns:
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
+
+    """
+    filtered_data = []
+    for item in api_data:
+        for ts_id_config in item["appliesToTimeSeries"]:
+            if ts_id_config["@id"] in param_values:
+                filtered_data.append(item)
+                break
+
     return filtered_data

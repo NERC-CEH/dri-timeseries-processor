@@ -281,8 +281,8 @@ class TestExtractDepTs(unittest.TestCase):
 
         expected_ts_ids = [
             'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw',
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw',
             'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw',
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw'
         ]
 
         self.assertEqual(ts_ids, expected_ts_ids)
@@ -327,7 +327,7 @@ class TestExtractQcDependencies(unittest.TestCase):
         expected_dependencies = [
             'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw',
             'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw',
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw'
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw',
         ]
 
         self.assertEqual(dependencies, expected_dependencies)

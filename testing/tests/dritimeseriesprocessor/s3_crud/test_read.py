@@ -1,8 +1,10 @@
 import duckdb
 import polars as pl
 
+from datetime import datetime
+
 from dritimeseriesprocessor.s3_crud.read import DuckDbParquetReader
-from testing.tests.dritimeseriesprocessor.s3_crud.base_test_case import BaseTestCase
+from testing.utils.s3_test_helper import S3TestHelper
 
 
 def get_unique_dates(df: pl.DataFrame):
@@ -11,9 +13,17 @@ def get_unique_dates(df: pl.DataFrame):
     unique_dates = df.select('time').unique()
     return unique_dates
 
-class TestReadParquetByQuery(BaseTestCase):
+class TestReadParquetByQuery(S3TestHelper):
     def setUp(self):
+        super().setUp()
         self.reader = DuckDbParquetReader()
+
+        # Add some valid data to the bucket
+        self.bucket_name = "ukceh-fdri-staging-timeseries-level-0"
+        self.data = self._create_hourly_test_data(datetime(2024, 1, 1), datetime(2024, 1, 10), upload = True)
+
+        # Add some corrupted data to the bucket
+        self._put_object(self.bucket_name, "corrupted.parquet", b"corrupted data")
 
     def test_read_parquet_by_query_single_key(self):
         """ Test that a valid query on one object key returns the expected results

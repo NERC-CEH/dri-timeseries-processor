@@ -7,6 +7,9 @@
         "arg_mapping": {
             "min_value": "lt",
             "max_value": "gt"
+        },
+        "kwargs": {
+            "within": false
         }
     },
     "battery_v": {
@@ -62,20 +65,23 @@
         "arg_mapping": {
             "min_value": "lt",
             "max_value": "gt"
+        },
+        "kwargs": {
+            "within": false
         }
     },
     "hfp_removal": {
         "name": "Heat flux plates check",
         "description": "Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate",
         "id": 64,
-        "function_name": "range",
+        "function_name": "time_range",
         "arg_mapping": {
             "min_value": "time_ge",
             "max_value": "time_le"
         },
         "kwargs": {
             "within": true,
-            "inclusive": true
+            "closed": "both"
         }
     },
     "pluvio_diag": {

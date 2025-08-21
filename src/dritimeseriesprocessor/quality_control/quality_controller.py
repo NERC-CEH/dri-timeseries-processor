@@ -1,11 +1,11 @@
 import logging
 from functools import lru_cache
-from typing import Dict, Union
+from typing import Dict
 
 import polars as pl
-from time_stream import TimeSeries
 
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
+from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.metrics_exporter import metrics
 from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
@@ -40,8 +40,8 @@ def remove_qcd_data(df: pl.DataFrame, column: str, flag_column: str) -> pl.DataF
 
 @metrics.track_qc_time()
 def run_quality_control(
-    ts_ids: Dict[str, Dict[str, Union[str, TimeSeries]]], remove: bool = False
-) -> Dict[str, Dict[str, Union[str, TimeSeries]]]:
+    ts_ids: Dict[str, TimeseriesContainerWithDerivations], remove: bool = False
+) -> Dict[str, TimeseriesContainerWithDerivations]:
     """Run data through Quality Control (QC) checks.
 
     Applies a series of quality control checks to the input DataFrame based on
@@ -66,8 +66,8 @@ def run_quality_control(
         ts = ts_dict["data"]
 
         ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
-        qc_configs = load_config("quality_control", ts_id_query_param)
-        if not qc_configs:
+        qc_data_processing_configs = load_config("quality_control", ts_id_query_param)
+        if not qc_data_processing_configs:
             logger.info(f"No quality control config found for Time Series ID: {ts_id}")
             continue
 
@@ -80,37 +80,42 @@ def run_quality_control(
         if qc_flag_col not in ts.flag_columns:
             ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
-        for config in qc_configs:
+        for data_processing_config in qc_data_processing_configs:
             # Run QC methods on time series
-            for qc_check in config.configs:
-                logger.info(f"Quality controlling {ts_id}: {qc_check.name}. Constraints: {qc_check.parameters}")
+            for qc_config in data_processing_config.configs:
+                logger.info(f"Quality controlling {ts_id}: {qc_config.name}. Constraints: {qc_config.parameters}")
 
-                method_metadata = qc_methods[qc_check.name]
+                qc_method_metadata = qc_methods[qc_config.name]
 
                 # Determine which time series we are running the qc test on
                 qc_ts = ts
-                if "dep_ts" in qc_check.parameters:
-                    qc_ts = ts_ids[qc_check.parameters["dep_ts"]]["data"]
+                if "dep_ts" in qc_config.parameters:
+                    # Check if the dependency time series exists
+                    if qc_config.parameters["dep_ts"] not in ts_ids:
+                        logger.warning(f"Dependency time series {qc_config.parameters['dep_ts']} not found in ts_ids.")
+                        continue
+
+                    qc_ts = ts_ids[qc_config.parameters["dep_ts"]]["data"]
                     # No longer need this key in the parameters once we've got the dependency time series
-                    qc_check.parameters.pop("dep_ts")
+                    qc_config.parameters.pop("dep_ts")
 
-                if method_metadata.arg_mapping:
-                    for new_name, old_name in method_metadata.arg_mapping.items():
-                        qc_check.parameters[new_name] = qc_check.parameters.pop(old_name)
+                if qc_method_metadata.arg_mapping:
+                    for new_name, old_name in qc_method_metadata.arg_mapping.items():
+                        qc_config.parameters[new_name] = qc_config.parameters.pop(old_name)
 
-                if method_metadata.kwargs:
-                    for parameter, value in method_metadata.kwargs.items():
-                        qc_check.parameters[parameter] = value
+                if qc_method_metadata.kwargs:
+                    for parameter, value in qc_method_metadata.kwargs.items():
+                        qc_config.parameters[parameter] = value
 
                 qc_result = qc_ts.qc_check(
-                    method_metadata.function_name,
+                    qc_method_metadata.function_name,
                     check_column=qc_ts.column_name,
-                    observation_interval=qc_check.observation_interval,
-                    **qc_check.parameters,
+                    observation_interval=qc_config.observation_interval,
+                    **qc_config.parameters,
                 )
 
                 # flag the primary time series with the results
-                ts.add_flag(qc_flag_col, qc_check.name, qc_result)
+                ts.add_flag(qc_flag_col, qc_config.name, qc_result)
 
                 # remove the data that has been flagged if required
                 if remove:

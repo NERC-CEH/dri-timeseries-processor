@@ -8,6 +8,7 @@ class ComponentType(Enum):
     INFILLING = "infilling"
     QUALITY_CONTROL = "quality_control"
     DERIVATION = "calculate"
+    AGGREGATION = "aggregate"
 
 
 SERVICE_BASE_URI = "http://fdri.ceh.ac.uk"

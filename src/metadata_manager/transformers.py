@@ -3,6 +3,7 @@
 import re
 from typing import Dict, List, Union
 
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from metadata_manager.models.common import SERVICE_BASE_URI, SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfiguration
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
@@ -47,7 +48,7 @@ def extract_site_ids(site_list: List[str], network: str) -> list:
         raise ValueError(f"Network {network} not supported.")
 
 
-def extract_timeseries_id_metadata(response: TimeseriesDatasetResponse) -> Dict[str, Dict[str, str]]:
+def extract_timeseries_id_metadata(response: TimeseriesDatasetResponse) -> Dict[str, TimeseriesContainer]:
     """Extract the metadata required for processing timeseries IDs from the dataset endpoint.
     Args:
         response: The TimeseriesDatasetResponse object from the metadata store dataset request.

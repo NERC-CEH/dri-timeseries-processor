@@ -5,6 +5,7 @@ from parameterized import parameterized
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.deriving.derivations import Calculation
+from testing.utils.testing_utils import df_to_ts
 
 
 # Define some test Calculation classes that have a mix of dependencies in their calculation operations
@@ -95,49 +96,23 @@ class Grandchild(Calculation):
 
 
 class TestEvaluate(unittest.TestCase):
-    def test_existing_output_column_raises_error(self):
-        df = pl.DataFrame({"col1": [1, 2, 3]})
-        calc = Child1()
-        calc._column_name = "col1"
-        with self.assertRaises(UserWarning):
-            calc.evaluate(df)
-
-    def test_existing_output_column_allowed(self):
-        df = pl.DataFrame({"col1": [1, 2, 3]})
-        expected = pl.DataFrame({"col1": [2, 4, 6]})
-
-        calc = Child1()
-        calc._column_name = "col1"
-        result = calc.evaluate(df, allow_override=True)
-        assert_frame_equal(result, expected)
-
-    def test_no_dependencies(self):
+    def test_one_dependencies(self):
         """ Test evaluation of a simple Calculation, which has no dependencies"""
-        df = pl.DataFrame({"col1": [1, 2, 3]})
-        expected = pl.DataFrame({"col1": [1, 2, 3], "child1": [2, 4, 6]})
+        ts = df_to_ts(pl.DataFrame({"col1": [1, 2, 3]}))
+        expected = df_to_ts(pl.DataFrame({"child1": [2, 4, 6]}))
 
         calc = Child1()
-        result = calc.evaluate(df)
-        assert_frame_equal(result, expected)
+        result = calc.evaluate(ts)
+        assert_frame_equal(result.df, expected.df)
 
-    def test_dependencies_dont_include(self):
-        """ Test a calculation with a dependency, but not adding those dependency columns to the output."""
-        df = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
-        expected = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6], "child2": [0.9, 1.0, 1.1]})
-
-        calc = Child2()
-        result = calc.evaluate(df, include_dependency_columns=False)
-        assert_frame_equal(result, expected)
-
-    def test_dependencies_include(self):
-        """ Test a calculation with a dependency, adding those dependency columns to the output."""
-        df = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
-        expected = pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6],
-                                 "child2": [0.9, 1.0, 1.1], "grandchild": [9, 10, 11]})
+    def test_muliple_dependencies(self):
+        """ Test a calculation with muliple dependencies."""
+        ts = df_to_ts(pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]}))
+        expected = df_to_ts(pl.DataFrame({"child2": [0.9, 1.0, 1.1]}))
 
         calc = Child2()
-        result = calc.evaluate(df, include_dependency_columns=True)
-        assert_frame_equal(result, expected)
+        result = calc.evaluate(ts)
+        assert_frame_equal(result.df, expected.df)
 
 
 class TestCollectDependencies(unittest.TestCase):
@@ -183,76 +158,6 @@ class TestCollectDependencies(unittest.TestCase):
         self.assertIsInstance(result[2], Grandchild)
         self.assertIsInstance(result[3], Child3)
         self.assertIsInstance(result[4], Child4)
-
-
-class TestCollectExpressions(unittest.TestCase):
-    def test_no_dependencies(self):
-        """ Test a calculation with no dependencies returns only its expression"""
-        calc = Child1()
-        result = calc._collect_expressions()
-
-        self.assertEqual(list(result.keys()), [calc.column_name])
-        self.assertIsInstance(result[calc.column_name], pl.Expr)
-
-    def test_single_dependencies(self):
-        """ Test a calculation with a single dependency, which in turn has no dependencies."""
-        calc = Child2()
-        result = calc._collect_expressions()
-
-        self.assertEqual(len(result), 2)
-        self.assertIn(calc.column_name, result)
-        self.assertIn(Grandchild().column_name, result)
-
-        self.assertIsInstance(result[calc.column_name], pl.Expr)
-        self.assertIsInstance(result[Grandchild().column_name], pl.Expr)
-
-    def test_multiple_dependencies(self):
-        """ Test a calculation with multiple dependencies that each have no dependencies."""
-        calc = Child3()
-        result = calc._collect_expressions()
-
-        self.assertEqual(len(result), 3)
-        self.assertIn(calc.column_name, result)
-        self.assertIn(Child1().column_name, result)
-        self.assertIn(Grandchild().column_name, result)
-
-        self.assertIsInstance(result[calc.column_name], pl.Expr)
-        self.assertIsInstance(result[Child1().column_name], pl.Expr)
-        self.assertIsInstance(result[Grandchild().column_name], pl.Expr)
-
-    def test_nested_dependencies(self):
-        """ Test a calculation with a dependency, that in turn as its own dependencies."""
-        calc = Child4()
-        result = calc._collect_expressions()
-
-        self.assertEqual(len(result), 3)
-        self.assertIn(calc.column_name, result)
-        self.assertIn(Child2().column_name, result)
-        self.assertIn(Grandchild().column_name, result)
-
-        self.assertIsInstance(result[calc.column_name], pl.Expr)
-        self.assertIsInstance(result[Child2().column_name], pl.Expr)
-        self.assertIsInstance(result[Grandchild().column_name], pl.Expr)
-
-    def test_complex_dependencies(self):
-        """ Test a calculation with complex dependencies, including nested dependencies and duplicates."""
-        calc = Parent()
-        result = calc._collect_expressions()
-
-        self.assertEqual(len(result), 6)
-        self.assertIn(calc.column_name, result)
-        self.assertIn(Child1().column_name, result)
-        self.assertIn(Child2().column_name, result)
-        self.assertIn(Child3().column_name, result)
-        self.assertIn(Child4().column_name, result)
-        self.assertIn(Grandchild().column_name, result)
-
-        self.assertIsInstance(result[calc.column_name], pl.Expr)
-        self.assertIsInstance(result[Child1().column_name], pl.Expr)
-        self.assertIsInstance(result[Child2().column_name], pl.Expr)
-        self.assertIsInstance(result[Child3().column_name], pl.Expr)
-        self.assertIsInstance(result[Child4().column_name], pl.Expr)
-        self.assertIsInstance(result[Grandchild().column_name], pl.Expr)
 
 
 class TestColumnsToExpressions(unittest.TestCase):

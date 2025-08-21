@@ -5,9 +5,10 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 from dritimeseriesprocessor.configuration import app_config
-from metadata_manager import api_manager
+from metadata_manager.api_manager import MetadataAPIManager
 from metadata_manager.models.common import ComponentType, build_processing_config_type_query_parameter
 from metadata_manager.models.methods.method_registry import (
+    AggregationMethods,
     CorrectionMethods,
     DerivationMethods,
     InfillingMethods,
@@ -23,7 +24,7 @@ from metadata_manager.models.schemas.derivations import TimeseriesDerivationResp
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.transformers import extract_timeseries_definition_metadata
 
-METADATA_CONNECTION = api_manager.MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
+METADATA_CONNECTION = MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
 def load_config(
@@ -92,6 +93,10 @@ def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMe
     elif config_type == ComponentType.DERIVATION:
         methods_json_file = config_dir / "derivation_methods.json"
         registry = DerivationMethods
+
+    elif config_type == ComponentType.AGGREGATION:
+        methods_json_file = config_dir / "aggregation_methods.json"
+        registry = AggregationMethods
 
     else:
         return None
