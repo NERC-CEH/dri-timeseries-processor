@@ -76,17 +76,21 @@ class TimeSeriesProcessor:
 
         self.network = network
 
-        # Arguments for fetching generic user defined timeseries
-        self.columns = parser.validate_columns(columns)
-        self.periodicities = parser.validate_periodicity(periodicity)
-        self.sites = self._validate_sites(sites)
+        # Initialize the user parameters
+        self.user_ts_ids = None
+        self.sites = None
+        self.columns = None
+        self.periodicities = None
 
-        self.user_ts_ids = self._construct_user_ts_id_objects(user_ts_ids)
-
-        # If user ts ids are provided, create the list of sites to query from the user ts id list as it won't have
-        # been provided by the user
-        if self.user_ts_ids:
-            self.sites = self._validate_sites(sorted(set(user_ts_id.site for user_ts_id in self.user_ts_ids)))
+        if user_ts_ids:
+            # Validate user specified timeseries ids and convert into UserTsID objects
+            self.user_ts_ids = self._construct_user_ts_id_objects(user_ts_ids)
+            self.sites = sorted(set(user_ts_id.site for user_ts_id in self.user_ts_ids))
+        else:
+            # Validate generic user arguments
+            self.columns = parser.validate_columns(columns)
+            self.periodicities = parser.validate_periodicity(periodicity)
+            self.sites = self._validate_sites(sites)
 
         # Construct query parameters which are consistent across all metadata API calls
         self.site_query_parameter = build_site_query_parameter(sites=self.sites, network=self.network)
@@ -316,16 +320,13 @@ class TimeSeriesProcessor:
 
         self.ts_ids = self.ts_ids | ts_ids_metadata
 
-    def _construct_user_ts_id_objects(self, user_ts_ids: List[List[str]] | None) -> None:
+    def _construct_user_ts_id_objects(self, user_ts_ids: List[List[str]]) -> None:
         """
         Convert the user provided list of [site, column, periodicity] to a named tuple, validating each parameter
         before storing the UserTsID objects in self.user_ts_ids.
 
         """
         validated_user_ts_ids = []
-
-        if user_ts_ids is None:
-            return validated_user_ts_ids
 
         for site, column, periodicity in user_ts_ids:
             validated_site = self._validate_sites(site)[0]
