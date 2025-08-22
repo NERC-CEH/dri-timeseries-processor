@@ -1,14 +1,13 @@
 import logging
-import polars as pl
-import subprocess
 from io import BytesIO
 from unittest import mock
 
+import polars as pl
+
 from dritimeseriesprocessor.__main__ import main
 from metadata_manager.api_manager import MetadataAPIManager
-from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.mock_metadata_api import MockMetadataAPI
-
+from testing.utils.s3_test_helper import S3TestHelper
 
 logger = logging.getLogger(__name__)
 

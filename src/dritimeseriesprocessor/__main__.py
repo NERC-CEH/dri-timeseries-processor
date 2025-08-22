@@ -14,6 +14,7 @@ def main(args: List[str]) -> None:
     args = parser.parse_args(args)
 
     time_series_processor = TimeSeriesProcessor(
+        user_ts_ids=args.ts_id,
         sites=args.sites,
         columns=args.columns,
         periodicity=args.periodicity,
