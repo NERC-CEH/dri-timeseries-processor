@@ -585,7 +585,7 @@
     "method_type": "aggregate",
     "method": "aggregate-mean",
     "inputs": [
-      "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed"
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed"
     ],
     "load": false,
     "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
@@ -600,7 +600,7 @@
     "processing_level": "processed",
     "method_type": "process",
     "method": null,
-    "inputs": ["http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw"],
+    "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"],
     "load": false,
     "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
     "sourceDataset": "PROCESSED_DATA_30MIN",

@@ -6,7 +6,6 @@ import polars as pl
 from time_stream import Period, TimeSeries, aggregation  # noqa: F401
 
 from dritimeseriesprocessor.deriving.derivations import derive
-from dritimeseriesprocessor.utils import map_def_to_id
 from metadata_manager.models.common import ComponentType
 from metadata_manager.models.service import load_methods
 
@@ -105,10 +104,7 @@ class AggregationAndDerivationProcessor:
         input_data = {}
         periodicity = None
         resolution = None
-        for dependent_ts_def in ts_metadata["inputs"]:
-            dependent_ts_id = map_def_to_id(
-                ts_def=dependent_ts_def, site_id=ts_metadata["sourceSite"], ts_ids=self.ts_ids
-            )
+        for dependent_ts_id in ts_metadata["inputs"]:
             dependent_ts_metadata = self.ts_ids[dependent_ts_id]
             dependent_ts = self.get_ts_data(dependent_ts_id)
 
@@ -178,8 +174,7 @@ class AggregationAndDerivationProcessor:
         if len(ts_metadata["inputs"]) > 1:
             raise ValueError(f"More than one input has been provided for aggregation for {ts_id}")
 
-        input_ts_def = ts_metadata["inputs"][0]
-        input_ts_id = map_def_to_id(ts_def=input_ts_def, site_id=ts_metadata["sourceSite"], ts_ids=self.ts_ids)
+        input_ts_id = ts_metadata["inputs"][0]
         input_ts = self.get_ts_data(input_ts_id)
 
         if not input_ts:

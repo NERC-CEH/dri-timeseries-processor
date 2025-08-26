@@ -114,6 +114,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "sourceColumnName": "TA",
             "sourceSite": "ALIC1",
             "load": False,
+            "inputs": []
         }
 
         item_two = {
@@ -126,6 +127,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "sourceColumnName": "TA",
             "sourceSite": "BUNNY",
             "load": False,
+            "inputs": []
         }
 
         expected = {
