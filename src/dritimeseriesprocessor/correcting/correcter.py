@@ -6,7 +6,7 @@ from typing import Dict
 import polars as pl
 
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.utils import not_missing_expr
 from metadata_manager.models.service import load_config, load_methods
@@ -24,8 +24,8 @@ def get_correction_methods() -> Dict:
 
 @metrics.track_corrections_time()
 def run_corrections(
-    ts_ids: Dict[str, TimeseriesContainerWithDerivations],
-) -> Dict[str, TimeseriesContainerWithDerivations]:
+    ts_ids: Dict[str, TimeseriesContainer],
+) -> Dict[str, TimeseriesContainer]:
     """Corrects the data by applying a series of corrections based on predefined configurations.
 
     Args:

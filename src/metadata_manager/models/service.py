@@ -1,6 +1,5 @@
 import asyncio
 import json
-from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -20,9 +19,7 @@ from metadata_manager.models.schemas.dependencies import (
     DependentTimeSeriesMetadata,
     DependentTimeSeriesMetadataResponse,
 )
-from metadata_manager.models.schemas.derivations import TimeseriesDerivationResponse
 from metadata_manager.models.schemas.sites import SitesResponse
-from metadata_manager.transformers import extract_timeseries_definition_metadata
 
 METADATA_CONNECTION = MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
@@ -139,41 +136,6 @@ def load_dependent_datasets(timeseries_id: str) -> List[DependentTimeSeriesMetad
         ts_dependency_list.extend(sub_dependencies)
 
     return ts_dependency_list
-
-
-def load_timeseries_derivation(timeseries_def: str) -> TimeseriesDerivationResponse:
-    """Load the derivation metadata for a particular timeseries definition.
-
-    Args:
-        timeseries_def: The timeseries definition
-
-    Returns:
-        The parsed dataset metadata.
-    """
-    data = asyncio.run(METADATA_CONNECTION.fetch_timeseries_derivation_metadata(timeseries_def))
-    return TimeseriesDerivationResponse.model_validate(data)
-
-
-@lru_cache(maxsize=100)
-def handle_derivation_response(timeseries_def: str) -> Dict[str, Union[str, List[str | None]]]:
-    """Wrapper to handle the timeseries derivation service and transformation functionality
-
-    Args:
-        timeseries_def: the timeseries definition
-
-    Returns:
-        A dictionary containing the transformed metadata from the API response.
-    """
-
-    # Validate API response for the definition
-    derivation_metadata = load_timeseries_derivation(timeseries_def)
-
-    # If the response has a methodology section then it will contain
-    # some dependencies that need checking.
-    # Extract the required metadata
-    metadata = extract_timeseries_definition_metadata(derivation_metadata)
-
-    return metadata
 
 
 def load_sites() -> SitesResponse:

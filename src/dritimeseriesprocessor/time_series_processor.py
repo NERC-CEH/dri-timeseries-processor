@@ -10,15 +10,12 @@ from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer, TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import (
-    call_method_async,
-    merge_ts_def_metadata,
-)
+from dritimeseriesprocessor.utils import call_method_async, map_def_to_id
 from metadata_manager.models.common import (
     URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
@@ -29,7 +26,6 @@ from metadata_manager.models.common import (
     build_view_query_parameter,
 )
 from metadata_manager.models.service import (
-    handle_derivation_response,
     load_datasets,
     load_dependent_datasets,
     load_sites,
@@ -162,9 +158,7 @@ class TimeSeriesProcessor:
         self._get_processing_timeseries_ids()
         self._get_dependent_timeseries_ids()
 
-        # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
-        # timeseries ID.
-        self._add_derivation_metadata()
+        self._map_input_ts_defs_to_ts_ids()
 
     def _get_specific_user_timeseries_ids(self) -> None:
         """Collect the timeseries ID metadata for any specific ts-ids provided by the user.
@@ -258,20 +252,6 @@ class TimeSeriesProcessor:
             self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )
 
-    def _add_derivation_metadata(self) -> None:
-        """
-        For each time series id metadata object fetch and the corresponding the derivation metadata, storing it within
-        the main timeseries id metadata.
-
-        """
-        # Get the derivation metadata for the timeseries IDs to be built
-        ts_def_metadata = {
-            ts_id["ts_def"]: handle_derivation_response(ts_id["ts_def"]) for ts_id in self.ts_ids.values()
-        }
-
-        # Add TS definition metadata to each timeseries ID
-        self.ts_ids = merge_ts_def_metadata(self.ts_ids, ts_def_metadata)
-
     def _identify_dependent_ts_ids(self) -> List[str]:
         """Build a list of the dependencies for any existing ts_ids."""
         dependent_timeseries_ids = []
@@ -281,6 +261,18 @@ class TimeSeriesProcessor:
             dependent_timeseries_ids.extend([dependent_ts.ts_id for dependent_ts in dependent_timeseries_list])
 
         return dependent_timeseries_ids
+
+    def _map_input_ts_defs_to_ts_ids(self) -> List[str]:
+        """Convert any input ts_defs to ts_ids and update the corresponding ts_metadata."""
+        for ts_id, ts_metadata in self.ts_ids.items():
+            input_ts_ids = [
+                map_def_to_id(input_def, ts_metadata["sourceSite"], self.ts_ids)
+                for input_def in ts_metadata.get("inputs", [])
+            ]
+
+            # Update the list of inputs for the current timeseries to use ts_ids instead of ts_defs
+            ts_metadata["inputs"] = input_ts_ids
+            self.ts_ids[ts_id] = ts_metadata
 
     def _load_raw_data(self) -> None:
         """Load the raw data for each time series."""
@@ -356,7 +348,7 @@ class TimeSeriesProcessor:
 
     @staticmethod
     def _write_timeseries(
-        ts_ids: Dict[str, TimeseriesContainerWithDerivations], bucket_name: str, network: str, writer: S3Writer
+        ts_ids: Dict[str, TimeseriesContainer], bucket_name: str, network: str, writer: S3Writer
     ) -> None:
         """Write the timeseries data to S3.
 
