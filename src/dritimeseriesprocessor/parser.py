@@ -39,6 +39,37 @@ def parse_args(args: list) -> ArgumentParser:
         choices=["cosmos", "fdri"],
     )
     parser.add_argument(
+        "--period",
+        required=True,
+        help=(
+            """A valid ISO8601 period to build the timeseries for. Should be a combination of
+            days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
+        ),
+    )
+    parser.add_argument(
+        "-ed",
+        "--end_date",
+        help=("The date to start the data extraction from. Must be of the form YYYY-MM-DD (default: todays date)"),
+        default=date.today().strftime("%Y-%m-%d"),
+    )
+
+    parser.add_argument(
+        "--ts-id",
+        type=str,
+        nargs=3,
+        action="append",
+        metavar=("site", "column", "periodicity"),
+        help=(
+            "One or more specific timeseries IDs to process. Each timeseries must be provided as a combination of the "
+            "site, column and periodicity (as ISO-8601). For example `--ts-id alic1 pe PT30M --ts-id bunny ta P1D` "
+            "will request processing for ts ids: http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed and "
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_1day_processed. "
+            "Note that it is assumed that the ts id corresponds to the processed data, and that the network is the "
+            "same as that provided using the `--network` argument."
+        ),
+    )
+
+    parser.add_argument(
         "--sites",
         help=(
             """The sites to extract. Must be a string of sites (upper or lower case) seperated by a comma
@@ -60,19 +91,7 @@ def parse_args(args: list) -> ArgumentParser:
             provided all available periodicities will be built."""
         ),
     )
-    parser.add_argument(
-        "-ed",
-        "--end_date",
-        help=("The date to start the data extraction from. Must be of the form YYYY-MM-DD (default: todays date)"),
-        default=date.today().strftime("%Y-%m-%d"),
-    )
-    parser.add_argument(
-        "--period",
-        help=(
-            """A valid ISO8601 period to build the timeseries for. Should be a combination of
-            days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"""
-        ),
-    )
+
     return parser.parse_args(args)
 
 
@@ -163,7 +182,7 @@ def validate_end_date(end_date: str) -> str:
         raise ValueError("Incorrect date format, should be YYYY-MM-DD")
 
 
-def validate_sites(sites: str, metadata_sites: list) -> List[str | None]:
+def validate_sites(sites: str | List[str], metadata_sites: list) -> List[str | None]:
     """Validate the sites entered.
 
     Checks user entered sites against the metadata site list and removes
@@ -176,21 +195,24 @@ def validate_sites(sites: str, metadata_sites: list) -> List[str | None]:
     Returns:
         A list of sites
     """
-    if sites is not None:
+    if sites is None:
+        return []
+
+    if isinstance(sites, str):
         sites_list = sites.split(",")
+    elif isinstance(sites, list):
+        sites_list = sites
 
-        checked_sites = []
-        # Rough check for formatting
-        for site in sites_list:
-            if not site.isalnum():
-                raise ValueError(f"Site {site} should only contain letters and numbers.")
-            else:
-                checked_sites.append(site.upper())
+    checked_sites = []
+    # Rough check for formatting
+    for site in sites_list:
+        if not site.isalnum():
+            raise ValueError(f"Site {site} should only contain letters and numbers.")
+        else:
+            checked_sites.append(site.upper())
 
-        # Filter out user requested sites that are not in the metadata store
-        sites = remove_sites_not_in_store(checked_sites, metadata_sites)
-    else:
-        sites = []
+    # Filter out user requested sites that are not in the metadata store
+    sites = remove_sites_not_in_store(checked_sites, metadata_sites)
 
     return sites
 
