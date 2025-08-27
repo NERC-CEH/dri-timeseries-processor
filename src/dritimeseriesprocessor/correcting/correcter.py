@@ -1,14 +1,13 @@
 import logging
-from datetime import datetime
 from functools import lru_cache
 from typing import Dict
 
-import polars as pl
-
+from dritimeseriesprocessor.correcting.operations import Operation
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
 from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.utils import not_missing_expr
+from dritimeseriesprocessor.utils import get_date_filter, not_missing_expr
+from metadata_manager.models.common import SERVICE_BASE_URI
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -45,8 +44,8 @@ def run_corrections(
     for ts_id, ts_dict in ts_ids.items():
         ts = ts_dict["data"]
 
-        correction_config = load_config("correction", ts_id)
-        if not correction_config:
+        correction_configs = load_config("correction", ts_id)
+        if not correction_configs:
             logger.info(f"No correction config found for Time Series ID: {ts_id}")
             continue
 
@@ -59,31 +58,55 @@ def run_corrections(
         if corrs_flag_col not in ts.columns:
             ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
-        for config in correction_config:
+        for data_processing_config in correction_configs:
             # Run the corrections on the timeseries
-            for method in config.configs:
-                # Ensure the end datetime is set; default to the current time if not provided
-                if method.observation_interval[1] is None:
-                    method.observation_interval = (method.observation_interval[0], datetime.now())
+            for corr_config in data_processing_config.configs:
+                date_filter = get_date_filter(ts.time_name, corr_config.observation_interval)
 
-                logger.info(
-                    f"Applying correction for {ts_id}: {method.name} between "
-                    f"{method.observation_interval[0].strftime('%Y-%m-%d %H:%M:%S')} and "
-                    f"{method.observation_interval[1].strftime('%Y-%m-%d %H:%M:%S')}"
-                )
+                # Only apply the correction if there is data in the observation interval
+                if not ts.df.filter(date_filter).height:
+                    logger.info(
+                        f"No data in observation interval {corr_config.observation_interval} for "
+                        f"Time Series ID: {ts_id}, skipping correction {corr_config.name}"
+                    )
+                    continue
 
-                # Create a mask to filter rows based on SITE_ID and the time range
-                mask = (pl.col(ts.time_name) >= method.observation_interval[0]) & (
-                    pl.col(ts.time_name) <= method.observation_interval[1]
-                )
+                corr_method_metadata = correction_methods.get(corr_config.name)
+
+                # Map dependency time series IDs to TimeSeries objects
+                if "dep_ts" in corr_config.parameters:
+                    if isinstance(corr_config.parameters["dep_ts"], str):
+                        dep_ts_ids = [corr_config.parameters["dep_ts"]]
+                    else:
+                        dep_ts_ids = corr_config.parameters["dep_ts"]
+
+                    for dep_ts_id in dep_ts_ids:
+                        full_dep_ts_id = f"{SERVICE_BASE_URI}/id/dataset/{dep_ts_id.lower()}"
+                        if full_dep_ts_id not in ts_ids:
+                            raise ValueError(f"Dependency time series ID {dep_ts_id} not found in provided data.")
+
+                        dep_ts = ts_ids[full_dep_ts_id]["data"]
+                        # Add the dependency time series to the parameters
+                        corr_config.parameters[dep_ts.column_name.lower()] = dep_ts
+
+                    # No longer need this key in the parameters once we've got the dependency time series
+                    corr_config.parameters.pop("dep_ts")
+
+                if corr_method_metadata.arg_mapping:
+                    for old_name, new_name in corr_method_metadata.arg_mapping.items():
+                        if old_name in corr_config.parameters:
+                            corr_config.parameters[new_name] = corr_config.parameters.pop(old_name)
 
                 # Apply the specified correction function to the DataFrame
-                correction_function = correction_methods[method.name]
-                ts.df = correction_function(ts.df, ts.column_name, method.parameters["correction_factor"], mask)
+                op = Operation.get(corr_method_metadata.function_name, **corr_config.parameters)
+                ts = op.apply(
+                    ts,
+                    date_filter=date_filter,
+                )
 
                 # Apply flagging to the DataFrame.
-                expr = mask & not_missing_expr(ts.column_name)
-                ts.add_flag(corrs_flag_col, method.name, expr)
+                expr = date_filter & not_missing_expr(ts.column_name)
+                ts.add_flag(corrs_flag_col, corr_config.name, expr)
 
         ts = update_corrections_core_flags(ts)
 

@@ -113,6 +113,34 @@ def not_missing_expr(column_name: str) -> pl.Expr:
     return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
 
 
+def get_date_filter(
+    time_name: str, observation_interval: datetime | tuple[datetime, datetime | None] | None
+) -> pl.Expr:
+    """Get Polars expression for observation date interval filtering.
+
+    Args:
+        time_name: The name of the time column to create the filter for
+        observation_interval: Tuple of (start_date, end_date) defining the time period.
+
+    Returns:
+        pl.Expr: Boolean polars expression for date filtering.
+    """
+    if observation_interval:
+        if isinstance(observation_interval, datetime):
+            start_date = observation_interval
+            end_date = None
+        else:
+            start_date, end_date = observation_interval
+
+        if end_date is None:
+            return pl.col(time_name) >= start_date
+        else:
+            return pl.col(time_name).is_between(start_date, end_date)
+
+    else:
+        return pl.lit(True)
+
+
 def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:
     """Filter out sites that are not in the metadata store.
 
