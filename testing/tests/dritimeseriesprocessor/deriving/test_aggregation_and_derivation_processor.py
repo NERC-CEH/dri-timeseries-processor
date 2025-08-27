@@ -11,6 +11,7 @@ class TestAggregationAndDerivationProcessor(TimeSeriesTestHelper):
         input_json_path = self.data_dir.joinpath(
             "inputs", "aggregation_and_derivation_processor", "input_ts_ids_pe_30min.json"
         )
+        # The input test data contains data from 08/03/24 07:30 - 08:30 inclusive (PT30M)
         input_ts_ids = self.load_ts_ids_from_json_file(input_json_path)
 
         expected_json_path = self.data_dir.joinpath(

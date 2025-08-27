@@ -4,14 +4,11 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "TNR01C",
     "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true,
     "data": {
       "time": [
         "2024-03-08 00:00:00.000000",
@@ -206,14 +203,11 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "BATTV",
     "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true,
     "data": {
       "time": [
         "2024-03-08 00:00:00.000000",
@@ -395,14 +389,11 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "SCANS",
     "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true,
     "data": {
       "time": [
         "2024-03-08 00:00:00.000000",
@@ -580,44 +571,41 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "TA",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_1day_processed",
     "resolution": "P1D",
     "periodicity": "P1D",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
-    "sourceDataset": "PROCESSED_DATA_1DAY",
-    "sourceColumnName": "TA",
-    "sourceSite": "ALIC1",
     "method_type": "aggregate",
     "method": "aggregate-mean",
     "inputs": [
       "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed"
     ],
-    "load": false
+    "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_1DAY",
+    "sourceColumnName": "TA",
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-qc",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "TA",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "TA",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
         "2024-03-08 00:00:00.000000",

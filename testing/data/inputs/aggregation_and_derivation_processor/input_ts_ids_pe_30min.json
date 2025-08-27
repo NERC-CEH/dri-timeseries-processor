@@ -4,10 +4,6 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "PE",
-    "sourceSite": "ALIC1",
     "method_type": "calculate",
     "method": "calculate-calculate_pe",
     "inputs": [
@@ -19,17 +15,17 @@
       "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_processed",
       "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_processed"
     ],
-    "load": false
+    "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "PE",
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "RN",
-    "sourceSite": "ALIC1",
     "method_type": "calculate",
     "method": "calculate-calculate_rn",
     "inputs": [
@@ -38,27 +34,31 @@
       "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_processed",
       "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed"
     ],
-    "load": false
+    "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "RN",
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "SWIN",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "SWIN",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "SWIN": [8.01, 51.78, 117.3, 192.6]
     }
@@ -68,34 +68,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "SWIN",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "LWIN",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "LWIN",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "LWIN": [245.3, 245.6, 248.0, 251.0]
     }
@@ -105,34 +102,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "LWIN",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "SWOUT",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "SWOUT",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "SWOUT": [4.255, 17.01, 31.63, 44.06]
     }
@@ -142,34 +136,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "SWOUT",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "LWOUT",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "LWOUT",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "LWOUT": [323.1, 324.6, 329.6, 336.0]
     }
@@ -179,34 +170,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "LWOUT",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "WS",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "WS",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "WS": [1.983, 2.02, 2.344, 2.356]
     }
@@ -216,34 +204,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "WS",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "TA",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "TA",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "TA": [2.699, 2.72, 3.344, 4.229]
     }
@@ -253,34 +238,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "TA",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rh_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "RH",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rh_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "RH",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "RH": [89.3, 89.8, 87.3, 83.1]
     }
@@ -290,34 +272,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "RH",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "PA",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "PA",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "PA": [996.37, 996.3177, 996.1989, 995.8616]
     }
@@ -327,34 +306,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "PA",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "G2",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "G2",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "G2": [-23.91237, -23.579, -22.02736, -18.40415]
     }
@@ -364,34 +340,31 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "G2",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   },
   "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_processed": {
     "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed",
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "processed",
-    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-    "sourceDataset": "PROCESSED_DATA_30MIN",
-    "sourceColumnName": "G1",
-    "sourceSite": "ALIC1",
     "method_type": "process",
     "method": null,
     "inputs": ["http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw"],
     "load": false,
+    "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+    "sourceDataset": "PROCESSED_DATA_30MIN",
+    "sourceColumnName": "G1",
+    "sourceSite": "ALIC1",
     "data": {
       "time": [
-        "2024-03-08 07:00:00.000000+00:00",
-        "2024-03-08 07:30:00.000000+00:00",
-        "2024-03-08 08:00:00.000000+00:00",
-        "2024-03-08 08:30:00.000000+00:00"
+        "2024-03-08 07:00:00.000000",
+        "2024-03-08 07:30:00.000000",
+        "2024-03-08 08:00:00.000000",
+        "2024-03-08 08:30:00.000000"
       ],
       "G1": [-25.57974, -24.94905, -22.44929, -17.51535]
     }
@@ -401,13 +374,10 @@
     "resolution": "PT30M",
     "periodicity": "PT30M",
     "processing_level": "raw",
+    "load": true,
     "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
     "sourceDataset": "LIVE_SOILMET_30MIN",
     "sourceColumnName": "G1",
-    "sourceSite": "ALIC1",
-    "method_type": null,
-    "method": null,
-    "inputs": [],
-    "load": true
+    "sourceSite": "ALIC1"
   }
 }
