@@ -166,6 +166,7 @@ class TimeSeriesProcessor:
             self._get_generic_user_timeseries_ids()
 
         self._get_derived_dependent_ts_ids()
+        # This should come last so we get dependencies for all ts_ids
         self._get_processing_dependent_ts_ids()
 
         # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
