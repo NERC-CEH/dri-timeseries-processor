@@ -143,7 +143,8 @@ def extract_dep_ts(processing_configs: List[DataProcessingConfiguration], param_
             dep_ts = config_item.parameters.get(param_name)
             if isinstance(dep_ts, str):
                 dep_ts = [dep_ts]
-            ts_ids.update(dep_ts)
+            if isinstance(dep_ts, list):
+                ts_ids.update(dep_ts)
 
     return list(ts_ids)
 
