@@ -39,26 +39,15 @@ def load_config(
     if isinstance(config_type, str):
         config_type = ComponentType(config_type)
 
-    if config_type == ComponentType.INFILLING:
-        params = parameters + build_processing_config_type_query_parameter("infill-configuration")
-        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
-        infill_config = DataProcessingConfigurations.model_validate(data)
-        return infill_config
+    config_mapping = {
+        ComponentType.INFILLING: "infill-configuration",
+        ComponentType.QUALITY_CONTROL: "qc",
+        ComponentType.CORRECTION: "correction-configuration",
+    }
+    params = parameters + build_processing_config_type_query_parameter(config_mapping[config_type])
+    data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
 
-    elif config_type == ComponentType.QUALITY_CONTROL:
-        params = parameters + build_processing_config_type_query_parameter("qc")
-        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
-        qc_config = DataProcessingConfigurations.model_validate(data)
-        return qc_config
-
-    elif config_type == ComponentType.CORRECTION:
-        params = parameters + build_processing_config_type_query_parameter("correction-configuration")
-        data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
-        correction_config = DataProcessingConfigurations.model_validate(data)
-        return correction_config
-
-    else:
-        return None
+    return DataProcessingConfigurations.model_validate(data)
 
 
 def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMethods | QcMethods | CorrectionMethods]:

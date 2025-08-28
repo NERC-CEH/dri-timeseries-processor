@@ -222,14 +222,13 @@ class TimeSeriesProcessor:
         # Fetch the corresponding timeseries metadata for the list of dependent time series IDs identified previously.
         timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_ids)
 
-        # TODO remove the limit parameter once FW-692 has been implemented
         self._get_ts_id_metadata(
             self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )
 
     def _get_derived_dependent_ts_ids(self) -> None:
         """
-        Recurisvely identify any time series derivation dependencies and fetch the corresponding metadata, adding the
+        Recursively identify any time series derivation dependencies and fetch the corresponding metadata, adding the
         new time series id metadata entries into the main self.ts_ids dictionary.
 
         """
@@ -238,7 +237,6 @@ class TimeSeriesProcessor:
         # Fetch the corresponding timeseries metadata for the list of dependent time series IDs identified previously.
         timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_ids)
 
-        # TODO remove the limit parameter once FW-692 has been implemented
         self._get_ts_id_metadata(
             self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )

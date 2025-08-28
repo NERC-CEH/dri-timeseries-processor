@@ -23,7 +23,9 @@ class MetadataAPIManager:
         self.host = host
         self.network = network
 
-    async def _make_api_call(self, url: str, params: Dict[str, str] = None) -> Dict[str, Any]:
+    async def _make_api_call(
+        self, url: str, params: list[tuple[str, str]] | dict[str, str] | None = None
+    ) -> Dict[str, Any]:
         """Make a call to the metadata API.
 
         Args:
@@ -48,7 +50,7 @@ class MetadataAPIManager:
                 raise e
 
     async def _make_paginated_api_call(
-        self, url: str, params: Dict[str, str] = None, page_size: int = PAGE_SIZE
+        self, url: str, params: list[tuple[str, str]] | dict[str, str] | None = None, page_size: int = PAGE_SIZE
     ) -> Dict[str, Any]:
         """
         Make a paginated call to the metadata API.
