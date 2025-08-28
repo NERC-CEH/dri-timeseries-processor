@@ -33,13 +33,13 @@ class Operation(ABC):
     def apply(
         self,
         ts: TimeSeries,
-        date_filter: pl.Expr = pl.lit(True),
+        filter_expr: pl.Expr = pl.lit(True),
     ) -> "TimeSeries":
         """Apply the operation to the DataFrame within a TimeSeries object.
 
         Args:
             ts: The TimeSeries object containing the DataFrame to operate on.
-            date_filter: Polars expression to filter dates on which to apply the operation.
+            filter_expr: Polars expression to filter when to apply the operation.
 
         Returns:
             The modified TimeSeries object.
@@ -83,11 +83,11 @@ class Multiply(Operation):
     def apply(
         self,
         ts: TimeSeries,
-        date_filter: pl.Expr = pl.lit(True),
+        filter_expr: pl.Expr = pl.lit(True),
     ) -> "TimeSeries":
         """Apply the multiply operation to the DataFrame within a TimeSeries object."""
         ts.df = ts.df.with_columns(
-            pl.when(date_filter)
+            pl.when(filter_expr)
             .then(pl.col(ts.column_name) * self.correction_factor)
             .otherwise(pl.col(ts.column_name))
             .alias(ts.column_name)
@@ -113,11 +113,11 @@ class Add(Operation):
     def apply(
         self,
         ts: TimeSeries,
-        date_filter: pl.Expr = pl.lit(True),
+        filter_expr: pl.Expr = pl.lit(True),
     ) -> "TimeSeries":
         """Apply the add operation to the DataFrame within a TimeSeries object."""
         ts.df = ts.df.with_columns(
-            pl.when(date_filter)
+            pl.when(filter_expr)
             .then(pl.col(ts.column_name) + self.correction_factor)
             .otherwise(pl.col(ts.column_name))
             .alias(ts.column_name)
@@ -143,11 +143,11 @@ class Power(Operation):
     def apply(
         self,
         ts: TimeSeries,
-        date_filter: pl.Expr = pl.lit(True),
+        filter_expr: pl.Expr = pl.lit(True),
     ) -> "TimeSeries":
         """Apply the power operation to the DataFrame within a TimeSeries object."""
         ts.df = ts.df.with_columns(
-            pl.when(date_filter)
+            pl.when(filter_expr)
             .then(pl.col(ts.column_name).pow(self.correction_factor))
             .otherwise(pl.col(ts.column_name))
             .alias(ts.column_name)
@@ -177,12 +177,12 @@ class LWCorrection(Operation):
     def apply(
         self,
         ts: TimeSeries,
-        date_filter: pl.Expr = pl.lit(True),
+        filter_expr: pl.Expr = pl.lit(True),
     ) -> "TimeSeries":
         """Apply the LW correction to the DataFrame within a TimeSeries object."""
         # First correct the uncalibrated values with the scalar correction.
         lw_unc_corr = self.lw_unc.df.with_columns(
-            pl.when(date_filter)
+            pl.when(filter_expr)
             .then(pl.col(self.lw_unc.column_name) * self.correction_factor)
             .otherwise(pl.col(self.lw_unc.column_name))
             .alias(self.lw_unc.column_name)
@@ -191,7 +191,7 @@ class LWCorrection(Operation):
         # Now re-calibrate LW value with temperature adjustment.
         # Convert temperature to Kelvin
         ta_k = self.ta.df.with_columns(
-            pl.when(date_filter)
+            pl.when(filter_expr)
             .then(pl.col(self.ta.column_name) + 273.15)
             .otherwise(pl.col(self.ta.column_name))
             .alias(self.ta.column_name)
@@ -202,7 +202,7 @@ class LWCorrection(Operation):
 
         # Recalculate LW value
         ts.df = ts.df.with_columns(
-            pl.when(date_filter)
+            pl.when(filter_expr)
             .then((lw_unc_corr[self.lw_unc.column_name] + sb_adj["SB_adj"]).round(1))
             .otherwise(pl.col(ts.column_name))
             .alias(ts.column_name)

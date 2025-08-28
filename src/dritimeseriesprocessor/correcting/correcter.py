@@ -101,7 +101,7 @@ def run_corrections(
                 op = Operation.get(corr_method_metadata.function_name, **corr_config.parameters)
                 ts = op.apply(
                     ts,
-                    date_filter=date_filter,
+                    filter_expr=date_filter,
                 )
 
                 # Apply flagging to the DataFrame.
