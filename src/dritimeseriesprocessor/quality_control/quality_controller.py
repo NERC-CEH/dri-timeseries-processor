@@ -7,6 +7,7 @@ import polars as pl
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
+from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,8 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
     for ts_id, ts_dict in ts_ids.items():
         ts = ts_dict["data"]
 
-        qc_data_processing_configs = load_config("quality_control", ts_id)
+        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
+        qc_data_processing_configs = load_config("quality_control", ts_id_query_param)
         if not qc_data_processing_configs:
             logger.info(f"No quality control config found for Time Series ID: {ts_id}")
             continue
@@ -86,6 +88,11 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
                 # Determine which time series we are running the qc test on
                 qc_ts = ts
                 if "dep_ts" in qc_config.parameters:
+                    # Check if the dependency time series exists
+                    if qc_config.parameters["dep_ts"] not in ts_ids:
+                        logger.warning(f"Dependency time series {qc_config.parameters['dep_ts']} not found in ts_ids.")
+                        continue
+
                     qc_ts = ts_ids[qc_config.parameters["dep_ts"]]["data"]
                     # No longer need this key in the parameters once we've got the dependency time series
                     qc_config.parameters.pop("dep_ts")

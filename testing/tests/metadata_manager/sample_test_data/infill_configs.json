@@ -1,0 +1,130 @@
+{
+    "meta": {
+        "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+        "publisher": "UK Centre for Ecology & Hydrology",
+        "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+        "licenseName": "OGL 3",
+        "comment": "",
+        "version": "1.0.0",
+        "hasFormat": [
+            "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+            "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+            "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+            "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+            "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+            "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw"
+        ]
+    },
+    "items": [
+        {
+            "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-holln-cts_mod_30min_raw",
+            "appliesToTimeSeries": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-cts_mod_30min_raw",
+                    "originatingSite": {
+                        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+                    }
+                }
+            ],
+            "hasAnnotation": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-infill-cosmos-holln-cts_mod_30min_raw-1",
+                    "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-infill-cosmos-holln-cts_mod_30min_raw-1#value",
+                        "value": 1,
+                        "@type": [
+                            {
+                                "@id": "http://schema.org/PropertyValue"
+                            }
+                        ]
+                    },
+                    "property": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/data-processing-configuration-priority"
+                    },
+                    "@type": [
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"
+                        }
+                    ]
+                }
+            ],
+            "hasCurrentConfiguration": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-holln-cts_mod_30min_raw-1-2018-12-19t12:00:00",
+                    "argument": [
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-holln-cts_mod_30min_raw-1-2018-12-19t12:00:00#alt-data",
+                            "hasValue": {
+                                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-holln-cts_mod_30min_raw-1-2018-12-19t12:00:00#alt-data.value",
+                                "valueReference": {
+                                    "@id": "http://fdri.ceh.ac.uk/id/time-series/cosmos-holln-cts_mod2_30min_raw"
+                                },
+                                "@type": [
+                                    {
+                                        "@id": "http://schema.org/PropertyValue"
+                                    }
+                                ]
+                            },
+                            "parameter": {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/alt_data-timeseries"
+                            },
+                            "@type": [
+                                {
+                                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                                }
+                            ]
+                        },
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-holln-cts_mod_30min_raw-1-2018-12-19t12:00:00#alt-data-config",
+                            "hasValue": {
+                                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-holln-cts_mod_30min_raw-1-2018-12-19t12:00:00#alt-data-config.value",
+                                "valueReference": {
+                                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-configuration-cosmos-holln-cts_mod_30min_raw-1-2018-12-19t12:00:00-cosmos-holln-cts_mod2_30min_raw"
+                                },
+                                "@type": [
+                                    {
+                                        "@id": "http://schema.org/PropertyValue"
+                                    }
+                                ]
+                            },
+                            "parameter": {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/alt_data-configuration"
+                            },
+                            "@type": [
+                                {
+                                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                                }
+                            ]
+                        }
+                    ],
+                    "method": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/method/alt_data"
+                    },
+                    "observationInterval": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-holln-cts_mod_30min_raw-1-2018-12-19t12:00:00#interval",
+                        "@type": [
+                            {
+                                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+                            }
+                        ],
+                        "endDate": "2019-11-05T12:30:00",
+                        "startDate": "2018-12-19T12:00:00"
+                    },
+                    "@type": [
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
+                        }
+                    ]
+                }
+            ],
+            "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration"
+            },
+            "@type": [
+                {
+                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+                }
+            ]
+        }
+    ]
+}

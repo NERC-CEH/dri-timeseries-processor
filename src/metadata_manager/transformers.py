@@ -4,7 +4,8 @@ import re
 from typing import Dict, List, Union
 
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
-from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.common import SERVICE_BASE_URI, SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfiguration
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
 
@@ -124,3 +125,62 @@ def extract_timeseries_methodology_metadata(
         raise ValueError(f"Method type '{metadata['method_type']}' requires a method to be specified.")
 
     return metadata
+
+
+def extract_dep_ts(processing_configs: List[DataProcessingConfiguration], param_name: str = "dep_ts") -> List[str]:
+    """Extract the unique dependent timeseries IDs from processing configurations.
+
+    Args:
+        processing_configs: List of DataProcessingConfiguration objects.
+        param_name: The name of the parameter containing dependent timeseries IDs.
+
+    Returns:
+        A list of timeseries IDs that the processing configurations apply to.
+    """
+    ts_ids = set()
+    for config in processing_configs:
+        for config_item in config.configs:
+            dep_ts = config_item.parameters.get(param_name)
+            if isinstance(dep_ts, str):
+                dep_ts = [dep_ts]
+            if isinstance(dep_ts, list):
+                ts_ids.update(dep_ts)
+
+    return list(ts_ids)
+
+
+def extract_correction_dependencies(corr_configs: List[DataProcessingConfiguration]) -> List[str]:
+    """Extract the timeseries IDs from correction configurations.
+
+    Args:
+        corr_configs: List of DataProcessingConfiguration objects.
+
+    Returns:
+        A list of timeseries IDs that the correction configurations apply to.
+    """
+    ts_ids = extract_dep_ts(corr_configs)
+    return [f"{SERVICE_BASE_URI}/id/dataset/{ts_id.lower()}" for ts_id in ts_ids]
+
+
+def extract_qc_dependencies(qc_configs: List[DataProcessingConfiguration]) -> List[str]:
+    """Extract the timeseries IDs from quality control configurations.
+
+    Args:
+        qc_configs: List of DataProcessingConfiguration objects.
+
+    Returns:
+        A list of timeseries IDs that the quality control configurations apply to.
+    """
+    return extract_dep_ts(qc_configs)
+
+
+def extract_infill_dependencies(infill_configs: List[DataProcessingConfiguration]) -> List[str]:
+    """Extract the timeseries IDs from infill configurations.
+
+    Args:
+        infill_configs: List of DataProcessingConfiguration objects.
+
+    Returns:
+        A list of timeseries IDs that the infill configurations apply to.
+    """
+    return extract_dep_ts(infill_configs, param_name="alt_data_timeseries")

@@ -1,4 +1,5 @@
 import json
+
 import unittest
 from pathlib import Path
 from typing import Any, Dict
@@ -6,12 +7,17 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.transformers import (
     extract_cosmos_site_ids,
     extract_site_ids,
     extract_timeseries_id_metadata,
+    extract_dep_ts,
+    extract_correction_dependencies,
+    extract_qc_dependencies,
+    extract_infill_dependencies,
     extract_timeseries_methodology_metadata,
 )
 
@@ -308,3 +314,92 @@ class TestExtractTimeseriesMethodologyMetadata(unittest.TestCase):
 
         with pytest.raises(ValueError, match=expected_error):
             extract_timeseries_methodology_metadata(input_data)
+
+
+class TestExtractDepTs(unittest.TestCase):
+    """Test the extract_dep_ts function."""
+
+    def setUp(self):
+        self.sample_dataset_response = (
+            load_json(Path(Path(__file__).parents[0], "sample_test_data", "qc_configs.json"))
+        )
+    
+    def test_extract_dep_ts(self):
+        """Test the extract_dep_ts function extracts the correct dependent timeseries IDs."""
+        # Load the data into the pyantic model
+        model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
+        ts_ids = extract_dep_ts(model_output, "dep_ts")
+
+        expected_ts_ids = [
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw',
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw',
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw',
+        ]
+
+        self.assertCountEqual(ts_ids, expected_ts_ids)
+
+
+class TestExtractCorrectionDependencies(unittest.TestCase):
+    """Test the extract_correction_dependencies function."""
+
+    def setUp(self):
+        self.sample_dataset_response = (
+            load_json(Path(Path(__file__).parents[0], "sample_test_data", "correction_configs.json"))
+        )
+    
+    def test_extract_correction_dependencies(self):
+        """Test the extract_correction_dependencies function extracts the correct dependencies."""
+        # Load the data into the pyantic model
+        model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
+        dependencies = extract_correction_dependencies(model_output)
+
+        expected_dependencies = [
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw',
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw'
+        ]
+
+        self.assertCountEqual(dependencies, expected_dependencies)
+
+
+class TestExtractQcDependencies(unittest.TestCase):
+    """Test the extract_qc_dependencies function."""
+
+    def setUp(self):
+        self.sample_dataset_response = (
+            load_json(Path(Path(__file__).parents[0], "sample_test_data", "qc_configs.json"))
+        )
+    
+    def test_extract_qc_dependencies(self):
+        """Test the extract_qc_dependencies function extracts the correct dependencies."""
+        # Load the data into the pyantic model
+        model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
+        dependencies = extract_qc_dependencies(model_output)
+
+        expected_dependencies = [
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw',
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw',
+            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw',
+        ]
+
+        self.assertCountEqual(dependencies, expected_dependencies)
+
+
+class TestExtractInfillDependencies(unittest.TestCase):
+    """Test the extract_infill_dependencies function."""
+
+    def setUp(self):
+        self.sample_dataset_response = (
+            load_json(Path(Path(__file__).parents[0], "sample_test_data", "infill_configs.json"))
+        )
+    
+    def test_extract_infill_dependencies(self):
+        """Test the extract_infill_dependencies function extracts the correct dependencies."""
+        # Load the data into the pyantic model
+        model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
+        dependencies = extract_infill_dependencies(model_output)
+
+        expected_dependencies = [
+            "http://fdri.ceh.ac.uk/id/time-series/cosmos-holln-cts_mod2_30min_raw"
+        ]
+
+        self.assertEqual(dependencies, expected_dependencies)

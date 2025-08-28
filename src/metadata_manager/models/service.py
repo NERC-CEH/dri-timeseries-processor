@@ -1,11 +1,11 @@
 import asyncio
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager.api_manager import MetadataAPIManager
-from metadata_manager.models.common import ComponentType
+from metadata_manager.models.common import ComponentType, build_processing_config_type_query_parameter
 from metadata_manager.models.methods.method_registry import (
     AggregationMethods,
     CorrectionMethods,
@@ -24,12 +24,14 @@ from metadata_manager.models.schemas.sites import SitesResponse
 METADATA_CONNECTION = MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
 
-def load_config(config_type: Union[ComponentType, str], ts_id: str) -> Optional[DataProcessingConfigurations]:
+def load_config(
+    config_type: Union[ComponentType, str], parameters: List[Tuple[str, str]]
+) -> Optional[DataProcessingConfigurations]:
     """Load configuration data based on the given configuration type.
 
     Args:
         config_type: The type of configuration to load.
-        ts_id: The time series ID to load configurations for.
+        parameters: API query parameters for the processing configuration endpoint.
 
     Returns:
         The parsed configurations.
@@ -37,23 +39,15 @@ def load_config(config_type: Union[ComponentType, str], ts_id: str) -> Optional[
     if isinstance(config_type, str):
         config_type = ComponentType(config_type)
 
-    if config_type == ComponentType.INFILLING:
-        data = asyncio.run(METADATA_CONNECTION.fetch_infill_config(ts_id))
-        infill_config = DataProcessingConfigurations.model_validate(data)
-        return infill_config
+    config_mapping = {
+        ComponentType.INFILLING: "infill-configuration",
+        ComponentType.QUALITY_CONTROL: "qc",
+        ComponentType.CORRECTION: "correction-configuration",
+    }
+    params = parameters + build_processing_config_type_query_parameter(config_mapping[config_type])
+    data = asyncio.run(METADATA_CONNECTION.fetch_processing_configs(params))
 
-    elif config_type == ComponentType.QUALITY_CONTROL:
-        data = asyncio.run(METADATA_CONNECTION.fetch_qc_config(ts_id))
-        qc_config = DataProcessingConfigurations.model_validate(data)
-        return qc_config
-
-    elif config_type == ComponentType.CORRECTION:
-        data = asyncio.run(METADATA_CONNECTION.fetch_correction_config(ts_id))
-        correction_config = DataProcessingConfigurations.model_validate(data)
-        return correction_config
-
-    else:
-        return None
+    return DataProcessingConfigurations.model_validate(data)
 
 
 def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMethods | QcMethods | CorrectionMethods]:
@@ -97,7 +91,7 @@ def load_methods(config_type: Union[ComponentType, str]) -> Optional[InfillingMe
         return registry.model_validate(json.load(f))
 
 
-def load_datasets(parameters: Dict) -> TimeseriesDatasetResponse:
+def load_datasets(parameters: List[Tuple[str, str]]) -> TimeseriesDatasetResponse:
     """Load dataset metadata from the API.
 
     Args:

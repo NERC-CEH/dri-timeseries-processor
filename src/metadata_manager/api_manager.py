@@ -22,9 +22,10 @@ class MetadataAPIManager:
         """
         self.host = host
         self.network = network
-        self.service_base_uri = "http://fdri.ceh.ac.uk"
 
-    async def _make_api_call(self, url: str, params: Dict[str, str] = None) -> Dict[str, Any]:
+    async def _make_api_call(
+        self, url: str, params: list[tuple[str, str]] | dict[str, str] | None = None
+    ) -> Dict[str, Any]:
         """Make a call to the metadata API.
 
         Args:
@@ -49,7 +50,7 @@ class MetadataAPIManager:
                 raise e
 
     async def _make_paginated_api_call(
-        self, url: str, params: Dict[str, str] = None, page_size: int = PAGE_SIZE
+        self, url: str, params: list[tuple[str, str]] | dict[str, str] | None = None, page_size: int = PAGE_SIZE
     ) -> Dict[str, Any]:
         """
         Make a paginated call to the metadata API.
@@ -130,71 +131,24 @@ class MetadataAPIManager:
         response = await self._make_paginated_api_call(f"{self.host}/id/network/{self.network}")
         return response
 
-    async def fetch_infill_config(self, ts_id: str) -> Dict[str, Any]:
-        """Fetch infill configurations for a given time series ID.
+    async def fetch_processing_configs(self, parameters: List[Tuple[str, str]]) -> Dict[str, Any]:
+        """Fetch processing configurations. This can be for infill, QC, and/or correction.
 
         Args:
-            ts_id: The time series ID to load infill configurations for.
+            parameters: API query parameters for the processing configuration endpoint.
+
         Returns:
-            JSON response containing infill configurations.
+            JSON response containing processing configurations.
 
         Raises:
             HTTPError: If the API request fails.
         """
-        url = (
-            f"{self.host}/id/data-processing-configuration.json?"
-            f"type={self.service_base_uri}/ref/common/configuration-type/infill-configuration"
-            f"&appliesToTimeSeries={ts_id}"
-        )
-
-        response = await self._make_paginated_api_call(url)
+        url = f"{self.host}/id/data-processing-configuration.json"
+        response = await self._make_paginated_api_call(url, parameters)
 
         return response
 
-    async def fetch_qc_config(self, ts_id: str) -> Dict[str, Any]:
-        """Fetch QC configurations for a given time series ID.
-
-        Args:
-            ts_id: The time series ID to load qc configurations for.
-        Returns:
-            JSON response containing qc configurations.
-
-        Raises:
-            HTTPError: If the API request fails.
-        """
-        url = (
-            f"{self.host}/id/data-processing-configuration.json?"
-            f"type={self.service_base_uri}/ref/common/configuration-type/qc"
-            f"&appliesToTimeSeries={ts_id}"
-        )
-
-        response = await self._make_paginated_api_call(url)
-
-        return response
-
-    async def fetch_correction_config(self, ts_id: str) -> Dict[str, Any]:
-        """Fetch correction configurations for a given time series ID.
-
-        Args:
-            ts_id: The time series ID to load correction configurations for.
-
-        Returns:
-            JSON response containing correction configurations.
-
-        Raises:
-            HTTPError: If the API request fails.
-        """
-        url = (
-            f"{self.host}/id/data-processing-configuration.json?"
-            f"type={self.service_base_uri}/ref/common/configuration-type/correction-configuration"
-            f"&appliesToTimeSeries={ts_id}"
-        )
-
-        response = await self._make_paginated_api_call(url)
-
-        return response
-
-    async def fetch_timeseries_metadata(self, parameters: Dict) -> Dict[str, Any]:
+    async def fetch_timeseries_metadata(self, parameters: List[Tuple[str, str]]) -> Dict[str, Any]:
         """Fetch metadata for timeseries id(s)
 
         Args:
