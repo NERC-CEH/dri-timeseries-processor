@@ -2,7 +2,6 @@ from typing import Any, Dict
 
 from pydantic import BaseModel, field_validator, model_validator
 
-from dritimeseriesprocessor.correcting import operations as correction_functions
 from dritimeseriesprocessor.deriving import derivations as derivation_functions
 from metadata_manager.models.common import ComponentType
 
@@ -75,7 +74,8 @@ class Method(BaseModel):
             # TODO: Changed how QC runs.  May think about refactor for the others.
             raise UserWarning("QC checks not run directly from this config object.")
         elif self.method_type == ComponentType.CORRECTION:
-            module = correction_functions
+            # TODO: Changed how correction runs.  May think about refactor for the others.
+            raise UserWarning("Correction methods not run directly from this config object.")
         elif self.method_type == ComponentType.DERIVATION:
             module = derivation_functions
         else:
