@@ -95,18 +95,18 @@ class TestRunCorrections(unittest.TestCase):
             "method_id": 1,
             "name": "ADD",
             "description": "Sum the data point and correction value",
-            "function_name": "mock_add_check",
+            "function_name": "add",
             "method_type": "correction",
-            "__call__": lambda self, *args, **kwargs: mock_add_check(*args, **kwargs),
+            "arg_mapping": {},
         })()
 
         multiply = type("DummyCorrectionMethod", (), {
             "method_id": 2,
             "name": "MULTIPLY",
             "description": "Multiply the data point by a correction factor",
-            "function_name": "mock_multiply_check",
+            "function_name": "multiply",
             "method_type": "correction",
-            "__call__": lambda self, *args, **kwargs: mock_multiply_check(*args, **kwargs),
+            "arg_mapping": {},
         })()
 
         self.mock_methods_dict = {
@@ -236,3 +236,18 @@ class TestRunCorrections(unittest.TestCase):
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORRS_FLAG'].to_list(), [0, 1, 1, 1, 1])
         # Check CORE flag values have been added
         self.assertEqual(result[self.ta_ts_id]["data"].df['temperature_CORE_FLAG'].to_list(), [32, 33, 33, 33, 33])
+
+    @patch('dritimeseriesprocessor.correcting.correcter.load_config')
+    @patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
+    def test_no_data_in_observation_interval(self, mock_get_methods, mock_get_configs):
+        """
+        Test run_corrections when no data exists in the observation interval.
+        Checks if the function returns the original DataFrame unchanged.
+        """
+        self.correction_config1.configs[0].observation_interval = (datetime(2024, 1, 1), datetime(2024, 1, 2))
+        mock_get_configs.return_value = [self.correction_config1]
+        mock_get_methods.return_value = self.mock_methods_dict
+
+        result = run_corrections(self.ts_ids)
+
+        self.assertEqual(result, self.ts_ids)

@@ -38,7 +38,7 @@ def run_corrections(
     # Initialise corrections flag system within TimeSeries object
     correction_flags_dict = {method: method_config.method_id for method, method_config in correction_methods.items()}
     if not correction_flags_dict:
-        logger.warning("No QC methods given in config.")
+        logger.warning("No correction methods given in config.")
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
