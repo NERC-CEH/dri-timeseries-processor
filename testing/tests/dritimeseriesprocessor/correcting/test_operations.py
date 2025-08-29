@@ -7,7 +7,7 @@ from time_stream import TimeSeries
 from polars.testing import assert_frame_equal
 from datetime import datetime
 
-from dritimeseriesprocessor.correcting.operations import Operation, Add, Multiply, Power, LWCorrection
+from dritimeseriesprocessor.correcting.operations import Operation, Add, Multiply, Power, LWCorrection, PACorrection
 
 
 def create_test_ts(data=[1., 2., 3., 4., 5., 6., 7.]) -> TimeSeries:
@@ -192,5 +192,36 @@ class TestLWCorrection(unittest.TestCase):
         expected_df = pl.DataFrame({
             "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
             "value": [373.9, 381.5, 377.7, 394.1, 379.2, 387.3, 391.8],
+        })
+        assert_frame_equal(result.df, expected_df)
+
+
+class TestPACorrection(unittest.TestCase):
+    def setUp(self):
+        self.pa = create_test_ts([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213])
+        self.ta = create_test_ts([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31])
+        self.altitude = 74.0
+        self.factor = -5.1
+        self.date_filter = create_test_filter()
+
+    def test_pa_correction_simple(self):
+        """ Test that the PACorrection function works across the full DataFrame
+        """
+        pa_correction = PACorrection(self.ta, self.altitude, self.factor)
+        result = pa_correction.apply(self.pa)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578],
+        })
+        assert_frame_equal(result.df, expected_df)
+
+    def test_date_filter(self):
+        """ Test that the PACorrection function works with a mask clause
+        """
+        pa_correction = PACorrection(self.ta, self.altitude, self.factor)
+        result = pa_correction.apply(self.pa, filter_expr=self.date_filter)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": [1007.504, 1007.391, 1002.3039, 1002.2789, 1002.2069, 1007.194, 1007.213],
         })
         assert_frame_equal(result.df, expected_df)

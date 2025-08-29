@@ -211,11 +211,76 @@ class LWCorrection(Operation):
         return ts
 
 
-def pa(df: pl.DataFrame, column: str, correction_factor: float, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
-    """Placeholder for PA correction function"""
-    return df
+# TODO: Implement site attribute fetching
+@register_operation
+class PACorrection(Operation):
+    """Correct air pressure with bias calculated from mean sea level pressure."""
+
+    name = "pa_corr"
+
+    def __init__(self, ta: TimeSeries, altitude: float, correction_factor: float) -> None:
+        """Initialise the PA correction operation.
+
+        Args:
+            correction_factor: The factor to multiply the air pressure by.
+
+        """
+        self.ta = ta
+        self.altitude = altitude
+        self.correction_factor = correction_factor
+
+    def apply(
+        self,
+        ts: TimeSeries,
+        filter_expr: pl.Expr = pl.lit(True),
+    ) -> "TimeSeries":
+        """Apply the PA correction to the DataFrame within a TimeSeries object."""
+        # Using the MSLP to PA conversion factor, calculate the unqiue adjustments
+        # for each PA value.
+        corrs = self.ta.df.with_columns(
+            pl.when(filter_expr)
+            .then(
+                self.correction_factor
+                * (1 - ((0.0065 * self.altitude) / (pl.col(self.ta.column_name) + (0.0065 * self.altitude) + 273.15)))
+                ** 5.257
+            )
+            .otherwise(pl.col(self.ta.column_name))
+            .alias("pa_corr")
+        )
+
+        ts.df = ts.df.with_columns(
+            pl.when(filter_expr)
+            .then((pl.col(ts.column_name) + corrs["pa_corr"]).round(4))
+            .otherwise(pl.col(ts.column_name))
+            .alias(ts.column_name)
+        )
+
+        return ts
 
 
-def wd(df: pl.DataFrame, column: str, correction_factor: float, mask: pl.Expr = pl.lit(True)) -> pl.DataFrame:
-    """Placeholder for WD correction function"""
-    return df
+# TODO: Placeholder implementation, to be replaced with real WD correction logic
+@register_operation
+class WDCorrection(Operation):
+    """Wind direction correction operation class."""
+
+    name = "wd_corr"
+
+    def __init__(self, ux: TimeSeries, uy: TimeSeries) -> None:
+        """Initialise the WD correction operation.
+
+        Args:
+            correction_factor: The factor to add to the wind direction column.
+
+        """
+        self.ux = ux
+        self.uy = uy
+
+    def apply(
+        self,
+        ts: TimeSeries,
+        filter_expr: pl.Expr = pl.lit(True),
+    ) -> "TimeSeries":
+        """Apply the WD correction to the DataFrame within a TimeSeries object."""
+        return ts
+
+
