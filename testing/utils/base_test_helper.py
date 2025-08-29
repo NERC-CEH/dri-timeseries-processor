@@ -78,6 +78,9 @@ class BaseTestHelper(unittest.TestCase):
             "https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/time-series-definition": self.load_json(
                 self.input_dir.joinpath("mock_metadata_api", "ts_def_metadata.json")
             ),
+            "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json": self.load_json(
+                self.input_dir.joinpath("mock_metadata_api", "processing_configs_alic1_bunny.json")
+            ),
         }
 
     def create_all_metadata_api_data(self) -> Dict[str, Any]:

@@ -60,7 +60,7 @@ def get_property(key: str, prop: Dict[str, Any] | None) -> Any:
     return values
 
 
-def build_site_query_parameter(sites: List[str], network: str) -> List[Tuple | None]:
+def build_site_query_parameter(sites: List[str], network: str) -> List[Tuple]:
     """Build the site query parameters for the dataset endpoint.
 
     As we use the same key for multiple sites, it needs to be a list of tuples.
@@ -72,10 +72,10 @@ def build_site_query_parameter(sites: List[str], network: str) -> List[Tuple | N
     Returns:
         A list of tuples with query parameter string and site.
     """
-    return [("originatingSite", f"http://fdri.ceh.ac.uk/id/site/{network}-{site.lower()}") for site in sites]
+    return [("originatingSite", f"{SERVICE_BASE_URI}/id/site/{network}-{site.lower()}") for site in sites]
 
 
-def build_column_query_parameter(columns: List[str]) -> List[Tuple | None]:
+def build_column_query_parameter(columns: List[str]) -> List[Tuple]:
     """Build the column name query parameters for the dataset endpoint.
 
     As we use the same key for multiple columns, it needs to be a list of tuples.
@@ -89,7 +89,7 @@ def build_column_query_parameter(columns: List[str]) -> List[Tuple | None]:
     return [("sourceColumnName", column) for column in columns]
 
 
-def build_periodicity_query_parameter(periodicities: List[str]) -> List[Tuple | None]:
+def build_periodicity_query_parameter(periodicities: List[str]) -> List[Tuple]:
     """Build the periodicity query parameters for the dataset endpoint.
 
     As we use the same key for multiple periods, it needs to be a list of tuples.
@@ -103,21 +103,49 @@ def build_periodicity_query_parameter(periodicities: List[str]) -> List[Tuple | 
     return [("type.measure.aggregation.periodicity", period) for period in periodicities]
 
 
-def build_timeseries_id_query_parameter(ts_ids: List[str]) -> List[Tuple | None]:
+def build_timeseries_id_query_parameter(ts_ids: List[str]) -> List[Tuple]:
     """Build the timeseries id query parameters for the dataset endpoint.
 
     As we use the same key for multiple timeseries id, it needs to be a list of tuples.
 
     Args:
-        ts_defs: A list of the timeseries definitions to query.
+        ts_ids: A list of the timeseries IDs to query.
 
     Returns:
-        A list of tuples with query parameter string and the timeseries definition.
+        A list of tuples with query parameter string and the timeseries ID.
     """
     return [("@id", ts_id) for ts_id in ts_ids]
 
 
-def build_processing_query_parameter(level: str) -> List[Tuple | None]:
+def build_processing_config_timeseries_id_query_parameter(ts_ids: Union[List[str], str]) -> List[Tuple]:
+    """Build the timeseries id query parameters for the processing config endpoint.
+
+    As we use the same key for multiple timeseries id, it needs to be a list of tuples.
+
+    Args:
+        ts_ids: A list of the timeseries IDs to query.
+
+    Returns:
+        A list of tuples with query parameter string and the timeseries ID.
+    """
+    if isinstance(ts_ids, str):
+        ts_ids = [ts_ids]
+    return [("appliesToTimeSeries", ts_id) for ts_id in ts_ids]
+
+
+def build_processing_config_type_query_parameter(config_type: str) -> List[Tuple]:
+    """Build the type query parameter for the processing config endpoint.
+
+    Args:
+        config_type: The configuration type
+
+    Returns:
+        A list of tuples with query parameter string and the configuration type
+    """
+    return [("type", f"{SERVICE_BASE_URI}/ref/common/configuration-type/{config_type}")]
+
+
+def build_processing_query_parameter(level: str) -> List[Tuple]:
     """Build the processing level query parameter for the dataset endpoint.
 
     As we use the same key for multiple processing levels, it needs to be a list of tuples.
@@ -128,10 +156,10 @@ def build_processing_query_parameter(level: str) -> List[Tuple | None]:
     Returns:
         A list of tuples with query parameter string and the processing level.
     """
-    return [("type.processingLevel", f"http://fdri.ceh.ac.uk/ref/common/processing-level/{level}")]
+    return [("type.processingLevel", f"{SERVICE_BASE_URI}/ref/common/processing-level/{level}")]
 
 
-def build_view_query_parameter(view: str) -> List[Tuple | None]:
+def build_view_query_parameter(view: str) -> List[Tuple]:
     """Build the view query parameter for the dataset endpoint.
 
     As we use the same key for multiple processing levels, it needs to be a list of tuples.

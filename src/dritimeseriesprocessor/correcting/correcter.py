@@ -4,10 +4,10 @@ from typing import Dict
 
 from dritimeseriesprocessor.correcting.operations import Operation
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.utils import get_date_filter, not_missing_expr
-from metadata_manager.models.common import SERVICE_BASE_URI
+from metadata_manager.models.common import SERVICE_BASE_URI, build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -23,8 +23,8 @@ def get_correction_methods() -> Dict:
 
 @metrics.track_corrections_time()
 def run_corrections(
-    ts_ids: Dict[str, TimeseriesContainerWithDerivations],
-) -> Dict[str, TimeseriesContainerWithDerivations]:
+    ts_ids: Dict[str, TimeseriesContainer],
+) -> Dict[str, TimeseriesContainer]:
     """Corrects the data by applying a series of corrections based on predefined configurations.
 
     Args:
@@ -44,7 +44,8 @@ def run_corrections(
     for ts_id, ts_dict in ts_ids.items():
         ts = ts_dict["data"]
 
-        correction_configs = load_config("correction", ts_id)
+        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
+        correction_configs = load_config("correction", ts_id_query_param)
         if not correction_configs:
             logger.info(f"No correction config found for Time Series ID: {ts_id}")
             continue

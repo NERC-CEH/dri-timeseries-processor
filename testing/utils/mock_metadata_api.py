@@ -25,6 +25,14 @@ class MockMetadataAPI:
             "sourceColumnName": filter_by_column,
             "type.processingLevel": filter_by_processing_level,
             "type": filter_by_type,
+            "appliesToTimeSeries": filter_by_applies_to_ts_id,
+        }
+
+        self.limit = None
+        self.offset = None
+        self.pagination_mapping = {
+            "_offset": self.set_offset,
+            "_limit": self.set_limit,
         }
 
         self.limit = None
@@ -294,5 +302,31 @@ def filter_by_type(param_values: List[str], api_data: Dict[str, Any]) -> Dict[st
             for the equivalent API call to the main metadata api.
 
     """
-    filtered_data = [item for item in api_data if item["type"][0]["@id"] in param_values]
+    filtered_data = [item for item in api_data if item["type"]["@id"] in param_values]
+    return filtered_data
+
+
+def filter_by_applies_to_ts_id(param_values: List[str], api_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Filter the api_data by one or more timeseries ids.
+
+    Iterate through the provided api data searching for any entries which have a matching appliesToTimeSeries @id
+    attribute to any of the values in the provided parameter values list.
+
+    Args:
+        param_values: List of values to search for within the provided api data
+        api_data (Dict[str, Any]): Dictionary of api data to filter. This is provided rather than using self.api_data
+            to allow nested filtering (e.g. filter by id and by site)
+
+    Returns:
+        Dictionary containing the filtered metadata value(s) from self.api_data. The contents should be a direct match
+            for the equivalent API call to the main metadata api.
+
+    """
+    filtered_data = []
+    for item in api_data:
+        for ts_id_config in item["appliesToTimeSeries"]:
+            if ts_id_config["@id"] in param_values:
+                filtered_data.append(item)
+                break
+
     return filtered_data

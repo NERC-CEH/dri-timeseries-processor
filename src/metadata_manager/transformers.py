@@ -4,9 +4,9 @@ import re
 from typing import Dict, List, Union
 
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
-from metadata_manager.models.common import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
-from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
-from metadata_manager.models.schemas.derivations import DerivationMetadata
+from metadata_manager.models.common import SERVICE_BASE_URI, SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
+from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfiguration
+from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
 
 
@@ -71,6 +71,14 @@ def extract_timeseries_id_metadata(response: TimeseriesDatasetResponse) -> Dict[
         # Extract processing level ID using regex
         ts_id_metadata["processing_level"] = re.match(URI_ID_EXTRACT_REGEX, type_def.processing_level.id).group(1)
 
+        ts_id_metadata = ts_id_metadata | extract_timeseries_methodology_metadata(type_def)
+
+        # Identify whether data loading will be required. This should only be the case for raw timeseries with no
+        # extra processing methodology (e.g. for aggregation or derivation)
+        ts_id_metadata["load"] = False
+        if ts_id_metadata["processing_level"] == "raw" and not type_def.methodology:
+            ts_id_metadata["load"] = True
+
         ts_id_metadata["sourceBucket"] = item.source_bucket
         ts_id_metadata["sourceDataset"] = item.source_dataset
         ts_id_metadata["sourceColumnName"] = item.source_column_name
@@ -85,39 +93,94 @@ def extract_timeseries_id_metadata(response: TimeseriesDatasetResponse) -> Dict[
     return metadata
 
 
-def extract_timeseries_definition_metadata(
-    derivation_metadata: DerivationMetadata,
+def extract_timeseries_methodology_metadata(
+    type_def: TimeSeriesType,
 ) -> Dict[str, Dict[str, Union[str, List[str | None]]]]:
-    """Extract the metadata required for deriving timeseries definitions.
+    """Extract the metadata required for deriving or aggregating timeseries definitions.
 
     Args:
-        derivation_metadata: The validated DerivationMetadata model from the response
+        type_def: The validated Methodology model from the response
 
     Returns:
-        The required derivation metadata for processing.
+        The required methodology metadata for processing.
     """
-    metadata = {}
+    metadata = {"inputs": []}
 
-    if derivation_metadata.methodology:
-        metadata["method_type"] = re.match(
-            URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.configuration_type
-        ).group(1)
-        if derivation_metadata.methodology.method:
-            metadata["method"] = re.match(URI_ID_EXTRACT_REGEX, derivation_metadata.methodology.method).group(1)
-        else:
-            metadata["method"] = None
-        metadata["inputs"] = derivation_metadata.methodology.uses
+    if not type_def.methodology:
+        return metadata
 
-        if metadata["method_type"] == "process" and len(metadata["inputs"]) != 1:
-            raise ValueError(
-                f"Processed timeseries definition {derivation_metadata.timeseries_def} should have exactly one input."
-            )
+    metadata["method_type"] = re.match(URI_ID_EXTRACT_REGEX, type_def.methodology.configuration_type).group(1)
 
-        if metadata["method_type"] in ("aggregate", "calculate") and not metadata["method"]:
-            raise ValueError(f"Method type '{metadata['method_type']}' requires a method to be specified.")
-
+    if type_def.methodology.method:
+        metadata["method"] = re.match(URI_ID_EXTRACT_REGEX, type_def.methodology.method).group(1)
     else:
-        # If no methodology section then there will be no further dependencies
-        metadata["inputs"] = []
+        metadata["method"] = None
+
+    metadata["inputs"] = type_def.methodology.uses
+
+    if metadata["method_type"] == "process" and len(metadata["inputs"]) != 1:
+        raise ValueError(f"Processed timeseries definition {type_def.id} should have exactly one input.")
+
+    if metadata["method_type"] in ("aggregate", "calculate") and not metadata["method"]:
+        raise ValueError(f"Method type '{metadata['method_type']}' requires a method to be specified.")
 
     return metadata
+
+
+def extract_dep_ts(processing_configs: List[DataProcessingConfiguration], param_name: str = "dep_ts") -> List[str]:
+    """Extract the unique dependent timeseries IDs from processing configurations.
+
+    Args:
+        processing_configs: List of DataProcessingConfiguration objects.
+        param_name: The name of the parameter containing dependent timeseries IDs.
+
+    Returns:
+        A list of timeseries IDs that the processing configurations apply to.
+    """
+    ts_ids = set()
+    for config in processing_configs:
+        for config_item in config.configs:
+            dep_ts = config_item.parameters.get(param_name)
+            if isinstance(dep_ts, str):
+                dep_ts = [dep_ts]
+            if isinstance(dep_ts, list):
+                ts_ids.update(dep_ts)
+
+    return list(ts_ids)
+
+
+def extract_correction_dependencies(corr_configs: List[DataProcessingConfiguration]) -> List[str]:
+    """Extract the timeseries IDs from correction configurations.
+
+    Args:
+        corr_configs: List of DataProcessingConfiguration objects.
+
+    Returns:
+        A list of timeseries IDs that the correction configurations apply to.
+    """
+    ts_ids = extract_dep_ts(corr_configs)
+    return [f"{SERVICE_BASE_URI}/id/dataset/{ts_id.lower()}" for ts_id in ts_ids]
+
+
+def extract_qc_dependencies(qc_configs: List[DataProcessingConfiguration]) -> List[str]:
+    """Extract the timeseries IDs from quality control configurations.
+
+    Args:
+        qc_configs: List of DataProcessingConfiguration objects.
+
+    Returns:
+        A list of timeseries IDs that the quality control configurations apply to.
+    """
+    return extract_dep_ts(qc_configs)
+
+
+def extract_infill_dependencies(infill_configs: List[DataProcessingConfiguration]) -> List[str]:
+    """Extract the timeseries IDs from infill configurations.
+
+    Args:
+        infill_configs: List of DataProcessingConfiguration objects.
+
+    Returns:
+        A list of timeseries IDs that the infill configurations apply to.
+    """
+    return extract_dep_ts(infill_configs, param_name="alt_data_timeseries")

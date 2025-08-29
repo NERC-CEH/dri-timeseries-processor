@@ -10,38 +10,40 @@ from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer, TimeseriesContainerWithDerivations
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
-from dritimeseriesprocessor.utils import (
-    call_method_async,
-    merge_ts_def_metadata,
-)
+from dritimeseriesprocessor.utils import call_method_async, map_def_to_id
 from metadata_manager.models.common import (
     URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
     build_periodicity_query_parameter,
+    build_processing_config_timeseries_id_query_parameter,
     build_processing_query_parameter,
     build_site_query_parameter,
     build_timeseries_id_query_parameter,
     build_view_query_parameter,
 )
 from metadata_manager.models.service import (
-    handle_derivation_response,
+    load_config,
     load_datasets,
     load_dependent_datasets,
     load_sites,
 )
-from metadata_manager.transformers import extract_site_ids, extract_timeseries_id_metadata
+from metadata_manager.transformers import (
+    extract_correction_dependencies,
+    extract_infill_dependencies,
+    extract_qc_dependencies,
+    extract_site_ids,
+    extract_timeseries_id_metadata,
+)
 
 logger = logging.getLogger(__name__)
 setup_logging()
 
 metrics.setup_metrics()
-
-PROCESSING_COLUMNS = ["BATTV", "SCANS", "TNR01C"]
 
 UserTsID = namedtuple("UserTsID", ["site", "column", "periodicity"])
 
@@ -159,12 +161,11 @@ class TimeSeriesProcessor:
         else:
             self._get_generic_user_timeseries_ids()
 
-        self._get_processing_timeseries_ids()
-        self._get_dependent_timeseries_ids()
+        self._get_derived_dependent_ts_ids()
+        # This should come last so we get dependencies for all ts_ids
+        self._get_processing_dependent_ts_ids()
 
-        # Once the full list of timeseries ids has been collated, add any relevant derivation metadata to each
-        # timeseries ID.
-        self._add_derivation_metadata()
+        self._map_input_ts_defs_to_ts_ids()
 
     def _get_specific_user_timeseries_ids(self) -> None:
         """Collect the timeseries ID metadata for any specific ts-ids provided by the user.
@@ -214,66 +215,54 @@ class TimeSeriesProcessor:
             + self.view_query_parameter
         )
 
-    def _get_processing_timeseries_ids(self) -> None:
-        """Collect the timeseries id metadata for any processing dependencies.
-
-        In a similar way to `_get_user_timeseries_ids()` the metadata api service is queried and the extracted results
-        are added to `self.ts_ids`. However, in this instance, the raw processing timeseries id metadata is requested
-        for the current site(s) instead. Currently this is a hard coded list of variables: "BATTV",
-        "SCANS"and "TNR01C", using a periodicity of PT30M.
-
-        """
-        # TODO: Determine these by looking at processing config dependencies in metadata
-        column_query_parameter = build_column_query_parameter(PROCESSING_COLUMNS)
-
-        processing_query_parameter = build_processing_query_parameter(level="raw")
-
-        # TODO: Once this information is available from the metadata service, remove the hardcoding of the periodicity
-        #   query parameter.
-
-        # Hardcode the periodicity to PT30M to ensure the correct raw data is fetched for the processing dependencies
-        periodicity_query_parameter = build_periodicity_query_parameter(["PT30M"])
-
-        self._get_ts_id_metadata(
-            self.site_query_parameter
-            + periodicity_query_parameter
-            + column_query_parameter
-            + processing_query_parameter
-            + self.view_query_parameter
-        )
-
-    def _get_dependent_timeseries_ids(self) -> None:
-        """
-        Recurisvely identify any time series dependencies and fetch the corresponding metadata, adding the new
-        time series id metadata entries into the main self.ts_ids dictionary.
-
-        """
-        dependent_timeseries_ids = self._identify_dependent_ts_ids()
+    def _get_processing_dependent_ts_ids(self) -> None:
+        """Collect the timeseries id metadata for any processing dependencies."""
+        dependent_timeseries_ids = self._identify_processing_dependent_ts_ids()
 
         # Fetch the corresponding timeseries metadata for the list of dependent time series IDs identified previously.
         timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_ids)
 
-        # TODO remove the limit parameter once FW-692 has been implemented
         self._get_ts_id_metadata(
             self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
         )
 
-    def _add_derivation_metadata(self) -> None:
+    def _get_derived_dependent_ts_ids(self) -> None:
         """
-        For each time series id metadata object fetch and the corresponding the derivation metadata, storing it within
-        the main timeseries id metadata.
+        Recursively identify any time series derivation dependencies and fetch the corresponding metadata, adding the
+        new time series id metadata entries into the main self.ts_ids dictionary.
 
         """
-        # Get the derivation metadata for the timeseries IDs to be built
-        ts_def_metadata = {
-            ts_id["ts_def"]: handle_derivation_response(ts_id["ts_def"]) for ts_id in self.ts_ids.values()
-        }
+        dependent_timeseries_ids = self._identify_derived_dependent_ts_ids()
 
-        # Add TS definition metadata to each timeseries ID
-        self.ts_ids = merge_ts_def_metadata(self.ts_ids, ts_def_metadata)
+        # Fetch the corresponding timeseries metadata for the list of dependent time series IDs identified previously.
+        timeseries_id_parameter = build_timeseries_id_query_parameter(dependent_timeseries_ids)
 
-    def _identify_dependent_ts_ids(self) -> List[str]:
-        """Build a list of the dependencies for any existing ts_ids."""
+        self._get_ts_id_metadata(
+            self.site_query_parameter + timeseries_id_parameter + self.view_query_parameter + [("_limit", 50)]
+        )
+
+    def _identify_processing_dependent_ts_ids(self) -> List[str]:
+        """Build a list of the processing dependencies for the raw ts_ids."""
+
+        # Processing configs only apply to raw data.
+        raw_ts_ids = [ts_id for ts_id, ts_dict in self.ts_ids.items() if ts_dict["processing_level"] == "raw"]
+        ts_ids_query_parameter = build_processing_config_timeseries_id_query_parameter(raw_ts_ids)
+
+        # Load all config
+        corr_configs = load_config("correction", ts_ids_query_parameter)
+        corr_dep_ts_ids = extract_correction_dependencies(corr_configs)
+
+        qc_configs = load_config("quality_control", ts_ids_query_parameter)
+        qc_dep_ts_ids = extract_qc_dependencies(qc_configs)
+
+        infill_configs = load_config("infilling", ts_ids_query_parameter)
+        infill_dep_ts_ids = extract_infill_dependencies(infill_configs)
+
+        # Combine all dependent timeseries IDs
+        return list(set(corr_dep_ts_ids + qc_dep_ts_ids + infill_dep_ts_ids))
+
+    def _identify_derived_dependent_ts_ids(self) -> List[str]:
+        """Build a list of the deriving dependencies for any existing ts_ids."""
         dependent_timeseries_ids = []
         for ts_id in self.ts_ids.keys():
             ts_name = re.match(URI_ID_EXTRACT_REGEX, ts_id).group(1)
@@ -281,6 +270,18 @@ class TimeSeriesProcessor:
             dependent_timeseries_ids.extend([dependent_ts.ts_id for dependent_ts in dependent_timeseries_list])
 
         return dependent_timeseries_ids
+
+    def _map_input_ts_defs_to_ts_ids(self) -> List[str]:
+        """Convert any input ts_defs to ts_ids and update the corresponding ts_metadata."""
+        for ts_id, ts_metadata in self.ts_ids.items():
+            input_ts_ids = [
+                map_def_to_id(input_def, ts_metadata["sourceSite"], self.ts_ids)
+                for input_def in ts_metadata.get("inputs", [])
+            ]
+
+            # Update the list of inputs for the current timeseries to use ts_ids instead of ts_defs
+            ts_metadata["inputs"] = input_ts_ids
+            self.ts_ids[ts_id] = ts_metadata
 
     def _load_raw_data(self) -> None:
         """Load the raw data for each time series."""
@@ -356,7 +357,7 @@ class TimeSeriesProcessor:
 
     @staticmethod
     def _write_timeseries(
-        ts_ids: Dict[str, TimeseriesContainerWithDerivations], bucket_name: str, network: str, writer: S3Writer
+        ts_ids: Dict[str, TimeseriesContainer], bucket_name: str, network: str, writer: S3Writer
     ) -> None:
         """Write the timeseries data to S3.
 
