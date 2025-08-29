@@ -282,5 +282,3 @@ class WDCorrection(Operation):
     ) -> "TimeSeries":
         """Apply the WD correction to the DataFrame within a TimeSeries object."""
         return ts
-
-
