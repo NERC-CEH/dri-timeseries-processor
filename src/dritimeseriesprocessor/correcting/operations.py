@@ -39,7 +39,7 @@ class Operation(ABC):
 
         Args:
             ts: The TimeSeries object containing the DataFrame to operate on.
-            filter_expr: Polars expression to filter when to apply the operation.
+            filter_expr: Polars expression to filter when to apply the operation. Defaults to applying to all rows.
 
         Returns:
             The modified TimeSeries object.
@@ -51,7 +51,7 @@ class Operation(ABC):
         """Factory method to get an operation instance from string names.
 
         Args:
-            operation: The operation name, e.g. "multiply", "add", "power"
+            operation: The operation name, e.g. "scalar", "add", "power"
             **kwargs: Parameters specific to the operation type, used to initialise the class object.
 
         Returns:
@@ -66,16 +66,16 @@ class Operation(ABC):
 
 
 @register_operation
-class Multiply(Operation):
-    """Multiply operation class."""
+class Scalar(Operation):
+    """Scalar operation class."""
 
-    name = "multiply"
+    name = "scalar"
 
     def __init__(self, correction_factor: float) -> None:
-        """Initialise the Multiply operation with a correction factor.
+        """Initialise the Scale operation with a correction factor.
 
         Args:
-            correction_factor: The factor to multiply the column by.
+            correction_factor: The factor to scale the column by.
 
         """
         self.correction_factor = correction_factor
@@ -85,7 +85,7 @@ class Multiply(Operation):
         ts: TimeSeries,
         filter_expr: pl.Expr = pl.lit(True),
     ) -> "TimeSeries":
-        """Apply the multiply operation to the DataFrame within a TimeSeries object."""
+        """Apply the scalar operation to the DataFrame within a TimeSeries object."""
         ts.df = ts.df.with_columns(
             pl.when(filter_expr)
             .then(pl.col(ts.column_name) * self.correction_factor)
@@ -181,21 +181,11 @@ class LWCorrection(Operation):
     ) -> "TimeSeries":
         """Apply the LW correction to the DataFrame within a TimeSeries object."""
         # First correct the uncalibrated values with the scalar correction.
-        lw_unc_corr = self.lw_unc.df.with_columns(
-            pl.when(filter_expr)
-            .then(pl.col(self.lw_unc.column_name) * self.correction_factor)
-            .otherwise(pl.col(self.lw_unc.column_name))
-            .alias(self.lw_unc.column_name)
-        )
+        lw_unc_corr = Scalar(self.correction_factor).apply(self.lw_unc, filter_expr).df
 
         # Now re-calibrate LW value with temperature adjustment.
         # Convert temperature to Kelvin
-        ta_k = self.ta.df.with_columns(
-            pl.when(filter_expr)
-            .then(pl.col(self.ta.column_name) + 273.15)
-            .otherwise(pl.col(self.ta.column_name))
-            .alias(self.ta.column_name)
-        )
+        ta_k = Add(273.15).apply(self.ta, filter_expr).df
 
         # Get adjustment amount from Stefan-Boltzmann constant 5.67 * 10^-8
         sb_adj = ta_k.with_columns((pl.col(self.ta.column_name).pow(4) * 5.67 * 1e-8).alias("SB_adj")).select("SB_adj")
@@ -203,7 +193,7 @@ class LWCorrection(Operation):
         # Recalculate LW value
         ts.df = ts.df.with_columns(
             pl.when(filter_expr)
-            .then((lw_unc_corr[self.lw_unc.column_name] + sb_adj["SB_adj"]).round(1))
+            .then((lw_unc_corr[self.lw_unc.column_name] + sb_adj["SB_adj"]))
             .otherwise(pl.col(ts.column_name))
             .alias(ts.column_name)
         )
@@ -222,7 +212,9 @@ class PACorrection(Operation):
         """Initialise the PA correction operation.
 
         Args:
-            correction_factor: The factor to multiply the air pressure by.
+            ta: TimeSeries object containing the air temperature data.
+            altitude: Site altitude in metres.
+            correction_factor: The factor used in PA correction.
 
         """
         self.ta = ta
@@ -250,7 +242,7 @@ class PACorrection(Operation):
 
         ts.df = ts.df.with_columns(
             pl.when(filter_expr)
-            .then((pl.col(ts.column_name) + corrs["pa_corr"]).round(4))
+            .then((pl.col(ts.column_name) + corrs["pa_corr"]))
             .otherwise(pl.col(ts.column_name))
             .alias(ts.column_name)
         )
@@ -269,7 +261,8 @@ class WDCorrection(Operation):
         """Initialise the WD correction operation.
 
         Args:
-            correction_factor: The factor to add to the wind direction column.
+            ux: The TimeSeries object containing the u-component of wind data.
+            uy: The TimeSeries object containing the y-component of wind data.
 
         """
         self.ux = ux

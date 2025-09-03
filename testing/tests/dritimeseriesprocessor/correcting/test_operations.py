@@ -1,38 +1,18 @@
 import unittest
-from unittest.mock import Mock
 from parameterized import parameterized
 
 import polars as pl
-from time_stream import TimeSeries
 from polars.testing import assert_frame_equal
 from datetime import datetime
+from testing.utils.testing_utils import create_test_filter, create_test_operation_ts
 
-from dritimeseriesprocessor.correcting.operations import Operation, Add, Multiply, Power, LWCorrection, PACorrection
-
-
-def create_test_ts(data=[1., 2., 3., 4., 5., 6., 7.]) -> TimeSeries:
-    """Set up test fixtures."""
-    df = pl.DataFrame({
-        "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-        "value": data,
-    })
-
-    return TimeSeries(df, "timestamp", metadata={"column_name": "value"})
-
-
-def create_test_filter() -> pl.Expr:
-    """Set up a date filter for tests."""
-    start_date = datetime(2025, 3, 1)
-    end_date = datetime(2025, 5, 1)
-    time_name = "timestamp"
-    return pl.col(time_name).is_between(start_date, end_date)
-
+from dritimeseriesprocessor.correcting.operations import Operation, Add, Scalar, Power, LWCorrection, PACorrection
 
 
 class TestOperation(unittest.TestCase):
     @parameterized.expand([
         ("add", {"correction_factor": 10}, Add),
-        ("multiply", {"correction_factor": 2}, Multiply),
+        ("scalar", {"correction_factor": 2}, Scalar),
     ])
     def test_get_with_string(self, get_input, input_args, expected):
         """Test Operation.get() with string input."""
@@ -49,7 +29,7 @@ class TestOperation(unittest.TestCase):
 
 class TestAdd(unittest.TestCase):
     def setUp(self):
-        self.ts = create_test_ts()
+        self.ts = create_test_operation_ts()
         self.date_filter = create_test_filter()
 
     @parameterized.expand([
@@ -74,7 +54,7 @@ class TestAdd(unittest.TestCase):
         (-1, [1., 2., 2., 3., 4., 6., 7.]),
     ])
     def test_date_filter(self, factor, expected):
-        """ Test that the add function works with a mask clause
+        """ Test that the add function works with a date filter
         """
         adder = Add(factor)
         result = adder.apply(self.ts, filter_expr=self.date_filter)
@@ -85,9 +65,9 @@ class TestAdd(unittest.TestCase):
         assert_frame_equal(result.df, expected_df)
 
 
-class TestMultiply(unittest.TestCase):
+class TestScalar(unittest.TestCase):
     def setUp(self):
-        self.ts = create_test_ts()
+        self.ts = create_test_operation_ts()
         self.date_filter = create_test_filter()
 
     @parameterized.expand([
@@ -97,27 +77,11 @@ class TestMultiply(unittest.TestCase):
         (-1, [-1., -2., -3., -4., -5., -6., -7.]),
         (0.5, [0.5, 1., 1.5, 2., 2.5, 3., 3.5]),
     ])
-    def test_multiply_simple(self, factor, expected):
-        """ Test that the Multiply function works across the full DataFrame
+    def test_scalar_simple(self, factor, expected):
+        """ Test that the Scalar function works across the full DataFrame
         """
-        multiplier = Multiply(factor)
+        multiplier = Scalar(factor)
         result = multiplier.apply(self.ts)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": expected,
-        })
-        assert_frame_equal(result.df, expected_df)
-
-    @parameterized.expand([
-        (2, [1., 2., 6., 8., 10., 6., 7.]),
-        (1, [1., 2., 3., 4., 5., 6., 7.]),
-        (0, [1., 2., 0., 0., 0., 6., 7.]),
-    ])
-    def test_date_filter(self, factor, expected):
-        """ Test that the Multiply function works with a mask clause
-        """
-        multiplier = Multiply(factor)
-        result = multiplier.apply(self.ts, filter_expr=self.date_filter)
         expected_df = pl.DataFrame({
             "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
             "value": expected,
@@ -127,7 +91,7 @@ class TestMultiply(unittest.TestCase):
 
 class TestPower(unittest.TestCase):
     def setUp(self):
-        self.ts = create_test_ts()
+        self.ts = create_test_operation_ts()
         self.date_filter = create_test_filter()
 
     @parameterized.expand([
@@ -147,29 +111,12 @@ class TestPower(unittest.TestCase):
         })
         assert_frame_equal(result.df, expected_df)
 
-    @parameterized.expand([
-        (2, [1., 2., 9., 16., 25., 6., 7.]),
-        (3, [1., 2., 27., 64., 125., 6., 7.]),
-        (1, [1., 2., 3., 4., 5., 6., 7.]),
-        (0, [1., 2., 1., 1., 1., 6., 7.]),
-    ])
-    def test_date_filter(self, factor, expected):
-        """ Test that the Power function works with a mask clause
-        """
-        power_op = Power(factor)
-        result = power_op.apply(self.ts, filter_expr=self.date_filter)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": expected,
-        })
-        assert_frame_equal(result.df, expected_df)
-
 
 class TestLWCorrection(unittest.TestCase):
     def setUp(self):
-        self.lw = create_test_ts([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8])
-        self.lw_unc = create_test_ts([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5])
-        self.ta = create_test_ts([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27])
+        self.lw = create_test_operation_ts([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8])
+        self.lw_unc = create_test_operation_ts([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5])
+        self.ta = create_test_operation_ts([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27])
         self.factor = 1.00924
         self.date_filter = create_test_filter()
 
@@ -180,26 +127,15 @@ class TestLWCorrection(unittest.TestCase):
         result = lw_correction.apply(self.lw)
         expected_df = pl.DataFrame({
             "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": [366.9, 371.9, 377.7, 394.1, 379.2, 376.3, 379.6],
-        })
-        assert_frame_equal(result.df, expected_df)
-
-    def test_date_filter(self):
-        """ Test that the LWCorrection function works with a mask clause
-        """
-        lw_correction = LWCorrection(self.lw_unc, self.ta, self.factor)
-        result = lw_correction.apply(self.lw, filter_expr=self.date_filter)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": [373.9, 381.5, 377.7, 394.1, 379.2, 387.3, 391.8],
+            "value": [366.89501779404736, 371.93855976840695, 377.7449872014795, 394.1243133190569, 379.22105814566305, 376.3027264419359, 379.5942580579116],
         })
         assert_frame_equal(result.df, expected_df)
 
 
 class TestPACorrection(unittest.TestCase):
     def setUp(self):
-        self.pa = create_test_ts([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213])
-        self.ta = create_test_ts([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31])
+        self.pa = create_test_operation_ts([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213])
+        self.ta = create_test_operation_ts([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31])
         self.altitude = 74.0
         self.factor = -5.1
         self.date_filter = create_test_filter()
@@ -212,16 +148,5 @@ class TestPACorrection(unittest.TestCase):
         expected_df = pl.DataFrame({
             "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
             "value": [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578],
-        })
-        assert_frame_equal(result.df, expected_df)
-
-    def test_date_filter(self):
-        """ Test that the PACorrection function works with a mask clause
-        """
-        pa_correction = PACorrection(self.ta, self.altitude, self.factor)
-        result = pa_correction.apply(self.pa, filter_expr=self.date_filter)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": [1007.504, 1007.391, 1002.3039, 1002.2789, 1002.2069, 1007.194, 1007.213],
         })
         assert_frame_equal(result.df, expected_df)

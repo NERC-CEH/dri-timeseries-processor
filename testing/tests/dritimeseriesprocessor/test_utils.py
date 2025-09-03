@@ -1,9 +1,11 @@
 import polars as pl
 import polars.testing
 import unittest
+from unittest.mock import MagicMock
 from datetime import date, datetime
 
 from dritimeseriesprocessor import utils
+from metadata_manager.models.common import SERVICE_BASE_URI
 
 
 class TestValidateISO8601Duration(unittest.TestCase):
@@ -155,6 +157,63 @@ class TestNotMissingExpr(unittest.TestCase):
         df = pl.DataFrame({"value": [10, None, 30, float('nan'), 50]}, strict=False)
         result = df.with_columns(expr.alias("is_not_missing"))
         self.assertEqual(result["is_not_missing"].to_list(), [True, False, True, False, True])
+
+
+class DummyDepTS:
+    def __init__(self, column_name):
+        self.column_name = column_name
+
+class DummyConfigItem:
+    def __init__(self, parameters):
+        self.parameters = parameters
+
+class TestExtractDepTs(unittest.TestCase):
+    def setUp(self):
+        # Setup dummy dependency timeseries containers
+        self.dep_ts1 = DummyDepTS("DEP1")
+        self.dep_ts2 = DummyDepTS("DEP2")
+        self.ts_ids = {
+            f"{SERVICE_BASE_URI}/id/dataset/dep1": {"data": self.dep_ts1},
+            f"{SERVICE_BASE_URI}/id/dataset/dep2": {"data": self.dep_ts2},
+        }
+
+    def test_single_dep_ts_as_string(self):
+        """Test with a single dependency time series ID as a string."""
+        config = DummyConfigItem(parameters={"dep_ts": "DEP1"})
+        result = utils.extract_dep_ts(config, self.ts_ids)
+        self.assertNotIn("dep_ts", result.parameters)
+        self.assertIn("dep1", result.parameters)
+        self.assertIs(result.parameters["dep1"], self.dep_ts1)
+
+    def test_multiple_dep_ts_as_list(self):
+        """Test with multiple dependency time series IDs as a list."""
+        config = DummyConfigItem(parameters={"dep_ts": ["DEP1", "DEP2"]})
+        result = utils.extract_dep_ts(config, self.ts_ids)
+        self.assertNotIn("dep_ts", result.parameters)
+        self.assertIn("dep1", result.parameters)
+        self.assertIn("dep2", result.parameters)
+        self.assertIs(result.parameters["dep1"], self.dep_ts1)
+        self.assertIs(result.parameters["dep2"], self.dep_ts2)
+
+    def test_dep_ts_not_found_raises(self):
+        """Test that a ValueError is raised if a dependency time series ID is not found."""
+        config = DummyConfigItem(parameters={"dep_ts": "NOTFOUND"})
+        with self.assertRaises(ValueError) as err:
+            utils.extract_dep_ts(config, self.ts_ids)
+        self.assertIn("Dependency time series ID NOTFOUND not found", str(err.exception))
+
+    def test_no_dep_ts_key(self):
+        """Test that the config is returned unchanged if there is no 'dep_ts' key."""
+        config = DummyConfigItem(parameters={"other_param": 123})
+        result = utils.extract_dep_ts(config, self.ts_ids)
+        self.assertEqual(result.parameters, {"other_param": 123})
+
+    def test_dep_ts_case_insensitive(self):
+        """Test that dependency time series IDs are handled case-insensitively."""
+        config = DummyConfigItem(parameters={"dep_ts": "dep1"})
+        result = utils.extract_dep_ts(config, self.ts_ids)
+        self.assertIn("dep1", result.parameters)
+        self.assertIs(result.parameters["dep1"], self.dep_ts1)
 
 
 class TestSplitDataForProcessing(unittest.TestCase):

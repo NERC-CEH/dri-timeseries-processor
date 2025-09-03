@@ -5,6 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, time
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
+from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
+from metadata_manager.models.common import SERVICE_BASE_URI
 
 import isodate
 import polars as pl
@@ -109,32 +111,36 @@ def not_missing_expr(column_name: str) -> pl.Expr:
     return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
 
 
-def get_date_filter(
-    time_name: str, observation_interval: datetime | tuple[datetime, datetime | None] | None
-) -> pl.Expr:
-    """Get Polars expression for observation date interval filtering.
+def extract_dep_ts(config: ConfigItem, ts_ids: Dict[str, TimeseriesContainer]) -> ConfigItem:
+    """Configs can contain dependency time series IDs. These should be replaced with the actual data
 
     Args:
-        time_name: The name of the time column to create the filter for
-        observation_interval: Tuple of (start_date, end_date) defining the time period.
+        config: A correction configuration object
+        ts_ids: Metadata and data for timeseries ids
 
     Returns:
-        pl.Expr: Boolean polars expression for date filtering.
+        The updated correction configuration object with dependency time series mapped to TimeSeries objects.
     """
-    if observation_interval:
-        if isinstance(observation_interval, datetime):
-            start_date = observation_interval
-            end_date = None
+    # Map dependency time series IDs to TimeSeries objects
+    if "dep_ts" in config.parameters:
+        if isinstance(config.parameters["dep_ts"], str):
+            dep_ts_ids = [config.parameters["dep_ts"]]
         else:
-            start_date, end_date = observation_interval
+            dep_ts_ids = config.parameters["dep_ts"]
 
-        if end_date is None:
-            return pl.col(time_name) >= start_date
-        else:
-            return pl.col(time_name).is_between(start_date, end_date)
+        for dep_ts_id in dep_ts_ids:
+            full_dep_ts_id = f"{SERVICE_BASE_URI}/id/dataset/{dep_ts_id.lower()}"
+            if full_dep_ts_id not in ts_ids:
+                raise ValueError(f"Dependency time series ID {dep_ts_id} not found in provided data.")
 
-    else:
-        return pl.lit(True)
+            dep_ts = ts_ids[full_dep_ts_id]["data"]
+            # Add the dependency time series to the parameters
+            config.parameters[dep_ts.column_name.lower()] = dep_ts
+
+        # No longer need this key in the parameters once we've got the dependency time series
+        config.parameters.pop("dep_ts")
+
+    return config
 
 
 def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:

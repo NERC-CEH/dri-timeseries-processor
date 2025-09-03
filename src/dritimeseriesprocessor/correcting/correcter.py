@@ -2,12 +2,15 @@ import logging
 from functools import lru_cache
 from typing import Dict
 
+import polars as pl
+from time_stream.utils import get_date_filter
+
 from dritimeseriesprocessor.correcting.operations import Operation
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.utils import get_date_filter, not_missing_expr
-from metadata_manager.models.common import SERVICE_BASE_URI, build_processing_config_timeseries_id_query_parameter
+from dritimeseriesprocessor.utils import not_missing_expr, extract_dep_ts
+from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
 
 logger = logging.getLogger(__name__)
@@ -59,13 +62,16 @@ def run_corrections(
         if corrs_flag_col not in ts.columns:
             ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
-        for data_processing_config in correction_configs:
+        for correction_config in correction_configs:
             # Run the corrections on the timeseries
-            for corr_config in data_processing_config.configs:
-                date_filter = get_date_filter(ts.time_name, corr_config.observation_interval)
+            for corr_config in correction_config.configs:
+                if corr_config.observation_interval:
+                    date_filter = get_date_filter(ts.time_name, corr_config.observation_interval)
+                else:
+                    date_filter = pl.lit(True)
 
                 # Only apply the correction if there is data in the observation interval
-                if not ts.df.filter(date_filter).height:
+                if ts.df.filter(date_filter).is_empty():
                     logger.info(
                         f"No data in observation interval {corr_config.observation_interval} for "
                         f"Time Series ID: {ts_id}, skipping correction {corr_config.name}"
@@ -73,27 +79,13 @@ def run_corrections(
                     continue
 
                 corr_method_metadata = correction_methods.get(corr_config.name)
+                if not corr_method_metadata:
+                    raise ValueError(f"Correction method {corr_config.name} not found in methods registry.")
 
-                # Map dependency time series IDs to TimeSeries objects
-                if "dep_ts" in corr_config.parameters:
-                    if isinstance(corr_config.parameters["dep_ts"], str):
-                        dep_ts_ids = [corr_config.parameters["dep_ts"]]
-                    else:
-                        dep_ts_ids = corr_config.parameters["dep_ts"]
-
-                    for dep_ts_id in dep_ts_ids:
-                        full_dep_ts_id = f"{SERVICE_BASE_URI}/id/dataset/{dep_ts_id.lower()}"
-                        if full_dep_ts_id not in ts_ids:
-                            raise ValueError(f"Dependency time series ID {dep_ts_id} not found in provided data.")
-
-                        dep_ts = ts_ids[full_dep_ts_id]["data"]
-                        # Add the dependency time series to the parameters
-                        corr_config.parameters[dep_ts.column_name.lower()] = dep_ts
-
-                    # No longer need this key in the parameters once we've got the dependency time series
-                    corr_config.parameters.pop("dep_ts")
+                corr_config = extract_dep_ts(corr_config, ts_ids)
 
                 if corr_method_metadata.arg_mapping:
+                    # Map argument names to match those expected by the operation, where needed.
                     for old_name, new_name in corr_method_metadata.arg_mapping.items():
                         if old_name in corr_config.parameters:
                             corr_config.parameters[new_name] = corr_config.parameters.pop(old_name)

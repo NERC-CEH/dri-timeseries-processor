@@ -17,9 +17,9 @@
     },
     "scalar": {
         "name": "SCALAR",
-        "description": "Multiply the data point by a correction factor. E.g. y=Cx where x is the data point and C is the correction factor.",
+        "description": "Scale the data point by a correction factor. E.g. y=Cx where x is the data point and C is the correction factor.",
         "id": 4,
-        "function_name": "multiply"
+        "function_name": "scalar"
     },
     "pa_corr": {
         "name": "PA_CORR",
