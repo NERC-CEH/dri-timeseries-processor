@@ -9,7 +9,7 @@ from dritimeseriesprocessor.correcting.operations import Operation
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
-from dritimeseriesprocessor.utils import not_missing_expr, extract_dep_ts
+from dritimeseriesprocessor.utils import extract_dep_ts, not_missing_expr
 from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
 
@@ -82,16 +82,16 @@ def run_corrections(
                 if not corr_method_metadata:
                     raise ValueError(f"Correction method {corr_config.name} not found in methods registry.")
 
-                corr_config = extract_dep_ts(corr_config, ts_ids)
+                corr_config_update = extract_dep_ts(corr_config, ts_ids)
 
                 if corr_method_metadata.arg_mapping:
                     # Map argument names to match those expected by the operation, where needed.
                     for old_name, new_name in corr_method_metadata.arg_mapping.items():
-                        if old_name in corr_config.parameters:
-                            corr_config.parameters[new_name] = corr_config.parameters.pop(old_name)
+                        if old_name in corr_config_update.parameters:
+                            corr_config_update.parameters[new_name] = corr_config_update.parameters.pop(old_name)
 
                 # Apply the specified correction function to the DataFrame
-                op = Operation.get(corr_method_metadata.function_name, **corr_config.parameters)
+                op = Operation.get(corr_method_metadata.function_name, **corr_config_update.parameters)
                 ts = op.apply(
                     ts,
                     filter_expr=date_filter,
@@ -99,7 +99,7 @@ def run_corrections(
 
                 # Apply flagging to the DataFrame.
                 expr = date_filter & not_missing_expr(ts.column_name)
-                ts.add_flag(corrs_flag_col, corr_config.name, expr)
+                ts.add_flag(corrs_flag_col, corr_config_update.name, expr)
 
         ts = update_corrections_core_flags(ts)
 
