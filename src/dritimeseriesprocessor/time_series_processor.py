@@ -31,6 +31,7 @@ from metadata_manager.models.service import (
     load_datasets,
     load_dependent_datasets,
     load_sites,
+    update_correction_configs_with_site_attributes,
 )
 from metadata_manager.transformers import (
     extract_correction_dependencies,
@@ -251,6 +252,7 @@ class TimeSeriesProcessor:
         # Load all config
         corr_configs = load_config("correction", ts_ids_query_parameter)
         corr_dep_ts_ids = extract_correction_dependencies(corr_configs)
+        corr_configs = update_correction_configs_with_site_attributes(corr_configs)
 
         qc_configs = load_config("quality_control", ts_ids_query_parameter)
         qc_dep_ts_ids = extract_qc_dependencies(qc_configs)

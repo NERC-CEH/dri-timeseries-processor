@@ -131,6 +131,25 @@ class MetadataAPIManager:
         response = await self._make_paginated_api_call(f"{self.host}/id/network/{self.network}")
         return response
 
+    async def fetch_site_metadata(self, site_id: str) -> Dict[str, Any]:
+        """
+        Fetch metadata for a single site ID
+
+        Args:
+            site_id: The site ID to fetch site metadata for.
+
+        Returns:
+            JSON response containing the metadata for the site ID.
+
+        Raises:
+            HTTPError: If the API request fails.
+
+        """
+        url = f"{self.host}/id/site/{site_id}"
+        response = await self._make_paginated_api_call(url)
+
+        return response
+
     async def fetch_processing_configs(self, parameters: List[Tuple[str, str]]) -> Dict[str, Any]:
         """Fetch processing configurations. This can be for infill, QC, and/or correction.
 
