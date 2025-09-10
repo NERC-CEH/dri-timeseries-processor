@@ -50,12 +50,13 @@ class TestMethod(unittest.TestCase):
             Method.model_validate(method_dict)
 
     def test_call_method(self):
-        """Test calling the method invokes the correct function with correct arguments."""
+        """Test calling the method invokes the correct function. Only valid with calculate/aggregation methods."""
         method_dict = self.method_dict.copy()
-        method_dict["function_name"] = "multiply"
+        method_dict["method_type"] = "calculate"
+        method_dict["function_name"] = "NetRadiation"
         
         mock_function = MagicMock(return_value="test_result")
-        with patch('dritimeseriesprocessor.correcting.operations.multiply', mock_function):
+        with patch('dritimeseriesprocessor.deriving.derivations.NetRadiation', mock_function):
             method = Method.model_validate(method_dict)
             result = method(arg1="value1", arg2="value2")
             mock_function.assert_called_once_with(arg1="value1", arg2="value2")
@@ -63,7 +64,9 @@ class TestMethod(unittest.TestCase):
 
     def test_call_missing_function(self):
         """Test that calling a non-existent function raises ValueError."""
-        method = Method.model_validate(self.method_dict)
+        method_dict = self.method_dict.copy()
+        method_dict["method_type"] = "calculate"
+        method = Method.model_validate(method_dict)
         with self.assertRaises(ValueError):
             method()
 

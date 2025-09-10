@@ -11,6 +11,8 @@ import polars as pl
 from polars.dataframe.group_by import GroupBy
 
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
+from metadata_manager.models.common import SERVICE_BASE_URI
+from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +109,38 @@ def not_missing_expr(column_name: str) -> pl.Expr:
         Expression for not missing values
     """
     return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
+
+
+def extract_dep_ts(config: ConfigItem, ts_ids: Dict[str, TimeseriesContainer]) -> ConfigItem:
+    """Configs can contain dependency time series IDs. These should be replaced with the actual data
+
+    Args:
+        config: A correction configuration object
+        ts_ids: Metadata and data for timeseries ids
+
+    Returns:
+        The updated correction configuration object with dependency time series mapped to TimeSeries objects.
+    """
+    # Map dependency time series IDs to TimeSeries objects
+    if "dep_ts" in config.parameters:
+        if isinstance(config.parameters["dep_ts"], str):
+            dep_ts_ids = [config.parameters["dep_ts"]]
+        else:
+            dep_ts_ids = config.parameters["dep_ts"]
+
+        for dep_ts_id in dep_ts_ids:
+            full_dep_ts_id = f"{SERVICE_BASE_URI}/id/dataset/{dep_ts_id.lower()}"
+            if full_dep_ts_id not in ts_ids:
+                raise ValueError(f"Dependency time series ID {dep_ts_id} not found in provided data.")
+
+            dep_ts = ts_ids[full_dep_ts_id]["data"]
+            # Add the dependency time series to the parameters
+            config.parameters[dep_ts.column_name.lower()] = dep_ts
+
+        # No longer need this key in the parameters once we've got the dependency time series
+        config.parameters.pop("dep_ts")
+
+    return config
 
 
 def remove_sites_not_in_store(sites: list, metadata_sites: list) -> list:

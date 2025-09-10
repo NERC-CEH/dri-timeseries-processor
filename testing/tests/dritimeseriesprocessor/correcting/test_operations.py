@@ -1,118 +1,152 @@
 import unittest
+from parameterized import parameterized
 
 import polars as pl
 from polars.testing import assert_frame_equal
+from datetime import datetime
+from testing.utils.testing_utils import create_test_filter, create_test_operation_ts
 
-from dritimeseriesprocessor.correcting.operations import add, multiply, power
+from dritimeseriesprocessor.correcting.operations import Operation, Add, Scalar, Power, LWCorrection, PACorrection
 
 
-def create_test_data():
-    return pl.DataFrame({
-        "SITE_ID": ["site1", "site2", "site3"],
-        "value": [10., 20., 30.],
-    })
+class TestOperation(unittest.TestCase):
+    @parameterized.expand([
+        ("add", {"correction_factor": 10}, Add),
+        ("scalar", {"correction_factor": 2}, Scalar),
+    ])
+    def test_get_with_string(self, get_input, input_args, expected):
+        """Test Operation.get() with string input."""
+        op = Operation.get(get_input, **input_args)
+        self.assertIsInstance(op, expected)
+        for arg, val in input_args.items():
+            self.assertEqual(getattr(op, arg), val)
+
+    def test_get_with_bad_string(self):
+        """Test Operation.get() with invalid string."""
+        with self.assertRaises(ValueError):
+            Operation.get("bad_operation")
 
 
 class TestAdd(unittest.TestCase):
     def setUp(self):
-        self.df = create_test_data()
+        self.ts = create_test_operation_ts()
+        self.date_filter = create_test_filter()
 
-    def test_add_simple(self):
+    @parameterized.expand([
+        (100, [101., 102., 103., 104., 105., 106., 107.]),
+        (0, [1., 2., 3., 4., 5., 6., 7.]),
+        (-1, [0., 1., 2., 3., 4., 5., 6.]),
+    ])
+    def test_add_simple(self, factor, expected):
         """ Test that the add function works across the full DataFrame
         """
-        result = add(self.df, "value", 100)
-        expected = pl.DataFrame({
-            "SITE_ID": ["site1", "site2", "site3"],
-            "value": [110., 120., 130.],
+        adder = Add(factor)
+        result = adder.apply(self.ts)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": expected,
         })
+        assert_frame_equal(result.df, expected_df)
 
-        assert_frame_equal(result, expected)
-
-    def test_add_mask(self):
-        """ Test that the add function works with a mask clause
+    @parameterized.expand([
+        (100, [1., 2., 103., 104., 105., 6., 7.]),
+        (0, [1., 2., 3., 4., 5., 6., 7.]),
+        (-1, [1., 2., 2., 3., 4., 6., 7.]),
+    ])
+    def test_date_filter(self, factor, expected):
+        """ Test that the add function works with a date filter
         """
-        mask = pl.col("SITE_ID").eq("site1")
-        result = add(self.df, "value", 100, mask)
-        expected = pl.DataFrame({
-            "SITE_ID": ["site1", "site2", "site3"],
-            "value": [110., 20., 30.],
+        adder = Add(factor)
+        result = adder.apply(self.ts, filter_expr=self.date_filter)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": expected,
         })
-
-        assert_frame_equal(result, expected)
-
-    def test_no_matching_rows(self):
-        """ Test when no rows match the condition
-        """
-        mask = pl.col("SITE_ID").eq("site4")
-        result = add(self.df, "value", 100, mask)
-        assert_frame_equal(result, self.df)
+        assert_frame_equal(result.df, expected_df)
 
 
-class TestMultiply(unittest.TestCase):
+class TestScalar(unittest.TestCase):
     def setUp(self):
-        self.df = create_test_data()
+        self.ts = create_test_operation_ts()
+        self.date_filter = create_test_filter()
 
-    def test_multiply_simple(self):
-        """ Test that the multiply function works across the full DataFrame
+    @parameterized.expand([
+        (2, [2., 4., 6., 8., 10., 12., 14.]),
+        (1, [1., 2., 3., 4., 5., 6., 7.]),
+        (0, [0., 0., 0., 0., 0., 0., 0.]),
+        (-1, [-1., -2., -3., -4., -5., -6., -7.]),
+        (0.5, [0.5, 1., 1.5, 2., 2.5, 3., 3.5]),
+    ])
+    def test_scalar_simple(self, factor, expected):
+        """ Test that the Scalar function works across the full DataFrame
         """
-        result = multiply(self.df, "value", 2.)
-        expected = pl.DataFrame({
-            "SITE_ID": ["site1", "site2", "site3"],
-            "value": [20., 40., 60.],
+        multiplier = Scalar(factor)
+        result = multiplier.apply(self.ts)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": expected,
         })
-
-        assert_frame_equal(result, expected)
-
-    def test_multiply_mask(self):
-        """ Test that the multiply function works with a mask clause
-        """
-        mask = pl.col("SITE_ID").eq("site2")
-        result = multiply(self.df, "value", 2., mask)
-        expected = pl.DataFrame({
-            "SITE_ID": ["site1", "site2", "site3"],
-            "value": [10., 40., 30.],
-        })
-
-        assert_frame_equal(result, expected)
-
-    def test_no_matching_rows(self):
-        """ Test there is no change when no rows match the mask expression
-        """
-        mask = pl.col("SITE_ID").eq("site4")
-        result = multiply(self.df, "value", 2., mask)
-        assert_frame_equal(result, self.df)
+        assert_frame_equal(result.df, expected_df)
 
 
 class TestPower(unittest.TestCase):
     def setUp(self):
-        self.df = create_test_data()
+        self.ts = create_test_operation_ts()
+        self.date_filter = create_test_filter()
 
-    def test_power_simple(self):
-        """ Test that the power function works across the full DataFrame
+    @parameterized.expand([
+        (2, [1., 4., 9., 16., 25., 36., 49.]),
+        (3, [1., 8., 27., 64., 125., 216., 343.]),
+        (1, [1., 2., 3., 4., 5., 6., 7.]),
+        (0, [1., 1., 1., 1., 1., 1., 1.]),
+    ])
+    def test_power_simple(self, factor, expected):
+        """ Test that the Power function works across the full DataFrame
         """
-        result = power(self.df, "value", 2.)
-        expected = pl.DataFrame({
-            "SITE_ID": ["site1", "site2", "site3"],
-            "value": [100., 400., 900.],
+        power_op = Power(factor)
+        result = power_op.apply(self.ts)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": expected,
         })
+        assert_frame_equal(result.df, expected_df)
 
-        assert_frame_equal(result, expected)
 
-    def test_power_mask(self):
-        """ Test that the power function works with a mask clause
+class TestLWCorrection(unittest.TestCase):
+    def setUp(self):
+        self.lw = create_test_operation_ts([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8])
+        self.lw_unc = create_test_operation_ts([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5])
+        self.ta = create_test_operation_ts([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27])
+        self.factor = 1.00924
+        self.date_filter = create_test_filter()
+
+    def test_lw_correction_simple(self):
+        """ Test that the LWCorrection function works across the full DataFrame
         """
-        mask = pl.col("SITE_ID").eq("site2")
-        result = power(self.df, "value", 2., mask)
-        expected = pl.DataFrame({
-            "SITE_ID": ["site1", "site2", "site3"],
-            "value": [10., 400., 30.],
+        lw_correction = LWCorrection(self.lw_unc, self.ta, self.factor)
+        result = lw_correction.apply(self.lw)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": [366.89501779404736, 371.93855976840695, 377.7449872014795, 394.1243133190569, 379.22105814566305, 376.3027264419359, 379.5942580579116],
         })
+        assert_frame_equal(result.df, expected_df)
 
-        assert_frame_equal(result, expected)
 
-    def test_no_matching_rows(self):
-        """ Test there is no change when no rows match the mask expression
+class TestPACorrection(unittest.TestCase):
+    def setUp(self):
+        self.pa = create_test_operation_ts([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213])
+        self.ta = create_test_operation_ts([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31])
+        self.altitude = 74.0
+        self.factor = -5.1
+        self.date_filter = create_test_filter()
+
+    def test_pa_correction_simple(self):
+        """ Test that the PACorrection function works across the full DataFrame
         """
-        mask = pl.col("SITE_ID").eq("site4")
-        result = power(self.df, "value", 2., mask)
-        assert_frame_equal(result, self.df)
+        pa_correction = PACorrection(self.ta, self.altitude, self.factor)
+        result = pa_correction.apply(self.pa)
+        expected_df = pl.DataFrame({
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578],
+        })
+        assert_frame_equal(result.df, expected_df)
