@@ -3,19 +3,23 @@
         "name": "ADD",
         "description": "Sum the data point and correction value. E.g. y=x+ C, where x is the data point and C is the change factor.",
         "id": 1,
-        "function_name": "add" 
+        "function_name": "add"
     },
     "lw_corr": {
         "name": "LW_CORR",
         "description": "Correction for long wave radiation where calibration values are incorrect.",
         "id": 2,
-        "function_name": "lw"
+        "function_name": "lw_corr",
+        "arg_mapping": {
+            "lwout_unc": "lw_unc",
+            "lwin_unc": "lw_unc"
+        }
     },
     "scalar": {
         "name": "SCALAR",
-        "description": "Multiply the data point by a correction factor. E.g. y=Cx where x is the data point and C is the correction factor.",
+        "description": "Scale the data point by a correction factor. E.g. y=Cx where x is the data point and C is the correction factor.",
         "id": 4,
-        "function_name": "multiply"
+        "function_name": "scalar"
     },
     "pa_corr": {
         "name": "PA_CORR",
