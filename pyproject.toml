@@ -50,8 +50,8 @@ dev = [
 version = { attr = "dritimeseriesprocessor.__version__" }
 
 [tool.setuptools.packages.find]
-where = ["src", "driutils"]
-include = ["dritimeseriesprocessor*", "databuilder*", "driutils*"]
+where = ["src"]
+include = ["dritimeseriesprocessor*", "databuilder*", "metadata_manager*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
@@ -102,3 +102,4 @@ strict = true
 
 [tool.uv.sources]
 time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
+dri-utils = {git = "https://github.com/NERC-CEH/dri-utils.git", branch = "feature/FPM-554-move-metadata-api-code"}
