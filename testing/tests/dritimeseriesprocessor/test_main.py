@@ -5,8 +5,8 @@ from unittest import mock
 import polars as pl
 
 from dritimeseriesprocessor.__main__ import main
-from metadata_manager.api_manager import MetadataAPIManager
-from testing.utils.mock_metadata_api import MockMetadataAPI
+from driutils.metadata_api.api_manager import MetadataAPIManager
+from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.s3_test_helper import S3TestHelper
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 
 [[package]]
@@ -469,6 +469,23 @@ wheels = [
 ]
 
 [[package]]
+name = "dri-utils"
+version = "0.0.15"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git#2bb10f1df8d13babcef00c5f99e369580497986a" }
+dependencies = [
+    { name = "autosemver" },
+    { name = "boto3" },
+    { name = "duckdb" },
+    { name = "httpx" },
+    { name = "isodate" },
+    { name = "moto" },
+    { name = "mypy-boto3-s3" },
+    { name = "polars" },
+    { name = "setuptools" },
+    { name = "tenacity" },
+]
+
+[[package]]
 name = "dritimeseriesprocessor"
 source = { editable = "." }
 dependencies = [
@@ -476,6 +493,7 @@ dependencies = [
     { name = "boto3" },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "config" },
+    { name = "dri-utils" },
     { name = "duckdb" },
     { name = "httpx" },
     { name = "isodate" },
@@ -528,6 +546,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.34.138" },
     { name = "boto3-stubs", extras = ["s3"] },
     { name = "config", specifier = ">=0.5.1" },
+    { name = "dri-utils", extras = ["all"], git = "https://github.com/NERC-CEH/dri-utils.git" },
     { name = "duckdb", specifier = ">=1.1.2" },
     { name = "httpx" },
     { name = "isodate" },

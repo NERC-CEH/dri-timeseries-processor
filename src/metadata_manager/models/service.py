@@ -3,8 +3,9 @@ import json
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
+from driutils.metadata_api.api_manager import MetadataAPIManager
+
 from dritimeseriesprocessor.configuration import app_config
-from metadata_manager.api_manager import MetadataAPIManager
 from metadata_manager.models.common import ComponentType, build_processing_config_type_query_parameter
 from metadata_manager.models.methods.method_registry import (
     AggregationMethods,

@@ -5,8 +5,8 @@ import polars as pl
 from time_stream import TimeSeries, Period
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.correcting.correcter import run_corrections
-from metadata_manager.api_manager import MetadataAPIManager
-from testing.utils.mock_metadata_api import MockMetadataAPI
+from driutils.metadata_api.api_manager import MetadataAPIManager
+from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
