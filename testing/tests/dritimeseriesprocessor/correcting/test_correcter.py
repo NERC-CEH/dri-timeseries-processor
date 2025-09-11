@@ -2,14 +2,14 @@ from datetime import datetime
 from unittest import mock
 
 import polars as pl
+from driutils.metadata_api.api_manager import MetadataAPIManager
+from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from time_stream import Period, TimeSeries
 
 from dritimeseriesprocessor.correcting.correcter import run_corrections, update_config_item_with_site_attributes
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from metadata_manager.api_manager import MetadataAPIManager
 from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
 from testing.utils.base_test_helper import BaseTestHelper
-from testing.utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
