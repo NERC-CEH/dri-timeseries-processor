@@ -126,7 +126,6 @@ def update_config_item_with_site_attributes(config_item: ConfigItem, site_id: st
     Args:
         config_item: List of correction configuration objects.
 
-
     Returns:
         config_item: The config item to be updated
         site_id: The ID of the site the configuration applies to.
