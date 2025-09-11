@@ -50,8 +50,8 @@ dev = [
 version = { attr = "dritimeseriesprocessor.__version__" }
 
 [tool.setuptools.packages.find]
-where = ["src"]
-include = ["dritimeseriesprocessor*", "databuilder*"]
+where = ["src", "driutils"]
+include = ["dritimeseriesprocessor*", "databuilder*", "driutils*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]

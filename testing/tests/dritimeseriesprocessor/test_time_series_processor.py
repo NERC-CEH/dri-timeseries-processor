@@ -7,8 +7,8 @@ from parameterized import parameterized
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor, UserTsID
-from metadata_manager.api_manager import MetadataAPIManager
-from testing.utils.mock_metadata_api import MockMetadataAPI
+from driutils.metadata_api.api_manager import MetadataAPIManager
+from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 

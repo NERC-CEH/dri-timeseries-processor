@@ -224,8 +224,8 @@ An example script for mocking the metadata api can be found below
 
 ```python
 from unittest import mock
-from metadata_manager.api_manager import MetadataAPIManager
-from testing.utils.mock_metadata_api import MockMetadataAPI
+from driutils.metadata_api.api_manager import MetadataAPIManager
+from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
