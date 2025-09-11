@@ -470,8 +470,8 @@ wheels = [
 
 [[package]]
 name = "dri-utils"
-version = "0.0.20"
-source = { git = "https://github.com/NERC-CEH/dri-utils.git?branch=feature%2FFPM-554-move-metadata-api-code#d5468c6a8a7424c238d5f62099fcb7a2690e8b86" }
+version = "0.0.15"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git#2bb10f1df8d13babcef00c5f99e369580497986a" }
 dependencies = [
     { name = "autosemver" },
     { name = "boto3" },
@@ -546,7 +546,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.34.138" },
     { name = "boto3-stubs", extras = ["s3"] },
     { name = "config", specifier = ">=0.5.1" },
-    { name = "dri-utils", extras = ["all"], git = "https://github.com/NERC-CEH/dri-utils.git?branch=feature%2FFPM-554-move-metadata-api-code" },
+    { name = "dri-utils", extras = ["all"], git = "https://github.com/NERC-CEH/dri-utils.git" },
     { name = "duckdb", specifier = ">=1.1.2" },
     { name = "httpx" },
     { name = "isodate" },
