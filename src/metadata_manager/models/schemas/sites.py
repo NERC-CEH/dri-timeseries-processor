@@ -5,6 +5,53 @@ from pydantic import BaseModel, Field, model_validator
 from metadata_manager.models.common import get_property
 
 
+class SiteMetadata(BaseModel):
+    """Site metadata information
+
+    Attributes:
+        id: ID for the site (e.g. 'http://fdri.ceh.ac.uk/id/site/cosmos-alic1').
+        altitude: The altitude of the site location.
+
+    """
+
+    id: str
+    altitude: float
+
+    @model_validator(mode="before")
+    @classmethod
+    def model_validate(cls, data: Dict[str, Any], *args, **kwargs) -> Dict[str, Any]:
+        site_metadata = {"id": data["@id"], "altitude": data["altitude"]}
+        return site_metadata
+
+
+class SiteMetadataResponse(BaseModel):
+    """Response wrapper that automatically extracts the single site metadata item"""
+
+    item: SiteMetadata = Field(None)
+
+    @classmethod
+    def model_validate(cls, obj: Dict[str, Any], *args, **kwargs) -> SiteMetadata:
+        """Validate and extract a single site metadata item from the response.
+
+        Args:
+            obj: Dictionary containing the response with an "items" key.
+            *args: Additional positional arguments (needed to match call to BaseModel.model_validate).
+            **kwargs: Additional keyword arguments (needed to match call to BaseModel.model_validate).
+
+        Returns:
+            SitesMetadata: The validated sites metadata instance.
+
+        Raises:
+            ValueError: If the "items" list does not contain exactly one item.
+
+        """
+        if len(obj["items"]) != 1:
+            raise ValueError(f"Expected exactly one item in the site metadata response, got {len(obj['items'])}")
+
+        # Create a new dict with the single item
+        return SiteMetadata.model_validate(obj["items"][0])
+
+
 class Sites(BaseModel):
     """Sites information.
 

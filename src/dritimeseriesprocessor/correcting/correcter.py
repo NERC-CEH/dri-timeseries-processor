@@ -1,4 +1,5 @@
 import logging
+import re
 from functools import lru_cache
 from typing import Dict
 
@@ -10,8 +11,11 @@ from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, upda
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.utils import extract_dep_ts, not_missing_expr
-from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
-from metadata_manager.models.service import load_config, load_methods
+from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, build_processing_config_timeseries_id_query_parameter
+from metadata_manager.models.schemas.data_processing_configurations import (
+    ConfigItem,
+)
+from metadata_manager.models.service import load_config, load_methods, load_site_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +67,11 @@ def run_corrections(
             ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
         for correction_config in correction_configs:
+            correction_config.configs = [
+                update_config_item_with_site_attributes(config_item=config_item, site_id=correction_config.site_id)
+                for config_item in correction_config.configs
+            ]
+
             # Run the corrections on the timeseries
             for corr_config in correction_config.configs:
                 if corr_config.observation_interval:
@@ -104,3 +113,35 @@ def run_corrections(
         ts = update_corrections_core_flags(ts)
 
     return ts_ids
+
+
+def update_config_item_with_site_attributes(config_item: ConfigItem, site_id: str) -> ConfigItem:
+    """
+    Update the correct configs with the values for any site parameters required.
+
+    For example, if a config contains a site_parameter value of "ALTITUDE", the metadata for the site
+    corresponding to the config will be fetched. The altitude value will be extracted and the
+    "site_parameter" key value  pair will be replaced with "altitude": altitude_value.
+
+    Args:
+        config_item: List of correction configuration objects.
+
+    Returns:
+        config_item: The config item to be updated
+        site_id: The ID of the site the configuration applies to.
+
+    """
+    # If site_attribute isn't in the config item parameters no changes need to be made to the config item.
+    if not config_item.parameters.get("site_attribute"):
+        return config_item
+
+    site_id = re.match(URI_ID_EXTRACT_REGEX, site_id).group(1)
+    site_metadata = load_site_metadata(site_id)
+
+    # Replace the site attribute entry in the parameter dictionary with the corresponding key-value
+    # pair for the attribute itself
+    site_attribute_key = config_item.parameters["site_attribute"].lower()
+    del config_item.parameters["site_attribute"]
+    config_item.parameters[site_attribute_key] = site_metadata.get(site_attribute_key)
+
+    return config_item

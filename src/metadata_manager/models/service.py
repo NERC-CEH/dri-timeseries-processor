@@ -6,7 +6,10 @@ from typing import List, Optional, Tuple, Union
 from driutils.metadata_api.api_manager import MetadataAPIManager
 
 from dritimeseriesprocessor.configuration import app_config
-from metadata_manager.models.common import ComponentType, build_processing_config_type_query_parameter
+from metadata_manager.models.common import (
+    ComponentType,
+    build_processing_config_type_query_parameter,
+)
 from metadata_manager.models.methods.method_registry import (
     AggregationMethods,
     CorrectionMethods,
@@ -14,13 +17,15 @@ from metadata_manager.models.methods.method_registry import (
     InfillingMethods,
     QcMethods,
 )
-from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
+from metadata_manager.models.schemas.data_processing_configurations import (
+    DataProcessingConfigurations,
+)
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
 from metadata_manager.models.schemas.dependencies import (
     DependentTimeSeriesMetadata,
     DependentTimeSeriesMetadataResponse,
 )
-from metadata_manager.models.schemas.sites import SitesResponse
+from metadata_manager.models.schemas.sites import SiteMetadataResponse, SitesResponse
 
 METADATA_CONNECTION = MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
@@ -141,3 +146,20 @@ def load_sites() -> SitesResponse:
     """
     data = asyncio.run(METADATA_CONNECTION.fetch_sites())
     return SitesResponse.model_validate(data)
+
+
+def load_site_metadata(site_id: str) -> SiteMetadataResponse:
+    """
+    Load metadata for a specific site ID
+
+    Args:
+        site_id: The site ID to load metadata for,
+
+    Returns:
+        SiteMetadataReponse from the metadata API
+
+    """
+    response = asyncio.run(METADATA_CONNECTION.fetch_site_metadata(site_id=site_id))
+    site_metadata = SiteMetadataResponse.model_validate(response)
+
+    return site_metadata
