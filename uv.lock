@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 
 [[package]]
@@ -469,6 +469,27 @@ wheels = [
 ]
 
 [[package]]
+name = "dri-utils"
+version = "0.0.16"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git?rev=feature%2FFPM-554-move-metadata-api-code#0cc447f17240a3007908ace8210053f6b659757f" }
+dependencies = [
+    { name = "autosemver" },
+    { name = "boto3" },
+    { name = "duckdb" },
+    { name = "httpx" },
+    { name = "moto" },
+    { name = "mypy-boto3-s3" },
+    { name = "polars" },
+    { name = "setuptools" },
+    { name = "tenacity" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "isodate" },
+]
+
+[[package]]
 name = "dritimeseriesprocessor"
 source = { editable = "." }
 dependencies = [
@@ -476,6 +497,7 @@ dependencies = [
     { name = "boto3" },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "config" },
+    { name = "dri-utils", extra = ["all"] },
     { name = "duckdb" },
     { name = "httpx" },
     { name = "isodate" },
@@ -528,6 +550,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.34.138" },
     { name = "boto3-stubs", extras = ["s3"] },
     { name = "config", specifier = ">=0.5.1" },
+    { name = "dri-utils", extras = ["all"], git = "https://github.com/NERC-CEH/dri-utils.git?rev=feature%2FFPM-554-move-metadata-api-code" },
     { name = "duckdb", specifier = ">=1.1.2" },
     { name = "httpx" },
     { name = "isodate" },
