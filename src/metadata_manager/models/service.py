@@ -1,13 +1,11 @@
 import asyncio
 import json
-import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from dritimeseriesprocessor.configuration import app_config
 from metadata_manager.api_manager import MetadataAPIManager
 from metadata_manager.models.common import (
-    URI_ID_EXTRACT_REGEX,
     ComponentType,
     build_processing_config_type_query_parameter,
 )
@@ -19,7 +17,6 @@ from metadata_manager.models.methods.method_registry import (
     QcMethods,
 )
 from metadata_manager.models.schemas.data_processing_configurations import (
-    DataProcessingConfiguration,
     DataProcessingConfigurations,
 )
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse
@@ -150,34 +147,18 @@ def load_sites() -> SitesResponse:
     return SitesResponse.model_validate(data)
 
 
-def update_correction_configs_with_site_attributes(corr_configs: List[DataProcessingConfiguration]) -> Dict[str, Any]:
+def load_site_metadata(site_id: str) -> SiteMetadataResponse:
     """
-    Update the correct configs with the values for any site parameters required.
-
-    For example, if a correction config contains a site_parameter value of "ALTITUDE", the metadata for the site
-    corresponding to the config will be fetched. The altitude value will be extracted and the "site_parameter" key value
-    pair will be replaced with "altitude": altitude_value.
+    Load metadata for a specific site ID
 
     Args:
-        corr_configs: List of correction configuration objects.
-
+        site_id: The site ID to load metadata for,
 
     Returns:
-        corr_configs: List of correction configuration objects with any site_attribute parameters replaced with the
-            key value pairs for any required attributes.
+        SiteMetadataReponse from the metadata API
 
     """
-    for config in corr_configs:
-        for config_item in config.configs:
-            if config_item.parameters.get("site_attribute"):
-                site_id = re.match(URI_ID_EXTRACT_REGEX, config.site_id).group(1)
-                response = asyncio.run(METADATA_CONNECTION.fetch_site_metadata(site_id=site_id))
-                site_metadata = SiteMetadataResponse.model_validate(response)
+    response = asyncio.run(METADATA_CONNECTION.fetch_site_metadata(site_id=site_id))
+    site_metadata = SiteMetadataResponse.model_validate(response)
 
-                # Replace the site attribute entry in the parameter dictionary with the corresponding key-value
-                # pair for the attribute itself
-                site_attribute_key = config_item.parameters["site_attribute"].lower()
-                del config_item.parameters["site_attribute"]
-                config_item.parameters[site_attribute_key] = site_metadata.get(site_attribute_key)
-
-    return corr_configs
+    return site_metadata

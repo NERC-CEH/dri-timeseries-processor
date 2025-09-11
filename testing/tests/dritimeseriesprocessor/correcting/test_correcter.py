@@ -1,29 +1,23 @@
 from datetime import datetime
 from unittest import mock
-import polars as pl
 
-from time_stream import TimeSeries, Period
+import polars as pl
+from time_stream import Period, TimeSeries
+
+from dritimeseriesprocessor.correcting.correcter import run_corrections, update_config_item_with_site_attributes
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
-from dritimeseriesprocessor.correcting.correcter import run_corrections
 from metadata_manager.api_manager import MetadataAPIManager
+from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
+from testing.utils.base_test_helper import BaseTestHelper
 from testing.utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 def create_test_ts(col_name: str, datetimes: list, data: list, periodicity: Period) -> TimeSeries:
     """Set up test fixtures."""
-    df = pl.DataFrame({
-        'time': datetimes,
-        col_name: data
-    })
+    df = pl.DataFrame({"time": datetimes, col_name: data})
 
-    ts = TimeSeries(
-        df,
-        "time",
-        periodicity,
-        periodicity,
-        metadata={"site_id": "site1", "column_name": col_name}
-    )
+    ts = TimeSeries(df, "time", periodicity, periodicity, metadata={"site_id": "site1", "column_name": col_name})
     ts = add_initial_core_flags(ts)
 
     return ts
@@ -34,33 +28,38 @@ class TestRunCorrections(TimeSeriesTestHelper):
     Test suite for the run_corrections function.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """
         Set up common test data and mocks.
         """
         super().setUp()
 
         # Set up dummy correction methods
-        lw_corr = type("DummyCorrectionMethod", (), {
-            "method_id": 1,
-            "name": "LW_CORR",
-            "description": "Correction for long wave radiation",
-            "function_name": "lw_corr",
-            "method_type": "correction",
-            "arg_mapping": {
-                "lwout_unc": "lw_unc",
-                "lwin_unc": "lw_unc"
-            }
-        })()
+        lw_corr = type(
+            "DummyCorrectionMethod",
+            (),
+            {
+                "method_id": 1,
+                "name": "LW_CORR",
+                "description": "Correction for long wave radiation",
+                "function_name": "lw_corr",
+                "method_type": "correction",
+                "arg_mapping": {"lwout_unc": "lw_unc", "lwin_unc": "lw_unc"},
+            },
+        )()
 
-        scalar = type("DummyCorrectionMethod", (), {
-            "method_id": 2,
-            "name": "SCALAR",
-            "description": "Scale the data point by a correction factor",
-            "function_name": "scalar",
-            "method_type": "correction",
-            "arg_mapping": {},
-        })()
+        scalar = type(
+            "DummyCorrectionMethod",
+            (),
+            {
+                "method_id": 2,
+                "name": "SCALAR",
+                "description": "Scale the data point by a correction factor",
+                "function_name": "scalar",
+                "method_type": "correction",
+                "arg_mapping": {},
+            },
+        )()
 
         self.mock_methods_dict = {
             "lw_corr": lw_corr,
@@ -68,8 +67,8 @@ class TestRunCorrections(TimeSeriesTestHelper):
         }
 
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
-    @mock.patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
-    def test_run_corrections_basic(self, mock_get_methods, mock_api_manager: mock.MagicMock):
+    @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
+    def test_run_corrections_basic(self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock) -> None:
         """
         Test basic functionality of run_corrections.
         Checks if the function adds the flag system, adds the flag columns, and runs the correction method.
@@ -78,13 +77,13 @@ class TestRunCorrections(TimeSeriesTestHelper):
             "g1",
             [
                 datetime(2017, 11, 10, 11),
-                datetime(2017, 11, 10, 11, 30), # Config start date
+                datetime(2017, 11, 10, 11, 30),  # Config start date
                 datetime(2017, 11, 10, 12),
                 datetime(2017, 11, 10, 12, 30),
                 datetime(2017, 11, 10, 13),
             ],
             [7.88732, 15.89324, 15.68856, 16.91815, 14.77755],
-            Period.of_minutes(30)
+            Period.of_minutes(30),
         )
         g1_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw"
         ts_ids = {
@@ -95,23 +94,27 @@ class TestRunCorrections(TimeSeriesTestHelper):
 
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
         mock_get_methods.return_value = self.mock_methods_dict
-        
+
         result = run_corrections(ts_ids)
 
         # Check flag system added
-        self.assertIn('corrs_flags', result[g1_ts_id]["data"].flag_systems)
+        self.assertIn("corrs_flags", result[g1_ts_id]["data"].flag_systems)
         # Check columns added
-        self.assertIn('g1_CORRS_FLAG', result[g1_ts_id]["data"].columns)
+        self.assertIn("g1_CORRS_FLAG", result[g1_ts_id]["data"].columns)
         # Check the correction method has been applied
-        self.assertEqual(result[g1_ts_id]["data"].df['g1'].to_list(), [7.88732, 3.156397464, 3.115748016, 3.35994459, 2.93482143])
+        self.assertEqual(
+            result[g1_ts_id]["data"].df["g1"].to_list(), [7.88732, 3.156397464, 3.115748016, 3.35994459, 2.93482143]
+        )
         # Check CORRS flag values have been added
-        self.assertEqual(result[g1_ts_id]["data"].df['g1_CORRS_FLAG'].to_list(), [0, 2, 2, 2, 2])
+        self.assertEqual(result[g1_ts_id]["data"].df["g1_CORRS_FLAG"].to_list(), [0, 2, 2, 2, 2])
         # Check core flag values updated
-        self.assertEqual(result[g1_ts_id]["data"].df['g1_CORE_FLAG'].to_list(), [32, 33, 33, 33, 33])
+        self.assertEqual(result[g1_ts_id]["data"].df["g1_CORE_FLAG"].to_list(), [32, 33, 33, 33, 33])
 
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
-    @mock.patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
-    def test_run_corrections_with_arg_mapping(self, mock_get_methods, mock_api_manager: mock.MagicMock):
+    @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
+    def test_run_corrections_with_arg_mapping(
+        self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock
+    ) -> None:
         """
         Test basic functionality with LW_CORR method which uses argument mapping.
         """
@@ -119,28 +122,15 @@ class TestRunCorrections(TimeSeriesTestHelper):
             datetime(2018, 12, 20, 11),
             datetime(2018, 12, 20, 11, 30),
             datetime(2018, 12, 20, 12, 0),
-            datetime(2018, 12, 20, 12, 30), # config end date
+            datetime(2018, 12, 20, 12, 30),  # config end date
             datetime(2018, 12, 20, 13, 0),
         ]
 
-        lwout_ts = create_test_ts(
-            "lwout",
-            datetimes,
-            [None, None, 361.4, 361.4, 360.6],
-            Period.of_minutes(30)
-        )
+        lwout_ts = create_test_ts("lwout", datetimes, [None, None, 361.4, 361.4, 360.6], Period.of_minutes(30))
         lwout_unc_ts = create_test_ts(
-            "lwout_unc",
-            datetimes,
-            [None, None, -2.898, -3.535, -4.91],
-            Period.of_minutes(30)
+            "lwout_unc", datetimes, [None, None, -2.898, -3.535, -4.91], Period.of_minutes(30)
         )
-        ta_ts = create_test_ts(
-            "ta",
-            datetimes,
-            [8.9, 9.11, 9.35, 9.45, 9.37],
-            Period.of_minutes(30)
-        )
+        ta_ts = create_test_ts("ta", datetimes, [8.9, 9.11, 9.35, 9.45, 9.37], Period.of_minutes(30))
         lwout_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw"
         lwout_unc_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw"
         ta_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"
@@ -159,23 +149,28 @@ class TestRunCorrections(TimeSeriesTestHelper):
 
         mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
         mock_get_methods.return_value = self.mock_methods_dict
-        
+
         result = run_corrections(ts_ids)
 
         # Test lw_corr has been applied to lwout. This uses the argument mapping to map lwout_unc to lw_unc
-        self.assertIn('corrs_flags', result[lwout_ts_id]["data"].flag_systems)
+        self.assertIn("corrs_flags", result[lwout_ts_id]["data"].flag_systems)
         # Check columns added
-        self.assertIn('lwout_CORRS_FLAG', result[lwout_ts_id]["data"].columns)
+        self.assertIn("lwout_CORRS_FLAG", result[lwout_ts_id]["data"].columns)
         # Check the correction method has been applied
-        self.assertEqual(result[lwout_ts_id]["data"].df['lwout'].to_list(), [None, None, 358.12876586484373, 357.98189715415776, 360.6])
+        self.assertEqual(
+            result[lwout_ts_id]["data"].df["lwout"].to_list(),
+            [None, None, 358.12876586484373, 357.98189715415776, 360.6],
+        )
         # Check CORRS flag values have been added - Not flagged None values
-        self.assertEqual(result[lwout_ts_id]["data"].df['lwout_CORRS_FLAG'].to_list(), [0, 0, 1, 1, 0])
+        self.assertEqual(result[lwout_ts_id]["data"].df["lwout_CORRS_FLAG"].to_list(), [0, 0, 1, 1, 0])
         # Check core flag values updated - None values left with missing flag (32 + 4)
-        self.assertEqual(result[lwout_ts_id]["data"].df['lwout_CORE_FLAG'].to_list(), [36, 36, 33, 33, 32])
+        self.assertEqual(result[lwout_ts_id]["data"].df["lwout_CORE_FLAG"].to_list(), [36, 36, 33, 33, 32])
 
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
-    @mock.patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
-    def test_run_corrections_no_config(self, mock_get_methods, mock_api_manager: mock.MagicMock):
+    @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
+    def test_run_corrections_no_config(
+        self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock
+    ) -> None:
         """
         Test run_corrections when no corrections config is available.
         Checks if the function returns the original DataFrame unchanged.
@@ -191,7 +186,7 @@ class TestRunCorrections(TimeSeriesTestHelper):
                 datetime(2024, 11, 10, 13),
             ],
             [1, 2, 3, 4, 5],
-            Period.of_minutes(30)
+            Period.of_minutes(30),
         )
         ts_ids = {
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw": {
@@ -207,8 +202,10 @@ class TestRunCorrections(TimeSeriesTestHelper):
         self.assertEqual(result, ts_ids)
 
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
-    @mock.patch('dritimeseriesprocessor.correcting.correcter.get_correction_methods')
-    def test_run_corrections_no_methods(self, mock_get_methods, mock_api_manager: mock.MagicMock):
+    @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
+    def test_run_corrections_no_methods(
+        self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock
+    ) -> None:
         """
         Test run_corrections when corrections config exists but no methods are specified.
         Checks if the function returns the original DataFrame unchanged.
@@ -217,13 +214,13 @@ class TestRunCorrections(TimeSeriesTestHelper):
             "g1",
             [
                 datetime(2017, 11, 10, 11),
-                datetime(2017, 11, 10, 11, 30), # Config start date
+                datetime(2017, 11, 10, 11, 30),  # Config start date
                 datetime(2017, 11, 10, 12),
                 datetime(2017, 11, 10, 12, 30),
                 datetime(2017, 11, 10, 13),
             ],
             [7.88732, 15.89324, 15.68856, 16.91815, 14.77755],
-            Period.of_minutes(30)
+            Period.of_minutes(30),
         )
         g1_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw"
         ts_ids = {
@@ -238,3 +235,38 @@ class TestRunCorrections(TimeSeriesTestHelper):
         result = run_corrections(ts_ids)
 
         self.assertEqual(result, ts_ids)
+
+
+@mock.patch.object(MetadataAPIManager, "_make_api_call")
+class TestUpdateConfigItemsWithSiteAttributes(BaseTestHelper):
+    def setUp(self) -> None:
+        super().setUp()
+        self.host_url = "test_url.com"
+        self.api = MetadataAPIManager(host=self.host_url, network="cosmos")
+
+    def test_update_config_item_with_site_attribute(self, mock_metadata_api: mock.MagicMock) -> None:
+        response_data = {
+            "meta": {},
+            "items": [{"@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hollin", "altitude": 123.45}],
+        }
+        mock_api_data = {"https://dri-metadata-api.staging.eds.ceh.ac.uk/id/site/cosmos-holln": response_data}
+        mock_metadata_api.side_effect = MockMetadataAPI(api_data=mock_api_data)
+
+        config_item = ConfigItem.model_construct(
+            name="pa_corr",
+            interval=(datetime(1800, 1, 1, 0, 0), None),
+            observation_interval=(datetime(2021, 10, 1, 0, 30), datetime(2021, 11, 1, 0, 0)),
+            parameters={"dep_ts": "COSMOS-HOLLN-TA_30MIN_RAW", "correction_factor": -2.5, "site_attribute": "ALTITUDE"},
+        )
+
+        expected_config = ConfigItem.model_construct(
+            name="pa_corr",
+            interval=(datetime(1800, 1, 1, 0, 0), None),
+            observation_interval=(datetime(2021, 10, 1, 0, 30), datetime(2021, 11, 1, 0, 0)),
+            parameters={"dep_ts": "COSMOS-HOLLN-TA_30MIN_RAW", "correction_factor": -2.5, "altitude": 123.45},
+        )
+
+        updated_config = update_config_item_with_site_attributes(
+            config_item=config_item, site_id="http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+        )
+        assert updated_config == expected_config
