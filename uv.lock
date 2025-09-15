@@ -470,8 +470,8 @@ wheels = [
 
 [[package]]
 name = "dri-utils"
-version = "0.0.15"
-source = { git = "https://github.com/NERC-CEH/dri-utils.git#2bb10f1df8d13babcef00c5f99e369580497986a" }
+version = "0.0.16"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git#59b2d80f68ae2dd000fc119d9cf32e16aff84838" }
 dependencies = [
     { name = "autosemver" },
     { name = "boto3" },
@@ -480,6 +480,7 @@ dependencies = [
     { name = "isodate" },
     { name = "moto" },
     { name = "mypy-boto3-s3" },
+    { name = "parameterized" },
     { name = "polars" },
     { name = "setuptools" },
     { name = "tenacity" },
