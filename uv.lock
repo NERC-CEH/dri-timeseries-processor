@@ -470,8 +470,8 @@ wheels = [
 
 [[package]]
 name = "dri-utils"
-version = "0.0.15"
-source = { git = "https://github.com/NERC-CEH/dri-utils.git#2bb10f1df8d13babcef00c5f99e369580497986a" }
+version = "0.0.16"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git?branch=update-sites-function#d0b9b6cd802edee89b7175d541bb0b9d512437ff" }
 dependencies = [
     { name = "autosemver" },
     { name = "boto3" },
@@ -546,7 +546,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.34.138" },
     { name = "boto3-stubs", extras = ["s3"] },
     { name = "config", specifier = ">=0.5.1" },
-    { name = "dri-utils", extras = ["all"], git = "https://github.com/NERC-CEH/dri-utils.git" },
+    { name = "dri-utils", extras = ["all"], git = "https://github.com/NERC-CEH/dri-utils.git?branch=update-sites-function" },
     { name = "duckdb", specifier = ">=1.1.2" },
     { name = "httpx" },
     { name = "isodate" },

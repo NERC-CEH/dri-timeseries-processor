@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 
 import boto3
+from driutils.metadata_api.utils import URI_ID_EXTRACT_REGEX
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
@@ -17,7 +18,6 @@ from dritimeseriesprocessor.processor import load_data, process_timeseries
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.utils import call_method_async, map_def_to_id
 from metadata_manager.models.common import (
-    URI_ID_EXTRACT_REGEX,
     build_column_query_parameter,
     build_periodicity_query_parameter,
     build_processing_config_timeseries_id_query_parameter,

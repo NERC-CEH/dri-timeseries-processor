@@ -1,9 +1,8 @@
 import re
 from typing import Any, Dict
 
+from driutils.metadata_api.utils import URI_ID_EXTRACT_REGEX, check_single_list_item
 from pydantic import BaseModel, Field, model_validator
-
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, check_single_list_item
 
 
 class ProcessingLevel(BaseModel):

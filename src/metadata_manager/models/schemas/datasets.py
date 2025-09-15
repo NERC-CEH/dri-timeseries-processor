@@ -1,8 +1,7 @@
 from typing import Any, Dict, List, Optional
 
+from driutils.metadata_api.utils import get_property
 from pydantic import BaseModel, Field, model_validator
-
-from metadata_manager.models.common import get_property
 
 
 class IDModel(BaseModel):
