@@ -4,6 +4,7 @@ from functools import lru_cache
 from typing import Dict
 
 import polars as pl
+from driutils.metadata_api.utils import URI_ID_EXTRACT_REGEX
 from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor.correcting.operations import Operation
@@ -11,7 +12,7 @@ from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, upda
 from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.utils import extract_dep_ts, not_missing_expr
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, build_processing_config_timeseries_id_query_parameter
+from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.schemas.data_processing_configurations import (
     ConfigItem,
 )

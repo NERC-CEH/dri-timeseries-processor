@@ -2,9 +2,10 @@ import re
 from datetime import datetime, time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from driutils.metadata_api.utils import URI_ID_EXTRACT_REGEX
 from pydantic import BaseModel, field_validator, model_validator
 
-from metadata_manager.models.common import URI_ID_EXTRACT_REGEX, get_interval_dates
+from metadata_manager.models.common import get_interval_dates
 
 
 class Annotation(BaseModel):
