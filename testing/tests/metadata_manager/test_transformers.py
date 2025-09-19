@@ -1,6 +1,4 @@
 import json
-
-import unittest
 from pathlib import Path
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
@@ -11,13 +9,13 @@ from metadata_manager.models.schemas.data_processing_configurations import DataP
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.transformers import (
+    extract_correction_dependencies,
     extract_cosmos_site_ids,
+    extract_dep_ts,
+    extract_infill_dependencies,
+    extract_qc_dependencies,
     extract_site_ids,
     extract_timeseries_id_metadata,
-    extract_dep_ts,
-    extract_correction_dependencies,
-    extract_qc_dependencies,
-    extract_infill_dependencies,
     extract_timeseries_methodology_metadata,
 )
 
@@ -28,13 +26,13 @@ def load_json(fpath: str) -> Dict[str, Any]:
     return data
 
 
-class TestExtractCOSMOSSiteIds(unittest.TestCase):
+class TestExtractCOSMOSSiteIds:
     """Test the extract_cosmos_site_ids function."""
 
-    def setUp(self) -> None:
+    @property
+    def sample_raw_data(self) -> Dict[str, Any]:
         """Set up test cases"""
-
-        self.sample_raw_data = {
+        sample_raw_data = {
             "items": [
                 {
                     "@id": "http://fdri.ceh.ac.uk/id/network/cosmos",
@@ -47,65 +45,70 @@ class TestExtractCOSMOSSiteIds(unittest.TestCase):
                 }
             ]
         }
+        return sample_raw_data
 
     def test_extract_site_ids_cosmos_uri(self) -> None:
         """Test extracting site IDs from cosmos URI"""
 
         validated_data = SitesResponse.model_validate(self.sample_raw_data)
         result = extract_cosmos_site_ids(validated_data)
-        self.assertEqual(result, ["SITE123", "SITE456"])
+        assert result == ["SITE123", "SITE456"]
 
     def test_extract_site_ids_cosmos_uri_fail(self) -> None:
         """Test extracting site IDs from cosmos URI where one fails."""
+        sample_raw_data = self.sample_raw_data.copy()
+        sample_raw_data["items"][0]["contains"][1]["@id"] = "http://fdri.ceh.ac.uk/id/site/fdri-site456"
+        validated_data = SitesResponse.model_validate(sample_raw_data)
 
-        self.sample_raw_data["items"][0]["contains"][1]["@id"] = "http://fdri.ceh.ac.uk/id/site/fdri-site456"
-        validated_data = SitesResponse.model_validate(self.sample_raw_data)
         result = extract_cosmos_site_ids(validated_data)
-        self.assertEqual(result, ["SITE123"])
+        assert result == ["SITE123"]
 
 
-class TestExtractSiteIds(unittest.TestCase):
+class TestExtractSiteIds:
     """Test the extract_site_ids function"""
 
-    def setUp(self) -> None:
+    @property
+    def sample_raw_data(self) -> None:
         """Set up test cases"""
 
-        self.sample_site1 = {
+        sample_site1 = {
             "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-site123",
             "label": ["Test Site1"],
             "comment": ["Test Comment1"],
         }
 
-        self.sample_site2 = {
+        sample_site2 = {
             "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-site456",
             "label": ["Test Site2"],
             "comment": ["Test Comment2"],
         }
 
-        self.sample_raw_data = {"items": [{"contains": [self.sample_site1, self.sample_site2]}]}
+        sample_raw_data = {"items": [{"contains": [sample_site1, sample_site2]}]}
+        return sample_raw_data
 
     @patch("metadata_manager.transformers.extract_cosmos_site_ids")
     def test_extract_site_ids_valid_network(self, mock_extract_cosmos_site_ids: MagicMock) -> None:
         """Test extracting site IDs from cosmos network"""
         mock_extract_cosmos_site_ids.return_value = ["SITE123", "SITE456"]
         result = extract_site_ids(self.sample_raw_data, "cosmos")
-        self.assertEqual(result, ["SITE123", "SITE456"])
+        assert result == ["SITE123", "SITE456"]
 
     def test_extract_site_ids_unsupported_network(self) -> None:
         """Test extracting site IDs from an unsupported network"""
 
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="Network unsupported_network not supported."):
             extract_site_ids(self.sample_raw_data, "unsupported_network")
-        self.assertEqual(str(context.exception), "Network unsupported_network not supported.")
 
 
-class TestExtractTimeseriesIDMetadata(unittest.TestCase):
+class TestExtractTimeseriesIDMetadata:
     """Test the extract_timeseries_id_metadata function."""
 
-    def setUp(self) -> None:
-        self.sample_dataset_response = load_json(
+    @property
+    def sample_dataset_response(self) -> None:
+        sample_dataset_response = load_json(
             Path(Path(__file__).parents[0], "sample_test_data", "dataset_response.json")
         )
+        return sample_dataset_response
 
     def test_extract_two_items(self) -> None:
         """Test two items are correctly extracted."""
@@ -120,7 +123,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "sourceColumnName": "TA",
             "sourceSite": "ALIC1",
             "load": False,
-            "inputs": []
+            "inputs": [],
         }
 
         item_two = {
@@ -133,7 +136,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
             "sourceColumnName": "TA",
             "sourceSite": "BUNNY",
             "load": False,
-            "inputs": []
+            "inputs": [],
         }
 
         expected = {
@@ -146,7 +149,7 @@ class TestExtractTimeseriesIDMetadata(unittest.TestCase):
         assert result == expected
 
 
-class TestExtractTimeseriesMethodologyMetadata(unittest.TestCase):
+class TestExtractTimeseriesMethodologyMetadata:
     def test_extract_timeseries_methodology_metadata(self) -> None:
         input_data = TimeSeriesType(
             **{
@@ -316,90 +319,90 @@ class TestExtractTimeseriesMethodologyMetadata(unittest.TestCase):
             extract_timeseries_methodology_metadata(input_data)
 
 
-class TestExtractDepTs(unittest.TestCase):
+class TestExtractDepTs:
     """Test the extract_dep_ts function."""
 
-    def setUp(self):
-        self.sample_dataset_response = (
-            load_json(Path(Path(__file__).parents[0], "sample_test_data", "qc_configs.json"))
-        )
-    
-    def test_extract_dep_ts(self):
+    @property
+    def sample_dataset_response(self) -> Dict[str, Any]:
+        sample_dataset_response = load_json(Path(Path(__file__).parents[0], "sample_test_data", "qc_configs.json"))
+        return sample_dataset_response
+
+    def test_extract_dep_ts(self) -> None:
         """Test the extract_dep_ts function extracts the correct dependent timeseries IDs."""
         # Load the data into the pyantic model
         model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
         ts_ids = extract_dep_ts(model_output, "dep_ts")
 
         expected_ts_ids = [
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw',
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw',
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw',
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
         ]
 
-        self.assertCountEqual(ts_ids, expected_ts_ids)
+        assert sorted(ts_ids) == sorted(expected_ts_ids)
 
 
-class TestExtractCorrectionDependencies(unittest.TestCase):
+class TestExtractCorrectionDependencies:
     """Test the extract_correction_dependencies function."""
 
-    def setUp(self):
-        self.sample_dataset_response = (
-            load_json(Path(Path(__file__).parents[0], "sample_test_data", "correction_configs.json"))
+    @property
+    def sample_dataset_response(self) -> Dict[str, Any]:
+        sample_dataset_response = load_json(
+            Path(Path(__file__).parents[0], "sample_test_data", "correction_configs.json")
         )
-    
-    def test_extract_correction_dependencies(self):
+        return sample_dataset_response
+
+    def test_extract_correction_dependencies(self) -> None:
         """Test the extract_correction_dependencies function extracts the correct dependencies."""
         # Load the data into the pyantic model
         model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
-        dependencies = extract_correction_dependencies(model_output)
-
         expected_dependencies = [
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw',
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw'
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw",
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
         ]
 
-        self.assertCountEqual(dependencies, expected_dependencies)
+        dependencies = extract_correction_dependencies(model_output)
+
+        assert sorted(expected_dependencies) == sorted(dependencies)
 
 
-class TestExtractQcDependencies(unittest.TestCase):
+class TestExtractQcDependencies:
     """Test the extract_qc_dependencies function."""
 
-    def setUp(self):
-        self.sample_dataset_response = (
-            load_json(Path(Path(__file__).parents[0], "sample_test_data", "qc_configs.json"))
-        )
-    
-    def test_extract_qc_dependencies(self):
+    @property
+    def sample_dataset_response(self) -> Dict[str, Any]:
+        sample_dataset_response = load_json(Path(Path(__file__).parents[0], "sample_test_data", "qc_configs.json"))
+        return sample_dataset_response
+
+    def test_extract_qc_dependencies(self) -> None:
         """Test the extract_qc_dependencies function extracts the correct dependencies."""
         # Load the data into the pyantic model
         model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
         dependencies = extract_qc_dependencies(model_output)
 
         expected_dependencies = [
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw',
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw',
-            'http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw',
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
         ]
 
-        self.assertCountEqual(dependencies, expected_dependencies)
+        assert sorted(expected_dependencies) == sorted(dependencies)
 
 
-class TestExtractInfillDependencies(unittest.TestCase):
+class TestExtractInfillDependencies:
     """Test the extract_infill_dependencies function."""
 
-    def setUp(self):
-        self.sample_dataset_response = (
-            load_json(Path(Path(__file__).parents[0], "sample_test_data", "infill_configs.json"))
-        )
-    
-    def test_extract_infill_dependencies(self):
+    @property
+    def sample_dataset_response(self) -> Dict[str, Any]:
+        sample_dataset_response = load_json(Path(Path(__file__).parents[0], "sample_test_data", "infill_configs.json"))
+        return sample_dataset_response
+
+    def test_extract_infill_dependencies(self) -> None:
         """Test the extract_infill_dependencies function extracts the correct dependencies."""
         # Load the data into the pyantic model
         model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
         dependencies = extract_infill_dependencies(model_output)
 
-        expected_dependencies = [
-            "http://fdri.ceh.ac.uk/id/time-series/cosmos-holln-cts_mod2_30min_raw"
-        ]
+        expected_dependencies = ["http://fdri.ceh.ac.uk/id/time-series/cosmos-holln-cts_mod2_30min_raw"]
 
-        self.assertEqual(dependencies, expected_dependencies)
+        assert dependencies == expected_dependencies

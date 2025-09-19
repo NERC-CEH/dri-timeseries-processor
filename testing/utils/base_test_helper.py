@@ -10,8 +10,8 @@ class ComparisonError(Exception):
     pass
 
 
-class BaseTestHelper(unittest.TestCase):
-    def setUp(self) -> None:
+class BaseTestHelper:
+    def __init__(self) -> None:
         """Sets up the testing environment.
 
         Creates a temp directory within the main test data folder to use as the current working directory for all tests
@@ -21,8 +21,6 @@ class BaseTestHelper(unittest.TestCase):
         output subdirectories.
 
         """
-        super().setUp()
-
         self.data_dir = Path(__file__).parents[1].joinpath("data")
         self.input_dir = self.data_dir.joinpath("inputs")
         self.output_dir = self.data_dir.joinpath("outputs")
@@ -35,15 +33,13 @@ class BaseTestHelper(unittest.TestCase):
         # Set the current working directory to be the temp dir so that all test outputs are written there
         os.chdir(self.temp_dir)
 
-    def tearDown(self) -> None:
+    def teardown(self) -> None:
         """Tears down the testing environment
 
         Resets the temporary directory, deleting and recreating it.
         Resets the current working directory back to it's original value.
 
         """
-        super().tearDown()
-
         self.reset_temp_dir()
 
         # Reset the current working directory

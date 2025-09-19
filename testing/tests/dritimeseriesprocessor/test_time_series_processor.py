@@ -2,22 +2,21 @@ import datetime
 from unittest import mock
 
 import pytest
-from parameterized import parameterized
+from driutils.metadata_api.api_manager import MetadataAPIManager
+from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 
 from dritimeseriesprocessor.configuration import app_config
 from dritimeseriesprocessor.s3_crud.write import S3Writer
 from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor, UserTsID
-from driutils.metadata_api.api_manager import MetadataAPIManager
-from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.s3_test_helper import S3TestHelper
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
-    def test_initialisation(self, mock_api_manager: mock.MagicMock) -> None:
+class TestTimeSeriesProcessor:
+    def test_initialisation(self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper) -> None:
         """Test query parameters are constructed correctly."""
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.default_metadata_api_data)
 
         expected_site_query_parameter = sorted(
             [
@@ -43,11 +42,13 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         assert ts_processor.start_date == expected_start_date
         assert ts_processor.end_date == expected_end_date
 
-    def test_get_specific_user_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+    def test_get_specific_user_timeseries_ids(
+        self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper
+    ) -> None:
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.default_metadata_api_data)
 
-        expected_ts_ids = self.load_ts_ids_from_json_file(
-            self.output_dir.joinpath("time_series_processor", "user_ts_ids_alic1_pe.json")
+        expected_ts_ids = ts_test_helper.load_ts_ids_from_json_file(
+            ts_test_helper.output_dir.joinpath("time_series_processor", "user_ts_ids_alic1_pe.json")
         )
 
         ts_processor = TimeSeriesProcessor(
@@ -55,13 +56,15 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         )
         ts_processor._get_specific_user_timeseries_ids()
 
-        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+        ts_test_helper.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_get_generic_user_timeseries_ids(self, mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+    def test_get_generic_user_timeseries_ids(
+        self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper
+    ) -> None:
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.default_metadata_api_data)
 
-        expected_ts_ids = self.load_ts_ids_from_json_file(
-            self.output_dir.joinpath("time_series_processor", "user_ts_ids_alic1_pe.json")
+        expected_ts_ids = ts_test_helper.load_ts_ids_from_json_file(
+            ts_test_helper.output_dir.joinpath("time_series_processor", "user_ts_ids_alic1_pe.json")
         )
 
         ts_processor = TimeSeriesProcessor(
@@ -69,13 +72,15 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         )
         ts_processor._get_generic_user_timeseries_ids()
 
-        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+        ts_test_helper.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_get_processing_dependent_ts_ids(self, mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+    def test_get_processing_dependent_ts_ids(
+        self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper
+    ) -> None:
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.default_metadata_api_data)
 
-        expected_ts_ids = self.load_ts_ids_from_json_file(
-            self.output_dir.joinpath("time_series_processor", "processing_ts_ids_alic1_swout.json")
+        expected_ts_ids = ts_test_helper.load_ts_ids_from_json_file(
+            ts_test_helper.output_dir.joinpath("time_series_processor", "processing_ts_ids_alic1_swout.json")
         )
 
         ts_processor = TimeSeriesProcessor(
@@ -87,14 +92,16 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         ts_processor._get_generic_user_timeseries_ids()
         ts_processor._get_processing_dependent_ts_ids()
 
-        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+        ts_test_helper.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_get_dependent_timeseries_metadata(self, mock_api_manager: mock.MagicMock) -> None:
-        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
+    def test_get_dependent_timeseries_metadata(
+        self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper
+    ) -> None:
+        api_data = ts_test_helper.default_metadata_api_data | ts_test_helper.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
-        expected_ts_ids = self.load_ts_ids_from_json_file(
-            self.output_dir.joinpath("time_series_processor", "dependent_and_user_ts_ids_alic1_pe.json")
+        expected_ts_ids = ts_test_helper.load_ts_ids_from_json_file(
+            ts_test_helper.output_dir.joinpath("time_series_processor", "dependent_and_user_ts_ids_alic1_pe.json")
         )
 
         ts_processor = TimeSeriesProcessor(
@@ -106,14 +113,16 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         ts_processor._get_generic_user_timeseries_ids()
         ts_processor._get_derived_dependent_ts_ids()
 
-        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+        ts_test_helper.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_collate_timeseries_id_metadata_to_process(self, mock_api_manager: mock.MagicMock) -> None:
-        api_data = self.default_metadata_api_data | self.create_ts_dependency_api_data()
+    def test_collate_timeseries_id_metadata_to_process(
+        self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper
+    ) -> None:
+        api_data = ts_test_helper.default_metadata_api_data | ts_test_helper.create_ts_dependency_api_data()
         mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
 
-        expected_ts_ids = self.load_ts_ids_from_json_file(
-            self.output_dir.joinpath("time_series_processor", "ts_ids_alic1_pe_full.json")
+        expected_ts_ids = ts_test_helper.load_ts_ids_from_json_file(
+            ts_test_helper.output_dir.joinpath("time_series_processor", "ts_ids_alic1_pe_full.json")
         )
 
         ts_processor = TimeSeriesProcessor(
@@ -121,16 +130,18 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         )
         ts_processor._collate_timeseries_id_metadata_to_process()
 
-        self.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
+        ts_test_helper.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=ts_processor.ts_ids)
 
-    def test_write_timeseries(self, mock_api_manager: mock.MagicMock) -> None:
+    def test_write_timeseries(
+        self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper, s3_test_helper: S3TestHelper
+    ) -> None:
         """Test data is correctly written to the processed bucket.
 
         There is no existing data for this test. The end to end test tests
         the write functionality when there is existing data.
         """
 
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.default_metadata_api_data)
         ts_processor = TimeSeriesProcessor(
             sites="alic1,bunny,chimn,morly",
             columns="RN,PA,TA",
@@ -146,7 +157,9 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         # The processed ts ids contain two different resolutions (PT30M and PT1M) each with two different
         # sites. Within each permutation of resolution and site are multiple columns.
         # This structure ensures all functionality tested.
-        ts_ids = self.load_ts_ids_from_json_file(self.input_dir.joinpath("write", "processed_ts_ids.json"))
+        ts_ids = ts_test_helper.load_ts_ids_from_json_file(
+            ts_test_helper.input_dir.joinpath("write", "processed_ts_ids.json")
+        )
         writer = S3Writer(s3_client)
         ts_processor._write_timeseries(ts_ids, s3_bucket, "cosmos", writer)
 
@@ -154,22 +167,38 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
         # 1) Check the number of items in the bucket matches the number of
         # expected items
         # 2) loop through the expected outputs and check they match the processor output
-        self._check_expected_parquet_files_exist_in_bucket(self.output_dir.joinpath("write", "full_process"), s3_bucket)
-        self._check_expected_parquet_files_exist_in_bucket(self.output_dir.joinpath("write", "full_process"), s3_bucket)
+        s3_test_helper._check_expected_parquet_files_exist_in_bucket(
+            ts_test_helper.output_dir.joinpath("write", "full_process"), s3_bucket
+        )
+        s3_test_helper._check_expected_parquet_files_exist_in_bucket(
+            ts_test_helper.output_dir.joinpath("write", "full_process"), s3_bucket
+        )
 
-    @parameterized.expand(
+    @pytest.mark.parametrize(
+        "site,column,periodicity",
         [
-            ("site_column_and_periodicity_present", "alic1", "PE", "PT30M"),
-            ("just_site_present", "alic1", None, None),
-            ("just_column_present", None, "PE", None),
-            ("just_periodicity_present", None, None, "PT30M"),
-        ]
+            ("alic1", "PE", "PT30M"),
+            ("alic1", None, None),
+            (None, "PE", None),
+            (None, None, "PT30M"),
+        ],
+        ids=[
+            "site_column_and_periodicity_present",
+            "just_site_present",
+            "just_column_present",
+            "just_periodicity_present",
+        ],
     )
     def test_specific_and_generic_ts_id_parameters_provided(
-        self, mock_api_manager: mock.MagicMock, name: str, site: str, column: str, periodicity: str
+        self,
+        mock_api_manager: mock.MagicMock,
+        site: str,
+        column: str,
+        periodicity: str,
+        ts_test_helper: TimeSeriesTestHelper,
     ) -> None:
         """Check an error is raised if a combination of user timeseries ids and generic ts parameters are provided."""
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.default_metadata_api_data)
 
         expected_error = (
             "Requesting a combination of specific timeseries ids and one or more of sites, columns and "
@@ -187,9 +216,11 @@ class TestTimeSeriesProcessor(S3TestHelper, TimeSeriesTestHelper):
                 network="cosmos",
             )
 
-    def test_construct_user_ts_id_objects(self, mock_api_manager: mock.MagicMock) -> None:
+    def test_construct_user_ts_id_objects(
+        self, mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper
+    ) -> None:
         """Check the UserTsID objects are created correctly, including validating the inputs."""
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.default_metadata_api_data)
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.default_metadata_api_data)
 
         expected_user_ts_ids = [
             UserTsID(site="ALIC1", column="PE", periodicity="PT30M"),

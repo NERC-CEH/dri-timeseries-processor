@@ -37,7 +37,7 @@ readme = "README.md"
 license = { text = "NO LICENSE" }
 
 [dependency-groups]
-test = ["pytest", "pytest-cov", "parameterized", "freezegun", "pytest-benchmark", "pytest-benchmark[histogram]", "awscli-local == 0.22.0"]
+test = ["pytest", "pytest-cov", "freezegun", "pytest-benchmark", "pytest-benchmark[histogram]", "awscli-local == 0.22.0"]
 docs = ["sphinx", "sphinx-copybutton", "sphinx-rtd-theme", "nbsphinx"]
 lint = ["ruff"]
 dev = [

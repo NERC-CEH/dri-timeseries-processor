@@ -8,7 +8,7 @@ from datetime import datetime
 from dritimeseriesprocessor.deriving.unit_conversions import HpaToKpa, WattsToMegajoules
 
 
-class TestHpaToKpa(unittest.TestCase):
+class TestHpaToKpa:
     period = Period.of_minutes(1)
 
     def test_hpa_to_kpa(self):
@@ -40,10 +40,10 @@ class TestHpaToKpa(unittest.TestCase):
         })
 
         assert_frame_equal(result.df, expected)
-        self.assertEqual(conversion.units, "kPa")
+        assert conversion.units == "kPa"
 
 
-class TestWattsToMegajoules(unittest.TestCase):
+class TestWattsToMegajoules:
     period = Period.of_minutes(60)
 
     def test_w_to_mj(self):
@@ -79,4 +79,4 @@ class TestWattsToMegajoules(unittest.TestCase):
         })
 
         assert_frame_equal(result.df, expected)
-        self.assertEqual(conversion.units, "MJ")
+        assert conversion.units == "MJ"

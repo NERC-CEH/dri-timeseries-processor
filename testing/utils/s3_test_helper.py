@@ -5,12 +5,12 @@ import io
 import logging
 from datetime import timedelta
 from pathlib import Path
-from polars.testing import assert_frame_equal
 from typing import List
 
 import boto3
 import polars as pl
 from botocore.exceptions import ClientError
+from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.configuration import app_config
 from testing.utils.base_test_helper import BaseTestHelper
@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 class S3TestHelper(BaseTestHelper):
-    def setUp(self) -> None:
-        super().setUp()
+    def __init__(self) -> None:
+        super().__init__()
 
         # Don't allow tests to be run unless the environment is set to local in order to
         # prevent accidental changes to the staging or production environments
@@ -137,11 +137,11 @@ class S3TestHelper(BaseTestHelper):
 
     def _check_expected_parquet_files_exist_in_bucket(self, expected_base_dir: str, output_bucket_name: str) -> None:
         """Check the s3 bucket contains only the expected outputs
-        
+
         Check that for every expected parquet file, the corresponding parquet has been
         generated with a matching path structure (i.e. same s3 keys) and contents, and no
         other parquet files have been generated
-        
+
         Args:
             expected_base_dir: The base directory where the expected outputs are stored
             output_bucket_name: The s3 bucket name where processor outputs are written
@@ -160,7 +160,7 @@ class S3TestHelper(BaseTestHelper):
 
     def _create_hourly_test_data(self, start_date: datetime, end_date: datetime, upload: bool = False) -> pl.DataFrame:
         """Create sample data that we have more control over for doing specific tests.
-        
+
         Upload data to level 0 bucket with the expected partition structure if requested
 
         Args:
@@ -173,13 +173,13 @@ class S3TestHelper(BaseTestHelper):
         all_data = {}
 
         while current_date <= end_date:
-            for site in ['site1', 'site2']:
+            for site in ["site1", "site2"]:
                 # Create hourly data for the current date
                 data = {
-                    'time': [current_date + timedelta(hours=i) for i in range(24)] * 2,
-                    'SITE_ID': [site] * 48,
-                    'col1': list(range(48)),
-                    'col2': list(range(48, 96))
+                    "time": [current_date + timedelta(hours=i) for i in range(24)] * 2,
+                    "SITE_ID": [site] * 48,
+                    "col1": list(range(48)),
+                    "col2": list(range(48, 96)),
                 }
 
                 # upload to s3
@@ -191,7 +191,9 @@ class S3TestHelper(BaseTestHelper):
                     parquet_buffer.seek(0)
 
                     # set the key
-                    key = f"cosmos/dataset=test_dataset/site={site}/date={current_date.strftime('%Y-%m-%d')}/data.parquet"
+                    key = (
+                        f"cosmos/dataset=test_dataset/site={site}/date={current_date.strftime('%Y-%m-%d')}/data.parquet"
+                    )
                     bucket_name = "ukceh-fdri-staging-timeseries-level-0"
 
                     self._put_object(bucket_name, key, parquet_buffer.getvalue())
@@ -199,5 +201,5 @@ class S3TestHelper(BaseTestHelper):
                 all_data = all_data | data
 
             current_date += timedelta(days=1)
-        
+
         return pl.DataFrame(all_data)

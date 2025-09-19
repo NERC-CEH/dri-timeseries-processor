@@ -1,98 +1,95 @@
 import os
-import unittest
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest import mock
+
+import pytest
 
 from databuilder import utils
+from testing.utils.base_test_helper import BaseTestHelper
 
 
-class DataCase(unittest.TestCase):
+@pytest.fixture
+def cosmos_data() -> Path:
+    data_dir = Path(__file__).parents[3] / "parquet-data"
+    cosmos_data = data_dir / "cosmos"
 
-    @classmethod
-    def setUpClass(cls):
-        cls.data_dir = Path(__file__).parents[3] / "parquet-data"
-        cls.cosmos_data = cls.data_dir / "cosmos"
-        cls.cosmos_precip = cls.cosmos_data / "LIVE_PRECIP_1MIN"
-        cls.cosmos_soilmet = cls.cosmos_data / "LIVE_SOILMET_30MIN"
+    return cosmos_data
 
-class TestInitialization(DataCase):
 
-    def setUp(self):
-        self.dest = TemporaryDirectory()
-    
-    def tearDown(self):
-        self.dest.cleanup()
+# class DataCase(unittest.TestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         cls.data_dir = Path(__file__).parents[3] / "parquet-data"
+#         cls.cosmos_data = cls.data_dir / "cosmos"
+#         cls.cosmos_precip = cls.cosmos_data / "LIVE_PRECIP_1MIN"
+#         cls.cosmos_soilmet = cls.cosmos_data / "LIVE_SOILMET_30MIN"
 
-    def test_creation_from_nonexistance(self):
 
-        output = Path(self.dest.name) / "out-data"
+class TestInitialization:
+    def test_creation_from_nonexistance(self, base_test_helper: BaseTestHelper) -> None:
+        output = base_test_helper.temp_dir.joinpath("out-data")
 
-        self.assertFalse(output.exists())
+        assert not output.exists()
 
         utils._create_directory(output, purge=False)
 
-        self.assertTrue(output.exists())
+        assert output.exists()
 
-    def test_creation_of_existing_dir_no_purge(self):
-
-        output = Path(self.dest.name) / "out-data"
+    def test_creation_of_existing_dir_no_purge(self, base_test_helper: BaseTestHelper) -> None:
+        output = base_test_helper.temp_dir.joinpath("out-data")
         os.makedirs(output)
         test_file = output / "test.txt"
 
         with open(test_file, "w") as f:
             f.write("test text")
 
-        self.assertTrue(test_file.exists())
+        assert test_file.exists()
 
         expected_content = os.listdir(output)
 
         utils._create_directory(output, purge=False)
 
-        self.assertEqual(expected_content, os.listdir(output))
+        assert expected_content, os.listdir(output)
 
-    def test_creation_of_existing_dir_with_purge(self):
-
-        output = Path(self.dest.name) / "out-data"
+    def test_creation_of_existing_dir_with_purge(self, base_test_helper: BaseTestHelper) -> None:
+        output = base_test_helper.temp_dir.joinpath("out-data")
         os.makedirs(output)
         test_file = output / "test.txt"
 
         with open(test_file, "w") as f:
             f.write("test text")
 
-        self.assertListEqual(os.listdir(output), [test_file.parts[-1]])
+        assert os.listdir(output) == [test_file.parts[-1]]
 
         utils._create_directory(output, purge=True)
-    
 
-        self.assertListEqual(os.listdir(output), [])
+        assert os.listdir(output) == []
 
-    def test_data_copied_to_directory(self):
-
-        output = Path(self.dest.name) / "out-data"
+    def test_data_copied_to_directory(self, base_test_helper: BaseTestHelper, cosmos_data: str) -> None:
+        output = base_test_helper.temp_dir.joinpath("out-data")
         utils._create_directory(output)
 
-        utils._copy_files(output, src=self.cosmos_data)
+        utils._copy_files(output, src=cosmos_data)
 
-        self.assertTrue(os.listdir(output), os.listdir(self.cosmos_data))
-    
-    def test_data_copied_to_directory_default_value(self):
+        assert os.listdir(output) == os.listdir(cosmos_data)
 
-        output = Path(self.dest.name) / "out-data"
+    def test_data_copied_to_directory_default_value(self, base_test_helper: BaseTestHelper, cosmos_data: str) -> None:
+        output = base_test_helper.temp_dir.joinpath("out-data")
         utils._create_directory(output)
 
         utils._copy_files(output)
 
-        self.assertTrue(os.listdir(output), os.listdir(self.cosmos_data))
+        assert os.listdir(output) == os.listdir(cosmos_data)
 
-    @patch("databuilder.utils._create_directory")
-    @patch("databuilder.utils._copy_files")
-    def test_init_helper_method(self, copy_files, create_directory):
+    @mock.patch("databuilder.utils._create_directory")
+    @mock.patch("databuilder.utils._copy_files")
+    def test_init_helper_method(
+        self, mock_copy_files: mock.MagicMock, mock_create_directory: mock.MagicMock, base_test_helper: BaseTestHelper
+    ) -> None:
         """Tests that the helper method executes the expected private methods"""
-
-        output = Path(self.dest.name) / "out-data"
+        output = base_test_helper.temp_dir.joinpath("out-data")
 
         utils.initialise_directory(output)
 
-        self.assertTrue(copy_files.called)
-        self.assertTrue(create_directory.called)
+        mock_copy_files.assert_called_once()
+        mock_create_directory.assert_called_once()

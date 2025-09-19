@@ -1,7 +1,7 @@
-import unittest
+from typing import Any
 
 import polars as pl
-from parameterized import parameterized
+import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.deriving.derivations import Calculation
@@ -95,9 +95,9 @@ class Grandchild(Calculation):
         return pl.col("col2") + 5
 
 
-class TestEvaluate(unittest.TestCase):
-    def test_one_dependencies(self):
-        """ Test evaluation of a simple Calculation, which has no dependencies"""
+class TestEvaluate:
+    def test_one_dependencies(self) -> None:
+        """Test evaluation of a simple Calculation, which has no dependencies"""
         ts = df_to_ts(pl.DataFrame({"col1": [1, 2, 3]}))
         expected = df_to_ts(pl.DataFrame({"child1": [2, 4, 6]}))
 
@@ -105,8 +105,8 @@ class TestEvaluate(unittest.TestCase):
         result = calc.evaluate(ts)
         assert_frame_equal(result.df, expected.df)
 
-    def test_muliple_dependencies(self):
-        """ Test a calculation with muliple dependencies."""
+    def test_muliple_dependencies(self) -> None:
+        """Test a calculation with muliple dependencies."""
         ts = df_to_ts(pl.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]}))
         expected = df_to_ts(pl.DataFrame({"child2": [0.9, 1.0, 1.1]}))
 
@@ -115,122 +115,126 @@ class TestEvaluate(unittest.TestCase):
         assert_frame_equal(result.df, expected.df)
 
 
-class TestCollectDependencies(unittest.TestCase):
-    def test_no_dependencies(self):
-        """ Test a calculation with no dependencies returns an empty list."""
+class TestCollectDependencies:
+    def test_no_dependencies(self) -> None:
+        """Test a calculation with no dependencies returns an empty list."""
         calc = Child1()
         result = calc._collect_dependencies()
-        self.assertEqual(result, [])
+        assert result == []
 
-    def test_single_dependencies(self):
-        """ Test a calculation with a single dependency, which in turn has no dependencies."""
+    def test_single_dependencies(self) -> None:
+        """Test a calculation with a single dependency, which in turn has no dependencies."""
         calc = Child2()
         result = calc._collect_dependencies()
-        self.assertEqual(len(result), 1)
-        self.assertIsInstance(result[0], Grandchild)
+        assert len(result) == 1
+        assert isinstance(result[0], Grandchild)
 
-    def test_multiple_dependencies(self):
-        """ Test a calculation with multiple dependencies that each have no dependencies."""
+    def test_multiple_dependencies(self) -> None:
+        """Test a calculation with multiple dependencies that each have no dependencies."""
         calc = Child3()
         result = calc._collect_dependencies()
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
         # Dependencies returned in order they were seen in the chain
-        self.assertIsInstance(result[0], Child1)
-        self.assertIsInstance(result[1], Grandchild)
+        assert isinstance(result[0], Child1)
+        assert isinstance(result[1], Grandchild)
 
-    def test_nested_dependencies(self):
-        """ Test a calculation with a dependency, that in turn as its own dependencies."""
+    def test_nested_dependencies(self) -> None:
+        """Test a calculation with a dependency, that in turn as its own dependencies."""
         calc = Child4()
         result = calc._collect_dependencies()
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
         # Dependencies returned in order they were seen in the chain
-        self.assertIsInstance(result[0], Child2)
-        self.assertIsInstance(result[1], Grandchild)
+        assert isinstance(result[0], Child2)
+        assert isinstance(result[1], Grandchild)
 
-    def test_complex_dependencies(self):
-        """ Test a calculation with complex dependencies, including nested dependencies and duplicates."""
+    def test_complex_dependencies(self) -> None:
+        """Test a calculation with complex dependencies, including nested dependencies and duplicates."""
         calc = Parent()
         result = calc._collect_dependencies()
-        self.assertEqual(len(result), 5)
+        assert len(result) == 5
         # Dependencies returned in order they were seen in the chain
-        self.assertIsInstance(result[0], Child1)
-        self.assertIsInstance(result[1], Child2)
-        self.assertIsInstance(result[2], Grandchild)
-        self.assertIsInstance(result[3], Child3)
-        self.assertIsInstance(result[4], Child4)
+        assert isinstance(result[0], Child1)
+        assert isinstance(result[1], Child2)
+        assert isinstance(result[2], Grandchild)
+        assert isinstance(result[3], Child3)
+        assert isinstance(result[4], Child4)
 
 
-class TestColumnsToExpressions(unittest.TestCase):
-    def setUp(self):
-        self.dummy_calc = Parent()
+class TestColumnsToExpressions:
+    dummy_calc = Parent()
 
-    def test_single_string_input(self):
-        """ Test that a single column string is returned as single expression."""
+    def test_single_string_input(self) -> None:
+        """Test that a single column string is returned as single expression."""
         col = "col1"
         result = self.dummy_calc._columns_to_expressions(col)
-        self.assertIsInstance(result, pl.Expr)
-        self.assertEqual(result.meta.output_name(), col)
+        assert isinstance(result, pl.Expr)
+        assert result.meta.output_name() == col
 
-    def test_multiple_string_inputs(self):
-        """ Test that multiple column strings are returned as a list of expressions."""
+    def test_multiple_string_inputs(self) -> None:
+        """Test that multiple column strings are returned as a list of expressions."""
         cols = ["col1", "col2", "col3"]
         result = self.dummy_calc._columns_to_expressions(*cols)
-        self.assertIsInstance(result, list)
-        self.assertEqual(len(result), len(cols))
+        assert isinstance(result, list)
+        assert len(result) == len(cols)
         for idx, col_name in enumerate(cols):
-            self.assertIsInstance(result[idx], pl.Expr)
-            self.assertEqual(result[idx].meta.output_name(), col_name)
+            assert isinstance(result[idx], pl.Expr)
+            assert result[idx].meta.output_name() == col_name
 
-    def test_single_col_expression_input(self):
-        """ Test that a single column expression is returned as the same expression."""
+    def test_single_col_expression_input(self) -> None:
+        """Test that a single column expression is returned as the same expression."""
         col = pl.col("col1")
         result = self.dummy_calc._columns_to_expressions(col)
-        self.assertIsInstance(result, pl.Expr)
-        self.assertEqual(repr(result), repr(col))
-        self.assertEqual(result.meta.output_name(), col.meta.output_name())
+        assert isinstance(result, pl.Expr)
+        assert repr(result) == repr(col)
+        assert result.meta.output_name() == col.meta.output_name()
 
-    def test_multiple_col_expression_input(self):
-        """ Test that multiple column expressions are returned as a list of the same expressions."""
+    def test_multiple_col_expression_input(self) -> None:
+        """Test that multiple column expressions are returned as a list of the same expressions."""
         cols = [pl.col("col1"), pl.col("col2"), pl.col("col3")]
         result = self.dummy_calc._columns_to_expressions(*cols)
 
-        self.assertIsInstance(result, list)
-        self.assertEqual(len(result), len(cols))
+        assert isinstance(result, list)
+        assert len(result) == len(cols)
         for idx, expr in enumerate(cols):
-            self.assertIsInstance(result[idx], pl.Expr)
-            self.assertEqual(repr(result[idx]), repr(expr))
-            self.assertEqual(result[idx].meta.output_name(), expr.meta.output_name())
+            assert isinstance(result[idx], pl.Expr)
+            assert repr(result[idx]) == repr(expr)
+            assert result[idx].meta.output_name() == expr.meta.output_name()
 
-    def test_single_math_expression_input(self):
-        """ Test that a single math expression is returned as the same expression."""
-        col = (pl.col("col1") * 10)**2
+    def test_single_math_expression_input(self) -> None:
+        """Test that a single math expression is returned as the same expression."""
+        col = (pl.col("col1") * 10) ** 2
         result = self.dummy_calc._columns_to_expressions(col)
-        self.assertIsInstance(result, pl.Expr)
-        self.assertEqual(repr(result), repr(col))
+        assert isinstance(result, pl.Expr)
+        assert repr(result) == repr(col)
 
-    def test_mixed_inputs(self):
-        """ Test a mix of string and expressions are returned as a list of equivalent expressions."""
+    def test_mixed_inputs(self) -> None:
+        """Test a mix of string and expressions are returned as a list of equivalent expressions."""
         cols = [pl.col("col1"), "col2", (pl.col("col3") + 10)]
         result = self.dummy_calc._columns_to_expressions(*cols)
 
-        self.assertIsInstance(result, list)
-        self.assertEqual(len(result), len(cols))
+        assert isinstance(result, list)
+        assert len(result) == len(cols)
 
-        [self.assertIsInstance(expr, pl.Expr) for expr in result]
+        for expr in result:
+            assert isinstance(expr, pl.Expr)
 
-    def test_no_arguments(self):
-        """ Test that no arguments returns empty list """
+    def test_no_arguments(self) -> None:
+        """Test that no arguments returns empty list"""
         result = self.dummy_calc._columns_to_expressions()
-        self.assertEqual(result, [])
+        assert result == []
 
-    @parameterized.expand([
-        ("int", 5),
-        ("float", 3.14),
-        ("none", None),
-        ("list", ["a", "b", "c"]),
-        ("dict", {"a": "colA", "b": "colB", "c": "colC"}),
-    ])
-    def test_invalid_input(self, _, invalid_arg):
-        """ Test that an invalid input (i.e. not string or expression) raises an exception."""
-        with self.assertRaises(TypeError):
+    @pytest.mark.parametrize(
+        "invalid_arg",
+        [
+            (5),
+            (3.14),
+            (None),
+            (["a", "b", "c"]),
+            ({"a": "colA", "b": "colB", "c": "colC"}),
+        ],
+        ids=["int", "float", "None", "list", "dict"],
+    )
+    def test_invalid_input(self, invalid_arg: Any) -> None:
+        """Test that an invalid input (i.e. not string or expression) raises an exception."""
+        with pytest.raises(TypeError):
             self.dummy_calc._columns_to_expressions(invalid_arg)

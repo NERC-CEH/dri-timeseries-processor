@@ -1,22 +1,17 @@
-import re
-from unittest import TestCase
-
-from parameterized import parameterized
-
 from metadata_manager.models.common import (
     SERVICE_BASE_URI,
     build_column_query_parameter,
     build_periodicity_query_parameter,
+    build_processing_config_timeseries_id_query_parameter,
+    build_processing_config_type_query_parameter,
     build_processing_query_parameter,
     build_site_query_parameter,
     build_timeseries_id_query_parameter,
-    build_processing_config_timeseries_id_query_parameter,
-    build_processing_config_type_query_parameter,
-    build_view_query_parameter
+    build_view_query_parameter,
 )
 
 
-class TestBuildSiteQueryParameter(TestCase):
+class TestBuildSiteQueryParameter:
     """Tests the build_site_query_parameter."""
 
     def test_multiple_sites(self) -> None:
@@ -43,7 +38,7 @@ class TestBuildSiteQueryParameter(TestCase):
         assert result == expected
 
 
-class TestBuildPeriodicityQueryParameter(TestCase):
+class TestBuildPeriodicityQueryParameter:
     """Tests the build_periodicity_query_parameter."""
 
     def test_multiple_periods(self) -> None:
@@ -65,7 +60,7 @@ class TestBuildPeriodicityQueryParameter(TestCase):
         assert result == expected
 
 
-class TestBuildColumnsQueryParameter(TestCase):
+class TestBuildColumnsQueryParameter:
     """Tests the build_column_query_parameter."""
 
     def test_multiple_columns(self) -> None:
@@ -87,7 +82,7 @@ class TestBuildColumnsQueryParameter(TestCase):
         assert result == expected
 
 
-class TestBuildProcessingQueryParameter(TestCase):
+class TestBuildProcessingQueryParameter:
     """Tests the build_processing_query_parameter."""
 
     def test_processing_level(self) -> None:
@@ -99,7 +94,7 @@ class TestBuildProcessingQueryParameter(TestCase):
         assert result == expected
 
 
-class TestBuildViewQueryParameter(TestCase):
+class TestBuildViewQueryParameter:
     """Tests the build_view_query_parameter."""
 
     def test_processing_level(self) -> None:
@@ -111,7 +106,7 @@ class TestBuildViewQueryParameter(TestCase):
         assert result == expected
 
 
-class TestBuildTimeSeriesIDQueryParameter(TestCase):
+class TestBuildTimeSeriesIDQueryParameter:
     """Tests the build_timeseries_id_query_parameter."""
 
     def test_multiple_timeseries_ids(self) -> None:
@@ -124,7 +119,7 @@ class TestBuildTimeSeriesIDQueryParameter(TestCase):
         assert result == expected
 
 
-class TestBuildProcessingConfigTimeseriesIDQueryParameter(TestCase):
+class TestBuildProcessingConfigTimeseriesIDQueryParameter:
     """Tests the build_processing_config_timeseries_id_query_parameter."""
 
     def test_multiple_timeseries_ids(self) -> None:
@@ -137,7 +132,7 @@ class TestBuildProcessingConfigTimeseriesIDQueryParameter(TestCase):
         assert result == expected
 
 
-class TestBuildProcessingConfigTypeQueryParameter(TestCase):
+class TestBuildProcessingConfigTypeQueryParameter:
     """Tests the build_processing_config_type_query_parameter."""
 
     def test_processing_config_type(self) -> None:

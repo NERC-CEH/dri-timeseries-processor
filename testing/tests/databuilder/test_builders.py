@@ -1,280 +1,223 @@
-import unittest
+import datetime
+from pathlib import Path
+from typing import Any
 from unittest import mock
 from unittest.mock import patch
-from pathlib import Path
-from databuilder.builders import ParquetBuilder
-from databuilder import utils
-from databuilder.enums import Operator
-from tempfile import TemporaryDirectory
-import datetime
-from parameterized import  parameterized
+
 import pandas as pd
+import pytest
 
-class DataCase(unittest.TestCase):
+from databuilder import utils
+from databuilder.builders import ParquetBuilder
+from databuilder.enums import Operator
+from testing.utils.base_test_helper import BaseTestHelper
 
-    @classmethod
-    def setUpClass(cls):
+DEFAULT_PARQUET_PATH = "dataset=LIVE_PRECIP_1MIN/site=BUNNY/date=2024-03-01/data.parquet"
 
-        cls.data_dir = Path(__file__).parents[2] / "parquet-data"
-        cls.cosmos_data = cls.data_dir / "cosmos"
-        cls.cosmos_precip = cls.cosmos_data / "dataset=LIVE_PRECIP_1MIN"
-        cls.cosmos_soilmet = cls.cosmos_data / "dataset=LIVE_SOILMET_30MIN"
 
-class TestParquetBuilderMethods(DataCase):
-    def setUp(self):
-        self.dest = TemporaryDirectory()
-        self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialise_directory(self.test_data)
-        
-        self.target = Path(f"{self.test_data}/dataset=LIVE_PRECIP_1MIN/site=BUNNY/date=2024-03-01/data.parquet")
-        
-    def testDown(self):
+def construct_target(temp_dir: Path, parquet_path: str = DEFAULT_PARQUET_PATH) -> Path:
+    utils.initialise_directory(temp_dir)
 
-        self.dest.cleanup()
+    parquet_path = "dataset=LIVE_PRECIP_1MIN/site=BUNNY/date=2024-03-01/data.parquet"
+    return temp_dir.joinpath(parquet_path)
 
-    def test_class_instantiated(self):
+
+@pytest.fixture
+def target(base_test_helper: BaseTestHelper) -> str:
+    utils.initialise_directory(base_test_helper.temp_dir)
+
+    parquet_path = "dataset=LIVE_PRECIP_1MIN/site=BUNNY/date=2024-03-01/data.parquet"
+    return base_test_helper.temp_dir.joinpath(parquet_path)
+
+
+@pytest.fixture
+def builder(target: str) -> ParquetBuilder:
+    return ParquetBuilder(target)
+
+
+class TestParquetBuilderMethods:
+    def test_class_instantiated(self, builder: ParquetBuilder) -> None:
         """Tests that the class is properly instantiated"""
+        assert isinstance(builder.target, Path)
+        assert isinstance(builder._output, Path)
+        assert isinstance(builder._dataframe, pd.DataFrame)
 
-        builder = ParquetBuilder(self.target)
+        assert builder.target == builder._output
 
-        self.assertIsInstance(builder.target, Path)
-        self.assertIsInstance(builder._output, Path)
-        self.assertIsInstance(builder._dataframe, pd.DataFrame)
-
-        self.assertEqual(builder.target, builder._output)
-    
-    def test_output_set(self):
+    def test_output_set(self, target: str) -> None:
         """Tests that the output parameter is set"""
-
         output = "/a/real/path"
+        builder = ParquetBuilder(target, output)
 
-        builder = ParquetBuilder(self.target, output)
-        
-        self.assertIsInstance(builder._output, Path)
-        self.assertEqual(builder._output, Path(output))
+        assert isinstance(builder._output, Path)
+        assert builder._output == Path(output)
 
-    def test_error_if_target_not_found(self):
+    def test_error_if_target_not_found(self) -> None:
         """Test that an error is raised if the target file does not exist"""
 
         target = "/totally/not/a/real/path"
 
-        with self.assertRaises(FileNotFoundError):
+        with pytest.raises(FileNotFoundError):
             ParquetBuilder(target)
 
-    def test_reset(self):
+    def test_reset(self, builder: ParquetBuilder) -> None:
         """Tests that the builder output can be reset"""
-
-        builder = ParquetBuilder(self.target)
-
-        self.assertIsNotNone(builder._dataframe)
+        assert builder._dataframe is not None
 
         builder.reset()
 
-        self.assertFalse(hasattr(builder, "_dataframe"))
-        self.assertFalse(hasattr(builder, "target"))
-        self.assertFalse(hasattr(builder, "output"))
+        assert not hasattr(builder, "_dataframe")
+        assert not hasattr(builder, "target")
+        assert not hasattr(builder, "output")
 
-class TestTimeClearing(DataCase):
 
-    def setUp(self):
-        self.dest = TemporaryDirectory()
-        self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialise_directory(self.test_data)
-        
-        self.target = f"{self.test_data}/dataset=LIVE_PRECIP_1MIN/site=BUNNY/date=2024-03-01/data.parquet"
-        
-        self.builder = ParquetBuilder(self.target)
-
-    def tearDown(self):
-        self.dest.cleanup()
-
-    @parameterized.expand([1,1.2,">"])
-    def test_error_if_non_enum_operator_used(self, operator):
+class TestTimeClearing:
+    @pytest.mark.parametrize("operator", [1, 1.2, ">"])
+    def test_error_if_non_enum_operator_used(self, operator: Any, builder: ParquetBuilder) -> None:
         """Test that a TypeError is raised unless the operator is passed as an Operator enum"""
-
         tm = datetime.time(hour=11)
 
-        with self.assertRaises(TypeError):
-            self.builder.filter_by_time(tm, operator)
-    
-    @parameterized.expand([1,1.2,"10:20"])
-    def test_error_if_non_datetime_received(self, time):
+        with pytest.raises(TypeError):
+            builder.filter_by_time(tm, operator)
+
+    @pytest.mark.parametrize("time", [1, 1.2, "10:20"])
+    def test_error_if_non_datetime_received(
+        self,
+        builder: ParquetBuilder,
+        time: Any,
+    ) -> None:
         """Test that a TypeError is raised unless the operator is passed as an Operator enum"""
+        with pytest.raises(TypeError):
+            builder.filter_by_time(time, Operator.GREATER_THAN)
 
-        with self.assertRaises(TypeError):
-            self.builder.filter_by_time(time, Operator.GREATER_THAN)
-
-
-    def test_time_filter_gt(self):
+    def test_time_filter_gt(self, builder: ParquetBuilder) -> None:
         """Tests that method removes values not greater than the specified time"""
-
         tm = datetime.time(hour=11)
         operator = Operator.GREATER_THAN
 
-        self.builder.filter_by_time(tm, operator)  
-        self.assertNotEqual(self.builder._dataframe.size, 0)
+        builder.filter_by_time(tm, operator)
+        assert len(builder._dataframe) == 779
 
-        df = self.builder._dataframe.query(f"time.dt.time <= @pd.Timestamp('{tm}').time()")
-        self.assertEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time <= @pd.Timestamp('{tm}').time()")
+        assert df.empty
 
-        df = self.builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
-        self.assertNotEqual(df.size, 0)
-    
-    def test_time_filter_ge(self):
+        df = builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
+        assert len(builder._dataframe) == 779
+
+    def test_time_filter_ge(self, builder: ParquetBuilder) -> None:
         """Tests that method removes values not greater than or equal to the specified time"""
 
         tm = datetime.time(hour=17, minute=14)
         operator = Operator.GREATER_THAN_EQUAL
 
-        self.builder.filter_by_time(tm, operator)  
-        self.assertNotEqual(self.builder._dataframe.size, 0)
+        builder.filter_by_time(tm, operator)
+        assert builder._dataframe.shape == (406, 14)
 
-        df = self.builder._dataframe.query(f"time.dt.time < @pd.Timestamp('{tm}').time()")
-        self.assertEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time < @pd.Timestamp('{tm}').time()")
+        assert df.empty
 
-        df = self.builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
-        self.assertNotEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
+        assert df.shape == (406, 14)
 
-    def test_time_filter_eq(self):
+    def test_time_filter_eq(self, builder: ParquetBuilder) -> None:
         """Tests that method removes values not equal to the specified time"""
 
         tm = datetime.time(hour=17, minute=14)
         operator = Operator.EQUAL
 
-        self.builder.filter_by_time(tm, operator)  
-        self.assertNotEqual(self.builder._dataframe.size, 0)
+        builder.filter_by_time(tm, operator)
+        assert builder._dataframe.shape == (1, 14)
 
-        df = self.builder._dataframe.query(f"time.dt.time != @pd.Timestamp('{tm}').time()")
-        self.assertEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time != @pd.Timestamp('{tm}').time()")
+        assert df.empty
 
-        df = self.builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
-        self.assertNotEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
+        assert builder._dataframe.shape == (1, 14)
 
-    def test_time_filter_lt(self):
+    def test_time_filter_lt(self, builder: ParquetBuilder) -> None:
         """Tests that method removes values not less than the specified time"""
 
         tm = datetime.time(hour=12, minute=14, second=36)
         operator = Operator.LESS_THAN
 
-        self.builder.filter_by_time(tm, operator)  
-        self.assertNotEqual(self.builder._dataframe.size, 0)
+        builder.filter_by_time(tm, operator)
+        assert builder._dataframe.shape == (735, 14)
 
-        df = self.builder._dataframe.query(f"time.dt.time >= @pd.Timestamp('{tm}').time()")
-        self.assertEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time >= @pd.Timestamp('{tm}').time()")
+        assert df.empty
 
-        df = self.builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
-        self.assertNotEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
+        assert df.shape == (735, 14)
 
-    def test_time_filter_le(self):
+    def test_time_filter_le(self, builder: ParquetBuilder) -> None:
         """Tests that method removes values not less than or equal to the specified time"""
 
         tm = datetime.time(hour=23, minute=14, second=36)
         operator = Operator.LESS_THAN_EQUAL
 
-        self.builder.filter_by_time(tm, operator)  
-        self.assertNotEqual(self.builder._dataframe.size, 0)
+        builder.filter_by_time(tm, operator)
+        assert builder._dataframe.shape == (1395, 14)
 
-        df = self.builder._dataframe.query(f"time.dt.time > @pd.Timestamp('{tm}').time()")
-        self.assertEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time > @pd.Timestamp('{tm}').time()")
+        assert df.empty
 
-        df = self.builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
-        self.assertNotEqual(df.size, 0)
+        df = builder._dataframe.query(f"time.dt.time {operator} @pd.Timestamp('{tm}').time()")
+        assert df.shape == (1395, 14)
 
-class TestPercentageRowRemoval(DataCase):
 
-    def setUp(self):
-        self.dest = TemporaryDirectory()
-        self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialise_directory(self.test_data)
-        
-        self.target = f"{self.test_data}/dataset=LIVE_PRECIP_1MIN/site=BUNNY/date=2024-03-01/data.parquet"
-        
-        self.builder = ParquetBuilder(self.target)
-
-    def tearDown(self):
-        self.dest.cleanup()
-
-    @parameterized.expand([-1, -1.2, 101, "1000"])
-    def test_bad_percentage_error(self, percent):
+class TestPercentageRowRemoval:
+    @pytest.mark.parametrize("percent", [-1, -1.2, 101, "1000"])
+    def test_bad_percentage_error(self, percent: Any, builder: ParquetBuilder) -> None:
         """Tests that an error is raised for bad percentage values"""
 
-        with self.assertRaises(ValueError):
-            self.builder.clear_percentage_of_rows(percent)
+        with pytest.raises(ValueError):
+            builder.clear_percentage_of_rows(percent)
 
-    @parameterized.expand([0, 10.5, 30, 75.9, 99.9, 100])
-    def test_rows_removed(self, percent):
-        
-        size_before = self.builder._dataframe.shape[0]
-        self.assertNotEqual(size_before, 0)
+    @pytest.mark.parametrize("percent", [0, 10.5, 30, 75.9, 99.9, 100])
+    def test_rows_removed(self, percent: Any, builder: ParquetBuilder) -> None:
+        size_before = builder._dataframe.shape[0]
+        assert size_before > 0
 
         acceptable_diff = size_before * 0.005
-        expected = size_before * (1- (percent / 100))
+        expected = size_before * (1 - (percent / 100))
 
-        self.builder.clear_percentage_of_rows(percent)
+        builder.clear_percentage_of_rows(percent)
 
-        size_after = self.builder._dataframe.shape[0]
+        size_after = builder._dataframe.shape[0]
 
-        self.assertAlmostEqual(size_after, expected, delta=acceptable_diff)
+        assert pytest.approx(size_after, abs=acceptable_diff) == pytest.approx(expected, abs=acceptable_diff)
 
-class TestPercentageCellRemoval(DataCase):
 
-    def setUp(self):
-        self.dest = TemporaryDirectory()
-        self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialise_directory(self.test_data)
-        
-        self.target = f"{self.test_data}/dataset=LIVE_PRECIP_1MIN/site=BUNNY/date=2024-03-01/data.parquet"
-        
-        self.builder = ParquetBuilder(self.target)
-        self.excluded_columns = ["time", "SITE_ID", "RECORD"]
+class TestPercentageCellRemoval:
+    excluded_columns = ["time", "SITE_ID", "RECORD"]
 
-    def tearDown(self):
-        self.dest.cleanup()
-
-    @parameterized.expand([-1, -1.2, 101, "1000"])
-    def test_bad_percentage_error(self, percent):
+    @pytest.mark.parametrize("percent", [-1, -1.2, 101, "1000"])
+    def test_bad_percentage_error(self, percent: Any, builder: ParquetBuilder) -> None:
         """Tests that an error is raised for bad percentage values"""
+        with pytest.raises(ValueError):
+            builder.set_random_cells_to_null(percent)
 
-        with self.assertRaises(ValueError):
-            self.builder.set_random_cells_to_null(percent)
+    @pytest.mark.parametrize("percent", [0, 10.5, 30, 75.9, 99.9, 100])
+    def test_cells_removed(self, percent: Any, builder: ParquetBuilder) -> None:
+        cols = [col for col in builder._dataframe.columns if col not in self.excluded_columns]
 
-    @parameterized.expand([0, 10.5, 30, 75.9, 99.9, 100])
-    def test_cells_removed(self, percent):
-        
-        cols = [col for col in self.builder._dataframe.columns if col not in self.excluded_columns]
-        
-        n_rows = self.builder._dataframe.shape[0]
-        self.assertNotEqual(n_rows, 0)
+        n_rows = builder._dataframe.shape[0]
+        assert n_rows != 0
 
-        n_nan = [self.builder._dataframe[col].isna().sum() for col in cols]
+        n_nan = [builder._dataframe[col].isna().sum() for col in cols]
 
-        self.builder.set_random_cells_to_null(percent, exclude=self.excluded_columns)
+        builder.set_random_cells_to_null(percent, exclude=self.excluded_columns)
 
         for col, nan_before in zip(cols, n_nan):
-            expected = (n_rows - nan_before) * (percent/100)
+            expected = (n_rows - nan_before) * (percent / 100)
 
-            size_after = self.builder._dataframe[col].isna().sum()
-            self.assertGreaterEqual(size_after, expected)
+            size_after = builder._dataframe[col].isna().sum()
+            assert size_after >= expected
 
-class TestBuilderWriting(DataCase):
 
-    def setUp(self):
-        self.dest = TemporaryDirectory()
-        self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialise_directory(self.test_data)
-
-        self.target = self.test_data / "dataset=LIVE_PRECIP_1MIN" / "site=BUNNY" / "date=2024-03-01/data.parquet"
-        self.output = self.test_data / "new-file.parquet"
-        self.output_new_dir = self.test_data / "a" / "new" / "file.parquet"
-        self.builder = ParquetBuilder(self.target)
-
-    def tearDown(self):
-        self.dest.cleanup()
-
-    def test_output_written(self):
+class TestBuilderWriting:
+    def test_output_written(self, builder: ParquetBuilder) -> None:
         """Tests that the builder output is written to file"""
-
-        builder = self.builder
         original_df = builder._dataframe.copy()
 
         builder.clear_percentage_of_rows(50)
@@ -283,74 +226,76 @@ class TestBuilderWriting(DataCase):
 
         output_df = pd.read_parquet(builder._output)
 
-        self.assertFalse(original_df.equals(output_df))
+        assert not original_df.equals(output_df)
 
-    def test_output_written_different_from_target_dir_exists(self):
+    def test_output_written_different_from_target_dir_exists(
+        self, base_test_helper: BaseTestHelper, target: str
+    ) -> None:
         """Tests that output is written to an existing directory but different filename"""
-        output = self.output
-        builder = ParquetBuilder(self.target, output)
+        output = base_test_helper.temp_dir.joinpath("new-file.parquet")
+        builder = ParquetBuilder(target, output)
 
-        self.assertFalse(output.exists(), "Output file should not exist at test start.")
+        assert not output.exists(), "Output file should not exist at test start."
         builder.write_output()
-        self.assertTrue(output.exists())
+        assert output.exists()
 
         new_df = pd.read_parquet(output)
 
-        self.assertTrue(builder._dataframe.equals(new_df))
+        assert builder._dataframe.equals(new_df)
 
-    def test_output_written_to_non_existing_directory_ok(self):
+    def test_output_written_to_non_existing_directory_ok(self, base_test_helper: BaseTestHelper, target: str) -> None:
         """Tests that output writes suceessfully to non-existing directory
         if the `new_dir_ok` fkag is set as True"""
-        output = self.output_new_dir
-        builder = ParquetBuilder(self.target, output)
+        output = base_test_helper.temp_dir.joinpath("a", "new", "file.parquet")
+        builder = ParquetBuilder(target, output)
 
-        self.assertFalse(output.exists(), "Output file should not exist at test start.")
-        self.assertFalse(output.parent.is_dir(), "Output directory should not exist")
+        assert not output.exists(), "Output file should not exist at test start."
+        assert not output.parent.is_dir(), "Output directory should not exist"
 
         builder.write_output(new_dir_ok=True)
-        self.assertTrue(output.exists())
+        assert output.exists()
 
         new_df = pd.read_parquet(output)
 
-        self.assertTrue(builder._dataframe.equals(new_df))
-    
-    def test_output_written_to_non_existing_directory_error(self):
-        """Tests error is raised if output directory doesn't exist
-        and if the `new_dir_ok` fkag is set as False"""
+        assert builder._dataframe.equals(new_df)
 
-        output = self.output_new_dir
-        builder = ParquetBuilder(self.target, output)
+    def test_output_written_to_non_existing_directory_error(
+        self, base_test_helper: BaseTestHelper, target: str
+    ) -> None:
+        """Tests error is raised if output directory doesn't exist and if the `new_dir_ok` fkag is set as False"""
+        output = base_test_helper.temp_dir.joinpath("a", "new", "file.parquet")
+        builder = ParquetBuilder(target, output)
 
-        with self.assertRaises(NotADirectoryError):
+        with pytest.raises(NotADirectoryError):
             builder.write_output()
 
 
-class TestBuilderInvocationMethod(DataCase):
-
-    def setUp(self):
-        self.dest = TemporaryDirectory()
-        self.test_data = Path(self.dest.name) / "out-data"
-        utils.initialise_directory(self.test_data)
-        
-        self.target = self.test_data / "dataset=LIVE_PRECIP_1MIN" / "site=BUNNY" / "date=2024-03-01/data.parquet"
-        self.builder = ParquetBuilder(self.target)
-
-    def tearDown(self):
-        self.dest.cleanup()
-
-    @parameterized.expand([
-        [10, None, None, None],
-        [None, 30, None, None],
-        [10, 45, datetime.time(11), None],
-        [None, None, None, datetime.time(9,32)],
-        [15.5, 79, datetime.time(18, 42), datetime.time(9,32)]
-        ])
-    @patch('databuilder.builders.ParquetBuilder.filter_by_time')
-    @patch('databuilder.builders.ParquetBuilder.set_random_cells_to_null')
-    @patch('databuilder.builders.ParquetBuilder.clear_percentage_of_rows')
-    def test_build_methods_called(self, p_row, p_cell, b_time, a_time, row_mock, cell_mock, time_mock):
+class TestBuilderInvocationMethod:
+    @pytest.mark.parametrize(
+        "p_row,p_cell,b_time,a_time",
+        [
+            [10, None, None, None],
+            [None, 30, None, None],
+            [10, 45, datetime.time(11), None],
+            [None, None, None, datetime.time(9, 32)],
+            [15.5, 79, datetime.time(18, 42), datetime.time(9, 32)],
+        ],
+    )
+    @patch("databuilder.builders.ParquetBuilder.filter_by_time")
+    @patch("databuilder.builders.ParquetBuilder.set_random_cells_to_null")
+    @patch("databuilder.builders.ParquetBuilder.clear_percentage_of_rows")
+    def test_build_methods_called(
+        self,
+        row_mock: mock.MagicMock,
+        cell_mock: mock.MagicMock,
+        time_mock: mock.MagicMock,
+        p_row: int | float | None,
+        p_cell: int | float | None,
+        b_time: datetime.time | None,
+        a_time: datetime.time | None,
+        builder: ParquetBuilder,
+    ) -> None:
         """Tests that the build methods are called"""
-        builder = ParquetBuilder(self.target)
 
         builder.build_all(p_row, p_cell, b_time, a_time)
 
@@ -358,41 +303,49 @@ class TestBuilderInvocationMethod(DataCase):
             row_mock.assert_called_once_with(p_row)
         else:
             row_mock.assert_not_called()
-        
+
         if p_cell:
             cell_mock.assert_called_once_with(p_cell, exclude=None)
         else:
             cell_mock.assert_not_called()
-        
+
         if not b_time and not a_time:
             time_mock.assert_not_called()
         elif b_time and a_time:
             time_mock.assert_has_calls(
-                [
-                    mock.call(b_time, Operator.GREATER_THAN_EQUAL),
-                    mock.call(a_time, Operator.LESS_THAN_EQUAL)
-                ]
-            ) 
+                [mock.call(b_time, Operator.GREATER_THAN_EQUAL), mock.call(a_time, Operator.LESS_THAN_EQUAL)]
+            )
         elif b_time:
             time_mock.assert_called_with(b_time, Operator.GREATER_THAN_EQUAL)
         elif a_time:
             time_mock.assert_called_with(a_time, Operator.LESS_THAN_EQUAL)
 
-    @parameterized.expand([
-        [10, None, None, None],
-        [None, 30, None, None],
-        [10, 45, datetime.time(11), None],
-        [None, None, None, datetime.time(9,32)],
-        [15.5, 79, datetime.time(18, 42), datetime.time(9,32)]
-        ])
-    @patch('databuilder.builders.ParquetBuilder.filter_by_time')
-    @patch('databuilder.builders.ParquetBuilder.set_random_cells_to_null')
-    @patch('databuilder.builders.ParquetBuilder.clear_percentage_of_rows')
-    def test_build_methods_called_protected_columns(self, p_row, p_cell, b_time, a_time, row_mock, cell_mock, time_mock):
+    @pytest.mark.parametrize(
+        "p_row,p_cell,b_time,a_time",
+        [
+            [10, None, None, None],
+            [None, 30, None, None],
+            [10, 45, datetime.time(11), None],
+            [None, None, None, datetime.time(9, 32)],
+            [15.5, 79, datetime.time(18, 42), datetime.time(9, 32)],
+        ],
+    )
+    @patch("databuilder.builders.ParquetBuilder.filter_by_time")
+    @patch("databuilder.builders.ParquetBuilder.set_random_cells_to_null")
+    @patch("databuilder.builders.ParquetBuilder.clear_percentage_of_rows")
+    def test_build_methods_called_protected_columns(
+        self,
+        row_mock: mock.MagicMock,
+        cell_mock: mock.MagicMock,
+        time_mock: mock.MagicMock,
+        p_row: int | float | None,
+        p_cell: int | float | None,
+        b_time: datetime.time | None,
+        a_time: datetime.time | None,
+        builder: ParquetBuilder,
+    ) -> None:
         """Tests that the build methods are called"""
         protected_columns = ["time", "SITE_ID"]
-
-        builder = ParquetBuilder(self.target)
 
         builder.build_all(p_row, p_cell, b_time, a_time, protected_columns=protected_columns)
 
@@ -400,21 +353,18 @@ class TestBuilderInvocationMethod(DataCase):
             row_mock.assert_called_once_with(p_row)
         else:
             row_mock.assert_not_called()
-        
+
         if p_cell:
             cell_mock.assert_called_once_with(p_cell, exclude=protected_columns)
         else:
             cell_mock.assert_not_called()
-        
+
         if not b_time and not a_time:
             time_mock.assert_not_called()
         elif b_time and a_time:
             time_mock.assert_has_calls(
-                [
-                    mock.call(b_time, Operator.GREATER_THAN_EQUAL),
-                    mock.call(a_time, Operator.LESS_THAN_EQUAL)
-                ]
-            ) 
+                [mock.call(b_time, Operator.GREATER_THAN_EQUAL), mock.call(a_time, Operator.LESS_THAN_EQUAL)]
+            )
         elif b_time:
             time_mock.assert_called_with(b_time, Operator.GREATER_THAN_EQUAL)
         elif a_time:
