@@ -136,7 +136,7 @@ class TimeSeriesTestHelper(BaseTestHelper):
 
                 # Sort any lists to be compared to ensure the comparison is consistent
                 if isinstance(expected_value, list):
-                    expected_value = sorted(expected_value)
+                    expected_value = sorted(expected_value)  # noqa: PLW2901
                     actual_value = sorted(actual_value)
 
                 if expected_value != actual_value:

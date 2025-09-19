@@ -436,7 +436,7 @@ class TestDataProcessingConfiguration:
         assert result.ts_id == "http://example.com/id/dataset/example_name"
 
     @patch("metadata_manager.models.schemas.data_processing_configurations.ConfigItem.model_validate")
-    def test_extract_method_config(self, mock_method_validate:MagicMock) -> None:
+    def test_extract_method_config(self, mock_method_validate: MagicMock) -> None:
         """Test extraction and validation of method configuration."""
         mock_method = MagicMock(spec=ConfigItem)
         mock_method.name = "linear-interpolation"
@@ -481,7 +481,7 @@ class TestDataProcessingConfiguration:
 
 class TestDataProcessingConfigurations:
     @patch("metadata_manager.models.schemas.data_processing_configurations.DataProcessingConfiguration.model_validate")
-    def test_model_validate_with_items_dict(self, mock_validate:MagicMock) -> None:
+    def test_model_validate_with_items_dict(self, mock_validate: MagicMock) -> None:
         """Test validation with a dictionary containing 'items'."""
         mock_config = MagicMock(spec=DataProcessingConfiguration)
         mock_validate.return_value = mock_config
@@ -491,7 +491,7 @@ class TestDataProcessingConfigurations:
         assert len(result) == 3
 
     @patch("metadata_manager.models.schemas.data_processing_configurations.DataProcessingConfiguration.model_validate")
-    def test_model_validate_with_list(self, mock_validate:MagicMock) -> None:
+    def test_model_validate_with_list(self, mock_validate: MagicMock) -> None:
         """Test validation with a list of items."""
         mock_config = MagicMock(spec=DataProcessingConfiguration)
         mock_validate.return_value = mock_config

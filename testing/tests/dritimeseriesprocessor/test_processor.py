@@ -3,7 +3,6 @@ from typing import Union
 from unittest.mock import MagicMock, patch
 
 import polars as pl
-import pytest
 from time_stream import TimeSeries
 
 from dritimeseriesprocessor.metrics_exporter import metrics

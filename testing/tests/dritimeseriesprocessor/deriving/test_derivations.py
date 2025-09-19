@@ -230,7 +230,7 @@ class TestDailyTotalRadiation:
 
 
 class TestDailyPotentialEvaporation:
-    def test_evaluate(self, ts_test_helper:TimeSeriesTestHelper) -> None:
+    def test_evaluate(self, ts_test_helper: TimeSeriesTestHelper) -> None:
         df = pl.read_csv(
             ts_test_helper.input_dir.joinpath("derivations", "pe_pt30m_3_days.csv"),
             schema=pl.Schema({"time": pl.Datetime(time_zone=timezone.utc), "PE": pl.Float64}),

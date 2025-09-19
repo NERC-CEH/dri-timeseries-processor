@@ -9,6 +9,7 @@ from testing.utils.s3_test_helper import S3TestHelper
 
 BUCKET_NAME = "ukceh-fdri-staging-timeseries-level-0"
 
+
 def get_unique_dates(df: pl.DataFrame) -> pl.Series:
     # Convert datetime to string date for easy assertion
     df = df.with_columns(pl.col("time").dt.strftime("%Y-%m-%d"))
@@ -53,7 +54,9 @@ class TestReadParquetByQuery:
         s3_test_helper._create_hourly_test_data(datetime(2024, 1, 1), datetime(2024, 1, 10), upload=True)
         s3_test_helper._put_object(BUCKET_NAME, "corrupted.parquet", b"corrupted data")
 
-        query = f"SELECT * FROM read_parquet('s3://{BUCKET_NAME}/cosmos/dataset=test_dataset/site=*/date=*/data.parquet')"
+        query = (
+            f"SELECT * FROM read_parquet('s3://{BUCKET_NAME}/cosmos/dataset=test_dataset/site=*/date=*/data.parquet')"
+        )
         result = reader.read(query)
 
         assert isinstance(result, pl.DataFrame)

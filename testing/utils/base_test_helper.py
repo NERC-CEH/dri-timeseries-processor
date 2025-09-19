@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import unittest
 from pathlib import Path
 from typing import Any, Dict
 
@@ -156,10 +155,8 @@ class BaseTestHelper:
         for json_path in base_dir.glob("*.json"):
             url = f"{base_url}{json_path.stem}{url_suffix}"
             with open(json_path) as json_file:
-                try:
-                    json_data = json.load(json_file)
-                except:
-                    print()
+                json_data = json.load(json_file)
+
             api_data[url] = json_data
 
         return api_data

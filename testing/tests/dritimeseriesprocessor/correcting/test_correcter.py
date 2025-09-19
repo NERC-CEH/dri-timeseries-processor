@@ -12,7 +12,6 @@ from dritimeseriesprocessor.correcting.correcter import run_corrections, update_
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
 from testing.utils.base_test_helper import BaseTestHelper
-from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 def create_test_ts(col_name: str, datetimes: list, data: list, periodicity: Period) -> TimeSeries:
@@ -64,6 +63,7 @@ class TestRunCorrections:
     """
     Test suite for the run_corrections function.
     """
+
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
     @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
     def test_run_corrections_basic(
@@ -225,7 +225,10 @@ class TestRunCorrections:
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
     @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
     def test_run_corrections_no_methods(
-        self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock, base_test_helper: BaseTestHelper,
+        self,
+        mock_get_methods: mock.MagicMock,
+        mock_api_manager: mock.MagicMock,
+        base_test_helper: BaseTestHelper,
     ) -> None:
         """
         Test run_corrections when corrections config exists but no methods are specified.

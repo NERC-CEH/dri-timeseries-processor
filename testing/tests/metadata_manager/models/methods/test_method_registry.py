@@ -113,7 +113,7 @@ class TestMethodRegisters:
         ],
     )
     @patch("metadata_manager.models.methods.method_registry.Method.model_validate")
-    def test_validate_called_for_each_method(self, mock_validate: MagicMock,  registry_class: object) -> None:
+    def test_validate_called_for_each_method(self, mock_validate: MagicMock, registry_class: object) -> None:
         """Test that InfillingMethod.model_validate is called for each method."""
         mock_method = MagicMock(spec=Method)
         mock_validate.return_value = mock_method

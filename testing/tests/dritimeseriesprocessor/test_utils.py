@@ -211,7 +211,7 @@ class TestExtractDepTs:
         """Test that a ValueError is raised if a dependency time series ID is not found."""
         config = DummyConfigItem(parameters={"dep_ts": "NOTFOUND"})
 
-        with pytest.raises(ValueError, match="Dependency time series ID NOTFOUND not found") as err:
+        with pytest.raises(ValueError, match="Dependency time series ID NOTFOUND not found"):
             utils.extract_dep_ts(config, self.ts_ids)
 
     def test_no_dep_ts_key(self) -> None:

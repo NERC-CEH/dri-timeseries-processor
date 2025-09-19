@@ -1,5 +1,3 @@
-import unittest
-
 from metadata_manager.models.schemas.dependencies import (
     DependentTimeSeriesMetadata,
     DependentTimeSeriesMetadataResponse,
