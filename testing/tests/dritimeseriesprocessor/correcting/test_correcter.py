@@ -1,7 +1,9 @@
 from datetime import datetime
+from typing import Any, Dict
 from unittest import mock
 
 import polars as pl
+import pytest
 from driutils.metadata_api.api_manager import MetadataAPIManager
 from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from time_stream import Period, TimeSeries
@@ -10,7 +12,6 @@ from dritimeseriesprocessor.correcting.correcter import run_corrections, update_
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
 from testing.utils.base_test_helper import BaseTestHelper
-from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
 def create_test_ts(col_name: str, datetimes: list, data: list, periodicity: Period) -> TimeSeries:
@@ -23,52 +24,55 @@ def create_test_ts(col_name: str, datetimes: list, data: list, periodicity: Peri
     return ts
 
 
-class TestRunCorrections(TimeSeriesTestHelper):
+@pytest.fixture()
+def mock_methods_dict() -> Dict[str, Any]:
+    lw_corr = type(
+        "DummyCorrectionMethod",
+        (),
+        {
+            "method_id": 1,
+            "name": "LW_CORR",
+            "description": "Correction for long wave radiation",
+            "function_name": "lw_corr",
+            "method_type": "correction",
+            "arg_mapping": {"lwout_unc": "lw_unc", "lwin_unc": "lw_unc"},
+        },
+    )()
+
+    scalar = type(
+        "DummyCorrectionMethod",
+        (),
+        {
+            "method_id": 2,
+            "name": "SCALAR",
+            "description": "Scale the data point by a correction factor",
+            "function_name": "scalar",
+            "method_type": "correction",
+            "arg_mapping": {},
+        },
+    )()
+
+    mock_methods_dict = {
+        "lw_corr": lw_corr,
+        "scalar": scalar,
+    }
+    return mock_methods_dict
+
+
+class TestRunCorrections:
     """
     Test suite for the run_corrections function.
     """
 
-    def setUp(self) -> None:
-        """
-        Set up common test data and mocks.
-        """
-        super().setUp()
-
-        # Set up dummy correction methods
-        lw_corr = type(
-            "DummyCorrectionMethod",
-            (),
-            {
-                "method_id": 1,
-                "name": "LW_CORR",
-                "description": "Correction for long wave radiation",
-                "function_name": "lw_corr",
-                "method_type": "correction",
-                "arg_mapping": {"lwout_unc": "lw_unc", "lwin_unc": "lw_unc"},
-            },
-        )()
-
-        scalar = type(
-            "DummyCorrectionMethod",
-            (),
-            {
-                "method_id": 2,
-                "name": "SCALAR",
-                "description": "Scale the data point by a correction factor",
-                "function_name": "scalar",
-                "method_type": "correction",
-                "arg_mapping": {},
-            },
-        )()
-
-        self.mock_methods_dict = {
-            "lw_corr": lw_corr,
-            "scalar": scalar,
-        }
-
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
     @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
-    def test_run_corrections_basic(self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock) -> None:
+    def test_run_corrections_basic(
+        self,
+        mock_get_methods: mock.MagicMock,
+        mock_api_manager: mock.MagicMock,
+        base_test_helper: BaseTestHelper,
+        mock_methods_dict: Dict[str, Any],
+    ) -> None:
         """
         Test basic functionality of run_corrections.
         Checks if the function adds the flag system, adds the flag columns, and runs the correction method.
@@ -92,28 +96,37 @@ class TestRunCorrections(TimeSeriesTestHelper):
             }
         }
 
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
-        mock_get_methods.return_value = self.mock_methods_dict
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=base_test_helper.create_all_metadata_api_data())
+        mock_get_methods.return_value = mock_methods_dict
 
         result = run_corrections(ts_ids)
 
         # Check flag system added
-        self.assertIn("corrs_flags", result[g1_ts_id]["data"].flag_systems)
+        assert "corrs_flags" in result[g1_ts_id]["data"].flag_systems
         # Check columns added
-        self.assertIn("g1_CORRS_FLAG", result[g1_ts_id]["data"].columns)
+        assert "g1_CORRS_FLAG" in result[g1_ts_id]["data"].columns
         # Check the correction method has been applied
-        self.assertEqual(
-            result[g1_ts_id]["data"].df["g1"].to_list(), [7.88732, 3.156397464, 3.115748016, 3.35994459, 2.93482143]
-        )
+        assert result[g1_ts_id]["data"].df["g1"].to_list() == [
+            7.88732,
+            3.156397464,
+            3.115748016,
+            3.35994459,
+            2.93482143,
+        ]
+
         # Check CORRS flag values have been added
-        self.assertEqual(result[g1_ts_id]["data"].df["g1_CORRS_FLAG"].to_list(), [0, 2, 2, 2, 2])
+        assert result[g1_ts_id]["data"].df["g1_CORRS_FLAG"].to_list() == [0, 2, 2, 2, 2]
         # Check core flag values updated
-        self.assertEqual(result[g1_ts_id]["data"].df["g1_CORE_FLAG"].to_list(), [32, 33, 33, 33, 33])
+        assert result[g1_ts_id]["data"].df["g1_CORE_FLAG"].to_list() == [32, 33, 33, 33, 33]
 
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
     @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
     def test_run_corrections_with_arg_mapping(
-        self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock
+        self,
+        mock_get_methods: mock.MagicMock,
+        mock_api_manager: mock.MagicMock,
+        base_test_helper: BaseTestHelper,
+        mock_methods_dict: Dict[str, Any],
     ) -> None:
         """
         Test basic functionality with LW_CORR method which uses argument mapping.
@@ -147,29 +160,37 @@ class TestRunCorrections(TimeSeriesTestHelper):
             },
         }
 
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
-        mock_get_methods.return_value = self.mock_methods_dict
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=base_test_helper.create_all_metadata_api_data())
+        mock_get_methods.return_value = mock_methods_dict
 
         result = run_corrections(ts_ids)
 
         # Test lw_corr has been applied to lwout. This uses the argument mapping to map lwout_unc to lw_unc
-        self.assertIn("corrs_flags", result[lwout_ts_id]["data"].flag_systems)
+        assert "corrs_flags" in result[lwout_ts_id]["data"].flag_systems
         # Check columns added
-        self.assertIn("lwout_CORRS_FLAG", result[lwout_ts_id]["data"].columns)
+        assert "lwout_CORRS_FLAG" in result[lwout_ts_id]["data"].columns
         # Check the correction method has been applied
-        self.assertEqual(
-            result[lwout_ts_id]["data"].df["lwout"].to_list(),
-            [None, None, 358.12876586484373, 357.98189715415776, 360.6],
-        )
+        assert result[lwout_ts_id]["data"].df["lwout"].to_list() == [
+            None,
+            None,
+            358.12876586484373,
+            357.98189715415776,
+            360.6,
+        ]
+
         # Check CORRS flag values have been added - Not flagged None values
-        self.assertEqual(result[lwout_ts_id]["data"].df["lwout_CORRS_FLAG"].to_list(), [0, 0, 1, 1, 0])
+        assert result[lwout_ts_id]["data"].df["lwout_CORRS_FLAG"].to_list() == [0, 0, 1, 1, 0]
         # Check core flag values updated - None values left with missing flag (32 + 4)
-        self.assertEqual(result[lwout_ts_id]["data"].df["lwout_CORE_FLAG"].to_list(), [36, 36, 33, 33, 32])
+        assert result[lwout_ts_id]["data"].df["lwout_CORE_FLAG"].to_list() == [36, 36, 33, 33, 32]
 
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
     @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
     def test_run_corrections_no_config(
-        self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock
+        self,
+        mock_get_methods: mock.MagicMock,
+        mock_api_manager: mock.MagicMock,
+        base_test_helper: BaseTestHelper,
+        mock_methods_dict: Dict[str, Any],
     ) -> None:
         """
         Test run_corrections when no corrections config is available.
@@ -194,17 +215,20 @@ class TestRunCorrections(TimeSeriesTestHelper):
             }
         }
 
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
-        mock_get_methods.return_value = self.mock_methods_dict
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=base_test_helper.create_all_metadata_api_data())
+        mock_get_methods.return_value = mock_methods_dict
 
         result = run_corrections(ts_ids)
 
-        self.assertEqual(result, ts_ids)
+        assert result == ts_ids
 
     @mock.patch.object(MetadataAPIManager, "_make_api_call")
     @mock.patch("dritimeseriesprocessor.correcting.correcter.get_correction_methods")
     def test_run_corrections_no_methods(
-        self, mock_get_methods: mock.MagicMock, mock_api_manager: mock.MagicMock
+        self,
+        mock_get_methods: mock.MagicMock,
+        mock_api_manager: mock.MagicMock,
+        base_test_helper: BaseTestHelper,
     ) -> None:
         """
         Test run_corrections when corrections config exists but no methods are specified.
@@ -229,21 +253,16 @@ class TestRunCorrections(TimeSeriesTestHelper):
             }
         }
 
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=base_test_helper.create_all_metadata_api_data())
         mock_get_methods.return_value = {}
 
         result = run_corrections(ts_ids)
 
-        self.assertEqual(result, ts_ids)
+        assert result == ts_ids
 
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestUpdateConfigItemsWithSiteAttributes(BaseTestHelper):
-    def setUp(self) -> None:
-        super().setUp()
-        self.host_url = "test_url.com"
-        self.api = MetadataAPIManager(host=self.host_url, network="cosmos")
-
+class TestUpdateConfigItemsWithSiteAttributes:
     def test_update_config_item_with_site_attribute(self, mock_metadata_api: mock.MagicMock) -> None:
         response_data = {
             "meta": {},

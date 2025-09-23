@@ -186,26 +186,35 @@ Make sure to also remove the test from the `qc_test_map` in [quality_config.py](
 
 ## Useful Test Helpers / Utilities
 
-The `testing/utils` folder contains a number of helper functions and classes to aid testing.
+The `testing/utils` folder contains a number of helper functions and classes to aid testing. These are available as fixtures defined in `conftest.py`.
+
+### BaseTestHelper
+
+This sets up a temp working directory, overwriting the current working directory, enables easy access to the main test
+data directory and adds helper functions for reading, writing and comparing time series id metadata.
+
+To use, include the `base_test_helper` inside the test function declaration. Any functionality can then be accessed from
+the `base_test_helper` object. For example:
+
+```python
+def test_main(self, base_test_helper: BaseTestHelper) -> None:
+    print(base_test_helper.data_dir)
+```
 
 ### TimeSeriesTestHelper
 
-This class is designed to be a mixin to a main test class used in place of the usual `unittest.TestCase`, for example:
+This contains a number of useful functions for loading and comparing timeseries data (e.g. ts_ids). It builds on
+BaseTestHelper, allowing all functionality within BaseTestHelper to also be available in the TimeSeriesTestHelper.
 
-```python
-class TestFunctionality(TestHelper):
-    def test_functionality(self):
-        pass
-```
+It is used in a similar way to the BaseTestHelper. The fixture name is `ts_test_helper`
 
-It sets up a temp working directory, overwriting the current working directory, enables easy access to the main test
-data directory and adds helper functions for reading, writing and comparing time series id metadata.
+### S3TestHelper
 
-### EndToEndTestHelper
+This contains functionality to initialise the localstack s3 instance for testing, clearing out the bucket before every
+test, and adding functions to check for the presence of objects etc. It builds on BaseTestHelper, allowing all
+functionality within BaseTestHelper to also be available in the S3TestHelper.
 
-This class is a counterpart to TimeSeriesTestHelper which is designed to aid running command line based end to end tests.
-Given a list of arguments, an output S3 bucket name and a directory containing expected data, it will run the timeseries
-processor from end to end, checking the contents written to S3 against the expected data. 
+It is used in a similar way to the BaseTestHelper. The fixture name is `s3_test_helper`
 
 ### MockMetadataAPI
 
@@ -229,9 +238,9 @@ from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
-class TestMetadataMocking(TimeSeriesTestHelper):
-    def test_api_response(mock_api_manager: mock.MagicMock) -> None:
-        mock_api_manager.side_effect = MockMetadataAPI(api_data=self.create_all_metadata_api_data())
+class TestMetadataMocking:
+    def test_api_response(mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper) -> None:
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.create_all_metadata_api_data())
 
         pass
 ```

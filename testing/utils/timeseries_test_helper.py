@@ -1,17 +1,12 @@
 import json
-import os
-import subprocess
-import shutil
-import unittest
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import datetime
 from typing import Any, Dict, List
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
 
 import polars as pl
 from polars.testing import assert_frame_equal
-from time_stream import Period, TimeSeries
+from time_stream import TimeSeries
 
+from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from testing.utils.base_test_helper import BaseTestHelper, ComparisonError
 
 
@@ -141,7 +136,7 @@ class TimeSeriesTestHelper(BaseTestHelper):
 
                 # Sort any lists to be compared to ensure the comparison is consistent
                 if isinstance(expected_value, list):
-                    expected_value = sorted(expected_value)
+                    expected_value = sorted(expected_value)  # noqa: PLW2901
                     actual_value = sorted(actual_value)
 
                 if expected_value != actual_value:

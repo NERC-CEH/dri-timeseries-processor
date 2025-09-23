@@ -1,4 +1,3 @@
-import unittest
 from datetime import date, datetime
 from typing import Union
 from unittest.mock import MagicMock, patch
@@ -56,29 +55,28 @@ def mock_query_by_date_range_no_data(
     return pl.DataFrame(data, schema)
 
 
-class TestLoadData(unittest.TestCase):
-    def setUp(self) -> None:
-        self.ts_metadata = {
-            "sourceDataset": "dataset1",
-            "sourceBucket": "bucket1",
-            "sourceColumnName": "col1",
-            "sourceSite": "site1",
-            "resolution": "PT30M",
-            "periodicity": "PT30M",
-            "processing_level": "raw",
-        }
+class TestLoadData:
+    ts_metadata = {
+        "sourceDataset": "dataset1",
+        "sourceBucket": "bucket1",
+        "sourceColumnName": "col1",
+        "sourceSite": "site1",
+        "resolution": "PT30M",
+        "periodicity": "PT30M",
+        "processing_level": "raw",
+    }
 
-        self.start_date = datetime(2023, 1, 1)
-        self.end_date = datetime(2023, 1, 31)
+    start_date = datetime(2023, 1, 1)
+    end_date = datetime(2023, 1, 31)
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
-    def test_load_data_success(self, mock_query:MagicMock) -> None:
+    def test_load_data_success(self, mock_query: MagicMock) -> None:
         """Test the load_data with valid ts_id."""
         mock_query.side_effect = mock_query_by_date_range
 
         result = load_data(self.ts_metadata, self.start_date, self.end_date)
-        self.assertIsInstance(result, TimeSeries)
-        self.assertEqual(result.df.shape, (3, 2))
+        assert isinstance(result, TimeSeries)
+        assert result.df.shape == (3, 2)
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
     def test_load_data_for_no_data(self, mock_query: MagicMock) -> None:
@@ -86,11 +84,11 @@ class TestLoadData(unittest.TestCase):
         mock_query.side_effect = mock_query_by_date_range_no_data
 
         result = load_data(self.ts_metadata, self.start_date, self.end_date)
-        self.assertIsInstance(result, TimeSeries)
-        self.assertEqual(result.df.shape, (0, 2))
+        assert isinstance(result, TimeSeries)
+        assert result.df.shape == (0, 2)
 
 
-class TestShiftProcessedData(unittest.TestCase):
+class TestShiftProcessedData:
     def test_expected_shift(self) -> None:
         ts_ids = {
             "ts1_raw": {
@@ -107,10 +105,10 @@ class TestShiftProcessedData(unittest.TestCase):
         }
 
         result = shift_processed_data(ts_ids)
-        self.assertEqual(result, expected)
+        assert result == expected
 
 
-class TestProcessTimeseries(unittest.TestCase):
+class TestProcessTimeseries:
     @patch("dritimeseriesprocessor.processor.run_corrections")
     @patch("dritimeseriesprocessor.processor.run_quality_control")
     @patch("dritimeseriesprocessor.processor.run_infilling")
@@ -145,12 +143,8 @@ class TestProcessTimeseries(unittest.TestCase):
 
         result = process_timeseries(ts_metadata)
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
         mock_run_corrections.assert_called_once()
         mock_run_quality_control.assert_called_once()
         mock_run_infilling.assert_called_once()
-
-
-if __name__ == "__main__":
-    unittest.main()

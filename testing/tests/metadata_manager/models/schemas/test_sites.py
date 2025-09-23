@@ -1,101 +1,80 @@
-import unittest
-from parameterized import parameterized
+from typing import Any, Dict
 
+import pytest
 from pydantic import ValidationError
 
 from metadata_manager.models.schemas.sites import Sites, SitesMetadata
 
 
-class TestSites(unittest.TestCase):
+class TestSites:
     """Test the sites model"""
-    def setUp(self):
-        self.test_data = [
-                {
-                    "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
-                    "label":
-                    [
-                        "Redmere"
-                    ]
-                },
-                {
-                    "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy",
-                    "label":
-                    [
-                        "Holme Lacy"
-                    ]
-                }
-            ]
 
-    def test_extract_sites(self):
+    @property
+    def test_data(self) -> Dict[str, Any]:
+        test_data = [
+            {"@id": "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer", "label": ["Redmere"]},
+            {"@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy", "label": ["Holme Lacy"]},
+        ]
+        return test_data
+
+    def test_extract_sites(self) -> None:
         """Test extraction of sites."""
         sites = Sites.model_validate(self.test_data)
-        self.assertEqual(sites.site_list, ["http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
-                                            "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy"])
+        assert sites.site_list == [
+            "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
+            "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy",
+        ]
 
-    @parameterized.expand([
-        ("test_missing_site_id", None),
-        ("test_invalid_site_id_type", 1234)
-    ])
-    def test_invalid_site_id_field(self, _, field):
+    @pytest.mark.parametrize("field", [(None), (1234)], ids=["test_missing_site_id", "test_invalid_site_id_type"])
+    def test_invalid_site_id_field(self, field: Any | None) -> None:
         """Test validation fails if no metadata"""
         invalid_data = self.test_data.copy()
         invalid_data[0]["@id"] = field
-        with self.assertRaises(ValidationError):
+
+        with pytest.raises(ValidationError):
             Sites.model_validate(invalid_data)
 
 
-class TestSitesMetadata(unittest.TestCase):
+class TestSitesMetadata:
     """Test Sites Metadata model"""
-    def setUp(self):
-        self.test_data = {
+
+    @property
+    def test_data(self) -> Dict[str, Any]:
+        test_data = {
             "@id": "http://fdri.ceh.ac.uk/id/network/cosmos",
-            "contains":
-            [
-                {
-                    "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
-                    "label":
-                    [
-                        "Redmere"
-                    ]
-                },
-                {
-                    "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy",
-                    "label":
-                    [
-                        "Holme Lacy"
-                    ]
-                }
+            "contains": [
+                {"@id": "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer", "label": ["Redmere"]},
+                {"@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy", "label": ["Holme Lacy"]},
             ],
-            "@type":
-            [
-                {
-                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/EnvironmentalMonitoringNetwork"
-                }
-            ],
-            "label":
-            [
-                "COSMOS Network"
-            ]
+            "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/EnvironmentalMonitoringNetwork"}],
+            "label": ["COSMOS Network"],
         }
-    
-    def test_extract_site_metadata_info(self):
+        return test_data
+
+    def test_extract_site_metadata_info(self) -> None:
         """Test extraction of site metadata."""
 
-        metadata = SitesMetadata.model_validate(self.test_data)
+        metadata = SitesMetadata.model_validate(self.test_data.copy())
 
-        self.assertEqual(metadata.network_id, "http://fdri.ceh.ac.uk/id/network/cosmos")
-        self.assertEqual(metadata.sites.site_list, ["http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
-                                                    "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy"])
-        self.assertEqual(metadata.network_label, "COSMOS Network")
+        assert metadata.network_id == "http://fdri.ceh.ac.uk/id/network/cosmos"
+        assert metadata.sites.site_list == [
+            "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
+            "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy",
+        ]
+        assert metadata.network_label == "COSMOS Network"
 
-    @parameterized.expand([
-        ("test_missing_network_id", "@id", ValidationError),
-        ("test_missing_label", "label", ValidationError),
-        ("test_missing_contains", "contains", KeyError)
-    ])
-    def test_missing_required_fields(self, _, field, error):
+    @pytest.mark.parametrize(
+        "field,error",
+        [
+            ("@id", ValidationError),
+            ("label", ValidationError),
+            ("contains", KeyError),
+        ],
+        ids=["test missing network id", "test missing label", "test missing contains"],
+    )
+    def test_missing_required_fields(self, field: str, error: str) -> None:
         """Test validation fails when required fields are missing."""
         invalid_data = self.test_data.copy()
         del invalid_data[field]
-        with self.assertRaises(error):
+        with pytest.raises(error):
             SitesMetadata.model_validate(invalid_data)

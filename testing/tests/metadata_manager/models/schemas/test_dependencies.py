@@ -1,5 +1,3 @@
-import unittest
-
 from metadata_manager.models.schemas.dependencies import (
     DependentTimeSeriesMetadata,
     DependentTimeSeriesMetadataResponse,
@@ -7,7 +5,7 @@ from metadata_manager.models.schemas.dependencies import (
 )
 
 
-class TestProcessingLevel(unittest.TestCase):
+class TestProcessingLevel:
     def test_processing_level(self) -> None:
         data = {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"}
         processing_level = ProcessingLevel.model_validate(data)
@@ -15,7 +13,7 @@ class TestProcessingLevel(unittest.TestCase):
         assert processing_level.processing_type == "processed"
 
 
-class TestDependentTimeSeriesMetadataResponse(unittest.TestCase):
+class TestDependentTimeSeriesMetadataResponse:
     def test_dependent_time_series_metadata_response(self) -> None:
         data = {
             "meta": {

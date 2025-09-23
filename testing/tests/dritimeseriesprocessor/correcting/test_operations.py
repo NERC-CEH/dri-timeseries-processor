@@ -1,152 +1,185 @@
-import unittest
-from parameterized import parameterized
+from datetime import datetime
+from typing import Any
 
 import polars as pl
+import pytest
 from polars.testing import assert_frame_equal
-from datetime import datetime
+
+from dritimeseriesprocessor.correcting.operations import Add, LWCorrection, Operation, PACorrection, Power, Scalar
 from testing.utils.testing_utils import create_test_filter, create_test_operation_ts
 
-from dritimeseriesprocessor.correcting.operations import Operation, Add, Scalar, Power, LWCorrection, PACorrection
 
-
-class TestOperation(unittest.TestCase):
-    @parameterized.expand([
-        ("add", {"correction_factor": 10}, Add),
-        ("scalar", {"correction_factor": 2}, Scalar),
-    ])
-    def test_get_with_string(self, get_input, input_args, expected):
+class TestOperation:
+    @pytest.mark.parametrize(
+        "get_input,input_args,expected",
+        [
+            ("add", {"correction_factor": 10}, Add),
+            ("scalar", {"correction_factor": 2}, Scalar),
+        ],
+    )
+    def test_get_with_string(self, get_input: str, input_args: dict[str, int], expected: Any) -> None:
         """Test Operation.get() with string input."""
         op = Operation.get(get_input, **input_args)
-        self.assertIsInstance(op, expected)
+        assert isinstance(op, expected)
         for arg, val in input_args.items():
-            self.assertEqual(getattr(op, arg), val)
+            assert getattr(op, arg) == val
 
-    def test_get_with_bad_string(self):
+    def test_get_with_bad_string(self) -> None:
         """Test Operation.get() with invalid string."""
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Operation.get("bad_operation")
 
 
-class TestAdd(unittest.TestCase):
-    def setUp(self):
-        self.ts = create_test_operation_ts()
-        self.date_filter = create_test_filter()
+class TestAdd:
+    @pytest.mark.parametrize(
+        "factor,expected",
+        [
+            (100, [101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0]),
+            (0, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),
+            (-1, [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]),
+        ],
+    )
+    def test_add_simple(self, factor: int, expected: list[float]) -> None:
+        """Test that the add function works across the full DataFrame"""
+        ts = create_test_operation_ts()
 
-    @parameterized.expand([
-        (100, [101., 102., 103., 104., 105., 106., 107.]),
-        (0, [1., 2., 3., 4., 5., 6., 7.]),
-        (-1, [0., 1., 2., 3., 4., 5., 6.]),
-    ])
-    def test_add_simple(self, factor, expected):
-        """ Test that the add function works across the full DataFrame
-        """
         adder = Add(factor)
-        result = adder.apply(self.ts)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": expected,
-        })
+
+        expected_df = pl.DataFrame(
+            {
+                "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+                "value": expected,
+            }
+        )
+
+        result = adder.apply(ts)
+
         assert_frame_equal(result.df, expected_df)
 
-    @parameterized.expand([
-        (100, [1., 2., 103., 104., 105., 6., 7.]),
-        (0, [1., 2., 3., 4., 5., 6., 7.]),
-        (-1, [1., 2., 2., 3., 4., 6., 7.]),
-    ])
-    def test_date_filter(self, factor, expected):
-        """ Test that the add function works with a date filter
-        """
+    @pytest.mark.parametrize(
+        "factor,expected",
+        [
+            (100, [1.0, 2.0, 103.0, 104.0, 105.0, 6.0, 7.0]),
+            (0, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),
+            (-1, [1.0, 2.0, 2.0, 3.0, 4.0, 6.0, 7.0]),
+        ],
+    )
+    def test_date_filter(self, factor: int, expected: list[int]) -> None:
+        """Test that the add function works with a date filter"""
+        ts = create_test_operation_ts()
+        date_filter = create_test_filter()
+
         adder = Add(factor)
-        result = adder.apply(self.ts, filter_expr=self.date_filter)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": expected,
-        })
+        expected_df = pl.DataFrame(
+            {
+                "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+                "value": expected,
+            }
+        )
+
+        result = adder.apply(ts, filter_expr=date_filter)
+
         assert_frame_equal(result.df, expected_df)
 
 
-class TestScalar(unittest.TestCase):
-    def setUp(self):
-        self.ts = create_test_operation_ts()
-        self.date_filter = create_test_filter()
+class TestScalar:
+    @pytest.mark.parametrize(
+        "factor,expected",
+        [
+            (2, [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0]),
+            (1, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),
+            (0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            (-1, [-1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0]),
+            (0.5, [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5]),
+        ],
+    )
+    def test_scalar_simple(self, factor: int, expected: list[int]) -> None:
+        """Test that the Scalar function works across the full DataFrame"""
+        ts = create_test_operation_ts()
 
-    @parameterized.expand([
-        (2, [2., 4., 6., 8., 10., 12., 14.]),
-        (1, [1., 2., 3., 4., 5., 6., 7.]),
-        (0, [0., 0., 0., 0., 0., 0., 0.]),
-        (-1, [-1., -2., -3., -4., -5., -6., -7.]),
-        (0.5, [0.5, 1., 1.5, 2., 2.5, 3., 3.5]),
-    ])
-    def test_scalar_simple(self, factor, expected):
-        """ Test that the Scalar function works across the full DataFrame
-        """
         multiplier = Scalar(factor)
-        result = multiplier.apply(self.ts)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": expected,
-        })
+        result = multiplier.apply(ts)
+        expected_df = pl.DataFrame(
+            {
+                "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+                "value": expected,
+            }
+        )
         assert_frame_equal(result.df, expected_df)
 
 
-class TestPower(unittest.TestCase):
-    def setUp(self):
-        self.ts = create_test_operation_ts()
-        self.date_filter = create_test_filter()
+class TestPower:
+    @pytest.mark.parametrize(
+        "factor,expected",
+        [
+            (2, [1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0]),
+            (3, [1.0, 8.0, 27.0, 64.0, 125.0, 216.0, 343.0]),
+            (1, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),
+            (0, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+        ],
+    )
+    def test_power_simple(self, factor: int, expected: list[int]) -> None:
+        """Test that the Power function works across the full DataFrame"""
+        ts = create_test_operation_ts()
 
-    @parameterized.expand([
-        (2, [1., 4., 9., 16., 25., 36., 49.]),
-        (3, [1., 8., 27., 64., 125., 216., 343.]),
-        (1, [1., 2., 3., 4., 5., 6., 7.]),
-        (0, [1., 1., 1., 1., 1., 1., 1.]),
-    ])
-    def test_power_simple(self, factor, expected):
-        """ Test that the Power function works across the full DataFrame
-        """
         power_op = Power(factor)
-        result = power_op.apply(self.ts)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": expected,
-        })
+        expected_df = pl.DataFrame(
+            {
+                "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+                "value": expected,
+            }
+        )
+
+        result = power_op.apply(ts)
+
         assert_frame_equal(result.df, expected_df)
 
 
-class TestLWCorrection(unittest.TestCase):
-    def setUp(self):
-        self.lw = create_test_operation_ts([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8])
-        self.lw_unc = create_test_operation_ts([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5])
-        self.ta = create_test_operation_ts([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27])
-        self.factor = 1.00924
-        self.date_filter = create_test_filter()
+class TestLWCorrection:
+    def test_lw_correction_simple(self) -> None:
+        """Test that the LWCorrection function works across the full DataFrame"""
+        lw = create_test_operation_ts([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8])
+        lw_unc = create_test_operation_ts([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5])
+        ta = create_test_operation_ts([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27])
+        factor = 1.00924
 
-    def test_lw_correction_simple(self):
-        """ Test that the LWCorrection function works across the full DataFrame
-        """
-        lw_correction = LWCorrection(self.lw_unc, self.ta, self.factor)
-        result = lw_correction.apply(self.lw)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": [366.89501779404736, 371.93855976840695, 377.7449872014795, 394.1243133190569, 379.22105814566305, 376.3027264419359, 379.5942580579116],
-        })
+        expected_df = pl.DataFrame(
+            {
+                "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+                "value": [
+                    366.89501779404736,
+                    371.93855976840695,
+                    377.7449872014795,
+                    394.1243133190569,
+                    379.22105814566305,
+                    376.3027264419359,
+                    379.5942580579116,
+                ],
+            }
+        )
+
+        lw_correction = LWCorrection(lw_unc, ta, factor)
+        result = lw_correction.apply(lw)
+
         assert_frame_equal(result.df, expected_df)
 
 
-class TestPACorrection(unittest.TestCase):
-    def setUp(self):
-        self.pa = create_test_operation_ts([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213])
-        self.ta = create_test_operation_ts([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31])
-        self.altitude = 74.0
-        self.factor = -5.1
-        self.date_filter = create_test_filter()
+class TestPACorrection:
+    def test_pa_correction_simple(self) -> None:
+        """Test that the PACorrection function works across the full DataFrame"""
+        pa = create_test_operation_ts([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213])
+        ta = create_test_operation_ts([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31])
+        altitude = 74.0
+        factor = -5.1
 
-    def test_pa_correction_simple(self):
-        """ Test that the PACorrection function works across the full DataFrame
-        """
-        pa_correction = PACorrection(self.ta, self.altitude, self.factor)
-        result = pa_correction.apply(self.pa)
-        expected_df = pl.DataFrame({
-            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-            "value": [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578],
-        })
+        expected_df = pl.DataFrame(
+            {
+                "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+                "value": [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578],
+            }
+        )
+
+        pa_correction = PACorrection(ta, altitude, factor)
+        result = pa_correction.apply(pa)
+
         assert_frame_equal(result.df, expected_df)

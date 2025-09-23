@@ -27,12 +27,17 @@ def df_to_ts(df: pl.DataFrame) -> "TimeSeries":
     )
 
 
-def create_test_operation_ts(data=[1., 2., 3., 4., 5., 6., 7.]) -> TimeSeries:
+def create_test_operation_ts(data: list | None = None) -> TimeSeries:
     """Set up test fixtures."""
-    df = pl.DataFrame({
-        "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
-        "value": data,
-    })
+    if data is None:
+        data = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+
+    df = pl.DataFrame(
+        {
+            "timestamp": [datetime(2025, m, 1) for m in range(1, 8)],
+            "value": data,
+        }
+    )
 
     return TimeSeries(df, "timestamp", metadata={"column_name": "value"})
 
