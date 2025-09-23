@@ -264,7 +264,6 @@ class TestRunCorrections:
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestUpdateConfigItemsWithSiteAttributes:
     def test_update_config_item_with_site_attribute(self, mock_metadata_api: mock.MagicMock) -> None:
-        # api = MetadataAPIManager(host="test_url.com", network="cosmos")
 
         response_data = {
             "meta": {},

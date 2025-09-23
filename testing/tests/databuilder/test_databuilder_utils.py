@@ -16,15 +16,6 @@ def cosmos_data() -> Path:
     return cosmos_data
 
 
-# class DataCase(unittest.TestCase):
-#     @classmethod
-#     def setUpClass(cls):
-#         cls.data_dir = Path(__file__).parents[3] / "parquet-data"
-#         cls.cosmos_data = cls.data_dir / "cosmos"
-#         cls.cosmos_precip = cls.cosmos_data / "LIVE_PRECIP_1MIN"
-#         cls.cosmos_soilmet = cls.cosmos_data / "LIVE_SOILMET_30MIN"
-
-
 class TestInitialization:
     def test_creation_from_nonexistance(self, base_test_helper: BaseTestHelper) -> None:
         output = base_test_helper.temp_dir.joinpath("out-data")

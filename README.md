@@ -186,7 +186,7 @@ Make sure to also remove the test from the `qc_test_map` in [quality_config.py](
 
 ## Useful Test Helpers / Utilities
 
-The `testing/utils` folder contains a number of helper functions and classes to aid testing.These are available as fixtures defined in `conftest.py`.
+The `testing/utils` folder contains a number of helper functions and classes to aid testing. These are available as fixtures defined in `conftest.py`.
 
 ### BaseTestHelper
 
@@ -206,7 +206,7 @@ def test_main(self, base_test_helper: BaseTestHelper) -> None:
 This contains a number of useful functions for loading and comparing timeseries data (e.g. ts_ids). It builds on
 BaseTestHelper, allowing all functionality within BaseTestHelper to also be available in the TimeSeriesTestHelper.
 
-It is used in a similar way to the BaseTestHelper. The fixutre name is `ts_test_helper`
+It is used in a similar way to the BaseTestHelper. The fixture name is `ts_test_helper`
 
 ### S3TestHelper
 
@@ -214,7 +214,7 @@ This contains functionality to initialise the localstack s3 instance for testing
 test, and adding functions to check for the presence of objects etc. It builds on BaseTestHelper, allowing all
 functionality within BaseTestHelper to also be available in the S3TestHelper.
 
-It is used in a similar way to the BaseTestHelper. The fixutre name is `s3_test_helper`
+It is used in a similar way to the BaseTestHelper. The fixture name is `s3_test_helper`
 
 ### MockMetadataAPI
 
@@ -239,7 +239,7 @@ from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestMetadataMocking:
-    def test_api_response(mock_api_manager: mock.MagicMock, ts_test_helper) -> None:
+    def test_api_response(mock_api_manager: mock.MagicMock, ts_test_helper: TimeSeriesTestHelper) -> None:
         mock_api_manager.side_effect = MockMetadataAPI(api_data=ts_test_helper.create_all_metadata_api_data())
 
         pass

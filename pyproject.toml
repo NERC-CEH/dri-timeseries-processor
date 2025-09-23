@@ -57,7 +57,7 @@ include = ["dritimeseriesprocessor*", "databuilder*", "metadata_manager*"]
 "*" = ["*.*"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=dritimeseriesprocessor --cov=databuilder --cov=time_series --cov-report=term-missing --benchmark-skip --disable-socket --allow-hosts=127.0.0.1,::1"
+addopts = "--cov=dritimeseriesprocessor --cov=databuilder --cov=time_series --cov-report=term-missing --disable-socket --allow-hosts=127.0.0.1,::1"
 markers = ["slow: Marks slow tests"]
 
 
