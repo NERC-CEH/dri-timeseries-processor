@@ -264,7 +264,6 @@ class TestRunCorrections:
 @mock.patch.object(MetadataAPIManager, "_make_api_call")
 class TestUpdateConfigItemsWithSiteAttributes:
     def test_update_config_item_with_site_attribute(self, mock_metadata_api: mock.MagicMock) -> None:
-
         response_data = {
             "meta": {},
             "items": [{"@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hollin", "altitude": 123.45}],
