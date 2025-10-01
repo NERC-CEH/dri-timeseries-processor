@@ -119,9 +119,9 @@ def extract_dep_ts(config: ConfigItem, ts_ids: Dict[str, TimeseriesContainer]) -
         ts_ids: Metadata and data for timeseries ids
 
     Returns:
-        The updated correction configuration object with dependency time series mapped to TimeSeries objects.
+        The updated correction configuration object with dependency time series mapped to ts.TimeFrame objects.
     """
-    # Map dependency time series IDs to TimeSeries objects
+    # Map dependency time series IDs to ts.TimeFrame objects
     if "dep_ts" in config.parameters:
         if isinstance(config.parameters["dep_ts"], str):
             dep_ts_ids = [config.parameters["dep_ts"]]
@@ -135,7 +135,7 @@ def extract_dep_ts(config: ConfigItem, ts_ids: Dict[str, TimeseriesContainer]) -
 
             dep_ts = ts_ids[full_dep_ts_id]["data"]
             # Add the dependency time series to the parameters
-            config.parameters[dep_ts.column_name.lower()] = dep_ts
+            config.parameters[dep_ts.metadata["column_name"].lower()] = dep_ts
 
         # No longer need this key in the parameters once we've got the dependency time series
         config.parameters.pop("dep_ts")
@@ -183,7 +183,7 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
 
 
-def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContainer]) -> Dict[str, str]:
+def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContainer]) -> str:
     """Map timeseries definition to its corresponding timeseries id given the site id.
 
     Args:

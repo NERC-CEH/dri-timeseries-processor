@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import polars as pl
 import pytest
+import time_stream as ts
 from polars.testing import assert_frame_equal
-from time_stream import Period, TimeSeries
 from time_stream.qc import QCCheck
 
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
@@ -21,7 +21,7 @@ class MockCheck(QCCheck):
     def __init__(self, **kwargs: Any):
         pass
 
-    def expr(self, check_column: str) -> pl.Expr:
+    def expr(self, _ctx: Any, _column: str) -> pl.Expr:
         return pl.lit(True)
 
 
@@ -41,17 +41,17 @@ def ts_ids() -> Dict[str, Any]:
         }
     )
 
-    resolution = Period.of_days(1)
-    periodicity = Period.of_days(1)
-    ts = TimeSeries(data, "time", resolution, periodicity, metadata={"site_id": "SITE1", "column_name": "value"})
-    ts = add_initial_core_flags(ts)
+    resolution = ts.Period.of_days(1)
+    periodicity = ts.Period.of_days(1)
+    tf = ts.TimeFrame(data, "time", resolution, periodicity).with_metadata({"site_id": "SITE1", "column_name": "value"})
+    tf = add_initial_core_flags(tf)
 
     ts_ids = {
         "SITE1_ta_30min_raw": {
-            "data": ts,
+            "data": tf,
         },
         "SITE1_pa_30min_raw": {
-            "data": ts,
+            "data": tf,
         },
     }
 
@@ -267,7 +267,7 @@ class TestRunQualityControl:
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        assert "qc_flags" in result[TA_TS_ID]["data"].flag_systems
+        result[TA_TS_ID]["data"].get_flag_system("qc_flags")
         # Check columns added
         assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
         # Check flag values (from mock functions) have been added
@@ -294,7 +294,7 @@ class TestRunQualityControl:
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        assert "qc_flags" in result[TA_TS_ID]["data"].flag_systems
+        result[TA_TS_ID]["data"].get_flag_system("qc_flags")
         # Check columns added
         assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
         # Check flag values (from both mock functions) have been added
@@ -321,7 +321,7 @@ class TestRunQualityControl:
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        assert "qc_flags" in result[TA_TS_ID]["data"].flag_systems
+        result[TA_TS_ID]["data"].get_flag_system("qc_flags")
         # Check columns added
         assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
         # Check flag values (from both mock functions) have been added

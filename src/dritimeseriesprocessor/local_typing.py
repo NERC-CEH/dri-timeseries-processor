@@ -2,7 +2,7 @@
 
 from typing import List, NotRequired, TypedDict
 
-from time_stream import TimeSeries
+import time_stream as ts
 
 
 class TimeseriesContainer(TypedDict):
@@ -32,4 +32,4 @@ class TimeseriesContainer(TypedDict):
     method: NotRequired[str]
     inputs: NotRequired[List[str]]
     load: NotRequired[bool]
-    data: NotRequired[TimeSeries]
+    data: NotRequired[ts.TimeFrame]

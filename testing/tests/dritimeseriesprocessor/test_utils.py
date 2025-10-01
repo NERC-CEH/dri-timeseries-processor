@@ -159,7 +159,7 @@ class TestNotMissingExpr:
 
 class DummyDepTS:
     def __init__(self, column_name: str) -> None:
-        self.column_name = column_name
+        self.metadata = {"column_name": column_name}
 
 
 class DummyConfigItem:
@@ -193,7 +193,7 @@ class TestExtractDepTs:
         assert "dep_ts" not in result.parameters
 
         assert isinstance(result.parameters["dep1"], DummyDepTS)
-        assert result.parameters["dep1"].column_name == "DEP1"
+        assert result.parameters["dep1"].metadata["column_name"] == "DEP1"
 
     def test_multiple_dep_ts_as_list(self) -> None:
         """Test with multiple dependency time series IDs as a list."""
@@ -205,7 +205,7 @@ class TestExtractDepTs:
 
         for key, expected_column_name in [("dep1", "DEP1"), ("dep2", "DEP2")]:
             assert isinstance(result.parameters[key], DummyDepTS)
-            assert result.parameters[key].column_name == expected_column_name
+            assert result.parameters[key].metadata["column_name"] == expected_column_name
 
     def test_dep_ts_not_found_raises(self) -> None:
         """Test that a ValueError is raised if a dependency time series ID is not found."""
@@ -227,7 +227,7 @@ class TestExtractDepTs:
         result = utils.extract_dep_ts(config, self.ts_ids)
 
         assert isinstance(result.parameters["dep1"], DummyDepTS)
-        assert result.parameters["dep1"].column_name == "DEP1"
+        assert result.parameters["dep1"].metadata["column_name"] == "DEP1"
 
 
 class TestSplitDataForProcessing:

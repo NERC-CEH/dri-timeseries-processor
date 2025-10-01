@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import ClassVar, Type
 
 import polars as pl
-from time_stream import TimeSeries
+import time_stream as ts
 
 logger = logging.getLogger(__name__)
 
@@ -32,17 +32,17 @@ class Operation(ABC):
     @abstractmethod
     def apply(
         self,
-        ts: TimeSeries,
+        tf: ts.TimeFrame,
         filter_expr: pl.Expr = pl.lit(True),
-    ) -> "TimeSeries":
-        """Apply the operation to the DataFrame within a TimeSeries object.
+    ) -> "ts.TimeFrame":
+        """Apply the operation to the DataFrame within a ts.TimeFrame object.
 
         Args:
-            ts: The TimeSeries object containing the DataFrame to operate on.
+            tf: The ts.TimeFrame object containing the DataFrame to operate on.
             filter_expr: Polars expression to filter when to apply the operation. Defaults to applying to all rows.
 
         Returns:
-            The modified TimeSeries object.
+            The modified ts.TimeFrame object.
         """
         pass
 
@@ -82,17 +82,20 @@ class Scalar(Operation):
 
     def apply(
         self,
-        ts: TimeSeries,
+        tf: ts.TimeFrame,
         filter_expr: pl.Expr = pl.lit(True),
-    ) -> "TimeSeries":
-        """Apply the scalar operation to the DataFrame within a TimeSeries object."""
-        ts.df = ts.df.with_columns(
-            pl.when(filter_expr)
-            .then(pl.col(ts.column_name) * self.correction_factor)
-            .otherwise(pl.col(ts.column_name))
-            .alias(ts.column_name)
+    ) -> ts.TimeFrame:
+        """Apply the scalar operation to the DataFrame within a ts.TimeFrame object."""
+        column_name = tf.metadata["column_name"]
+        tf = tf.with_df(
+            tf.df.with_columns(
+                pl.when(filter_expr)
+                .then(pl.col(column_name) * self.correction_factor)
+                .otherwise(pl.col(column_name))
+                .alias(column_name)
+            )
         )
-        return ts
+        return tf
 
 
 @register_operation
@@ -112,17 +115,20 @@ class Add(Operation):
 
     def apply(
         self,
-        ts: TimeSeries,
+        tf: ts.TimeFrame,
         filter_expr: pl.Expr = pl.lit(True),
-    ) -> "TimeSeries":
-        """Apply the add operation to the DataFrame within a TimeSeries object."""
-        ts.df = ts.df.with_columns(
-            pl.when(filter_expr)
-            .then(pl.col(ts.column_name) + self.correction_factor)
-            .otherwise(pl.col(ts.column_name))
-            .alias(ts.column_name)
+    ) -> ts.TimeFrame:
+        """Apply the add operation to the DataFrame within a ts.TimeFrame object."""
+        column_name = tf.metadata["column_name"]
+        tf = tf.with_df(
+            tf.df.with_columns(
+                pl.when(filter_expr)
+                .then(pl.col(column_name) + self.correction_factor)
+                .otherwise(pl.col(column_name))
+                .alias(column_name)
+            )
         )
-        return ts
+        return tf
 
 
 @register_operation
@@ -142,17 +148,20 @@ class Power(Operation):
 
     def apply(
         self,
-        ts: TimeSeries,
+        tf: ts.TimeFrame,
         filter_expr: pl.Expr = pl.lit(True),
-    ) -> "TimeSeries":
-        """Apply the power operation to the DataFrame within a TimeSeries object."""
-        ts.df = ts.df.with_columns(
-            pl.when(filter_expr)
-            .then(pl.col(ts.column_name).pow(self.correction_factor))
-            .otherwise(pl.col(ts.column_name))
-            .alias(ts.column_name)
+    ) -> ts.TimeFrame:
+        """Apply the power operation to the DataFrame within a ts.TimeFrame object."""
+        column_name = tf.metadata["column_name"]
+        tf = tf.with_df(
+            tf.df.with_columns(
+                pl.when(filter_expr)
+                .then(pl.col(column_name).pow(self.correction_factor))
+                .otherwise(pl.col(column_name))
+                .alias(column_name)
+            )
         )
-        return ts
+        return tf
 
 
 @register_operation
@@ -161,12 +170,12 @@ class LWCorrection(Operation):
 
     name = "lw_corr"
 
-    def __init__(self, lw_unc: TimeSeries, ta: TimeSeries, correction_factor: float) -> None:
+    def __init__(self, lw_unc: ts.TimeFrame, ta: ts.TimeFrame, correction_factor: float) -> None:
         """Initialise the LW correction operation.
 
         Args:
-            lw_unc: The TimeSeries object containing the uncalibrated long wave radiation data.
-            ta: The TimeSeries object containing the air temperature data.
+            lw_unc: The ts.TimeFrame object containing the uncalibrated long wave radiation data.
+            ta: The ts.TimeFrame object containing the air temperature data.
             correction_factor: The factor to multiply the uncalibrated long wave radiation by before re-calibration.
 
         """
@@ -176,10 +185,10 @@ class LWCorrection(Operation):
 
     def apply(
         self,
-        ts: TimeSeries,
+        tf: ts.TimeFrame,
         filter_expr: pl.Expr = pl.lit(True),
-    ) -> "TimeSeries":
-        """Apply the LW correction to the DataFrame within a TimeSeries object."""
+    ) -> ts.TimeFrame:
+        """Apply the LW correction to the DataFrame within a ts.TimeFrame object."""
         # First correct the uncalibrated values with the scalar correction.
         lw_unc_corr = Scalar(self.correction_factor).apply(self.lw_unc, filter_expr).df
 
@@ -188,17 +197,23 @@ class LWCorrection(Operation):
         ta_k = Add(273.15).apply(self.ta, filter_expr).df
 
         # Get adjustment amount from Stefan-Boltzmann constant 5.67 * 10^-8
-        sb_adj = ta_k.with_columns((pl.col(self.ta.column_name).pow(4) * 5.67 * 1e-8).alias("SB_adj")).select("SB_adj")
+        sb_adj = ta_k.with_columns(
+            (pl.col(self.ta.metadata["column_name"]).pow(4) * 5.67 * 1e-8).alias("SB_adj")
+        ).select("SB_adj")
 
         # Recalculate LW value
-        ts.df = ts.df.with_columns(
-            pl.when(filter_expr)
-            .then((lw_unc_corr[self.lw_unc.column_name] + sb_adj["SB_adj"]))
-            .otherwise(pl.col(ts.column_name))
-            .alias(ts.column_name)
+        lw_column_name = self.lw_unc.metadata["column_name"]
+        column_name = tf.metadata["column_name"]
+        tf = tf.with_df(
+            tf.df.with_columns(
+                pl.when(filter_expr)
+                .then((lw_unc_corr[lw_column_name] + sb_adj["SB_adj"]))
+                .otherwise(pl.col(column_name))
+                .alias(column_name)
+            )
         )
 
-        return ts
+        return tf
 
 
 # TODO: Implement site attribute fetching
@@ -208,11 +223,11 @@ class PACorrection(Operation):
 
     name = "pa_corr"
 
-    def __init__(self, ta: TimeSeries, altitude: float, correction_factor: float) -> None:
+    def __init__(self, ta: ts.TimeFrame, altitude: float, correction_factor: float) -> None:
         """Initialise the PA correction operation.
 
         Args:
-            ta: TimeSeries object containing the air temperature data.
+            ta: ts.TimeFrame object containing the air temperature data.
             altitude: Site altitude in metres.
             correction_factor: The factor used in PA correction.
 
@@ -223,31 +238,35 @@ class PACorrection(Operation):
 
     def apply(
         self,
-        ts: TimeSeries,
+        tf: ts.TimeFrame,
         filter_expr: pl.Expr = pl.lit(True),
-    ) -> "TimeSeries":
-        """Apply the PA correction to the DataFrame within a TimeSeries object."""
+    ) -> ts.TimeFrame:
+        """Apply the PA correction to the DataFrame within a ts.TimeFrame object."""
         # Using the MSLP to PA conversion factor, calculate the unqiue adjustments
         # for each PA value.
+        ta_column_name = self.ta.metadata["column_name"]
         corrs = self.ta.df.with_columns(
             pl.when(filter_expr)
             .then(
                 self.correction_factor
-                * (1 - ((0.0065 * self.altitude) / (pl.col(self.ta.column_name) + (0.0065 * self.altitude) + 273.15)))
+                * (1 - ((0.0065 * self.altitude) / (pl.col(ta_column_name) + (0.0065 * self.altitude) + 273.15)))
                 ** 5.257
             )
-            .otherwise(pl.col(self.ta.column_name))
+            .otherwise(pl.col(ta_column_name))
             .alias("pa_corr")
         )
 
-        ts.df = ts.df.with_columns(
-            pl.when(filter_expr)
-            .then((pl.col(ts.column_name) + corrs["pa_corr"]))
-            .otherwise(pl.col(ts.column_name))
-            .alias(ts.column_name)
+        column_name = tf.metadata["column_name"]
+        tf = tf.with_df(
+            tf.df.with_columns(
+                pl.when(filter_expr)
+                .then((pl.col(column_name) + corrs["pa_corr"]))
+                .otherwise(pl.col(column_name))
+                .alias(column_name)
+            )
         )
 
-        return ts
+        return tf
 
 
 # TODO: Placeholder implementation, to be replaced with real WD correction logic
@@ -257,12 +276,12 @@ class WDCorrection(Operation):
 
     name = "wd_corr"
 
-    def __init__(self, ux: TimeSeries, uy: TimeSeries) -> None:
+    def __init__(self, ux: ts.TimeFrame, uy: ts.TimeFrame) -> None:
         """Initialise the WD correction operation.
 
         Args:
-            ux: The TimeSeries object containing the u-component of wind data.
-            uy: The TimeSeries object containing the y-component of wind data.
+            ux: The ts.TimeFrame object containing the u-component of wind data.
+            uy: The ts.TimeFrame object containing the y-component of wind data.
 
         """
         self.ux = ux
@@ -270,8 +289,8 @@ class WDCorrection(Operation):
 
     def apply(
         self,
-        ts: TimeSeries,
+        tf: ts.TimeFrame,
         filter_expr: pl.Expr = pl.lit(True),
-    ) -> "TimeSeries":
-        """Apply the WD correction to the DataFrame within a TimeSeries object."""
-        return ts
+    ) -> ts.TimeFrame:
+        """Apply the WD correction to the DataFrame within a ts.TimeFrame object."""
+        return tf

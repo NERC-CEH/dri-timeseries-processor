@@ -3,7 +3,7 @@
 import logging
 
 import polars as pl
-from time_stream import TimeSeries
+import time_stream as ts
 
 from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
 from dritimeseriesprocessor.utils import missing_expr, not_missing_expr
@@ -65,128 +65,128 @@ def infill_flag_column_name(column: str) -> str:
     return f"{column}_INFILL_FLAG"
 
 
-def initialise_core_flag_system(ts: TimeSeries) -> TimeSeries:
-    """Setup core flag system in TimeSeries object.
+def initialise_core_flag_system(tf: ts.TimeFrame) -> ts.TimeFrame:
+    """Setup core flag system in ts.TimeFrame object.
 
     Args:
-        ts: The input TimeSeries object.
+        tf: The input ts.TimeFrame object.
 
     Returns:
-        The TimeSeries with the core flag system added.
+        The ts.TimeFrame with the core flag system added.
     """
-    # Initialise core flag system within TimeSeries object
+    # Initialise core flag system within ts.TimeFrame object
     core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
-    ts.add_flag_system(CORE_FLAG_SYS_NAME, core_flags_dict)
+    tf.register_flag_system(CORE_FLAG_SYS_NAME, core_flags_dict)
 
-    return ts
+    return tf
 
 
-def add_initial_core_flags(ts: TimeSeries) -> TimeSeries:
+def add_initial_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
     """Setup core flags and initialise with "unchecked" and "missing" flags.
 
     Args:
-        ts: The input TimeSeries object.
+        tf: The input ts.TimeFrame object.
 
     Returns:
-        The TimeSeries with the flag columns added
+        The ts.TimeFrame with the flag columns added
     """
-    ts = initialise_core_flag_system(ts)
+    tf = initialise_core_flag_system(tf)
 
-    for data_col_name in ts.data_columns:
+    for data_col_name in tf.data_columns:
         flag_col_name = core_flag_column_name(data_col_name)
-        ts.init_flag_column(CORE_FLAG_SYS_NAME, flag_col_name)
+        tf.init_flag_column(data_col_name, CORE_FLAG_SYS_NAME, flag_col_name)
 
         # Set all as unchecked
-        ts.add_flag(flag_col_name, "unchecked", pl.lit(True))
+        tf.add_flag(flag_col_name, "unchecked", pl.lit(True))
         # Flag missing values
-        ts.add_flag(flag_col_name, "missing", missing_expr(data_col_name))
+        tf.add_flag(flag_col_name, "missing", missing_expr(data_col_name))
 
-    return ts
+    return tf
 
 
-def update_corrections_core_flags(ts: TimeSeries) -> TimeSeries:
+def update_corrections_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
     """Add 'corrected' flag where data has been corrected. This is determined by where there is a corrections flag.
 
     Args:
-        ts: The input TimeSeries object.
+        tf: The input ts.TimeFrame object.
 
     Returns:
-        The TimeSeries with the flag columns added
+        The ts.TimeFrame with the flag columns added
     """
-    for data_col_name in ts.data_columns:
+    for data_col_name in tf.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
         corrs_flag_col_name = corrs_flag_column_name(data_col_name)
 
-        if core_flag_col_name not in ts.flag_columns:
-            raise ValueError(f"Core flag column {core_flag_col_name} not found in TimeSeries.")
+        if core_flag_col_name not in tf.flag_columns:
+            raise ValueError(f"Core flag column {core_flag_col_name} not found in ts.TimeFrame.")
 
         # Do nothing if there is no corrections flag column.
-        if corrs_flag_col_name not in ts.flag_columns:
+        if corrs_flag_col_name not in tf.flag_columns:
             continue
 
         # Add corrected core flag where corrections flag is not 0.
         expr = pl.col(corrs_flag_col_name) != 0
-        ts.add_flag(core_flag_col_name, "corrected", expr)
+        tf.add_flag(core_flag_col_name, "corrected", expr)
 
-    return ts
+    return tf
 
 
-def update_quality_control_core_flags(ts: TimeSeries) -> TimeSeries:
+def update_quality_control_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
     """Remove 'unchecked' flag and add 'removed' flag where data has been removed.
 
     Args:
-        ts: The input TimeSeries object.
+        tf: The input ts.TimeFrame object.
 
     Returns:
-        The TimeSeries with the flag columns added
+        The ts.TimeFrame with the flag columns added
     """
-    for data_col_name in ts.data_columns:
+    for data_col_name in tf.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
         qc_flag_col_name = qc_flag_column_name(data_col_name)
 
-        if core_flag_col_name not in ts.flag_columns:
-            raise ValueError(f"Core flag column {core_flag_col_name} not found in TimeSeries.")
+        if core_flag_col_name not in tf.flag_columns:
+            raise ValueError(f"Core flag column {core_flag_col_name} not found in ts.TimeFrame.")
 
         # Do nothing if there is no QC flag column.
-        if qc_flag_col_name not in ts.flag_columns:
+        if qc_flag_col_name not in tf.flag_columns:
             continue
 
         # Remove unchecked flag where there is a non-null QC flag.
         expr = not_missing_expr(qc_flag_col_name)
-        ts.remove_flag(core_flag_col_name, "unchecked", expr)
+        tf.remove_flag(core_flag_col_name, "unchecked", expr)
 
         # Add removed flag, the data value must be missing as well as have a QC flag value not 0.
         expr = (missing_expr(data_col_name)) & (pl.col(qc_flag_col_name) != 0)
-        ts.add_flag(core_flag_col_name, "removed", expr)
+        tf.add_flag(core_flag_col_name, "removed", expr)
         # If data is removed, remove the corrected flag.
-        ts.remove_flag(core_flag_col_name, "corrected", expr)
+        tf.remove_flag(core_flag_col_name, "corrected", expr)
 
-    return ts
+    return tf
 
 
-def update_infill_core_flags(ts: TimeSeries) -> TimeSeries:
+def update_infill_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
     """Add 'estimated' flag where data has been infilled. This is
     determined by where there is an infill flag.
 
     Args:
-        ts: The input TimeSeries object.
+        tf: The input ts.TimeFrame object.
 
     Returns:
-        The TimeSeries with the flag columns added
+        The ts.TimeFrame with the flag columns added
     """
-    for data_col_name in ts.data_columns:
+    for data_col_name in tf.data_columns:
         core_flag_col_name = core_flag_column_name(data_col_name)
         infill_flag_col_name = infill_flag_column_name(data_col_name)
 
-        if core_flag_col_name not in ts.flag_columns:
-            raise ValueError(f"Core flag column {core_flag_col_name} not found in TimeSeries.")
+        if core_flag_col_name not in tf.flag_columns:
+            raise ValueError(f"Core flag column {core_flag_col_name} not found in ts.TimeFrame.")
 
         # Do nothing if there is no infilling flag column.
-        if infill_flag_col_name not in ts.flag_columns:
+        if infill_flag_col_name not in tf.flag_columns:
             continue
 
         # Add estimated core flag where infill flag is not 0.
         expr = pl.col(infill_flag_col_name) != 0
-        ts.add_flag(core_flag_col_name, "estimated", expr)
+        tf.add_flag(core_flag_col_name, "estimated", expr)
 
-    return ts
+    return tf
