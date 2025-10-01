@@ -7,8 +7,7 @@ import polars as pl
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
-from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
-from metadata_manager.models.service import load_config, load_methods
+from metadata_manager.models.service import load_methods
 
 logger = logging.getLogger(__name__)
 
@@ -60,12 +59,10 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
         logger.warning("No QC methods given in config.")
         return ts_ids
 
-    for ts_id, ts_dict in ts_ids.items():
-        ts = ts_dict.data
+    for ts_id, ts_container in ts_ids.items():
+        ts = ts_container.data
 
-        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
-        qc_data_processing_configs = load_config("quality_control", ts_id_query_param)
-        if not qc_data_processing_configs:
+        if not ts_container.qc_configs:
             logger.info(f"No quality control config found for Time Series ID: {ts_id}")
             continue
 
@@ -78,7 +75,7 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
         if qc_flag_col not in ts.flag_columns:
             ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
 
-        for data_processing_config in qc_data_processing_configs:
+        for data_processing_config in ts_container.qc_configs:
             # Run QC methods on time series
             for qc_config in data_processing_config.configs:
                 logger.info(f"Quality controlling {ts_id}: {qc_config.name}. Constraints: {qc_config.parameters}")

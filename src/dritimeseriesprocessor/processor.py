@@ -86,13 +86,13 @@ def shift_processed_data(
     Returns:
         A dictionary with the updated metadata.
     """
-    for ts_id, ts_metadata in ts_ids.items():
-        if ts_metadata.method_type == "process":
+    for ts_id, ts_container in ts_ids.items():
+        if ts_container.method_type == "process":
             # All processed timeseries IDs should have one input, the raw timeseries ID they are derived from.
-            if len(ts_metadata.inputs) != 1:
+            if len(ts_container.inputs) != 1:
                 raise ValueError(f"Processed timeseries ID {ts_id} should have exactly one input.")
 
-            raw_ts_id = ts_metadata.inputs[0]
+            raw_ts_id = ts_container.inputs[0]
 
             if ts_ids[raw_ts_id].data:
                 # Move the data object from raw_ts_id to (processed) ts_id

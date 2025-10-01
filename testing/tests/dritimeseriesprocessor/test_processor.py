@@ -57,7 +57,7 @@ def mock_query_by_date_range_no_data(
 
 
 class TestLoadData:
-    ts_metadata = SimpleNamespace(
+    ts_container = SimpleNamespace(
         sourceDataset="dataset1",
         sourceBucket="bucket1",
         sourceColumnName="col1",
@@ -75,7 +75,7 @@ class TestLoadData:
         """Test the load_data with valid ts_id."""
         mock_query.side_effect = mock_query_by_date_range
 
-        result = load_data(self.ts_metadata, self.start_date, self.end_date)
+        result = load_data(self.ts_container, self.start_date, self.end_date)
         assert isinstance(result, TimeSeries)
         assert result.df.shape == (3, 2)
 
@@ -84,7 +84,7 @@ class TestLoadData:
         """Test the load_data when there is no data."""
         mock_query.side_effect = mock_query_by_date_range_no_data
 
-        result = load_data(self.ts_metadata, self.start_date, self.end_date)
+        result = load_data(self.ts_container, self.start_date, self.end_date)
         assert isinstance(result, TimeSeries)
         assert result.df.shape == (0, 2)
 
@@ -113,7 +113,7 @@ class TestProcessTimeseries:
         self, mock_run_infilling: MagicMock, mock_run_quality_control: MagicMock, mock_run_corrections: MagicMock
     ) -> None:
         """Test the process_timeseries function."""
-        ts_metadata = {
+        ts_container = {
             "ts1_raw": SimpleNamespace(
                 ts_def="ts1_raw",
                 sourceSite="alic1",
@@ -122,7 +122,7 @@ class TestProcessTimeseries:
             ),
             "ts2_processed": SimpleNamespace(method_type="process", sourceSite="alic1", inputs=["ts1_raw"], data=None),
         }
-        return_ts_metadata = {
+        return_ts_container = {
             "ts1_raw": SimpleNamespace(ts_def="ts1_raw", sourceSite="alic1", data=[2], method_type="raw"),
             "ts2_processed": SimpleNamespace(method_type="process", sourceSite="alic1", inputs=["ts1_raw"], data=None),
         }
@@ -131,11 +131,11 @@ class TestProcessTimeseries:
             "ts2_processed": SimpleNamespace(method_type="process", sourceSite="alic1", inputs=["ts1_raw"], data=[2]),
         }
 
-        mock_run_corrections.return_value = return_ts_metadata
-        mock_run_quality_control.return_value = return_ts_metadata
-        mock_run_infilling.return_value = return_ts_metadata
+        mock_run_corrections.return_value = return_ts_container
+        mock_run_quality_control.return_value = return_ts_container
+        mock_run_infilling.return_value = return_ts_container
 
-        result = process_timeseries(ts_metadata)
+        result = process_timeseries(ts_container)
 
         assert result == expected
 

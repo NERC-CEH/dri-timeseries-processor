@@ -92,9 +92,9 @@ class S3Writer(WriterInterface):
         """
         resolutions = defaultdict(list)
 
-        for ts_metadata in processed_ts_ids:
-            key = (ts_metadata.resolution, ts_metadata.sourceSite)
-            data = ts_metadata.data.df
+        for ts_container in processed_ts_ids:
+            key = (ts_container.resolution, ts_container.sourceSite)
+            data = ts_container.data.df
 
             resolutions[key].append(data)
 

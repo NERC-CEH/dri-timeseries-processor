@@ -250,26 +250,28 @@ class TimeSeriesProcessor:
         return dependent_timeseries_ids
 
     def _load_data_processing_configs(self) -> None:
-        raw_ts_ids = [ts_id for ts_id, ts_metadata in self.ts_ids.items() if ts_metadata.processing_level == "raw"]
-        ts_ids_query_parameter = build_processing_config_timeseries_id_query_parameter(raw_ts_ids)
+        raw_ts_ids = [ts_id for ts_id, ts_container in self.ts_ids.items() if ts_container.processing_level == "raw"]
 
-        self._load_data_processing_config(
-            ts_ids_query_parameter=ts_ids_query_parameter,
-            config_type="correction",
-            ts_container_attr="correction_configs",
-        )
+        for raw_ts_id in raw_ts_ids:
+            ts_ids_query_parameter = build_processing_config_timeseries_id_query_parameter([raw_ts_id])
 
-        self._load_data_processing_config(
-            ts_ids_query_parameter=ts_ids_query_parameter,
-            config_type="quality_control",
-            ts_container_attr="qc_configs",
-        )
+            self._load_data_processing_config(
+                ts_ids_query_parameter=ts_ids_query_parameter,
+                config_type="correction",
+                ts_container_attr="correction_configs",
+            )
 
-        self._load_data_processing_config(
-            ts_ids_query_parameter=ts_ids_query_parameter,
-            config_type="infilling",
-            ts_container_attr="infill_configs",
-        )
+            self._load_data_processing_config(
+                ts_ids_query_parameter=ts_ids_query_parameter,
+                config_type="quality_control",
+                ts_container_attr="qc_configs",
+            )
+
+            self._load_data_processing_config(
+                ts_ids_query_parameter=ts_ids_query_parameter,
+                config_type="infilling",
+                ts_container_attr="infill_configs",
+            )
 
     def _load_data_processing_config(
         self, ts_ids_query_parameter: List[Tuple], config_type: str, ts_container_attr: str
@@ -288,22 +290,22 @@ class TimeSeriesProcessor:
             getattr(self.ts_ids[config.ts_id], ts_container_attr).append(config)
 
     def _map_input_ts_defs_to_ts_ids(self) -> List[str]:
-        """Convert any input ts_defs to ts_ids and update the corresponding ts_metadata."""
-        for ts_id, ts_metadata in self.ts_ids.items():
+        """Convert any input ts_defs to ts_ids and update the corresponding ts_container."""
+        for ts_id, ts_container in self.ts_ids.items():
             input_ts_ids = [
-                map_def_to_id(input_def, ts_metadata.sourceSite, self.ts_ids) for input_def in ts_metadata.inputs
+                map_def_to_id(input_def, ts_container.sourceSite, self.ts_ids) for input_def in ts_container.inputs
             ]
 
             # Update the list of inputs for the current timeseries to use ts_ids instead of ts_defs
-            ts_metadata.inputs = input_ts_ids
-            self.ts_ids[ts_id] = ts_metadata
+            ts_container.inputs = input_ts_ids
+            self.ts_ids[ts_id] = ts_container
 
     def _load_raw_data(self) -> None:
         """Load the raw data for each time series."""
-        for ts_id, ts_metadata in self.ts_ids.items():
-            if ts_metadata.load:
+        for ts_id, ts_container in self.ts_ids.items():
+            if ts_container.load:
                 logger.info(f"Loading data for {ts_id}")
-                ts = load_data(ts_metadata, self.start_date, self.end_date)
+                ts = load_data(ts_container, self.start_date, self.end_date)
                 if not ts.df.is_empty():
                     ts = add_initial_core_flags(ts)
 
