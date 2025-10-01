@@ -45,11 +45,11 @@ class AggregationAndDerivationProcessor:
         """
         for ts_id, ts_metadata in self.ts_ids.items():
             # Skip any time series which have already been calculated
-            if ts_metadata.get("data"):
+            if ts_metadata.data:
                 continue
 
             # Skip any time series which don't need aggregation or derivation calculating
-            if ts_metadata.get("method_type") not in (DERIVATION_METHOD, AGGREGATION_METHOD):
+            if ts_metadata.method_type not in (DERIVATION_METHOD, AGGREGATION_METHOD):
                 continue
 
             self.calculate_derivation_or_aggregation_for_ts_id(ts_id, ts_metadata)
@@ -69,7 +69,7 @@ class AggregationAndDerivationProcessor:
             ts_metadata: Dictionary containing the metadata corresponding to the provided timeseries ID
 
         """
-        ts_method = ts_metadata.get("method_type")
+        ts_method = ts_metadata.method_type
         if ts_method == DERIVATION_METHOD:
             self.calculate_derivation(ts_id, ts_metadata)
 
@@ -93,7 +93,7 @@ class AggregationAndDerivationProcessor:
 
         """
 
-        derivation_method_name = ts_metadata["method"]
+        derivation_method_name = ts_metadata.method
         derivation_method = self.derivation_methods.get(derivation_method_name)
         if not derivation_method:
             raise ValueError(
@@ -104,7 +104,7 @@ class AggregationAndDerivationProcessor:
         input_data = {}
         periodicity = None
         resolution = None
-        for dependent_ts_id in ts_metadata["inputs"]:
+        for dependent_ts_id in ts_metadata.inputs:
             dependent_ts_metadata = self.ts_ids[dependent_ts_id]
             dependent_ts = self.get_ts_data(dependent_ts_id)
 
@@ -119,10 +119,10 @@ class AggregationAndDerivationProcessor:
             # values based on the input ts metadata.
             if TIME_COLUMN not in input_data.keys():
                 input_data[TIME_COLUMN] = dependent_ts.df[dependent_ts.time_name]
-                periodicity = dependent_ts_metadata["periodicity"]
-                resolution = dependent_ts_metadata["resolution"]
+                periodicity = dependent_ts_metadata.periodicity
+                resolution = dependent_ts_metadata.resolution
 
-            source_column_name = dependent_ts_metadata["sourceColumnName"]
+            source_column_name = dependent_ts_metadata.sourceColumnName
             input_data[source_column_name] = dependent_ts.df[source_column_name]
 
         # Construct the input time series object from the input data columns
@@ -132,9 +132,9 @@ class AggregationAndDerivationProcessor:
             resolution=resolution,
             periodicity=periodicity,
             metadata={
-                "site_id": ts_metadata["sourceSite"],
-                "column_name": ts_metadata["sourceColumnName"],
-                "processing_level": ts_metadata["processing_level"],
+                "site_id": ts_metadata.sourceSite,
+                "column_name": ts_metadata.sourceColumnName,
+                "processing_level": ts_metadata.processing_level,
             },
         )
 
@@ -146,11 +146,11 @@ class AggregationAndDerivationProcessor:
         derived_ts = derive(
             input_ts=input_ts,
             calc=derivation_method,
-            column_name=ts_metadata["sourceColumnName"],
+            column_name=ts_metadata.sourceColumnName,
             **kwargs,
         )
 
-        self.ts_ids[ts_id]["data"] = derived_ts
+        self.ts_ids[ts_id].data = derived_ts
 
     def calculate_aggregation(self, ts_id: str, ts_metadata: Dict[str, Union[str, TimeSeries]]) -> None:
         """
@@ -166,15 +166,15 @@ class AggregationAndDerivationProcessor:
             ValueError: More than one input timeseries has been specified for aggregation.
 
         """
-        aggregation_method_name = ts_metadata["method"]
+        aggregation_method_name = ts_metadata.method
         aggregation_method = self.aggregation_methods.get(aggregation_method_name)
 
         # There should only be a single input to be aggregated. Any aggregations with multiple inputs should be
         # calculated using the derivation processor
-        if len(ts_metadata["inputs"]) > 1:
+        if len(ts_metadata.inputs) > 1:
             raise ValueError(f"More than one input has been provided for aggregation for {ts_id}")
 
-        input_ts_id = ts_metadata["inputs"][0]
+        input_ts_id = ts_metadata.inputs[0]
         input_ts = self.get_ts_data(input_ts_id)
 
         if not input_ts:
@@ -182,15 +182,15 @@ class AggregationAndDerivationProcessor:
                 f"Unable to calculate aggregation for {ts_id}. The required input {input_ts_id} has no available data."
             )
 
-        aggregation_period = Period.of_iso_duration(ts_metadata["periodicity"])
+        aggregation_period = Period.of_iso_duration(ts_metadata.periodicity)
 
         aggregated_ts = input_ts.aggregate(
             aggregation_period=aggregation_period,
             aggregation_function=aggregation_method.function_name,
-            columns=ts_metadata["sourceColumnName"],
+            columns=ts_metadata.sourceColumnName,
         )
 
-        self.ts_ids[ts_id]["data"] = aggregated_ts
+        self.ts_ids[ts_id].data = aggregated_ts
 
     def get_ts_data(self, ts_id: str) -> TimeSeries:
         """
@@ -207,7 +207,7 @@ class AggregationAndDerivationProcessor:
 
         """
         ts_metadata = self.ts_ids[ts_id]
-        if not ts_metadata.get("data"):
+        if not ts_metadata.data:
             self.calculate_derivation_or_aggregation_for_ts_id(ts_id, ts_metadata)
 
-        return self.ts_ids[ts_id].get("data")
+        return self.ts_ids[ts_id].data

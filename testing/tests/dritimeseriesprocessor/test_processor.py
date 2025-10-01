@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from types import SimpleNamespace
 from typing import Union
 from unittest.mock import MagicMock, patch
 
@@ -56,15 +57,15 @@ def mock_query_by_date_range_no_data(
 
 
 class TestLoadData:
-    ts_metadata = {
-        "sourceDataset": "dataset1",
-        "sourceBucket": "bucket1",
-        "sourceColumnName": "col1",
-        "sourceSite": "site1",
-        "resolution": "PT30M",
-        "periodicity": "PT30M",
-        "processing_level": "raw",
-    }
+    ts_metadata = SimpleNamespace(
+        sourceDataset="dataset1",
+        sourceBucket="bucket1",
+        sourceColumnName="col1",
+        sourceSite="site1",
+        resolution="PT30M",
+        periodicity="PT30M",
+        processing_level="raw",
+    )
 
     start_date = datetime(2023, 1, 1)
     end_date = datetime(2023, 1, 31)
@@ -91,17 +92,13 @@ class TestLoadData:
 class TestShiftProcessedData:
     def test_expected_shift(self) -> None:
         ts_ids = {
-            "ts1_raw": {
-                "ts_def": "ts1_raw",
-                "sourceSite": "alic1",
-                "data": [1],
-            },
-            "ts2_processed": {"method_type": "process", "sourceSite": "alic1", "inputs": ["ts1_raw"]},
+            "ts1_raw": SimpleNamespace(ts_def="ts1_raw", sourceSite="alic1", data=[1], method_type="raw"),
+            "ts2_processed": SimpleNamespace(method_type="process", sourceSite="alic1", inputs=["ts1_raw"]),
         }
 
         expected = {
-            "ts1_raw": {"ts_def": "ts1_raw", "sourceSite": "alic1"},
-            "ts2_processed": {"data": [1], "method_type": "process", "sourceSite": "alic1", "inputs": ["ts1_raw"]},
+            "ts1_raw": SimpleNamespace(ts_def="ts1_raw", sourceSite="alic1", method_type="raw", data=None),
+            "ts2_processed": SimpleNamespace(data=[1], method_type="process", sourceSite="alic1", inputs=["ts1_raw"]),
         }
 
         result = shift_processed_data(ts_ids)
@@ -117,24 +114,21 @@ class TestProcessTimeseries:
     ) -> None:
         """Test the process_timeseries function."""
         ts_metadata = {
-            "ts1_raw": {
-                "ts_def": "ts1_raw",
-                "sourceSite": "alic1",
-                "data": [1],
-            },
-            "ts2_processed": {"method_type": "process", "sourceSite": "alic1", "inputs": ["ts1_raw"]},
+            "ts1_raw": SimpleNamespace(
+                ts_def="ts1_raw",
+                sourceSite="alic1",
+                data=[1],
+                method_type="raw",
+            ),
+            "ts2_processed": SimpleNamespace(method_type="process", sourceSite="alic1", inputs=["ts1_raw"], data=None),
         }
         return_ts_metadata = {
-            "ts1_raw": {
-                "ts_def": "ts1_raw",
-                "sourceSite": "alic1",
-                "data": [2],
-            },
-            "ts2_processed": {"method_type": "process", "sourceSite": "alic1", "inputs": ["ts1_raw"]},
+            "ts1_raw": SimpleNamespace(ts_def="ts1_raw", sourceSite="alic1", data=[2], method_type="raw"),
+            "ts2_processed": SimpleNamespace(method_type="process", sourceSite="alic1", inputs=["ts1_raw"], data=None),
         }
         expected = {
-            "ts1_raw": {"ts_def": "ts1_raw", "sourceSite": "alic1"},
-            "ts2_processed": {"method_type": "process", "sourceSite": "alic1", "inputs": ["ts1_raw"], "data": [2]},
+            "ts1_raw": SimpleNamespace(ts_def="ts1_raw", sourceSite="alic1", method_type="raw", data=None),
+            "ts2_processed": SimpleNamespace(method_type="process", sourceSite="alic1", inputs=["ts1_raw"], data=[2]),
         }
 
         mock_run_corrections.return_value = return_ts_metadata

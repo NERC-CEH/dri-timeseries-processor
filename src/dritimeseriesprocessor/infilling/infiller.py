@@ -3,9 +3,8 @@ from functools import lru_cache
 from typing import Dict
 
 from dritimeseriesprocessor.flagging.flagger import infill_flag_column_name, update_infill_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
-from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
-from metadata_manager.models.service import load_config, load_methods
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
+from metadata_manager.models.service import load_methods
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +39,10 @@ def run_infilling(
         logger.warning("No infill methods given in config.")
         return ts_ids
 
-    for ts_id, ts_dict in ts_ids.items():
-        ts = ts_dict["data"]
+    for ts_id, ts_container in ts_ids.items():
+        ts = ts_container.data
 
-        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
-        infill_configs = load_config("infilling", ts_id_query_param)
-        if not infill_configs:
+        if not ts_container.infill_configs:
             logger.info(f"No infilling config found for Time Series ID: {ts_id}")
             continue
 
@@ -59,7 +56,9 @@ def run_infilling(
             ts.init_flag_column(INFILL_FLAG_SYS_NAME, infill_flag_col)
 
         # Order by priority
-        sorted_infillers = sorted(infill_configs, key=lambda x: x.annotations["data-processing-configuration-priority"])
+        sorted_infillers = sorted(
+            ts_container.infill_configs, key=lambda x: x.annotations["data-processing-configuration-priority"]
+        )
         for config in sorted_infillers:
             # Run infill methods on time series
             for infill_method in config.configs:
@@ -91,6 +90,6 @@ def run_infilling(
                 ts.add_flag(infill_flag_col, infill_method.name, null_mask_before.ne(null_mask_after))
 
         ts = update_infill_core_flags(ts)
-        ts_ids[ts_id]["data"] = ts
+        ts_ids[ts_id].data = ts
 
     return ts_ids

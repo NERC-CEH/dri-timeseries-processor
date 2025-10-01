@@ -5,8 +5,8 @@ from typing import Dict
 import polars as pl
 
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.service import load_config, load_methods
 
@@ -61,7 +61,7 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
-        ts = ts_dict["data"]
+        ts = ts_dict.data
 
         ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
         qc_data_processing_configs = load_config("quality_control", ts_id_query_param)
@@ -93,7 +93,7 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
                         logger.warning(f"Dependency time series {qc_config.parameters['dep_ts']} not found in ts_ids.")
                         continue
 
-                    qc_ts = ts_ids[qc_config.parameters["dep_ts"]]["data"]
+                    qc_ts = ts_ids[qc_config.parameters["dep_ts"]].data
                     # No longer need this key in the parameters once we've got the dependency time series
                     qc_config.parameters.pop("dep_ts")
 
@@ -118,7 +118,7 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
                 # remove the data that has been flagged if required
                 if remove:
                     ts.df = remove_qcd_data(ts.df, ts.column_name, qc_flag_col)
-                    ts_ids[ts_id]["data"] = ts
+                    ts_ids[ts_id].data = ts
 
         ts = update_quality_control_core_flags(ts)
 

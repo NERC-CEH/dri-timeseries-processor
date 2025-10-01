@@ -10,7 +10,7 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from metadata_manager.models.common import SERVICE_BASE_URI
 from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
 
@@ -133,7 +133,7 @@ def extract_dep_ts(config: ConfigItem, ts_ids: Dict[str, TimeseriesContainer]) -
             if full_dep_ts_id not in ts_ids:
                 raise ValueError(f"Dependency time series ID {dep_ts_id} not found in provided data.")
 
-            dep_ts = ts_ids[full_dep_ts_id]["data"]
+            dep_ts = ts_ids[full_dep_ts_id].data
             # Add the dependency time series to the parameters
             config.parameters[dep_ts.column_name.lower()] = dep_ts
 
@@ -196,7 +196,7 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContain
     """
     # Find the TS ID that matches the input definition and sourceSite
     for check_ts_id, check_metadata in ts_ids.items():
-        if check_metadata.get("ts_def") == ts_def and check_metadata.get("sourceSite") == site_id:
+        if check_metadata.ts_def == ts_def and check_metadata.sourceSite == site_id:
             return check_ts_id
     raise ValueError(f"Could not find TS ID for TS definition {ts_def} and sourceSite {site_id}")
 

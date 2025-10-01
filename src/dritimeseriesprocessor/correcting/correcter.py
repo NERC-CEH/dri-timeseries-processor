@@ -9,8 +9,8 @@ from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor.correcting.operations import Operation
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from dritimeseriesprocessor.utils import extract_dep_ts, not_missing_expr
 from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.schemas.data_processing_configurations import (
@@ -50,7 +50,7 @@ def run_corrections(
         return ts_ids
 
     for ts_id, ts_dict in ts_ids.items():
-        ts = ts_dict["data"]
+        ts = ts_dict.data
 
         ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
         correction_configs = load_config("correction", ts_id_query_param)
