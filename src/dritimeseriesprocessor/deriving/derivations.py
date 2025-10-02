@@ -2,7 +2,7 @@ import math
 from typing import Optional, Type, Union
 
 import polars as pl
-from time_stream import Period, TimeSeries
+import time_stream as ts
 
 from dritimeseriesprocessor.deriving.calculation import AggregationConfig, Calculation
 
@@ -312,7 +312,7 @@ class DailyTotalRadiation(Calculation):
 
     @property
     def preprocess_aggregation_config(self) -> AggregationConfig:
-        return AggregationConfig(function_name="mean_sum", period=Period.of_iso_duration("P1D"))
+        return AggregationConfig(function_name="mean_sum", period=ts.Period.of_iso_duration("P1D"))
 
     def expr(self) -> pl.Expr:
         daily_radiation = self._rad * 0.0864
@@ -344,7 +344,7 @@ class DailyPotentialEvaporation(Calculation):
 
     @property
     def postprocess_aggregation_config(self) -> AggregationConfig:
-        return AggregationConfig(function_name="mean_sum", period=Period.of_iso_duration("P1D"))
+        return AggregationConfig(function_name="mean_sum", period=ts.Period.of_iso_duration("P1D"))
 
     def expr(self) -> pl.Expr:
         filtered_pe = pl.when(self._pe < 0).then(0).otherwise(self._pe)
@@ -352,22 +352,22 @@ class DailyPotentialEvaporation(Calculation):
 
 
 def derive(
-    input_ts: TimeSeries,
+    input_tf: ts.TimeFrame,
     calc: Type[Calculation],
     column_name: Optional[str] = None,
     **kwargs,
-) -> TimeSeries:
-    """Derive a new TimeSeries from a given Calculation.
+) -> ts.TimeFrame:
+    """Derive a new ts.TimeFrame from a given Calculation.
 
     Args:
-        ts: Input TimeSeries object.
+        input_tf: Input ts.TimeFrame object.
         calc: The Calculation class to be instantiated and used.
         column_name: The name for the derived column.  If not provided, uses the default defined within the class.
         **kwargs: Arguments required for the calculation
 
     Returns:
-        TimeSeries: The resulting TimeSeries after applying the calculation.
+        ts.TimeFrame: The resulting ts.TimeFrame after applying the calculation.
     """
     calc_instance = calc(**kwargs, column_name=column_name)
 
-    return calc_instance.evaluate(input_ts)
+    return calc_instance.evaluate(input_tf)

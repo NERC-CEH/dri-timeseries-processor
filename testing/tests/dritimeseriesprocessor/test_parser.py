@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 import pytest
+import time_stream as ts
 from freezegun import freeze_time
 
 from dritimeseriesprocessor import parser
@@ -177,7 +178,7 @@ class TestValidatePeriodicity:
         period = "rubbish"
         error_message = f"Illegal ISO 8601 duration: {period.upper()}"
 
-        with pytest.raises(ValueError, match=error_message):
+        with pytest.raises(ts.exceptions.PeriodParsingError, match=error_message):
             parser.validate_periodicity(period)
 
 

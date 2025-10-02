@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
 import polars as pl
+import time_stream as ts
 from polars.testing import assert_frame_equal
-from time_stream import Period, TimeSeries
 
 from dritimeseriesprocessor.deriving.calculation import Calculation
 from dritimeseriesprocessor.deriving.derivations import (
@@ -22,7 +22,7 @@ from testing.utils.testing_utils import df_to_ts
 from testing.utils.timeseries_test_helper import TimeSeriesTestHelper
 
 
-def init_timeseries() -> TimeSeries:
+def init_timeseries() -> ts.TimeFrame:
     df = pl.DataFrame(
         {
             "time": [datetime(2024, 1, 1), datetime(2024, 1, 2), datetime(2024, 1, 3)],
@@ -30,8 +30,8 @@ def init_timeseries() -> TimeSeries:
             "data_col2": [4, 5, 6],
         }
     )
-    ts = TimeSeries(df, "time")
-    return ts
+    tf = ts.TimeFrame(df, "time")
+    return tf
 
 
 class MockCalculation(Calculation):
@@ -62,7 +62,6 @@ class TestDerive:
         )
 
         assert "mock_calc" in result.data_columns
-        assert result.mock_calc.metadata() == {"units": "mock_unit"}
         assert_frame_equal(result.df, expected_df, check_dtype=False)
 
 
@@ -199,9 +198,9 @@ class TestDailyTotalRadiation:
             ts_test_helper.input_dir.joinpath("derivations", "rn_pt30m_3_days.csv"),
             schema=pl.Schema({"time": pl.Datetime(time_zone=timezone.utc), "SWOUT": pl.Float64}),
         )
-        ts = TimeSeries(df, "time", Period.of_iso_duration("PT30M"), Period.of_iso_duration("PT30M"))
+        tf = ts.TimeFrame(df, "time", ts.Period.of_iso_duration("PT30M"), ts.Period.of_iso_duration("PT30M"))
 
-        expected = TimeSeries(
+        expected = ts.TimeFrame(
             pl.DataFrame(
                 {
                     "time": [
@@ -219,12 +218,12 @@ class TestDailyTotalRadiation:
                 ),
             ),
             "time",
-            Period.of_iso_duration("P1D"),
-            Period.of_iso_duration("P1D"),
+            ts.Period.of_iso_duration("P1D"),
+            ts.Period.of_iso_duration("P1D"),
         )
 
         calc = DailyTotalRadiation(column_name="SWOUT")
-        result = calc.evaluate(ts)
+        result = calc.evaluate(tf)
 
         assert_frame_equal(expected.df, result.df)
 
@@ -235,9 +234,9 @@ class TestDailyPotentialEvaporation:
             ts_test_helper.input_dir.joinpath("derivations", "pe_pt30m_3_days.csv"),
             schema=pl.Schema({"time": pl.Datetime(time_zone=timezone.utc), "PE": pl.Float64}),
         )
-        ts = TimeSeries(df, "time", Period.of_iso_duration("PT30M"), Period.of_iso_duration("PT30M"))
+        tf = ts.TimeFrame(df, "time", ts.Period.of_iso_duration("PT30M"), ts.Period.of_iso_duration("PT30M"))
 
-        expected = TimeSeries(
+        expected = ts.TimeFrame(
             pl.DataFrame(
                 {
                     "time": [
@@ -255,11 +254,11 @@ class TestDailyPotentialEvaporation:
                 ),
             ),
             "time",
-            Period.of_iso_duration("P1D"),
-            Period.of_iso_duration("P1D"),
+            ts.Period.of_iso_duration("P1D"),
+            ts.Period.of_iso_duration("P1D"),
         )
 
         calc = DailyPotentialEvaporation(pe="PE", column_name="PE")
-        result = calc.evaluate(ts)
+        result = calc.evaluate(tf)
 
         assert_frame_equal(expected.df, result.df)

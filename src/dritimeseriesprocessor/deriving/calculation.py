@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 
 import polars as pl
+import time_stream as ts
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
-from time_stream import Period, TimeSeries, aggregation  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 @dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class AggregationConfig:
     function_name: str
-    period: Period
+    period: ts.Period
 
 
 class Calculation(ABC):
@@ -102,46 +102,41 @@ class Calculation(ABC):
         """
         return column_name or self.default_column_name
 
-    def evaluate(self, ts: TimeSeries) -> pl.DataFrame:
-        """Evaluate the expression and perform any pre and post aggregations
+    def evaluate(self, tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Evaluate the expression and perform any pre- and post- aggregations
 
         Args:
-            ts: Input TimeSeries.
+            tf: Input ts.TimeFrame.
 
         Returns:
-            TimeSeries: TimeSeries with the result of the calculation.
+            ts.TimeFrame: ts.TimeFrame with the result of the calculation.
         """
 
         if self.preprocess_aggregation_config:
-            ts = self._apply_aggregation(ts, self.preprocess_aggregation_config)
+            tf = self._apply_aggregation(tf, self.preprocess_aggregation_config)
 
-        ts = self._evaluate_expression(ts=ts)
+        tf = self._evaluate_expression(tf=tf)
 
         if self.postprocess_aggregation_config:
-            ts = self._apply_aggregation(ts, self.postprocess_aggregation_config)
+            tf = self._apply_aggregation(tf, self.postprocess_aggregation_config)
 
         # Pull out time and self.column_name from the result
-        ts.df = ts.df.select([ts.time_name, self.column_name])
+        tf = tf.select(self.column_name)
 
-        # Add the units metadata to the column
-        # TODO: Waiting for a method to be added to do this in TimeSeries
-        ts.__getattr__(self.column_name)._metadata.update({"units": self.units})
+        return tf
 
-        return ts
-
-    def _apply_aggregation(self, ts: TimeSeries, aggregation_config: AggregationConfig) -> pl.DataFrame:
-        """Apply aggregation to the TimeSeries DataFrame.
+    def _apply_aggregation(self, tf: ts.TimeFrame, aggregation_config: AggregationConfig) -> ts.TimeFrame:
+        """Apply aggregation to the ts.TimeFrame DataFrame.
 
         Args:
-            ts: Input TimeSeries object.
-            aggregation_period: Period over which to aggregate.
-            aggregation_function: Method to use for aggregation.
+            tf: Input ts.TimeFrame object.
+            aggregation_config: The aggregation function to be applied and associated config.
 
         Returns:
-            TimeSeries: TimeSeries with aggregated results.
+            ts.TimeFrame: ts.TimeFrame with aggregated results.
 
         """
-        aggregated_ts = ts.aggregate(
+        aggregated_tf = tf.aggregate(
             aggregation_period=aggregation_config.period,
             aggregation_function=aggregation_config.function_name,
             columns=self.column_name,
@@ -149,33 +144,26 @@ class Calculation(ABC):
 
         # Rename to the original column name
         aggregated_column_name = f"{aggregation_config.function_name}_{self.column_name}"
-        aggregated_ts.df = aggregated_ts.df.rename({aggregated_column_name: self.column_name})
+        aggregated_tf = aggregated_tf.with_df(aggregated_tf.df.rename({aggregated_column_name: self.column_name}))
+        return aggregated_tf
 
-        return aggregated_ts
-
-    def _evaluate_expression(self, ts: TimeSeries) -> TimeSeries:
+    def _evaluate_expression(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """
-        Evaluate the expressions for the calculation, returning a new TimeSeries with the results.
+        Evaluate the expressions for the calculation, returning a new ts.TimeFrame with the results.
 
         Args:
-            ts: Input TimeSeries.
+            tf: Input ts.TimeFrame.
 
         Returns:
-            TimeSeries: TimeSeries with the results of the calculation.
+            ts.TimeFrame: ts.TimeFrame with the results of the calculation.
         """
 
         # Perform the evaluation(s)
-        lazy_df = ts.df.lazy()
+        lazy_df = tf.df.lazy()
         result = lazy_df.with_columns(self.expr().alias(self.column_name))
         result_df = result.collect()
 
-        return TimeSeries(
-            df=result_df,
-            time_name=ts.time_name,
-            resolution=ts.resolution,
-            periodicity=ts.periodicity,
-            metadata=ts.metadata(),
-        )
+        return tf.with_df(result_df)
 
     def _collect_dependencies(self) -> list["Calculation"]:
         """Automatically discover dependencies by introspecting attributes that are instances of Calculation.
