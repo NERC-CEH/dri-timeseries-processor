@@ -69,7 +69,6 @@ class TestRunCorrections:
     def test_run_corrections_basic(
         self,
         mock_get_methods: mock.MagicMock,
-        base_test_helper: BaseTestHelper,
         mock_methods_dict: Dict[str, Any],
     ) -> None:
         """
@@ -214,7 +213,6 @@ class TestRunCorrections:
     def test_run_corrections_no_config(
         self,
         mock_get_methods: mock.MagicMock,
-        base_test_helper: BaseTestHelper,
         mock_methods_dict: Dict[str, Any],
     ) -> None:
         """

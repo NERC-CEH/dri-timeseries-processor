@@ -62,12 +62,12 @@ class AggregationAndDerivationProcessor:
         If appropriate (i.e. the corresponding method for derivation or aggregation is indicated in the ts_container)
         create the derived or aggregated data for the provided time series.
 
-        If no method has been provided in the timeseries metadata, or the method isn't appropriate, no calculations
+        If no method has been provided in the timeseries container, or the method isn't appropriate, no calculations
         will take place. Effectively the timeseries will be skipped.
 
         Args:
             ts_id: ID of the time series to calculate derived or aggregated for.
-            ts_container: TimeseriesContainer containing the metadata corresponding to the provided timeseries ID
+            ts_container: TimeseriesContainer containing the container corresponding to the provided timeseries ID
 
         """
         ts_method = ts_container.method_type
@@ -85,7 +85,7 @@ class AggregationAndDerivationProcessor:
 
         Args:
             ts_id (str): The ID of the time series to calculate derived data for.
-            ts_container: TimeseriesContainer containing the metadata for the provided
+            ts_container: TimeseriesContainer containing the metadata and any associated data for the provided
                 time series ID.
 
         Raises:

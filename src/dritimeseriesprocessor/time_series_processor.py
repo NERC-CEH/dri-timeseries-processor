@@ -172,8 +172,6 @@ class TimeSeriesProcessor:
         # This should come last so we get dependencies for all ts_ids
         self._load_data_processing_configs()
 
-        # self._get_processing_dependent_ts_ids()
-
         self._map_input_ts_defs_to_ts_ids()
 
     def _get_specific_user_timeseries_ids(self) -> None:
@@ -253,22 +251,22 @@ class TimeSeriesProcessor:
         raw_ts_ids = [ts_id for ts_id, ts_container in self.ts_ids.items() if ts_container.processing_level == "raw"]
 
         for raw_ts_id in raw_ts_ids:
-            ts_ids_query_parameter = build_processing_config_timeseries_id_query_parameter([raw_ts_id])
+            ts_id_query_parameter = build_processing_config_timeseries_id_query_parameter(raw_ts_id)
 
             self._load_data_processing_config(
-                ts_ids_query_parameter=ts_ids_query_parameter,
+                ts_ids_query_parameter=ts_id_query_parameter,
                 config_type="correction",
                 ts_container_attr="correction_configs",
             )
 
             self._load_data_processing_config(
-                ts_ids_query_parameter=ts_ids_query_parameter,
+                ts_ids_query_parameter=ts_id_query_parameter,
                 config_type="quality_control",
                 ts_container_attr="qc_configs",
             )
 
             self._load_data_processing_config(
-                ts_ids_query_parameter=ts_ids_query_parameter,
+                ts_ids_query_parameter=ts_id_query_parameter,
                 config_type="infilling",
                 ts_container_attr="infill_configs",
             )

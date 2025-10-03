@@ -21,7 +21,17 @@ class TimeseriesContainer:
         sourceDataset: The source dataset.
         sourceColumnName: The source column name.
         sourceSite: The source site.
+        method_type: The type of method to apply  if relevant (e.g aggregation or derivation ).
+        method: The method to apply (e.g. for aggregation or derivation)
+        inputs: A list of ts_ids which are required to calculate the final data product
+        load: Whether or not to load any raw data
         data: The timeseries data.
+        correction_configs: A list of DataProcessingConfiguration options, each corresponding to a correction that needs
+            applying
+        qc_configs: A list of DataProcessingConfiguration options, each corresponding to a quality control method that
+            needsapplying
+        infill_configs: A list of DataProcessingConfiguration options, each corresponding to a infilling method that
+            needs applying
     """
 
     ts_def: str
@@ -40,9 +50,3 @@ class TimeseriesContainer:
     correction_configs: List[DataProcessingConfiguration] = field(default_factory=list)
     qc_configs: List[DataProcessingConfiguration] = field(default_factory=list)
     infill_configs: List[DataProcessingConfiguration] = field(default_factory=list)
-
-    @property
-    def load_data(self) -> bool:
-        if self.processing_level == "raw" and not self.method:
-            return True
-        return False
