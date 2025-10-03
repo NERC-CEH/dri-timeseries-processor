@@ -67,7 +67,7 @@ class TimeSeriesProcessor:
         sites: str | None = None,
         columns: List[str] | None = None,
         periodicity: str | None = None,
-        end_date: datetime.date = None,
+        end_date: datetime = None,
     ):
         # Validate inputs as user_ts_ids is mutually exclusive to the combination of [sites, columns or periodicity]
         if user_ts_ids and (sites or columns or periodicity):

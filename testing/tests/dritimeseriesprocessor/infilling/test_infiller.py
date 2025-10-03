@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import polars as pl
 import pytest
-from time_stream import Period, TimeSeries
+import time_stream as ts
 from time_stream.infill import InfillMethod
 
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
@@ -37,17 +37,17 @@ def ts_ids() -> Dict[str, Any]:
             "pressure": [1010.0, 1011.0, 1012.0, None, 1013.0, None, 1014.0, 1015.0, None, 1016.0],
         }
     )
-    resolution = Period.of_hours(1)
-    periodicity = Period.of_hours(1)
-    ta_ts = TimeSeries(ta_data, "time", resolution, periodicity, metadata={"column_name": "temperature"})
-    ta_ts = add_initial_core_flags(ta_ts)
+    resolution = ts.Period.of_hours(1)
+    periodicity = ts.Period.of_hours(1)
+    ta_tf = ts.TimeFrame(ta_data, "time", resolution, periodicity).with_metadata({"column_name": "temperature"})
+    ta_tf = add_initial_core_flags(ta_tf)
 
-    pa_ts = TimeSeries(pa_data, "time", resolution, periodicity, metadata={"column_name": "pressure"})
-    pa_ts = add_initial_core_flags(pa_ts)
+    pa_tf = ts.TimeFrame(pa_data, "time", resolution, periodicity).with_metadata({"column_name": "pressure"})
+    pa_tf = add_initial_core_flags(pa_tf)
 
     ts_ids = {
-        "SITE1_ta_30min_raw": SimpleNamespace(data=ta_ts, infill_configs=[]),
-        "SITE1_pa_30min_raw": SimpleNamespace(data=pa_ts, infill_configs=[]),
+        "SITE1_ta_30min_raw": SimpleNamespace(data=ta_tf, infill_configs=[]),
+        "SITE1_pa_30min_raw": SimpleNamespace(data=pa_tf, infill_configs=[]),
     }
     return ts_ids
 
@@ -176,7 +176,8 @@ class TestRunInfilling:
         result = run_infilling(ts_ids)
 
         # Check flag system added
-        assert "infill_flags" in result["SITE1_ta_30min_raw"].data.flag_systems
+        result["SITE1_ta_30min_raw"].data.get_flag_system("infill_flags")
+
         # Check columns added
         assert "temperature_INFILL_FLAG" in result["SITE1_ta_30min_raw"].data.columns
         # Check flag values (from mock functions) have been added
@@ -216,7 +217,8 @@ class TestRunInfilling:
         result = run_infilling(ts_ids)
 
         # Check flag system added
-        assert "infill_flags" in result["SITE1_ta_30min_raw"].data.flag_systems
+        result["SITE1_ta_30min_raw"].data.get_flag_system("infill_flags")
+
         # Check columns added
         assert "temperature_INFILL_FLAG" in result["SITE1_ta_30min_raw"].data.columns
         # Check flag values (from mock functions) have been added

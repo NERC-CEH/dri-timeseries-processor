@@ -4,7 +4,7 @@ from typing import Union
 from unittest.mock import MagicMock, patch
 
 import polars as pl
-from time_stream import TimeSeries
+import time_stream as ts
 
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.processor import (
@@ -76,7 +76,7 @@ class TestLoadData:
         mock_query.side_effect = mock_query_by_date_range
 
         result = load_data(self.ts_container, self.start_date, self.end_date)
-        assert isinstance(result, TimeSeries)
+        assert isinstance(result, ts.TimeFrame)
         assert result.df.shape == (3, 2)
 
     @patch("dritimeseriesprocessor.processor.data_manager.query_by_date_range")
@@ -85,7 +85,7 @@ class TestLoadData:
         mock_query.side_effect = mock_query_by_date_range_no_data
 
         result = load_data(self.ts_container, self.start_date, self.end_date)
-        assert isinstance(result, TimeSeries)
+        assert isinstance(result, ts.TimeFrame)
         assert result.df.shape == (0, 2)
 
 

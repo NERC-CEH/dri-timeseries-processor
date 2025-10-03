@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
 import polars as pl
-from time_stream import Period, TimeSeries
+import time_stream as ts
 
 
-def df_to_ts(df: pl.DataFrame) -> "TimeSeries":
-    """Convert a Polars DataFrame to a TimeSeries object."""
+def df_to_ts(df: pl.DataFrame) -> ts.TimeFrame:
+    """Convert a Polars DataFrame to a ts.TimeFrame object."""
 
     # Add time column according to the length of the DataFrame
     time_name = "time"
@@ -16,18 +16,17 @@ def df_to_ts(df: pl.DataFrame) -> "TimeSeries":
     df = df.select(["time"] + [col for col in df.columns if col != "time"])
 
     # Set resolution and periodicity
-    resolution = Period.of_iso_duration("P1D")
+    resolution = ts.Period.of_iso_duration("P1D")
 
-    return TimeSeries(
+    return ts.TimeFrame(
         df=df,
         time_name=time_name,
         resolution=resolution,
         periodicity=resolution,
-        metadata={},
     )
 
 
-def create_test_operation_ts(data: list | None = None) -> TimeSeries:
+def create_test_operation_ts(data: list | None = None) -> ts.TimeFrame:
     """Set up test fixtures."""
     if data is None:
         data = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
@@ -39,7 +38,7 @@ def create_test_operation_ts(data: list | None = None) -> TimeSeries:
         }
     )
 
-    return TimeSeries(df, "timestamp", metadata={"column_name": "value"})
+    return ts.TimeFrame(df, "timestamp").with_metadata({"column_name": "value"})
 
 
 def create_test_filter() -> pl.Expr:

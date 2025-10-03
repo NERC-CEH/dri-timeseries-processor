@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from typing import Dict
 
-from time_stream import TimeSeries
+import time_stream as ts
 
 from dritimeseriesprocessor.correcting.correcter import run_corrections
 from dritimeseriesprocessor.infilling.infiller import run_infilling
@@ -15,7 +15,7 @@ from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 logger = logging.getLogger(__name__)
 
 
-def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date: datetime) -> TimeSeries:
+def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date: datetime) -> ts.TimeFrame:
     """
     Load in data for the given timeseries from S3 using the data_manager.
 
@@ -25,7 +25,7 @@ def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date:
         end_date: The end date of the data
 
     Returns:
-        TimeSeries: A timeseries instance containing the loaded data.
+        ts.TimeFrame: A timeseries instance containing the loaded data.
     """
     logger.info(
         {
@@ -54,25 +54,35 @@ def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date:
             url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
         )
 
-    ts = TimeSeries(
+    # To help test the processor with large amounts of data, we bypass any errors
+    # raised by duplicate timestamps when running locally. In production, we want
+    # the default behaviour which is to raise the error.
+    if "environment" not in os.environ:
+        on_duplicates = "keep_first"
+    else:
+        on_duplicates = "error"
+
+    tf = ts.TimeFrame(
         bucket_data,
         "time",
         ts_container.resolution,
         ts_container.periodicity,
-        metadata={
+        on_duplicates=on_duplicates,
+    ).with_metadata(
+        {
             "site_id": ts_container.sourceSite,
             "column_name": ts_container.sourceColumnName,
             "processing_level": ts_container.processing_level,
-        },
+        }
     )
 
     # To help test the processor with large amounts of data, we bypass any errors
     # raised by duplicate timestamps when running locally. In production we want
     # the default behaviour which is too raise the error.
     if "environment" not in os.environ:
-        ts.on_duplicates = "keep_first"
+        tf.on_duplicates = "keep_first"
 
-    return ts
+    return tf
 
 
 def shift_processed_data(

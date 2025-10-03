@@ -5,9 +5,9 @@ from unittest import mock
 
 import polars as pl
 import pytest
+import time_stream as ts
 from driutils.metadata_api.api_manager import MetadataAPIManager
 from driutils.testing_utils.mock_metadata_api import MockMetadataAPI
-from time_stream import Period, TimeSeries
 
 from dritimeseriesprocessor.correcting.correcter import run_corrections, update_config_item_with_site_attributes
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
@@ -15,14 +15,14 @@ from metadata_manager.models.schemas.data_processing_configurations import Confi
 from testing.utils.base_test_helper import BaseTestHelper
 
 
-def create_test_ts(col_name: str, datetimes: list, data: list, periodicity: Period) -> TimeSeries:
+def create_test_tf(col_name: str, datetimes: list, data: list, periodicity: ts.Period) -> ts.TimeFrame:
     """Set up test fixtures."""
     df = pl.DataFrame({"time": datetimes, col_name: data})
 
-    ts = TimeSeries(df, "time", periodicity, periodicity, metadata={"site_id": "site1", "column_name": col_name})
-    ts = add_initial_core_flags(ts)
+    tf = ts.TimeFrame(df, "time", periodicity, periodicity).with_metadata({"site_id": "site1", "column_name": col_name})
+    tf = add_initial_core_flags(tf)
 
-    return ts
+    return tf
 
 
 @pytest.fixture()
@@ -75,7 +75,7 @@ class TestRunCorrections:
         Test basic functionality of run_corrections.
         Checks if the function adds the flag system, adds the flag columns, and runs the correction method.
         """
-        g1_ts = create_test_ts(
+        g1_ts = create_test_tf(
             "g1",
             [
                 datetime(2017, 11, 10, 11),
@@ -85,7 +85,7 @@ class TestRunCorrections:
                 datetime(2017, 11, 10, 13),
             ],
             [7.88732, 15.89324, 15.68856, 16.91815, 14.77755],
-            Period.of_minutes(30),
+            ts.Period.of_minutes(30),
         )
         g1_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw"
         ts_ids = {
@@ -117,7 +117,7 @@ class TestRunCorrections:
         result = run_corrections(ts_ids)
 
         # Check flag system added
-        assert "corrs_flags" in result[g1_ts_id].data.flag_systems
+        result[g1_ts_id].data.get_flag_system("corrs_flags")
         # Check columns added
         assert "g1_CORRS_FLAG" in result[g1_ts_id].data.columns
         # Check the correction method has been applied
@@ -152,11 +152,11 @@ class TestRunCorrections:
             datetime(2018, 12, 20, 13, 0),
         ]
 
-        lwout_ts = create_test_ts("lwout", datetimes, [None, None, 361.4, 361.4, 360.6], Period.of_minutes(30))
-        lwout_unc_ts = create_test_ts(
-            "lwout_unc", datetimes, [None, None, -2.898, -3.535, -4.91], Period.of_minutes(30)
+        lwout_ts = create_test_tf("lwout", datetimes, [None, None, 361.4, 361.4, 360.6], ts.Period.of_minutes(30))
+        lwout_unc_ts = create_test_tf(
+            "lwout_unc", datetimes, [None, None, -2.898, -3.535, -4.91], ts.Period.of_minutes(30)
         )
-        ta_ts = create_test_ts("ta", datetimes, [8.9, 9.11, 9.35, 9.45, 9.37], Period.of_minutes(30))
+        ta_ts = create_test_tf("ta", datetimes, [8.9, 9.11, 9.35, 9.45, 9.37], ts.Period.of_minutes(30))
         lwout_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw"
         lwout_unc_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw"
         ta_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"
@@ -192,7 +192,8 @@ class TestRunCorrections:
         result = run_corrections(ts_ids)
 
         # Test lw_corr has been applied to lwout. This uses the argument mapping to map lwout_unc to lw_unc
-        assert "corrs_flags" in result[lwout_ts_id].data.flag_systems
+        result[lwout_ts_id].data.get_flag_system("corrs_flags")
+
         # Check columns added
         assert "lwout_CORRS_FLAG" in result[lwout_ts_id].data.columns
         # Check the correction method has been applied
@@ -220,7 +221,7 @@ class TestRunCorrections:
         Checks if the function returns the original DataFrame unchanged.
         """
         # Create data with no corresponding correction config
-        ta_ts = create_test_ts(
+        ta_ts = create_test_tf(
             "ta",
             [
                 datetime(2024, 11, 10, 11),
@@ -230,7 +231,7 @@ class TestRunCorrections:
                 datetime(2024, 11, 10, 13),
             ],
             [1, 2, 3, 4, 5],
-            Period.of_minutes(30),
+            ts.Period.of_minutes(30),
         )
         ts_ids = {
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw": SimpleNamespace(
@@ -256,7 +257,7 @@ class TestRunCorrections:
         Test run_corrections when corrections config exists but no methods are specified.
         Checks if the function returns the original DataFrame unchanged.
         """
-        g1_ts = create_test_ts(
+        g1_ts = create_test_tf(
             "g1",
             [
                 datetime(2017, 11, 10, 11),
@@ -266,7 +267,7 @@ class TestRunCorrections:
                 datetime(2017, 11, 10, 13),
             ],
             [7.88732, 15.89324, 15.68856, 16.91815, 14.77755],
-            Period.of_minutes(30),
+            ts.Period.of_minutes(30),
         )
         g1_ts_id = "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw"
         ts_ids = {

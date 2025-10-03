@@ -2,7 +2,7 @@ from datetime import datetime
 
 import polars as pl
 import pytest
-from time_stream import TimeSeries
+import time_stream as ts
 
 from dritimeseriesprocessor.flagging.flagger import (
     add_initial_core_flags,
@@ -18,7 +18,7 @@ from dritimeseriesprocessor.flagging.flagger import (
 
 
 @pytest.fixture
-def sample_timeseries() -> TimeSeries:
+def sample_timeseries() -> ts.TimeFrame:
     data = {
         "timestamp": [
             datetime(2023, 1, 1, 0, 0),
@@ -29,16 +29,16 @@ def sample_timeseries() -> TimeSeries:
         ],
         "value": [10, None, 30, None, 50],
     }
-    sample_timeseries = TimeSeries(
+    sample_timeseries = ts.TimeFrame(
         pl.DataFrame(data),
         time_name="timestamp",
     )
-    sample_timeseries.add_flag_system("corrs_flags", {"ADD": 1})
-    sample_timeseries.init_flag_column("corrs_flags", "value_CORRS_FLAG", [1, 0, 0, 0, 1])
-    sample_timeseries.add_flag_system("qc_flags", {"RANGE": 1})
-    sample_timeseries.init_flag_column("qc_flags", "value_QC_FLAG", [0, 1, 0, 1, 0])
-    sample_timeseries.add_flag_system("infill_flags", {"INTERP": 1})
-    sample_timeseries.init_flag_column("infill_flags", "value_INFILL_FLAG", [0, 0, 1, 0, 0])
+    sample_timeseries.register_flag_system("corrs_flags", {"ADD": 1})
+    sample_timeseries.init_flag_column("value", "corrs_flags", "value_CORRS_FLAG", [1, 0, 0, 0, 1])
+    sample_timeseries.register_flag_system("qc_flags", {"RANGE": 1})
+    sample_timeseries.init_flag_column("value", "qc_flags", "value_QC_FLAG", [0, 1, 0, 1, 0])
+    sample_timeseries.register_flag_system("infill_flags", {"INTERP": 1})
+    sample_timeseries.init_flag_column("value", "infill_flags", "value_INFILL_FLAG", [0, 0, 1, 0, 0])
 
     return sample_timeseries
 
@@ -81,14 +81,14 @@ class TestInfillFlagColumnName:
 
 
 class TestInitialiseCoreFlagSystem:
-    def test_initialise_core_flag_system(self, sample_timeseries: TimeSeries) -> None:
+    def test_initialise_core_flag_system(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test the initialisation of the core flag system."""
-        ts = initialise_core_flag_system(sample_timeseries)
-        assert "core_flags" in ts.flag_systems
+        tf = initialise_core_flag_system(sample_timeseries)
+        tf.get_flag_system("core_flags")
 
 
 class TestAddInitialCoreFlags:
-    def test_add_initial_core_flags(self, sample_timeseries: TimeSeries) -> None:
+    def test_add_initial_core_flags(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test the initial core flags of 'unchecked' (32) and 'missing' (4) are added correctly."""
         ts = add_initial_core_flags(sample_timeseries)
 
@@ -99,21 +99,21 @@ class TestAddInitialCoreFlags:
 
 
 class TestUpdateCorrectionsCoreFlags:
-    def test_update_corrections_core_flags(self, sample_timeseries: TimeSeries) -> None:
+    def test_update_corrections_core_flags(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test the the core flag column is updated with 'corrected' core flag (1)."""
         ts = add_initial_core_flags(sample_timeseries)
         ts = update_corrections_core_flags(sample_timeseries)
         flag_col = core_flag_column_name("value")
         assert list(ts.df[flag_col]) == [33, 36, 32, 36, 33]
 
-    def test_no_core_flag_column(self, sample_timeseries: TimeSeries) -> None:
+    def test_no_core_flag_column(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test that an error is raised if the core flag column is not found."""
         with pytest.raises(ValueError):
             update_corrections_core_flags(sample_timeseries)
 
 
 class TestUpdateQualityControlCoreFlags:
-    def test_update_quality_control_core_flags(self, sample_timeseries: TimeSeries) -> None:
+    def test_update_quality_control_core_flags(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test the core flag column is updated with the 'removed' core flag (8),
         and the 'unchecked' core flag (32) is removed."""
         # Init core flags so the unchecked flag is present.
@@ -123,31 +123,31 @@ class TestUpdateQualityControlCoreFlags:
         # Should be left with missing (4) plus removed (8) flags.
         assert list(ts.df[flag_col]) == [0, 12, 0, 12, 0]
 
-    def test_unchecked_not_removed(self, sample_timeseries: TimeSeries) -> None:
+    def test_unchecked_not_removed(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test that the 'unchecked' flag is not removed when the QC flag is missing."""
         # Init core flags so the unchecked flag is present.
-        ts = add_initial_core_flags(sample_timeseries)
-        ts.df = ts.df.with_columns(pl.Series("value_QC_FLAG", [0, None, 0, None, 0]))
-        ts = update_quality_control_core_flags(ts)
+        tf = add_initial_core_flags(sample_timeseries)
+        tf = tf.with_df(tf.df.with_columns(pl.Series("value_QC_FLAG", [0, None, 0, None, 0])))
+        tf = update_quality_control_core_flags(tf)
         flag_col = core_flag_column_name("value")
         # Should be left with missing (4) plus unchecked (32) flags.
-        assert list(ts.df[flag_col]) == [0, 36, 0, 36, 0]
+        assert list(tf.df[flag_col]) == [0, 36, 0, 36, 0]
 
-    def test_no_core_flag_column(self, sample_timeseries: TimeSeries) -> None:
+    def test_no_core_flag_column(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test that an error is raised if the core flag column is not found."""
         with pytest.raises(ValueError):
             update_quality_control_core_flags(sample_timeseries)
 
 
 class TestUpdateInfillCoreFlags:
-    def test_update_infill_core_flags(self, sample_timeseries: TimeSeries) -> None:
+    def test_update_infill_core_flags(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test the the core flag column is updated with the 'interpolated' core flag (2)."""
         ts = add_initial_core_flags(sample_timeseries)
         ts = update_infill_core_flags(sample_timeseries)
         flag_col = core_flag_column_name("value")
         assert list(ts.df[flag_col]) == [32, 36, 34, 36, 32]
 
-    def test_no_core_flag_column(self, sample_timeseries: TimeSeries) -> None:
+    def test_no_core_flag_column(self, sample_timeseries: ts.TimeFrame) -> None:
         """Test that an error is raised if the core flag column is not found."""
         with pytest.raises(ValueError):
             update_infill_core_flags(sample_timeseries)

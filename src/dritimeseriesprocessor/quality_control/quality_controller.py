@@ -3,6 +3,7 @@ from functools import lru_cache
 from typing import Dict
 
 import polars as pl
+import time_stream as ts
 
 from dritimeseriesprocessor.flagging.flagger import qc_flag_column_name, update_quality_control_core_flags
 from dritimeseriesprocessor.metrics_exporter import metrics
@@ -53,27 +54,29 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
     """
     qc_methods = get_qc_methods()
 
-    # Initialise quality control flag system within TimeSeries object
+    # Initialise quality control flag system within ts.TimeFrame object
     qc_flags_dict = {method: method_config.method_id for method, method_config in qc_methods.items()}
     if not qc_flags_dict:
         logger.warning("No QC methods given in config.")
         return ts_ids
 
     for ts_id, ts_container in ts_ids.items():
-        ts = ts_container.data
+        tf = ts_container.data
 
         if not ts_container.qc_configs:
             logger.info(f"No quality control config found for Time Series ID: {ts_id}")
             continue
 
         # Set up the flag system if it doesn't already exist
-        if QC_FLAG_SYS_NAME not in ts.flag_systems:
-            ts.add_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
+        try:
+            tf.get_flag_system(QC_FLAG_SYS_NAME)
+        except ts.exceptions.FlagSystemNotFoundError:
+            tf.register_flag_system(QC_FLAG_SYS_NAME, qc_flags_dict)
 
         # Add a flag column for the quality control method
-        qc_flag_col = qc_flag_column_name(ts.column_name)
-        if qc_flag_col not in ts.flag_columns:
-            ts.init_flag_column(QC_FLAG_SYS_NAME, qc_flag_col)
+        qc_flag_col = qc_flag_column_name(tf.metadata["column_name"])
+        if qc_flag_col not in tf.flag_columns:
+            tf.init_flag_column(tf.metadata["column_name"], QC_FLAG_SYS_NAME, qc_flag_col)
 
         for data_processing_config in ts_container.qc_configs:
             # Run QC methods on time series
@@ -83,14 +86,14 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
                 qc_method_metadata = qc_methods[qc_config.name]
 
                 # Determine which time series we are running the qc test on
-                qc_ts = ts
+                qc_tf = tf
                 if "dep_ts" in qc_config.parameters:
                     # Check if the dependency time series exists
                     if qc_config.parameters["dep_ts"] not in ts_ids:
                         logger.warning(f"Dependency time series {qc_config.parameters['dep_ts']} not found in ts_ids.")
                         continue
 
-                    qc_ts = ts_ids[qc_config.parameters["dep_ts"]].data
+                    qc_tf = ts_ids[qc_config.parameters["dep_ts"]].data
                     # No longer need this key in the parameters once we've got the dependency time series
                     qc_config.parameters.pop("dep_ts")
 
@@ -102,24 +105,24 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
                     for parameter, value in qc_method_metadata.kwargs.items():
                         qc_config.parameters[parameter] = value
 
-                qc_result = qc_ts.qc_check(
+                qc_result = qc_tf.qc_check(
                     qc_method_metadata.function_name,
-                    check_column=qc_ts.column_name,
+                    column_name=qc_tf.metadata["column_name"],
                     observation_interval=qc_config.observation_interval,
                     **qc_config.parameters,
                 )
 
                 # flag the primary time series with the results
-                ts.add_flag(qc_flag_col, qc_config.name, qc_result)
+                tf.add_flag(qc_flag_col, qc_config.name, qc_result)
 
                 # remove the data that has been flagged if required
                 if remove:
-                    ts.df = remove_qcd_data(ts.df, ts.column_name, qc_flag_col)
-                    ts_ids[ts_id].data = ts
+                    tf = tf.with_df(remove_qcd_data(tf.df, tf.metadata["column_name"], qc_flag_col))
+                    ts_ids[ts_id].data = tf
 
-        ts = update_quality_control_core_flags(ts)
+        tf = update_quality_control_core_flags(tf)
 
-        qcflag_columns = [col for col in ts.columns if col.endswith("_QCFLAG")]
+        qcflag_columns = [col for col in tf.columns if col.endswith("_QCFLAG")]
         flags_count = len(qcflag_columns)
         logger.info(f"Number of QC flag columns: {flags_count}")
         metrics.increment_flags(flags_count)
