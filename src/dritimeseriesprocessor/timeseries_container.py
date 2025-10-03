@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from time_stream import TimeSeries
+from time_stream import TimeFrame
 
 from metadata_manager.models.schemas.data_processing_configurations import (
     DataProcessingConfiguration,
@@ -25,7 +25,7 @@ class TimeseriesContainer:
         method: The method to apply (e.g. for aggregation or derivation)
         inputs: A list of ts_ids which are required to calculate the final data product
         load: Whether or not to load any raw data
-        data: The timeseries data.
+        data: The time series data.
         correction_configs: A list of DataProcessingConfiguration options, each corresponding to a correction that needs
             applying
         qc_configs: A list of DataProcessingConfiguration options, each corresponding to a quality control method that
@@ -46,7 +46,7 @@ class TimeseriesContainer:
     method: str | None = None
     inputs: List[str] = field(default_factory=list)
     load: bool = False
-    data: TimeSeries | None = None
+    data: TimeFrame | None = None
     correction_configs: List[DataProcessingConfiguration] = field(default_factory=list)
     qc_configs: List[DataProcessingConfiguration] = field(default_factory=list)
     infill_configs: List[DataProcessingConfiguration] = field(default_factory=list)

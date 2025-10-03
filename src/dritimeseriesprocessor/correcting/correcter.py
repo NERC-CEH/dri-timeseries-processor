@@ -112,7 +112,7 @@ def run_corrections(
                 tf.add_flag(corrs_flag_col, corr_config_update.name, expr)
 
         tf = update_corrections_core_flags(tf)
-        ts_dict["data"] = tf
+        ts_container.data = tf
 
     return ts_ids
 
