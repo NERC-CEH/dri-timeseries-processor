@@ -77,7 +77,7 @@ class DuckDbParquetReader(ParquetReaderInterface):
                 CREATE SECRET aws_secret (
                     TYPE S3,
                     PROVIDER CREDENTIAL_CHAIN,
-                    CHAIN 'sts'
+                    CHAIN 'config'
                 );
             """)
         if app_config.environment == "staging-fake":
