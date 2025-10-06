@@ -14,6 +14,9 @@ from dritimeseriesprocessor.quality_control.quality_controller import remove_qcd
 
 TA_TS_ID = "SITE1_ta_30min_raw"
 PA_TS_ID = "SITE1_pa_30min_raw"
+MISSING_START_TS_ID = "missing_start"
+MISSING_MIDDLE_TS_ID = "missing_middle"
+MISSING_END_TS_ID = "missing_end"
 
 
 class MockCheck(QCCheck):
@@ -47,9 +50,31 @@ def ts_ids() -> Dict[str, Any]:
     tf = ts.TimeFrame(data, "time", resolution, periodicity).with_metadata({"site_id": "SITE1", "column_name": "value"})
     tf = add_initial_core_flags(tf)
 
+    # Create some timeframes with missing data
+    tf_missing_start = ts.TimeFrame(data.slice(2), "time", resolution, periodicity).with_metadata(
+        {"site_id": "SITE1", "column_name": "value"}
+    )
+    tf_missing_start = add_initial_core_flags(tf_missing_start)
+
+    tf_missing_middle = ts.TimeFrame(
+        data.filter(~pl.col("time").is_between(datetime(2023, 8, 12), datetime(2023, 8, 13))),
+        "time",
+        resolution,
+        periodicity,
+    ).with_metadata({"site_id": "SITE1", "column_name": "value"})
+    tf_missing_middle = add_initial_core_flags(tf_missing_middle)
+
+    tf_missing_end = ts.TimeFrame(data.slice(0, data.height - 2), "time", resolution, periodicity).with_metadata(
+        {"site_id": "SITE1", "column_name": "value"}
+    )
+    tf_missing_end = add_initial_core_flags(tf_missing_end)
+
     ts_ids = {
-        "SITE1_ta_30min_raw": SimpleNamespace(data=tf, qc_configs=[]),
-        "SITE1_pa_30min_raw": SimpleNamespace(data=tf, qc_configs=[]),
+        TA_TS_ID: SimpleNamespace(data=tf, qc_configs=[]),
+        PA_TS_ID: SimpleNamespace(data=tf, qc_configs=[]),
+        MISSING_START_TS_ID: SimpleNamespace(data=tf_missing_start, qc_configs=[]),
+        MISSING_MIDDLE_TS_ID: SimpleNamespace(data=tf_missing_middle, qc_configs=[]),
+        MISSING_END_TS_ID: SimpleNamespace(data=tf_missing_end, qc_configs=[]),
     }
 
     return ts_ids
@@ -99,10 +124,25 @@ def mock_methods_dict() -> Dict[str, Any]:
         },
     )()
 
+    QC_method_dep_ts = type(
+        "DummyQCMethod",
+        (),
+        {
+            "method_id": 8,
+            "name": "Mock Check Dep Ts",
+            "description": "Another mock qc check, which takes a dependent time series",
+            "function_name": MockCheck,
+            "method_type": "quality_control",
+            "arg_mapping": {},
+            "kwargs": {},
+        },
+    )()
+
     mock_methods_dict = {
         "mock_check1": QC_method1,
         "mock_check2": QC_method2,
         "mock_check3": QC_method3,
+        "mock_check_dep_ts": QC_method_dep_ts,
     }
 
     return mock_methods_dict
@@ -195,6 +235,124 @@ def qc_config_3() -> Dict[str, Any]:
         },
     )()
     return qc_config
+
+
+@pytest.fixture
+def qc_config_dep_ts_same_len() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": TA_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config_dep_ts_missing_start() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": MISSING_START_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config_dep_ts_missing_middle() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": MISSING_MIDDLE_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config_dep_ts_missing_end() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": MISSING_END_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config(request: Any) -> Any:
+    """Meta-fixture that returns the appropriate config fixture"""
+    return request.getfixturevalue(request.param)
 
 
 class TestRemoveQCdData:
@@ -318,3 +476,46 @@ class TestRunQualityControl:
         assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
         # Check flag values (from both mock functions) have been added
         assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [0, 4, 4, 4, 0, 0]
+
+    @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
+    @pytest.mark.parametrize(
+        "qc_config",
+        [
+            "qc_config_dep_ts_same_len",
+            pytest.param(
+                "qc_config_dep_ts_missing_start",
+                marks=pytest.mark.xfail(reason="Known issue with different length dependent timeseries", strict=True),
+            ),
+            pytest.param(
+                "qc_config_dep_ts_missing_middle",
+                marks=pytest.mark.xfail(reason="Known issue with different length dependent timeseries", strict=True),
+            ),
+            pytest.param(
+                "qc_config_dep_ts_missing_end",
+                marks=pytest.mark.xfail(reason="Known issue with different length dependent timeseries", strict=True),
+            ),
+        ],
+        indirect=True,
+    )
+    def test_run_qc_with_dep_ts(
+        self,
+        mock_get_methods: MagicMock,
+        qc_config: Dict[str, Any],
+        ts_ids: Dict[str, Any],
+        mock_methods_dict: Dict[str, Any],
+    ) -> None:
+        """Test results of run_quality_control where the check includes a dependent time series."""
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config]
+
+        mock_get_methods.return_value = mock_methods_dict
+
+        # Call function
+        result = run_quality_control(ts_ids)
+
+        # Check flag system added
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
+        # Check columns added
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
+        # Check flag values (from mock functions) have been added
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [8, 8, 8, 8, 8, 8]
