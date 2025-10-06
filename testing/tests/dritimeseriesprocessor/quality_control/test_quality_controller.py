@@ -1,4 +1,5 @@
 from datetime import datetime
+from types import SimpleNamespace
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
@@ -47,12 +48,8 @@ def ts_ids() -> Dict[str, Any]:
     tf = add_initial_core_flags(tf)
 
     ts_ids = {
-        "SITE1_ta_30min_raw": {
-            "data": tf,
-        },
-        "SITE1_pa_30min_raw": {
-            "data": tf,
-        },
+        "SITE1_ta_30min_raw": SimpleNamespace(data=tf, qc_configs=[]),
+        "SITE1_pa_30min_raw": SimpleNamespace(data=tf, qc_configs=[]),
     }
 
     return ts_ids
@@ -237,48 +234,42 @@ class TestRemoveQCdData:
 
 
 class TestRunQualityControl:
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
-    def test_run_quality_control_no_methods(
-        self, mock_get_methods: MagicMock, mock_get_configs: MagicMock, ts_ids: Dict[str, Any]
-    ) -> None:
+    def test_run_quality_control_no_methods(self, mock_get_methods: MagicMock, ts_ids: Dict[str, Any]) -> None:
         """Test run_quality_control when no QC methods are defined."""
-        mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
         result = run_quality_control(ts_ids)
 
         assert result == ts_ids
 
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
     def test_run_quality_control_success(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         ts_ids: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
         qc_config_1: Dict[str, Any],
     ) -> None:
         """Test basic results of run_quality_control."""
-        mock_get_configs.return_value = [qc_config_1]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config_1]
+
         mock_get_methods.return_value = mock_methods_dict
 
         # Call function
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        result[TA_TS_ID]["data"].get_flag_system("qc_flags")
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
         # Check columns added
-        assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
         # Check flag values (from mock functions) have been added
-        assert result[TA_TS_ID]["data"].df["value_QC_FLAG"].to_list() == [1, 1, 1, 1, 1, 1]
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [1, 1, 1, 1, 1, 1]
 
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
     def test_run_quality_control_multiple_methods(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         ts_ids: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
         qc_config_1: Dict[str, Any],
@@ -287,42 +278,43 @@ class TestRunQualityControl:
         """Test run_quality_control with multiple QC methods for a single column.
         Checks if the methods are applied in the correct order (by priority).
         """
-        mock_get_configs.return_value = [qc_config_1, qc_config_2]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config_1, qc_config_2]
+
         mock_get_methods.return_value = mock_methods_dict
 
         # Call function
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        result[TA_TS_ID]["data"].get_flag_system("qc_flags")
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
         # Check columns added
-        assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
         # Check flag values (from both mock functions) have been added
-        assert result[TA_TS_ID]["data"].df["value_QC_FLAG"].to_list() == [3, 3, 3, 3, 3, 3]
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [3, 3, 3, 3, 3, 3]
 
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
     def test_run_quality_control_observation_interval(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         ts_ids: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
         qc_config_3: Dict[str, Any],
-        qc_config_2: Dict[str, Any],
     ) -> None:
         """Test run_quality_control that has an observation interval - meaning that only data for a specific date
         range should be flagged
         """
-        mock_get_configs.return_value = [qc_config_3]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config_3]
+
         mock_get_methods.return_value = mock_methods_dict
 
         # Call function
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        result[TA_TS_ID]["data"].get_flag_system("qc_flags")
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
         # Check columns added
-        assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
         # Check flag values (from both mock functions) have been added
-        assert result[TA_TS_ID]["data"].df["value_QC_FLAG"].to_list() == [0, 4, 4, 4, 0, 0]
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [0, 4, 4, 4, 0, 0]

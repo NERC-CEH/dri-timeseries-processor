@@ -1,5 +1,6 @@
 import re
 from datetime import date, datetime
+from types import SimpleNamespace
 from typing import Any, Dict
 
 import polars as pl
@@ -179,8 +180,8 @@ class TestExtractDepTs:
     @property
     def ts_ids(self) -> Dict[str, Any]:
         ts_ids = {
-            f"{SERVICE_BASE_URI}/id/dataset/dep1": {"data": DummyDepTS("DEP1")},
-            f"{SERVICE_BASE_URI}/id/dataset/dep2": {"data": DummyDepTS("DEP2")},
+            f"{SERVICE_BASE_URI}/id/dataset/dep1": SimpleNamespace(data=DummyDepTS("DEP1")),
+            f"{SERVICE_BASE_URI}/id/dataset/dep2": SimpleNamespace(data=DummyDepTS("DEP2")),
         }
         return ts_ids
 
@@ -291,16 +292,16 @@ class TestMapDefToId:
     @property
     def test_ts_ids(self) -> Dict[str, Dict[str, str]]:
         test_ts_ids = {
-            "alic1-precip_30min_raw": {
-                "ts_def": "precip_30min_raw",
-                "processing_level": "raw",
-                "sourceSite": "ALIC1",
-            },
-            "alic1-ta_30min_raw": {
-                "ts_def": "ta_30min_raw",
-                "processing_level": "raw",
-                "sourceSite": "ALIC1",
-            },
+            "alic1-precip_30min_raw": SimpleNamespace(
+                ts_def="precip_30min_raw",
+                processing_level="raw",
+                sourceSite="ALIC1",
+            ),
+            "alic1-ta_30min_raw": SimpleNamespace(
+                ts_def="ta_30min_raw",
+                processing_level="raw",
+                sourceSite="ALIC1",
+            ),
         }
         return test_ts_ids
 

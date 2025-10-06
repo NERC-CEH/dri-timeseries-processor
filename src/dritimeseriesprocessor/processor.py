@@ -7,10 +7,10 @@ import time_stream as ts
 
 from dritimeseriesprocessor.correcting.correcter import run_corrections
 from dritimeseriesprocessor.infilling.infiller import run_infilling
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
 from dritimeseriesprocessor.quality_control.quality_controller import run_quality_control
 from dritimeseriesprocessor.s3_crud import data_manager
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 
 logger = logging.getLogger(__name__)
 
@@ -29,22 +29,22 @@ def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date:
     """
     logger.info(
         {
-            "dataset": ts_container["sourceDataset"],
-            "bucket": ts_container["sourceBucket"],
-            "column": ts_container["sourceColumnName"],
-            "site": ts_container["sourceSite"],
+            "dataset": ts_container.sourceDataset,
+            "bucket": ts_container.sourceBucket,
+            "column": ts_container.sourceColumnName,
+            "site": ts_container.sourceSite,
             "start_date": start_date,
             "end_date": end_date,
         }
     )
 
     bucket_data = data_manager.query_by_date_range(
-        bucket_name=ts_container["sourceBucket"],
-        prefix=f"cosmos/dataset={ts_container['sourceDataset']}",
+        bucket_name=ts_container.sourceBucket,
+        prefix=f"cosmos/dataset={ts_container.sourceDataset}",
         start_date=start_date,
         end_date=end_date,
-        site_ids=[ts_container["sourceSite"]],
-        columns=[ts_container["sourceColumnName"]],
+        site_ids=[ts_container.sourceSite],
+        columns=[ts_container.sourceColumnName],
     )
 
     if bucket_data.shape[0] == 0:
@@ -65,16 +65,22 @@ def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date:
     tf = ts.TimeFrame(
         bucket_data,
         "time",
-        ts_container["resolution"],
-        ts_container["periodicity"],
+        ts_container.resolution,
+        ts_container.periodicity,
         on_duplicates=on_duplicates,
     ).with_metadata(
         {
-            "site_id": ts_container["sourceSite"],
-            "column_name": ts_container["sourceColumnName"],
-            "processing_level": ts_container["processing_level"],
+            "site_id": ts_container.sourceSite,
+            "column_name": ts_container.sourceColumnName,
+            "processing_level": ts_container.processing_level,
         }
     )
+
+    # To help test the processor with large amounts of data, we bypass any errors
+    # raised by duplicate timestamps when running locally. In production we want
+    # the default behaviour which is too raise the error.
+    if "environment" not in os.environ:
+        tf.on_duplicates = "keep_first"
 
     return tf
 
@@ -90,18 +96,19 @@ def shift_processed_data(
     Returns:
         A dictionary with the updated metadata.
     """
-    for ts_id, ts_metadata in ts_ids.items():
-        if ts_metadata.get("method_type") == "process":
+    for ts_id, ts_container in ts_ids.items():
+        if ts_container.method_type == "process":
             # All processed timeseries IDs should have one input, the raw timeseries ID they are derived from.
-            if len(ts_metadata["inputs"]) != 1:
+            if len(ts_container.inputs) != 1:
                 raise ValueError(f"Processed timeseries ID {ts_id} should have exactly one input.")
 
-            raw_ts_id = ts_metadata["inputs"][0]
+            raw_ts_id = ts_container.inputs[0]
 
-            if "data" in ts_ids[raw_ts_id]:
+            if ts_ids[raw_ts_id].data:
                 # Move the data object from raw_ts_id to (processed) ts_id
                 logger.info(f"Moving data from {raw_ts_id} to {ts_id}")
-                ts_ids[ts_id]["data"] = ts_ids[raw_ts_id].pop("data")
+                ts_ids[ts_id].data = ts_ids[raw_ts_id].data
+                ts_ids[raw_ts_id].data = None
 
     return ts_ids
 
@@ -119,8 +126,8 @@ def process_timeseries(
         ts_ids: Metadata and processed data for timeseries ids
     """
     # Subset entries with a "data" key
-    ts_ids_with_data = {k: v for k, v in ts_ids.items() if "data" in v}
-    ts_ids_with_no_data = {k: v for k, v in ts_ids.items() if "data" not in v}
+    ts_ids_with_data = {ts_id: ts_container for ts_id, ts_container in ts_ids.items() if ts_container.data}
+    ts_ids_with_no_data = {ts_id: ts_container for ts_id, ts_container in ts_ids.items() if not ts_container.data}
 
     # Corrections
     ts_ids_with_data = run_corrections(ts_ids_with_data)

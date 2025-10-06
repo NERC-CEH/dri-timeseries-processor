@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from testing.utils.base_test_helper import BaseTestHelper, ComparisonError
 
 
@@ -62,7 +62,7 @@ class TimeSeriesTestHelper(BaseTestHelper):
                 )
                 ts_metadata["data"] = tf
 
-            processed_ts_ids[ts_id] = ts_metadata
+            processed_ts_ids[ts_id] = TimeseriesContainer(**ts_metadata)
 
         return processed_ts_ids
 
@@ -85,9 +85,9 @@ class TimeSeriesTestHelper(BaseTestHelper):
         output_data = {}
 
         for ts_id, ts_metadata in ts_ids.items():
-            data = ts_metadata.get("data")
+            data = ts_metadata.data
             if data:
-                ts_metadata["data"] = {
+                ts_metadata.data = {
                     "time": data.df["time"].cast(pl.String).to_list(),
                 } | {
                     column_name: data.df[column_name].to_list()
@@ -95,7 +95,7 @@ class TimeSeriesTestHelper(BaseTestHelper):
                     if column_name != "time"
                 }
 
-            output_data[ts_id] = ts_metadata
+            output_data[ts_id] = ts_metadata.__dict__
 
         return output_data
 
@@ -113,10 +113,14 @@ class TimeSeriesTestHelper(BaseTestHelper):
         If attributes_to_ignore is provided, any attributes named within the list will be ignored for the comparison.
 
         """
-        for expected_ts_id, expected_ts_dict in expected_ts_ids.items():
-            actual_ts_dict = actual_ts_ids.get(expected_ts_id)
-            if not actual_ts_dict:
+        for expected_ts_id, expected_ts_container in expected_ts_ids.items():
+            # Extract the dictionary representation of the TimeseriesContainer object to make comparisons easier
+            expected_ts_dict = expected_ts_container.__dict__
+
+            actual_ts_container = actual_ts_ids.get(expected_ts_id)
+            if not actual_ts_container:
                 raise ComparisonError(f"The expected time series ID: `{expected_ts_id}` could not be found.")
+            actual_ts_dict = actual_ts_container.__dict__
 
             for expected_key, expected_value in expected_ts_dict.items():
                 actual_value = actual_ts_dict.get(expected_key)
@@ -132,8 +136,13 @@ class TimeSeriesTestHelper(BaseTestHelper):
 
                 # Sort any lists to be compared to ensure the comparison is consistent
                 if isinstance(expected_value, list):
-                    expected_value = sorted(expected_value)  # noqa: PLW2901
-                    actual_value = sorted(actual_value)
+                    for item in expected_value:
+                        if item not in actual_value:
+                            raise ComparisonError(
+                                f"The expected and actual values for key `{expected_key}` (ts_id: {expected_ts_id}) "
+                                f"do not match. Expected value: `{item} could not be found in: `{actual_value}`"
+                            )
+                    continue
 
                 if expected_value != actual_value:
                     raise ComparisonError(

@@ -5,7 +5,7 @@ from typing import Dict, List, Union
 
 from driutils.metadata_api.utils import SITE_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from metadata_manager.models.common import SERVICE_BASE_URI
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfiguration
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
@@ -90,7 +90,7 @@ def extract_timeseries_id_metadata(response: TimeseriesDatasetResponse) -> Dict[
         if originating_site:
             ts_id_metadata["sourceSite"] = re.match(SITE_ID_EXTRACT_REGEX, originating_site.id).group(1).upper()
 
-        metadata[item.id] = ts_id_metadata
+        metadata[item.id] = TimeseriesContainer(**ts_id_metadata)
 
     return metadata
 

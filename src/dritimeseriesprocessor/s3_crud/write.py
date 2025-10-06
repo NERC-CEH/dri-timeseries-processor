@@ -13,8 +13,8 @@ from botocore.exceptions import ClientError
 from mypy_boto3_s3.client import S3Client
 from polars.dataframe import DataFrame
 
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 
 logger = logging.getLogger(__name__)
 
@@ -92,9 +92,9 @@ class S3Writer(WriterInterface):
         """
         resolutions = defaultdict(list)
 
-        for ts_metadata in processed_ts_ids:
-            key = (ts_metadata["resolution"], ts_metadata["sourceSite"])
-            data = ts_metadata["data"].df
+        for ts_container in processed_ts_ids:
+            key = (ts_container.resolution, ts_container.sourceSite)
+            data = ts_container.data.df
 
             resolutions[key].append(data)
 

@@ -61,7 +61,7 @@ class TestS3Writer:
 
         # For write methods we only need processed datasets and their metadata
         processed_timeseries = [
-            metadata for metadata in test_ts_ids.values() if metadata["processing_level"] == "processed"
+            metadata for metadata in test_ts_ids.values() if metadata.processing_level == "processed"
         ]
 
         writer = S3Writer(s3_test_helper.s3_client)

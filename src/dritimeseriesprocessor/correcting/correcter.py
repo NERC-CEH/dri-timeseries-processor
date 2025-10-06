@@ -10,14 +10,13 @@ from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor.correcting.operations import Operation
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from dritimeseriesprocessor.utils import extract_dep_ts, not_missing_expr
-from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.schemas.data_processing_configurations import (
     ConfigItem,
 )
-from metadata_manager.models.service import load_config, load_methods, load_site_metadata
+from metadata_manager.models.service import load_methods, load_site_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -50,12 +49,10 @@ def run_corrections(
         logger.warning("No correction methods given in config.")
         return ts_ids
 
-    for ts_id, ts_dict in ts_ids.items():
-        tf = ts_dict["data"]
+    for ts_id, ts_container in ts_ids.items():
+        tf = ts_container.data
 
-        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
-        correction_configs = load_config("correction", ts_id_query_param)
-        if not correction_configs:
+        if not ts_container.correction_configs:
             logger.info(f"No correction config found for Time Series ID: {ts_id}")
             continue
 
@@ -70,7 +67,7 @@ def run_corrections(
         if corrs_flag_col not in tf.columns:
             tf.init_flag_column(tf.metadata["column_name"], CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
-        for correction_config in correction_configs:
+        for correction_config in ts_container.correction_configs:
             correction_config.configs = [
                 update_config_item_with_site_attributes(config_item=config_item, site_id=correction_config.site_id)
                 for config_item in correction_config.configs
@@ -115,7 +112,7 @@ def run_corrections(
                 tf.add_flag(corrs_flag_col, corr_config_update.name, expr)
 
         tf = update_corrections_core_flags(tf)
-        ts_dict["data"] = tf
+        ts_container.data = tf
 
     return ts_ids
 
