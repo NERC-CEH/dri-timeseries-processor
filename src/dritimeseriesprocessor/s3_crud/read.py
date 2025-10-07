@@ -5,6 +5,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
+import boto3
 import duckdb
 import polars as pl
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
@@ -73,20 +74,26 @@ class DuckDbParquetReader(ParquetReaderInterface):
 
         if app_config.environment in ["staging", "production"]:
             logger.debug("Configured DuckDB for production environment.")
-            conn.execute("""
+
+            sess = boto3.Session()
+            credentials = sess.get_credentials().get_frozen_credentials()
+
+            conn.execute(f"""
                 CREATE SECRET aws_secret (
-                    TYPE S3,
-                    PROVIDER CREDENTIAL_CHAIN,
-                    CHAIN 'sts',
-                    VALIDATION 'none'
+                        TYPE S3,
+                        KEY_ID '{credentials.access_key}',
+                        SECRET '{credentials.secret_key}',
+                        SESSION_TOKEN '{credentials.token}',
+                        REGION '{sess.region_name}'
                 );
             """)
+
         if app_config.environment == "staging-fake":
             logger.debug("Configured DuckDB for fake staging.")
 
         try:
             df = conn.execute(query, params).pl()
-            logger.info(conn.execute(query, params))
+            logger.info(query)
             return df
         except duckdb.HTTPException as e:
             logger.error(f"Failed to find data from query: {query}")
