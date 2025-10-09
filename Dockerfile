@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev
 
 # Build production container
-FROM amazon/aws-lambda-python:3.12 AS prod
+FROM python:3.12-slim AS prod
 
 COPY --from=builder --chown=python:python /python /python
 
