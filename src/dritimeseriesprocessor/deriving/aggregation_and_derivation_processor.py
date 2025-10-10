@@ -187,9 +187,16 @@ class AggregationAndDerivationProcessor:
         aggregated_ts = input_ts.aggregate(
             aggregation_period=aggregation_period,
             aggregation_function=aggregation_method.function_name,
-            columns=ts_metadata["sourceColumnName"],
+            columns=list(input_ts.data_columns)[0],
         )
 
+        # Sometimes the column name of the aggregation input isnt the same as the
+        # column name in is aggregated counterpart.
+        if ts_metadata["sourceColumnName"] != list(input_ts.data_columns)[0]:
+            for col in aggregated_ts.df.columns:
+                aggregated_ts.df = aggregated_ts.df.rename({col: col.replace(list(input_ts.data_columns)[0], ts_metadata["sourceColumnName"])})
+
+            
         self.ts_ids[ts_id]["data"] = aggregated_ts
 
     def get_ts_data(self, ts_id: str) -> TimeSeries:

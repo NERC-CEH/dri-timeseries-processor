@@ -71,3 +71,29 @@ class TestAggregationAndDerivationProcessor:
         ts_test_helper.compare_ts_ids(
             expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids, attributes_to_ignore=["metadata"]
         )
+
+    def test_aggregation_precip_1min(self, ts_test_helper: TimeSeriesTestHelper) -> None:
+        """
+        Check aggregation for precip at 1 min resolution is calculated correctly
+
+        This should involve updating the column name in the aggregated timeseries
+
+        """
+        input_json_path = ts_test_helper.data_dir.joinpath(
+            "inputs", "aggregation_and_derivation_processor", "input_ts_ids_precip_1min.json"
+        )
+        input_ts_ids = ts_test_helper.load_ts_ids_from_json_file(input_json_path)
+
+        expected_json_path = ts_test_helper.data_dir.joinpath(
+            "outputs", "aggregation_and_derivation_processor", "expected_ts_ids_pe_1day.json"
+        )
+        expected_ts_ids = ts_test_helper.load_ts_ids_from_json_file(expected_json_path)
+
+        aggregation_and_derivation_processor = AggregationAndDerivationProcessor(ts_ids=input_ts_ids)
+        actual_ts_ids = aggregation_and_derivation_processor.run()
+
+        # Depending on the version of time_stream installed, metadata may not be transferred through to the aggregated
+        # output. Therefore don't compare the metadata attribute for the time being.
+        ts_test_helper.compare_ts_ids(
+            expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids, attributes_to_ignore=["metadata"]
+        )
