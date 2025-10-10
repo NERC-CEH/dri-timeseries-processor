@@ -10,7 +10,7 @@ import isodate
 import polars as pl
 from polars.dataframe.group_by import GroupBy
 
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from metadata_manager.models.common import SERVICE_BASE_URI
 from metadata_manager.models.schemas.data_processing_configurations import ConfigItem
 
@@ -119,9 +119,9 @@ def extract_dep_ts(config: ConfigItem, ts_ids: Dict[str, TimeseriesContainer]) -
         ts_ids: Metadata and data for timeseries ids
 
     Returns:
-        The updated correction configuration object with dependency time series mapped to TimeSeries objects.
+        The updated correction configuration object with dependency time series mapped to ts.TimeFrame objects.
     """
-    # Map dependency time series IDs to TimeSeries objects
+    # Map dependency time series IDs to ts.TimeFrame objects
     if "dep_ts" in config.parameters:
         if isinstance(config.parameters["dep_ts"], str):
             dep_ts_ids = [config.parameters["dep_ts"]]
@@ -133,9 +133,9 @@ def extract_dep_ts(config: ConfigItem, ts_ids: Dict[str, TimeseriesContainer]) -
             if full_dep_ts_id not in ts_ids:
                 raise ValueError(f"Dependency time series ID {dep_ts_id} not found in provided data.")
 
-            dep_ts = ts_ids[full_dep_ts_id]["data"]
+            dep_ts = ts_ids[full_dep_ts_id].data
             # Add the dependency time series to the parameters
-            config.parameters[dep_ts.column_name.lower()] = dep_ts
+            config.parameters[dep_ts.metadata["column_name"].lower()] = dep_ts
 
         # No longer need this key in the parameters once we've got the dependency time series
         config.parameters.pop("dep_ts")
@@ -183,7 +183,7 @@ def split_data_for_processing(df: pl.DataFrame, metadata: Dict[str, Any] = None)
     return [(site[0], data, metadata) for site, data in df.group_by([pl.col("SITE_ID")])]
 
 
-def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContainer]) -> Dict[str, str]:
+def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContainer]) -> str:
     """Map timeseries definition to its corresponding timeseries id given the site id.
 
     Args:
@@ -196,7 +196,7 @@ def map_def_to_id(ts_def: str, site_id: str, ts_ids: Dict[str, TimeseriesContain
     """
     # Find the TS ID that matches the input definition and sourceSite
     for check_ts_id, check_metadata in ts_ids.items():
-        if check_metadata.get("ts_def") == ts_def and check_metadata.get("sourceSite") == site_id:
+        if check_metadata.ts_def == ts_def and check_metadata.sourceSite == site_id:
             return check_ts_id
     raise ValueError(f"Could not find TS ID for TS definition {ts_def} and sourceSite {site_id}")
 

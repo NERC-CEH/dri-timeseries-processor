@@ -1,11 +1,12 @@
 from datetime import datetime
+from types import SimpleNamespace
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import polars as pl
 import pytest
+import time_stream as ts
 from polars.testing import assert_frame_equal
-from time_stream import Period, TimeSeries
 from time_stream.qc import QCCheck
 
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
@@ -13,6 +14,9 @@ from dritimeseriesprocessor.quality_control.quality_controller import remove_qcd
 
 TA_TS_ID = "SITE1_ta_30min_raw"
 PA_TS_ID = "SITE1_pa_30min_raw"
+MISSING_START_TS_ID = "missing_start"
+MISSING_MIDDLE_TS_ID = "missing_middle"
+MISSING_END_TS_ID = "missing_end"
 
 
 class MockCheck(QCCheck):
@@ -21,7 +25,7 @@ class MockCheck(QCCheck):
     def __init__(self, **kwargs: Any):
         pass
 
-    def expr(self, check_column: str) -> pl.Expr:
+    def expr(self, _ctx: Any, _column: str) -> pl.Expr:
         return pl.lit(True)
 
 
@@ -41,18 +45,36 @@ def ts_ids() -> Dict[str, Any]:
         }
     )
 
-    resolution = Period.of_days(1)
-    periodicity = Period.of_days(1)
-    ts = TimeSeries(data, "time", resolution, periodicity, metadata={"site_id": "SITE1", "column_name": "value"})
-    ts = add_initial_core_flags(ts)
+    resolution = ts.Period.of_days(1)
+    periodicity = ts.Period.of_days(1)
+    tf = ts.TimeFrame(data, "time", resolution, periodicity).with_metadata({"site_id": "SITE1", "column_name": "value"})
+    tf = add_initial_core_flags(tf)
+
+    # Create some timeframes with missing data
+    tf_missing_start = ts.TimeFrame(data.slice(2), "time", resolution, periodicity).with_metadata(
+        {"site_id": "SITE1", "column_name": "value"}
+    )
+    tf_missing_start = add_initial_core_flags(tf_missing_start)
+
+    tf_missing_middle = ts.TimeFrame(
+        data.filter(~pl.col("time").is_between(datetime(2023, 8, 12), datetime(2023, 8, 13))),
+        "time",
+        resolution,
+        periodicity,
+    ).with_metadata({"site_id": "SITE1", "column_name": "value"})
+    tf_missing_middle = add_initial_core_flags(tf_missing_middle)
+
+    tf_missing_end = ts.TimeFrame(data.slice(0, data.height - 2), "time", resolution, periodicity).with_metadata(
+        {"site_id": "SITE1", "column_name": "value"}
+    )
+    tf_missing_end = add_initial_core_flags(tf_missing_end)
 
     ts_ids = {
-        "SITE1_ta_30min_raw": {
-            "data": ts,
-        },
-        "SITE1_pa_30min_raw": {
-            "data": ts,
-        },
+        TA_TS_ID: SimpleNamespace(data=tf, qc_configs=[]),
+        PA_TS_ID: SimpleNamespace(data=tf, qc_configs=[]),
+        MISSING_START_TS_ID: SimpleNamespace(data=tf_missing_start, qc_configs=[]),
+        MISSING_MIDDLE_TS_ID: SimpleNamespace(data=tf_missing_middle, qc_configs=[]),
+        MISSING_END_TS_ID: SimpleNamespace(data=tf_missing_end, qc_configs=[]),
     }
 
     return ts_ids
@@ -102,10 +124,25 @@ def mock_methods_dict() -> Dict[str, Any]:
         },
     )()
 
+    QC_method_dep_ts = type(
+        "DummyQCMethod",
+        (),
+        {
+            "method_id": 8,
+            "name": "Mock Check Dep Ts",
+            "description": "Another mock qc check, which takes a dependent time series",
+            "function_name": MockCheck,
+            "method_type": "quality_control",
+            "arg_mapping": {},
+            "kwargs": {},
+        },
+    )()
+
     mock_methods_dict = {
         "mock_check1": QC_method1,
         "mock_check2": QC_method2,
         "mock_check3": QC_method3,
+        "mock_check_dep_ts": QC_method_dep_ts,
     }
 
     return mock_methods_dict
@@ -200,6 +237,124 @@ def qc_config_3() -> Dict[str, Any]:
     return qc_config
 
 
+@pytest.fixture
+def qc_config_dep_ts_same_len() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": TA_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config_dep_ts_missing_start() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": MISSING_START_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config_dep_ts_missing_middle() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": MISSING_MIDDLE_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config_dep_ts_missing_end() -> Dict[str, Any]:
+    qc_config = type(
+        "DummyQCConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": PA_TS_ID,
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "mock_check_dep_ts",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "parameters": {
+                            "dep_ts": MISSING_END_TS_ID,
+                        },
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                    },
+                )
+            ],
+            "annotations": {},
+        },
+    )()
+    return qc_config
+
+
+@pytest.fixture
+def qc_config(request: Any) -> Any:
+    """Meta-fixture that returns the appropriate config fixture"""
+    return request.getfixturevalue(request.param)
+
+
 class TestRemoveQCdData:
     """Unit tests for the remove_qcd_data function."""
 
@@ -237,48 +392,42 @@ class TestRemoveQCdData:
 
 
 class TestRunQualityControl:
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
-    def test_run_quality_control_no_methods(
-        self, mock_get_methods: MagicMock, mock_get_configs: MagicMock, ts_ids: Dict[str, Any]
-    ) -> None:
+    def test_run_quality_control_no_methods(self, mock_get_methods: MagicMock, ts_ids: Dict[str, Any]) -> None:
         """Test run_quality_control when no QC methods are defined."""
-        mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
         result = run_quality_control(ts_ids)
 
         assert result == ts_ids
 
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
     def test_run_quality_control_success(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         ts_ids: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
         qc_config_1: Dict[str, Any],
     ) -> None:
         """Test basic results of run_quality_control."""
-        mock_get_configs.return_value = [qc_config_1]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config_1]
+
         mock_get_methods.return_value = mock_methods_dict
 
         # Call function
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        assert "qc_flags" in result[TA_TS_ID]["data"].flag_systems
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
         # Check columns added
-        assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
         # Check flag values (from mock functions) have been added
-        assert result[TA_TS_ID]["data"].df["value_QC_FLAG"].to_list() == [1, 1, 1, 1, 1, 1]
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [1, 1, 1, 1, 1, 1]
 
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
     def test_run_quality_control_multiple_methods(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         ts_ids: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
         qc_config_1: Dict[str, Any],
@@ -287,42 +436,86 @@ class TestRunQualityControl:
         """Test run_quality_control with multiple QC methods for a single column.
         Checks if the methods are applied in the correct order (by priority).
         """
-        mock_get_configs.return_value = [qc_config_1, qc_config_2]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config_1, qc_config_2]
+
         mock_get_methods.return_value = mock_methods_dict
 
         # Call function
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        assert "qc_flags" in result[TA_TS_ID]["data"].flag_systems
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
         # Check columns added
-        assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
         # Check flag values (from both mock functions) have been added
-        assert result[TA_TS_ID]["data"].df["value_QC_FLAG"].to_list() == [3, 3, 3, 3, 3, 3]
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [3, 3, 3, 3, 3, 3]
 
-    @patch("dritimeseriesprocessor.quality_control.quality_controller.load_config")
     @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
     def test_run_quality_control_observation_interval(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         ts_ids: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
         qc_config_3: Dict[str, Any],
-        qc_config_2: Dict[str, Any],
     ) -> None:
         """Test run_quality_control that has an observation interval - meaning that only data for a specific date
         range should be flagged
         """
-        mock_get_configs.return_value = [qc_config_3]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config_3]
+
         mock_get_methods.return_value = mock_methods_dict
 
         # Call function
         result = run_quality_control(ts_ids)
 
         # Check flag system added
-        assert "qc_flags" in result[TA_TS_ID]["data"].flag_systems
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
         # Check columns added
-        assert "value_QC_FLAG" in result[TA_TS_ID]["data"].columns
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
         # Check flag values (from both mock functions) have been added
-        assert result[TA_TS_ID]["data"].df["value_QC_FLAG"].to_list() == [0, 4, 4, 4, 0, 0]
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [0, 4, 4, 4, 0, 0]
+
+    @patch("dritimeseriesprocessor.quality_control.quality_controller.get_qc_methods")
+    @pytest.mark.parametrize(
+        "qc_config",
+        [
+            "qc_config_dep_ts_same_len",
+            pytest.param(
+                "qc_config_dep_ts_missing_start",
+                marks=pytest.mark.xfail(reason="Known issue with different length dependent timeseries", strict=True),
+            ),
+            pytest.param(
+                "qc_config_dep_ts_missing_middle",
+                marks=pytest.mark.xfail(reason="Known issue with different length dependent timeseries", strict=True),
+            ),
+            pytest.param(
+                "qc_config_dep_ts_missing_end",
+                marks=pytest.mark.xfail(reason="Known issue with different length dependent timeseries", strict=True),
+            ),
+        ],
+        indirect=True,
+    )
+    def test_run_qc_with_dep_ts(
+        self,
+        mock_get_methods: MagicMock,
+        qc_config: Dict[str, Any],
+        ts_ids: Dict[str, Any],
+        mock_methods_dict: Dict[str, Any],
+    ) -> None:
+        """Test results of run_quality_control where the check includes a dependent time series."""
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.qc_configs = [qc_config]
+
+        mock_get_methods.return_value = mock_methods_dict
+
+        # Call function
+        result = run_quality_control(ts_ids)
+
+        # Check flag system added
+        result[TA_TS_ID].data.get_flag_system("qc_flags")
+        # Check columns added
+        assert "value_QC_FLAG" in result[TA_TS_ID].data.columns
+        # Check flag values (from mock functions) have been added
+        assert result[TA_TS_ID].data.df["value_QC_FLAG"].to_list() == [8, 8, 8, 8, 8, 8]

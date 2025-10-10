@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from metadata_manager.models.schemas.data_processing_configurations import DataProcessingConfigurations
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
@@ -113,31 +114,31 @@ class TestExtractTimeseriesIDMetadata:
     def test_extract_two_items(self) -> None:
         """Test two items are correctly extracted."""
 
-        item_one = {
-            "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
-            "resolution": "PT30M",
-            "periodicity": "PT30M",
-            "processing_level": "processed",
-            "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-            "sourceDataset": "PROCESSED_DATA_30MIN",
-            "sourceColumnName": "TA",
-            "sourceSite": "ALIC1",
-            "load": False,
-            "inputs": [],
-        }
+        item_one = TimeseriesContainer(
+            ts_def="http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+            resolution="PT30M",
+            periodicity="PT30M",
+            processing_level="processed",
+            sourceBucket="ukceh-fdri-staging-timeseries-processed",
+            sourceDataset="PROCESSED_DATA_30MIN",
+            sourceColumnName="TA",
+            sourceSite="ALIC1",
+            load=False,
+            inputs=[],
+        )
 
-        item_two = {
-            "ts_def": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
-            "resolution": "PT30M",
-            "periodicity": "PT30M",
-            "processing_level": "processed",
-            "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
-            "sourceDataset": "PROCESSED_DATA_30MIN",
-            "sourceColumnName": "TA",
-            "sourceSite": "BUNNY",
-            "load": False,
-            "inputs": [],
-        }
+        item_two = TimeseriesContainer(
+            ts_def="http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+            resolution="PT30M",
+            periodicity="PT30M",
+            processing_level="processed",
+            sourceBucket="ukceh-fdri-staging-timeseries-processed",
+            sourceDataset="PROCESSED_DATA_30MIN",
+            sourceColumnName="TA",
+            sourceSite="BUNNY",
+            load=False,
+            inputs=[],
+        )
 
         expected = {
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed": item_one,

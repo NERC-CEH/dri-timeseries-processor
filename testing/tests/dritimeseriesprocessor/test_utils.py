@@ -1,5 +1,6 @@
 import re
 from datetime import date, datetime
+from types import SimpleNamespace
 from typing import Any, Dict
 
 import polars as pl
@@ -159,7 +160,7 @@ class TestNotMissingExpr:
 
 class DummyDepTS:
     def __init__(self, column_name: str) -> None:
-        self.column_name = column_name
+        self.metadata = {"column_name": column_name}
 
 
 class DummyConfigItem:
@@ -179,8 +180,8 @@ class TestExtractDepTs:
     @property
     def ts_ids(self) -> Dict[str, Any]:
         ts_ids = {
-            f"{SERVICE_BASE_URI}/id/dataset/dep1": {"data": DummyDepTS("DEP1")},
-            f"{SERVICE_BASE_URI}/id/dataset/dep2": {"data": DummyDepTS("DEP2")},
+            f"{SERVICE_BASE_URI}/id/dataset/dep1": SimpleNamespace(data=DummyDepTS("DEP1")),
+            f"{SERVICE_BASE_URI}/id/dataset/dep2": SimpleNamespace(data=DummyDepTS("DEP2")),
         }
         return ts_ids
 
@@ -193,7 +194,7 @@ class TestExtractDepTs:
         assert "dep_ts" not in result.parameters
 
         assert isinstance(result.parameters["dep1"], DummyDepTS)
-        assert result.parameters["dep1"].column_name == "DEP1"
+        assert result.parameters["dep1"].metadata["column_name"] == "DEP1"
 
     def test_multiple_dep_ts_as_list(self) -> None:
         """Test with multiple dependency time series IDs as a list."""
@@ -205,7 +206,7 @@ class TestExtractDepTs:
 
         for key, expected_column_name in [("dep1", "DEP1"), ("dep2", "DEP2")]:
             assert isinstance(result.parameters[key], DummyDepTS)
-            assert result.parameters[key].column_name == expected_column_name
+            assert result.parameters[key].metadata["column_name"] == expected_column_name
 
     def test_dep_ts_not_found_raises(self) -> None:
         """Test that a ValueError is raised if a dependency time series ID is not found."""
@@ -227,7 +228,7 @@ class TestExtractDepTs:
         result = utils.extract_dep_ts(config, self.ts_ids)
 
         assert isinstance(result.parameters["dep1"], DummyDepTS)
-        assert result.parameters["dep1"].column_name == "DEP1"
+        assert result.parameters["dep1"].metadata["column_name"] == "DEP1"
 
 
 class TestSplitDataForProcessing:
@@ -291,16 +292,16 @@ class TestMapDefToId:
     @property
     def test_ts_ids(self) -> Dict[str, Dict[str, str]]:
         test_ts_ids = {
-            "alic1-precip_30min_raw": {
-                "ts_def": "precip_30min_raw",
-                "processing_level": "raw",
-                "sourceSite": "ALIC1",
-            },
-            "alic1-ta_30min_raw": {
-                "ts_def": "ta_30min_raw",
-                "processing_level": "raw",
-                "sourceSite": "ALIC1",
-            },
+            "alic1-precip_30min_raw": SimpleNamespace(
+                ts_def="precip_30min_raw",
+                processing_level="raw",
+                sourceSite="ALIC1",
+            ),
+            "alic1-ta_30min_raw": SimpleNamespace(
+                ts_def="ta_30min_raw",
+                processing_level="raw",
+                sourceSite="ALIC1",
+            ),
         }
         return test_ts_ids
 

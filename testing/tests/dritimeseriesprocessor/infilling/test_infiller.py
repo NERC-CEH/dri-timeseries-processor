@@ -1,10 +1,11 @@
 from datetime import datetime
+from types import SimpleNamespace
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import polars as pl
 import pytest
-from time_stream import Period, TimeSeries
+import time_stream as ts
 from time_stream.infill import InfillMethod
 
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
@@ -36,21 +37,17 @@ def ts_ids() -> Dict[str, Any]:
             "pressure": [1010.0, 1011.0, 1012.0, None, 1013.0, None, 1014.0, 1015.0, None, 1016.0],
         }
     )
-    resolution = Period.of_hours(1)
-    periodicity = Period.of_hours(1)
-    ta_ts = TimeSeries(ta_data, "time", resolution, periodicity, metadata={"column_name": "temperature"})
-    ta_ts = add_initial_core_flags(ta_ts)
+    resolution = ts.Period.of_hours(1)
+    periodicity = ts.Period.of_hours(1)
+    ta_tf = ts.TimeFrame(ta_data, "time", resolution, periodicity).with_metadata({"column_name": "temperature"})
+    ta_tf = add_initial_core_flags(ta_tf)
 
-    pa_ts = TimeSeries(pa_data, "time", resolution, periodicity, metadata={"column_name": "pressure"})
-    pa_ts = add_initial_core_flags(pa_ts)
+    pa_tf = ts.TimeFrame(pa_data, "time", resolution, periodicity).with_metadata({"column_name": "pressure"})
+    pa_tf = add_initial_core_flags(pa_tf)
 
     ts_ids = {
-        "SITE1_ta_30min_raw": {
-            "data": ta_ts,
-        },
-        "SITE1_pa_30min_raw": {
-            "data": pa_ts,
-        },
+        "SITE1_ta_30min_raw": SimpleNamespace(data=ta_tf, infill_configs=[]),
+        "SITE1_pa_30min_raw": SimpleNamespace(data=pa_tf, infill_configs=[]),
     }
     return ts_ids
 
@@ -140,30 +137,26 @@ def infill_config_2() -> Dict[str, Any]:
 
 
 class TestRunInfilling:
-    @patch("dritimeseriesprocessor.infilling.infiller.load_config")
     @patch("dritimeseriesprocessor.infilling.infiller.get_infill_methods")
-    def test_run_infilling_no_methods(
-        self, mock_get_methods: MagicMock, mock_get_configs: MagicMock, ts_ids: Dict[str, Any]
-    ) -> None:
+    def test_run_infilling_no_methods(self, mock_get_methods: MagicMock, ts_ids: Dict[str, Any]) -> None:
         """Test run_infilling when no infill methods are defined."""
-        mock_get_configs.return_value = [MagicMock()]
         mock_get_methods.return_value = {}
         result = run_infilling(ts_ids)
 
         assert result == ts_ids
 
-    @patch("dritimeseriesprocessor.infilling.infiller.load_config")
     @patch("dritimeseriesprocessor.infilling.infiller.get_infill_methods")
     def test_run_infilling_success(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         infill_config_1: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
         ts_ids: Dict[str, Any],
     ) -> None:
         """Test basic results of run_infilling."""
-        mock_get_configs.return_value = [infill_config_1]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.infill_configs = [infill_config_1]
+
         mock_get_methods.return_value = mock_methods_dict
 
         expected_infill_flags = [
@@ -183,18 +176,17 @@ class TestRunInfilling:
         result = run_infilling(ts_ids)
 
         # Check flag system added
-        assert "infill_flags" in result["SITE1_ta_30min_raw"]["data"].flag_systems
-        # Check columns added
-        assert "temperature_INFILL_FLAG" in result["SITE1_ta_30min_raw"]["data"].columns
-        # Check flag values (from mock functions) have been added
-        assert result["SITE1_ta_30min_raw"]["data"].df["temperature_INFILL_FLAG"].to_list() == expected_infill_flags
+        result["SITE1_ta_30min_raw"].data.get_flag_system("infill_flags")
 
-    @patch("dritimeseriesprocessor.infilling.infiller.load_config")
+        # Check columns added
+        assert "temperature_INFILL_FLAG" in result["SITE1_ta_30min_raw"].data.columns
+        # Check flag values (from mock functions) have been added
+        assert result["SITE1_ta_30min_raw"].data.df["temperature_INFILL_FLAG"].to_list() == expected_infill_flags
+
     @patch("dritimeseriesprocessor.infilling.infiller.get_infill_methods")
     def test_run_infilling_multiple_methods(
         self,
         mock_get_methods: MagicMock,
-        mock_get_configs: MagicMock,
         infill_config_1: Dict[str, Any],
         infill_config_2: Dict[str, Any],
         mock_methods_dict: Dict[str, Any],
@@ -203,7 +195,9 @@ class TestRunInfilling:
         """Test run_infilling with multiple infill methods for a single column.
         Checks if the methods are applied in the correct order (by priority).
         """
-        mock_get_configs.return_value = [infill_config_1, infill_config_2]
+        for ts_id, ts_container in ts_ids.items():
+            ts_container.infill_configs = [infill_config_1, infill_config_2]
+
         mock_get_methods.return_value = mock_methods_dict
 
         expected_infill_flags = [
@@ -223,8 +217,9 @@ class TestRunInfilling:
         result = run_infilling(ts_ids)
 
         # Check flag system added
-        assert "infill_flags" in result["SITE1_ta_30min_raw"]["data"].flag_systems
+        result["SITE1_ta_30min_raw"].data.get_flag_system("infill_flags")
+
         # Check columns added
-        assert "temperature_INFILL_FLAG" in result["SITE1_ta_30min_raw"]["data"].columns
+        assert "temperature_INFILL_FLAG" in result["SITE1_ta_30min_raw"].data.columns
         # Check flag values (from mock functions) have been added
-        assert result["SITE1_ta_30min_raw"]["data"].df["temperature_INFILL_FLAG"].to_list() == expected_infill_flags
+        assert result["SITE1_ta_30min_raw"].data.df["temperature_INFILL_FLAG"].to_list() == expected_infill_flags

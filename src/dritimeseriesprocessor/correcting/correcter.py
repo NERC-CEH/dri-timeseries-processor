@@ -4,19 +4,19 @@ from functools import lru_cache
 from typing import Dict
 
 import polars as pl
+import time_stream as ts
 from driutils.metadata_api.utils import URI_ID_EXTRACT_REGEX
 from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor.correcting.operations import Operation
 from dritimeseriesprocessor.flagging.flagger import corrs_flag_column_name, update_corrections_core_flags
-from dritimeseriesprocessor.local_typing import TimeseriesContainer
 from dritimeseriesprocessor.metrics_exporter import metrics
+from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from dritimeseriesprocessor.utils import extract_dep_ts, not_missing_expr
-from metadata_manager.models.common import build_processing_config_timeseries_id_query_parameter
 from metadata_manager.models.schemas.data_processing_configurations import (
     ConfigItem,
 )
-from metadata_manager.models.service import load_config, load_methods, load_site_metadata
+from metadata_manager.models.service import load_methods, load_site_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -43,31 +43,31 @@ def run_corrections(
     """
     correction_methods = get_correction_methods()
 
-    # Initialise corrections flag system within TimeSeries object
+    # Initialise corrections flag system within ts.TimeFrame object
     correction_flags_dict = {method: method_config.method_id for method, method_config in correction_methods.items()}
     if not correction_flags_dict:
         logger.warning("No correction methods given in config.")
         return ts_ids
 
-    for ts_id, ts_dict in ts_ids.items():
-        ts = ts_dict["data"]
+    for ts_id, ts_container in ts_ids.items():
+        tf = ts_container.data
 
-        ts_id_query_param = build_processing_config_timeseries_id_query_parameter(ts_id)
-        correction_configs = load_config("correction", ts_id_query_param)
-        if not correction_configs:
+        if not ts_container.correction_configs:
             logger.info(f"No correction config found for Time Series ID: {ts_id}")
             continue
 
-        # Initialise correction flag system within TimeSeries object.
-        if CORRS_FLAG_SYS_NAME not in ts.flag_systems:
-            ts.add_flag_system(CORRS_FLAG_SYS_NAME, correction_flags_dict)
+        # Initialise correction flag system within ts.TimeFrame object.
+        try:
+            tf.get_flag_system(CORRS_FLAG_SYS_NAME)
+        except ts.exceptions.FlagSystemNotFoundError:
+            tf.register_flag_system(CORRS_FLAG_SYS_NAME, correction_flags_dict)
 
         # Add a flag column for the correction method
-        corrs_flag_col = corrs_flag_column_name(ts.column_name)
-        if corrs_flag_col not in ts.columns:
-            ts.init_flag_column(CORRS_FLAG_SYS_NAME, corrs_flag_col)
+        corrs_flag_col = corrs_flag_column_name(tf.metadata["column_name"])
+        if corrs_flag_col not in tf.columns:
+            tf.init_flag_column(tf.metadata["column_name"], CORRS_FLAG_SYS_NAME, corrs_flag_col)
 
-        for correction_config in correction_configs:
+        for correction_config in ts_container.correction_configs:
             correction_config.configs = [
                 update_config_item_with_site_attributes(config_item=config_item, site_id=correction_config.site_id)
                 for config_item in correction_config.configs
@@ -76,12 +76,12 @@ def run_corrections(
             # Run the corrections on the timeseries
             for corr_config in correction_config.configs:
                 if corr_config.observation_interval:
-                    date_filter = get_date_filter(ts.time_name, corr_config.observation_interval)
+                    date_filter = get_date_filter(tf.time_name, corr_config.observation_interval)
                 else:
                     date_filter = pl.lit(True)
 
                 # Only apply the correction if there is data in the observation interval
-                if ts.df.filter(date_filter).is_empty():
+                if tf.df.filter(date_filter).is_empty():
                     logger.info(
                         f"No data in observation interval {corr_config.observation_interval} for "
                         f"Time Series ID: {ts_id}, skipping correction {corr_config.name}"
@@ -102,16 +102,17 @@ def run_corrections(
 
                 # Apply the specified correction function to the DataFrame
                 op = Operation.get(corr_method_metadata.function_name, **corr_config_update.parameters)
-                ts = op.apply(
-                    ts,
+                tf = op.apply(
+                    tf,
                     filter_expr=date_filter,
                 )
 
                 # Apply flagging to the DataFrame.
-                expr = date_filter & not_missing_expr(ts.column_name)
-                ts.add_flag(corrs_flag_col, corr_config_update.name, expr)
+                expr = date_filter & not_missing_expr(tf.metadata["column_name"])
+                tf.add_flag(corrs_flag_col, corr_config_update.name, expr)
 
-        ts = update_corrections_core_flags(ts)
+        tf = update_corrections_core_flags(tf)
+        ts_container.data = tf
 
     return ts_ids
 
