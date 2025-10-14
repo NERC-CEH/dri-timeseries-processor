@@ -191,12 +191,15 @@ class AggregationAndDerivationProcessor:
 
         # Sometimes the column name of the aggregation input isnt the same as the
         # column name in is aggregated counterpart.
-        if ts_container["sourceColumnName"] != list(input_tf.data_columns)[0]:
-            for col in aggregated_tf.df.columns:
-                aggregated_tf.df = aggregated_tf.df.rename({col: col.replace(list(input_tf.data_columns)[0], ts_container["sourceColumnName"])})
+        if ts_container.sourceColumnName != list(input_tf.data_columns)[0]:
+            column_mapping = {}
+            for col in aggregated_tf.columns:
+                column_mapping[col] = col.replace(list(input_tf.data_columns)[0], ts_container.sourceColumnName)
 
-            
-        self.ts_ids[ts_id]["data"] = aggregated_tf
+            renamed_df = aggregated_tf.df.rename(column_mapping)
+            aggregated_tf = aggregated_tf.with_df(renamed_df)
+
+        self.ts_ids[ts_id].data = aggregated_tf
 
     def get_ts_data(self, ts_id: str) -> ts.TimeFrame:
         """
