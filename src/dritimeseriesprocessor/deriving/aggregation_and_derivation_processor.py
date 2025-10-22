@@ -6,6 +6,7 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.deriving.derivations import derive
+from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.timeseries_container import TimeseriesContainer
 from metadata_manager.models.common import ComponentType
 from metadata_manager.models.service import load_methods
@@ -15,6 +16,9 @@ logger = logging.getLogger(__name__)
 TIME_COLUMN = "time"
 DERIVATION_METHOD = "calculate"
 AGGREGATION_METHOD = "aggregate"
+
+RAW = "raw"
+PROCESSED = "processed"
 
 
 @lru_cache(maxsize=1)
@@ -32,10 +36,11 @@ def get_aggregation_methods() -> Dict:
 class AggregationAndDerivationProcessor:
     """Calculates aggregated and derived data for any relevant ts.TimeFrame."""
 
-    def __init__(self, ts_ids: Dict[str, TimeseriesContainer]):
+    def __init__(self, ts_ids: Dict[str, TimeseriesContainer], processing_level: str = PROCESSED):
         self.aggregation_methods = get_aggregation_methods()
         self.derivation_methods = get_derivation_methods()
         self.ts_ids = ts_ids
+        self.processing_level = processing_level
 
     def run(self) -> Dict[str, TimeseriesContainer]:
         """
@@ -47,6 +52,10 @@ class AggregationAndDerivationProcessor:
         for ts_id, ts_container in self.ts_ids.items():
             # Skip any time series which have already been calculated
             if ts_container.data:
+                continue
+
+            # Skip any time series which don't have the correct processing level
+            if ts_container.processing_level != self.processing_level:
                 continue
 
             # Skip any time series which don't need aggregation or derivation calculating
@@ -183,11 +192,30 @@ class AggregationAndDerivationProcessor:
 
         aggregation_period = ts.Period.of_iso_duration(ts_container.periodicity)
 
+        rename_outputs = False
+        source_column_name = ts_container.sourceColumnName
+        if ts_container.sourceColumnName not in input_tf.data_columns:
+            rename_outputs = True
+            source_column_name = self.ts_ids[input_ts_id].sourceColumnName
+
         aggregated_tf = input_tf.aggregate(
             aggregation_period=aggregation_period,
             aggregation_function=aggregation_method.function_name,
-            columns=ts_container.sourceColumnName,
+            columns=source_column_name,
         )
+
+        if rename_outputs:
+            column_to_rename = f"{aggregation_method.function_name}_{source_column_name}"
+            aggregated_tf = aggregated_tf.with_df(
+                new_df=aggregated_tf.df.rename({column_to_rename: ts_container.sourceColumnName})
+            )
+            aggregated_tf.metadata["column_name"] = ts_container.sourceColumnName
+
+        # Where the aggregation has been run to generate new raw level data, initialise the core flags so that QC etc
+        # can run successfully during the processing step.
+        if self.processing_level == RAW:
+            aggregated_tf = aggregated_tf.select(["time", ts_container.sourceColumnName])
+            add_initial_core_flags(aggregated_tf)
 
         self.ts_ids[ts_id].data = aggregated_tf
 
