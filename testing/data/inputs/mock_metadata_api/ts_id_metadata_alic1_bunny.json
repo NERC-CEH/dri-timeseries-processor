@@ -1308,6 +1308,7 @@
           }
         }
       ],
+      "sourceColumnName": "PRECIP",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
