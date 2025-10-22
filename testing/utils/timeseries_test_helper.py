@@ -49,7 +49,7 @@ class TimeSeriesTestHelper(BaseTestHelper):
                 data_dict = ts_metadata["data"]
                 data_dict["time"] = [datetime.fromisoformat(item) for item in data_dict["time"]]
                 tf = ts.TimeFrame(
-                    df=pl.from_dict(data_dict),
+                    df=pl.from_dict(data_dict, data_dict.keys()),
                     time_name="time",
                     resolution=ts_metadata["resolution"],
                     periodicity=ts_metadata["periodicity"],
@@ -100,17 +100,12 @@ class TimeSeriesTestHelper(BaseTestHelper):
         return output_data
 
     def compare_ts_ids(
-        self,
-        expected_ts_ids: Dict[str, TimeseriesContainer],
-        actual_ts_ids: Dict[str, TimeseriesContainer],
-        attributes_to_ignore: List | None = None,
+        self, expected_ts_ids: Dict[str, TimeseriesContainer], actual_ts_ids: Dict[str, TimeseriesContainer]
     ) -> None:
         """Compares two time series id metadata objects.
 
         Iterates through the dictionary of expected time series id metadata objects, comparing each key value pair
         to the actual data provided, raising an error if the comparison fails.
-
-        If attributes_to_ignore is provided, any attributes named within the list will be ignored for the comparison.
 
         """
         for expected_ts_id, expected_ts_container in expected_ts_ids.items():

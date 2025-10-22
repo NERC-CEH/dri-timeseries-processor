@@ -94,6 +94,4 @@ class TestAggregationAndDerivationProcessor:
 
         # Depending on the version of time_stream installed, metadata may not be transferred through to the aggregated
         # output. Therefore don't compare the metadata attribute for the time being.
-        ts_test_helper.compare_ts_ids(
-            expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids, attributes_to_ignore=["metadata"]
-        )
+        ts_test_helper.compare_ts_ids(expected_ts_ids=expected_ts_ids, actual_ts_ids=actual_ts_ids)
