@@ -185,4 +185,4 @@ def extract_infill_dependencies(infill_configs: List[DataProcessingConfiguration
     Returns:
         A list of timeseries IDs that the infill configurations apply to.
     """
-    return extract_dep_ts(infill_configs, param_name="alt_data_timeseries")
+    return extract_dep_ts(infill_configs)
