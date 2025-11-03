@@ -1,0 +1,111 @@
+import pytest
+from pydantic import ValidationError
+
+from new_processor.api_models.shared import (
+    BaseAPIResponse,
+    HasCurrentConfigurationItem,
+    HasValue,
+    IDModel,
+    Meta,
+)
+
+
+class TestIDModel:
+    def test_simple_parsing(self) -> None:
+        """Test that model maps id alias correctly."""
+        data = {"@id": "http://example.com/id/test"}
+        model = IDModel.model_validate(data)
+        assert model.id == "http://example.com/id/test"
+
+    def test_missing_id_raises(self) -> None:
+        """Test that model raises error if '@id' missing."""
+        with pytest.raises(ValidationError) as err:
+            IDModel.model_validate({})
+        assert err.value.errors()[0]["loc"] == ("@id",)
+
+
+class TestMeta:
+    def test_field_aliases_and_values(self) -> None:
+        """Test that Meta fields and aliases validate correctly."""
+        data = {
+            "@id": "http://example.com/meta",
+            "publisher": "UKCEH",
+            "license": "OGL3",
+            "licenseName": "OGL3",
+            "comment": "example",
+            "version": "1.0",
+            "hasFormat": ["json"],
+        }
+        meta = Meta.model_validate(data)
+        assert meta.id == "http://example.com/meta"
+        assert meta.publisher == "UKCEH"
+        assert meta.license == "OGL3"
+        assert meta.license_name == "OGL3"
+        assert meta.comment == "example"
+        assert meta.version == "1.0"
+        assert meta.has_format == ["json"]
+
+
+class TestHasValue:
+    def test_with_value(self) -> None:
+        """Test that a direct numeric value is accepted."""
+        data = {"@id": "1", "@type": [], "value": 42}
+        model = HasValue.model_validate(data)
+        assert model.value == 42
+        assert model.value_reference is None
+
+    def test_with_value_reference(self) -> None:
+        """Test that valueReference is accepted instead of value."""
+        data = {"@id": "1", "@type": [], "valueReference": {"@id": "ref-1"}}
+        model = HasValue.model_validate(data)
+        assert model.value_reference.id == "ref-1"
+        assert model.value is None
+
+    def test_missing_both_raises(self) -> None:
+        """Test that missing both value and valueReference raises an error."""
+        data = {"@id": "1"}
+        with pytest.raises(ValidationError) as err:
+            HasValue.model_validate(data)
+        errors = err.value.errors()
+        assert errors[0]["type"] == "missing_value_or_reference"
+
+
+class TestHasCurrentConfigurationItem:
+    def test_optional_method(self) -> None:
+        """Test that the optional method fields can be omitted."""
+        data = {"@id": "config-1"}
+        model = HasCurrentConfigurationItem.model_validate(data)
+        assert model.method is None
+        assert model.field_type is None
+
+
+class TestBaseAPIResponse:
+    def test_valid_response(self) -> None:
+        """Test that a simple valid API response is successful."""
+        data = {
+            "meta": {
+                "@id": "http://example.com/meta",
+                "publisher": "UKCEH",
+                "license": "OGL3",
+                "licenseName": "OGL3",
+                "comment": "example",
+                "version": "1.0",
+                "hasFormat": ["json"],
+            },
+            "items": [],
+        }
+        response = BaseAPIResponse.model_validate(data)
+
+        assert response.meta.id == "http://example.com/meta"
+        assert response.meta.publisher == "UKCEH"
+        assert response.meta.license == "OGL3"
+        assert response.meta.license_name == "OGL3"
+        assert response.meta.comment == "example"
+        assert response.meta.version == "1.0"
+        assert response.meta.has_format == ["json"]
+        assert response.items == []
+
+    def test_missing_meta_raises(self) -> None:
+        """Test that a missing meta field raises a validation error."""
+        with pytest.raises(ValidationError):
+            BaseAPIResponse.model_validate({"items": []})

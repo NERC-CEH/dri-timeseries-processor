@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/network/invalid.json",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/network/invalid.ttl",
+      "http://fdri.ceh.ac.uk/id/network/invalid.csv",
+      "http://fdri.ceh.ac.uk/id/network/invalid.geojson",
+      "http://fdri.ceh.ac.uk/id/network/invalid.json",
+      "http://fdri.ceh.ac.uk/id/network/invalid.rdf",
+      "http://fdri.ceh.ac.uk/id/network/invalid.html"
+    ]
+  }
+}

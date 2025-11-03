@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018.json",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.ttl",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.json",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.csv",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.geojson",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.rdf",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.html"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018",
+      "easting": "553029",
+      "northing": "164280",
+      "altitude": 44.1,
+      "hasAnnotation": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/catchment-area"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area.value",
+            "value": 118.4
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-identifier",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/operator-facility-id"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-identifier.value",
+            "value": "451320001"
+          }
+        }
+      ],
+      "hasRepresentativePoint": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-latlong"
+      },
+      "identifier": [
+        "40018"
+      ],
+      "hasGeometry": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-latlong",
+          "asWKT": "POINT(0.1964190449649131, 51.356986942291414)",
+          "@type": [
+            {
+              "@id": "http://www.opengis.net/ont/geosparql#Geometry"
+            }
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-eastings",
+          "asWKT": "\u003Chttp://www.opengis.net/def/crs/EPSG/0/27700\u003E POINT(553029, 164280)",
+          "@type": [
+            {
+              "@id": "http://www.opengis.net/ont/geosparql#Geometry"
+            }
+          ]
+        }
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/EnvironmentalMonitoringSite"
+        }
+      ],
+      "comment": [
+        "Three bay, non-standard broad-crested weir, each bay approx. 3-4m wide, total crest width 11m. Channel bends downstream of structure."
+      ],
+      "label": [
+        "Darent at Lullingstone"
+      ],
+      "lat": "51.356986942291414",
+      "long": "0.1964190449649131",
+      "qualifiedAttribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-attribution",
+          "hasRole": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator"
+          },
+          "agent": {
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-ea-ksl"
+          },
+          "@type": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/vocab/metadata/RelatedPartyAttribution"
+            }
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#organisation-attribution",
+          "hasRole": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator-organisation"
+          },
+          "agent": {
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-organisation-ea"
+          },
+          "@type": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/vocab/metadata/RelatedPartyAttribution"
+            }
+          ]
+        }
+      ],
+      "hasFeatureOfInterest": {
+        "@id": "http://fdri.ceh.ac.uk/id/feature/nrfa-40018"
+      }
+    }
+  ]
+}
