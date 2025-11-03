@@ -7,6 +7,7 @@ including ID structures, metadata headers, value representations, and configurat
 These models ensure consistent validation and alias mapping across all API response types.
 """
 
+from datetime import datetime
 from typing import Self
 
 from pydantic import BaseModel, Field, model_validator
@@ -30,6 +31,14 @@ class Meta(IDModel):
     has_format: list[str] = Field(..., alias="hasFormat")
 
 
+class ObservationInterval(IDModel):
+    """Represents an observation interval with start and (optional) end dates."""
+
+    field_type: list[IDModel] = Field(..., alias="@type")
+    start_date: datetime = Field(..., alias="startDate")
+    end_date: datetime | None = Field(None, alias="endDate")
+
+
 class HasValue(IDModel):
     """Represents a value with type information."""
 
@@ -46,11 +55,21 @@ class HasValue(IDModel):
         return self
 
 
+class ArgumentItem(IDModel):
+    """Configuration argument with parameter and value."""
+
+    field_type: list[IDModel] = Field(..., alias="@type")
+    has_value: HasValue = Field(..., alias="hasValue")
+    parameter: IDModel
+
+
 class HasCurrentConfigurationItem(IDModel):
     """Base configuration item with method."""
 
     field_type: list[IDModel] | None = Field(None, alias="@type")
     method: IDModel | None = None
+    argument: list[ArgumentItem] = Field(default_factory=list)
+    observation_interval: ObservationInterval | None = Field(None, alias="observationInterval")
 
 
 class BaseAPIResponse(BaseModel):
