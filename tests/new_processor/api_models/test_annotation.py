@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 from src.new_processor.api_models.annotation import HasAnnotationItem
 from tests.utils.fixture_helpers import load_json_string
+from tests.utils.validation_helpers import assert_pydantic_validation_error_cause
 
 
 class TestAnnotation:
@@ -95,10 +96,7 @@ class TestAnnotation:
             HasAnnotationItem.model_validate(data)
 
         # Verify what caused the error
-        errors = err.value.errors()
-        assert len(errors) == 1
-        assert errors[0]["type"] == "missing_value_or_reference"
-        assert errors[0]["loc"] == ("hasValue",)
+        assert_pydantic_validation_error_cause(err, 1, "missing_value_or_reference", ("hasValue",))
 
     def test_missing_property_id(self) -> None:
         """Test that validation fails when property @id is missing."""
@@ -111,10 +109,7 @@ class TestAnnotation:
             HasAnnotationItem.model_validate(test_data)
 
         # Verify what caused the error
-        errors = err.value.errors()
-        assert len(errors) == 1
-        assert errors[0]["type"] == "missing"
-        assert errors[0]["loc"] == ("property", "@id")
+        assert_pydantic_validation_error_cause(err, 1, "missing", ("property", "@id"))
 
     def test_missing_property_field(self) -> None:
         """Test that validation fails when property field is missing."""
@@ -127,10 +122,7 @@ class TestAnnotation:
             HasAnnotationItem.model_validate(test_data)
 
         # Verify what caused the error
-        errors = err.value.errors()
-        assert len(errors) == 1
-        assert errors[0]["type"] == "missing"
-        assert errors[0]["loc"] == ("property",)
+        assert_pydantic_validation_error_cause(err, 1, "missing", ("property",))
 
     def test_missing_value(self) -> None:
         """Test that validation fails when value or valueReference is missing in hasValue"""
@@ -143,10 +135,7 @@ class TestAnnotation:
             HasAnnotationItem.model_validate(test_data)
 
         # Verify what caused the error
-        errors = err.value.errors()
-        assert len(errors) == 1
-        assert errors[0]["type"] == "missing_value_or_reference"
-        assert errors[0]["loc"] == ("hasValue",)
+        assert_pydantic_validation_error_cause(err, 1, "missing_value_or_reference", ("hasValue",))
 
     def test_missing_has_value(self) -> None:
         """Test that validation fails when hasValue or hasValueSeries field is completely missing."""
@@ -158,6 +147,5 @@ class TestAnnotation:
         with pytest.raises(ValidationError) as err:
             HasAnnotationItem.model_validate(test_data)
 
-        errors = err.value.errors()
-        assert len(errors) == 1
-        assert errors[0]["type"] == "missing_value_or_value_series"
+        # Verify what caused the error
+        assert_pydantic_validation_error_cause(err, 1, "missing_value_or_value_series")

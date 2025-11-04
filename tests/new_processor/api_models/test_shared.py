@@ -1,5 +1,6 @@
 import pytest
 from pydantic import ValidationError
+from tests.utils.validation_helpers import assert_pydantic_validation_error_cause
 
 from new_processor.api_models.shared import (
     BaseAPIResponse,
@@ -66,8 +67,8 @@ class TestHasValue:
         data = {"@id": "1"}
         with pytest.raises(ValidationError) as err:
             HasValue.model_validate(data)
-        errors = err.value.errors()
-        assert errors[0]["type"] == "missing_value_or_reference"
+
+        assert_pydantic_validation_error_cause(err, 1, "missing_value_or_reference")
 
 
 class TestHasCurrentConfigurationItem:
