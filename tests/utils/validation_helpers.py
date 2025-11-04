@@ -34,8 +34,6 @@ def invalid_raises(load_json_file: Callable, filename: str, model: Type[BaseMode
         model: The Pydantic model class to validate against.
     """
     data = load_json_file(filename)
-
-    data = load_json_file(filename)
     with pytest.raises(ValidationError):
         model.model_validate(data)
 
