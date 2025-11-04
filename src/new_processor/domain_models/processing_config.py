@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from src.new_processor.enums import ConfigurationType
+from new_processor.utils.enums import ConfigurationType
 
 
 @dataclass

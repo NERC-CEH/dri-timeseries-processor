@@ -8,15 +8,18 @@ domain-level objects.
 from collections import defaultdict
 from typing import Any
 
-from new_processor.api_models.data_processing_configuration import (
+from src.new_processor.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetItem
-from new_processor.api_models.shared import HasCurrentConfigurationItem
-from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.enums import ConfigurationType, MethodType, ProcessingLevel
-from new_processor.utils.strings import extract_uri_id
+from src.new_processor.api_models.dataset_timeseries import TimeSeriesDatasetItem
+from src.new_processor.api_models.shared import HasCurrentConfigurationItem
+from src.new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
+from src.new_processor.domain_models.time_series_container import TimeSeriesContainer
+from src.new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from src.new_processor.utils.strings import extract_uri_id
+
+from new_processor.api_models.annotation import HasAnnotationItem
+from new_processor.api_models.shared import ArgumentItem
 
 
 def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
@@ -44,6 +47,9 @@ def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
     if method_type:
         method_type = MethodType(extract_uri_id(method_type))
 
+    depends_on = [d.id for d in item.depends_on]
+    direct_depends_on = [d.id for d in item.direct_depends_on]
+
     return TimeSeriesContainer(
         ts_id=item.id,
         ref_id=info.id,
@@ -57,6 +63,8 @@ def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
         source_site=source_site,
         method_type=method_type,
         method=method,
+        depends_on=depends_on,
+        direct_depends_on=direct_depends_on,
     )
 
 
@@ -71,7 +79,7 @@ def map_processing_config_item(item: DataProcessingConfigurationItem) -> Process
         specific method configurations for use in the processing pipeline
     """
     config_type = ConfigurationType(extract_uri_id(item.type.id))
-    annotations = extract_annotations(item)
+    annotations = extract_annotations(item.has_annotation)
     method_configs = [map_method_config(cfg) for cfg in item.has_current_configuration or []]
 
     return ProcessingConfig(
@@ -82,25 +90,25 @@ def map_processing_config_item(item: DataProcessingConfigurationItem) -> Process
     )
 
 
-def extract_annotations(item: DataProcessingConfigurationItem) -> dict[str, Any]:
+def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     """Extract annotation key–value pairs from the configuration item.
 
     Args:
-        item: A DataProcessingConfigurationItem containing optional annotations.
+        annotations: A list of HasAnnotationItems taken from a DataProcessingConfigurationItem.
 
     Returns:
         A dictionary mapping annotation property identifiers to their values.
     """
-    annotations = {}
+    extracted = {}
 
-    for ann in item.has_annotation:
+    for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            annotations[key] = ann.has_value.value
+            extracted[key] = ann.has_value.value
         elif ann.has_value_series:
-            annotations[key] = ann.has_value_series.has_current_value
+            extracted[key] = ann.has_value_series.has_current_value
 
-    return annotations
+    return extracted
 
 
 def map_method_config(current_config: HasCurrentConfigurationItem) -> MethodConfig:
@@ -114,7 +122,7 @@ def map_method_config(current_config: HasCurrentConfigurationItem) -> MethodConf
         A MethodConfig object describing a configuration of a processing method.
     """
     method = extract_uri_id(current_config.method.id)
-    params = extract_arguments(current_config)
+    params = extract_arguments(current_config.argument)
 
     start_date, end_date = None, None
     if current_config.observation_interval:
@@ -129,13 +137,13 @@ def map_method_config(current_config: HasCurrentConfigurationItem) -> MethodConf
     )
 
 
-def extract_arguments(current_config: HasCurrentConfigurationItem) -> dict[str, Any]:
+def extract_arguments(argument_items: list[ArgumentItem]) -> dict[str, Any]:
     """Extract method argument names and values from a configuration definition.
 
     Handles both direct literal values and references to other datasets.
 
     Args:
-        current_config: The HasCurrentConfigurationItem containing argument definitions.
+        argument_items: List of ArgumentItems from a HasCurrentConfigurationItem model.
 
     Returns:
         A dictionary mapping parameter names to either literal values or referenced dataset identifiers. If a parameter
@@ -143,7 +151,7 @@ def extract_arguments(current_config: HasCurrentConfigurationItem) -> dict[str, 
     """
     collected_args = defaultdict(list)
 
-    for arg in current_config.argument:
+    for arg in argument_items:
         param_name = extract_uri_id(arg.parameter.id).replace("-", "_")
         has_value = arg.has_value
 
