@@ -1,12 +1,11 @@
-from typing import Callable
-
 import pytest
 from pydantic import ValidationError
 from src.new_processor.api_models.annotation import HasAnnotationItem
+from tests.utils.fixture_helpers import load_json_string
 
 
 class TestAnnotation:
-    def test_basic_annotation(self, load_json_string: Callable) -> None:
+    def test_basic_annotation(self) -> None:
         data = load_json_string("""{
             "@id": "http://fdri.ceh.ac.uk/id/annotation/example-1",
             "property": {"@id": "http://fdri.ceh.ac.uk/ref/common/cop/comment"},
@@ -22,7 +21,7 @@ class TestAnnotation:
         assert result.has_value.value == 123
         assert result.has_value_series is None
 
-    def test_annotation_with_value_series(self, load_json_string: Callable) -> None:
+    def test_annotation_with_value_series(self) -> None:
         data = load_json_string("""{
             "@id": "http://fdri.ceh.ac.uk/id/annotation/example-2",
             "property": {"@id": "http://fdri.ceh.ac.uk/ref/common/cop/status"},
@@ -81,15 +80,13 @@ class TestAnnotation:
         ],
         ids=["test_int", "test_str", "test_float", "test_bool"],
     )
-    def test_extract_param_info_success(
-        self, load_json_string: Callable, test_data: str, expected_value: int | float | None
-    ) -> None:
+    def test_extract_param_info_success(self, test_data: str, expected_value: int | float | None) -> None:
         """Test that annotation parameters are correctly extracted for various valid inputs."""
         data = load_json_string(test_data)
         result = HasAnnotationItem.model_validate(data)
         assert result.has_value.value == expected_value
 
-    def test_value_equal_none_raises_error(self, load_json_string: Callable) -> None:
+    def test_value_equal_none_raises_error(self) -> None:
         """Test that a value with explicit value of "null" (loads as None in python) raises validation error"""
         test_data = '{"@id": "none", "property": {"@id": "none_value"}, "hasValue": {"@id": "id", "value": null}}'
         data = load_json_string(test_data)
