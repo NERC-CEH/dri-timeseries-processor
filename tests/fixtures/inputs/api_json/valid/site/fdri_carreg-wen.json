@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.json",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.rdf",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.geojson",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.json",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.html",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.ttl",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.csv"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01",
+      "hasRepresentativePoint": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01#geo-latlong"
+      },
+      "hasPart": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-ws",
+          "label": [
+            "WS"
+          ]
+        }
+      ],
+      "identifier": [
+        "SE-CARWE-01"
+      ],
+      "hasGeometry": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01#geo-latlong",
+          "asWKT": "POINT(-3.72671814, 52.48277697)",
+          "@type": [
+            {
+              "@id": "http://www.opengis.net/ont/geosparql#Geometry"
+            }
+          ]
+        }
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/EnvironmentalMonitoringSite"
+        }
+      ],
+      "label": [
+        "Carreg Wen"
+      ]
+    }
+  ]
+}
