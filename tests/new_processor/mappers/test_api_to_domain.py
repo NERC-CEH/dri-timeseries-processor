@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Callable
 
 from src.new_processor.api_models.annotation import HasAnnotationItem
 from src.new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
@@ -15,13 +14,13 @@ from src.new_processor.mappers.api_to_domain import (
     map_processing_config_item,
 )
 from src.new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
-from tests.utils.fixture_helpers import FIXTURES_DIR
+from tests.utils.fixture_helpers import FIXTURES_INPUTS_DIR, load_json_file
 from tests.utils.validation_helpers import valid_parses
 
 
 class TestMapDatasetItem:
-    def test_dataset_with_method(self, load_json_file: Callable) -> None:
-        filename = FIXTURES_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_rn_1day_processed.json"
+    def test_dataset_with_method(self) -> None:
+        filename = FIXTURES_INPUTS_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_rn_1day_processed.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
 
         result = map_dataset_item(api_model.items[0])
@@ -59,8 +58,8 @@ class TestMapDatasetItem:
 
         assert result == expected
 
-    def test_dataset_no_method(self, load_json_file: Callable) -> None:
-        filename = FIXTURES_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_ta_30min_raw.json"
+    def test_dataset_no_method(self) -> None:
+        filename = FIXTURES_INPUTS_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_ta_30min_raw.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
 
         result = map_dataset_item(api_model.items[0])
@@ -90,7 +89,7 @@ class TestMapDatasetItem:
 
 
 class TestExtractArguments:
-    def test_extract_arguments(self, load_json_file: Callable) -> None:
+    def test_extract_arguments(self) -> None:
         """Test that arguments are extracted correctly from the configuration item api model."""
         data = [
             {
@@ -123,7 +122,7 @@ class TestExtractArguments:
         }
         assert result == expected
 
-    def test_extract_argument_hyphen_replace(self, load_json_file: Callable) -> None:
+    def test_extract_argument_hyphen_replace(self) -> None:
         """Test that arguments that have hyphens in the parameter name are replaced with an underscore."""
         data = [
             {
@@ -145,7 +144,7 @@ class TestExtractArguments:
         }
         assert result == expected
 
-    def test_extract_argument_multiple_values(self, load_json_file: Callable) -> None:
+    def test_extract_argument_multiple_values(self) -> None:
         """Test that arguments with the same parameter name extract into a list."""
         data = [
             {
@@ -340,8 +339,10 @@ class TestExtractAnnotations:
 
 
 class TestMapProcessingConfigItem:
-    def test_qc_processing_config(self, load_json_file: Callable) -> None:
-        filename = FIXTURES_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
+    def test_qc_processing_config(self) -> None:
+        filename = (
+            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
+        )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0])
@@ -360,8 +361,10 @@ class TestMapProcessingConfigItem:
 
         assert result == expected
 
-    def test_infill_processing_config(self, load_json_file: Callable) -> None:
-        filename = FIXTURES_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_infill.json"
+    def test_infill_processing_config(self) -> None:
+        filename = (
+            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_infill.json"
+        )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0])
@@ -381,9 +384,10 @@ class TestMapProcessingConfigItem:
 
         assert result == expected
 
-    def test_correction_processing_config(self, load_json_file: Callable) -> None:
+    def test_correction_processing_config(self) -> None:
         filename = (
-            FIXTURES_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_correction.json"
+            FIXTURES_INPUTS_DIR
+            / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_correction.json"
         )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
@@ -405,9 +409,11 @@ class TestMapProcessingConfigItem:
 
         assert result == expected
 
-    def test_get_all_dep_ts(self, load_json_file: Callable) -> None:
+    def test_get_all_dep_ts(self) -> None:
         """Test that we can extract all dependent timeseries Ids from all processing configurations"""
-        filename = FIXTURES_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
+        filename = (
+            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
+        )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = []
