@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import polars as pl
 import pytest
 import time_stream as ts
-from time_stream.infill import InfillMethod
+from time_stream.infill import InfillCtx, InfillMethod
 
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.infilling.infiller import run_infilling
@@ -18,7 +18,7 @@ class MockInfillMethod(InfillMethod):
     def __init__(self, **kwargs: Any):
         pass
 
-    def _fill(self, df: pl.DataFrame, infill_column: str) -> pl.DataFrame:
+    def _fill(self, df: pl.DataFrame, infill_column: str, ctx: InfillCtx) -> pl.DataFrame:
         return df.with_columns(pl.col(infill_column).fill_null(100).alias(f"{infill_column}_{self.name}"))
 
 
@@ -39,10 +39,14 @@ def ts_ids() -> Dict[str, Any]:
     )
     resolution = ts.Period.of_hours(1)
     periodicity = ts.Period.of_hours(1)
-    ta_tf = ts.TimeFrame(ta_data, "time", resolution, periodicity).with_metadata({"column_name": "temperature"})
+    ta_tf = ts.TimeFrame(ta_data, "time", resolution=resolution, periodicity=periodicity).with_metadata(
+        {"column_name": "temperature"}
+    )
     ta_tf = add_initial_core_flags(ta_tf)
 
-    pa_tf = ts.TimeFrame(pa_data, "time", resolution, periodicity).with_metadata({"column_name": "pressure"})
+    pa_tf = ts.TimeFrame(pa_data, "time", resolution=resolution, periodicity=periodicity).with_metadata(
+        {"column_name": "pressure"}
+    )
     pa_tf = add_initial_core_flags(pa_tf)
 
     ts_ids = {
