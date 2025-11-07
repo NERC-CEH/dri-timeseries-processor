@@ -409,7 +409,7 @@ class TestDataProcessingConfiguration:
             ],
             "hasAnnotation": [
                 {
-                    "property": {"@id": "http://example.com/property/data-processing-configuration-priority"},
+                    "property": {"@id": "http://example.com/property/priority"},
                     "hasValue": {"value": 1},
                 }
             ],
@@ -448,7 +448,7 @@ class TestDataProcessingConfiguration:
     def test_extract_annotations(self) -> None:
         """Test extraction and validation of method configuration."""
         result = DataProcessingConfiguration.model_validate(self.test_data)
-        assert result.annotations == {"data-processing-configuration-priority": 1}
+        assert result.annotations == {"priority": 1}
 
     def test_missing_applies_to_time_series(self) -> None:
         """Test that validation fails when appliesToTimeSeries is missing."""

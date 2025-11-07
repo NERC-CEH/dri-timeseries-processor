@@ -108,7 +108,7 @@ def infill_config_1() -> Dict[str, Any]:
                     },
                 )
             ],
-            "annotations": {"data-processing-configuration-priority": 1},
+            "annotations": {"priority": 1},
         },
     )()
     return infill_config
@@ -134,7 +134,7 @@ def infill_config_2() -> Dict[str, Any]:
                     },
                 )
             ],
-            "annotations": {"data-processing-configuration-priority": 2},
+            "annotations": {"priority": 2},
         },
     )()
     return infill_config

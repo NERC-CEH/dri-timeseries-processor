@@ -63,8 +63,8 @@ def load_data(ts_container: TimeseriesContainer, start_date: datetime, end_date:
         on_duplicates = "error"
 
     tf = ts.TimeFrame(
-        bucket_data,
-        "time",
+        df=bucket_data,
+        time_name="time",
         resolution=ts_container.resolution,
         periodicity=ts_container.periodicity,
         on_duplicates=on_duplicates,
