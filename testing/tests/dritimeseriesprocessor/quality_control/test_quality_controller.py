@@ -45,28 +45,30 @@ def ts_ids() -> Dict[str, Any]:
         }
     )
 
-    resolution = ts.Period.of_days(1)
-    periodicity = ts.Period.of_days(1)
-    tf = ts.TimeFrame(data, "time", resolution, periodicity).with_metadata({"site_id": "SITE1", "column_name": "value"})
+    resolution = "P1D"
+    periodicity = "P1D"
+    tf = ts.TimeFrame(data, "time", resolution=resolution, periodicity=periodicity).with_metadata(
+        {"site_id": "SITE1", "column_name": "value"}
+    )
     tf = add_initial_core_flags(tf)
 
     # Create some timeframes with missing data
-    tf_missing_start = ts.TimeFrame(data.slice(2), "time", resolution, periodicity).with_metadata(
-        {"site_id": "SITE1", "column_name": "value"}
-    )
+    tf_missing_start = ts.TimeFrame(
+        data.slice(2), "time", resolution=resolution, periodicity=periodicity
+    ).with_metadata({"site_id": "SITE1", "column_name": "value"})
     tf_missing_start = add_initial_core_flags(tf_missing_start)
 
     tf_missing_middle = ts.TimeFrame(
         data.filter(~pl.col("time").is_between(datetime(2023, 8, 12), datetime(2023, 8, 13))),
         "time",
-        resolution,
-        periodicity,
+        resolution=resolution,
+        periodicity=periodicity,
     ).with_metadata({"site_id": "SITE1", "column_name": "value"})
     tf_missing_middle = add_initial_core_flags(tf_missing_middle)
 
-    tf_missing_end = ts.TimeFrame(data.slice(0, data.height - 2), "time", resolution, periodicity).with_metadata(
-        {"site_id": "SITE1", "column_name": "value"}
-    )
+    tf_missing_end = ts.TimeFrame(
+        data.slice(0, data.height - 2), "time", resolution=resolution, periodicity=periodicity
+    ).with_metadata({"site_id": "SITE1", "column_name": "value"})
     tf_missing_end = add_initial_core_flags(tf_missing_end)
 
     ts_ids = {

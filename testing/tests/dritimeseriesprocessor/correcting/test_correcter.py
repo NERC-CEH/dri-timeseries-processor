@@ -19,7 +19,9 @@ def create_test_tf(col_name: str, datetimes: list, data: list, periodicity: ts.P
     """Set up test fixtures."""
     df = pl.DataFrame({"time": datetimes, col_name: data})
 
-    tf = ts.TimeFrame(df, "time", periodicity, periodicity).with_metadata({"site_id": "site1", "column_name": col_name})
+    tf = ts.TimeFrame(df, "time", periodicity, periodicity=periodicity).with_metadata(
+        {"site_id": "site1", "column_name": col_name}
+    )
     tf = add_initial_core_flags(tf)
 
     return tf
