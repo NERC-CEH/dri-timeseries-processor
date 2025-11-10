@@ -7,9 +7,10 @@ for use in the DAG builder and data processing pipeline.
 
 from dataclasses import dataclass, field
 
-from src.new_processor.domain_models.processing_config import ProcessingConfig
-from src.new_processor.utils.enums import MethodType, ProcessingLevel
 from time_stream import TimeFrame
+
+from new_processor.domain_models.processing_config import ProcessingConfig
+from new_processor.utils.enums import MethodType, ProcessingLevel
 
 
 @dataclass

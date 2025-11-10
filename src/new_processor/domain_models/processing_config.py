@@ -26,6 +26,7 @@ class MethodConfig:
 
 @dataclass
 class ProcessingConfig:
+    ts_id: str
     config_id: str
     config_type: ConfigurationType
     method_configs: list[MethodConfig]
@@ -35,5 +36,9 @@ class ProcessingConfig:
         dep_ts = []
         for method_config in self.method_configs:
             if "dep_ts" in method_config.params:
-                dep_ts.append(method_config.params["dep_ts"])
+                dep_ts_ids = method_config.params["dep_ts"]
+                if isinstance(dep_ts_ids, list):
+                    dep_ts.extend(dep_ts_ids)
+                else:
+                    dep_ts.append(dep_ts_ids)
         return dep_ts
