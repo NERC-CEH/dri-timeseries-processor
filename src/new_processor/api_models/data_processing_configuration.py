@@ -18,7 +18,6 @@ from new_processor.api_models.annotation import HasAnnotationItem
 from new_processor.api_models.shared import (
     BaseAPIResponse,
     HasCurrentConfigurationItem,
-    HasValue,
     IDModel,
 )
 
@@ -29,27 +28,12 @@ class AppliesToTimeSeries(IDModel):
     originating_site: IDModel = Field(..., alias="originatingSite")
 
 
-class ArgumentItem(IDModel):
-    """Configuration argument with parameter and value."""
-
-    field_type: list[IDModel] = Field(..., alias="@type")
-    has_value: HasValue = Field(..., alias="hasValue")
-    parameter: IDModel
-
-
-class ObservationInterval(IDModel):
-    """Observation interval specification."""
-
-    field_type: list[IDModel] = Field(..., alias="@type")
-    start_date: str = Field(..., alias="startDate")
-
-
 class DataProcessingConfigurationItem(IDModel):
     """Data processing configuration item."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
     applies_to_time_series: list[AppliesToTimeSeries] = Field(..., alias="appliesToTimeSeries")
-    has_annotation: list[HasAnnotationItem] | None = Field(None, alias="hasAnnotation")
+    has_annotation: list[HasAnnotationItem] = Field(default_factory=list, alias="hasAnnotation")
     has_current_configuration: list[HasCurrentConfigurationItem] = Field(..., alias="hasCurrentConfiguration")
     type: IDModel
 

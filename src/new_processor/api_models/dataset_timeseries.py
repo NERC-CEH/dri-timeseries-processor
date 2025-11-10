@@ -70,7 +70,7 @@ class TimeSeriesDatasetItem(IDModel):
     """Time series dataset item."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
-    type: list[TypeItem] = Field(..., min_length=1)
+    type: list[TypeItem] = Field(..., min_length=1, max_length=1)
     source_bucket: str | None = Field(None, alias="sourceBucket")
     source_dataset: str | None = Field(None, alias="sourceDataset")
     source_column_name: str | None = Field(None, alias="sourceColumnName")
