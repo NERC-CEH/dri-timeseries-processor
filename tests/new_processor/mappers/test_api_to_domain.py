@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import Mock
 
 from src.new_processor.api_models.annotation import HasAnnotationItem
 from src.new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
@@ -86,6 +87,61 @@ class TestMapDatasetItem:
         )
 
         assert result == expected
+
+    def test_all_dependencies_no_configs(self) -> None:
+        """Test that the all_dependencies method returns valid list, when there are no qc/correction/infill configs"""
+
+        item = TimeSeriesContainer(
+            ts_id="test_id",
+            ref_id="test_ref_id",
+            source_bucket="bucket",
+            source_dataset="dataset",
+            source_column="col",
+            source_site="a-site",
+            resolution="PT30M",
+            periodicity="PT30M",
+            processing_level=ProcessingLevel.RAW,
+            variable="variable",
+            depends_on=["dep1", "dep2", "dep3"],
+            direct_depends_on=["dep1"],
+        )
+        expected = ["dep1", "dep2", "dep3"]
+        assert item.all_dependencies() == expected
+
+    def test_all_dependencies_with_configs(self) -> None:
+        """Test that the all_dependencies method returns valid list, when there are a qc/correction/infill configs"""
+
+        mock_config_qc = Mock(spec=ProcessingConfig)
+        mock_config_qc.config_type = ConfigurationType.QUALITY_CONTROL
+        mock_config_qc.all_dep_ts.return_value = ["dep1", "dep4"]
+
+        mock_config_correction = Mock(spec=ProcessingConfig)
+        mock_config_correction.config_type = ConfigurationType.QUALITY_CONTROL
+        mock_config_correction.all_dep_ts.return_value = ["dep4", "dep5"]
+
+        mock_config_infill = Mock(spec=ProcessingConfig)
+        mock_config_infill.config_type = ConfigurationType.QUALITY_CONTROL
+        mock_config_infill.all_dep_ts.return_value = []
+
+        item = TimeSeriesContainer(
+            ts_id="test_id",
+            ref_id="test_ref_id",
+            source_bucket="bucket",
+            source_dataset="dataset",
+            source_column="col",
+            source_site="a-site",
+            resolution="PT30M",
+            periodicity="PT30M",
+            processing_level=ProcessingLevel.RAW,
+            variable="variable",
+            depends_on=["dep1", "dep2", "dep3"],
+            direct_depends_on=["dep1"],
+            correction_configs=[mock_config_correction],
+            qc_configs=[mock_config_qc],
+            infill_configs=[mock_config_infill],
+        )
+        expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
+        assert item.all_dependencies() == expected
 
 
 class TestExtractArguments:

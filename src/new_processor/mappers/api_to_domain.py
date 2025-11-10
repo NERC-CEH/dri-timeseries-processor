@@ -90,29 +90,8 @@ def map_processing_config_item(item: DataProcessingConfigurationItem) -> Process
     )
 
 
-def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
-    """Extract annotation key–value pairs from the configuration item.
-
-    Args:
-        annotations: A list of HasAnnotationItems taken from a DataProcessingConfigurationItem.
-
-    Returns:
-        A dictionary mapping annotation property identifiers to their values.
-    """
-    extracted = {}
-
-    for ann in annotations:
-        key = extract_uri_id(ann.property.id).replace("-", "_")
-        if ann.has_value:
-            extracted[key] = ann.has_value.value
-        elif ann.has_value_series:
-            extracted[key] = ann.has_value_series.has_current_value
-
-    return extracted
-
-
 def map_method_config(current_config: HasCurrentConfigurationItem) -> MethodConfig:
-    """Convert a HasCurrentConfigurationItem into a MethodConfig domain model.
+    """Map a HasCurrentConfigurationItem into a MethodConfig domain model.
 
     Args:
         current_config: A single configuration definition for a method, possibly including an observation interval and
@@ -135,6 +114,27 @@ def map_method_config(current_config: HasCurrentConfigurationItem) -> MethodConf
         start_date=start_date,
         end_date=end_date,
     )
+
+
+def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
+    """Extract annotation key–value pairs from the configuration item.
+
+    Args:
+        annotations: A list of HasAnnotationItems taken from a DataProcessingConfigurationItem.
+
+    Returns:
+        A dictionary mapping annotation property identifiers to their values.
+    """
+    extracted = {}
+
+    for ann in annotations:
+        key = extract_uri_id(ann.property.id).replace("-", "_")
+        if ann.has_value:
+            extracted[key] = ann.has_value.value
+        elif ann.has_value_series:
+            extracted[key] = ann.has_value_series.has_current_value
+
+    return extracted
 
 
 def extract_arguments(argument_items: list[ArgumentItem]) -> dict[str, Any]:
