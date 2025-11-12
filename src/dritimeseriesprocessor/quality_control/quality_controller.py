@@ -98,7 +98,7 @@ def run_quality_control(ts_ids: Dict[str, TimeseriesContainer], remove: bool = F
                     qc_config.parameters.pop("dep_ts")
 
                 if qc_method_metadata.arg_mapping:
-                    for new_name, old_name in qc_method_metadata.arg_mapping.items():
+                    for old_name, new_name in qc_method_metadata.arg_mapping.items():
                         qc_config.parameters[new_name] = qc_config.parameters.pop(old_name)
 
                 if qc_method_metadata.kwargs:
