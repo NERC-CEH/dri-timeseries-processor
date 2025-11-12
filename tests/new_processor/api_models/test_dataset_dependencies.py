@@ -1,5 +1,5 @@
 import pytest
-from src.new_processor.api_models.dataset_dependencies import DatasetDependencies
+from new_processor.api_models.dataset_dependencies import DatasetDependencies
 from tests.utils.fixture_helpers import discover_json_test_cases, load_json_file
 from tests.utils.validation_helpers import invalid_raises, valid_parses
 
