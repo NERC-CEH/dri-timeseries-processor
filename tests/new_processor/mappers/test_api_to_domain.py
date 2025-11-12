@@ -15,13 +15,13 @@ from src.new_processor.mappers.api_to_domain import (
     map_processing_config_item,
 )
 from src.new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
-from tests.utils.fixture_helpers import FIXTURES_INPUTS_DIR, load_json_file
+from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR, load_json_file
 from tests.utils.validation_helpers import valid_parses
 
 
 class TestMapDatasetItem:
     def test_dataset_with_method(self) -> None:
-        filename = FIXTURES_INPUTS_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_rn_1day_processed.json"
+        filename = TEST_DATA_INPUT_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_rn_1day_processed.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
 
         result = map_dataset_item(api_model.items[0])
@@ -60,7 +60,7 @@ class TestMapDatasetItem:
         assert result == expected
 
     def test_dataset_no_method(self) -> None:
-        filename = FIXTURES_INPUTS_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_ta_30min_raw.json"
+        filename = TEST_DATA_INPUT_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_ta_30min_raw.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
 
         result = map_dataset_item(api_model.items[0])
@@ -397,7 +397,7 @@ class TestExtractAnnotations:
 class TestMapProcessingConfigItem:
     def test_qc_processing_config(self) -> None:
         filename = (
-            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
+            TEST_DATA_INPUT_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
         )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
@@ -419,7 +419,7 @@ class TestMapProcessingConfigItem:
 
     def test_infill_processing_config(self) -> None:
         filename = (
-            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_infill.json"
+            TEST_DATA_INPUT_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_infill.json"
         )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
@@ -442,7 +442,7 @@ class TestMapProcessingConfigItem:
 
     def test_correction_processing_config(self) -> None:
         filename = (
-            FIXTURES_INPUTS_DIR
+            TEST_DATA_INPUT_DIR
             / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_correction.json"
         )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
@@ -468,7 +468,7 @@ class TestMapProcessingConfigItem:
     def test_get_all_dep_ts(self) -> None:
         """Test that we can extract all dependent timeseries Ids from all processing configurations"""
         filename = (
-            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
+            TEST_DATA_INPUT_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
         )
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 

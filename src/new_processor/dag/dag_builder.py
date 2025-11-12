@@ -11,7 +11,6 @@ giving knowledge of which datasets need to be processed before others.
 
 from collections import defaultdict
 
-from dritimeseriesprocessor.configuration import app_config
 from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.api_models.dataset_dependencies import DatasetDependencies
 from new_processor.api_models.dataset_timeseries import TimeSeriesDataset
@@ -21,7 +20,7 @@ from new_processor.externals.routers import MetadataRouter
 from new_processor.mappers.api_to_domain import map_dataset_item, map_processing_config_item
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
-from new_processor.utils.urls import PROCESSING_LEVEL_URI, SITE_URI, CONFIGURATION_TYPE_URI
+from new_processor.utils.urls import CONFIGURATION_TYPE_URI, PROCESSING_LEVEL_URI, SITE_URI
 
 
 class DatasetDependencyGraph:
@@ -256,18 +255,18 @@ class DatasetDependencyGraph:
                 dag.setdefault(dep, [])
         return dag
 
-
-import time
-
-router = MetadataRouter(app_config.metadata_api_url)
-start = time.time()
-builder = DatasetDependencyGraph("cosmos", sites=["BUNNY"], variables=["RN"], periodicity="PT30M", api_router=router)
-
-builder.build()
-dag = builder.build_dag()
-end = time.time()
-print("DAG built took {} seconds".format(end - start))
-
-print("\n=== DAG ===")
-for idx, (node, deps) in enumerate(dag.items()):
-    print(idx, f"{node} -> {[d for d in deps]}")
+#
+# import time
+#
+# router = MetadataRouter(app_config.metadata_api_url)
+# start = time.time()
+# builder = DatasetDependencyGraph("cosmos", sites=["BUNNY"], variables=["RN"], periodicity="PT30M", api_router=router)
+#
+# builder.build()
+# DAG = builder.build_dag()
+# end = time.time()
+# print("DAG built took {} seconds".format(end - start))
+#
+# print("\n=== DAG ===")
+# for idx, (node, deps) in enumerate(DAG.items()):
+#     print(idx, f"{node} -> {[d for d in deps]}")

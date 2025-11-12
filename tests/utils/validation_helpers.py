@@ -13,7 +13,7 @@ def valid_parses(load_json_file: Callable, filename: str, model: Type[BaseModel]
         model: The Pydantic model class to validate against.
 
     Raises:
-        ValidationError: If Pydantic validation failes
+        ValidationError: If Pydantic validation fails
         AssertionError: If the parsed model is empty.
     """
     data = load_json_file(filename)

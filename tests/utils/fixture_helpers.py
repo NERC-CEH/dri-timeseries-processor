@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from _pytest.mark.structures import ParameterSet
 
-FIXTURES_INPUTS_DIR = Path(__file__).parent.parent / "fixtures" / "inputs"
+TEST_DATA_INPUT_DIR = Path(__file__).parent.parent / "data" / "inputs"
 
 
 def discover_json_test_cases(directory: str | Path) -> list[ParameterSet]:
@@ -14,12 +14,12 @@ def discover_json_test_cases(directory: str | Path) -> list[ParameterSet]:
     Returns:
         A list of pytest.param objects, each representing a JSON file.
     """
-    directory = FIXTURES_INPUTS_DIR / Path(directory)
+    directory = TEST_DATA_INPUT_DIR / Path(directory)
 
     test_cases = []
     for path in directory.glob("*.json"):
         # Create a readable relative ID for test display
-        relative_path_id = str(path.relative_to(FIXTURES_INPUTS_DIR))
+        relative_path_id = str(path.relative_to(TEST_DATA_INPUT_DIR))
         test_cases.append(pytest.param(str(path), id=relative_path_id))
 
     return test_cases
@@ -27,7 +27,7 @@ def discover_json_test_cases(directory: str | Path) -> list[ParameterSet]:
 
 def load_json_file(filename: str) -> dict[str, Any]:
     """Helper for loading input JSON files."""
-    filepath = FIXTURES_INPUTS_DIR / filename
+    filepath = TEST_DATA_INPUT_DIR / filename
     if not filepath.exists():
         raise FileNotFoundError(f"Fixture not found: {filepath}")
 

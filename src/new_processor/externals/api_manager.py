@@ -1,3 +1,10 @@
+"""
+Metadata API Manager
+
+Provides a lightweight interface for interacting with the metadata API. Supports both single and paginated requests.
+For paginated requests, it automatically combines results when multiple pages are returned.
+"""
+
 import logging
 from typing import Any
 
@@ -22,7 +29,7 @@ class MetadataAPIManager:
         self.host = host
         self.session = requests.Session()
 
-    def _make_api_call(self, url: str, params: list[tuple[str, str]] | dict[str, str] | None = None) -> dict[str, Any]:
+    def make_api_call(self, url: str, params: list[tuple[str, str]] | dict[str, str] | None = None) -> dict[str, Any]:
         """Make a call to the metadata API.
 
         Args:
@@ -44,8 +51,12 @@ class MetadataAPIManager:
             logger.error(f"Failed to fetch data: {e}")
             logger.exception(e)
             raise
+        except ValueError as e:
+            logger.error(f"Invalid JSON response from: {url}")
+            logger.exception(e)
+            raise
 
-    def _make_paginated_api_call(
+    def make_paginated_api_call(
         self,
         url: str,
         params: tuple[tuple[str, str], ...] | dict[str, str] | None = None,
@@ -72,7 +83,7 @@ class MetadataAPIManager:
             The JSON response from the API. This will be the combined response if pagination is required.
         """
         # Make the initial API response to determine if further paginated API calls are required.
-        initial_response = self._make_api_call(url=url, params=params)
+        initial_response = self.make_api_call(url=url, params=params)
         meta = initial_response.get("meta", {})
         items = list(initial_response.get("items", []))
 
@@ -89,7 +100,7 @@ class MetadataAPIManager:
 
         while True:
             params = self._update_params(params, "_offset", offset)
-            next_page = self._make_api_call(url=url, params=params)
+            next_page = self.make_api_call(url=url, params=params)
             new_items = next_page.get("items", [])
             if not new_items:
                 break
