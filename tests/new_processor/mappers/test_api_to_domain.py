@@ -1,22 +1,23 @@
 from datetime import datetime
 from unittest.mock import Mock
 
-from src.new_processor.api_models.annotation import HasAnnotationItem
-from src.new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from src.new_processor.api_models.dataset_timeseries import TimeSeriesDataset
-from src.new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
-from src.new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from src.new_processor.domain_models.time_series_container import TimeSeriesContainer
-from src.new_processor.mappers.api_to_domain import (
+from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR, load_json_file
+from tests.utils.validation_helpers import valid_parses
+
+from new_processor.api_models.annotation import HasAnnotationItem
+from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
+from new_processor.api_models.dataset_timeseries import TimeSeriesDataset
+from new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.mappers.api_to_domain import (
     extract_annotations,
     extract_arguments,
     map_dataset_item,
     map_method_config,
     map_processing_config_item,
 )
-from src.new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
-from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR, load_json_file
-from tests.utils.validation_helpers import valid_parses
+from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 
 
 class TestMapDatasetItem:
@@ -404,6 +405,7 @@ class TestMapProcessingConfigItem:
         result = map_processing_config_item(api_model.items[0])
 
         expected = ProcessingConfig(
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_raw-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
@@ -426,6 +428,7 @@ class TestMapProcessingConfigItem:
         result = map_processing_config_item(api_model.items[0])
 
         expected = ProcessingConfig(
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
@@ -450,6 +453,7 @@ class TestMapProcessingConfigItem:
         result = map_processing_config_item(api_model.items[0])
 
         expected = ProcessingConfig(
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/sgb0ag444qc40u99nsdo8n5m0kuscic7",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
