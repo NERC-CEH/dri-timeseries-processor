@@ -227,7 +227,7 @@ class TestResolveDataset:
             "C": container_c,
         }
         assert mock_router.fetch_all_dependencies.call_count == 2
-        assert mock_router.fetch_processing_configs.call_count == 2
+        assert mock_router.fetch_processing_configs.call_count == 1
 
 
 class TestBuildDag:
