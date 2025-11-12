@@ -89,11 +89,10 @@ class TestAnnotation:
 
 
 class TestArgument:
-
     def test_extract_param_info_success(self) -> None:
         """Test that annotation parameters are correctly extracted valid input."""
 
-        test_data = { "@id": "http://example.com/argument#str_value", "hasValue": {"value": "example"}}
+        test_data = {"@id": "http://example.com/argument#str_value", "hasValue": {"value": "example"}}
         result = Argument.model_validate(test_data)
         assert result.name == "str_value"
         assert result.value == "example"

@@ -283,7 +283,7 @@ class TestRunInfilling:
         ]
 
         result = run_infilling(ts_ids)
-        
+
         # Check flag system added
         result["SITE1_pa_30min_raw"].data.get_flag_system("infill_flags")
 
@@ -292,4 +292,3 @@ class TestRunInfilling:
 
         # Check flag values have been added
         assert result["SITE1_pa_30min_raw"].data.df["pressure_INFILL_FLAG"].to_list() == expected_infill_flags
-
