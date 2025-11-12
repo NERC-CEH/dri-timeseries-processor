@@ -7,6 +7,7 @@ import pytest
 
 from metadata_manager.models.schemas.data_processing_configurations import (
     Annotation,
+    Argument,
     ConfigItem,
     DataProcessingConfiguration,
     DataProcessingConfigurations,
@@ -87,6 +88,43 @@ class TestAnnotation:
             Annotation.model_validate(test_data)
 
 
+class TestArgument:
+
+    def test_extract_param_info_success(self) -> None:
+        """Test that annotation parameters are correctly extracted valid input."""
+
+        test_data = { "@id": "http://example.com/argument#str_value", "hasValue": {"value": "example"}}
+        result = Argument.model_validate(test_data)
+        assert result.name == "str_value"
+        assert result.value == "example"
+
+    def test_missing_id(self) -> None:
+        """Test that validation fails when property @id is missing."""
+        test_data = {
+            "hasValue": {"value": 10},
+        }
+        with pytest.raises(KeyError):
+            Argument.model_validate(test_data)
+
+    def test_missing_value(self) -> None:
+        """Test that validation fails when value is missing in hasValue."""
+        # Arrange
+        test_data = {
+            "@id": "http://example.com/property#priority",
+            "hasValue": {},
+        }
+        with pytest.raises(KeyError):
+            Argument.model_validate(test_data)
+
+    def test_missing_has_value(self) -> None:
+        """Test that validation fails when hasValue field is missing."""
+        test_data = {
+            "@id": "http://example.com/property#priority",
+        }
+        with pytest.raises(KeyError):
+            Argument.model_validate(test_data)
+
+
 class TestParameter:
     @pytest.mark.parametrize(
         "param_value",
@@ -140,6 +178,25 @@ class TestParameter:
         result = Parameter.model_validate(test_data)
         assert result.name == "reference_value"
         assert result.value == "http://example.com/variable/air_temp"
+
+    def test_extract_param_info_with_nested_arguments(self) -> None:
+        """Test parameter extraction with nested arguments."""
+        test_data = {
+            "parameter": {"@id": "http://example.com/parameter/configuration"},
+            "hasValue": {
+                "valueReference": {
+                    "@id": "http://example.com/variable/air_temp",
+                    "argument": [
+                        {"@id": "http://example.com/argument#int_value", "hasValue": {"value": 10}},
+                        {"@id": "http://example.com/argument#str_value", "hasValue": {"value": "example"}},
+                    ],
+                }
+            },
+        }
+
+        result = Parameter.model_validate(test_data)
+        assert result.name == "configuration"
+        assert result.value == {"int_value": 10, "str_value": "example"}
 
     @pytest.mark.parametrize(
         "id_value,expected",
@@ -367,6 +424,30 @@ class TestConfigItem:
         result = ConfigItem.model_validate(test_data)
         assert len(result.parameters) == 1
         assert result.parameters["value"] == [6, 24, "linear"]
+
+    def test_extract_nested_parameters(self) -> None:
+        """Test extraction of nested parameters."""
+        test_data = {
+            "method": {"@id": "http://example.com/method/test"},
+            "argument": [
+                {
+                    "parameter": {"@id": "http://example.com/parameter/configuration"},
+                    "hasValue": {
+                        "valueReference": {
+                            "@id": "http://example.com/variable/air_temp",
+                            "argument": [
+                                {"@id": "http://example.com/argument#int_value", "hasValue": {"value": 10}},
+                                {"@id": "http://example.com/argument#str_value", "hasValue": {"value": "example"}},
+                            ],
+                        }
+                    },
+                }
+            ],
+        }
+        result = ConfigItem.model_validate(test_data)
+        assert len(result.parameters) == 2
+        assert result.parameters["int_value"] == 10
+        assert result.parameters["str_value"] == "example"
 
     def test_missing_method_id(self) -> None:
         """Test that validation fails when method @id is missing."""
