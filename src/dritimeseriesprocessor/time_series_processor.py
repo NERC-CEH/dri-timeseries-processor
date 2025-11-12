@@ -9,6 +9,7 @@ from driutils.metadata_api.utils import URI_ID_EXTRACT_REGEX
 
 from dritimeseriesprocessor import parser
 from dritimeseriesprocessor.configuration import app_config
+from dritimeseriesprocessor.deriving.aggregation_and_derivation_processor import AggregationAndDerivationProcessor
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.logger import setup_logging
 from dritimeseriesprocessor.metrics_exporter import metrics
@@ -120,44 +121,38 @@ class TimeSeriesProcessor:
         """
         # Collate metadata
         # ----------------
-        import time
-
-        start = time.time()
         logger.info("Collecting timeseries IDs")
         self._collate_timeseries_id_metadata_to_process()
 
-        end = time.time()
-        print("Took {} seconds".format(end - start))
+        # Load data
+        # ----------------
+        logger.info("Loading raw data")
+        self._load_raw_data()
 
-        # # Load data
-        # # ----------------
-        # logger.info("Loading raw data")
-        # self._load_raw_data()
-        #
-        # # Process data
-        # # ------------
-        # logger.info("Processing data")
-        # self._process_data()
-        #
-        # logger.info("Calculating aggregated and derived data")
-        # aggregation_and_derivation_processor = AggregationAndDerivationProcessor(self.ts_ids)
-        # self.ts_ids = aggregation_and_derivation_processor.run()
-        #
-        # # Write data
-        # # ----------
-        # # TODO
-        # # Do we need to write out the processing columns?
-        # # Do we keep the extra aggregation columns?
-        # writer = S3Writer(self.s3_client)
-        # self._write_timeseries(self.ts_ids, app_config.processed_bucket, self.network, writer)
-        #
-        # # Record a successful run of the pipeline and push all metrics to the pushgateway
-        # metrics.record_successful_run()
-        # logger.info("Processing completed successfully")
-        #
-        # metrics.export_metrics_to_pushgateway(
-        #     url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
-        # )
+        # Process data
+        # ------------
+        logger.info("Processing data")
+        self._process_data()
+
+        logger.info("Calculating aggregated and derived data")
+        aggregation_and_derivation_processor = AggregationAndDerivationProcessor(self.ts_ids)
+        self.ts_ids = aggregation_and_derivation_processor.run()
+
+        # Write data
+        # ----------
+        # TODO
+        # Do we need to write out the processing columns?
+        # Do we keep the extra aggregation columns?
+        writer = S3Writer(self.s3_client)
+        self._write_timeseries(self.ts_ids, app_config.processed_bucket, self.network, writer)
+
+        # Record a successful run of the pipeline and push all metrics to the pushgateway
+        metrics.record_successful_run()
+        logger.info("Processing completed successfully")
+
+        metrics.export_metrics_to_pushgateway(
+            url=metrics.get_pushgateway_url(), job="timeseries-processor", registry=metrics.registry
+        )
 
     def _collate_timeseries_id_metadata_to_process(self) -> None:
         """Collect all relevant time series metadata from the metadata API.
