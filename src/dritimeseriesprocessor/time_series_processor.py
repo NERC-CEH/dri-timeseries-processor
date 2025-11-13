@@ -33,9 +33,7 @@ from metadata_manager.models.service import (
     load_sites,
 )
 from metadata_manager.transformers import (
-    extract_correction_dependencies,
-    extract_infill_dependencies,
-    extract_qc_dependencies,
+    extract_dep_ts,
     extract_site_ids,
     extract_timeseries_id_metadata,
 )
@@ -48,9 +46,9 @@ metrics.setup_metrics()
 UserTsID = namedtuple("UserTsID", ["site", "column", "periodicity"])
 
 PROCESSING_CONFIG_DEP_TS_FUNCTIONS = {
-    "correction": extract_correction_dependencies,
-    "quality_control": extract_qc_dependencies,
-    "infilling": extract_infill_dependencies,
+    "correction": extract_dep_ts,
+    "quality_control": extract_dep_ts,
+    "infilling": extract_dep_ts,
 }
 
 
