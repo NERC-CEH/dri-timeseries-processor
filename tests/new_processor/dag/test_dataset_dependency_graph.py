@@ -20,9 +20,6 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
     Returns:
         A TimeSeriesContainer instance
     """
-    container = MagicMock()
-    container.ts_id = ts_id
-
     return TimeSeriesContainer(
         ts_id=ts_id,
         ref_id=ts_id + "_ref",

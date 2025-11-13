@@ -254,20 +254,3 @@ class DatasetDependencyGraph:
             for dep in dag[ds_id]:
                 dag.setdefault(dep, [])
         return dag
-
-
-#
-# import time
-#
-# router = MetadataRouter(app_config.metadata_api_url)
-# start = time.time()
-# builder = DatasetDependencyGraph("cosmos", sites=["BUNNY"], variables=["RN"], periodicity="PT30M", api_router=router)
-#
-# builder.build()
-# DAG = builder.build_dag()
-# end = time.time()
-# print("DAG built took {} seconds".format(end - start))
-#
-# print("\n=== DAG ===")
-# for idx, (node, deps) in enumerate(DAG.items()):
-#     print(idx, f"{node} -> {[d for d in deps]}")
