@@ -60,9 +60,7 @@ def run_infilling(
             tf.init_flag_column(tf.metadata["column_name"], INFILL_FLAG_SYS_NAME, infill_flag_col)
 
         # Order by priority
-        sorted_infillers = sorted(
-            ts_container.infill_configs, key=lambda x: x.annotations["data-processing-configuration-priority"]
-        )
+        sorted_infillers = sorted(ts_container.infill_configs, key=lambda x: x.annotations["priority"])
         for config in sorted_infillers:
             # Run infill methods on time series
             for infill_method in config.configs:
@@ -75,6 +73,18 @@ def run_infilling(
                     f"Infilling {tf.metadata['column_name']} with method: {infill_method.name}. "
                     f"Constraints: {infill_method.parameters}"
                 )
+                # Determine which data frame to use for infilling
+                if "dep_ts" in infill_method.parameters:
+                    # Check if the dependency time series exists
+                    dep_ts = infill_method.parameters["dep_ts"]
+                    if dep_ts not in ts_ids:
+                        logger.warning(f"Dependency time series {dep_ts} not found in ts_ids.")
+                        continue
+
+                    # Setup infill parameters for alternative data infilling
+                    infill_method.parameters["alt_df"] = ts_ids[dep_ts].data.df
+                    infill_method.parameters["alt_data_column"] = ts_ids[dep_ts].data.metadata["column_name"]
+                    infill_method.parameters.pop("dep_ts")
 
                 # To work out which values were infilled
                 null_mask_before = tf.df[tf.metadata["column_name"]].is_null()

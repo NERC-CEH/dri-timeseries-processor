@@ -4,5 +4,11 @@
         "description": "Linear interpolation. Creates straight line through the gap",
         "id": 1,
         "function_name": "linear"
+    },
+    "alt_data": {
+        "name": "Alt Data",
+        "description": "Alternative Data Infilling",
+        "id": 2,
+        "function_name": "alt_data"
     }
 }
