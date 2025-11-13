@@ -5,8 +5,8 @@
         "id": 1,
         "function_name": "range",
         "arg_mapping": {
-            "min_value": "lt",
-            "max_value": "gt"
+            "lt": "min_value",
+            "gt": "max_value"
         },
         "kwargs": {
             "within": false
@@ -18,7 +18,7 @@
         "id": 2,
         "function_name": "comparison",
         "arg_mapping": {
-            "compare_to": "lt"
+            "lt": "compare_to"
         },
         "kwargs": {
             "operator": "<"
@@ -30,7 +30,7 @@
         "id": 4,
         "function_name": "comparison",
         "arg_mapping": {
-            "compare_to": "lt"
+            "lt": "compare_to"
         },
         "kwargs": {
             "operator": "<"
@@ -42,7 +42,7 @@
         "id": 8,
         "function_name": "comparison",
         "arg_mapping": {
-            "compare_to": "value"
+            "value": "compare_to"
         },
         "kwargs": {
             "operator": "is_in"
@@ -54,7 +54,7 @@
         "id": 16,
         "function_name": "spike",
         "arg_mapping": {
-            "threshold": "gt"
+            "gt": "threshold"
         }
     },
     "nr01_temp": {
@@ -63,8 +63,8 @@
         "id": 32,
         "function_name": "range",
         "arg_mapping": {
-            "min_value": "lt",
-            "max_value": "gt"
+            "lt": "min_value",
+            "gt": "max_value"
         },
         "kwargs": {
             "within": false
@@ -76,8 +76,8 @@
         "id": 64,
         "function_name": "time_range",
         "arg_mapping": {
-            "min_value": "time_ge",
-            "max_value": "time_le"
+            "time_ge": "min_value",
+            "time_le": "max_value"
         },
         "kwargs": {
             "within": true,
@@ -90,7 +90,7 @@
         "id": 128,
         "function_name": "comparison",
         "arg_mapping": {
-            "compare_to": "gt"
+            "gt": "compare_to"
         },
         "kwargs": {
             "operator": ">"
@@ -102,7 +102,7 @@
         "id": 256,
         "function_name": "comparison",
         "arg_mapping": {
-            "compare_to": "lt"
+            "lt": "compare_to"
         },
         "kwargs": {
             "operator": "<"
@@ -114,7 +114,7 @@
         "id": 512,
         "function_name": "comparison",
         "arg_mapping": {
-            "compare_to": "lt"
+            "lt": "compare_to"
         },
         "kwargs": {
             "operator": "<"
