@@ -486,3 +486,24 @@ class TestMapProcessingConfigItem:
         ]
 
         assert result == expected
+
+    def test_get_all_dep_ts_with_multiple_deps_in_config(self) -> None:
+        """Test that get all deps works when a single config has multiple dependencies.
+        Added this as we were getting a failure for the Long wave correction config that has 2 dependencies.
+        """
+        filename = (
+            TEST_DATA_INPUT_DIR
+            / "api_json/valid/data_processing_configuration/cosmos_bunny_lwin_30min_raw_correction.json"
+        )
+        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
+
+        result = []
+        for item in api_model.items:
+            result.extend(map_processing_config_item(item).all_dep_ts())
+
+        expected = [
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw",
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
+        ]
+
+        assert result == expected

@@ -33,12 +33,12 @@ class ProcessingConfig:
     annotations: dict[str, Any] = field(default_factory=dict)
 
     def all_dep_ts(self) -> list[str]:
-        dep_ts = []
+        deps = set()
         for method_config in self.method_configs:
             if "dep_ts" in method_config.params:
                 dep_ts_ids = method_config.params["dep_ts"]
                 if isinstance(dep_ts_ids, list):
-                    dep_ts.extend(dep_ts_ids)
+                    deps.update(dep_ts_ids)
                 else:
-                    dep_ts.append(dep_ts_ids)
-        return dep_ts
+                    deps.add(dep_ts_ids)
+        return sorted(deps)
