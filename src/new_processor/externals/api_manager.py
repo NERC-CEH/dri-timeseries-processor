@@ -49,11 +49,9 @@ class MetadataAPIManager:
             return response.json()
         except HTTPError as e:
             logger.error(f"Failed to fetch data: {e}")
-            logger.exception(e)
             raise
-        except ValueError as e:
+        except ValueError:
             logger.error(f"Invalid JSON response from: {url}")
-            logger.exception(e)
             raise
 
     def make_paginated_api_call(
