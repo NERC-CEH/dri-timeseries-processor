@@ -6,6 +6,8 @@ import pytest
 from _pytest.mark.structures import ParameterSet
 
 TEST_DATA_INPUT_DIR = Path(__file__).parent.parent / "data" / "inputs"
+TEST_DATA_API_VALID = TEST_DATA_INPUT_DIR / "api_json" / "valid"
+TEST_DATA_API_INVALID = TEST_DATA_INPUT_DIR / "api_json" / "invalid"
 
 
 def discover_json_test_cases(directory: str | Path) -> list[ParameterSet]:
