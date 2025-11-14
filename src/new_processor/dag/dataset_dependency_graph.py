@@ -62,6 +62,7 @@ class DatasetDependencyGraph:
         self.api_router = api_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
         self._dataset_cache: dict[str, TimeSeriesContainer] = {}
+        self._dependency_cache = set()
 
     def build(self) -> None:
         """Build and return the complete dependency DAG for the specified sites, variables, and resolution
@@ -102,7 +103,6 @@ class DatasetDependencyGraph:
             root_datasets: List of root-level datasets to act as the starting batch.
         """
         current_batch = list(root_datasets)
-        dependency_cache = set()  # keep a log which IDs we know we have got direct dependencies for
 
         while current_batch:
             next_batch = []
@@ -117,42 +117,73 @@ class DatasetDependencyGraph:
                 if container.ts_id in self.datasets:
                     continue
 
-                # Resolve direct dataset dependencies
-                if container.ts_id not in dependency_cache:
-                    # The _all_dependencies endpoint is recursive, so we know that for all the "depends_on" datasets
-                    # of the parent we will already have their direct dependencies. Keep a cache so that we can skip
-                    # the API call for these child datasets
-                    self._fetch_dataset_dependencies(container.ts_id)
-                    dependency_cache.add(container.ts_id)
-                    dependency_cache.update(container.depends_on)
+                # Perform the resolving operations
+                self._resolve_direct_dependencies(container)
+                self._attach_configs_to_container(container, configs_by_id.get(container.ts_id, []))
+                self._add_dependencies_to_batch(container, next_batch)
 
-                # Attach the data processing configs
-                for config in configs_by_id.get(container.ts_id, []):
-                    if config.config_type == ConfigurationType.QUALITY_CONTROL:
-                        container.qc_configs.append(config)
-                    elif config.config_type == ConfigurationType.INFILLING:
-                        container.infill_configs.append(config)
-                    elif config.config_type == ConfigurationType.CORRECTION:
-                        container.correction_configs.append(config)
-                    else:
-                        raise TypeError(f"Unknown configuration type: {config.config_type}")
-
-                # Recurse through all known dependencies - adding items to the next batch
-                for dep_id in container.all_dependencies():
-                    if dep_id not in self.datasets:
-                        dep_container = self._fetch_dataset_by_id(dep_id)
-                        next_batch.append(dep_container)
-
-                # Once we're happy this dataset has been fully resolved, add it to our datasets container
+                # Once we're happy this dataset has been fully resolved, add it to our dataset container
                 self.datasets[container.ts_id] = container
 
             current_batch = next_batch  # move to next batch of recursion
 
+    def _resolve_direct_dependencies(self, container: TimeSeriesContainer) -> None:
+        """Resolve the direct dependencies for a dataset, using the `_all_dependencies` endpoint.
+
+        The `_all_dependencies` endpoint is recursive, so we know that for all the "depends_on" datasets of the
+        parent we will already have their direct dependencies.
+        Keep a cache so that we can skip the API call for these child datasets
+
+        Args:
+            container: The dataset container whose dependencies are being resolved.
+        """
+        if container.ts_id in self._dependency_cache:
+            return
+        # The _all_dependencies endpoint is recursive, so we know that for all the "depends_on" datasets
+        # of the parent we will already have their direct dependencies. Keep a cache so that we can skip
+        # the API call for these child datasets
+        self._fetch_dataset_dependencies(container.ts_id)
+        self._dependency_cache.add(container.ts_id)
+        self._dependency_cache.update(container.depends_on)
+
+    def _attach_configs_to_container(self, container: TimeSeriesContainer, configs: list[ProcessingConfig]) -> None:
+        """Attach data processing configuration objects (QC, infilling, correction) to a dataset container.
+
+        Args:
+            container: The dataset container receiving configuration objects.
+            configs: A list of the `ProcessingConfig` objects associated with this dataset.
+        """
+        for config in configs:
+            if config.config_type == ConfigurationType.QUALITY_CONTROL:
+                container.qc_configs.append(config)
+            elif config.config_type == ConfigurationType.INFILLING:
+                container.infill_configs.append(config)
+            elif config.config_type == ConfigurationType.CORRECTION:
+                container.correction_configs.append(config)
+            else:
+                raise TypeError(f"Unknown configuration type: {config.config_type}")
+
+    def _add_dependencies_to_batch(self, container: TimeSeriesContainer, next_batch: list[TimeSeriesContainer]) -> None:
+        """Add dataset dependencies into the next batch for resolution.
+
+        For every dependency ID listed by the container (from metadata or configs):
+            - If we haven't already processed or stored this dataset, fetch it from the API.
+            - The fetched container is appended to the next batch for further resolution.
+
+        Args:
+            container: The dataset whose dependency IDs will be inspected.
+            next_batch: The list that accumulates newly discovered datasets for the next iteration.
+        """
+        for dep_id in container.all_dependencies():
+            if dep_id not in self.datasets:
+                dep_container = self._fetch_dataset_by_id(dep_id)
+                next_batch.append(dep_container)
+
     def _fetch_root_datasets(self) -> list[TimeSeriesContainer]:
         """Fetch processed dataset containers for the target sites and variables.
 
-        Queries the metadata API for processed-level datasets matching the specified
-        sites, variables, and resolution. Results are cached for efficient lookups.
+        Queries the metadata API for processed-level datasets matching the specified sites, variables, and resolution.
+        Results are cached for efficient lookups.
 
         Returns:
             List of TimeSeriesContainer objects representing root datasets.
