@@ -102,23 +102,20 @@ class DatasetDependencyGraph:
             root_datasets: List of root-level datasets to act as the starting batch.
         """
         current_batch = list(root_datasets)
-        resolved = set()  # keep a log of which IDs have been resolved
         dependency_cache = set()  # keep a log which IDs we know we have got direct dependencies for
 
         while current_batch:
             next_batch = []
 
             # Fetch data processing configs for all IDs in the current batch - helps reduce number of API calls.
-            batch_ids = [ds.ts_id for ds in current_batch if ds.ts_id not in resolved]
+            batch_ids = [ds.ts_id for ds in current_batch if ds.ts_id not in self.datasets]
             configs_by_id = self._fetch_configs_for_dataset(batch_ids)
 
             # Resolve each dataset in the current batch
             for container in current_batch:
                 # If we've already seen this time series ID, we can skip
-                if container.ts_id in resolved:
+                if container.ts_id in self.datasets:
                     continue
-                resolved.add(container.ts_id)
-                self.datasets[container.ts_id] = container
 
                 # Resolve direct dataset dependencies
                 if container.ts_id not in dependency_cache:
@@ -144,8 +141,10 @@ class DatasetDependencyGraph:
                 for dep_id in container.all_dependencies():
                     if dep_id not in self.datasets:
                         dep_container = self._fetch_dataset_by_id(dep_id)
-                        self.datasets[dep_id] = dep_container
                         next_batch.append(dep_container)
+
+                # Once we're happy this dataset has been fully resolved, add it to our datasets container
+                self.datasets[container.ts_id] = container
 
             current_batch = next_batch  # move to next batch of recursion
 
