@@ -33,7 +33,6 @@ class MetadataRouter:
             The JSON response containing datasets matching the provided parameters.
         """
         url = f"{self.host}/id/dataset"
-        print(url, query_params)
         return self.api_manager.make_paginated_api_call(url, query_params)
 
     def fetch_dataset_by_id(self, dataset_id: str) -> dict[str, Any]:
@@ -46,7 +45,6 @@ class MetadataRouter:
             The JSON response for the specified dataset.
         """
         url = f"{self.host}/id/dataset/{dataset_id}?_view=timeseries"
-        print(url)
         return self.api_manager.make_paginated_api_call(url)
 
     def fetch_all_dependencies(self, dataset_id: str) -> dict[str, Any]:
@@ -60,7 +58,6 @@ class MetadataRouter:
             The JSON response containing all dataset dependencies, including nested ones.
         """
         url = f"{self.host}/id/dataset/{dataset_id}/_all_dependencies"
-        print(url)
         return self.api_manager.make_paginated_api_call(url)
 
     def fetch_processing_configs(self, query_params: tuple[tuple[str, str], ...]) -> dict[str, Any]:
@@ -73,5 +70,4 @@ class MetadataRouter:
             The JSON response containing data processing configurations.
         """
         url = f"{self.host}/id/data-processing-configuration"
-        print(url, query_params)
         return self.api_manager.make_paginated_api_call(url, query_params)
