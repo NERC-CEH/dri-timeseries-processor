@@ -12,8 +12,7 @@ giving knowledge of which datasets need to be processed before others.
 from collections import defaultdict
 
 from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from new_processor.api_models.dataset_dependencies import DatasetDependencies
-from new_processor.api_models.dataset_timeseries import TimeSeriesDataset
+from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.domain_models.processing_config import ProcessingConfig
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.externals.routers import MetadataRouter
@@ -81,7 +80,7 @@ class DatasetDependencyGraph:
         ]
 
         response = self.api_router.fetch_dataset_by_params(tuple(sites_params + variables_params + other_params))
-        parsed = TimeSeriesDataset.model_validate(response)
+        parsed = TimeSeriesDatasetResponse.model_validate(response)
 
         all_containers = []
         for item in parsed.items:
@@ -100,7 +99,7 @@ class DatasetDependencyGraph:
             List of TimeSeriesContainer objects that the specified dataset depends on.
         """
         response = self.api_router.fetch_all_dependencies(extract_uri_id(dataset_id))
-        parsed = DatasetDependencies.model_validate(response)
+        parsed = TimeSeriesDatasetResponse.model_validate(response)
 
         all_containers = []
         for item in parsed.items:
@@ -124,7 +123,7 @@ class DatasetDependencyGraph:
             return self._dataset_cache[dataset_id]
 
         response = self.api_router.fetch_dataset_by_id(extract_uri_id(dataset_id))
-        parsed = TimeSeriesDataset.model_validate(response)
+        parsed = TimeSeriesDatasetResponse.model_validate(response)
         container = map_dataset_item(parsed.items[0])
         self._dataset_cache[container.ts_id] = container
         return container

@@ -6,7 +6,7 @@ from tests.utils.validation_helpers import valid_parses
 
 from new_processor.api_models.annotation import HasAnnotationItem
 from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from new_processor.api_models.dataset_timeseries import TimeSeriesDataset
+from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
 from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
@@ -23,7 +23,7 @@ from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingL
 class TestMapDatasetItem:
     def test_dataset_with_method(self) -> None:
         filename = TEST_DATA_INPUT_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_rn_1day_processed.json"
-        api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
+        api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
         result = map_dataset_item(api_model.items[0])
 
@@ -62,7 +62,7 @@ class TestMapDatasetItem:
 
     def test_dataset_no_method(self) -> None:
         filename = TEST_DATA_INPUT_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_ta_30min_raw.json"
-        api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
+        api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
         result = map_dataset_item(api_model.items[0])
 

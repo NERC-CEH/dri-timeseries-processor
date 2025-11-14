@@ -86,7 +86,7 @@ def patch_dataset_model_and_mapper(
         mock_router.fetch_processing_configs.return_value = {"items": items}
 
         # Mimic the model_validate of API pydantic models returning a list of dataset dicts
-        api_models = ["DatasetDependencies", "TimeSeriesDataset", "DataProcessingConfiguration"]
+        api_models = ["TimeSeriesDatasetResponse", "DataProcessingConfiguration"]
         for api_model in api_models:
             monkeypatch.setattr(
                 f"new_processor.dag.dataset_dependency_graph.{api_model}.model_validate", lambda _: api_model_return
