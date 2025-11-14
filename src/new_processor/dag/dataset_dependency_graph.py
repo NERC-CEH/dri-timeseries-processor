@@ -10,6 +10,7 @@ giving knowledge of which datasets need to be processed before others.
 """
 
 from collections import defaultdict
+from typing import Any
 
 from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
@@ -61,99 +62,6 @@ class DatasetDependencyGraph:
         self.api_router = api_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
         self._dataset_cache: dict[str, TimeSeriesContainer] = {}
-
-    def _fetch_root_datasets(self) -> list[TimeSeriesContainer]:
-        """Fetch processed dataset containers for the target sites and variables.
-
-        Queries the metadata API for processed-level datasets matching the specified
-        sites, variables, and resolution. Results are cached for efficient lookups.
-
-        Returns:
-            List of TimeSeriesContainer objects representing root datasets.
-        """
-        sites_params = [("originatingSite", f"{SITE_URI}/{self.network}-{site.lower()}") for site in self.sites]
-        variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in self.variables]
-        other_params = [
-            ("_view", "timeseries"),
-            ("type.measure.aggregation.periodicity", self.periodicity),
-            ("type.processingLevel", f"{PROCESSING_LEVEL_URI}/{ProcessingLevel.PROCESSED.value}"),
-        ]
-
-        response = self.api_router.fetch_dataset_by_params(tuple(sites_params + variables_params + other_params))
-        parsed = TimeSeriesDatasetResponse.model_validate(response)
-
-        all_containers = []
-        for item in parsed.items:
-            container = map_dataset_item(item)
-            self._dataset_cache[container.ts_id] = container
-            all_containers.append(container)
-        return all_containers
-
-    def _fetch_dataset_dependencies(self, dataset_id: str) -> list[TimeSeriesContainer]:
-        """Fetch all dependencies for a given dataset.
-
-        Args:
-            dataset_id: The dataset URI to fetch dependencies for.
-
-        Returns:
-            List of TimeSeriesContainer objects that the specified dataset depends on.
-        """
-        response = self.api_router.fetch_all_dependencies(extract_uri_id(dataset_id))
-        parsed = TimeSeriesDatasetResponse.model_validate(response)
-
-        all_containers = []
-        for item in parsed.items:
-            container = map_dataset_item(item)
-            self._dataset_cache[container.ts_id] = container
-            all_containers.append(container)
-        return all_containers
-
-    def _fetch_dataset_by_id(self, dataset_id: str) -> TimeSeriesContainer:
-        """Fetch a single dataset container by its ID.
-
-        Checks the cache first before making an API call. Results are cached for subsequent lookups.
-
-        Args:
-            dataset_id: The dataset URI or ID to fetch.
-
-        Returns:
-            TimeSeriesContainer object for the requested dataset.
-        """
-        if dataset_id in self._dataset_cache:
-            return self._dataset_cache[dataset_id]
-
-        response = self.api_router.fetch_dataset_by_id(extract_uri_id(dataset_id))
-        parsed = TimeSeriesDatasetResponse.model_validate(response)
-        container = map_dataset_item(parsed.items[0])
-        self._dataset_cache[container.ts_id] = container
-        return container
-
-    def _fetch_configs_for_dataset(self, dataset_id: str | list[str]) -> dict[str, list[ProcessingConfig]]:
-        """Fetch data processing configurations (QC, infilling, correction) that apply to the specified dataset(s).
-
-        Args:
-            dataset_id: Single dataset ID or list of dataset IDs.
-
-        Returns:
-            Dictionary mapping dataset IDs to their list of processing configurations.
-        """
-        if not dataset_id:
-            return {}
-
-        if isinstance(dataset_id, str):
-            dataset_id = [dataset_id]
-
-        config_type_params = [("type", f"{CONFIGURATION_TYPE_URI}/{ct.value}") for ct in ConfigurationType]
-        other_params = [("appliesToTimeSeries", d) for d in dataset_id]
-        response = self.api_router.fetch_processing_configs(tuple(config_type_params + other_params))
-        parsed = DataProcessingConfiguration.model_validate(response)
-
-        dataset_configs = defaultdict(list)
-        for item in parsed.items:
-            mapped_config = map_processing_config_item(item)
-            dataset_configs[mapped_config.ts_id].append(mapped_config)
-
-        return dataset_configs
 
     def build(self) -> None:
         """Build and return the complete dependency DAG for the specified sites, variables, and resolution
@@ -240,6 +148,116 @@ class DatasetDependencyGraph:
                         next_batch.append(dep_container)
 
             current_batch = next_batch  # move to next batch of recursion
+
+    def _fetch_root_datasets(self) -> list[TimeSeriesContainer]:
+        """Fetch processed dataset containers for the target sites and variables.
+
+        Queries the metadata API for processed-level datasets matching the specified
+        sites, variables, and resolution. Results are cached for efficient lookups.
+
+        Returns:
+            List of TimeSeriesContainer objects representing root datasets.
+        """
+        sites_params = [("originatingSite", f"{SITE_URI}/{self.network}-{site.lower()}") for site in self.sites]
+        variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in self.variables]
+        other_params = [
+            ("_view", "timeseries"),
+            ("type.measure.aggregation.periodicity", self.periodicity),
+            ("type.processingLevel", f"{PROCESSING_LEVEL_URI}/{ProcessingLevel.PROCESSED.value}"),
+        ]
+
+        response = self.api_router.fetch_dataset_by_params(tuple(sites_params + variables_params + other_params))
+        all_containers = self._build_dataset_containers(response)
+        return all_containers
+
+    def _fetch_dataset_dependencies(self, dataset_id: str) -> list[TimeSeriesContainer]:
+        """Fetch all dependencies for a given dataset.
+
+        Args:
+            dataset_id: The dataset URI to fetch dependencies for.
+
+        Returns:
+            List of TimeSeriesContainer objects that the specified dataset depends on.
+        """
+        response = self.api_router.fetch_all_dependencies(extract_uri_id(dataset_id))
+        all_containers = self._build_dataset_containers(response)
+        return all_containers
+
+    def _fetch_dataset_by_id(self, dataset_id: str) -> TimeSeriesContainer:
+        """Fetch a single dataset container by its ID.
+
+        Checks the cache first before making an API call. Results are cached for subsequent lookups.
+
+        Args:
+            dataset_id: The dataset URI or ID to fetch.
+
+        Returns:
+            TimeSeriesContainer object for the requested dataset.
+        """
+        if dataset_id in self._dataset_cache:
+            return self._dataset_cache[dataset_id]
+
+        response = self.api_router.fetch_dataset_by_id(extract_uri_id(dataset_id))
+        all_containers = self._build_dataset_containers(response)
+        return all_containers[0]
+
+    def _fetch_configs_for_dataset(self, dataset_id: str | list[str]) -> dict[str, list[ProcessingConfig]]:
+        """Fetch data processing configurations (QC, infilling, correction) that apply to the specified dataset(s).
+
+        Args:
+            dataset_id: Single dataset ID or list of dataset IDs.
+
+        Returns:
+            Dictionary mapping dataset IDs to their list of processing configurations.
+        """
+        if not dataset_id:
+            return {}
+
+        if isinstance(dataset_id, str):
+            dataset_id = [dataset_id]
+
+        config_type_params = [("type", f"{CONFIGURATION_TYPE_URI}/{ct.value}") for ct in ConfigurationType]
+        other_params = [("appliesToTimeSeries", d) for d in dataset_id]
+        response = self.api_router.fetch_processing_configs(tuple(config_type_params + other_params))
+
+        dataset_configs = self._build_processing_configs(response)
+        return dataset_configs
+
+    def _build_dataset_containers(self, dataset_response: dict[str, Any]) -> list[TimeSeriesContainer]:
+        """Parse an API response container timeseries dataset items and convert them to the `TimeSeriesContainer`
+        domain models.
+
+        Cache each container so that later dependency-resolution steps can reuse them without repeated construction.
+
+        Args:
+            dataset_response: The JSON dictionary from the metadata API representing a set of dataset items.
+
+        Returns:
+            All mapped `TimeSeriesContainer` extracted from the response.
+        """
+        parsed = TimeSeriesDatasetResponse.model_validate(dataset_response)
+        all_containers = []
+        for item in parsed.items:
+            container = map_dataset_item(item)
+            self._dataset_cache[container.ts_id] = container
+            all_containers.append(container)
+        return all_containers
+
+    def _build_processing_configs(self, dataset_response: dict[str, Any]) -> dict[str, list[ProcessingConfig]]:
+        """Parse an API response containing processing configuration items and return them grouped by timeseries ID.
+
+        Args:
+            dataset_response: The JSON dictionary from the metadata API representing a set of processing configs.
+
+        Returns:
+            A dictionary keyed by timeseries ID, with value as the list of associated processing configs.
+        """
+        parsed = DataProcessingConfiguration.model_validate(dataset_response)
+        dataset_configs = defaultdict(list)
+        for item in parsed.items:
+            mapped_config = map_processing_config_item(item)
+            dataset_configs[mapped_config.ts_id].append(mapped_config)
+        return dataset_configs
 
     def build_dag(self) -> dict[str, list[str]]:
         """Construct the DAG structure from resolved datasets.
