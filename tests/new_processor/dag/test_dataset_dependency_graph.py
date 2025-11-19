@@ -31,9 +31,9 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         variable=ts_id + "_variable",
         processing_level=ProcessingLevel.PROCESSED,
         depends_on=depends_on or [],
-        qc_configs=[],
-        infill_configs=[],
-        correction_configs=[],
+        qc_configs=set(),
+        infill_configs=set(),
+        correction_configs=set(),
     )
 
 
@@ -190,8 +190,8 @@ class TestResolveDataset:
         builder._resolve_dataset([container_a])
 
         # add the expected cfg into the domain models
-        container_a.correction_configs = [make_processing_config_container("A")]
-        container_b.correction_configs = [make_processing_config_container("B")]
+        container_a.correction_configs = {make_processing_config_container("A")}
+        container_b.correction_configs = {make_processing_config_container("B")}
 
         assert builder.datasets == {"A": container_a, "B": container_b}
         assert mock_router.fetch_all_dependencies.call_count == 1

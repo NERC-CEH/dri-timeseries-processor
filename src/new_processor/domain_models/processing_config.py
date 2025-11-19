@@ -42,3 +42,7 @@ class ProcessingConfig:
                 else:
                     deps.add(dep_ts_ids)
         return sorted(deps)
+
+    def __hash__(self) -> int:
+        """Allow this container to be used as a dict or set key."""
+        return hash(self.ts_id + "_" + self.config_id)

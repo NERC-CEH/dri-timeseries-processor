@@ -52,9 +52,9 @@ class TestMapDatasetItem:
                 "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_raw",
             ],
             direct_depends_on=["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"],
-            correction_configs=[],
-            qc_configs=[],
-            infill_configs=[],
+            correction_configs=set(),
+            qc_configs=set(),
+            infill_configs=set(),
             data=None,
         )
 
@@ -81,9 +81,9 @@ class TestMapDatasetItem:
             method=None,
             depends_on=[],
             direct_depends_on=[],
-            correction_configs=[],
-            qc_configs=[],
-            infill_configs=[],
+            correction_configs=set(),
+            qc_configs=set(),
+            infill_configs=set(),
             data=None,
         )
 
@@ -137,9 +137,9 @@ class TestMapDatasetItem:
             variable="variable",
             depends_on=["dep1", "dep2", "dep3"],
             direct_depends_on=["dep1"],
-            correction_configs=[mock_config_correction],
-            qc_configs=[mock_config_qc],
-            infill_configs=[mock_config_infill],
+            correction_configs={mock_config_correction},
+            qc_configs={mock_config_qc},
+            infill_configs={mock_config_infill},
         )
         expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
         assert item.all_dependencies() == expected

@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from time_stream import TimeFrame
 
 from new_processor.domain_models.processing_config import ProcessingConfig
-from new_processor.utils.enums import MethodType, ProcessingLevel
+from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 
 
 @dataclass
@@ -33,16 +33,16 @@ class TimeSeriesContainer:
     depends_on: list[str] = field(default_factory=list)
     direct_depends_on: list[str] = field(default_factory=list)
 
-    correction_configs: list[ProcessingConfig] = field(default_factory=list)
-    qc_configs: list[ProcessingConfig] = field(default_factory=list)
-    infill_configs: list[ProcessingConfig] = field(default_factory=list)
+    correction_configs: set[ProcessingConfig] = field(default_factory=set)
+    qc_configs: set[ProcessingConfig] = field(default_factory=set)
+    infill_configs: set[ProcessingConfig] = field(default_factory=set)
 
     data: TimeFrame | None = None
 
     def all_dependencies(self) -> list[str]:
         """Return a deduplicated list of all dependencies, including config-based."""
         deps = set(self.depends_on)
-        for c in self.correction_configs + self.qc_configs + self.infill_configs:
+        for c in self.correction_configs | self.qc_configs | self.infill_configs:
             deps.update(c.all_dep_ts())
 
         return sorted(deps)
@@ -52,6 +52,22 @@ class TimeSeriesContainer:
         raw bucket
         """
         return self.method is None
+
+    def attach_configs(self, configs: list[ProcessingConfig]) -> None:
+        """Attach data processing configuration objects (QC, infilling, correction) to this container.
+
+        Args:
+            configs: A list of the `ProcessingConfig` objects to attach.
+        """
+        for config in configs:
+            if config.config_type == ConfigurationType.QUALITY_CONTROL:
+                self.qc_configs.add(config)
+            elif config.config_type == ConfigurationType.INFILLING:
+                self.infill_configs.add(config)
+            elif config.config_type == ConfigurationType.CORRECTION:
+                self.correction_configs.add(config)
+            else:
+                raise TypeError(f"Unknown configuration type: {config.config_type}")
 
     def __hash__(self) -> int:
         """Allow this container to be used as a dict or set key."""

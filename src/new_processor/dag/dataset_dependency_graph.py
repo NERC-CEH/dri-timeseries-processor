@@ -123,7 +123,7 @@ class DatasetDependencyGraph:
 
                 # Perform the resolving operations
                 self._resolve_direct_dependencies(container)
-                self._attach_configs_to_container(container, configs_by_id.get(container.ts_id, []))
+                container.attach_configs(configs_by_id.get(container.ts_id, []))
                 self._add_dependencies_to_batch(container, next_batch)
 
                 # Once we're happy this dataset has been fully resolved, add it to our dataset container
@@ -160,23 +160,6 @@ class DatasetDependencyGraph:
         self._fetch_dataset_dependencies(container.ts_id)
         self._dependency_cache.add(container.ts_id)
         self._dependency_cache.update(container.depends_on)
-
-    def _attach_configs_to_container(self, container: TimeSeriesContainer, configs: list[ProcessingConfig]) -> None:
-        """Attach data processing configuration objects (QC, infilling, correction) to a dataset container.
-
-        Args:
-            container: The dataset container receiving configuration objects.
-            configs: A list of the `ProcessingConfig` objects associated with this dataset.
-        """
-        for config in configs:
-            if config.config_type == ConfigurationType.QUALITY_CONTROL:
-                container.qc_configs.append(config)
-            elif config.config_type == ConfigurationType.INFILLING:
-                container.infill_configs.append(config)
-            elif config.config_type == ConfigurationType.CORRECTION:
-                container.correction_configs.append(config)
-            else:
-                raise TypeError(f"Unknown configuration type: {config.config_type}")
 
     def _add_dependencies_to_batch(
         self, container: TimeSeriesContainer, next_batch: dict[str, TimeSeriesContainer]
