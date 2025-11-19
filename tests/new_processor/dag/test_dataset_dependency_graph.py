@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.domain_models.processing_config import ProcessingConfig
+from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 
@@ -254,8 +254,8 @@ class TestBuildDag:
 
         assert dag == {"A": ["B"], "B": [], "C": []}
 
-    def test_build_dag_nested_dependencies(self) -> None:
-        """Test that nested dependency graphs include all dependencies."""
+    def test_build_dag_simple_nested_dependencies(self) -> None:
+        """Test that a simple nested dependency graphs include all dependencies."""
         container_a = make_time_series_container("A", depends_on=["B", "C"])
         container_b = make_time_series_container("B", depends_on=["D"])
         container_c = make_time_series_container("C", depends_on=["D"])
@@ -269,3 +269,127 @@ class TestBuildDag:
         dag = builder.build_dag()
 
         assert dag == {"A": ["B", "C"], "B": ["D"], "C": ["D"], "D": []}
+
+
+class TestBuildResolver:
+    @pytest.mark.parametrize(
+        "all_ids, root_ids, direct_dependencies, config_dependencies, expected_batches, expected_dag",
+        [
+            (
+                # Scenario 1
+                # ----------
+                # Setup:
+                #   - A as root dataset
+                #   - A depends on B
+                #   - B depends on C via a config
+                # Expected behaviour:
+                #   - A should be in batch 1,
+                #   - B should be in batch 2
+                #   - C in batch 3
+                ["A", "B", "C"],
+                ["A"],
+                {"A": ["B"]},
+                {"B": ["C"]},
+                [["A"], ["B"], ["C"]],
+                {"A": ["B"], "B": ["C"], "C": []},
+            ),
+            (
+                # Scenario 2
+                # ----------
+                # Setup:
+                #   - A, B as root datasets
+                #   - B depends on C
+                #   - C depends on D via a config
+                #   - D depends on A (to check the deeper levels of recursion)
+                # Expected behaviour:
+                #   - A, B should be in batch 1,
+                #   - C should be in batch 2
+                #   - D in batch 3
+                #   - A would be in next batch, but should exit early as A already resolved.
+                ["A", "B", "C", "D"],
+                ["A", "B"],
+                {"B": ["C"], "D": ["A"]},
+                {"C": "D"},
+                [["A", "B"], ["C"], ["D"]],
+                {"A": [], "B": ["C"], "C": ["D"], "D": ["A"]},
+            ),
+            (
+                # Scenario 3
+                # ----------
+                # Setup:
+                #   - A and D as root datasets
+                #   - A depends on B, C, D
+                #   - B and C depends on D via a config
+                #   - D depends on B
+                # Expected behaviour:
+                #   - A, D should be in batch 1,
+                #   - B, C should be in batch 2, along with D (as it's a dep of A, and hasn't been processed yet)
+                #   - No more batches as everything processed by now.
+                ["A", "B", "C", "D"],
+                ["A", "D"],
+                {"A": ["B", "C", "D"], "D": ["B"]},
+                {"B": ["D"], "C": ["D"]},
+                [["A", "D"], ["B", "C", "D"]],
+                {"A": ["B", "C", "D"], "B": ["D"], "C": ["D"], "D": ["B"]},
+            ),
+        ],
+    )
+    def test_build_scenarios(
+        self,
+        all_ids: list,
+        root_ids: list,
+        direct_dependencies: dict,
+        config_dependencies: dict,
+        expected_batches: list,
+        expected_dag: dict,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Test scenario for the dataset dependency graph resolver."""
+
+        # Create TimeSeriesContainer objects for all IDs in this test
+        containers = {i: make_time_series_container(i, depends_on=direct_dependencies.get(i, [])) for i in all_ids}
+
+        # Wrangle the container objects into expected formats return by the methods we are going to mock later
+        root_containers = [containers[i] for i in root_ids]
+        direct_dependencies = {i: [containers[d] for d in deps] for i, deps in direct_dependencies.items()}
+        config_dependencies = {
+            i: [
+                ProcessingConfig(
+                    ts_id=i,
+                    config_id="config_id",
+                    config_type=ConfigurationType.QUALITY_CONTROL,
+                    method_configs=[MethodConfig(method="method_with_dependency", params={"dep_ts": d})],
+                    annotations={},
+                )
+                for d in deps
+            ]
+            for i, deps in config_dependencies.items()
+        }
+        expected_batches = [{i: containers[i] for i in batch} for batch in expected_batches]
+
+        # Set up the DatasetDependencyGraph class object
+        mock_router = create_mock_router([dataset_id for dataset_id in containers.keys()])
+        builder = DatasetDependencyGraph("a_network", "a_site", "A", "PT30M", mock_router)
+
+        # Mock the methods that the `build` method calls with the results of the wrangling we did earlier
+        builder._fetch_root_datasets = MagicMock(return_value=root_containers)
+        builder._fetch_dataset_by_id = MagicMock(side_effect=lambda i: containers[i])
+        builder._fetch_dataset_dependencies = MagicMock(side_effect=lambda i: direct_dependencies.get(i, []))
+        builder._fetch_configs_for_dataset = MagicMock(
+            side_effect=lambda i: {d: config_dependencies.get(d, []) for d in i}
+        )
+
+        # We want to test which IDs are being processed in which batch, so hook into a method that captures that info
+        batches = []
+
+        def capture(batch: dict) -> None:
+            batches.append(batch)
+
+        builder._batch_start = MagicMock(side_effect=capture)
+
+        # Do the resolving and test behaviours
+        builder.build()
+        assert batches == expected_batches
+
+        dag = builder.build_dag()
+        assert dag == expected_dag

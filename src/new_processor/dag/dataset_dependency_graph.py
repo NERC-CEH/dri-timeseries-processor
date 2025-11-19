@@ -9,6 +9,7 @@ The graph enables downstream components to determine the full dependency chain f
 giving knowledge of which datasets need to be processed before others.
 """
 
+import logging
 from collections import defaultdict
 from typing import Any
 
@@ -21,6 +22,8 @@ from new_processor.mappers.api_to_domain import map_dataset_item, map_processing
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
 from new_processor.utils.urls import CONFIGURATION_TYPE_URI, PROCESSING_LEVEL_URI, SITE_URI
+
+logger = logging.getLogger(__name__)
 
 
 class DatasetDependencyGraph:
@@ -102,19 +105,20 @@ class DatasetDependencyGraph:
         Args:
             root_datasets: List of root-level datasets to act as the starting batch.
         """
-        current_batch = list(root_datasets)
+        current_batch = {ds.ts_id: ds for ds in root_datasets}
 
         while current_batch:
-            next_batch = []
+            self._batch_start(current_batch)
+            next_batch = {}
 
             # Fetch data processing configs for all IDs in the current batch - helps reduce number of API calls.
-            batch_ids = [ds.ts_id for ds in current_batch if ds.ts_id not in self.datasets]
+            batch_ids = [ts_id for ts_id in current_batch if ts_id not in self.datasets]
             configs_by_id = self._fetch_configs_for_dataset(batch_ids)
 
             # Resolve each dataset in the current batch
-            for container in current_batch:
+            for ts_id, container in current_batch.items():
                 # If we've already seen this time series ID, we can skip
-                if container.ts_id in self.datasets:
+                if ts_id in self.datasets:
                     continue
 
                 # Perform the resolving operations
@@ -123,9 +127,20 @@ class DatasetDependencyGraph:
                 self._add_dependencies_to_batch(container, next_batch)
 
                 # Once we're happy this dataset has been fully resolved, add it to our dataset container
-                self.datasets[container.ts_id] = container
+                self.datasets[ts_id] = container
 
             current_batch = next_batch  # move to next batch of recursion
+
+    @staticmethod
+    def _batch_start(batch: dict[str, TimeSeriesContainer]) -> None:
+        """A simple observability hook to capture the batch ids currently being processed.
+
+        This method is mainly to give unit test something to hook into to test the current batch ids.
+
+        Args:
+            batch: Batch IDs being resolved
+        """
+        logger.debug(f"Resolving dataset ids: {list(batch.keys())}")
 
     def _resolve_direct_dependencies(self, container: TimeSeriesContainer) -> None:
         """Resolve the direct dependencies for a dataset, using the `_all_dependencies` endpoint.
@@ -163,7 +178,9 @@ class DatasetDependencyGraph:
             else:
                 raise TypeError(f"Unknown configuration type: {config.config_type}")
 
-    def _add_dependencies_to_batch(self, container: TimeSeriesContainer, next_batch: list[TimeSeriesContainer]) -> None:
+    def _add_dependencies_to_batch(
+        self, container: TimeSeriesContainer, next_batch: dict[str, TimeSeriesContainer]
+    ) -> None:
         """Add dataset dependencies into the next batch for resolution.
 
         For every dependency ID listed by the container (from metadata or configs):
@@ -172,12 +189,12 @@ class DatasetDependencyGraph:
 
         Args:
             container: The dataset whose dependency IDs will be inspected.
-            next_batch: The list that accumulates newly discovered datasets for the next iteration.
+            next_batch: The set that accumulates newly discovered datasets for the next iteration.
         """
         for dep_id in container.all_dependencies():
-            if dep_id not in self.datasets:
+            if dep_id not in self.datasets and dep_id not in next_batch:
                 dep_container = self._fetch_dataset_by_id(dep_id)
-                next_batch.append(dep_container)
+                next_batch[dep_id] = dep_container
 
     def _fetch_root_datasets(self) -> list[TimeSeriesContainer]:
         """Fetch processed dataset containers for the target sites and variables.
