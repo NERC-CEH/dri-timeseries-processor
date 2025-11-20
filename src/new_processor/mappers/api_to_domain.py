@@ -8,18 +8,16 @@ domain-level objects.
 from collections import defaultdict
 from typing import Any
 
-from src.new_processor.api_models.data_processing_configuration import (
+from new_processor.api_models.annotation import HasAnnotationItem
+from new_processor.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from src.new_processor.api_models.dataset_timeseries import TimeSeriesDatasetItem
-from src.new_processor.api_models.shared import HasCurrentConfigurationItem
-from src.new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from src.new_processor.domain_models.time_series_container import TimeSeriesContainer
-from src.new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
-from src.new_processor.utils.strings import extract_uri_id
-
-from new_processor.api_models.annotation import HasAnnotationItem
-from new_processor.api_models.shared import ArgumentItem
+from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetItem
+from new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from new_processor.utils.strings import extract_uri_id
 
 
 def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
@@ -78,11 +76,13 @@ def map_processing_config_item(item: DataProcessingConfigurationItem) -> Process
         A ProcessingConfig domain object containing annotations and a list of MethodConfig objects which provide
         specific method configurations for use in the processing pipeline
     """
+    ts_id = item.applies_to_time_series[0].id
     config_type = ConfigurationType(extract_uri_id(item.type.id))
     annotations = extract_annotations(item.has_annotation)
     method_configs = [map_method_config(cfg) for cfg in item.has_current_configuration or []]
 
     return ProcessingConfig(
+        ts_id=ts_id,
         config_id=item.id,
         config_type=config_type,
         method_configs=method_configs,

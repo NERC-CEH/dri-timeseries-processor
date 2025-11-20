@@ -1,8 +1,9 @@
 import pytest
 from pydantic import ValidationError
-from src.new_processor.api_models.annotation import HasAnnotationItem
 from tests.utils.fixture_helpers import load_json_string
 from tests.utils.validation_helpers import assert_pydantic_validation_error_cause
+
+from new_processor.api_models.annotation import HasAnnotationItem
 
 
 class TestAnnotation:

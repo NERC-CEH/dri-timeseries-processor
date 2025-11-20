@@ -1,28 +1,29 @@
 from datetime import datetime
 from unittest.mock import Mock
 
-from src.new_processor.api_models.annotation import HasAnnotationItem
-from src.new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from src.new_processor.api_models.dataset_timeseries import TimeSeriesDataset
-from src.new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
-from src.new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from src.new_processor.domain_models.time_series_container import TimeSeriesContainer
-from src.new_processor.mappers.api_to_domain import (
+from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
+from tests.utils.validation_helpers import valid_parses
+
+from new_processor.api_models.annotation import HasAnnotationItem
+from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
+from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.mappers.api_to_domain import (
     extract_annotations,
     extract_arguments,
     map_dataset_item,
     map_method_config,
     map_processing_config_item,
 )
-from src.new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
-from tests.utils.fixture_helpers import FIXTURES_INPUTS_DIR, load_json_file
-from tests.utils.validation_helpers import valid_parses
+from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 
 
 class TestMapDatasetItem:
     def test_dataset_with_method(self) -> None:
-        filename = FIXTURES_INPUTS_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_rn_1day_processed.json"
-        api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
+        filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_rn_1day_processed.json"
+        api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
         result = map_dataset_item(api_model.items[0])
 
@@ -51,17 +52,17 @@ class TestMapDatasetItem:
                 "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_raw",
             ],
             direct_depends_on=["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"],
-            correction_configs=[],
-            qc_configs=[],
-            infill_configs=[],
+            correction_configs=set(),
+            qc_configs=set(),
+            infill_configs=set(),
             data=None,
         )
 
         assert result == expected
 
     def test_dataset_no_method(self) -> None:
-        filename = FIXTURES_INPUTS_DIR / "api_json/valid/dataset_timeseries/cosmos_bunny_ta_30min_raw.json"
-        api_model = valid_parses(load_json_file, filename, TimeSeriesDataset)
+        filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_ta_30min_raw.json"
+        api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
         result = map_dataset_item(api_model.items[0])
 
@@ -80,9 +81,9 @@ class TestMapDatasetItem:
             method=None,
             depends_on=[],
             direct_depends_on=[],
-            correction_configs=[],
-            qc_configs=[],
-            infill_configs=[],
+            correction_configs=set(),
+            qc_configs=set(),
+            infill_configs=set(),
             data=None,
         )
 
@@ -136,9 +137,9 @@ class TestMapDatasetItem:
             variable="variable",
             depends_on=["dep1", "dep2", "dep3"],
             direct_depends_on=["dep1"],
-            correction_configs=[mock_config_correction],
-            qc_configs=[mock_config_qc],
-            infill_configs=[mock_config_infill],
+            correction_configs={mock_config_correction},
+            qc_configs={mock_config_qc},
+            infill_configs={mock_config_infill},
         )
         expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
         assert item.all_dependencies() == expected
@@ -396,14 +397,13 @@ class TestExtractAnnotations:
 
 class TestMapProcessingConfigItem:
     def test_qc_processing_config(self) -> None:
-        filename = (
-            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
-        )
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0])
 
         expected = ProcessingConfig(
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_raw-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
@@ -418,14 +418,13 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_infill_processing_config(self) -> None:
-        filename = (
-            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_infill.json"
-        )
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_infill.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0])
 
         expected = ProcessingConfig(
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
@@ -441,15 +440,13 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_correction_processing_config(self) -> None:
-        filename = (
-            FIXTURES_INPUTS_DIR
-            / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_correction.json"
-        )
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_correction.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0])
 
         expected = ProcessingConfig(
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/sgb0ag444qc40u99nsdo8n5m0kuscic7",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
@@ -467,9 +464,7 @@ class TestMapProcessingConfigItem:
 
     def test_get_all_dep_ts(self) -> None:
         """Test that we can extract all dependent timeseries Ids from all processing configurations"""
-        filename = (
-            FIXTURES_INPUTS_DIR / "api_json/valid/data_processing_configuration/cosmos_bunny_swin_30min_raw_qc.json"
-        )
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = []
@@ -479,6 +474,24 @@ class TestMapProcessingConfigItem:
         expected = [
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw",
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-scans_30min_raw",
+        ]
+
+        assert result == expected
+
+    def test_get_all_dep_ts_with_multiple_deps_in_config(self) -> None:
+        """Test that get all deps works when a single config has multiple dependencies.
+        Added this as we were getting a failure for the Long wave correction config that has 2 dependencies.
+        """
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_lwin_30min_raw_correction.json"
+        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
+
+        result = []
+        for item in api_model.items:
+            result.extend(map_processing_config_item(item).all_dep_ts())
+
+        expected = [
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw",
+            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
         ]
 
         assert result == expected

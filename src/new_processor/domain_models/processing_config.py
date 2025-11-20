@@ -26,14 +26,23 @@ class MethodConfig:
 
 @dataclass
 class ProcessingConfig:
+    ts_id: str
     config_id: str
     config_type: ConfigurationType
     method_configs: list[MethodConfig]
     annotations: dict[str, Any] = field(default_factory=dict)
 
     def all_dep_ts(self) -> list[str]:
-        dep_ts = []
+        deps = set()
         for method_config in self.method_configs:
             if "dep_ts" in method_config.params:
-                dep_ts.append(method_config.params["dep_ts"])
-        return dep_ts
+                dep_ts_ids = method_config.params["dep_ts"]
+                if isinstance(dep_ts_ids, list):
+                    deps.update(dep_ts_ids)
+                else:
+                    deps.add(dep_ts_ids)
+        return sorted(deps)
+
+    def __hash__(self) -> int:
+        """Allow this container to be used as a dict or set key."""
+        return hash(self.ts_id + "_" + self.config_id)

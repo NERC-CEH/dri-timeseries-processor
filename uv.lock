@@ -600,7 +600,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.34.138" },
     { name = "boto3-stubs", extras = ["s3"] },
     { name = "config", specifier = ">=0.5.1" },
-    { name = "dri-utils", extras = ["all"], git = "https://github.com/NERC-CEH/dri-utils.git" },
+    { name = "dri-utils", git = "https://github.com/NERC-CEH/dri-utils.git" },
     { name = "duckdb", specifier = ">=1.1.2" },
     { name = "httpx" },
     { name = "isodate" },
