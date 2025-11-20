@@ -177,7 +177,7 @@ class TestFetchDatasets:
         assert mock_router.fetch_processing_configs.call_count == 1
 
 
-class TestResolveDataset:
+class TestBuild:
     def test_resolve_dataset_single(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that a single-level dependency chain resolves correctly and configs are attached."""
         container_a = make_time_series_container("A", depends_on=["B"])
@@ -186,8 +186,8 @@ class TestResolveDataset:
         mock_router = setup_mocks(["A", "B"], monkeypatch)
 
         builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
-
-        builder._resolve_dataset([container_a])
+        builder._fetch_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
 
         # add the expected cfg into the domain models
         container_a.correction_configs = {make_processing_config_container("A")}
@@ -206,13 +206,13 @@ class TestResolveDataset:
         mock_router = setup_mocks(["A", "B", "C"], monkeypatch)
 
         builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
-
-        builder._resolve_dataset([container_a, container_b, container_c])
+        builder._fetch_root_datasets = MagicMock(return_value=[container_a, container_b, container_c])
+        builder.build()
 
         # add the expected cfg into the domain models
-        container_a.correction_configs = [make_processing_config_container("A")]
-        container_b.correction_configs = [make_processing_config_container("B")]
-        container_c.correction_configs = [make_processing_config_container("C")]
+        container_a.correction_configs = {make_processing_config_container("A")}
+        container_b.correction_configs = {make_processing_config_container("B")}
+        container_c.correction_configs = {make_processing_config_container("C")}
 
         assert builder.datasets == {
             "A": container_a,

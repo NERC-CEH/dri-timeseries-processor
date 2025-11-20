@@ -75,15 +75,6 @@ class DatasetDependencyGraph:
         2. Recursively resolves all dependencies
         3. Attaches data processing configurations (QC, Infill, Correction)
         4. Cleans up resources (caches and API connection)
-        """
-        root_datasets = self._fetch_root_datasets()
-        self._resolve_dataset(root_datasets)
-
-        # clear the cache
-        self._dataset_cache = {}
-
-    def _resolve_dataset(self, root_datasets: list[TimeSeriesContainer]) -> None:
-        """Recursively resolve dependencies for all datasets.
 
         Handles recursion through a "batch" system where datasets are processed in iterative "batches" where each
         batch represents the current set of unresolved datasets. This approach enables data processing configuration
@@ -101,10 +92,14 @@ class DatasetDependencyGraph:
         The process continues until there are no new datasets left to resolve. This ensures that all datasets that
         we gather from the root datasets, direct dependencies, and data processing configurations will be resolved
         and represented in the final `self.datasets` object.
-
-        Args:
-            root_datasets: List of root-level datasets to act as the starting batch.
         """
+        # Clear caches etc.
+        self.reset()
+
+        # Fetch the root datasets - i.e. the ones originally requested by the user.
+        root_datasets = self._fetch_root_datasets()
+
+        # Start the batch with the root datasets
         current_batch = {ds.ts_id: ds for ds in root_datasets}
 
         while current_batch:
@@ -301,3 +296,9 @@ class DatasetDependencyGraph:
             for dep in dag[ds_id]:
                 dag.setdefault(dep, [])
         return dag
+
+    def reset(self) -> None:
+        """Clear all cached and resolved datasets states."""
+        self._dataset_cache.clear()
+        self._dependency_cache.clear()
+        self.datasets.clear()
