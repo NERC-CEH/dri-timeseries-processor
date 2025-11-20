@@ -193,9 +193,3 @@ class DatasetRepository:
             container: The dataset container of the resolved dataset.
         """
         self.resolved[container.ts_id] = container
-
-    def reset(self) -> None:
-        """Clear all cached and resolved state in the repository."""
-        self._cache.clear()
-        self._dependency_cache.clear()
-        self.resolved.clear()

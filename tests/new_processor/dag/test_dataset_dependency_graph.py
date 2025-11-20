@@ -1,15 +1,180 @@
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from dag_common import create_mock_router, setup_mocks
 
-from new_processor.dag.batch import Batch
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.dag.repositories import DatasetRepository
 from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.utils.enums import ConfigurationType
-from utils.fixture_helpers import make_processing_config_container, make_time_series_container
+from new_processor.utils.enums import ConfigurationType, ProcessingLevel
+
+
+def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) -> TimeSeriesContainer:
+    """Create a lightweight fake TimeSeriesContainer for use in tests.
+
+    Args:
+        ts_id: The time series ID.
+        depends_on: Optional list of dataset IDs that this container depends on.
+
+    Returns:
+        A TimeSeriesContainer instance
+    """
+    return TimeSeriesContainer(
+        ts_id=ts_id,
+        ref_id=ts_id + "_ref",
+        source_bucket=ts_id + "_bucket",
+        source_site=ts_id + "_site",
+        source_column=ts_id + "_column",
+        source_dataset=ts_id + "_dataset",
+        resolution=ts_id + "_resolution",
+        periodicity=ts_id + "_periodicity",
+        variable=ts_id + "_variable",
+        processing_level=ProcessingLevel.PROCESSED,
+        depends_on=depends_on or [],
+        qc_configs=set(),
+        infill_configs=set(),
+        correction_configs=set(),
+    )
+
+
+def make_processing_config_container(ts_id: str) -> ProcessingConfig:
+    """Create a lightweight fake ProcessingConfig for a given dataset.
+
+    Args:
+        ts_id: The time series ID that the configuration applies to.
+
+    Returns:
+        A ProcessingConfig instance
+    """
+    return ProcessingConfig(
+        ts_id=ts_id,
+        config_id=ts_id + "_config_id",
+        config_type=ConfigurationType.CORRECTION,
+        method_configs=[],
+        annotations={},
+    )
+
+
+def create_items_list(ts_ids: str | list) -> list:
+    """Create a simple list of items in a format mocking response from metadata API"""
+    if isinstance(ts_ids, str):
+        ts_ids = [ts_ids]
+    items = [{"@id": ts_id} for ts_id in ts_ids]
+    return items
+
+
+def create_mock_router(items: list) -> MagicMock:
+    """Return a mocked MetadataRouter with no-op API calls."""
+    mock_router = MagicMock()
+    mock_router.fetch_dataset_by_params.return_value = {"items": items}
+    mock_router.fetch_all_dependencies.return_value = {"items": items}
+    mock_router.fetch_dataset_by_id.return_value = {"items": items}
+    mock_router.fetch_processing_configs.return_value = {"items": items}
+    return mock_router
+
+
+def monkeypatch_api_models(monkeypatch: pytest.MonkeyPatch, items: list) -> None:
+    """ "Mimic the model_validate of API pydantic models returning a list of dataset dicts"""
+    api_models = ["TimeSeriesDatasetResponse", "DataProcessingConfiguration"]
+    api_model_return = SimpleNamespace(items=items)
+    for api_model in api_models:
+        monkeypatch.setattr(
+            f"new_processor.dag.dataset_dependency_graph.{api_model}.model_validate", lambda _: api_model_return
+        )
+
+
+def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Mimic the map_dataset_item Domain->API mapper returning a TimeSeriesContainer and
+    Mimic the map_processing_config_item Domain->API mapper returning a ProcessingConfig
+    """
+    monkeypatch.setattr(
+        "new_processor.dag.dataset_dependency_graph.map_dataset_item",
+        lambda item: make_time_series_container(item["@id"]),
+    )
+
+    monkeypatch.setattr(
+        "new_processor.dag.dataset_dependency_graph.map_processing_config_item",
+        lambda item: make_processing_config_container(item["@id"]),
+    )
+
+
+def setup_mocks(ts_ids: str | list[str], monkeypatch: pytest.MonkeyPatch) -> MagicMock:
+    """Mock the pydantic model validators and mapping functions."""
+    items = create_items_list(ts_ids)
+    mock_router = create_mock_router(items)
+    monkeypatch_api_models(monkeypatch, items)
+    monkeypatch_mappers(monkeypatch)
+    return mock_router
+
+
+class TestFetchDatasets:
+    def test_fetch_root_datasets(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that _fetch_root_datasets returns a time series container and populates the dataset cache."""
+        ts_id = "ds1"
+        container = make_time_series_container("ds1")
+        mock_router = setup_mocks(ts_id, monkeypatch)
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+
+        assert builder._dataset_cache == {}  # cache should be empty to start
+
+        result = builder._fetch_root_datasets()
+
+        assert result == [container]
+        assert builder._dataset_cache == {ts_id: container}
+        assert mock_router.fetch_dataset_by_params.call_count == 1
+
+    def test_fetch_dataset_dependencies(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that _fetch_dataset_dependencies returns a time series container and populates the dataset cache."""
+        dep_ts_ids = ["ds2", "ds3"]
+        mock_router = setup_mocks(dep_ts_ids, monkeypatch)
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+
+        assert builder._dataset_cache == {}  # cache should be empty to start
+
+        result = builder._fetch_dataset_dependencies("ds1")
+
+        assert result == [make_time_series_container(t) for t in dep_ts_ids]
+        assert builder._dataset_cache == {t: make_time_series_container(t) for t in dep_ts_ids}
+        assert mock_router.fetch_all_dependencies.call_count == 1
+
+    def test_fetch_dataset_by_id(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that _fetch_dataset_by_id returns a time series container and populates the dataset cache."""
+        ts_id = "ds1"
+        mock_router = setup_mocks(ts_id, monkeypatch)
+        container = make_time_series_container(ts_id)
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+
+        assert builder._dataset_cache == {}  # cache should be empty to start
+
+        result = builder._fetch_dataset_by_id(ts_id)
+        assert result == container
+        assert builder._dataset_cache == {ts_id: container}
+        assert mock_router.fetch_dataset_by_id.call_count == 1
+
+    def test_fetch_dataset_by_id_uses_cache(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that _fetch_dataset_by_id uses cache and skips API call if already present."""
+        ts_id = "ds1"
+        mock_router = setup_mocks(ts_id, monkeypatch)
+        container = make_time_series_container(ts_id)
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+
+        builder._dataset_cache[ts_id] = container  # mock the cache
+
+        result = builder._fetch_dataset_by_id(ts_id)
+        assert result == container
+        mock_router.fetch_dataset_by_id.assert_not_called()  # shouldn't have needed to call the router functions
+
+    def test_fetch_configs_for_single_dataset(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that _fetch_configs_for_dataset returns data processing config."""
+        ts_id = "ds1"
+        mock_router = setup_mocks(ts_id, monkeypatch)
+        container = make_processing_config_container(ts_id)
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+
+        result = builder._fetch_configs_for_dataset(ts_id)
+
+        assert result == {ts_id: [container]}
+        assert mock_router.fetch_processing_configs.call_count == 1
 
 
 class TestResolveDataset:
@@ -22,13 +187,13 @@ class TestResolveDataset:
 
         builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
 
-        builder._resolve_datasets([container_a])
+        builder._resolve_dataset([container_a])
 
         # add the expected cfg into the domain models
         container_a.correction_configs = {make_processing_config_container("A")}
         container_b.correction_configs = {make_processing_config_container("B")}
 
-        assert builder.dataset_repository.resolved == {"A": container_a, "B": container_b}
+        assert builder.resolved == {"A": container_a, "B": container_b}
         assert mock_router.fetch_all_dependencies.call_count == 1
         assert mock_router.fetch_processing_configs.call_count == 2
 
@@ -42,14 +207,14 @@ class TestResolveDataset:
 
         builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
 
-        builder._resolve_datasets([container_a, container_b, container_c])
+        builder._resolve_dataset([container_a, container_b, container_c])
 
         # add the expected cfg into the domain models
-        container_a.correction_configs = {make_processing_config_container("A")}
-        container_b.correction_configs = {make_processing_config_container("B")}
-        container_c.correction_configs = {make_processing_config_container("C")}
+        container_a.correction_configs = [make_processing_config_container("A")]
+        container_b.correction_configs = [make_processing_config_container("B")]
+        container_c.correction_configs = [make_processing_config_container("C")]
 
-        assert builder.dataset_repository.resolved == {
+        assert builder.resolved == {
             "A": container_a,
             "B": container_b,
             "C": container_c,
@@ -65,8 +230,10 @@ class TestBuildDag:
         container_b = make_time_series_container("B")
         container_c = make_time_series_container("C")
 
-        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", MagicMock())
-        builder.dataset_repository.resolved = {"A": container_a, "B": container_b, "C": container_c}
+        mock_router = create_mock_router(["A", "B", "C"])
+
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+        builder.resolved = {"A": container_a, "B": container_b, "C": container_c}
 
         dag = builder.build_dag()
 
@@ -78,8 +245,10 @@ class TestBuildDag:
         container_b = make_time_series_container("B")
         container_c = make_time_series_container("C")
 
-        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", MagicMock())
-        builder.dataset_repository.resolved = {"A": container_a, "B": container_b, "C": container_c}
+        mock_router = create_mock_router(["A", "B", "C"])
+
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+        builder.resolved = {"A": container_a, "B": container_b, "C": container_c}
 
         dag = builder.build_dag()
 
@@ -92,8 +261,10 @@ class TestBuildDag:
         container_c = make_time_series_container("C", depends_on=["D"])
         container_d = make_time_series_container("D")
 
-        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", MagicMock())
-        builder.dataset_repository.resolved = {"A": container_a, "B": container_b, "C": container_c, "D": container_d}
+        mock_router = create_mock_router(["A", "B", "C", "D"])
+
+        builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
+        builder.resolved = {"A": container_a, "B": container_b, "C": container_c, "D": container_d}
 
         dag = builder.build_dag()
 
@@ -201,34 +372,20 @@ class TestBuildResolver:
         builder = DatasetDependencyGraph("a_network", "a_site", "A", "PT30M", mock_router)
 
         # Mock the methods that the `build` method calls with the results of the wrangling we did earlier
-        builder.dataset_repository.fetch_root_datasets = MagicMock(return_value=root_containers)
-        builder.dataset_repository.fetch_dataset_by_id = MagicMock(side_effect=lambda i: containers[i])
-        builder.dataset_repository.fetch_dataset_dependencies = MagicMock(
-            side_effect=lambda i: direct_dependencies.get(i, [])
-        )
-        builder.config_repository.fetch_configs_for_dataset = MagicMock(
+        builder._fetch_root_datasets = MagicMock(return_value=root_containers)
+        builder._fetch_dataset_by_id = MagicMock(side_effect=lambda i: containers[i])
+        builder._fetch_dataset_dependencies = MagicMock(side_effect=lambda i: direct_dependencies.get(i, []))
+        builder._fetch_configs_for_dataset = MagicMock(
             side_effect=lambda i: {d: config_dependencies.get(d, []) for d in i}
         )
 
         # We want to test which IDs are being processed in which batch, so hook into a method that captures that info
         batches = []
 
-        def make_test_batch(initial: list[TimeSeriesContainer], repository: DatasetRepository) -> Batch:
-            # Use a custom TestBatch subclass to capture the current batch contents
-            class TestBatch(Batch):
-                def __init__(
-                    self, _initial: list[TimeSeriesContainer], _repository: DatasetRepository, _log: list
-                ) -> None:
-                    super().__init__(_initial, _repository)
-                    self._log = _log
+        def capture(batch: dict) -> None:
+            batches.append(batch)
 
-                def advance(self) -> None:
-                    self._log.append(self.current)
-                    super().advance()
-
-            return TestBatch(initial, repository, batches)
-
-        monkeypatch.setattr("new_processor.dag.dataset_dependency_graph.Batch", make_test_batch)
+        builder._batch_start = MagicMock(side_effect=capture)
 
         # Do the resolving and test behaviours
         builder.build()

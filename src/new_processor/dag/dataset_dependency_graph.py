@@ -66,13 +66,13 @@ class DatasetDependencyGraph:
         root_datasets = self.dataset_repository.fetch_root_datasets(
             self.network, self.sites, self.variables, self.periodicity
         )
-        self._resolve_datasets(root_datasets)
+        self._resolve_dataset(root_datasets)
 
-    def _resolve_datasets(self, root_datasets: list[TimeSeriesContainer]) -> None:
+    def _resolve_dataset(self, root_datasets: list[TimeSeriesContainer]) -> None:
         """Recursively resolve dependencies for all datasets.
 
         Handles recursion through a "batch" system where datasets are processed in iterative "batches" where each
-        batch represents the current set of uns datasets. This approach enables data processing configuration
+        batch represents the current set of unresolved datasets. This approach enables data processing configuration
         lookups to be grouped into a single API call per batch, reducing network overhead and improving performance
         while preserving full dependency resolution.
 
@@ -91,7 +91,6 @@ class DatasetDependencyGraph:
         Args:
             root_datasets: List of root-level datasets to act as the starting batch.
         """
-        self.dataset_repository.reset()
         batch = Batch(root_datasets, self.dataset_repository)
 
         while not batch.empty():
