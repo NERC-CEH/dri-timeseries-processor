@@ -193,7 +193,7 @@ class TestResolveDataset:
         container_a.correction_configs = {make_processing_config_container("A")}
         container_b.correction_configs = {make_processing_config_container("B")}
 
-        assert builder.datasets == {"A": container_a, "B": container_b}
+        assert builder.resolved == {"A": container_a, "B": container_b}
         assert mock_router.fetch_all_dependencies.call_count == 1
         assert mock_router.fetch_processing_configs.call_count == 2
 
@@ -214,7 +214,7 @@ class TestResolveDataset:
         container_b.correction_configs = [make_processing_config_container("B")]
         container_c.correction_configs = [make_processing_config_container("C")]
 
-        assert builder.datasets == {
+        assert builder.resolved == {
             "A": container_a,
             "B": container_b,
             "C": container_c,
@@ -233,7 +233,7 @@ class TestBuildDag:
         mock_router = create_mock_router(["A", "B", "C"])
 
         builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
-        builder.datasets = {"A": container_a, "B": container_b, "C": container_c}
+        builder.resolved = {"A": container_a, "B": container_b, "C": container_c}
 
         dag = builder.build_dag()
 
@@ -248,7 +248,7 @@ class TestBuildDag:
         mock_router = create_mock_router(["A", "B", "C"])
 
         builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
-        builder.datasets = {"A": container_a, "B": container_b, "C": container_c}
+        builder.resolved = {"A": container_a, "B": container_b, "C": container_c}
 
         dag = builder.build_dag()
 
@@ -264,7 +264,7 @@ class TestBuildDag:
         mock_router = create_mock_router(["A", "B", "C", "D"])
 
         builder = DatasetDependencyGraph("a_network", "a_site", "var1", "PT30M", mock_router)
-        builder.datasets = {"A": container_a, "B": container_b, "C": container_c, "D": container_d}
+        builder.resolved = {"A": container_a, "B": container_b, "C": container_c, "D": container_d}
 
         dag = builder.build_dag()
 
