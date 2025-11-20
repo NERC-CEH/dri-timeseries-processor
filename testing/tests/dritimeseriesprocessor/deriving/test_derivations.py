@@ -198,7 +198,9 @@ class TestDailyTotalRadiation:
             ts_test_helper.input_dir.joinpath("derivations", "rn_pt30m_3_days.csv"),
             schema=pl.Schema({"time": pl.Datetime(time_zone=timezone.utc), "SWOUT": pl.Float64}),
         )
-        tf = ts.TimeFrame(df, "time", ts.Period.of_iso_duration("PT30M"), ts.Period.of_iso_duration("PT30M"))
+        tf = ts.TimeFrame(
+            df, "time", resolution=ts.Period.of_iso_duration("PT30M"), periodicity=ts.Period.of_iso_duration("PT30M")
+        )
 
         expected = ts.TimeFrame(
             pl.DataFrame(
@@ -218,8 +220,8 @@ class TestDailyTotalRadiation:
                 ),
             ),
             "time",
-            ts.Period.of_iso_duration("P1D"),
-            ts.Period.of_iso_duration("P1D"),
+            resolution=ts.Period.of_iso_duration("P1D"),
+            periodicity=ts.Period.of_iso_duration("P1D"),
         )
 
         calc = DailyTotalRadiation(column_name="SWOUT")
@@ -234,7 +236,9 @@ class TestDailyPotentialEvaporation:
             ts_test_helper.input_dir.joinpath("derivations", "pe_pt30m_3_days.csv"),
             schema=pl.Schema({"time": pl.Datetime(time_zone=timezone.utc), "PE": pl.Float64}),
         )
-        tf = ts.TimeFrame(df, "time", ts.Period.of_iso_duration("PT30M"), ts.Period.of_iso_duration("PT30M"))
+        tf = ts.TimeFrame(
+            df, "time", resolution=ts.Period.of_iso_duration("PT30M"), periodicity=ts.Period.of_iso_duration("PT30M")
+        )
 
         expected = ts.TimeFrame(
             pl.DataFrame(
@@ -254,8 +258,8 @@ class TestDailyPotentialEvaporation:
                 ),
             ),
             "time",
-            ts.Period.of_iso_duration("P1D"),
-            ts.Period.of_iso_duration("P1D"),
+            resolution=ts.Period.of_iso_duration("P1D"),
+            periodicity=ts.Period.of_iso_duration("P1D"),
         )
 
         calc = DailyPotentialEvaporation(pe="PE", column_name="PE")

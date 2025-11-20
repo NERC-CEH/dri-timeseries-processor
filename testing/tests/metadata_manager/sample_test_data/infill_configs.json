@@ -39,7 +39,7 @@
                         ]
                     },
                     "property": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/data-processing-configuration-priority"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/priority"
                     },
                     "@type": [
                         {
@@ -66,7 +66,7 @@
                                 ]
                             },
                             "parameter": {
-                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/alt_data-timeseries"
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
                             },
                             "@type": [
                                 {

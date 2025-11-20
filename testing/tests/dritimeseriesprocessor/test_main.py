@@ -100,3 +100,31 @@ class TestMain:
 
         # check the outputs
         s3_test_helper._check_expected_parquet_files_exist_in_bucket(expected_base_output_dir, output_bucket_name)
+
+    def test_precip_raw_pt30m(self, mock_api_manager: mock.MagicMock, s3_test_helper: S3TestHelper) -> None:
+        """Test the end to end workflow for raw precip PT30M which requires aggregation prior to QC etc."""
+        expected_base_output_dir = s3_test_helper.output_dir.joinpath("end_to_end", "raw_precip_pt30m")
+        output_bucket_name = "ukceh-fdri-staging-timeseries-processed"
+
+        cli_args = [
+            "--sites",
+            "bunny",
+            "--columns",
+            "PRECIP",
+            "--periodicity",
+            "PT30M",
+            "--period",
+            "P2D",
+            "--network",
+            "cosmos",
+        ]
+
+        # create mock api responses
+        api_data = s3_test_helper.create_all_metadata_api_data()
+        mock_api_manager.side_effect = MockMetadataAPI(api_data=api_data)
+
+        # run the processor
+        main(cli_args)
+
+        # check the outputs
+        s3_test_helper._check_expected_parquet_files_exist_in_bucket(expected_base_output_dir, output_bucket_name)

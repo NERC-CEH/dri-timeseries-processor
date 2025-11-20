@@ -31,25 +31,17 @@
                     "@id": "http://fdri.ceh.ac.uk/id/configuration-item/3go7kbe480lqc3gn0ftjnthf7518u5vt",
                     "argument": [
                         {
-                            "@id": "http://fdri.ceh.ac.uk/id/argument/rv5uijk5qp28n3uh97s14s8ak4puoikm",
-                            "hasValue": {
-                                "@id": "http://fdri.ceh.ac.uk/id/argument/rv5uijk5qp28n3uh97s14s8ak4puoikm#value",
-                                "value": "COSMOS-ALIC1-TA_30MIN_RAW"
-                            },
-                            "parameter": {
-                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                            },
-                            "@type": [
-                                {
-                                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                                }
-                            ]
-                        },
-                        {
                             "@id": "http://fdri.ceh.ac.uk/id/argument/75hgles33egjadki7o209l1ka8ru16oj",
                             "hasValue": {
                                 "@id": "http://fdri.ceh.ac.uk/id/argument/75hgles33egjadki7o209l1ka8ru16oj#value",
-                                "value": "COSMOS-ALIC1-LWOUT_UNC_30MIN_RAW"
+                                "valueReference": {
+                                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw"
+                                },
+                                "@type": [
+                                    {
+                                        "@id": "http://schema.org/PropertyValue"
+                                    }
+                                ]
                             },
                             "parameter": {
                                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
@@ -74,10 +66,60 @@
                                     "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                                 }
                             ]
+                        },
+                        {
+                            "@id": "http://fdri.ceh.ac.uk/id/argument/rv5uijk5qp28n3uh97s14s8ak4puoikm",
+                            "hasValue": {
+                                "@id": "http://fdri.ceh.ac.uk/id/argument/rv5uijk5qp28n3uh97s14s8ak4puoikm#value",
+                                "valueReference": {
+                                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"
+                                },
+                                "@type": [
+                                    {
+                                        "@id": "http://schema.org/PropertyValue"
+                                    }
+                                ]
+                            },
+                            "parameter": {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                            },
+                            "@type": [
+                                {
+                                    "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                                }
+                            ]
                         }
                     ],
                     "method": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/method/lw_corr"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/method/lw_corr",
+                        "parameter": [
+                            {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                            },
+                            {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+                            },
+                            {
+                                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+                            }
+                        ],
+                        "@type": [
+                            {
+                                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+                            }
+                        ],
+                        "broader": {
+                            "@id": "http://fdri.ceh.ac.uk/id/common/method/cosmos-specific"
+                        },
+                        "inScheme": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+                        },
+                        "prefLabel": [
+                            "Long wave correction"
+                        ],
+                        "scopeNote": [
+                            "Correction for long wave radiation where calibration values are incorrect"
+                        ]
                     },
                     "observationInterval": {
                         "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-07-28-15:00:00-2018-12-20-12:30:00",
@@ -88,12 +130,7 @@
                         ],
                         "endDate": "2018-12-20T12:30:00",
                         "startDate": "2016-07-28T15:00:00"
-                    },
-                    "@type": [
-                        {
-                            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                        }
-                    ]
+                    }
                 }
             ],
             "title": [
@@ -110,3 +147,4 @@
         }
     ]
 }
+
