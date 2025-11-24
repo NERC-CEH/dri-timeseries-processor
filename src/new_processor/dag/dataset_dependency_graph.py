@@ -11,6 +11,7 @@ giving knowledge of which datasets need to be processed before others.
 
 import logging
 from collections import defaultdict
+from graphlib import TopologicalSorter
 from typing import Any
 
 from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
@@ -296,6 +297,33 @@ class DatasetDependencyGraph:
             for dep in dag[ds_id]:
                 dag.setdefault(dep, [])
         return dag
+
+    def flat_topo_sort(self) -> list[str]:
+        """Return a flat topological ordering of the DAG."""
+        topo_sorter = TopologicalSorter(self.build_dag())
+        layers = topo_sorter.static_order()  # Raises a CycleError if cycle detected in the DAG
+        return list(layers)
+
+    def layered_topo_sort(self) -> list[list[str]]:
+        """Return a layered (batched) topological ordering of the DAG.
+
+        Each inner list contains dataset IDs that can be processed in parallel, given that all their dependencies
+        appear in earlier layers.
+
+        Raises:
+            ValueError: If the dependency graph contains a cycle.
+        """
+        layers = []
+        topo_sorter = TopologicalSorter(self.build_dag())
+        topo_sorter.prepare()  # Raises a CycleError if cycle detected in the DAG
+
+        while topo_sorter.is_active():
+            ready = list(topo_sorter.get_ready())
+            ready.sort()
+            layers.append(ready)
+            topo_sorter.done(*ready)
+
+        return layers
 
     def reset(self) -> None:
         """Clear all cached and resolved datasets states."""

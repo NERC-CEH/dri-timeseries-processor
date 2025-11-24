@@ -393,3 +393,64 @@ class TestBuildResolver:
 
         dag = builder.build_dag()
         assert dag == expected_dag
+
+
+class TestTopoSort:
+    builder = DatasetDependencyGraph("a_network", "a_site", "A", "PT30M", MagicMock())
+
+    test_cases_good = [
+        # Flat example - A depends on B, B depends on C, C no dependencies
+        ({"A": ["B"], "B": ["C"], "C": []}, [["C"], ["B"], ["A"]]),
+        # A and B depend on C, which depends on D
+        ({"A": ["C"], "B": ["C"], "C": ["D"], "D": []}, [["D"], ["C"], ["A", "B"]]),
+        # B and C depend on A, and D depends on B and C
+        ({"A": [], "B": ["A"], "C": ["A"], "D": ["B", "C"]}, [["A"], ["B", "C"], ["D"]]),
+        # Separate graphs - A depends on B, C depends on D
+        ({"A": ["B"], "B": [], "C": ["D"], "D": []}, [["B", "D"], ["A", "C"]]),
+        # Three levels - A and B depend on C, C and D depend on E
+        ({"A": ["C"], "B": ["C"], "C": ["E"], "D": ["E"], "E": []}, [["E"], ["C", "D"], ["A", "B"]]),
+        # Many independent to one dependency
+        ({"A": ["E"], "B": ["E"], "C": ["E"], "D": ["E"], "E": []}, [["E"], ["A", "B", "C", "D"]]),
+    ]
+
+    @pytest.mark.parametrize("dag, expected", test_cases_good)
+    def test_flat_topo_sort(self, dag: dict, expected: list[list]) -> None:
+        """Test the flat topological sorting."""
+        self.builder.build_dag = MagicMock(return_value=dag)
+        expected = [item for layer in expected for item in layer]
+        result = self.builder.flat_topo_sort()
+        assert result == expected
+
+    @pytest.mark.parametrize("dag, expected", test_cases_good)
+    def test_layered_topo_sort(self, dag: dict, expected: list[list]) -> None:
+        """Test the layered topological sorting."""
+        self.builder.build_dag = MagicMock(return_value=dag)
+        result = self.builder.layered_topo_sort()
+        assert result == expected
+
+    test_cases_bad = [
+        # Simple cycle, where both depend on each other
+        ({"A": ["B"], "B": ["A"]}),
+        # Layered cycle, where A depends on C, which depends on D, which cycles back round to depend on A
+        ({"A": ["C"], "B": [], "C": ["D"], "D": ["A"]}),
+    ]
+
+    @pytest.mark.parametrize("dag", test_cases_bad)
+    def test_flat_topo_sort_cycle_detected(self, dag: dict) -> None:
+        """Test that error raised if a cycle detected."""
+        self.builder.build_dag = MagicMock(return_value=dag)
+        with pytest.raises(ValueError):
+            self.builder.flat_topo_sort()
+
+    @pytest.mark.parametrize("dag", test_cases_bad)
+    def test_layered_topo_sort_cycle_detected(self, dag: dict) -> None:
+        """Test that error raised if a cycle detected."""
+        self.builder.build_dag = MagicMock(return_value=dag)
+        with pytest.raises(ValueError):
+            self.builder.layered_topo_sort()
+
+    def test_empty_dag(self) -> None:
+        """Test the sorting methods return empty list if dag is empty"""
+        self.builder.build_dag = MagicMock(return_value={})
+        assert self.builder.flat_topo_sort() == []
+        assert self.builder.layered_topo_sort() == []

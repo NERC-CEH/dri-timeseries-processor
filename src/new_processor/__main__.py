@@ -14,8 +14,18 @@ if __name__ == "__main__":
     builder.build()
     DAG = builder.build_dag()
     end = time.time()
-    print("DAG built took {} seconds".format(end - start))
+    print(f"DAG built took {end - start} seconds")
 
     print("\n=== DAG ===")
     for idx, (node, deps) in enumerate(DAG.items()):
         print(idx, f"{node} -> {[d for d in deps]}")
+
+    print("\n=== DAG - flat sort ===")
+    for node in builder.flat_topo_sort():
+        print(node)
+
+    print("\n=== DAG - layered sort ===")
+    for idx, layer in enumerate(builder.layered_topo_sort()):
+        print(f"\nLayer {idx}:")
+        for node in layer:
+            print(node)
