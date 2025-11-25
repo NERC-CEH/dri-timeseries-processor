@@ -400,17 +400,27 @@ class TestTopoSort:
 
     test_cases_good = [
         # Flat example - A depends on B, B depends on C, C no dependencies
-        ({"A": ["B"], "B": ["C"], "C": []}, [["C"], ["B"], ["A"]]),
+        pytest.param({"A": ["B"], "B": ["C"], "C": []}, [["C"], ["B"], ["A"]], id="flat A-B-C"),
         # A and B depend on C, which depends on D
-        ({"A": ["C"], "B": ["C"], "C": ["D"], "D": []}, [["D"], ["C"], ["A", "B"]]),
+        pytest.param({"A": ["C"], "B": ["C"], "C": ["D"], "D": []}, [["D"], ["C"], ["A", "B"]], id="group AB-C-D"),
         # B and C depend on A, and D depends on B and C
-        ({"A": [], "B": ["A"], "C": ["A"], "D": ["B", "C"]}, [["A"], ["B", "C"], ["D"]]),
+        pytest.param({"A": [], "B": ["A"], "C": ["A"], "D": ["B", "C"]}, [["A"], ["B", "C"], ["D"]], id="group D-BC-A"),
         # Separate graphs - A depends on B, C depends on D
-        ({"A": ["B"], "B": [], "C": ["D"], "D": []}, [["B", "D"], ["A", "C"]]),
+        pytest.param(
+            {"A": ["B"], "B": [], "C": ["D"], "D": []}, [["B", "D"], ["A", "C"]], id="separate graphs A-B C-D"
+        ),
         # Three levels - A and B depend on C, C and D depend on E
-        ({"A": ["C"], "B": ["C"], "C": ["E"], "D": ["E"], "E": []}, [["E"], ["C", "D"], ["A", "B"]]),
+        pytest.param(
+            {"A": ["C"], "B": ["C"], "C": ["E"], "D": ["E"], "E": []},
+            [["E"], ["C", "D"], ["A", "B"]],
+            id="levels AB-C CD-E",
+        ),
         # Many independent to one dependency
-        ({"A": ["E"], "B": ["E"], "C": ["E"], "D": ["E"], "E": []}, [["E"], ["A", "B", "C", "D"]]),
+        pytest.param(
+            {"A": ["E"], "B": ["E"], "C": ["E"], "D": ["E"], "E": []},
+            [["E"], ["A", "B", "C", "D"]],
+            id="one dependency ABCD-E",
+        ),
     ]
 
     @pytest.mark.parametrize("dag, expected", test_cases_good)
@@ -430,9 +440,9 @@ class TestTopoSort:
 
     test_cases_bad = [
         # Simple cycle, where both depend on each other
-        ({"A": ["B"], "B": ["A"]}),
+        pytest.param({"A": ["B"], "B": ["A"]}, id="simple cycle A-B-A"),
         # Layered cycle, where A depends on C, which depends on D, which cycles back round to depend on A
-        ({"A": ["C"], "B": [], "C": ["D"], "D": ["A"]}),
+        pytest.param({"A": ["C"], "B": [], "C": ["D"], "D": ["A"]}, id="layered cycle A-C-D-A"),
     ]
 
     @pytest.mark.parametrize("dag", test_cases_bad)
