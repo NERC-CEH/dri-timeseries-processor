@@ -10,34 +10,24 @@ loop = asyncio.get_event_loop()
 
 METADATA_CONNECTION = MetadataAPIManager(host=app_config.metadata_api_url, network="cosmos")
 
-METADATA_URLS = [
-    "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/network/cosmos",
-    "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset",
-    "https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/time-series-definition",
-    "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json",
-]
-
 BASE_DIR = Path(__file__).parents[1].joinpath("testing", "data", "inputs", "mock_metadata_api")
 
 FILE_MAPPING = {
     "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/network/cosmos": "sites_metadata.json",
-    "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset": "ts_id_metadata_alic1_bunny.json",
+    (
+        "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset.json?_limit=10000000&_view=timeseries"
+        "&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1"
+        "&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-bunny"
+    ): "ts_id_metadata_alic1_bunny.json",
     "https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/time-series-definition": "ts_def_metadata.json",
     "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json": (
         "processing_configs_alic1_bunny.json"
     ),
 }
 
-""" NOTES - DELETE LATER
-Sites:
-    - ALIC1, BUNNY
-    - need all correction configurations, infill_configs, qc_configs, and ts_deps
 
-- how to automate file structure?
-
-"""
 # Combinations of variables and periods which are needed for all sites.
-SITES = ["ALIC1", "BUNNY"]
+SITES = ["alic1", "bunny"]
 VARIABLES = ["battv", "g1", "g2", "lwin", "lwout", "pa", "rh", "scans", "swin", "ta", "tnr01c", "ws"]
 PERIODS = ["30min"]
 
@@ -99,7 +89,7 @@ def update_multi_file_urls(base_url: str, output_dir: str) -> None:
                 url = f"{base_url}{basename}"
 
                 print(f"Updating data for: {url}")
-                save_response_to_file(url=url, output_filepath=BASE_DIR.joinpath(f"{basename}.json"))
+                save_response_to_file(url=url, output_filepath=output_dir.joinpath(f"{basename}.json"))
 
 
 def save_response_to_file(url: str, output_filepath: str) -> None:

@@ -249,6 +249,12 @@ Note that in order for `_make_api_call` to be mocked effectively, the `side_effe
 needs to be set rather than the return value. This allows the `__call__` function with `MockMetadataAPI` to replace
 calls to `_make_api_call` directly whilst still retaining the rest of the functionality available in `MetadataAPIManager`.
 
+#### Updating mock metadata json files
+The mock metadata json response data can be updated using the `update_mock_metadata_response.json` script located in `./bin`. It should run through all existing required variable-specific and more generic endpoints and regenerate the response json content for all files.
+
+If new mock data is required, the script should be updated to ensure anyone
+running the script in the future updates all required data.
+
 # Making Gaps in the Parquet Data
 
 To test the QC behaviour when there is missing data, and to test the infilling processes, the test data has been duplicated and had sections of data removed. This located at [./parquet-data/cosmos-with-gaps](./parquet-data/cosmos-with-gaps) and is only done for LIVE_PRECIP_1MIN for now.
