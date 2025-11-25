@@ -39,7 +39,7 @@
                         ]
                     },
                     "property": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/data-processing-configuration-priority"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/cop/priority"
                     },
                     "@type": [
                         {

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import polars as pl
 import pytest
 import time_stream as ts
-from time_stream.infill import InfillMethod
+from time_stream.infill import InfillCtx, InfillMethod
 
 from dritimeseriesprocessor.flagging.flagger import add_initial_core_flags
 from dritimeseriesprocessor.infilling.infiller import run_infilling
@@ -18,7 +18,7 @@ class MockInfillMethod(InfillMethod):
     def __init__(self, **kwargs: Any):
         pass
 
-    def _fill(self, df: pl.DataFrame, infill_column: str) -> pl.DataFrame:
+    def _fill(self, df: pl.DataFrame, infill_column: str, ctx: InfillCtx) -> pl.DataFrame:
         return df.with_columns(pl.col(infill_column).fill_null(100).alias(f"{infill_column}_{self.name}"))
 
 
@@ -39,10 +39,14 @@ def ts_ids() -> Dict[str, Any]:
     )
     resolution = ts.Period.of_hours(1)
     periodicity = ts.Period.of_hours(1)
-    ta_tf = ts.TimeFrame(ta_data, "time", resolution, periodicity).with_metadata({"column_name": "temperature"})
+    ta_tf = ts.TimeFrame(ta_data, "time", resolution=resolution, periodicity=periodicity).with_metadata(
+        {"column_name": "temperature"}
+    )
     ta_tf = add_initial_core_flags(ta_tf)
 
-    pa_tf = ts.TimeFrame(pa_data, "time", resolution, periodicity).with_metadata({"column_name": "pressure"})
+    pa_tf = ts.TimeFrame(pa_data, "time", resolution=resolution, periodicity=periodicity).with_metadata(
+        {"column_name": "pressure"}
+    )
     pa_tf = add_initial_core_flags(pa_tf)
 
     ts_ids = {
@@ -104,7 +108,7 @@ def infill_config_1() -> Dict[str, Any]:
                     },
                 )
             ],
-            "annotations": {"data-processing-configuration-priority": 1},
+            "annotations": {"priority": 1},
         },
     )()
     return infill_config
@@ -130,7 +134,33 @@ def infill_config_2() -> Dict[str, Any]:
                     },
                 )
             ],
-            "annotations": {"data-processing-configuration-priority": 2},
+            "annotations": {"priority": 2},
+        },
+    )()
+    return infill_config
+
+
+@pytest.fixture
+def infill_config_with_dep_ts() -> Dict[str, Any]:
+    infill_config = type(
+        "DummyInfillConfig",
+        (),
+        {
+            "site_id": "SITE1",
+            "ts_id": "SITE1_ta_30min_raw",
+            "configs": [
+                type(
+                    "DummyMethodConfig",
+                    (),
+                    {
+                        "name": "method1",
+                        "interval": (datetime(2000, 1, 1), None),
+                        "observation_interval": (datetime(2023, 1, 1), None),
+                        "parameters": {"dep_ts": "SITE1_pa_30min_raw"},
+                    },
+                )
+            ],
+            "annotations": {"priority": 1},
         },
     )()
     return infill_config
@@ -223,3 +253,42 @@ class TestRunInfilling:
         assert "temperature_INFILL_FLAG" in result["SITE1_ta_30min_raw"].data.columns
         # Check flag values (from mock functions) have been added
         assert result["SITE1_ta_30min_raw"].data.df["temperature_INFILL_FLAG"].to_list() == expected_infill_flags
+
+    @patch("dritimeseriesprocessor.infilling.infiller.get_infill_methods")
+    def test_run_infilling_with_dep_ts(
+        self,
+        mock_get_methods: MagicMock,
+        infill_config_with_dep_ts: Dict[str, Any],
+        mock_methods_dict: Dict[str, Any],
+        ts_ids: Dict[str, Any],
+    ) -> None:
+        """Test run_infilling with a dependency time series."""
+
+        # Setup the config
+        ts_ids["SITE1_pa_30min_raw"].infill_configs = [infill_config_with_dep_ts]
+
+        mock_get_methods.return_value = mock_methods_dict
+
+        expected_infill_flags = [
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+        ]
+
+        result = run_infilling(ts_ids)
+
+        # Check flag system added
+        result["SITE1_pa_30min_raw"].data.get_flag_system("infill_flags")
+
+        # Check columns added
+        assert "pressure_INFILL_FLAG" in result["SITE1_pa_30min_raw"].data.columns
+
+        # Check flag values have been added
+        assert result["SITE1_pa_30min_raw"].data.df["pressure_INFILL_FLAG"].to_list() == expected_infill_flags

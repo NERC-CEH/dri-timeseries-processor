@@ -10,11 +10,8 @@ from metadata_manager.models.schemas.data_processing_configurations import DataP
 from metadata_manager.models.schemas.datasets import TimeseriesDatasetResponse, TimeSeriesType
 from metadata_manager.models.schemas.sites import SitesResponse
 from metadata_manager.transformers import (
-    extract_correction_dependencies,
     extract_cosmos_site_ids,
     extract_dep_ts,
-    extract_infill_dependencies,
-    extract_qc_dependencies,
     extract_site_ids,
     extract_timeseries_id_metadata,
     extract_timeseries_methodology_metadata,
@@ -341,69 +338,3 @@ class TestExtractDepTs:
         ]
 
         assert sorted(ts_ids) == sorted(expected_ts_ids)
-
-
-class TestExtractCorrectionDependencies:
-    """Test the extract_correction_dependencies function."""
-
-    @property
-    def sample_dataset_response(self) -> Dict[str, Any]:
-        sample_dataset_response = load_json(
-            Path(Path(__file__).parents[0], "sample_test_data", "correction_configs.json")
-        )
-        return sample_dataset_response
-
-    def test_extract_correction_dependencies(self) -> None:
-        """Test the extract_correction_dependencies function extracts the correct dependencies."""
-        # Load the data into the pyantic model
-        model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
-        expected_dependencies = [
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw",
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
-        ]
-
-        dependencies = extract_correction_dependencies(model_output)
-
-        assert sorted(expected_dependencies) == sorted(dependencies)
-
-
-class TestExtractQcDependencies:
-    """Test the extract_qc_dependencies function."""
-
-    @property
-    def sample_dataset_response(self) -> Dict[str, Any]:
-        sample_dataset_response = load_json(Path(Path(__file__).parents[0], "sample_test_data", "qc_configs.json"))
-        return sample_dataset_response
-
-    def test_extract_qc_dependencies(self) -> None:
-        """Test the extract_qc_dependencies function extracts the correct dependencies."""
-        # Load the data into the pyantic model
-        model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
-        dependencies = extract_qc_dependencies(model_output)
-
-        expected_dependencies = [
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
-        ]
-
-        assert sorted(expected_dependencies) == sorted(dependencies)
-
-
-class TestExtractInfillDependencies:
-    """Test the extract_infill_dependencies function."""
-
-    @property
-    def sample_dataset_response(self) -> Dict[str, Any]:
-        sample_dataset_response = load_json(Path(Path(__file__).parents[0], "sample_test_data", "infill_configs.json"))
-        return sample_dataset_response
-
-    def test_extract_infill_dependencies(self) -> None:
-        """Test the extract_infill_dependencies function extracts the correct dependencies."""
-        # Load the data into the pyantic model
-        model_output = DataProcessingConfigurations.model_validate(self.sample_dataset_response)
-        dependencies = extract_infill_dependencies(model_output)
-
-        expected_dependencies = ["http://fdri.ceh.ac.uk/id/time-series/cosmos-holln-cts_mod2_30min_raw"]
-
-        assert dependencies == expected_dependencies

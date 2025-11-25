@@ -2,7 +2,7 @@ import re
 from datetime import datetime, time
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from driutils.metadata_api.utils import URI_ID_EXTRACT_REGEX
+from driutils.metadata_api.utils import ARG_ID_EXTRACT_REGEX, URI_ID_EXTRACT_REGEX
 from pydantic import BaseModel, field_validator, model_validator
 
 from metadata_manager.models.common import get_interval_dates
@@ -37,6 +37,35 @@ class Annotation(BaseModel):
         return result
 
 
+class Argument(BaseModel):
+    """Represents a generic argument parameter
+
+    Attributes:
+        name: The argument name
+        value: The argument value
+    """
+
+    name: str
+    value: Union[int, float, str]
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_param_info(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract argument info from raw API data.
+
+        Args:
+            data: The raw input data dictionary.
+
+        Returns:
+            Processed argument data.
+        """
+        result = {}
+        result["name"] = re.match(ARG_ID_EXTRACT_REGEX, data["@id"]).group(1).replace("-", "_")
+        result["value"] = data["hasValue"]["value"]
+
+        return result
+
+
 class Parameter(BaseModel):
     """Represents a generic configuration parameter with a name and value/reference.
 
@@ -46,7 +75,7 @@ class Parameter(BaseModel):
     """
 
     name: str
-    value: Optional[Union[None, int, float, str, time]] = None
+    value: Optional[Union[None, int, float, str, time, Dict[str, Any]]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -71,11 +100,19 @@ class Parameter(BaseModel):
         if "valueReference" in has_value and "@id" in has_value["valueReference"]:
             result["value"] = has_value["valueReference"]["@id"]
 
+            if result["name"] == "configuration":
+                arguments = has_value["valueReference"]["argument"]
+                args = {}
+                for arg in arguments:
+                    a = Argument.model_validate(arg)
+                    args[a.name] = a.value
+                result["value"] = args
+
         return result
 
     @field_validator("value")
     @classmethod
-    def parse_value(cls, value: str) -> Union[None, int, float, str, time]:
+    def parse_value(cls, value: str) -> Union[None, int, float, str, time, Dict[str, Any]]:
         """Validate and convert the 'value' field to the appropriate type.
 
         This validator attempts to parse the input value into one of four types:
@@ -90,7 +127,7 @@ class Parameter(BaseModel):
         Returns:
             The parsed value in the appropriate type
         """
-        if value is None:
+        if value is None or isinstance(value, dict):
             return value
 
         # Try to convert to numeric (int or float)
@@ -153,6 +190,11 @@ class ConfigItem(BaseModel):
         params = {}
         for arg in data.get("argument", []):
             param = Parameter.model_validate(arg)
+
+            if param.name == "configuration" and isinstance(param.value, dict):
+                for k, v in param.value.items():
+                    params[k] = v
+                continue
 
             # Some arguments have the same names, e.g. in "error code" QC test, there could be multiple "value"
             # arguments.  Therefore, need to handle this here - make the dictionary value a list of all values found
