@@ -18,8 +18,8 @@ from new_processor.api_models.data_processing_configuration import DataProcessin
 from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.domain_models.processing_config import ProcessingConfig
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.externals.routers import MetadataRouter
 from new_processor.mappers.api_to_domain import map_dataset_item, map_processing_config_item
+from new_processor.routers.metadata_router import MetadataRouter
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
 from new_processor.utils.urls import CONFIGURATION_TYPE_URI, PROCESSING_LEVEL_URI, SITE_URI
