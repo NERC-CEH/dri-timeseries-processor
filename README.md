@@ -250,7 +250,7 @@ needs to be set rather than the return value. This allows the `__call__` functio
 calls to `_make_api_call` directly whilst still retaining the rest of the functionality available in `MetadataAPIManager`.
 
 #### Updating mock metadata json files
-The mock metadata json response data can be updated using the `update_mock_metadata_response.json` script located in `./bin`. It should run through all existing required variable-specific and more generic endpoints and regenerate the response json content for all files.
+The mock metadata json response data can be updated using the `update_mock_metadata_response.py` script located in `./bin`. It should run through all existing required variable-specific and more generic endpoints and regenerate the response json content for all files.
 
 If new mock data is required, the script should be updated to ensure anyone
 running the script in the future updates all required data.

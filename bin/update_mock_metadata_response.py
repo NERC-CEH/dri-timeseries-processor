@@ -96,7 +96,7 @@ def save_response_to_file(url: str, output_filepath: str) -> None:
     response = loop.run_until_complete(METADATA_CONNECTION._make_paginated_api_call(url))
 
     with open(output_filepath, "w") as output_file:
-        json.dump(response, output_file)
+        json.dump(response, output_file, indent=2)
 
 
 if __name__ == "__main__":
