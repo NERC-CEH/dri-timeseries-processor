@@ -11,7 +11,7 @@ from new_processor.utils.environment import detect_environment
 
 logger = logging.getLogger(__name__)
 
-LOCAL_CONFIG_PATH = Path(__file__).with_name("__assets__") / "env.cfg"
+LOCAL_CONFIG_PATH = Path(__file__).parent.parent / "__assets__" / "env.cfg"
 
 
 class AppConfig(ABC):
@@ -19,9 +19,13 @@ class AppConfig(ABC):
 
     # Required keys
     AWS_DEFAULT_REGION: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    endpoint_url: str
     level_0_bucket: str
     processed_bucket: str
     metadata_api_url: str
+    environment: Environment
 
     def __init__(self):
         self.load_config()
@@ -38,9 +42,6 @@ class AppConfigLocal(AppConfig):
     """
 
     # Required local config keys
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
-    endpoint_url: str
 
     def __init__(self, env: Environment):
         if env is not Environment.LOCAL:
@@ -69,6 +70,8 @@ class AppConfigLocal(AppConfig):
             self.metadata_api_url = cfg["metadata_api_url"]
             self.endpoint_url = cfg["endpoint_url"]
 
+            self.environment = Environment.LOCAL
+
         except KeyNotFoundError as err:
             raise KeyError(f"Missing required local config key:\n{err}")
 
@@ -80,9 +83,6 @@ class AppConfigLocal(AppConfig):
 
 class AppConfigLive(AppConfig):
     """Loads configuration values for live environments."""
-
-    # Required live config keys
-    environment: str
 
     def __init__(self, env: Environment):
         if env is Environment.LOCAL:
@@ -100,7 +100,7 @@ class AppConfigLive(AppConfig):
             self.level_0_bucket = os.environ["level_0_bucket"]
             self.processed_bucket = os.environ["processed_bucket"]
             self.metadata_api_url = os.environ["metadata_api_url"]
-            self.environment = os.environ["environment"]
+            self.environment = Environment(os.environ["environment"])
 
         except KeyError as err:
             raise KeyError(f"Missing required live config key:\n{err}")

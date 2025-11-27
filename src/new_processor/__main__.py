@@ -2,7 +2,7 @@ import time
 
 from dritimeseriesprocessor.configuration import app_config
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.externals.routers import MetadataRouter
+from new_processor.routers.metadata_router import MetadataRouter
 
 if __name__ == "__main__":
     router = MetadataRouter(app_config.metadata_api_url)
