@@ -6,7 +6,7 @@ from io import BytesIO
 
 import polars as pl
 
-from new_processor.storage.storage_client import StorageClient
+from new_processor.storage.storage_client import S3StorageClient, StorageClient
 from new_processor.utils.dataframes import merge_dataframes
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class ParquetWriterInterface(ABC):
 
 
 class ByteParquetWriter(ParquetWriterInterface):
-    """Parquet writer backed by a byte-level StorageClient.
+    """Parquet writer backed by a byte-level StorageClient (e.g. S3).
 
     This class handles:
     - Writing DataFrames as parquet bytes
@@ -41,12 +41,16 @@ class ByteParquetWriter(ParquetWriterInterface):
             df: The data to store
             time_col: Name of the time column in df
         """
+        exceptions_to_catch = [FileNotFoundError]
+        if isinstance(self.storage, S3StorageClient):
+            exceptions_to_catch.append(self.storage.client.exceptions.NoSuchKey)
+
         try:
             existing_bytes = self.storage.get_bytes(bucket, key)
             existing_df = pl.read_parquet(existing_bytes)
             combined_df = merge_dataframes(existing_df, df, time_col)
             logger.debug(f"Merging existing and new data for {bucket}/{key}")
-        except FileNotFoundError:
+        except tuple(exceptions_to_catch):
             combined_df = df
             logger.debug(f"No existing parquet at {bucket}/{key}; writing new file")
 

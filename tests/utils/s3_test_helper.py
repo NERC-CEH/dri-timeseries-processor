@@ -3,18 +3,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import polars as pl
-import pytest
 from polars.testing import assert_frame_equal
 
-from new_processor.configuration.app_config import app_config
 from new_processor.storage.storage_client import S3StorageClient
-
-
-@pytest.fixture
-def s3_storage_client() -> S3StorageClient:
-    cfg = app_config()
-    client = S3StorageClient(cfg.AWS_ACCESS_KEY_ID, cfg.AWS_SECRET_ACCESS_KEY, cfg.AWS_DEFAULT_REGION, cfg.endpoint_url)
-    return client
 
 
 def assert_bucket_matches(s3_storage_client: S3StorageClient, expected_base: Path, bucket: str) -> None:
@@ -29,7 +20,11 @@ def assert_bucket_matches(s3_storage_client: S3StorageClient, expected_base: Pat
 
 
 def create_hourly_test_data(
-    start: datetime, end: datetime, upload: bool = False, storage_client: S3StorageClient | None = None
+    start: datetime,
+    end: datetime,
+    bucket_name: str,
+    upload: bool = False,
+    storage_client: S3StorageClient | None = None,
 ) -> pl.DataFrame:
     frames = []
 
@@ -52,7 +47,6 @@ def create_hourly_test_data(
                 df.write_parquet(buf)
 
                 key = f"cosmos/dataset=test_dataset/site={site}/date={day.strftime('%Y-%m-%d')}/data.parquet"
-                bucket_name = "ukceh-fdri-staging-timeseries-level-0"
                 storage_client.put_bytes(bucket_name, key, buf.getvalue())
 
     return pl.concat(frames)

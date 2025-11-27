@@ -33,6 +33,9 @@ def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.
     Returns:
         A merged DataFrame containing all relevant columns.
     """
+    if join_col not in df1.columns or join_col not in df1.columns:
+        raise ValueError(f"join_col '{join_col}' must exist in both DataFrames.")
+
     common_cols = set(df1.columns) & set(df2.columns)
     update_cols = {c for c in common_cols if c != join_col}
 
@@ -50,6 +53,6 @@ def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.
 
     # Build final set of columns
     coalesce_cols = [pl.coalesce(f"{col}_current", col).alias(col) for col in update_cols]
-    combined_df = combined_df.select(join_col, *extra_from_df2, *coalesce_cols, *extra_from_df1)
+    combined_df = combined_df.select(join_col, *extra_from_df2, *coalesce_cols, *extra_from_df1).sort(join_col)
 
     return combined_df

@@ -7,6 +7,7 @@ import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
 
+from new_processor.configuration.app_config import app_config
 from new_processor.io_backend.duckdb_connection import DuckDBConnectionFactory, create_duckdb_factory
 from new_processor.io_backend.reader import DuckDBParquetReader
 from new_processor.storage.storage_client import S3StorageClient
@@ -14,6 +15,13 @@ from utils.s3_test_helper import create_hourly_test_data
 from utils.validation_helpers import assert_unique_dates_in_dataframe
 
 DUMMY_DF = pl.DataFrame({"a": [1]})
+
+
+@pytest.fixture
+def s3_storage_client() -> S3StorageClient:
+    cfg = app_config()
+    client = S3StorageClient(cfg.AWS_ACCESS_KEY_ID, cfg.AWS_SECRET_ACCESS_KEY, cfg.AWS_DEFAULT_REGION, cfg.endpoint_url)
+    return client
 
 
 @pytest.fixture
@@ -107,7 +115,11 @@ def setup_test_data(s3_storage_client: S3StorageClient) -> Iterator:
     # setup
     s3_storage_client.clear_bucket(BUCKET_NAME)
     create_hourly_test_data(
-        start=datetime(2024, 1, 1), end=datetime(2024, 1, 10), upload=True, storage_client=s3_storage_client
+        start=datetime(2024, 1, 1),
+        end=datetime(2024, 1, 10),
+        bucket_name=BUCKET_NAME,
+        upload=True,
+        storage_client=s3_storage_client,
     )
     s3_storage_client.put_bytes(BUCKET_NAME, "corrupted.parquet", b"corrupted data")
 
