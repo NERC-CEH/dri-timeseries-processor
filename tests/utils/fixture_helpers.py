@@ -8,23 +8,33 @@ from _pytest.mark.structures import ParameterSet
 TEST_DATA_INPUT_DIR = Path(__file__).parent.parent / "data" / "inputs"
 TEST_DATA_API_VALID = TEST_DATA_INPUT_DIR / "api_json" / "valid"
 TEST_DATA_API_INVALID = TEST_DATA_INPUT_DIR / "api_json" / "invalid"
+TEST_DATA_ASSETS_VALID = TEST_DATA_INPUT_DIR / "__assets__" / "valid"
+TEST_DATA_ASSETS_INVALID = TEST_DATA_INPUT_DIR / "__assets__" / "invalid"
 
 
-def discover_json_test_cases(directory: str | Path) -> list[ParameterSet]:
-    """Discover all JSON files in a directory for use with @pytest.mark.parametrize.
+def discover_file_test_cases(directory: str | Path, glob_pattern: str = "*") -> list[ParameterSet]:
+    """Discover all files in a directory for use with @pytest.mark.parametrize.
+
+    Args:
+          directory: Path to directory to discover files within
+          glob_pattern: Optional pattern to filter files
 
     Returns:
-        A list of pytest.param objects, each representing a JSON file.
+        A list of pytest.param objects, each representing a file.
     """
-    directory = TEST_DATA_INPUT_DIR / Path(directory)
-
     test_cases = []
-    for path in directory.glob("*.json"):
+    for path in directory.glob(glob_pattern):
         # Create a readable relative ID for test display
         relative_path_id = str(path.relative_to(TEST_DATA_INPUT_DIR))
         test_cases.append(pytest.param(str(path), id=relative_path_id))
 
     return test_cases
+
+
+def discover_json_test_cases(directory: str | Path) -> list[ParameterSet]:
+    """Discover all JSON files in a directory for use with @pytest.mark.parametrize."""
+    directory = TEST_DATA_INPUT_DIR / Path(directory)
+    return discover_file_test_cases(directory, glob_pattern="*.json")
 
 
 def load_json_file(filename: str) -> dict[str, Any]:

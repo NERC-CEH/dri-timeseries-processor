@@ -16,3 +16,10 @@ class MethodType(Enum):
 class ProcessingLevel(Enum):
     RAW = "raw"
     PROCESSED = "processed"
+
+
+class Environment(Enum):
+    LOCAL = "local"
+    STAGING = "staging"
+    PRODUCTION = "production"
+    STAGING_FAKE = "staging-fake"
