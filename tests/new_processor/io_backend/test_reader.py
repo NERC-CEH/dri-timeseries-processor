@@ -1,13 +1,14 @@
+from datetime import datetime
+from unittest.mock import MagicMock
+
 import duckdb
 import polars as pl
 import pytest
-from datetime import datetime
-from unittest.mock import MagicMock
 from polars.testing import assert_frame_equal
 
-from new_processor.io_backend.reader import DuckDBParquetReader
 from new_processor.io_backend.duckdb_connection import DuckDBConnectionFactory, create_duckdb_factory
-from utils.s3_test_helper import create_hourly_test_data, s3_storage_client
+from new_processor.io_backend.reader import DuckDBParquetReader
+from utils.s3_test_helper import create_hourly_test_data
 from utils.validation_helpers import assert_unique_dates_in_dataframe
 
 DUMMY_DF = pl.DataFrame({"a": [1]})
@@ -47,8 +48,8 @@ class TestDuckDBParquetReader:
         mock_conn.execute.assert_called_with("SELECT * FROM tbl", [123])
         assert_frame_equal(result, DUMMY_DF)
 
-    def test_retry_on_invalid_input_second_passes(self, mock_factory, mock_conn, monkeypatch):
-        """ Test that the second retry is a success"""
+    def test_retry_on_invalid_input_second_passes(self, mock_factory, mock_conn):
+        """Test that the second retry is a success"""
         mock_conn.execute.side_effect = [duckdb.InvalidInputException(), MagicMock(pl=lambda: DUMMY_DF)]
 
         reader = DuckDBParquetReader(connection_factory=mock_factory)
@@ -61,8 +62,8 @@ class TestDuckDBParquetReader:
         assert stats["attempt_number"] == 2
         assert stats["idle_for"] == 2
 
-    def test_retry_on_invalid_input_all_fail(self, mock_factory, mock_conn, monkeypatch):
-        """ Test that max number of retries occurs on raising a InvalidInputException"""
+    def test_retry_on_invalid_input_all_fail(self, mock_factory, mock_conn):
+        """Test that max number of retries occurs on raising a InvalidInputException"""
         mock_conn.execute.side_effect = duckdb.InvalidInputException()
         reader = DuckDBParquetReader(connection_factory=mock_factory)
 
@@ -75,8 +76,8 @@ class TestDuckDBParquetReader:
         assert stats["attempt_number"] == 3
         assert stats["idle_for"] == 4
 
-    def test_retry_on_http_exception(self, mock_factory, mock_conn, monkeypatch):
-        """ Test that retry doesn't occur on raising a HTTPException"""
+    def test_retry_on_http_exception(self, mock_factory, mock_conn):
+        """Test that retry doesn't occur on raising a HTTPException"""
         mock_conn.execute.side_effect = duckdb.HTTPException()
         reader = DuckDBParquetReader(connection_factory=mock_factory)
 
@@ -92,6 +93,7 @@ class TestDuckDBParquetReader:
 
 BUCKET_NAME = "ukceh-fdri-staging-timeseries-level-0"
 
+
 @pytest.fixture
 def reader() -> DuckDBParquetReader:
     factory = create_duckdb_factory()
@@ -103,10 +105,7 @@ def setup_test_data(s3_storage_client):
     # setup
     s3_storage_client.clear_bucket(BUCKET_NAME)
     create_hourly_test_data(
-        start=datetime(2024, 1, 1),
-        end=datetime(2024, 1, 10),
-        upload=True,
-        storage_client=s3_storage_client
+        start=datetime(2024, 1, 1), end=datetime(2024, 1, 10), upload=True, storage_client=s3_storage_client
     )
     s3_storage_client.put_bytes(BUCKET_NAME, "corrupted.parquet", b"corrupted data")
 
@@ -120,13 +119,19 @@ def setup_test_data(s3_storage_client):
 class TestDuckDBParquetReaderIntegration:
     """Integration tests that check specific usages of the class"""
 
-    @pytest.mark.parametrize("keys, expected", [
-        (("cosmos/dataset=test_dataset/site=site1/date=2024-01-01/data.parquet",), ["2024-01-01"]),
-        ((
-            "cosmos/dataset=test_dataset/site=site1/date=2024-01-01/data.parquet",
-            "cosmos/dataset=test_dataset/site=site1/date=2024-01-02/data.parquet",
-        ), ["2024-01-01", "2024-01-02"])
-    ])
+    @pytest.mark.parametrize(
+        "keys, expected",
+        [
+            (("cosmos/dataset=test_dataset/site=site1/date=2024-01-01/data.parquet",), ["2024-01-01"]),
+            (
+                (
+                    "cosmos/dataset=test_dataset/site=site1/date=2024-01-01/data.parquet",
+                    "cosmos/dataset=test_dataset/site=site1/date=2024-01-02/data.parquet",
+                ),
+                ["2024-01-01", "2024-01-02"],
+            ),
+        ],
+    )
     def test_read_parquet_valid(self, keys: tuple, expected: list, reader: DuckDBParquetReader) -> None:
         """Happy-path: read parquet key(s) via DuckDB and return expected dates."""
         keys_str = [f"s3://{BUCKET_NAME}/{key}" for key in keys]

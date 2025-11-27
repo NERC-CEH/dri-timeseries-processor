@@ -2,9 +2,8 @@ import io
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import pytest
-
 import polars as pl
+import pytest
 from polars.testing import assert_frame_equal
 
 from new_processor.configuration.app_config import app_config
@@ -14,15 +13,12 @@ from new_processor.storage.storage_client import S3StorageClient
 @pytest.fixture
 def s3_storage_client() -> S3StorageClient:
     cfg = app_config()
-    client = S3StorageClient(cfg.endpoint_url)
+    client = S3StorageClient(cfg.AWS_ACCESS_KEY_ID, cfg.AWS_SECRET_ACCESS_KEY, cfg.AWS_DEFAULT_REGION, cfg.endpoint_url)
     return client
 
 
 def assert_bucket_matches(s3_storage_client: S3StorageClient, expected_base: Path, bucket: str) -> None:
-    expected_keys = [
-        p.relative_to(expected_base).as_posix()
-        for p in expected_base.rglob("data.parquet")
-    ]
+    expected_keys = [p.relative_to(expected_base).as_posix() for p in expected_base.rglob("data.parquet")]
     actual_keys = sorted(s3_storage_client.list_keys(bucket))
     assert actual_keys == sorted(expected_keys), "Mismatch in S3 keys"
 
@@ -33,7 +29,7 @@ def assert_bucket_matches(s3_storage_client: S3StorageClient, expected_base: Pat
 
 
 def create_hourly_test_data(
-        start: datetime, end: datetime, upload: bool = False, storage_client: S3StorageClient | None = None
+    start: datetime, end: datetime, upload: bool = False, storage_client: S3StorageClient | None = None
 ) -> pl.DataFrame:
     frames = []
 

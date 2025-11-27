@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from utils.fixture_helpers import load_json_file, TEST_DATA_MOCK_METADATA
-
+from utils.fixture_helpers import TEST_DATA_MOCK_METADATA, load_json_file
 
 BASE_URL = "https://dri-metadata-api.staging.eds.ceh.ac.uk/"
 
@@ -24,10 +23,7 @@ def default_metadata_api_data() -> dict[str, Any]:
 
 def load_all_api_data_from_folder(base_dir: Path, base_url: str, suffix: str = "") -> dict[str, Any]:
     """Load all JSON files in base_dir into a URL → JSON dict."""
-    return {
-        f"{base_url}{file.stem}{suffix}": file.read_text()
-        for file in base_dir.glob("*.json")
-    }
+    return {f"{base_url}{file.stem}{suffix}": file.read_text() for file in base_dir.glob("*.json")}
 
 
 def all_metadata_api_data() -> dict[str, Any]:

@@ -10,7 +10,7 @@ TEST_DATA_API_VALID = TEST_DATA_INPUT_DIR / "api_json" / "valid"
 TEST_DATA_API_INVALID = TEST_DATA_INPUT_DIR / "api_json" / "invalid"
 TEST_DATA_ASSETS_VALID = TEST_DATA_INPUT_DIR / "__assets__" / "valid"
 TEST_DATA_ASSETS_INVALID = TEST_DATA_INPUT_DIR / "__assets__" / "invalid"
-TEST_DATA_MOCK_METADATA =  TEST_DATA_INPUT_DIR / "mock_metadata_api"
+TEST_DATA_MOCK_METADATA = TEST_DATA_INPUT_DIR / "mock_metadata_api"
 
 
 def discover_file_test_cases(directory: str | Path, glob_pattern: str = "*") -> list[ParameterSet]:
