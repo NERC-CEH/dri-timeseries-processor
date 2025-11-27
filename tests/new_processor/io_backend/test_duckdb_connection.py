@@ -72,12 +72,12 @@ class TestDuckDBConnectionFactory:
 
 class TestCreateDuckdbFactory:
     @staticmethod
-    def mock_app_config(mock_config, monkeypatch) -> None:
+    def mock_app_config(mock_config: SimpleNamespace, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "new_processor.io_backend.duckdb_connection.app_config", MagicMock(return_value=mock_config)
         )
 
-    def test_create_duckdb_factory_local(self, monkeypatch) -> None:
+    def test_create_duckdb_factory_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_config = SimpleNamespace(
             environment=Environment.LOCAL,
             endpoint_url="http://ls",
@@ -90,7 +90,7 @@ class TestCreateDuckdbFactory:
         assert isinstance(factory, LocalStackDuckDBConnectionFactory)
 
     @pytest.mark.parametrize("env", ["staging", "production"])
-    def test_create_duckdb_factory_live(self, env, monkeypatch) -> None:
+    def test_create_duckdb_factory_live(self, env: str, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_config = SimpleNamespace(
             environment=Environment(env),
         )
@@ -99,7 +99,7 @@ class TestCreateDuckdbFactory:
         factory = create_duckdb_factory()
         assert isinstance(factory, AwsDuckDBConnectionFactory)
 
-    def test_create_duckdb_factory_fake(self, monkeypatch) -> None:
+    def test_create_duckdb_factory_fake(self, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_config = SimpleNamespace(
             environment=Environment.STAGING_FAKE,
         )

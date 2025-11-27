@@ -54,13 +54,13 @@ def parse_secret_string(secret_string: str) -> dict[str, str]:
     items = {}
 
     for part in secret_string.split(";"):
-        part = part.strip()
-        if not part:
+        secret_part = part.strip()
+        if not secret_part:
             continue
 
         # Split on the first '=' only (some values may contain '=')
-        if "=" in part:
-            key, value = part.split("=", 1)
+        if "=" in secret_part:
+            key, value = secret_part.split("=", 1)
             items[key.strip()] = value.strip()
 
     return items

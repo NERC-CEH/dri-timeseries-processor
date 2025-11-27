@@ -62,10 +62,15 @@ class StorageClient(ABC):
 class S3StorageClient(StorageClient):
     """S3 implementation of StorageClient, suitable for AWS and LocalStack."""
 
-    def __init__(self, aws_access_key_id, aws_secret_access_key, region_name, endpoint_url: str | None = None):
+    def __init__(
+        self, aws_access_key_id: str, aws_secret_access_key: str, aws_region_name: str, endpoint_url: str | None = None
+    ):
         """Initialize an S3 client.
 
         Args:
+            aws_access_key_id: AWS Access Key.
+            aws_secret_access_key: AWS Secret Key.
+            aws_region_name: AWS Region Name.
             endpoint_url: Optional - used for LocalStack/testing environments. If omitted, AWS defaults apply.
         """
         kwargs = {}
@@ -73,7 +78,9 @@ class S3StorageClient(StorageClient):
             kwargs["endpoint_url"] = endpoint_url
 
         session = boto3.session.Session(
-            aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name=region_name
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=aws_region_name,
         )
 
         self.client = session.client("s3", **kwargs)

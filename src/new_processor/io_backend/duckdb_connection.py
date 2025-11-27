@@ -7,6 +7,7 @@ from object storage via the S3 API.
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from typing import Iterator
 
 import boto3
 import duckdb
@@ -145,7 +146,7 @@ def create_duckdb_factory() -> DuckDBConnectionFactory:
 
 
 @contextmanager
-def duckdb_connection():
+def duckdb_connection() -> Iterator[duckdb.DuckDBPyConnection]:
     factory = create_duckdb_factory()
     conn = factory.create()
     try:

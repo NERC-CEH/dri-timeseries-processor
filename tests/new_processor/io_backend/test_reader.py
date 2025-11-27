@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Iterator
 from unittest.mock import MagicMock
 
 import duckdb
@@ -8,6 +9,7 @@ from polars.testing import assert_frame_equal
 
 from new_processor.io_backend.duckdb_connection import DuckDBConnectionFactory, create_duckdb_factory
 from new_processor.io_backend.reader import DuckDBParquetReader
+from new_processor.storage.storage_client import S3StorageClient
 from utils.s3_test_helper import create_hourly_test_data
 from utils.validation_helpers import assert_unique_dates_in_dataframe
 
@@ -23,7 +25,7 @@ def mock_conn() -> MagicMock:
 
 
 @pytest.fixture
-def mock_factory(mock_conn) -> MagicMock:
+def mock_factory(mock_conn: MagicMock) -> MagicMock:
     """A mock factory that returns the mock connection."""
     factory = MagicMock(spec=DuckDBConnectionFactory)
     factory.create.return_value = mock_conn
@@ -33,14 +35,14 @@ def mock_factory(mock_conn) -> MagicMock:
 class TestDuckDBParquetReader:
     """Simple tests that check the core functionality of the class"""
 
-    def test_read_calls_factory_create(self, mock_factory):
+    def test_read_calls_factory_create(self, mock_factory: MagicMock) -> None:
         reader = DuckDBParquetReader(connection_factory=mock_factory)
         result = reader.read("SELECT 1")
 
         mock_factory.create.assert_called_once()
         assert_frame_equal(result, DUMMY_DF)
 
-    def test_read_executes_query(self, mock_factory, mock_conn):
+    def test_read_executes_query(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
         reader = DuckDBParquetReader(connection_factory=mock_factory)
         result = reader.read("SELECT * FROM tbl", params=[123])
 
@@ -48,7 +50,7 @@ class TestDuckDBParquetReader:
         mock_conn.execute.assert_called_with("SELECT * FROM tbl", [123])
         assert_frame_equal(result, DUMMY_DF)
 
-    def test_retry_on_invalid_input_second_passes(self, mock_factory, mock_conn):
+    def test_retry_on_invalid_input_second_passes(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
         """Test that the second retry is a success"""
         mock_conn.execute.side_effect = [duckdb.InvalidInputException(), MagicMock(pl=lambda: DUMMY_DF)]
 
@@ -62,7 +64,7 @@ class TestDuckDBParquetReader:
         assert stats["attempt_number"] == 2
         assert stats["idle_for"] == 2
 
-    def test_retry_on_invalid_input_all_fail(self, mock_factory, mock_conn):
+    def test_retry_on_invalid_input_all_fail(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
         """Test that max number of retries occurs on raising a InvalidInputException"""
         mock_conn.execute.side_effect = duckdb.InvalidInputException()
         reader = DuckDBParquetReader(connection_factory=mock_factory)
@@ -76,7 +78,7 @@ class TestDuckDBParquetReader:
         assert stats["attempt_number"] == 3
         assert stats["idle_for"] == 4
 
-    def test_retry_on_http_exception(self, mock_factory, mock_conn):
+    def test_retry_on_http_exception(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
         """Test that retry doesn't occur on raising a HTTPException"""
         mock_conn.execute.side_effect = duckdb.HTTPException()
         reader = DuckDBParquetReader(connection_factory=mock_factory)
@@ -101,7 +103,7 @@ def reader() -> DuckDBParquetReader:
 
 
 @pytest.fixture
-def setup_test_data(s3_storage_client):
+def setup_test_data(s3_storage_client: S3StorageClient) -> Iterator:
     # setup
     s3_storage_client.clear_bucket(BUCKET_NAME)
     create_hourly_test_data(
