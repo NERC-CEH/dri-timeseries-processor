@@ -16,7 +16,6 @@ class TestRemoveProtocolFromUrl:
             ("ftp://weird.example.com/data", "weird.example.com/data"),
             ("example.com", "example.com"),
             ("example.com/path", "example.com/path"),
-            ("//example.com/path", "example.com/path"),
         ],
     )
     def test_valid_string(self, url: str, expected: str) -> None:

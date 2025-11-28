@@ -2,7 +2,7 @@
 Common base URIs and endpoint constants used throughout the metadata API integration.
 """
 
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 BASE_URI = "http://fdri.ceh.ac.uk"
 REF_URI = f"{BASE_URI}/ref"
@@ -26,7 +26,15 @@ def remove_protocol_from_url(url: str) -> str:
         >>> remove_protocol_from_url("https://www.example.com")
         "www.example.com"
     """
-    endpoint_url = urlparse(url)
-    # Remove the protocol scheme by setting it to an empty string
-    endpoint_url = "".join(endpoint_url[1:])
+    parts = urlsplit(url)
+
+    # If no scheme, return unchanged
+    if not parts.scheme:
+        return url
+
+    endpoint_url = parts.netloc + parts.path
+    if parts.query:
+        endpoint_url += f"?{parts.query}"
+    if parts.fragment:
+        endpoint_url += f"#{parts.fragment}"
     return endpoint_url
