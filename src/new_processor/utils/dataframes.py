@@ -17,9 +17,13 @@ def split_by_date(df: pl.DataFrame, time_col: str) -> list[tuple[datetime, pl.Da
     Returns:
         A list of `(date, dataframe)` tuples, where each DataFrame contains only rows belonging to a single date.
     """
+    if df.is_empty():
+        return []
     # group_by returns groups as `[(key_tuple, DataFrame), ...]`
     grouper = df.group_by(pl.col(time_col).dt.date())
-    return [(group_key[0], group_df) for group_key, group_df in grouper]
+    split_dfs = [(group_key[0], group_df) for group_key, group_df in grouper]
+    split_dfs.sort(key=lambda x: x[0])
+    return split_dfs
 
 
 def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.DataFrame:
@@ -33,6 +37,15 @@ def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.
     Returns:
         A merged DataFrame containing all relevant columns.
     """
+    if df1.is_empty() and df2.is_empty():
+        return pl.DataFrame()
+
+    if df1.is_empty() and not df2.is_empty():
+        return df2
+
+    if not df1.is_empty() and df2.is_empty():
+        return df1
+
     if join_col not in df1.columns or join_col not in df1.columns:
         raise ValueError(f"join_col '{join_col}' must exist in both DataFrames.")
 
