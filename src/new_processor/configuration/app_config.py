@@ -41,8 +41,6 @@ class AppConfigLocal(AppConfig):
     Check configs for missing or empty parameters and creates class instance attributes for each one.
     """
 
-    # Required local config keys
-
     def __init__(self, env: Environment):
         if env is not Environment.LOCAL:
             raise EnvironmentError(f"Environment must be set to 'local'. Got: '{env}'")
