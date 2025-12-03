@@ -1,3 +1,8 @@
+"""
+Helper functions related to strings
+"""
+
+
 def extract_uri_id(uri: str) -> str:
     """Extract the final path segment from a URI.
 

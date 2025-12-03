@@ -1,5 +1,6 @@
 from typing import Callable, Type
 
+import polars as pl
 import pytest
 from pydantic import BaseModel, ValidationError
 
@@ -66,3 +67,20 @@ def assert_pydantic_validation_error_cause(
         assert e["type"] == expected_type[idx]
         if expected_loc is not None:
             assert e["loc"] == expected_loc[idx]
+
+
+def assert_unique_dates_in_dataframe(df: pl.DataFrame, expected: list[str], time_col: str = "time") -> None:
+    """Generic helper to test that expected dates are present in the given dataframe
+
+    Args:
+        df: DataFrame to test the expected dates against.
+        expected: Sorted list of expected dates to find.
+        time_col: The name of the time column in the DataFrame.
+
+    Raises:
+        AssertionError: If the dates aren't found in the DataFrame.
+    """
+    # Convert Polars datetime to string date for easy assertion
+    df = df.with_columns(pl.col(time_col).dt.strftime("%Y-%m-%d"))
+    unique_dates = df.select(time_col).unique()
+    assert sorted(unique_dates[time_col].to_list()) == expected

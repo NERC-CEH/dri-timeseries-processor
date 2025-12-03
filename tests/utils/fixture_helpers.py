@@ -10,6 +10,7 @@ TEST_DATA_API_VALID = TEST_DATA_INPUT_DIR / "api_json" / "valid"
 TEST_DATA_API_INVALID = TEST_DATA_INPUT_DIR / "api_json" / "invalid"
 TEST_DATA_ASSETS_VALID = TEST_DATA_INPUT_DIR / "__assets__" / "valid"
 TEST_DATA_ASSETS_INVALID = TEST_DATA_INPUT_DIR / "__assets__" / "invalid"
+TEST_DATA_MOCK_METADATA = TEST_DATA_INPUT_DIR / "mock_metadata_api"
 
 
 def discover_file_test_cases(directory: str | Path, glob_pattern: str = "*") -> list[ParameterSet]:
@@ -37,9 +38,9 @@ def discover_json_test_cases(directory: str | Path) -> list[ParameterSet]:
     return discover_file_test_cases(directory, glob_pattern="*.json")
 
 
-def load_json_file(filename: str) -> dict[str, Any]:
+def load_json_file(filepath: str | Path) -> dict[str, Any]:
     """Helper for loading input JSON files."""
-    filepath = TEST_DATA_INPUT_DIR / filename
+    filepath = Path(filepath)
     if not filepath.exists():
         raise FileNotFoundError(f"Fixture not found: {filepath}")
 
