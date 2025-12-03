@@ -5,8 +5,9 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.__metadata__.config_core_flags import core_flag_config
 from new_processor.utils.polars_utils import missing_expr, not_missing_expr
+from new_processor.routers.metadata_router import fetch_core_flags
+from new_processor.api_models.operations.flags import CoreFlagResponse
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,10 @@ def initialise_core_flag_system(tf: ts.TimeFrame) -> ts.TimeFrame:
         The ts.TimeFrame with the core flag system added.
     """
     # Initialise core flag system within ts.TimeFrame object
-    core_flags_dict = {name: flag.id for name, flag in core_flag_config.items()}
+    response = fetch_core_flags()
+    parsed = CoreFlagResponse.model_validate(response)
+
+    core_flags_dict = {name: flag.id for name, flag in parsed.core_flags.items()}
     tf.register_flag_system(CORE_FLAG_SYS_NAME, core_flags_dict)
 
     return tf

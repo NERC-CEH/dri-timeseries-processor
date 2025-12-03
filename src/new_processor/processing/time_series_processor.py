@@ -11,6 +11,7 @@ from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.routers.data_router import DataRouter
 from new_processor.configuration.app_config import app_config
 from new_processor.utils.enums import MethodType
+from new_processor.operations.flags.flag_operations import add_initial_core_flags
 
 logger = logging.getLogger(__name__)
 
@@ -82,5 +83,6 @@ class TimeSeriesProcessor:
             }
         )
 
-        # TODO: Think about where 'initialise core flags' will go.
+        tf = add_initial_core_flags(tf)
         container.data = tf
+        print(tf)
