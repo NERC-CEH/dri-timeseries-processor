@@ -18,6 +18,7 @@ class ParquetWriterInterface(ABC):
     @abstractmethod
     def write(self, *args, **kwargs) -> None:
         """Abstract method for write operations"""
+        pass
 
 
 class ByteParquetWriter(ParquetWriterInterface):

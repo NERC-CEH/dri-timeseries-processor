@@ -18,6 +18,7 @@ class ParquetReaderInterface(ABC):
     @abstractmethod
     def read(self, *args, **kwargs) -> pl.DataFrame:
         """Abstract method for read operations"""
+        pass
 
 
 class DuckDBParquetReader(ParquetReaderInterface):

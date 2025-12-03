@@ -23,6 +23,7 @@ class DuckDBConnectionFactory(ABC):
     @abstractmethod
     def create(self) -> duckdb.DuckDBPyConnection:
         """Abstract method to create the connection"""
+        pass
 
     @staticmethod
     def _configure_duckdb_base() -> duckdb.DuckDBPyConnection:
