@@ -11,6 +11,7 @@ class MethodType(Enum):
     PROCESS = "process"
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
+    LOAD = "load_raw"
 
 
 class ProcessingLevel(Enum):

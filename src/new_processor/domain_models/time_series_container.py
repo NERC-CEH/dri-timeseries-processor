@@ -17,6 +17,7 @@ from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingL
 class TimeSeriesContainer:
     ts_id: str
     ref_id: str
+    network: str
 
     source_bucket: str
     source_dataset: str

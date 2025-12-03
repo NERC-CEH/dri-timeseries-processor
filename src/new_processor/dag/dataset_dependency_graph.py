@@ -264,7 +264,7 @@ class DatasetDependencyGraph:
         parsed = TimeSeriesDatasetResponse.model_validate(dataset_response)
         all_containers = []
         for item in parsed.items:
-            container = map_dataset_item(item)
+            container = map_dataset_item(item, self.network)
             self._dataset_cache[container.ts_id] = container
             all_containers.append(container)
         return all_containers

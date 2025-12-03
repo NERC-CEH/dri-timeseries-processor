@@ -4,7 +4,7 @@ import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
 
-from new_processor.utils.dataframes import (
+from new_processor.utils.polars_utils import (
     merge_dataframes,
     split_by_date,
 )
