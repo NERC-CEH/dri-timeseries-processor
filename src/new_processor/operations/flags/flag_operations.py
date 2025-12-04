@@ -5,64 +5,11 @@ import logging
 import polars as pl
 import time_stream as ts
 
+from new_processor.operations.flags.flag_names import (CORE_FLAG_SYS_NAME, core_flag_column_name, corrs_flag_column_name, qc_flag_column_name, infill_flag_column_name)
 from new_processor.routers.metadata_router import fetch_core_flags
 from new_processor.utils.polars_utils import missing_expr, not_missing_expr
 
 logger = logging.getLogger(__name__)
-
-
-CORE_FLAG_SYS_NAME = "core_flags"
-
-
-def core_flag_column_name(column: str) -> str:
-    """Return flag column name for given data column name.
-
-    Args:
-        column: Data column name
-
-    Returns:
-        Flag column name
-    """
-    return f"{column}_CORE_FLAG"
-
-
-def corrs_flag_column_name(column: str) -> str:
-    """
-    Return column name of corrections flag column for a given variable column.
-
-    Args:
-        column: Data column name
-
-    Returns:
-        Flag column name
-    """
-    return f"{column}_CORRS_FLAG"
-
-
-def qc_flag_column_name(column: str) -> str:
-    """
-    Return column name of QC flag column for a given variable column.
-
-    Args:
-        column: Data column name
-
-    Returns:
-        Flag column name
-    """
-    return f"{column}_QC_FLAG"
-
-
-def infill_flag_column_name(column: str) -> str:
-    """
-    Return column name of infill flag column for a given variable column.
-
-    Args:
-        column: Data column name
-
-    Returns:
-        Flag column name
-    """
-    return f"{column}_INFILL_FLAG"
 
 
 def initialise_core_flag_system(tf: ts.TimeFrame) -> ts.TimeFrame:

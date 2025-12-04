@@ -14,8 +14,10 @@ from time_stream import TimeFrame
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.flags.flag_operations import add_initial_core_flags
+from new_processor.operations.quality_control.apply_qc import run_quality_control
 from new_processor.routers.data_router import DataRouter
 from new_processor.utils.enums import MethodType
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,21 +70,13 @@ class TimeSeriesProcessor:
         """
 
         container = self.graph.datasets[dataset_id]
-        print("\n", dataset_id)
 
         match container.method_type:
             case MethodType.LOAD:
                 self._load_raw(container)
 
             case MethodType.PROCESS:
-                # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
-                #  that's where all the configs will be found.
-                #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
-                #  Is this robust?
-                dep_container = self.graph.datasets[container.direct_depends_on[0]]
-                print("do corrections", dep_container.correction_configs)
-                print("do qc", dep_container.qc_configs)
-                print("do infill", dep_container.infill_configs)
+                self._process(container)
 
             case MethodType.AGGREGATION:
                 print("aggregate", container.method)
@@ -100,9 +94,6 @@ class TimeSeriesProcessor:
         Args:
             container: Time series container of metadata and data.
         """
-
-        print("load raw", container.source_bucket)
-
         df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
 
         # TODO: Note issue about the "time" name - where to get this in metadata
@@ -121,4 +112,19 @@ class TimeSeriesProcessor:
 
         tf = add_initial_core_flags(tf)
         container.data = tf
-        print(tf)
+
+    def _process(self, container):
+        # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
+        #  that's where all the configs will be found.
+        #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
+        #  Is this robust?
+        dep_id = container.direct_depends_on[0]
+        dep_container = self.graph.datasets[dep_id]
+
+       # print("do corrections", dep_container.correction_configs)
+
+        if dep_container.qc_configs:
+            tf = run_quality_control(dep_container, self.graph.datasets)
+            container.data = tf
+
+    #    print("do infill", dep_container.infill_configs)
