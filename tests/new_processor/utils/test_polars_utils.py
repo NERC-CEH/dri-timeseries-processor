@@ -6,6 +6,8 @@ from polars.testing import assert_frame_equal
 
 from new_processor.utils.polars_utils import (
     merge_dataframes,
+    missing_expr,
+    not_missing_expr,
     split_by_date,
 )
 
@@ -143,3 +145,21 @@ class TestMergeDataframes:
 
         result = merge_dataframes(df1, df2, "join")
         assert_frame_equal(result, expected, check_column_order=False)
+
+
+class TestMissingExpr:
+    def test_missing_expr(self) -> None:
+        """Test the expression for detecting missing values."""
+        expr = missing_expr("value")
+        df = pl.DataFrame({"value": [10, None, 30, float("nan"), 50]}, strict=False)
+        result = df.with_columns(expr.alias("is_missing"))
+        assert result["is_missing"].to_list() == [False, True, False, True, False]
+
+
+class TestNotMissingExpr:
+    def test_not_missing_expr(self) -> None:
+        """Test the expression for detecting non-missing values."""
+        expr = not_missing_expr("value")
+        df = pl.DataFrame({"value": [10, None, 30, float("nan"), 50]}, strict=False)
+        result = df.with_columns(expr.alias("is_not_missing"))
+        assert result["is_not_missing"].to_list() == [True, False, True, False, True]
