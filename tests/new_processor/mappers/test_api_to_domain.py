@@ -25,15 +25,16 @@ class TestMapDatasetItem:
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_rn_1day_processed.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
-        result = map_dataset_item(api_model.items[0])
+        result = map_dataset_item(api_model.items[0], "network")
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
             ref_id="http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_1day_processed",
+            network="network",
             source_bucket="ukceh-fdri-staging-timeseries-processed",
             source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
-            source_site="http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
+            source_site="cosmos-bunny",
             resolution="P1D",
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
@@ -64,20 +65,21 @@ class TestMapDatasetItem:
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_ta_30min_raw.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
-        result = map_dataset_item(api_model.items[0])
+        result = map_dataset_item(api_model.items[0], "network")
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
             ref_id="http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw",
+            network="network",
             source_bucket="ukceh-fdri-staging-timeseries-level-0",
             source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
-            source_site="http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
+            source_site="cosmos-bunny",
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
             variable="Air temperature",
-            method_type=None,
+            method_type=MethodType.LOAD,
             method=None,
             depends_on=[],
             direct_depends_on=[],
@@ -95,6 +97,7 @@ class TestMapDatasetItem:
         item = TimeSeriesContainer(
             ts_id="test_id",
             ref_id="test_ref_id",
+            network="network",
             source_bucket="bucket",
             source_dataset="dataset",
             source_column="col",
@@ -127,6 +130,7 @@ class TestMapDatasetItem:
         item = TimeSeriesContainer(
             ts_id="test_id",
             ref_id="test_ref_id",
+            network="network",
             source_bucket="bucket",
             source_dataset="dataset",
             source_column="col",
