@@ -3,15 +3,15 @@ from datetime import datetime
 
 from new_processor.configuration.app_config import app_config
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from new_processor.io_backend.duckdb_connection import create_duckdb_factory
+from new_processor.io_backend.reader import DuckDBParquetReader
+from new_processor.io_backend.writer import ByteParquetWriter
+from new_processor.processing.time_series_processor import TimeSeriesProcessor
 from new_processor.routers.data_router import DuckDBDataRouter
 from new_processor.routers.metadata_router import MetadataRouter
 
 # from new_processor.routers.data_router import S3DataRouter
 from new_processor.storage.storage_client import S3StorageClient
-from new_processor.processing.time_series_processor import TimeSeriesProcessor
-from new_processor.io_backend.reader import DuckDBParquetReader
-from new_processor.io_backend.writer import ByteParquetWriter
-from new_processor.io_backend.duckdb_connection import create_duckdb_factory
 
 if __name__ == "__main__":
     cfg = app_config()

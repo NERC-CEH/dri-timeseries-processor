@@ -3,13 +3,15 @@ from datetime import datetime
 
 import polars as pl
 
-from new_processor.io_backend.reader import DuckDBParquetReader
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.io_backend.reader import DuckDBParquetReader
 
 
 class DataRouter(ABC):
     @abstractmethod
-    def query_by_date_range(self, container: TimeSeriesContainer, start_date: datetime, end_date: datetime):
+    def query_by_date_range(
+        self, container: TimeSeriesContainer, start_date: datetime, end_date: datetime
+    ) -> pl.DataFrame:
         pass
 
 
@@ -38,9 +40,9 @@ class DuckDBDataRouter(DataRouter):
         query = f"""
             SELECT time, {container.source_column}
             FROM read_parquet('{bucket_path}')
-            WHERE 
+            WHERE
                 (date BETWEEN ? AND ?) AND
-                site = ?;            
+                site = ?;
         """
         params = [start_date, end_date, site_hack]
         return self.reader.read(query, params)

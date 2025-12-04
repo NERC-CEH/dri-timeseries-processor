@@ -1,17 +1,13 @@
 import logging
 from datetime import datetime
 
-import polars as pl
 from time_stream import TimeFrame
 
-from new_processor.io_backend.reader import ParquetReaderInterface
-from new_processor.io_backend.writer import ParquetWriterInterface
-from new_processor.storage.storage_client import StorageClient
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.routers.data_router import DataRouter
-from new_processor.configuration.app_config import app_config
-from new_processor.utils.enums import MethodType
+from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.flags.flag_operations import add_initial_core_flags
+from new_processor.routers.data_router import DataRouter
+from new_processor.utils.enums import MethodType
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +25,7 @@ class TimeSeriesProcessor:
         self.start_date = start_date
         self.end_date = end_date
 
-    def run(self):
+    def run(self) -> None:
         layers = self.graph.layered_topo_sort()
         logger.info("Processing pipeline started.")
 
@@ -40,7 +36,7 @@ class TimeSeriesProcessor:
 
         logger.info("Processing pipeline completed successfully.")
 
-    def process_dataset(self, dataset_id: str):
+    def process_dataset(self, dataset_id: str) -> None:
         container = self.graph.datasets[dataset_id]
         print("\n", dataset_id)
 
@@ -64,7 +60,7 @@ class TimeSeriesProcessor:
             case MethodType.DERIVATION:
                 print("derive", container.method)
 
-    def _load_raw(self, container):
+    def _load_raw(self, container: TimeSeriesContainer) -> None:
         print("load raw", container.source_bucket)
 
         df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)

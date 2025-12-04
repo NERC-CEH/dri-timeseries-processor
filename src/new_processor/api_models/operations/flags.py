@@ -44,7 +44,7 @@ class CoreFlagItem(BaseModel):
 
 
 class CoreFlagResponse(BaseModel):
-    """ Container for all core flag definitions.
+    """Container for all core flag definitions.
     JSON root contains: {"core_flags": {...}}
     """
 

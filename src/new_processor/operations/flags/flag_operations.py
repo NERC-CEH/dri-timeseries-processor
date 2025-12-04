@@ -5,9 +5,9 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from new_processor.utils.polars_utils import missing_expr, not_missing_expr
-from new_processor.routers.metadata_router import fetch_core_flags
 from new_processor.api_models.operations.flags import CoreFlagResponse
+from new_processor.routers.metadata_router import fetch_core_flags
+from new_processor.utils.polars_utils import missing_expr, not_missing_expr
 
 logger = logging.getLogger(__name__)
 

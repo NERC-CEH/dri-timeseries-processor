@@ -93,4 +93,3 @@ def not_missing_expr(column_name: str) -> pl.Expr:
         Expression for not missing values
     """
     return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
-

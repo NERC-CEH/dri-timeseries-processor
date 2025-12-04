@@ -76,7 +76,7 @@ class MetadataRouter:
 
 
 def fetch_core_flags() -> dict[str, Any]:
-    """ Fetch core flag metadata.  This is a placeholder while a proper metadata store is being built.
+    """Fetch core flag metadata.  This is a placeholder while a proper metadata store is being built.
 
     In the future this could call:
         - an internal metadata API
