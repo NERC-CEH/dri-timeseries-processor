@@ -1,3 +1,7 @@
+"""
+Data routing interfaces for retrieving time series data.
+"""
+
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -8,10 +12,26 @@ from new_processor.io_backend.reader import DuckDBParquetReader
 
 
 class DataRouter(ABC):
+    """Abstract interface for loading time series data.
+
+    Implementations are responsible for retrieving data for a given dataset and time window, and returning it as a
+    Polars DataFrame.
+    """
+
     @abstractmethod
     def query_by_date_range(
         self, container: TimeSeriesContainer, start_date: datetime, end_date: datetime
     ) -> pl.DataFrame:
+        """Retrieve data for specified date range.
+
+        Args:
+            container: Contains metadata required for building the dataset query.
+            start_date: Start of the date range (inclusive).
+            end_date: End of the date range (inclusive).
+
+        Returns:
+            A Polars DataFrame containing the data.
+        """
         pass
 
 
@@ -22,6 +42,17 @@ class DuckDBDataRouter(DataRouter):
     def query_by_date_range(
         self, container: TimeSeriesContainer, start_date: datetime, end_date: datetime
     ) -> pl.DataFrame:
+        """Retrieve data for data range using DuckDB SQL query.
+
+        Args:
+            container: Contains metadata required for building the dataset query.
+            start_date: Start of the date range (inclusive).
+            end_date: End of the date range (inclusive).
+
+        Returns:
+            A Polars DataFrame containing the data.
+        """
+
         # TODO: Time column should not be hard coded. Where in metadata is best?
         # TODO: Bucket path (network=.../dataset=...) is specific to COSMOS raw bucket.  How to make this generic?
         # TODO: Network is not a partition on the RAW bucket, but is on the PROCESSED bucket - reconcile?

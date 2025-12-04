@@ -1,3 +1,11 @@
+"""
+Time series processing pipeline.
+
+This module defines the `TimeSeriesProcessor`, which orchestrates dataset processing based on a dataset dependency
+graph. It loads raw data, applies initial flagging, and carries out further processing steps according to each
+dataset's method type.
+"""
+
 import logging
 from datetime import datetime
 
@@ -13,6 +21,11 @@ logger = logging.getLogger(__name__)
 
 
 class TimeSeriesProcessor:
+    """Orchestrates the dataset processing pipeline.
+
+    The processor traverses the graph in topological layers and processes each dataset in turn.
+    """
+
     def __init__(
         self,
         graph: DatasetDependencyGraph,
@@ -20,12 +33,23 @@ class TimeSeriesProcessor:
         start_date: datetime,
         end_date: datetime,
     ):
+        """Initialise the processor.
+
+        Args:
+            graph: Dependency graph containing dataset relationships and repository of dataset containers.
+            data_router: Router for retrieving raw data from storage.
+            start_date: Start of the date range to process (inclusive).
+            end_date: End of the date range to process (inclusive).
+        """
         self.graph = graph
         self.data_router = data_router
         self.start_date = start_date
         self.end_date = end_date
 
     def run(self) -> None:
+        """Execute the processing pipeline by iterating through the dependency graph.
+        The graph is traversed in order, ensuring dependencies are processed before the datasets that rely on them.
+        """
         layers = self.graph.layered_topo_sort()
         logger.info("Processing pipeline started.")
 
@@ -37,6 +61,12 @@ class TimeSeriesProcessor:
         logger.info("Processing pipeline completed successfully.")
 
     def process_dataset(self, dataset_id: str) -> None:
+        """Process a single dataset according to the configured method type in its metadata.
+
+        Args:
+            dataset_id: The dataset to process.
+        """
+
         container = self.graph.datasets[dataset_id]
         print("\n", dataset_id)
 
@@ -61,6 +91,16 @@ class TimeSeriesProcessor:
                 print("derive", container.method)
 
     def _load_raw(self, container: TimeSeriesContainer) -> None:
+        """Load raw time-series data for a dataset and initialise a `TimeFrame`.
+
+        The DataRouter is used to retrieve the data, which is then wrapped into a `TimeFrame` with resolution and
+        periodicity from metadata. Core flags are initialised and the resulting `TimeFrame` is stored on the
+        container.
+
+        Args:
+            container: Time series container of metadata and data.
+        """
+
         print("load raw", container.source_bucket)
 
         df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
