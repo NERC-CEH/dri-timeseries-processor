@@ -10,6 +10,8 @@ import json
 from typing import Any
 
 from new_processor import PACKAGE_ROOT
+from new_processor.api_models.operations.flags import CoreFlagResponse
+from new_processor.api_models.operations.operation import OperationRegistry
 from new_processor.externals.api_manager import MetadataAPIManager
 
 
@@ -75,7 +77,7 @@ class MetadataRouter:
         return self.api_manager.make_paginated_api_call(url, query_params)
 
 
-def fetch_core_flags() -> dict[str, Any]:
+def fetch_core_flags() -> CoreFlagResponse:
     """Fetch core flag metadata.  This is a placeholder while a proper metadata store is being built.
 
     In the future this could call:
@@ -86,4 +88,11 @@ def fetch_core_flags() -> dict[str, Any]:
     For now, it loads from local JSON.
     """
     path = PACKAGE_ROOT / "__metadata__" / "core_flags.json"
-    return json.loads(path.read_text())
+    data = json.loads(path.read_text())
+    return CoreFlagResponse.model_validate(data)
+
+
+def load_qc_methods() -> OperationRegistry:
+    path = PACKAGE_ROOT / "__metadata__" / "qc_methods.json"
+    data = json.loads(path.read_text())
+    return OperationRegistry.model_validate(data)

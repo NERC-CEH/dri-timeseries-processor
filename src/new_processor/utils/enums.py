@@ -14,6 +14,14 @@ class MethodType(Enum):
     LOAD = "load_raw"
 
 
+class OperationType(Enum):
+    CORRECTION = "correction"
+    INFILLING = "infilling"
+    QUALITY_CONTROL = "quality_control"
+    DERIVATION = "calculate"
+    AGGREGATION = "aggregate"
+
+
 class ProcessingLevel(Enum):
     RAW = "raw"
     PROCESSED = "processed"

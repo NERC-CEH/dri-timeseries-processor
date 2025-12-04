@@ -5,7 +5,6 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from new_processor.api_models.operations.flags import CoreFlagResponse
 from new_processor.routers.metadata_router import fetch_core_flags
 from new_processor.utils.polars_utils import missing_expr, not_missing_expr
 
@@ -77,9 +76,7 @@ def initialise_core_flag_system(tf: ts.TimeFrame) -> ts.TimeFrame:
     """
     # Initialise core flag system within ts.TimeFrame object
     response = fetch_core_flags()
-    parsed = CoreFlagResponse.model_validate(response)
-
-    core_flags_dict = {name: flag.id for name, flag in parsed.core_flags.items()}
+    core_flags_dict = {name: flag.id for name, flag in response.core_flags.items()}
     tf.register_flag_system(CORE_FLAG_SYS_NAME, core_flags_dict)
 
     return tf
