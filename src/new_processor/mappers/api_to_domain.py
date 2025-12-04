@@ -25,7 +25,8 @@ def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesCon
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
-        network: The network that this model belongs to
+        network: The network that this model belongs to TODO: Ideally this would be in the metadata API response
+
     Returns:
         A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
         processing.
