@@ -96,3 +96,15 @@ def load_qc_methods() -> OperationRegistry:
     path = PACKAGE_ROOT / "__metadata__" / "qc_methods.json"
     data = json.loads(path.read_text())
     return OperationRegistry.model_validate(data)
+
+
+def load_infilling_methods() -> OperationRegistry:
+    path = PACKAGE_ROOT / "__metadata__" / "infilling_methods.json"
+    data = json.loads(path.read_text())
+    return OperationRegistry.model_validate(data)
+
+
+def load_correction_methods() -> OperationRegistry:
+    path = PACKAGE_ROOT / "__metadata__" / "correction_methods.json"
+    data = json.loads(path.read_text())
+    return OperationRegistry.model_validate(data)
