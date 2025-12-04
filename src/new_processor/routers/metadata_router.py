@@ -6,8 +6,10 @@ Constructs the appropriate API endpoints for datasets and data-processing config
 queries and dependency lookups.
 """
 
+import json
 from typing import Any
 
+from new_processor import PACKAGE_ROOT
 from new_processor.externals.api_manager import MetadataAPIManager
 
 
@@ -71,3 +73,17 @@ class MetadataRouter:
         """
         url = f"{self.host}/id/data-processing-configuration"
         return self.api_manager.make_paginated_api_call(url, query_params)
+
+
+def fetch_core_flags() -> dict[str, Any]:
+    """Fetch core flag metadata.  This is a placeholder while a proper metadata store is being built.
+
+    In the future this could call:
+        - an internal metadata API
+        - an S3 object
+        - a PostgreSQL metadata store
+
+    For now, it loads from local JSON.
+    """
+    path = PACKAGE_ROOT / "__metadata__" / "core_flags.json"
+    return json.loads(path.read_text())

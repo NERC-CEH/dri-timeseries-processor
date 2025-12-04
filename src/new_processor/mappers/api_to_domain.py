@@ -20,11 +20,12 @@ from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingL
 from new_processor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
+def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesContainer:
     """Map a Pydantic TimeSeriesDatasetItem to a domain-level TimeSeriesContainer.
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
+        network: The network that this model belongs to TODO: Ideally this would be in the metadata API response
 
     Returns:
         A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
@@ -34,7 +35,7 @@ def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
 
     processing_level = ProcessingLevel(extract_uri_id(info.processing_level.id))
     variable = info.measure.variable.pref_label[0]
-    source_site = item.originating_site[0].id
+    source_site = extract_uri_id(item.originating_site[0].id)
 
     methodology = info.methodology
     method_config = methodology.configuration if methodology else None
@@ -44,6 +45,8 @@ def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
 
     if method_type:
         method_type = MethodType(extract_uri_id(method_type))
+    else:
+        method_type = MethodType.LOAD
 
     depends_on = [d.id for d in item.depends_on]
     direct_depends_on = [d.id for d in item.direct_depends_on]
@@ -51,6 +54,7 @@ def map_dataset_item(item: TimeSeriesDatasetItem) -> TimeSeriesContainer:
     return TimeSeriesContainer(
         ts_id=item.id,
         ref_id=info.id,
+        network=network,
         resolution=info.measure.aggregation.resolution,
         periodicity=info.measure.aggregation.periodicity,
         processing_level=processing_level,

@@ -7,7 +7,7 @@ from io import BytesIO
 import polars as pl
 
 from new_processor.storage.storage_client import S3StorageClient, StorageClient
-from new_processor.utils.dataframes import merge_dataframes
+from new_processor.utils.polars_utils import merge_dataframes
 
 logger = logging.getLogger(__name__)
 

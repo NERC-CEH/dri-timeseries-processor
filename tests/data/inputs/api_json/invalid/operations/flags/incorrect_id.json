@@ -1,0 +1,10 @@
+{
+    "core_flags": {
+        "bad": {
+            "name": "Test flag",
+            "description": "ID not a power of 2.",
+            "symbol": "T",
+            "id": 3
+        }
+    }
+}
