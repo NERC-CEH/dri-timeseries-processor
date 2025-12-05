@@ -14,11 +14,9 @@ from time_stream import TimeFrame
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.flags.flag_operations import add_initial_core_flags
-from new_processor.operations.correction import CorrectionProcessor
-from new_processor.operations.infill import InfillProcessor
-from new_processor.operations.qc import QCProcessor
+from new_processor.operations.registry import OPERATION_PROCESSORS
 from new_processor.routers.data_router import DataRouter
-from new_processor.utils.enums import MethodType
+from new_processor.utils.enums import MethodType, OperationType
 
 
 logger = logging.getLogger(__name__)
@@ -49,9 +47,6 @@ class TimeSeriesProcessor:
         self.data_router = data_router
         self.start_date = start_date
         self.end_date = end_date
-        self.qc_processor = QCProcessor()
-        self.infill_processor = InfillProcessor()
-        self.correction_processor = CorrectionProcessor()
 
     def run(self) -> None:
         """Execute the processing pipeline by iterating through the dependency graph.
@@ -126,13 +121,10 @@ class TimeSeriesProcessor:
         dep_id = container.direct_depends_on[0]
         dep_container = self.graph.datasets[dep_id]
 
-        if dep_container.correction_configs:
-            tf = self.correction_processor.run(dep_container, self.graph.datasets)
+        operation_steps = [OperationType.CORRECTION, OperationType.QUALITY_CONTROL, OperationType.INFILLING]
 
-        if dep_container.qc_configs:
-            tf = self.qc_processor.run(dep_container, self.graph.datasets)
-
-        if dep_container.infill_configs:
-            tf = self.infill_processor.run(dep_container, self.graph.datasets)
+        for operation_type in operation_steps:
+            operation_processor = OPERATION_PROCESSORS[operation_type]
+            dep_container.data = operation_processor.run(dep_container, self.graph.datasets)
 
         print("done.")

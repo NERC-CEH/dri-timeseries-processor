@@ -30,7 +30,7 @@ class InfillProcessor(OperationProcessor):
         return sorted(configs, key=lambda cfg: cfg.annotations.get("priority", 0))
 
     def apply_method(self, tf_primary, method_metadata, config, dataset_repository):
-        params = config.params.copy()  # ensure we don't mutate original parameters
+        params = config.params
         infill_column = tf_primary.metadata["column_name"]
 
         # TODO: Unsure whether this parameter is actually needed.  Not used in any method currently.

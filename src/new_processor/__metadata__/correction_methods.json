@@ -27,7 +27,7 @@
       "name": "PA_CORR",
       "description": "Correction for pressure where adjust has been calculated from mean sea level pressure.",
       "id": 8,
-      "function_name": "pa"
+      "function_name": "pa_corr"
     },
     "power": {
       "name": "POWER",

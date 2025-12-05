@@ -1,3 +1,4 @@
+import copy
 import logging
 from abc import ABC, abstractmethod
 
@@ -44,6 +45,18 @@ class OperationProcessor(ABC):
     def core_flag_updater(self, tf):
         pass
 
+    @staticmethod
+    def configure_parameters(method_metadata, params):
+        # Remap config parameter names if required
+        for old, new in method_metadata.arg_mapping.items():
+            if old in params:
+                params[new] = params.pop(old)
+
+        # Add default kwargs
+        params.update(method_metadata.kwargs)
+
+        return params
+
     def sort_configs(self, configs):
         return configs
 
@@ -74,15 +87,22 @@ class OperationProcessor(ABC):
             for cfg in cfg_block.method_configs:
                 logger.info(f"Operation: {self.operation_type} | {container.ts_id} | {cfg.method}. ")
 
-                method_metadata = methods[cfg.method]
+                # Create a copy to ensure that any mutations that take place are self-contained.
+                cfg = copy.copy(cfg)
 
+                # Extract the method metadata and configure the parameters
+                method_metadata = methods[cfg.method]
+                cfg.params = self.configure_parameters(method_metadata, cfg.params)
+
+                # Run the method!
                 result = self.apply_method(tf_primary, method_metadata, cfg, dataset_repository)
 
+                # Add any resulting flags
                 mask = self.compute_flag_mask(tf_primary, result, col_primary)
                 if mask is not None:
                     tf_primary.add_flag(flag_column, cfg.method, mask)
 
-        # 6. Post-process flags (core flag updater)
+        # 6. Post-process core flags
         tf_primary = self.core_flag_updater(tf_primary)
 
         return tf_primary

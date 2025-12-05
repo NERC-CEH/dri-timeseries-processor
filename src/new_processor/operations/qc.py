@@ -25,19 +25,12 @@ class QCProcessor(OperationProcessor):
         return qc_flag_column_name(column)
 
     def apply_method(self, tf_primary, method_metadata, config, dataset_repository):
-        params = config.params.copy()  # ensure we don't mutate original parameters
+        params = config.params
 
         # Decide which TimeFrame to run QC against
         tf_qc = tf_primary
         if "dep_ts" in params:
             tf_qc = dataset_repository[params.pop("dep_ts")].data
-
-        # Map parameter names
-        for old, new in method_metadata.arg_mapping.items():
-            params[new] = params.pop(old)
-
-        # Add default kwargs
-        params.update(method_metadata.kwargs)
 
         # Run QC
         result = tf_qc.qc_check(

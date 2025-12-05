@@ -83,7 +83,7 @@ def map_processing_config_item(
 
     Args:
         item: The validated DataProcessingConfigurationItem from the API.
-        all_site_metadata: Metadata for the site this processing configuration applies to.
+        all_site_metadata: Metadata for sites.
 
     Returns:
         A ProcessingConfig domain object containing annotations and a list of MethodConfig objects which provide
@@ -162,6 +162,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
 
     Args:
         argument_items: List of ArgumentItems from a HasCurrentConfigurationItem model.
+        site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
         A dictionary mapping parameter names to either literal values or referenced dataset identifiers. If a parameter
@@ -173,25 +174,39 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         param_name = extract_uri_id(arg.parameter.id).replace("-", "_")
         has_value = arg.has_value
 
-        # Special case where we need to extract parameter from the site metadata
-        if param_name.lower() == "site_attribute":
-            site_attribute = has_value.value
-            param_name = site_attribute.lower()
-            has_value.value = getattr(site_metadata, param_name)
-
-        # Literal value
+          # Literal value
         if has_value.value is not None:
-            collected_args[param_name].append(has_value.value)
+            # Resolve any special case where we need to extract parameter from the site metadata
+            param_name, value = resolve_site_attribute(param_name, has_value.value, site_metadata)
+            collected_args[param_name].append(value)
 
         # Reference value (dependent dataset)
         if has_value.value_reference is not None:
             ref_id = has_value.value_reference.id
             collected_args[param_name].append(ref_id)
 
-
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}
     return params
+
+
+def resolve_site_attribute(param_name: str, value: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
+    """Resolve any special case where we need to extract parameter from the site metadata.
+
+    Args:
+        param_name: The name of the parameter to resolve.
+        value: The value of the parameter.
+        site_metadata: Metadata for the site this processing configuration applies to.
+
+    Returns:
+        Resolved parameter name and value.
+    """
+    if param_name.lower() != "site_attribute":
+        return param_name, value
+
+    actual_param = value.lower()
+    actual_value = getattr(site_metadata, actual_param)
+    return actual_param, actual_value
 
 
 def map_site_metadata(item: SiteItem) -> SiteMetadata:

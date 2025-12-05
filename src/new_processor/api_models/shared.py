@@ -43,7 +43,7 @@ class HasValue(IDModel):
     """Represents a value with type information."""
 
     field_type: list[IDModel] | None = Field(None, alias="@type")
-    value: int | float | str | None = None
+    value: int | float | str | list[str] | None = None
     value_reference: IDModel | None = Field(None, alias="valueReference")
 
     @model_validator(mode="after")
