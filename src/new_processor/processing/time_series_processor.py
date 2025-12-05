@@ -126,5 +126,3 @@ class TimeSeriesProcessor:
         for operation_type in operation_steps:
             operation_processor = OPERATION_PROCESSORS[operation_type]
             dep_container.data = operation_processor.run(dep_container, self.graph.datasets)
-
-        print("done.")

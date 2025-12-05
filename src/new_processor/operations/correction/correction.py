@@ -6,7 +6,7 @@ from new_processor.utils.enums import OperationType
 from new_processor.operations.flags.flag_operations import update_corrections_core_flags
 from new_processor.operations.flags.flag_names import CORRS_FLAG_SYS_NAME, corrs_flag_column_name
 from new_processor.operations.operation_processor import OperationProcessor
-from new_processor.operations.correction_operations import Correction
+from new_processor.operations.correction.correction_operations import Correction
 
 logger = logging.getLogger(__name__)
 
