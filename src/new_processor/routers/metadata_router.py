@@ -7,12 +7,14 @@ queries and dependency lookups.
 """
 
 import json
+from functools import lru_cache
 from typing import Any
 
 from new_processor import PACKAGE_ROOT
 from new_processor.api_models.operations.flags import CoreFlagResponse
 from new_processor.api_models.operations.operation import OperationRegistry
 from new_processor.externals.api_manager import MetadataAPIManager
+from new_processor.utils.enums import OperationType
 
 
 class MetadataRouter:
@@ -90,6 +92,22 @@ def fetch_core_flags() -> CoreFlagResponse:
     path = PACKAGE_ROOT / "__metadata__" / "core_flags.json"
     data = json.loads(path.read_text())
     return CoreFlagResponse.model_validate(data)
+
+
+@lru_cache(maxsize=1)
+def load_methods(operation_type: OperationType) -> OperationRegistry:
+    match operation_type:
+        case OperationType.QUALITY_CONTROL:
+            return load_qc_methods()
+
+        case OperationType.INFILLING:
+            return load_infilling_methods()
+
+        case OperationType.CORRECTION:
+            return load_correction_methods()
+
+        case _:
+            raise ValueError(f"Unknown operation type {operation_type}")
 
 
 def load_qc_methods() -> OperationRegistry:
