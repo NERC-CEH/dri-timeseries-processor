@@ -249,38 +249,38 @@ class DatasetDependencyGraph:
         dataset_configs = self._build_processing_configs(response)
         return dataset_configs
 
-    def _build_dataset_containers(self, dataset_response: dict[str, Any]) -> list[TimeSeriesContainer]:
+    def _build_dataset_containers(self, dataset_response: TimeSeriesDatasetResponse) -> list[TimeSeriesContainer]:
         """Parse an API response container timeseries dataset items and convert them to the `TimeSeriesContainer`
         domain models.
 
         Cache each container so that later dependency-resolution steps can reuse them without repeated construction.
 
         Args:
-            dataset_response: The JSON dictionary from the metadata API representing a set of dataset items.
+            dataset_response: The TimeSeriesDatasetResponse representing a set of dataset items.
 
         Returns:
             All mapped `TimeSeriesContainer` extracted from the response.
         """
-        parsed = TimeSeriesDatasetResponse.model_validate(dataset_response)
         all_containers = []
-        for item in parsed.items:
+        for item in dataset_response.items:
             container = map_dataset_item(item, self.network)
             self._dataset_cache[container.ts_id] = container
             all_containers.append(container)
         return all_containers
 
-    def _build_processing_configs(self, dataset_response: dict[str, Any]) -> dict[str, list[ProcessingConfig]]:
+    def _build_processing_configs(
+            self, dataset_response: DataProcessingConfiguration
+    ) -> dict[str, list[ProcessingConfig]]:
         """Parse an API response containing processing configuration items and return them grouped by timeseries ID.
 
         Args:
-            dataset_response: The JSON dictionary from the metadata API representing a set of processing configs.
+            dataset_response: The DataProcessingConfiguration representing a set of processing configs.
 
         Returns:
             A dictionary keyed by timeseries ID, with value as the list of associated processing configs.
         """
-        parsed = DataProcessingConfiguration.model_validate(dataset_response)
         dataset_configs = defaultdict(list)
-        for item in parsed.items:
+        for item in dataset_response.items:
             mapped_config = map_processing_config_item(item)
             dataset_configs[mapped_config.ts_id].append(mapped_config)
         return dataset_configs

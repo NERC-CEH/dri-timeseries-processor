@@ -28,7 +28,7 @@ if __name__ == "__main__":
     data_router = DuckDBDataRouter(reader)
 
     builder = DatasetDependencyGraph(
-        "cosmos", sites=["BUNNY"], variables=["LWIN"], periodicity="PT30M", api_router=router
+        "cosmos", sites=["HOLLN"], variables=["PA"], periodicity="PT30M", api_router=router
     )
     builder.build()
     DAG = builder.build_dag()

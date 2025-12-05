@@ -31,9 +31,10 @@ class CorrectionProcessor(OperationProcessor):
         #return result
 
     def compute_flag_mask(self, tf, result, column_name):
-        before_mask = tf.df[column_name].is_null()
-        after_mask = result.df[column_name].is_null()
-        return before_mask.ne(after_mask)
+        #before_mask = tf.df[column_name].is_null()
+        #after_mask = result.df[column_name].is_null()
+        #return before_mask.ne(after_mask)
+        pass
 
     def core_flag_updater(self, tf):
         return update_corrections_core_flags(tf)

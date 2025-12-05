@@ -67,10 +67,14 @@ def create_items_list(ts_ids: str | list) -> list:
 def create_mock_router(items: list) -> MagicMock:
     """Return a mocked MetadataRouter with no-op API calls."""
     mock_router = MagicMock()
-    mock_router.fetch_dataset_by_params.return_value = {"items": items}
-    mock_router.fetch_all_dependencies.return_value = {"items": items}
-    mock_router.fetch_dataset_by_id.return_value = {"items": items}
-    mock_router.fetch_processing_configs.return_value = {"items": items}
+
+    mock_response = MagicMock()
+    mock_response.items = items
+
+    mock_router.fetch_dataset_by_params.return_value = mock_response
+    mock_router.fetch_all_dependencies.return_value = mock_response
+    mock_router.fetch_dataset_by_id.return_value = mock_response
+    mock_router.fetch_processing_configs.return_value = mock_response
     return mock_router
 
 
