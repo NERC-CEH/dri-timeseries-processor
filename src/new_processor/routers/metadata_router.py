@@ -8,15 +8,16 @@ queries and dependency lookups.
 
 import json
 from functools import lru_cache
-from typing import Any
 
 from new_processor import PACKAGE_ROOT
 from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.api_models.operations.flags import CoreFlagResponse
 from new_processor.api_models.operations.operation import OperationRegistry
+from new_processor.api_models.site import SiteResponse
 from new_processor.externals.api_manager import MetadataAPIManager
 from new_processor.utils.enums import OperationType
+from new_processor.utils.strings import extract_uri_id
 
 
 class MetadataRouter:
@@ -83,6 +84,42 @@ class MetadataRouter:
         url = f"{self.host}/id/data-processing-configuration"
         response = self.api_manager.make_paginated_api_call(url, query_params)
         return DataProcessingConfiguration.model_validate(response)
+
+    def fetch_site(self, site_id: str) -> SiteResponse:
+        """Fetch site metadata for given site ID.
+
+        Args:
+            site_id: ID of the site to fetch.
+
+        Returns:
+            The parsed JSON response containing site metadata.
+        """
+        url = f"{self.host}/id/site/{site_id}"
+        response = self.api_manager.make_paginated_api_call(url)
+        return SiteResponse.model_validate(response)
+
+
+    def fetch_site_by_alt_id(self, alt_site_id: str) -> SiteResponse:
+        """Fetch site metadata for given alt site ID - the "identifier" field in the API metadata
+
+        e.g. BUNNY instead of cosmos-bunny for the COSMOS network.
+
+        # TODO: This is a bit of a workaround until we have a better mechanism for fetching site metadata, e.g. see
+            https://github.com/NERC-CEH/fdri-discovery/issues/248
+
+        Args:
+            alt_site_id: Alternative ID of the site to fetch.
+
+        Returns:
+            The parsed JSON response containing site metadata.
+        """
+        url = f"{self.host}/id/site"
+        params = (
+            ("identifier", alt_site_id),
+        )
+        response = self.api_manager.make_paginated_api_call(url, params)
+        site_id = extract_uri_id(response["items"][0]["@id"])
+        return self.fetch_site(site_id)
 
 
 def fetch_core_flags() -> CoreFlagResponse:

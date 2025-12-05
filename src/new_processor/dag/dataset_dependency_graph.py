@@ -12,13 +12,13 @@ giving knowledge of which datasets need to be processed before others.
 import logging
 from collections import defaultdict
 from graphlib import TopologicalSorter
-from typing import Any
 
+from metadata_manager.models.schemas.sites import SiteMetadata
 from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.domain_models.processing_config import ProcessingConfig
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.mappers.api_to_domain import map_dataset_item, map_processing_config_item
+from new_processor.mappers.api_to_domain import map_dataset_item, map_processing_config_item, map_site_metadata
 from new_processor.routers.metadata_router import MetadataRouter
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
@@ -65,6 +65,7 @@ class DatasetDependencyGraph:
 
         self.api_router = api_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
+        self.site_metadata: dict[str, SiteMetadata] = {}
         self._dataset_cache: dict[str, TimeSeriesContainer] = {}
         self._dependency_cache = set()
 
@@ -97,6 +98,9 @@ class DatasetDependencyGraph:
         # Clear caches etc.
         self.reset()
 
+        # Fetch all site metadata
+        self._get_site_metadata()
+
         # Fetch the root datasets - i.e. the ones originally requested by the user.
         root_datasets = self._fetch_root_datasets()
 
@@ -126,6 +130,14 @@ class DatasetDependencyGraph:
                 self.datasets[ts_id] = container
 
             current_batch = next_batch  # move to next batch of recursion
+
+    def _get_site_metadata(self) -> None:
+        """Fetches site metadata for all sites with variables being processed."""
+        for site in self.sites:
+            logger.info(f"Fetching site metadata for: {site}")
+            response = self.api_router.fetch_site_by_alt_id(site).items[0]
+            meta = map_site_metadata(response)
+            self.site_metadata[meta.site_id] = meta
 
     @staticmethod
     def _batch_start(batch: dict[str, TimeSeriesContainer]) -> None:
@@ -281,7 +293,7 @@ class DatasetDependencyGraph:
         """
         dataset_configs = defaultdict(list)
         for item in dataset_response.items:
-            mapped_config = map_processing_config_item(item)
+            mapped_config = map_processing_config_item(item, self.site_metadata)
             dataset_configs[mapped_config.ts_id].append(mapped_config)
         return dataset_configs
 
@@ -330,3 +342,4 @@ class DatasetDependencyGraph:
         self._dataset_cache.clear()
         self._dependency_cache.clear()
         self.datasets.clear()
+        self.site_metadata.clear()

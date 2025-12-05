@@ -35,10 +35,10 @@ class SiteItem(IDModel):
     field_type: list[IDModel] = Field(..., alias="@type")
 
     # Location fields
-    easting: str | None = None
-    northing: str | None = None
-    lat: str | None = None
-    long: str | None = None
+    easting: float | None = None
+    northing: float | None = None
+    lat: float | None = None
+    long: float | None = None
     altitude: float | None = None
     has_representative_point: IDModel | None = Field(None, alias="hasRepresentativePoint")
     has_geometry: list[HasGeometryItem] | None = Field(list, alias="hasGeometry")
@@ -53,7 +53,7 @@ class SiteItem(IDModel):
     observes: list[IDModel] | None = []
 
 
-class Site(BaseAPIResponse):
+class SiteResponse(BaseAPIResponse):
     """Site API response."""
 
-    items: list[SiteItem] = Field(..., max_length=1)
+    items: list[SiteItem]

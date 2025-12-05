@@ -5,6 +5,7 @@ These mappers extract the fields actually required by the pipeline and flatten n
 domain-level objects.
 """
 
+from datetime import datetime
 from collections import defaultdict
 from typing import Any
 
@@ -14,7 +15,9 @@ from new_processor.api_models.data_processing_configuration import (
 )
 from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetItem
 from new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from new_processor.api_models.site import SiteItem
 from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.domain_models.site_metadata import SiteMetadata
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
@@ -70,20 +73,30 @@ def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesCon
     )
 
 
-def map_processing_config_item(item: DataProcessingConfigurationItem) -> ProcessingConfig:
+def map_processing_config_item(
+        item: DataProcessingConfigurationItem, all_site_metadata: dict[str, SiteMetadata]
+) -> ProcessingConfig:
     """Map a DataProcessingConfigurationItem to a ProcessingConfig domain model.
+
+    Some processing configurations will have "site_attribute" parameters that require fetching this metadata
+    key from the site metadata.
 
     Args:
         item: The validated DataProcessingConfigurationItem from the API.
+        all_site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
         A ProcessingConfig domain object containing annotations and a list of MethodConfig objects which provide
         specific method configurations for use in the processing pipeline
     """
     ts_id = item.applies_to_time_series[0].id
+    site_id = item.applies_to_time_series[0].originating_site.id
     config_type = ConfigurationType(extract_uri_id(item.type.id))
     annotations = extract_annotations(item.has_annotation)
-    method_configs = [map_method_config(cfg) for cfg in item.has_current_configuration or []]
+    
+    site_metadata = all_site_metadata[site_id]
+
+    method_configs = [map_method_config(cfg, site_metadata) for cfg in item.has_current_configuration or []]
 
     return ProcessingConfig(
         ts_id=ts_id,
@@ -94,18 +107,19 @@ def map_processing_config_item(item: DataProcessingConfigurationItem) -> Process
     )
 
 
-def map_method_config(current_config: HasCurrentConfigurationItem) -> MethodConfig:
+def map_method_config(current_config: HasCurrentConfigurationItem, site_metadata: SiteMetadata) -> MethodConfig:
     """Map a HasCurrentConfigurationItem into a MethodConfig domain model.
 
     Args:
         current_config: A single configuration definition for a method, possibly including an observation interval and
                         argument list.
+        site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
         A MethodConfig object describing a configuration of a processing method.
     """
     method = extract_uri_id(current_config.method.id)
-    params = extract_arguments(current_config.argument)
+    params = extract_arguments(current_config.argument, site_metadata)
 
     start_date, end_date = None, None
     if current_config.observation_interval:
@@ -141,7 +155,7 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     return extracted
 
 
-def extract_arguments(argument_items: list[ArgumentItem]) -> dict[str, Any]:
+def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMetadata) -> dict[str, Any]:
     """Extract method argument names and values from a configuration definition.
 
     Handles both direct literal values and references to other datasets.
@@ -159,6 +173,12 @@ def extract_arguments(argument_items: list[ArgumentItem]) -> dict[str, Any]:
         param_name = extract_uri_id(arg.parameter.id).replace("-", "_")
         has_value = arg.has_value
 
+        # Special case where we need to extract parameter from the site metadata
+        if param_name.lower() == "site_attribute":
+            site_attribute = has_value.value
+            param_name = site_attribute.lower()
+            has_value.value = getattr(site_metadata, param_name)
+
         # Literal value
         if has_value.value is not None:
             collected_args[param_name].append(has_value.value)
@@ -168,6 +188,34 @@ def extract_arguments(argument_items: list[ArgumentItem]) -> dict[str, Any]:
             ref_id = has_value.value_reference.id
             collected_args[param_name].append(ref_id)
 
+
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}
     return params
+
+
+def map_site_metadata(item: SiteItem) -> SiteMetadata:
+    """Map a Pydantic SiteItem to a domain-level SiteMetadata object.
+
+    Args:
+        item: The validated Pydantic model representing a single site.
+
+    Returns:
+        A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
+        processing.
+    """
+    start_date = datetime.fromisoformat(item.operating_period.start_date)
+    end_date = datetime.fromisoformat(item.operating_period.end_date)
+
+    return SiteMetadata(
+        site_id = item.id,
+        alt_id = item.identifier[0],
+        full_name = item.label[0],
+        easting = item.easting,
+        northing = item.northing,
+        lat = item.lat,
+        lon = item.long,
+        altitude = item.altitude,
+        start_date = start_date,
+        end_date = end_date,
+    )

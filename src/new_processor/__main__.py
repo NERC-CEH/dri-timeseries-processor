@@ -11,6 +11,8 @@ from new_processor.routers.data_router import DuckDBDataRouter
 from new_processor.routers.metadata_router import MetadataRouter
 from new_processor.storage.storage_client import S3StorageClient
 
+logger = logging.getLogger(__name__)
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
@@ -32,6 +34,9 @@ if __name__ == "__main__":
     )
     builder.build()
     DAG = builder.build_dag()
+
+    for site, meta in builder.site_metadata.items():
+        logger.info(f"{site}: {meta}")
 
     start_date = datetime.strptime("2024-03-08", "%Y-%m-%d")
     end_date = datetime.strptime("2024-03-10", "%Y-%m-%d")
