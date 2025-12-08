@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class QCPipeline(OperationPipeline):
-    """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer.
-    """
+    """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer."""
+
     def __init__(self):
         super().__init__(OperationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
 

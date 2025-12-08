@@ -10,6 +10,7 @@ from functools import lru_cache
 from new_processor import PACKAGE_ROOT
 from new_processor.models.api_models.flags import CoreFlagResponse
 
+
 def load_metadata_json(name: str) -> dict:
     """Load given metadata json file.
 

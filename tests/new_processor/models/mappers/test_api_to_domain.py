@@ -1,6 +1,7 @@
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
 
+from new_processor.models.domain_models.site_metadata import SiteMetadata
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
 from tests.utils.validation_helpers import valid_parses
 
@@ -176,7 +177,7 @@ class TestExtractArguments:
         ]
 
         api_model = [ArgumentItem.model_validate(arg) for arg in data]
-        result = extract_arguments(api_model)
+        result = extract_arguments(api_model, MagicMock())
         expected = {
             "dep_ts": "http://fdri.ceh.ac.uk/id/dataset/dependent-dataset_id",
             "lt": 10.5,
@@ -199,7 +200,7 @@ class TestExtractArguments:
         ]
 
         api_model = [ArgumentItem.model_validate(arg) for arg in data]
-        result = extract_arguments(api_model)
+        result = extract_arguments(api_model, MagicMock())
         expected = {
             "a_string_value": "string value",
         }
@@ -241,7 +242,7 @@ class TestExtractArguments:
         ]
 
         api_model = [ArgumentItem.model_validate(arg) for arg in data]
-        result = extract_arguments(api_model)
+        result = extract_arguments(api_model, MagicMock())
         expected = {
             "same_name_value": [1, 2, 3],
         }
@@ -268,7 +269,7 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model)
+        result = map_method_config(api_model, MagicMock())
 
         expected = MethodConfig(
             method="method_function_name",
@@ -303,7 +304,7 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model)
+        result = map_method_config(api_model, MagicMock())
 
         expected = MethodConfig(
             method="method_function_name",
@@ -350,7 +351,7 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model)
+        result = map_method_config(api_model, MagicMock())
 
         expected = MethodConfig(
             method="linear_linear",
@@ -404,7 +405,7 @@ class TestMapProcessingConfigItem:
         filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
-        result = map_processing_config_item(api_model.items[0])
+        result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = ProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
@@ -425,7 +426,7 @@ class TestMapProcessingConfigItem:
         filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_infill.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
-        result = map_processing_config_item(api_model.items[0])
+        result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = ProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
@@ -447,7 +448,7 @@ class TestMapProcessingConfigItem:
         filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_correction.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
-        result = map_processing_config_item(api_model.items[0])
+        result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = ProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
@@ -473,7 +474,7 @@ class TestMapProcessingConfigItem:
 
         result = []
         for item in api_model.items:
-            result.extend(map_processing_config_item(item).all_dep_ts())
+            result.extend(map_processing_config_item(item, MagicMock()).all_dep_ts())
 
         expected = [
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw",
@@ -491,7 +492,7 @@ class TestMapProcessingConfigItem:
 
         result = []
         for item in api_model.items:
-            result.extend(map_processing_config_item(item).all_dep_ts())
+            result.extend(map_processing_config_item(item, MagicMock()).all_dep_ts())
 
         expected = [
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw",

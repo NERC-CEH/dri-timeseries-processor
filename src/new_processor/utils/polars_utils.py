@@ -96,7 +96,11 @@ def not_missing_expr(column_name: str) -> pl.Expr:
     return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
 
 
-def date_filter_expr(time_name: str, start_date: datetime | None, end_date: datetime | None, ) -> pl.Expr:
+def date_filter_expr(
+    time_name: str,
+    start_date: datetime | None,
+    end_date: datetime | None,
+) -> pl.Expr:
     """Return expression for date filter.
 
     Args:
@@ -109,5 +113,5 @@ def date_filter_expr(time_name: str, start_date: datetime | None, end_date: date
     """
     if start_date is None and end_date is None:
         return pl.lit(True)
-    
+
     return get_date_filter(time_name, (start_date, end_date))

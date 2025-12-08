@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 OPERATION_PIPELINES = {
     OperationType.CORRECTION: CorrectionPipeline(),
     OperationType.QUALITY_CONTROL: QCPipeline(),
-    OperationType.INFILLING: InfillPipeline()
+    OperationType.INFILLING: InfillPipeline(),
 }
 
 

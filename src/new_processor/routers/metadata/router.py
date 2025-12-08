@@ -91,7 +91,6 @@ class MetadataRouter:
         response = self.api_manager.make_paginated_api_call(url)
         return SiteResponse.model_validate(response)
 
-
     def fetch_site_by_alt_id(self, alt_site_id: str) -> SiteResponse:
         """Fetch site metadata for given alt site ID - the "identifier" field in the API metadata
 
@@ -107,9 +106,7 @@ class MetadataRouter:
             The parsed JSON response containing site metadata.
         """
         url = f"{self.host}/id/site"
-        params = (
-            ("identifier", alt_site_id),
-        )
+        params = (("identifier", alt_site_id),)
         response = self.api_manager.make_paginated_api_call(url, params)
         site_id = extract_uri_id(response["items"][0]["@id"])
         return self.fetch_site(site_id)

@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class InfillPipeline(OperationPipeline):
-    """Processor for running infilling on a TimeSeriesContainer.
-    """
+    """Processor for running infilling on a TimeSeriesContainer."""
+
     def __init__(self):
         super().__init__(OperationType.INFILLING, INFILL_FLAG_SYS_NAME)
 
@@ -23,8 +23,7 @@ class InfillPipeline(OperationPipeline):
         return infill_flag_column_name(column)
 
     def sort_configs(self, configs):
-        """Infill configs have a required priority ordering
-        """
+        """Infill configs have a required priority ordering"""
         return sorted(configs, key=lambda cfg: cfg.annotations.get("priority", 0))
 
     def compute_flag_mask(self, tf, result, column_name):

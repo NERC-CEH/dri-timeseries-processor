@@ -74,7 +74,7 @@ def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesCon
 
 
 def map_processing_config_item(
-        item: DataProcessingConfigurationItem, all_site_metadata: dict[str, SiteMetadata]
+    item: DataProcessingConfigurationItem, all_site_metadata: dict[str, SiteMetadata]
 ) -> ProcessingConfig:
     """Map a DataProcessingConfigurationItem to a ProcessingConfig domain model.
 
@@ -93,7 +93,7 @@ def map_processing_config_item(
     site_id = item.applies_to_time_series[0].originating_site.id
     config_type = ConfigurationType(extract_uri_id(item.type.id))
     annotations = extract_annotations(item.has_annotation)
-    
+
     site_metadata = all_site_metadata[site_id]
 
     method_configs = [map_method_config(cfg, site_metadata) for cfg in item.has_current_configuration or []]
@@ -222,14 +222,14 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     end_date = datetime.fromisoformat(item.operating_period.end_date)
 
     return SiteMetadata(
-        site_id = item.id,
-        alt_id = item.identifier[0],
-        full_name = item.label[0],
-        easting = item.easting,
-        northing = item.northing,
-        lat = item.lat,
-        lon = item.long,
-        altitude = item.altitude,
-        start_date = start_date,
-        end_date = end_date,
+        site_id=item.id,
+        alt_id=item.identifier[0],
+        full_name=item.label[0],
+        easting=item.easting,
+        northing=item.northing,
+        lat=item.lat,
+        lon=item.long,
+        altitude=item.altitude,
+        start_date=start_date,
+        end_date=end_date,
     )

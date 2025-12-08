@@ -20,6 +20,7 @@ class CorrectionMethod(Operation, ABC):
 @CorrectionMethod.register
 class Add(CorrectionMethod):
     """Add operation class."""
+
     name = "add"
     flag_value = 1
 
@@ -35,6 +36,7 @@ class Add(CorrectionMethod):
 @CorrectionMethod.register
 class LWCorrection(CorrectionMethod):
     """Long wave correction operation class."""
+
     name = "lw_corr"
     flag_value = 2
 
@@ -69,6 +71,7 @@ class LWCorrection(CorrectionMethod):
 @CorrectionMethod.register
 class Scalar(CorrectionMethod):
     """Scalar operation class."""
+
     name = "scalar"
     flag_value = 4
 
@@ -84,6 +87,7 @@ class Scalar(CorrectionMethod):
 @CorrectionMethod.register
 class PACorrection(CorrectionMethod):
     """Correct air pressure with bias calculated from mean sea level pressure."""
+
     name = "pa_corr"
     flag_value = 8
 
@@ -95,25 +99,23 @@ class PACorrection(CorrectionMethod):
 
         altitude = config.params["altitude"]
 
-        pa_corr = ta_tf.df.with_columns((
-                    config.params["correction_factor"]
-                    * (1 - ((0.0065 * altitude) / (pl.col(ta_col) + (0.0065 * altitude) + 273.15))) ** 5.257
+        pa_corr = ta_tf.df.with_columns(
+            (
+                config.params["correction_factor"]
+                * (1 - ((0.0065 * altitude) / (pl.col(ta_col) + (0.0065 * altitude) + 273.15))) ** 5.257
             ).alias("pa_corr")
         )
 
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter).then(
-                    (pl.col(primary_col) + pa_corr["pa_corr"]).alias(primary_col)
-                )
-            )
+            tf.df.with_columns(pl.when(date_filter).then((pl.col(primary_col) + pa_corr["pa_corr"]).alias(primary_col)))
         )
 
 
 @CorrectionMethod.register
 class Power(CorrectionMethod):
     """Power operation class."""
+
     name = "power"
     flag_value = 16
 
@@ -121,9 +123,7 @@ class Power(CorrectionMethod):
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
-                pl.when(date_filter).then(
-                    pl.col(tf.metadata["column_name"]).pow(config.params["correction_factor"])
-                )
+                pl.when(date_filter).then(pl.col(tf.metadata["column_name"]).pow(config.params["correction_factor"]))
             )
         )
 
@@ -132,6 +132,7 @@ class Power(CorrectionMethod):
 @CorrectionMethod.register
 class WDCorrection(CorrectionMethod):
     """Wind direction correction operation class."""
+
     name = "wd"
     flag_value = 32
 

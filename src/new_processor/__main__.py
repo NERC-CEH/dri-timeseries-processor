@@ -15,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s %(message)s')
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 
     cfg = app_config()
 
@@ -32,7 +31,11 @@ if __name__ == "__main__":
     # ALIC1 - LWIN / LWOUT - has a funky correction config (lw corr)
     # HOLLN - PA - has a funky correction config (pa corr)
     builder = DatasetDependencyGraph(
-        "cosmos", sites=["HOLLN", "ALIC1", "BUNNY"], variables=["LWIN", "PA", "RN", "PE"], periodicity="PT30M", api_router=router
+        "cosmos",
+        sites=["HOLLN", "ALIC1", "BUNNY"],
+        variables=["LWIN", "PA", "RN", "PE"],
+        periodicity="PT30M",
+        api_router=router,
     )
     builder.build()
     DAG = builder.build_dag()

@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class CorrectionPipeline(OperationPipeline):
-    """Processor for running corrections on a TimeSeriesContainer.
-    """
+    """Processor for running corrections on a TimeSeriesContainer."""
+
     def __init__(self):
         super().__init__(OperationType.CORRECTION, CORRS_FLAG_SYS_NAME)
 

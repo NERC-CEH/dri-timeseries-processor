@@ -27,7 +27,7 @@ U = TypeVar("U")
 OPERATION_METHOD_REGISTRY = {
     OperationType.CORRECTION: CorrectionMethod._REGISTRY,
     OperationType.QUALITY_CONTROL: QcMethod._REGISTRY,
-    OperationType.INFILLING: InfillMethod._REGISTRY
+    OperationType.INFILLING: InfillMethod._REGISTRY,
 }
 
 
@@ -38,11 +38,7 @@ class OperationPipeline(ABC):
     sorting configuration blocks, and constructing flag column names.
     """
 
-    def __init__(
-            self,
-            operation_type: OperationType,
-            flag_system_name: str
-    ):
+    def __init__(self, operation_type: OperationType, flag_system_name: str):
         """Initialise the operation processor.
 
         Args:
@@ -55,10 +51,7 @@ class OperationPipeline(ABC):
 
     @abstractmethod
     def apply_method(
-            self,
-            tf: ts.TimeFrame,
-            config: MethodConfig,
-            dataset_repository: dict[str, TimeSeriesContainer]
+        self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
     ) -> T:
         """Apply a specific method to the time series data.
 

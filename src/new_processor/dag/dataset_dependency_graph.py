@@ -281,7 +281,7 @@ class DatasetDependencyGraph:
         return all_containers
 
     def _build_processing_configs(
-            self, dataset_response: DataProcessingConfiguration
+        self, dataset_response: DataProcessingConfiguration
     ) -> dict[str, list[ProcessingConfig]]:
         """Parse an API response containing processing configuration items and return them grouped by timeseries ID.
 

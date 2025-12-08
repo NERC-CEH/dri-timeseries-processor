@@ -1,3 +1,4 @@
+from datetime import datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -5,6 +6,7 @@ import pytest
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 
@@ -56,6 +58,21 @@ def make_processing_config_container(ts_id: str) -> ProcessingConfig:
     )
 
 
+def make_site_metadata_container() -> SiteMetadata:
+    return SiteMetadata(
+        site_id="siteId",
+        alt_id="alt_it",
+        full_name="full site name",
+        easting=123,
+        northing=456,
+        lat=1.23,
+        lon=4.56,
+        altitude=1000,
+        start_date=datetime(2000, 1, 1),
+        end_date=datetime(3000, 1, 1),
+    )
+
+
 def create_items_list(ts_ids: str | list) -> list:
     """Create a simple list of items in a format mocking response from metadata API"""
     if isinstance(ts_ids, str):
@@ -99,7 +116,12 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(
         "new_processor.dag.dataset_dependency_graph.map_processing_config_item",
-        lambda item: make_processing_config_container(item["@id"]),
+        lambda item, _: make_processing_config_container(item["@id"]),
+    )
+
+    monkeypatch.setattr(
+        "new_processor.dag.dataset_dependency_graph.map_site_metadata",
+        lambda item: make_site_metadata_container(),
     )
 
 
@@ -350,6 +372,7 @@ class TestBuildResolver:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Test scenario for the dataset dependency graph resolver."""
+        setup_mocks(all_ids, monkeypatch)
 
         # Create TimeSeriesContainer objects for all IDs in this test
         containers = {i: make_time_series_container(i, depends_on=direct_dependencies.get(i, [])) for i in all_ids}
