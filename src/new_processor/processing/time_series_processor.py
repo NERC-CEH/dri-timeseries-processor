@@ -13,13 +13,12 @@ from time_stream import TimeFrame
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.operations.flags.flag_methods import add_initial_core_flags
-from new_processor.routers.data.router import DataRouter
-from new_processor.utils.enums import MethodType, OperationType
 from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
+from new_processor.operations.flags.flag_methods import add_initial_core_flags
 from new_processor.operations.infill.infill_pipeline import InfillPipeline
 from new_processor.operations.quality_control.qc_pipeline import QCPipeline
-
+from new_processor.routers.data.router import DataRouter
+from new_processor.utils.enums import MethodType, OperationType
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +122,7 @@ class TimeSeriesProcessor:
         tf = add_initial_core_flags(tf)
         container.data = tf
 
-    def _process(self, container):
+    def _process(self, container: TimeSeriesContainer) -> None:
         # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
         #  that's where all the configs will be found.
         #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.

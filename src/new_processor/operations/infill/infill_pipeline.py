@@ -1,11 +1,15 @@
 import logging
 
+import polars as pl
+import time_stream as ts
+
+from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.utils.enums import OperationType
 from new_processor.operations.flags.flag_methods import update_infill_core_flags
 from new_processor.operations.flags.flag_names import INFILL_FLAG_SYS_NAME, infill_flag_column_name
-from new_processor.operations.operation_pipeline import OperationPipeline
 from new_processor.operations.infill.infill_methods import InfillMethod
+from new_processor.operations.operation_pipeline import OperationPipeline
+from new_processor.utils.enums import OperationType
 
 logger = logging.getLogger(__name__)
 
@@ -16,25 +20,25 @@ class InfillPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.INFILLING, INFILL_FLAG_SYS_NAME)
 
-    def get_configs(self, container: TimeSeriesContainer):
+    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
         return container.infill_configs
 
-    def get_flag_column(self, column: str):
+    def get_flag_column(self, column: str) -> str:
         return infill_flag_column_name(column)
 
-    def sort_configs(self, configs):
+    def sort_configs(self, configs: set[ProcessingConfig]) -> list[ProcessingConfig]:
         """Infill configs have a required priority ordering"""
         return sorted(configs, key=lambda cfg: cfg.annotations.get("priority", 0))
 
-    def compute_flag_mask(self, tf, result, column_name):
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         before_mask = tf.df[column_name].is_null()
         after_mask = result.df[column_name].is_null()
         return before_mask.ne(after_mask)
 
-    def core_flag_updater(self, tf):
+    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         return update_infill_core_flags(tf)
 
-    def apply_method(self, tf, config, dataset_repository):
+    def apply_method(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         # Collect any dependency TimeFrame to run infill with
         if "dep_ts" in config.params:
             dep_tf = dataset_repository[config.params["dep_ts"]].data

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from new_processor.utils.enums import OperationType
-
 import polars as pl
 import time_stream as ts
 from time_stream.operation import Operation
 
+from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.utils.enums import OperationType
 from new_processor.utils.polars_utils import date_filter_expr
 
 
@@ -13,7 +13,7 @@ class CorrectionMethod(Operation, ABC):
     operation_type: OperationType.CORRECTION
 
     @abstractmethod
-    def run(self, *args, **kwargs):
+    def run(self, *args, **kwargs) -> ts.TimeFrame:
         pass
 
 
@@ -24,7 +24,7 @@ class Add(CorrectionMethod):
     name = "add"
     flag_value = 1
 
-    def run(self, tf: ts.TimeFrame, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
@@ -40,7 +40,7 @@ class LWCorrection(CorrectionMethod):
     name = "lw_corr"
     flag_value = 2
 
-    def run(self, tf: ts.TimeFrame, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         lw_unc_tf = config.params["lw_unc"]
         ta_tf = config.params["ta"]
 
@@ -75,7 +75,7 @@ class Scalar(CorrectionMethod):
     name = "scalar"
     flag_value = 4
 
-    def run(self, tf: ts.TimeFrame, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
@@ -91,7 +91,7 @@ class PACorrection(CorrectionMethod):
     name = "pa_corr"
     flag_value = 8
 
-    def run(self, tf: ts.TimeFrame, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         ta_tf = config.params["ta"]
 
         primary_col = tf.metadata["column_name"]
@@ -119,7 +119,7 @@ class Power(CorrectionMethod):
     name = "power"
     flag_value = 16
 
-    def run(self, tf: ts.TimeFrame, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
@@ -136,5 +136,5 @@ class WDCorrection(CorrectionMethod):
     name = "wd"
     flag_value = 32
 
-    def run(self, tf: ts.TimeFrame, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         pass

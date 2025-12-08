@@ -7,8 +7,8 @@ from datetime import datetime
 
 import polars as pl
 
-from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.io_backend.reader import DuckDBParquetReader
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 
 
 class DataRouter(ABC):

@@ -5,8 +5,8 @@ These mappers extract the fields actually required by the pipeline and flatten n
 domain-level objects.
 """
 
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
 from typing import Any
 
 from new_processor.models.api_models.annotation import HasAnnotationItem

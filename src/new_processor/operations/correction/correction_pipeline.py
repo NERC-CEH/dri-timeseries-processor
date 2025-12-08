@@ -1,12 +1,15 @@
 import logging
 
+import polars as pl
+import time_stream as ts
+
+from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.utils.enums import OperationType
+from new_processor.operations.correction.correction_methods import CorrectionMethod
 from new_processor.operations.flags.flag_methods import update_corrections_core_flags
 from new_processor.operations.flags.flag_names import CORRS_FLAG_SYS_NAME, corrs_flag_column_name
 from new_processor.operations.operation_pipeline import OperationPipeline
-from new_processor.operations.correction.correction_methods import CorrectionMethod
-
+from new_processor.utils.enums import OperationType
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +20,13 @@ class CorrectionPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.CORRECTION, CORRS_FLAG_SYS_NAME)
 
-    def get_configs(self, container: TimeSeriesContainer):
+    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
         return container.correction_configs
 
-    def get_flag_column(self, column: str):
+    def get_flag_column(self, column: str) -> str:
         return corrs_flag_column_name(column)
 
-    def apply_method(self, tf, config, dataset_repository):
+    def apply_method(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         params = config.params
 
         # Name any dependent timeseries with their column names
@@ -46,10 +49,10 @@ class CorrectionPipeline(OperationPipeline):
         method = CorrectionMethod.get(config.method)
         return method.run(tf, config)
 
-    def compute_flag_mask(self, tf, result, column_name):
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         before_mask = tf.df[column_name].is_null()
         after_mask = result.df[column_name].is_null()
         return before_mask.ne(after_mask)
 
-    def core_flag_updater(self, tf):
+    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         return update_corrections_core_flags(tf)

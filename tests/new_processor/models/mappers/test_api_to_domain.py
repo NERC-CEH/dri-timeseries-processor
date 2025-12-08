@@ -1,7 +1,6 @@
 from datetime import datetime
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
-from new_processor.models.domain_models.site_metadata import SiteMetadata
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
 from tests.utils.validation_helpers import valid_parses
 

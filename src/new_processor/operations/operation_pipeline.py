@@ -12,10 +12,9 @@ from time_stream.exceptions import FlagSystemNotFoundError
 from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.correction.correction_methods import CorrectionMethod
-from new_processor.utils.enums import OperationType
-from new_processor.operations.quality_control.qc_methods import QcMethod
 from new_processor.operations.infill.infill_methods import InfillMethod
-
+from new_processor.operations.quality_control.qc_methods import QcMethod
+from new_processor.utils.enums import OperationType
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +103,7 @@ class OperationPipeline(ABC):
         pass
 
     @abstractmethod
-    def core_flag_updater(self, tf: ts.TimeFrame):
+    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags after all methods are applied.
 
         Args:
@@ -174,7 +173,7 @@ class OperationPipeline(ABC):
             flag_system = {name: m.flag_value for name, m in self.registry.items()}
             tf.register_flag_system(self.flag_system_name, flag_system)
 
-    def _initialise_flag_column(self, tf, col_name):
+    def _initialise_flag_column(self, tf: ts.TimeFrame, col_name: str) -> None:
         """Initialise the flag column for this operation (if not already initialised).
 
         Args:

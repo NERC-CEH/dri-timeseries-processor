@@ -1,15 +1,17 @@
 from abc import ABC, abstractmethod
 
-from new_processor.utils.enums import OperationType
-
+import time_stream as ts
 from time_stream.operation import Operation
+
+from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.utils.enums import OperationType
 
 
 class InfillMethod(Operation, ABC):
     operation_type: OperationType.INFILLING
 
     @abstractmethod
-    def run(self, *args, **kwargs):
+    def run(self, *args, **kwargs) -> ts.TimeFrame:
         pass
 
 
@@ -18,7 +20,7 @@ class Linear(InfillMethod):
     name = "linear_linear"
     flag_value = 1
 
-    def run(self, tf, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         return tf.infill(
             "linear",
             tf.metadata["column_name"],
@@ -31,7 +33,7 @@ class AltData(InfillMethod):
     name = "alt_data"
     flag_value = 2
 
-    def run(self, tf, config):
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
         return tf.infill(
             "alt_data",
             tf.metadata["column_name"],
