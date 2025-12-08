@@ -163,20 +163,20 @@ class OperationProcessor(ABC):
         """
         # 1. Extract available methods from registry
         methods = self.registry.items
-        tf_primary = container.data
-        col_primary = tf_primary.metadata["column_name"]
+        tf = container.data
+        col_name = tf.metadata["column_name"]
 
         # 2. Initialise flag system
         flag_system = {name: m.id for name, m in methods.items()}
         try:
-            tf_primary.get_flag_system(self.flag_system_name)
+            tf.get_flag_system(self.flag_system_name)
         except FlagSystemNotFoundError:
-            tf_primary.register_flag_system(self.flag_system_name, flag_system)
+            tf.register_flag_system(self.flag_system_name, flag_system)
 
         # 3. Prepare flag column
-        flag_column = self.get_flag_column(col_primary)
-        if flag_column not in tf_primary.flag_columns:
-            tf_primary.init_flag_column(col_primary, self.flag_system_name, flag_column)
+        flag_column = self.get_flag_column(col_name)
+        if flag_column not in tf.flag_columns:
+            tf.init_flag_column(col_name, self.flag_system_name, flag_column)
 
         # 4. Extract the configs to run
         configs = self.get_configs(container)
@@ -195,14 +195,14 @@ class OperationProcessor(ABC):
                 cfg.params = self.configure_parameters(method_metadata, cfg.params)
 
                 # Run the method!
-                result = self.apply_method(tf_primary, method_metadata, cfg, dataset_repository)
+                result = self.apply_method(tf, method_metadata, cfg, dataset_repository)
 
                 # Add any resulting flags
-                mask = self.compute_flag_mask(tf_primary, result, col_primary)
+                mask = self.compute_flag_mask(tf, result, col_name)
                 if mask is not None:
-                    tf_primary.add_flag(flag_column, cfg.method, mask)
+                    tf.add_flag(flag_column, cfg.method, mask)
 
         # 6. Post-process core flags
-        tf_primary = self.core_flag_updater(tf_primary)
+        tf = self.core_flag_updater(tf)
 
-        return tf_primary
+        return tf
