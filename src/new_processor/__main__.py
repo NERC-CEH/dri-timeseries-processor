@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # ALIC1 - LWIN / LWOUT - has a funky correction config (lw corr)
     # HOLLN - PA - has a funky correction config (pa corr)
     builder = DatasetDependencyGraph(
-        "cosmos", sites=["ALIC1", "HOLLN"], variables=["RN"], periodicity="PT30M", api_router=router
+        "cosmos", sites=["HOLLN", "ALIC1", "BUNNY"], variables=["LWIN", "PA", "RN", "PE"], periodicity="PT30M", api_router=router
     )
     builder.build()
     DAG = builder.build_dag()

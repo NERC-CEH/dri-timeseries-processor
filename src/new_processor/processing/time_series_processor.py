@@ -13,13 +13,22 @@ from time_stream import TimeFrame
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.operations.flags.flag_operations import add_initial_core_flags
-from new_processor.operations.registry import OPERATION_PROCESSORS
+from new_processor.operations.flags.flag_methods import add_initial_core_flags
 from new_processor.routers.data.router import DataRouter
 from new_processor.utils.enums import MethodType, OperationType
+from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
+from new_processor.operations.infill.infill_pipeline import InfillPipeline
+from new_processor.operations.quality_control.qc_pipeline import QCPipeline
 
 
 logger = logging.getLogger(__name__)
+
+
+OPERATION_PIPELINES = {
+    OperationType.CORRECTION: CorrectionPipeline(),
+    OperationType.QUALITY_CONTROL: QCPipeline(),
+    OperationType.INFILLING: InfillPipeline()
+}
 
 
 class TimeSeriesProcessor:
@@ -126,5 +135,5 @@ class TimeSeriesProcessor:
         operation_steps = [OperationType.CORRECTION, OperationType.QUALITY_CONTROL, OperationType.INFILLING]
 
         for operation_type in operation_steps:
-            operation_processor = OPERATION_PROCESSORS[operation_type]
-            dep_container.data = operation_processor.run(dep_container, self.graph.datasets)
+            operation_pipeline = OPERATION_PIPELINES[operation_type]
+            dep_container.data = operation_pipeline.run(dep_container, self.graph.datasets)

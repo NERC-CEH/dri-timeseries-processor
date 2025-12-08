@@ -8,10 +8,7 @@ import json
 from functools import lru_cache
 
 from new_processor import PACKAGE_ROOT
-from new_processor.models.api_models.operations.flags import CoreFlagResponse
-from new_processor.models.api_models.operations.operation import OperationRegistry
-from new_processor.utils.enums import OperationType
-
+from new_processor.models.api_models.flags import CoreFlagResponse
 
 def load_metadata_json(name: str) -> dict:
     """Load given metadata json file.
@@ -37,27 +34,3 @@ def fetch_core_flags() -> CoreFlagResponse:
     """
     data = load_metadata_json("core_flags.json")
     return CoreFlagResponse.model_validate(data)
-
-
-@lru_cache(maxsize=1)
-def fetch_methods(operation_type: OperationType) -> OperationRegistry:
-    """Fetch method metadata for given operation type.
-
-    Args:
-        operation_type: Operation type to get method metadata for.
-
-    Returns:
-        The parsed method metadata.
-    """
-    mapping = {
-        OperationType.QUALITY_CONTROL: "qc_methods.json",
-        OperationType.INFILLING: "infilling_methods.json",
-        OperationType.CORRECTION: "correction_methods.json",
-    }
-
-    filename = mapping.get(operation_type)
-    if filename is None:
-        raise ValueError(f"Unknown operation type {operation_type}")
-
-    data = load_metadata_json(filename)
-    return OperationRegistry.model_validate(data)

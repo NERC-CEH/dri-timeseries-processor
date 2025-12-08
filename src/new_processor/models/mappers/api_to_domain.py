@@ -174,7 +174,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         param_name = extract_uri_id(arg.parameter.id).replace("-", "_")
         has_value = arg.has_value
 
-          # Literal value
+        # Literal value
         if has_value.value is not None:
             # Resolve any special case where we need to extract parameter from the site metadata
             param_name, value = resolve_site_attribute(param_name, has_value.value, site_metadata)

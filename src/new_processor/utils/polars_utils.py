@@ -5,6 +5,7 @@ Helper functions related to Polars DataFrames
 from datetime import datetime
 
 import polars as pl
+from time_stream.utils import get_date_filter
 
 
 def split_by_date(df: pl.DataFrame, time_col: str) -> list[tuple[datetime, pl.DataFrame]]:
@@ -93,3 +94,20 @@ def not_missing_expr(column_name: str) -> pl.Expr:
         Expression for not missing values
     """
     return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
+
+
+def date_filter_expr(time_name: str, start_date: datetime | None, end_date: datetime | None, ) -> pl.Expr:
+    """Return expression for date filter.
+
+    Args:
+        time_name: Time column name
+        start_date: Start date
+        end_date: End date
+
+    Returns:
+        Expression for date filter
+    """
+    if start_date is None and end_date is None:
+        return pl.lit(True)
+    
+    return get_date_filter(time_name, (start_date, end_date))

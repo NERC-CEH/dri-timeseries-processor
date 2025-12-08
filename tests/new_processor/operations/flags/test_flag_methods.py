@@ -4,7 +4,7 @@ import polars as pl
 import pytest
 import time_stream as ts
 
-from new_processor.operations.flags.flag_operations import (
+from new_processor.operations.flags.flag_methods import (
     add_initial_core_flags,
     core_flag_column_name,
     corrs_flag_column_name,

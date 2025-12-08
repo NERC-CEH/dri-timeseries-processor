@@ -2,7 +2,6 @@
 An orchestration class used to run for processing operations for corrections, quality control and infilling.
 """
 
-import copy
 import logging
 from abc import ABC, abstractmethod
 from typing import Iterable, TypeVar
@@ -10,11 +9,13 @@ from typing import Iterable, TypeVar
 import time_stream as ts
 from time_stream.exceptions import FlagSystemNotFoundError
 
-from new_processor.routers.metadata.local_loader import fetch_methods
-from new_processor.models.api_models.operations.operation import OperationDescriptor
 from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.operations.correction.correction_methods import CorrectionMethod
 from new_processor.utils.enums import OperationType
+from new_processor.operations.quality_control.qc_methods import QcMethod
+from new_processor.operations.infill.infill_methods import InfillMethod
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,14 @@ T = TypeVar("T")
 U = TypeVar("U")
 
 
-class OperationProcessor(ABC):
+OPERATION_METHOD_REGISTRY = {
+    OperationType.CORRECTION: CorrectionMethod._REGISTRY,
+    OperationType.QUALITY_CONTROL: QcMethod._REGISTRY,
+    OperationType.INFILLING: InfillMethod._REGISTRY
+}
+
+
+class OperationPipeline(ABC):
     """A base class to define the workflow of operations such as corrections, QC, and infilling.
 
     Subclasses implement the operation specific components such as applying a method, computing flag masks,
@@ -43,13 +51,12 @@ class OperationProcessor(ABC):
         """
         self.operation_type = operation_type
         self.flag_system_name = flag_system_name
-        self.registry = fetch_methods(operation_type)
+        self.registry = OPERATION_METHOD_REGISTRY[self.operation_type]
 
     @abstractmethod
     def apply_method(
             self,
             tf: ts.TimeFrame,
-            method_metadata: OperationDescriptor,
             config: MethodConfig,
             dataset_repository: dict[str, TimeSeriesContainer]
     ) -> T:
@@ -57,8 +64,7 @@ class OperationProcessor(ABC):
 
         Args:
             tf: Time series frame to process.
-            method_metadata: Metadata describing the method to apply.
-            config: Configuration object containing method parameters.
+            config: Configuration that the method requires.
             dataset_repository: Repository for accessing additional datasets.
 
         Returns:
@@ -116,28 +122,6 @@ class OperationProcessor(ABC):
         """
         pass
 
-    @staticmethod
-    def configure_parameters(method_metadata: OperationDescriptor, params: dict) -> dict:
-        """Configure method parameters by applying mappings and defaults.
-
-        Args:
-            method_metadata: Metadata describing the method to apply.
-            params: Dictionary of parameters to configure.
-
-        Returns:
-            Configured parameters dictionary with remapped names and defaults.
-        """
-
-        # Remap config parameter names if required
-        for old, new in method_metadata.arg_mapping.items():
-            if old in params:
-                params[new] = params.pop(old)
-
-        # Add default kwargs
-        params.update(method_metadata.kwargs)
-
-        return params
-
     def sort_configs(self, configs: Iterable[ProcessingConfig]) -> Iterable[ProcessingConfig]:
         """Sort configuration blocks into execution order.
 
@@ -161,48 +145,63 @@ class OperationProcessor(ABC):
         Returns:
             The updated TimeFrame after all operations and flag updates.
         """
-        # 1. Extract available methods from registry
-        methods = self.registry.items
         tf = container.data
         col_name = tf.metadata["column_name"]
 
-        # 2. Initialise flag system
-        flag_system = {name: m.id for name, m in methods.items()}
-        try:
-            tf.get_flag_system(self.flag_system_name)
-        except FlagSystemNotFoundError:
-            tf.register_flag_system(self.flag_system_name, flag_system)
+        # Initialise the flags
+        self._initialise_flag_system(tf)
+        self._initialise_flag_column(tf, col_name)
 
-        # 3. Prepare flag column
-        flag_column = self.get_flag_column(col_name)
-        if flag_column not in tf.flag_columns:
-            tf.init_flag_column(col_name, self.flag_system_name, flag_column)
-
-        # 4. Extract the configs to run
+        # Extract the configs to run
         configs = self.get_configs(container)
         configs = self.sort_configs(configs)
 
-        # 5. Apply configs
+        # Apply configs
         for cfg_block in configs:
             for cfg in cfg_block.method_configs:
                 logger.info(f"Operation: {self.operation_type} | {cfg.method}")
 
-                # Create a copy to ensure that any mutations that take place are self-contained.
-                cfg = copy.copy(cfg)
+                # Run the method and apply any resulting flags
+                result = self.apply_method(tf, cfg, dataset_repository)
+                self._add_flag(tf, result, col_name, cfg.method)
 
-                # Extract the method metadata and configure the parameters
-                method_metadata = methods[cfg.method]
-                cfg.params = self.configure_parameters(method_metadata, cfg.params)
-
-                # Run the method!
-                result = self.apply_method(tf, method_metadata, cfg, dataset_repository)
-
-                # Add any resulting flags
-                mask = self.compute_flag_mask(tf, result, col_name)
-                if mask is not None:
-                    tf.add_flag(flag_column, cfg.method, mask)
-
-        # 6. Post-process core flags
+        # Post-process core flags
         tf = self.core_flag_updater(tf)
-
         return tf
+
+    def _initialise_flag_system(self, tf: ts.TimeFrame) -> None:
+        """Initialise the flag system for this operation (if not already initialised).
+
+        Args:
+            tf: TimeFrame to initialise flags on.
+        """
+        try:
+            tf.get_flag_system(self.flag_system_name)
+        except FlagSystemNotFoundError:
+            flag_system = {name: m.flag_value for name, m in self.registry.items()}
+            tf.register_flag_system(self.flag_system_name, flag_system)
+
+    def _initialise_flag_column(self, tf, col_name):
+        """Initialise the flag column for this operation (if not already initialised).
+
+        Args:
+            tf: TimeFrame to initialise flag column on.
+            col_name: Name of the parent column
+        """
+        flag_column = self.get_flag_column(col_name)
+        if flag_column not in tf.flag_columns:
+            tf.init_flag_column(col_name, self.flag_system_name, flag_column)
+
+    def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> None:
+        """Apply a flag to the flag column
+
+        ARgs:
+            tf: TimeFrame containing original data.
+            result: The result of the operation.
+            col_name: Name of the parent column.
+            flag_name: Type of flag to apply (must exist in the associated flag system).
+        """
+        flag_column = self.get_flag_column(col_name)
+        mask = self.compute_flag_mask(tf, result, col_name)
+        if mask is not None:
+            tf.add_flag(flag_column, flag_name, mask)
