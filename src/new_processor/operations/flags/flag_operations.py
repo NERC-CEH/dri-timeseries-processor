@@ -6,7 +6,7 @@ import polars as pl
 import time_stream as ts
 
 from new_processor.operations.flags.flag_names import (CORE_FLAG_SYS_NAME, core_flag_column_name, corrs_flag_column_name, qc_flag_column_name, infill_flag_column_name)
-from new_processor.routers.metadata_router import fetch_core_flags
+from new_processor.routers.metadata.local_loader import fetch_core_flags
 from new_processor.utils.polars_utils import missing_expr, not_missing_expr
 
 logger = logging.getLogger(__name__)

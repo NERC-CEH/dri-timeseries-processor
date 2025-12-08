@@ -5,7 +5,7 @@ import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
 
-from new_processor.routers.data_router import DuckDBDataRouter
+from new_processor.routers.data.router import DuckDBDataRouter
 
 TEST_DF = pl.DataFrame({"time": [datetime(2023, 1, 1), datetime(2023, 1, 2)], "value": [10, 20]})
 

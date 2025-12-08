@@ -1,6 +1,5 @@
 import logging
 
-from new_processor.routers.metadata_router import load_methods
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import OperationType
 from new_processor.operations.flags.flag_operations import update_infill_core_flags
@@ -14,9 +13,7 @@ class InfillProcessor(OperationProcessor):
     """Processor for running infilling on a TimeSeriesContainer.
     """
     def __init__(self):
-        operation_type = OperationType.INFILLING
-        registry = load_methods(operation_type)
-        super().__init__(operation_type, INFILL_FLAG_SYS_NAME, registry)
+        super().__init__(OperationType.INFILLING, INFILL_FLAG_SYS_NAME)
 
     def get_configs(self, container: TimeSeriesContainer):
         return container.infill_configs

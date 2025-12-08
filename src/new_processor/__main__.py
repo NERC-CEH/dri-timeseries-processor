@@ -7,8 +7,8 @@ from new_processor.io_backend.duckdb_connection import create_duckdb_factory
 from new_processor.io_backend.reader import DuckDBParquetReader
 from new_processor.io_backend.writer import ByteParquetWriter
 from new_processor.processing.time_series_processor import TimeSeriesProcessor
-from new_processor.routers.data_router import DuckDBDataRouter
-from new_processor.routers.metadata_router import MetadataRouter
+from new_processor.routers.data.router import DuckDBDataRouter
+from new_processor.routers.metadata.router import MetadataRouter
 from new_processor.storage.storage_client import S3StorageClient
 
 logger = logging.getLogger(__name__)
@@ -29,8 +29,10 @@ if __name__ == "__main__":
     writer = ByteParquetWriter(storage)
     data_router = DuckDBDataRouter(reader)
 
+    # ALIC1 - LWIN / LWOUT - has a funky correction config (lw corr)
+    # HOLLN - PA - has a funky correction config (pa corr)
     builder = DatasetDependencyGraph(
-        "cosmos", sites=["ALIC1"], variables=["LWOUT"], periodicity="PT30M", api_router=router
+        "cosmos", sites=["ALIC1", "HOLLN"], variables=["RN"], periodicity="PT30M", api_router=router
     )
     builder.build()
     DAG = builder.build_dag()

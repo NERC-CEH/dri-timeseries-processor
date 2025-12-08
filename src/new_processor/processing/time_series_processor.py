@@ -15,7 +15,7 @@ from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.flags.flag_operations import add_initial_core_flags
 from new_processor.operations.registry import OPERATION_PROCESSORS
-from new_processor.routers.data_router import DataRouter
+from new_processor.routers.data.router import DataRouter
 from new_processor.utils.enums import MethodType, OperationType
 
 
@@ -94,6 +94,7 @@ class TimeSeriesProcessor:
         Args:
             container: Time series container of metadata and data.
         """
+        logger.info(f"{MethodType.LOAD}: {container.ts_id}")
         df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
 
         # TODO: Note issue about the "time" name - where to get this in metadata
@@ -118,6 +119,7 @@ class TimeSeriesProcessor:
         #  that's where all the configs will be found.
         #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
         #  Is this robust?
+        logger.info(f"{MethodType.PROCESS}: {container.ts_id}")
         dep_id = container.direct_depends_on[0]
         dep_container = self.graph.datasets[dep_id]
 

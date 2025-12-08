@@ -1,6 +1,5 @@
 import logging
 
-from new_processor.routers.metadata_router import load_methods
 from new_processor.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import OperationType
 from new_processor.operations.flags.flag_operations import update_quality_control_core_flags
@@ -14,9 +13,7 @@ class QCProcessor(OperationProcessor):
     """Processor for running Quality Control (QC) checks on a TimeSeriesContainer.
     """
     def __init__(self):
-        operation_type = OperationType.QUALITY_CONTROL
-        registry = load_methods(operation_type)
-        super().__init__(operation_type, QC_FLAG_SYS_NAME, registry)
+        super().__init__(OperationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
 
     def get_configs(self, container: TimeSeriesContainer):
         return container.qc_configs

@@ -216,8 +216,7 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
         item: The validated Pydantic model representing a single site.
 
     Returns:
-        A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
-        processing.
+        A simplified SiteMetadata domain model
     """
     start_date = datetime.fromisoformat(item.operating_period.start_date)
     end_date = datetime.fromisoformat(item.operating_period.end_date)
