@@ -11,9 +11,9 @@ import time_stream as ts
 from time_stream.exceptions import FlagSystemNotFoundError
 
 from new_processor.routers.metadata.local_loader import fetch_methods
-from new_processor.api_models.operations.operation import OperationRegistry, OperationDescriptor
-from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.api_models.operations.operation import OperationDescriptor
+from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import OperationType
 
 logger = logging.getLogger(__name__)

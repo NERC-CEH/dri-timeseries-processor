@@ -9,16 +9,16 @@ from datetime import datetime
 from collections import defaultdict
 from typing import Any
 
-from new_processor.api_models.annotation import HasAnnotationItem
-from new_processor.api_models.data_processing_configuration import (
+from new_processor.models.api_models.annotation import HasAnnotationItem
+from new_processor.models.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetItem
-from new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
-from new_processor.api_models.site import SiteItem
-from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from new_processor.domain_models.site_metadata import SiteMetadata
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem
+from new_processor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from new_processor.models.api_models.site import SiteItem
+from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.site_metadata import SiteMetadata
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
 

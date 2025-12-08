@@ -11,8 +11,8 @@ domain models.
 
 from pydantic import Field
 
-from new_processor.api_models.annotation import HasAnnotationItem
-from new_processor.api_models.shared import BaseAPIResponse, IDModel
+from new_processor.models.api_models.annotation import HasAnnotationItem
+from new_processor.models.api_models.shared import BaseAPIResponse, IDModel
 
 
 class HasGeometryItem(IDModel):

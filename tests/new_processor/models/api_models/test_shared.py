@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 from tests.utils.validation_helpers import assert_pydantic_validation_error_cause
 
-from new_processor.api_models.shared import (
+from new_processor.models.api_models.shared import (
     BaseAPIResponse,
     HasCurrentConfigurationItem,
     HasValue,

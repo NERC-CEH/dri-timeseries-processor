@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 
 from time_stream import TimeFrame
 
-from new_processor.domain_models.processing_config import ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig
 from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 
 

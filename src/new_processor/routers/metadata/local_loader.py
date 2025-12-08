@@ -8,8 +8,8 @@ import json
 from functools import lru_cache
 
 from new_processor import PACKAGE_ROOT
-from new_processor.api_models.operations.flags import CoreFlagResponse
-from new_processor.api_models.operations.operation import OperationRegistry
+from new_processor.models.api_models.operations.flags import CoreFlagResponse
+from new_processor.models.api_models.operations.operation import OperationRegistry
 from new_processor.utils.enums import OperationType
 
 

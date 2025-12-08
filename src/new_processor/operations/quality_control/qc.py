@@ -1,6 +1,6 @@
 import logging
 
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import OperationType
 from new_processor.operations.flags.flag_operations import update_quality_control_core_flags
 from new_processor.operations.flags.flag_names import QC_FLAG_SYS_NAME, qc_flag_column_name

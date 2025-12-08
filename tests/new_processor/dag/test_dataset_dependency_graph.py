@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 
 

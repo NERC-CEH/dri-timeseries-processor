@@ -14,11 +14,11 @@ from collections import defaultdict
 from graphlib import TopologicalSorter
 
 from metadata_manager.models.schemas.sites import SiteMetadata
-from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
-from new_processor.domain_models.processing_config import ProcessingConfig
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.mappers.api_to_domain import map_dataset_item, map_processing_config_item, map_site_metadata
+from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
+from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from new_processor.models.domain_models.processing_config import ProcessingConfig
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.mappers.api_to_domain import map_dataset_item, map_processing_config_item, map_site_metadata
 from new_processor.routers.metadata.router import MetadataRouter
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id

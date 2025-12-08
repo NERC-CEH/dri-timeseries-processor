@@ -13,7 +13,7 @@ domain models and building dependency graphs.
 
 from pydantic import Field
 
-from new_processor.api_models.shared import BaseAPIResponse, HasCurrentConfigurationItem, IDModel
+from new_processor.models.api_models.shared import BaseAPIResponse, HasCurrentConfigurationItem, IDModel
 
 
 class Variable(IDModel):

@@ -11,7 +11,7 @@ from typing import Self
 from pydantic import BaseModel, Field, model_validator
 from pydantic_core import PydanticCustomError
 
-from new_processor.api_models.shared import HasValue, IDModel
+from new_processor.models.api_models.shared import HasValue, IDModel
 
 
 class QualifierItem(IDModel):

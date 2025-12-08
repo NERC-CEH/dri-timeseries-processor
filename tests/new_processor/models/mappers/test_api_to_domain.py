@@ -4,13 +4,13 @@ from unittest.mock import Mock
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
 from tests.utils.validation_helpers import valid_parses
 
-from new_processor.api_models.annotation import HasAnnotationItem
-from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
-from new_processor.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
-from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.mappers.api_to_domain import (
+from new_processor.models.api_models.annotation import HasAnnotationItem
+from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
+from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from new_processor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.mappers.api_to_domain import (
     extract_annotations,
     extract_arguments,
     map_dataset_item,

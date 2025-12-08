@@ -14,8 +14,8 @@ Description:
 
 from pydantic import Field
 
-from new_processor.api_models.annotation import HasAnnotationItem
-from new_processor.api_models.shared import (
+from new_processor.models.api_models.annotation import HasAnnotationItem
+from new_processor.models.api_models.shared import (
     BaseAPIResponse,
     HasCurrentConfigurationItem,
     IDModel,

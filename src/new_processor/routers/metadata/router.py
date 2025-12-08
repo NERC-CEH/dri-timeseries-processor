@@ -6,9 +6,9 @@ Constructs the appropriate API endpoints for datasets and data-processing config
 queries and dependency lookups.
 """
 
-from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
-from new_processor.api_models.site import SiteResponse
+from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
+from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from new_processor.models.api_models.site import SiteResponse
 from new_processor.externals.api_manager import MetadataAPIManager
 from new_processor.utils.strings import extract_uri_id
 

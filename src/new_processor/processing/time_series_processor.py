@@ -12,7 +12,7 @@ from datetime import datetime
 from time_stream import TimeFrame
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.flags.flag_operations import add_initial_core_flags
 from new_processor.operations.registry import OPERATION_PROCESSORS
 from new_processor.routers.data.router import DataRouter

@@ -2,7 +2,7 @@ import pytest
 from tests.utils.fixture_helpers import discover_json_test_cases, load_json_file
 from tests.utils.validation_helpers import invalid_raises, valid_parses
 
-from new_processor.api_models.network import Network
+from new_processor.models.api_models.network import Network
 
 
 class TestNetwork:

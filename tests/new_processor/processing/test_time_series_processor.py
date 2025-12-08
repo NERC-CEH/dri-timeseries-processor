@@ -6,7 +6,7 @@ import pytest
 import time_stream as ts
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.processing.time_series_processor import TimeSeriesProcessor
 from new_processor.utils.enums import ProcessingLevel
 

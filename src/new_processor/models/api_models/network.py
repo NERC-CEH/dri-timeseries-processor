@@ -10,7 +10,7 @@ lists all sites associated with the network.
 
 from pydantic import Field
 
-from new_processor.api_models.shared import BaseAPIResponse, IDModel
+from new_processor.models.api_models.shared import BaseAPIResponse, IDModel
 
 
 class Contain(IDModel):
