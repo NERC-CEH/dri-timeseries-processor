@@ -19,24 +19,68 @@ class QCPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
 
-    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
-        return container.qc_configs
+    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+        """Apply the given quality control method to the TimeFrame data.
 
-    def get_flag_column(self, column: str) -> str:
-        return qc_flag_column_name(column)
+        Args:
+            tf: Time series frame to process.
+            config: Configuration of the quality control method.
+            dataset_repository: Repository for accessing additional datasets.
 
-    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> ts.TimeFrame:
-        """For QC, the flag mask is just the result of the qc check"""
-        return result
-
-    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
-        return update_quality_control_core_flags(tf)
-
-    def apply_method(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
-        # Decide which TimeFrame to run QC against
+        Returns:
+            Result of applying the QC method.
+        """
         tf_qc = tf
         if "dep_ts" in config.params:
             tf_qc = dataset_repository[config.params["dep_ts"]].data
 
         method = QcMethod.get(config.method)
         return method.run(tf_qc, config)
+
+    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
+        """Extract the QC method configurations.
+
+        Args:
+            container: Time series container to get the QC method configurations from.
+
+        Returns:
+            List of QC configurations to be applied.
+        """
+        return container.qc_configs
+
+    def get_flag_column(self, column: str) -> str:
+        """Determine the QC flag column name for a given data column.
+
+        Args:
+            column: Name of the data column.
+
+        Returns:
+            Name of the corresponding QC flag column.
+        """
+        return qc_flag_column_name(column)
+
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> ts.TimeFrame:
+        """Return an object that can be used to determine the mask for adding a flag to the flag column.
+
+        For QC, the flag mask is just the result of the qc check - i.e. 1 = qc check failed, 0 = qc check passed
+
+        Args:
+            tf: Original TimeFrame being processed.
+            result: Result from applying a method to tf.
+            column_name: Name of the column being processed.
+
+        Returns:
+            Result of QC check
+        """
+        return result
+
+    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Update core flags with the QC flag after all methods are applied.
+
+        Args:
+            tf: TimeFrame with flags to update.
+
+        Returns:
+            Timeframe with updated core flags
+        """
+        return update_quality_control_core_flags(tf)

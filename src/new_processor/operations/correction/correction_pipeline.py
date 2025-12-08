@@ -20,13 +20,18 @@ class CorrectionPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.CORRECTION, CORRS_FLAG_SYS_NAME)
 
-    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
-        return container.correction_configs
+    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+        """Apply the given correction method to the TimeFrame data.
 
-    def get_flag_column(self, column: str) -> str:
-        return corrs_flag_column_name(column)
+        Args:
+            tf: Time series frame to correct.
+            config: Configuration of the correction method.
+            dataset_repository: Repository for accessing additional datasets.
 
-    def apply_method(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+        Returns:
+            Result of applying the correction method.
+        """
+
         params = config.params
 
         # Name any dependent timeseries with their column names
@@ -49,10 +54,53 @@ class CorrectionPipeline(OperationPipeline):
         method = CorrectionMethod.get(config.method)
         return method.run(tf, config)
 
+    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
+        """Extract the correction method configurations.
+
+        Args:
+            container: Time series container to get the correction method configurations from.
+
+        Returns:
+            List of correction configurations to be applied.
+        """
+        return container.correction_configs
+
+    def get_flag_column(self, column: str) -> str:
+        """Determine the correction flag column name for a given data column.
+
+        Args:
+            column: Name of the data column.
+
+        Returns:
+            Name of the corresponding correction flag column.
+        """
+        return corrs_flag_column_name(column)
+
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
+        """Return an object that can be used to determine the mask for adding a flag to the flag column.
+
+        For corrections, the flag mask compares the original with the result and provides True where
+        there are differences.
+
+        Args:
+            tf: Original TimeFrame being processed.
+            result: Result from applying corrections to tf.
+            column_name: Name of the column being processed.
+
+        Returns:
+            Boolean series where data has changed after correcting.
+        """
         before_mask = tf.df[column_name].is_null()
         after_mask = result.df[column_name].is_null()
         return before_mask.ne(after_mask)
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Update core flags with the correction flag after all methods are applied.
+
+        Args:
+            tf: TimeFrame with flags to update.
+
+        Returns:
+            Timeframe with updated core flags
+        """
         return update_corrections_core_flags(tf)

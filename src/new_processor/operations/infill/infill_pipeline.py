@@ -20,25 +20,18 @@ class InfillPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.INFILLING, INFILL_FLAG_SYS_NAME)
 
-    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
-        return container.infill_configs
+    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+        """Apply the given infill method to the TimeFrame data.
 
-    def get_flag_column(self, column: str) -> str:
-        return infill_flag_column_name(column)
+        Args:
+            tf: Time series frame to infill.
+            config: Configuration of the infill method.
+            dataset_repository: Repository for accessing additional datasets.
 
-    def sort_configs(self, configs: set[ProcessingConfig]) -> list[ProcessingConfig]:
-        """Infill configs have a required priority ordering"""
-        return sorted(configs, key=lambda cfg: cfg.annotations.get("priority", 0))
+        Returns:
+            Result of applying the infill method.
+        """
 
-    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
-        before_mask = tf.df[column_name].is_null()
-        after_mask = result.df[column_name].is_null()
-        return before_mask.ne(after_mask)
-
-    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
-        return update_infill_core_flags(tf)
-
-    def apply_method(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         # Collect any dependency TimeFrame to run infill with
         if "dep_ts" in config.params:
             dep_tf = dataset_repository[config.params["dep_ts"]].data
@@ -47,3 +40,64 @@ class InfillPipeline(OperationPipeline):
 
         method = InfillMethod.get(config.method)
         return method.run(tf, config)
+
+    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
+        """Extract the infill method configurations.
+
+        Args:
+            container: Time series container to get the infill method configurations from.
+
+        Returns:
+            List of infill configurations to be applied.
+        """
+        return container.infill_configs
+
+    def sort_configs(self, configs: set[ProcessingConfig]) -> list[ProcessingConfig]:
+        """Sort the infilling configs into the correct order based on their "priority"
+
+        Args:
+            configs: List of infill configurations to be sorted.
+
+        Returns:
+            Sorted list of infill configurations
+        """
+        return sorted(configs, key=lambda cfg: cfg.annotations.get("priority", 0))
+
+    def get_flag_column(self, column: str) -> str:
+        """Determine the infill flag column name for a given data column.
+
+        Args:
+            column: Name of the data column.
+
+        Returns:
+            Name of the corresponding infill flag column.
+        """
+        return infill_flag_column_name(column)
+
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
+        """Return an object that can be used to determine the mask for adding a flag to the flag column.
+
+        For infill, the flag mask compares the original with the result and provides True where there are differences.
+
+        Args:
+            tf: Original TimeFrame being processed.
+            result: Result from applying infilling to tf.
+            column_name: Name of the column being processed.
+
+        Returns:
+            Boolean series where data has changed after infilling.
+        """
+        before_mask = tf.df[column_name].is_null()
+        after_mask = result.df[column_name].is_null()
+        return before_mask.ne(after_mask)
+
+    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Update core flags with the infill flag after all methods are applied.
+
+        Args:
+            tf: TimeFrame with flags to update.
+
+        Returns:
+            Timeframe with updated core flags
+        """
+        return update_infill_core_flags(tf)

@@ -49,9 +49,7 @@ class OperationPipeline(ABC):
         self.registry = OPERATION_METHOD_REGISTRY[self.operation_type]
 
     @abstractmethod
-    def apply_method(
-        self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
-    ) -> T:
+    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict[str, TimeSeriesContainer]) -> T:
         """Apply a specific method to the time series data.
 
         Args:
@@ -61,6 +59,43 @@ class OperationPipeline(ABC):
 
         Returns:
             Result of applying the method, format depends on implementation.
+        """
+        pass
+
+    @abstractmethod
+    def get_configs(self, container: TimeSeriesContainer) -> Iterable[ProcessingConfig]:
+        """Extract the method configuration blocks for this operation.
+
+        Args:
+            container: Time series container of metadata and data.
+
+        Returns:
+            List of configuration blocks to be applied.
+        """
+        pass
+
+    def sort_configs(self, configs: Iterable[ProcessingConfig]) -> Iterable[ProcessingConfig]:
+        """Sort configuration blocks into execution order.
+
+        Override this method in subclasses to define custom ordering logic.
+
+        Args:
+            configs: List of configuration blocks.
+
+        Returns:
+            Sorted list of configuration blocks
+        """
+        return configs
+
+    @abstractmethod
+    def get_flag_column(self, column: str) -> str:
+        """Determine the flag column name for a given data column.
+
+        Args:
+            column: Name of the data column.
+
+        Returns:
+            Name of the corresponding flag column.
         """
         pass
 
@@ -79,30 +114,6 @@ class OperationPipeline(ABC):
         pass
 
     @abstractmethod
-    def get_configs(self, container: TimeSeriesContainer) -> Iterable[ProcessingConfig]:
-        """Extract the method configuration blocks for this operation.
-
-        Args:
-            container: Time series container of metadata and data.
-
-        Returns:
-            List of configuration blocks to be applied.
-        """
-        pass
-
-    @abstractmethod
-    def get_flag_column(self, column: str) -> str:
-        """Determine the flag column name for a given data column.
-
-        Args:
-            column: Name of the data column.
-
-        Returns:
-            Name of the corresponding flag column.
-        """
-        pass
-
-    @abstractmethod
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags after all methods are applied.
 
@@ -114,19 +125,6 @@ class OperationPipeline(ABC):
         """
         pass
 
-    def sort_configs(self, configs: Iterable[ProcessingConfig]) -> Iterable[ProcessingConfig]:
-        """Sort configuration blocks into execution order.
-
-        Override this method in subclasses to define custom ordering logic.
-
-        Args:
-            configs: List of configuration blocks.
-
-        Returns:
-            Sorted list of configuration blocks
-        """
-        return configs
-
     def run(self, container: TimeSeriesContainer, dataset_repository: dict[str, TimeSeriesContainer]) -> ts.TimeFrame:
         """Execute the full operation workflow on the time series container.
 
@@ -137,7 +135,7 @@ class OperationPipeline(ABC):
         Returns:
             The updated TimeFrame after all operations and flag updates.
         """
-        tf = container.data
+        tf = container.data.copy()
         col_name = tf.metadata["column_name"]
 
         # Initialise the flags
@@ -154,7 +152,7 @@ class OperationPipeline(ABC):
                 logger.info(f"Operation: {self.operation_type} | {cfg.method}")
 
                 # Run the method and apply any resulting flags
-                result = self.apply_method(tf, cfg, dataset_repository)
+                result = self.apply(tf, cfg, dataset_repository)
                 self._add_flag(tf, result, col_name, cfg.method)
 
         # Post-process core flags
