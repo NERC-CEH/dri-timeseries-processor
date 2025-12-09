@@ -41,16 +41,16 @@ class SiteItem(IDModel):
     long: float | None = None
     altitude: float | None = None
     has_representative_point: IDModel | None = Field(None, alias="hasRepresentativePoint")
-    has_geometry: list[HasGeometryItem] | None = Field(list, alias="hasGeometry")
+    has_geometry: list[HasGeometryItem] | None = Field(default_factory=list, alias="hasGeometry")
 
     # Other metadata
-    has_annotation: list[HasAnnotationItem] | None = Field(list, alias="hasAnnotation")
+    has_annotation: list[HasAnnotationItem] | None = Field(default_factory=list, alias="hasAnnotation")
     operating_period: OperatingPeriod | None = Field(None, alias="operatingPeriod")
-    has_part: list[IDModel] | None = Field(list, alias="hasPart")
-    identifier: list[str] | None = Field(list)
-    comment: list[str] | None = Field(list)
-    label: list[str] | None = Field(list)
-    observes: list[IDModel] | None = Field(list)
+    has_part: list[IDModel] | None = Field(default_factory=list, alias="hasPart")
+    identifier: list[str] | None = Field(default_factory=list)
+    comment: list[str] | None = Field(default_factory=list)
+    label: list[str] | None = Field(default_factory=list)
+    observes: list[IDModel] | None = Field(default_factory=list)
 
 
 class SiteResponse(BaseAPIResponse):

@@ -426,6 +426,7 @@ class TestBuildResolver:
         builder._fetch_configs_for_dataset = MagicMock(
             side_effect=lambda i: {d: config_dependencies.get(d, []) for d in i}
         )
+        builder._fetch_site_metadata = MagicMock()
 
         # We want to test which IDs are being processed in which batch, so hook into a method that captures that info
         batches = []

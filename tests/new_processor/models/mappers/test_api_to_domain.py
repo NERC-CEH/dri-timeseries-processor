@@ -525,7 +525,7 @@ class TestMapSiteMetadata:
             northing=5678.0,
             lat=0.1234,
             lon=-0.5678,
-            altitude=999,
+            altitude=999.0,
             start_date=datetime(2000, 1, 1),
             end_date=datetime(2099, 12, 31),
         )

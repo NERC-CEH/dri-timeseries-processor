@@ -17,7 +17,6 @@
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/site/no_id",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/EnvironmentalMonitoringSite"
