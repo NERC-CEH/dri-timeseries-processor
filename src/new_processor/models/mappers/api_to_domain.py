@@ -221,10 +221,13 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     start_date = datetime.fromisoformat(item.operating_period.start_date)
     end_date = datetime.fromisoformat(item.operating_period.end_date)
 
+    alt_id = item.identifier[0] if item.identifier else None
+    full_name = item.label[0] if item.label else None
+
     return SiteMetadata(
         site_id=item.id,
-        alt_id=item.identifier[0],
-        full_name=item.label[0],
+        alt_id=alt_id,
+        full_name=full_name,
         easting=item.easting,
         northing=item.northing,
         lat=item.lat,

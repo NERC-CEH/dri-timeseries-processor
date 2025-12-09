@@ -58,9 +58,9 @@ def make_processing_config_container(ts_id: str) -> ProcessingConfig:
     )
 
 
-def make_site_metadata_container() -> SiteMetadata:
+def make_site_metadata_container(site_id: str) -> SiteMetadata:
     return SiteMetadata(
-        site_id="siteId",
+        site_id=site_id,
         alt_id="alt_it",
         full_name="full site name",
         easting=123,
@@ -92,6 +92,7 @@ def create_mock_router(items: list) -> MagicMock:
     mock_router.fetch_all_dependencies.return_value = mock_response
     mock_router.fetch_dataset_by_id.return_value = mock_response
     mock_router.fetch_processing_configs.return_value = mock_response
+    mock_router.fetch_site_by_alt_id.return_value = mock_response
     return mock_router
 
 
@@ -121,7 +122,7 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(
         "new_processor.dag.dataset_dependency_graph.map_site_metadata",
-        lambda item: make_site_metadata_container(),
+        lambda item: make_site_metadata_container(item["@id"]),
     )
 
 
@@ -202,6 +203,25 @@ class TestFetchDatasets:
 
         assert result == {ts_id: [container]}
         assert mock_router.fetch_processing_configs.call_count == 1
+
+    @pytest.mark.parametrize(
+        "sites, num",
+        [
+            ("site1", 1),
+            (["site1", "site2"], 2),
+        ],
+    )
+    def test_get_site_metadata(self, sites: str | list, num: int, monkeypatch: pytest.MonkeyPatch) -> None:
+        mock_router = setup_mocks(sites, monkeypatch)
+        builder = DatasetDependencyGraph("a_network", sites, "var1", "PT30M", mock_router)
+
+        builder._fetch_site_metadata()
+        result = builder.site_metadata
+
+        for site_id, container in result.items():
+            assert container == make_site_metadata_container(site_id)
+
+        assert mock_router.fetch_site_by_alt_id.call_count == num
 
 
 class TestBuild:

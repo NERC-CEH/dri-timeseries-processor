@@ -19,7 +19,7 @@ from new_processor.models.api_models.dataset_timeseries import TimeSeriesDataset
 from new_processor.models.domain_models.processing_config import ProcessingConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.models.mappers.api_to_domain import map_dataset_item, map_processing_config_item, map_site_metadata
-from new_processor.routers.metadata.router import MetadataRouter
+from new_processor.routers.metadata.metadata_router import MetadataRouter
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
 from new_processor.utils.urls import CONFIGURATION_TYPE_URI, PROCESSING_LEVEL_URI, SITE_URI
@@ -99,7 +99,7 @@ class DatasetDependencyGraph:
         self.reset()
 
         # Fetch all site metadata
-        self._get_site_metadata()
+        self._fetch_site_metadata()
 
         # Fetch the root datasets - i.e. the ones originally requested by the user.
         root_datasets = self._fetch_root_datasets()
@@ -130,14 +130,6 @@ class DatasetDependencyGraph:
                 self.datasets[ts_id] = container
 
             current_batch = next_batch  # move to next batch of recursion
-
-    def _get_site_metadata(self) -> None:
-        """Fetches site metadata for all sites with variables being processed."""
-        for site in self.sites:
-            logger.info(f"Fetching site metadata for: {site}")
-            response = self.api_router.fetch_site_by_alt_id(site).items[0]
-            meta = map_site_metadata(response)
-            self.site_metadata[meta.site_id] = meta
 
     @staticmethod
     def _batch_start(batch: dict[str, TimeSeriesContainer]) -> None:
@@ -260,6 +252,14 @@ class DatasetDependencyGraph:
 
         dataset_configs = self._build_processing_configs(response)
         return dataset_configs
+
+    def _fetch_site_metadata(self) -> None:
+        """Fetches site metadata for all sites with variables being processed."""
+        for site in self.sites:
+            logger.info(f"Fetching site metadata for: {site}")
+            response = self.api_router.fetch_site_by_alt_id(site).items[0]
+            meta = map_site_metadata(response)
+            self.site_metadata[meta.site_id] = meta
 
     def _build_dataset_containers(self, dataset_response: TimeSeriesDatasetResponse) -> list[TimeSeriesContainer]:
         """Parse an API response container timeseries dataset items and convert them to the `TimeSeriesContainer`

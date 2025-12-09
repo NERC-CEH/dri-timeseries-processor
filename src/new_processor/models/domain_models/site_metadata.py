@@ -9,8 +9,8 @@ from datetime import datetime
 @dataclass
 class SiteMetadata:
     site_id: str
-    alt_id: str
-    full_name: str
+    alt_id: str | None = None
+    full_name: str | None = None
     easting: float | None = None
     northing: float | None = None
     lat: float | None = None

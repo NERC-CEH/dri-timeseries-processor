@@ -32,7 +32,7 @@ class OperatingPeriod(IDModel):
 class SiteItem(IDModel):
     """Site item with location and metadata."""
 
-    field_type: list[IDModel] = Field(..., alias="@type")
+    field_type: list[IDModel] | None = Field(None, alias="@type")
 
     # Location fields
     easting: float | None = None
@@ -47,10 +47,10 @@ class SiteItem(IDModel):
     has_annotation: list[HasAnnotationItem] | None = Field(list, alias="hasAnnotation")
     operating_period: OperatingPeriod | None = Field(None, alias="operatingPeriod")
     has_part: list[IDModel] | None = Field(list, alias="hasPart")
-    identifier: list[str]
-    comment: list[str] | None = []
-    label: list[str]
-    observes: list[IDModel] | None = []
+    identifier: list[str] | None = Field(list)
+    comment: list[str] | None = Field(list)
+    label: list[str] | None = Field(list)
+    observes: list[IDModel] | None = Field(list)
 
 
 class SiteResponse(BaseAPIResponse):

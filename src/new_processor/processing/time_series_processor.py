@@ -17,7 +17,7 @@ from new_processor.operations.correction.correction_pipeline import CorrectionPi
 from new_processor.operations.flags.flag_methods import add_initial_core_flags
 from new_processor.operations.infill.infill_pipeline import InfillPipeline
 from new_processor.operations.quality_control.qc_pipeline import QCPipeline
-from new_processor.routers.data.router import DataRouter
+from new_processor.routers.data.data_router import DataRouter
 from new_processor.utils.enums import MethodType, OperationType
 
 logger = logging.getLogger(__name__)
@@ -143,4 +143,4 @@ class TimeSeriesProcessor:
 
         for operation_type in operation_steps:
             operation_pipeline = OPERATION_PIPELINES[operation_type]
-            container.data = operation_pipeline.run(dep_container, self.graph.datasets)
+            dep_container.data = operation_pipeline.run(dep_container, self.graph.datasets)

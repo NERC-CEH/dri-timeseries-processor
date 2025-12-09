@@ -8,7 +8,9 @@ from new_processor.models.api_models.annotation import HasAnnotationItem
 from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from new_processor.models.api_models.site import SiteItem
 from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.models.mappers.api_to_domain import (
     extract_annotations,
@@ -16,6 +18,7 @@ from new_processor.models.mappers.api_to_domain import (
     map_dataset_item,
     map_method_config,
     map_processing_config_item,
+    map_site_metadata,
 )
 from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 
@@ -498,4 +501,32 @@ class TestMapProcessingConfigItem:
             "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
         ]
 
+        assert result == expected
+
+
+class TestMapSiteMetadata:
+    def test_simple_site_metadata(self) -> None:
+        data = {
+            "@id": "top_level_id",
+            "easting": "1234.0",
+            "northing": "5678.0",
+            "lat": "0.1234",
+            "long": "-0.5678",
+            "altitude": 999,
+            "operatingPeriod": {"@id": "operating_period_id", "startDate": "2000-01-01", "endDate": "2099-12-31"},
+        }
+
+        api_model = SiteItem.model_validate(data)
+        result = map_site_metadata(api_model)
+
+        expected = SiteMetadata(
+            site_id="top_level_id",
+            easting=1234.0,
+            northing=5678.0,
+            lat=0.1234,
+            lon=-0.5678,
+            altitude=999,
+            start_date=datetime(2000, 1, 1),
+            end_date=datetime(2099, 12, 31),
+        )
         assert result == expected
