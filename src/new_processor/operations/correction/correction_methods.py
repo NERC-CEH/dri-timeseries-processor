@@ -3,10 +3,10 @@ from abc import ABC, abstractmethod
 import polars as pl
 import time_stream as ts
 from time_stream.operation import Operation
+from time_stream.utils import get_date_filter
 
 from new_processor.models.domain_models.processing_config import MethodConfig
 from new_processor.utils.enums import OperationType
-from new_processor.utils.polars_utils import date_filter_expr
 
 
 class CorrectionMethod(Operation, ABC):
@@ -25,7 +25,7 @@ class Add(CorrectionMethod):
     flag_value = 1
 
     def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
-        date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
                 pl.when(date_filter)
@@ -60,7 +60,7 @@ class LWCorrection(CorrectionMethod):
         sb_adj = ta_k.with_columns((pl.col(ta_col).pow(4) * 5.67 * 1e-8).alias("SB_adj")).select("SB_adj")
 
         # Recalculate LW value
-        date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
                 pl.when(date_filter)
@@ -78,7 +78,7 @@ class Scalar(CorrectionMethod):
     flag_value = 4
 
     def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
-        date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
                 pl.when(date_filter)
@@ -110,7 +110,7 @@ class PACorrection(CorrectionMethod):
             ).alias("pa_corr")
         )
 
-        date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
                 pl.when(date_filter)
@@ -129,7 +129,7 @@ class Power(CorrectionMethod):
     flag_value = 16
 
     def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
-        date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
                 pl.when(date_filter)
