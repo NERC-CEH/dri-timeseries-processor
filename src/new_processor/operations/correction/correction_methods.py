@@ -28,7 +28,9 @@ class Add(CorrectionMethod):
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
-                pl.when(date_filter).then(pl.col(tf.metadata["column_name"]) + config.params["correction_factor"])
+                pl.when(date_filter)
+                .then(pl.col(tf.metadata["column_name"]) + config.params["correction_factor"])
+                .otherwise(pl.col(tf.metadata["column_name"]))
             )
         )
 
@@ -47,8 +49,8 @@ class LWCorrection(CorrectionMethod):
         lw_unc_col = lw_unc_tf.metadata["column_name"]
         ta_col = ta_tf.metadata["column_name"]
 
-        # First correct the uncalibrated values with the scalar correction.
-        lw_unc_corr = lw_unc_tf.df.with_columns(pl.col(lw_unc_col) + config.params["correction_factor"])
+        # First correct the uncalibrated values.
+        lw_unc_corr = lw_unc_tf.df.with_columns(pl.col(lw_unc_col) * config.params["correction_factor"])
 
         # Now re-calibrate LW value with temperature adjustment.
         # Convert temperature to Kelvin
@@ -61,9 +63,9 @@ class LWCorrection(CorrectionMethod):
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
-                pl.when(date_filter).then(
-                    (lw_unc_corr[lw_unc_col] + sb_adj["SB_adj"]).alias(tf.metadata["column_name"])
-                )
+                pl.when(date_filter)
+                .then((lw_unc_corr[lw_unc_col] + sb_adj["SB_adj"]).alias(tf.metadata["column_name"]))
+                .otherwise(pl.col(tf.metadata["column_name"]))
             )
         )
 
@@ -79,7 +81,9 @@ class Scalar(CorrectionMethod):
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
-                pl.when(date_filter).then(pl.col(tf.metadata["column_name"]) * config.params["correction_factor"])
+                pl.when(date_filter)
+                .then(pl.col(tf.metadata["column_name"]) * config.params["correction_factor"])
+                .otherwise(pl.col(tf.metadata["column_name"]))
             )
         )
 
@@ -108,7 +112,12 @@ class PACorrection(CorrectionMethod):
 
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
-            tf.df.with_columns(pl.when(date_filter).then((pl.col(primary_col) + pa_corr["pa_corr"]).alias(primary_col)))
+            tf.df.with_columns(
+                pl.when(date_filter)
+                .then(pl.col(primary_col) + pa_corr["pa_corr"])
+                .otherwise(pl.col(primary_col))
+                .alias(primary_col)
+            )
         )
 
 
@@ -123,7 +132,9 @@ class Power(CorrectionMethod):
         date_filter = date_filter_expr(tf.time_name, config.start_date, config.end_date)
         return tf.with_df(
             tf.df.with_columns(
-                pl.when(date_filter).then(pl.col(tf.metadata["column_name"]).pow(config.params["correction_factor"]))
+                pl.when(date_filter)
+                .then(pl.col(tf.metadata["column_name"]).pow(config.params["correction_factor"]))
+                .otherwise(pl.col(tf.metadata["column_name"]))
             )
         )
 
