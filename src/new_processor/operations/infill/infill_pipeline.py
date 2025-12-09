@@ -87,9 +87,13 @@ class InfillPipeline(OperationPipeline):
         Returns:
             Boolean series where data has changed after infilling.
         """
-        before_mask = tf.df[column_name].is_null()
-        after_mask = result.df[column_name].is_null()
-        return before_mask.ne(after_mask)
+        before = tf.df[column_name]
+        after = result.df[column_name]
+
+        before_is_null = before.is_null() | before.is_nan()
+        after_is_null = after.is_null() | after.is_nan()
+
+        return before_is_null.ne(after_is_null)
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags with the infill flag after all methods are applied.

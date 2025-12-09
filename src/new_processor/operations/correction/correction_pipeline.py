@@ -90,9 +90,19 @@ class CorrectionPipeline(OperationPipeline):
         Returns:
             Boolean series where data has changed after correcting.
         """
-        before_mask = tf.df[column_name].is_null()
-        after_mask = result.df[column_name].is_null()
-        return before_mask.ne(after_mask)
+        before = tf.df[column_name]
+        after = result.df[column_name]
+
+        before_is_null = before.is_null() | before.is_nan()
+        after_is_null = after.is_null() | after.is_nan()
+
+        # Null status changed (null -> value or value -> null)
+        null_status_changed = (before_is_null & ~after_is_null) | (~before_is_null & after_is_null)
+
+        # Both have values but values are different
+        values_changed = (~before_is_null & ~after_is_null) & (before != after)
+
+        return null_status_changed | values_changed
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags with the correction flag after all methods are applied.
