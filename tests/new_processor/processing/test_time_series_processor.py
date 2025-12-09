@@ -8,7 +8,7 @@ import time_stream as ts
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.processing.time_series_processor import TimeSeriesProcessor
-from new_processor.utils.enums import ProcessingLevel
+from new_processor.utils.enums import OperationType, ProcessingLevel
 
 
 def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
@@ -113,3 +113,50 @@ class TestTimeSeriesProcessor:
         # Core flags should have been added
         assert "core_flags" in container.data.flag_systems
         assert "value_CORE_FLAG" in container.data.flag_columns
+
+    def test_process(self, mock_router: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that _process runs all three pipelines in order and updates container.data"""
+        raw_ds_id = "raw_ds1"
+        processed_ds_id = "processed_ds1"
+
+        mock_graph = create_mock_dag([[raw_ds_id], [processed_ds_id]])
+
+        tf_result = MagicMock(spec=ts.TimeFrame)
+
+        mock_corr_pipeline = MagicMock()
+        mock_corr_pipeline.run.return_value = tf_result
+
+        mock_infill_pipeline = MagicMock()
+        mock_infill_pipeline.run.return_value = tf_result
+
+        mock_qc_pipeline = MagicMock()
+        mock_qc_pipeline.run.return_value = tf_result
+
+        monkeypatch.setattr(
+            "new_processor.processing.time_series_processor.OPERATION_PIPELINES",
+            {
+                OperationType.CORRECTION: mock_corr_pipeline,
+                OperationType.QUALITY_CONTROL: mock_qc_pipeline,
+                OperationType.INFILLING: mock_infill_pipeline,
+            },
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            start_date=datetime(2023, 1, 1),
+            end_date=datetime(2023, 1, 2),
+        )
+
+        raw_container = mock_graph.datasets[raw_ds_id]
+        processor._load_raw(raw_container)
+        processed_container = mock_graph.datasets[processed_ds_id]
+        processed_container.direct_depends_on = [raw_ds_id]
+
+        processor._process(processed_container)
+
+        mock_corr_pipeline.run.assert_called_once()
+        mock_infill_pipeline.run.assert_called_once()
+        mock_qc_pipeline.run.assert_called_once()
+        assert raw_container.data == tf_result
+        assert processed_container.data == tf_result

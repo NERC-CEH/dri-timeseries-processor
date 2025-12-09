@@ -144,3 +144,6 @@ class TimeSeriesProcessor:
         for operation_type in operation_steps:
             operation_pipeline = OPERATION_PIPELINES[operation_type]
             dep_container.data = operation_pipeline.run(dep_container, self.graph.datasets)
+
+        # shift the data into the primary container
+        container.data = dep_container.data
