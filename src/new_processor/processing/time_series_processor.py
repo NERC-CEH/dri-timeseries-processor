@@ -13,6 +13,7 @@ from time_stream import TimeFrame
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
 from new_processor.operations.flags.flag_methods import add_initial_core_flags
 from new_processor.operations.infill.infill_pipeline import InfillPipeline
@@ -27,6 +28,7 @@ OPERATION_PIPELINES = {
     OperationType.CORRECTION: CorrectionPipeline(),
     OperationType.QUALITY_CONTROL: QCPipeline(),
     OperationType.INFILLING: InfillPipeline(),
+    OperationType.AGGREGATION: AggregationPipeline(),
 }
 
 
@@ -87,7 +89,7 @@ class TimeSeriesProcessor:
                 self._process(container)
 
             case MethodType.AGGREGATION:
-                print("aggregate", container.method)
+                self._aggregate(container)
 
             case MethodType.DERIVATION:
                 print("derive", container.method)
@@ -100,7 +102,7 @@ class TimeSeriesProcessor:
         container.
 
         Args:
-            container: Time series container of metadata and data.
+            container: Time series container of metadata and data for the dataset to load.
         """
         logger.info(f"{MethodType.LOAD}: {container.ts_id}")
         df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
@@ -115,7 +117,6 @@ class TimeSeriesProcessor:
             {
                 "site_id": container.source_site,
                 "column_name": container.source_column,
-                "processing_level": container.processing_level,
             }
         )
 
@@ -129,21 +130,49 @@ class TimeSeriesProcessor:
         Each operation type has a pipeline class responsible for the specifics of how that method is carried out.
 
         Args:
-            container: Time series container of metadata and data.
+            container: Time series container of metadata and data for the dataset to process.
         """
         # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
         #  that's where all the configs will be found.
         #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
         #  Is this robust?
         logger.info(f"{MethodType.PROCESS}: {container.ts_id}")
-        dep_id = container.direct_depends_on[0]
-        dep_container = self.graph.datasets[dep_id]
+
+        dep_container = self._get_single_dependency(container)
 
         operation_steps = [OperationType.CORRECTION, OperationType.QUALITY_CONTROL, OperationType.INFILLING]
-
         for operation_type in operation_steps:
             operation_pipeline = OPERATION_PIPELINES[operation_type]
             dep_container.data = operation_pipeline.run(dep_container, self.graph.datasets)
 
         # shift the data into the primary container
         container.data = dep_container.data
+
+    def _aggregate(self, container: TimeSeriesContainer) -> None:
+        """Run aggregation to create a single dataset according to the method configurations attached via metadata.
+
+        Args:
+            container: Time series container of metadata and data for dataset to create via aggregation.
+        """
+        logger.info(f"{MethodType.AGGREGATION}: {container.ts_id}")
+
+        dep_container = self._get_single_dependency(container)
+        aggregation_pipeline = OPERATION_PIPELINES[OperationType.AGGREGATION]
+        container.data = aggregation_pipeline.run(container, dep_container)
+
+    def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
+        """Get the dependent time series container of the given container where it is assumed that there is only
+        a single dependency.
+
+        Args:
+            container: Time series container for the dataset to fetch single dependency
+
+        Returns:
+            Dependent time series container.
+        """
+        num_dependents = len(container.direct_depends_on)
+        if num_dependents != 1:
+            raise ValueError(f"Expected a single dependent dataset. Found: {num_dependents}")
+
+        dep_id = container.direct_depends_on[0]
+        return self.graph.datasets[dep_id]
