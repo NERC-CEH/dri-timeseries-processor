@@ -35,21 +35,23 @@ class CorrectionPipeline(OperationPipeline):
         params = config.params
 
         # Name any dependent timeseries with their column names
-        if "dep_ts" in config.params:
-            dep_ids = config.params["dep_ts"]
-            if isinstance(dep_ids, str):
-                dep_ids = [dep_ids]
+        dep_ids = config.params.get("dep_ts", [])
+        if isinstance(dep_ids, str):
+            dep_ids = [dep_ids]
 
-            for dep_id in dep_ids:
-                dep_tf = dataset_repository[dep_id].data
-                dep_name = dep_tf.metadata["column_name"].lower()
+        for dep_id in dep_ids:
+            dep_tf = dataset_repository[dep_id].data
+            dep_name = dep_tf.metadata["column_name"].lower()
 
-                # TODO - I think we should rename "dep_ts" in the config to "lw_unc" (in this example)
-                if config.method == "lw_corr":
-                    if dep_name in ["lwout_unc", "lwin_unc"]:
-                        dep_name = "lw_unc"
+            # TODO - I think we should rename "dep_ts" in the config to "lw_unc" (in this example)
+            # This is currently a workaround for the lw_corr method.  This method runs on both LWOUT and LWIN
+            # datasets, requiring the LWOUT_UNC and LWIN_UNC dependent datasets. To keep the method generic for
+            # both, the method expects the generic name of "LW_UNC" to be used.
+            if config.method == "lw_corr":
+                if dep_name in ["lwout_unc", "lwin_unc"]:
+                    dep_name = "lw_unc"
 
-                params[dep_name] = dep_tf
+            params[dep_name] = dep_tf
 
         method = CorrectionMethod.get(config.method)
         return method.run(tf, config)
