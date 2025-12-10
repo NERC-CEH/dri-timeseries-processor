@@ -1,30 +1,11 @@
 from datetime import datetime
 
 import polars as pl
-import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from new_processor.models.domain_models.processing_config import MethodConfig
 from new_processor.operations.infill.infill_methods import AltData, Linear
-
-
-def create_timeframe(values: list[float], column_name: str = "value") -> ts.TimeFrame:
-    """Create a test TimeFrame with sequential monthly timestamps.
-
-    Args:
-        values: Optional list of values
-        column_name: Name of the data column
-
-    Returns:
-        TimeFrame with test data
-    """
-    df = pl.DataFrame(
-        {
-            "time": [datetime(2025, m, 1) for m in range(1, len(values) + 1)],
-            column_name: values,
-        }
-    )
-    return ts.TimeFrame(df=df, resolution="P1M", time_name="time").with_metadata({"column_name": column_name})
+from utils.data_creation import create_timeframe
 
 
 def create_method_config(
@@ -62,7 +43,7 @@ class TestLinear:
         result = Linear().run(tf, config)
 
         expected = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
-        expected_df = pl.DataFrame({"time": [datetime(2025, m, 1) for m in range(1, 8)], "value": expected})
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
 
         assert_frame_equal(result.df, expected_df)
 
@@ -70,14 +51,14 @@ class TestLinear:
         """Test that the infill function works with a date filter."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
         config = create_method_config(
-            start_date=datetime(2025, 3, 1),
-            end_date=datetime(2025, 5, 31),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = Linear().run(tf, config)
 
         expected = [1.0, None, 3.0, 4.0, 5.0, None, 7.0]
-        expected_df = pl.DataFrame({"time": [datetime(2025, m, 1) for m in range(1, 8)], "value": expected})
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
 
         assert_frame_equal(result.df, expected_df)
 
@@ -87,7 +68,7 @@ class TestAltData:
         """Test that the alt_data function works across the full DataFrame."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
         alt_df = pl.DataFrame(
-            {"time": [datetime(2025, m, 1) for m in range(1, 8)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
         )
         config = create_method_config(
             alt_df=alt_df,
@@ -97,7 +78,7 @@ class TestAltData:
         result = AltData().run(tf, config)
 
         expected = [1.0, 20.0, 3.0, 40.0, 5.0, 60.0, 7.0]
-        expected_df = pl.DataFrame({"time": [datetime(2025, m, 1) for m in range(1, 8)], "value": expected})
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
 
         assert_frame_equal(result.df, expected_df)
 
@@ -105,18 +86,18 @@ class TestAltData:
         """Test that the alt_data function works with a date filter."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
         alt_df = pl.DataFrame(
-            {"time": [datetime(2025, m, 1) for m in range(1, 8)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
         )
         config = create_method_config(
             alt_df=alt_df,
             alt_data_column="alt",
-            start_date=datetime(2025, 3, 1),
-            end_date=datetime(2025, 5, 31),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = AltData().run(tf, config)
 
         expected = [1.0, None, 3.0, 40.0, 5.0, None, 7.0]
-        expected_df = pl.DataFrame({"time": [datetime(2025, m, 1) for m in range(1, 8)], "value": expected})
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
 
         assert_frame_equal(result.df, expected_df)
