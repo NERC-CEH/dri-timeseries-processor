@@ -1,3 +1,12 @@
+"""
+Configuration module for the processing pipeline.
+
+This module provides an interface for loading application configuration across different runtime environments.
+Local development reads from an env.cfg file, while live environments source values directly from environment variables.
+
+The `app_config()` function selects the appropriate configuration loader based on the detected environment.
+"""
+
 import logging
 import os
 from abc import ABC, abstractmethod

@@ -60,7 +60,6 @@ class DuckDBParquetReader(ParquetReaderInterface):
 
         try:
             df = conn.execute(query, params).pl()
-            logger.info(f"DuckDB executed query: {query}")
             return df
 
         except duckdb.HTTPException:

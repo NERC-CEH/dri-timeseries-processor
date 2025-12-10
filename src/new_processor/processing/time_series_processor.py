@@ -12,12 +12,22 @@ from datetime import datetime
 from time_stream import TimeFrame
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.operations.flags.flag_operations import add_initial_core_flags
-from new_processor.routers.data_router import DataRouter
-from new_processor.utils.enums import MethodType
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
+from new_processor.operations.flags.flag_methods import add_initial_core_flags
+from new_processor.operations.infill.infill_pipeline import InfillPipeline
+from new_processor.operations.quality_control.qc_pipeline import QCPipeline
+from new_processor.routers.data.data_router import DataRouter
+from new_processor.utils.enums import MethodType, OperationType
 
 logger = logging.getLogger(__name__)
+
+
+OPERATION_PIPELINES = {
+    OperationType.CORRECTION: CorrectionPipeline(),
+    OperationType.QUALITY_CONTROL: QCPipeline(),
+    OperationType.INFILLING: InfillPipeline(),
+}
 
 
 class TimeSeriesProcessor:
@@ -68,21 +78,13 @@ class TimeSeriesProcessor:
         """
 
         container = self.graph.datasets[dataset_id]
-        print("\n", dataset_id)
 
         match container.method_type:
             case MethodType.LOAD:
                 self._load_raw(container)
 
             case MethodType.PROCESS:
-                # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
-                #  that's where all the configs will be found.
-                #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
-                #  Is this robust?
-                dep_container = self.graph.datasets[container.direct_depends_on[0]]
-                print("do corrections", dep_container.correction_configs)
-                print("do qc", dep_container.qc_configs)
-                print("do infill", dep_container.infill_configs)
+                self._process(container)
 
             case MethodType.AGGREGATION:
                 print("aggregate", container.method)
@@ -100,9 +102,7 @@ class TimeSeriesProcessor:
         Args:
             container: Time series container of metadata and data.
         """
-
-        print("load raw", container.source_bucket)
-
+        logger.info(f"{MethodType.LOAD}: {container.ts_id}")
         df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
 
         # TODO: Note issue about the "time" name - where to get this in metadata
@@ -121,4 +121,29 @@ class TimeSeriesProcessor:
 
         tf = add_initial_core_flags(tf)
         container.data = tf
-        print(tf)
+
+    def _process(self, container: TimeSeriesContainer) -> None:
+        """Process a single dataset according to the data processing configurations attached via metadata.
+
+        This runs the operations of: Corrections, Quality Control and Infilling (in that order) to the given dataset.
+        Each operation type has a pipeline class responsible for the specifics of how that method is carried out.
+
+        Args:
+            container: Time series container of metadata and data.
+        """
+        # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
+        #  that's where all the configs will be found.
+        #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
+        #  Is this robust?
+        logger.info(f"{MethodType.PROCESS}: {container.ts_id}")
+        dep_id = container.direct_depends_on[0]
+        dep_container = self.graph.datasets[dep_id]
+
+        operation_steps = [OperationType.CORRECTION, OperationType.QUALITY_CONTROL, OperationType.INFILLING]
+
+        for operation_type in operation_steps:
+            operation_pipeline = OPERATION_PIPELINES[operation_type]
+            dep_container.data = operation_pipeline.run(dep_container, self.graph.datasets)
+
+        # shift the data into the primary container
+        container.data = dep_container.data

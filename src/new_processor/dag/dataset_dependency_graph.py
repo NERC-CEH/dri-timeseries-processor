@@ -12,14 +12,14 @@ giving knowledge of which datasets need to be processed before others.
 import logging
 from collections import defaultdict
 from graphlib import TopologicalSorter
-from typing import Any
 
-from new_processor.api_models.data_processing_configuration import DataProcessingConfiguration
-from new_processor.api_models.dataset_timeseries import TimeSeriesDatasetResponse
-from new_processor.domain_models.processing_config import ProcessingConfig
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.mappers.api_to_domain import map_dataset_item, map_processing_config_item
-from new_processor.routers.metadata_router import MetadataRouter
+from metadata_manager.models.schemas.sites import SiteMetadata
+from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
+from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from new_processor.models.domain_models.processing_config import ProcessingConfig
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.mappers.api_to_domain import map_dataset_item, map_processing_config_item, map_site_metadata
+from new_processor.routers.metadata.metadata_router import MetadataRouter
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
 from new_processor.utils.urls import CONFIGURATION_TYPE_URI, PROCESSING_LEVEL_URI, SITE_URI
@@ -65,6 +65,7 @@ class DatasetDependencyGraph:
 
         self.api_router = api_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
+        self.site_metadata: dict[str, SiteMetadata] = {}
         self._dataset_cache: dict[str, TimeSeriesContainer] = {}
         self._dependency_cache = set()
 
@@ -96,6 +97,9 @@ class DatasetDependencyGraph:
         """
         # Clear caches etc.
         self.reset()
+
+        # Fetch all site metadata
+        self._fetch_site_metadata()
 
         # Fetch the root datasets - i.e. the ones originally requested by the user.
         root_datasets = self._fetch_root_datasets()
@@ -249,39 +253,47 @@ class DatasetDependencyGraph:
         dataset_configs = self._build_processing_configs(response)
         return dataset_configs
 
-    def _build_dataset_containers(self, dataset_response: dict[str, Any]) -> list[TimeSeriesContainer]:
+    def _fetch_site_metadata(self) -> None:
+        """Fetches site metadata for all sites with variables being processed."""
+        for site in self.sites:
+            logger.info(f"Fetching site metadata for: {site}")
+            response = self.api_router.fetch_site_by_alt_id(site).items[0]
+            meta = map_site_metadata(response)
+            self.site_metadata[meta.site_id] = meta
+
+    def _build_dataset_containers(self, dataset_response: TimeSeriesDatasetResponse) -> list[TimeSeriesContainer]:
         """Parse an API response container timeseries dataset items and convert them to the `TimeSeriesContainer`
         domain models.
 
         Cache each container so that later dependency-resolution steps can reuse them without repeated construction.
 
         Args:
-            dataset_response: The JSON dictionary from the metadata API representing a set of dataset items.
+            dataset_response: The TimeSeriesDatasetResponse representing a set of dataset items.
 
         Returns:
             All mapped `TimeSeriesContainer` extracted from the response.
         """
-        parsed = TimeSeriesDatasetResponse.model_validate(dataset_response)
         all_containers = []
-        for item in parsed.items:
+        for item in dataset_response.items:
             container = map_dataset_item(item, self.network)
             self._dataset_cache[container.ts_id] = container
             all_containers.append(container)
         return all_containers
 
-    def _build_processing_configs(self, dataset_response: dict[str, Any]) -> dict[str, list[ProcessingConfig]]:
+    def _build_processing_configs(
+        self, dataset_response: DataProcessingConfiguration
+    ) -> dict[str, list[ProcessingConfig]]:
         """Parse an API response containing processing configuration items and return them grouped by timeseries ID.
 
         Args:
-            dataset_response: The JSON dictionary from the metadata API representing a set of processing configs.
+            dataset_response: The DataProcessingConfiguration representing a set of processing configs.
 
         Returns:
             A dictionary keyed by timeseries ID, with value as the list of associated processing configs.
         """
-        parsed = DataProcessingConfiguration.model_validate(dataset_response)
         dataset_configs = defaultdict(list)
-        for item in parsed.items:
-            mapped_config = map_processing_config_item(item)
+        for item in dataset_response.items:
+            mapped_config = map_processing_config_item(item, self.site_metadata)
             dataset_configs[mapped_config.ts_id].append(mapped_config)
         return dataset_configs
 
@@ -330,3 +342,4 @@ class DatasetDependencyGraph:
         self._dataset_cache.clear()
         self._dependency_cache.clear()
         self.datasets.clear()
+        self.site_metadata.clear()

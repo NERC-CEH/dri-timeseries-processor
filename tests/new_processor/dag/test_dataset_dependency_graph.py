@@ -1,11 +1,13 @@
+from datetime import datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.domain_models.processing_config import MethodConfig, ProcessingConfig
-from new_processor.domain_models.time_series_container import TimeSeriesContainer
+from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.site_metadata import SiteMetadata
+from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 
 
@@ -56,6 +58,21 @@ def make_processing_config_container(ts_id: str) -> ProcessingConfig:
     )
 
 
+def make_site_metadata_container(site_id: str) -> SiteMetadata:
+    return SiteMetadata(
+        site_id=site_id,
+        alt_id="alt_it",
+        full_name="full site name",
+        easting=123,
+        northing=456,
+        lat=1.23,
+        lon=4.56,
+        altitude=1000,
+        start_date=datetime(2000, 1, 1),
+        end_date=datetime(3000, 1, 1),
+    )
+
+
 def create_items_list(ts_ids: str | list) -> list:
     """Create a simple list of items in a format mocking response from metadata API"""
     if isinstance(ts_ids, str):
@@ -67,10 +84,15 @@ def create_items_list(ts_ids: str | list) -> list:
 def create_mock_router(items: list) -> MagicMock:
     """Return a mocked MetadataRouter with no-op API calls."""
     mock_router = MagicMock()
-    mock_router.fetch_dataset_by_params.return_value = {"items": items}
-    mock_router.fetch_all_dependencies.return_value = {"items": items}
-    mock_router.fetch_dataset_by_id.return_value = {"items": items}
-    mock_router.fetch_processing_configs.return_value = {"items": items}
+
+    mock_response = MagicMock()
+    mock_response.items = items
+
+    mock_router.fetch_dataset_by_params.return_value = mock_response
+    mock_router.fetch_all_dependencies.return_value = mock_response
+    mock_router.fetch_dataset_by_id.return_value = mock_response
+    mock_router.fetch_processing_configs.return_value = mock_response
+    mock_router.fetch_site_by_alt_id.return_value = mock_response
     return mock_router
 
 
@@ -95,7 +117,12 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(
         "new_processor.dag.dataset_dependency_graph.map_processing_config_item",
-        lambda item: make_processing_config_container(item["@id"]),
+        lambda item, _: make_processing_config_container(item["@id"]),
+    )
+
+    monkeypatch.setattr(
+        "new_processor.dag.dataset_dependency_graph.map_site_metadata",
+        lambda item: make_site_metadata_container(item["@id"]),
     )
 
 
@@ -176,6 +203,25 @@ class TestFetchDatasets:
 
         assert result == {ts_id: [container]}
         assert mock_router.fetch_processing_configs.call_count == 1
+
+    @pytest.mark.parametrize(
+        "sites, num",
+        [
+            ("site1", 1),
+            (["site1", "site2"], 2),
+        ],
+    )
+    def test_get_site_metadata(self, sites: str | list, num: int, monkeypatch: pytest.MonkeyPatch) -> None:
+        mock_router = setup_mocks(sites, monkeypatch)
+        builder = DatasetDependencyGraph("a_network", sites, "var1", "PT30M", mock_router)
+
+        builder._fetch_site_metadata()
+        result = builder.site_metadata
+
+        for site_id, container in result.items():
+            assert container == make_site_metadata_container(site_id)
+
+        assert mock_router.fetch_site_by_alt_id.call_count == num
 
 
 class TestBuild:
@@ -346,6 +392,7 @@ class TestBuildResolver:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Test scenario for the dataset dependency graph resolver."""
+        setup_mocks(all_ids, monkeypatch)
 
         # Create TimeSeriesContainer objects for all IDs in this test
         containers = {i: make_time_series_container(i, depends_on=direct_dependencies.get(i, [])) for i in all_ids}
@@ -379,6 +426,7 @@ class TestBuildResolver:
         builder._fetch_configs_for_dataset = MagicMock(
             side_effect=lambda i: {d: config_dependencies.get(d, []) for d in i}
         )
+        builder._fetch_site_metadata = MagicMock()
 
         # We want to test which IDs are being processed in which batch, so hook into a method that captures that info
         batches = []
