@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import polars as pl
-import time_stream as ts
 from polars.testing import assert_series_equal
 
 from new_processor.models.domain_models.processing_config import MethodConfig
@@ -17,25 +16,7 @@ from new_processor.operations.quality_control.qc_methods import (
     Spike,
     TdtTSoil,
 )
-
-
-def create_timeframe(values: list[float], column_name: str = "value") -> ts.TimeFrame:
-    """Create a test TimeFrame with sequential monthly timestamps.
-
-    Args:
-        values: Optional list of values
-        column_name: Name of the data column
-
-    Returns:
-        TimeFrame with test data
-    """
-    df = pl.DataFrame(
-        {
-            "time": [datetime(2025, 1, 1, h) for h in range(1, len(values) + 1)],
-            column_name: values,
-        }
-    )
-    return ts.TimeFrame(df=df, time_name="time").with_metadata({"column_name": column_name})
+from utils.data_creation import create_timeframe
 
 
 def create_method_config(
@@ -81,8 +62,8 @@ class TestRange:
         config = create_method_config(
             lt=3,
             gt=5,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = Range().run(tf, config)
@@ -107,8 +88,8 @@ class TestBatteryVoltage:
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
         config = create_method_config(
             lt=4,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = BatteryVoltage().run(tf, config)
@@ -133,8 +114,8 @@ class TestSamples:
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
         config = create_method_config(
             lt=4,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = Samples().run(tf, config)
@@ -159,8 +140,8 @@ class TestErrorCode:
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
         config = create_method_config(
             value=[5.0, 6.0, 7.0],
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = ErrorCode().run(tf, config)
@@ -185,8 +166,8 @@ class TestSpike:
         tf = create_timeframe([1.0, 2.0, 30.0, 4.0, 5.0, 60.0, 7.0])
         config = create_method_config(
             gt=5.0,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = Spike().run(tf, config)
@@ -212,8 +193,8 @@ class TestNr01Temp:
         config = create_method_config(
             lt=3,
             gt=5,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = Nr01Temp().run(tf, config)
@@ -226,7 +207,7 @@ class TestHeatFluxPlateRemoval:
     def test_hfp_simple(self) -> None:
         """Test that the hfp removal function works across the full DataFrame."""
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-        config = create_method_config(time_ge="02:00:00", time_le="04:00:00")
+        config = create_method_config(time_ge="01:00:00", time_le="03:00:00")
 
         result = HeatFluxPlateRemoval().run(tf, config)
 
@@ -237,10 +218,10 @@ class TestHeatFluxPlateRemoval:
         """Test that the hfp removal function works with a date filter."""
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
         config = create_method_config(
-            time_ge="02:00:00",
-            time_le="04:00:00",
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            time_ge="01:00:00",
+            time_le="03:00:00",
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = HeatFluxPlateRemoval().run(tf, config)
@@ -265,8 +246,8 @@ class TestPluvioDiagnostic:
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
         config = create_method_config(
             gt=4,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = PluvioDiagnostic().run(tf, config)
@@ -291,8 +272,8 @@ class TestSnowDaySignal:
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
         config = create_method_config(
             lt=4,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = SnowDaySignal().run(tf, config)
@@ -317,8 +298,8 @@ class TestTdtTSoil:
         tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
         config = create_method_config(
             lt=4,
-            start_date=datetime(2025, 1, 1, 3),
-            end_date=datetime(2025, 1, 1, 5, 59),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = TdtTSoil().run(tf, config)

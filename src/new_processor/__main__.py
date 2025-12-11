@@ -30,11 +30,12 @@ if __name__ == "__main__":
 
     # ALIC1 - LWIN / LWOUT - has a funky correction config (lw corr)
     # HOLLN - PA - has a funky correction config (pa corr)
+    # daily PRECIP has an odd thing going on with the aggregation (raw to raw)
     builder = DatasetDependencyGraph(
         "cosmos",
-        sites=["HOLLN", "ALIC1", "BUNNY"],
-        variables=["LWIN", "PA", "RN", "PE"],
-        periodicity="PT30M",
+        sites=["BUNNY"],
+        variables=["PRECIP"],
+        periodicity="P1D",
         api_router=router,
     )
     builder.build()

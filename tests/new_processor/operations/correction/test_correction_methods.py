@@ -2,7 +2,6 @@ from datetime import datetime
 
 import polars as pl
 import pytest
-import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from new_processor.models.domain_models.processing_config import MethodConfig
@@ -14,29 +13,7 @@ from new_processor.operations.correction.correction_methods import (
     Power,
     Scalar,
 )
-
-
-def create_timeframe(values: list[float] | None = None, column_name: str = "value") -> ts.TimeFrame:
-    """Create a test TimeFrame with sequential monthly timestamps.
-
-    Args:
-        values: Optional list of values
-        column_name: Name of the data column
-
-    Returns:
-        TimeFrame with test data
-    """
-    if values is None:
-        values = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
-
-    df = pl.DataFrame(
-        {
-            "time": [datetime(2025, m, 1) for m in range(1, len(values) + 1)],
-            column_name: values,
-        }
-    )
-
-    return ts.TimeFrame(df=df, time_name="time").with_metadata({"column_name": column_name})
+from utils.data_creation import create_timeframe
 
 
 def create_method_config(
@@ -73,7 +50,7 @@ def run_function_test(factor: float, expected: list[float], fn: CorrectionMethod
     tf = create_timeframe()
     config = create_method_config(correction_factor=factor)
     result = fn.run(tf, config)
-    expected_df = pl.DataFrame({"time": [datetime(2025, m, 1) for m in range(1, 8)], "value": expected})
+    expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
     assert_frame_equal(result.df, expected_df)
 
 
@@ -81,17 +58,15 @@ def run_function_with_date_filter_test(factor: float, expected: list[float], fn:
     tf = create_timeframe()
     config = create_method_config(
         correction_factor=factor,
-        start_date=datetime(2025, 3, 1),
-        end_date=datetime(2025, 5, 31),
+        start_date=datetime(2025, 1, 1, 2),
+        end_date=datetime(2025, 1, 1, 4, 59),
     )
     result = fn.run(tf, config)
-    expected_df = pl.DataFrame({"time": [datetime(2025, m, 1) for m in range(1, 8)], "value": expected})
+    expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
     assert_frame_equal(result.df, expected_df)
 
 
 class TestAdd:
-    """Tests for Add correction method."""
-
     @pytest.mark.parametrize(
         "factor,expected",
         [
@@ -111,8 +86,6 @@ class TestAdd:
 
 
 class TestScalar:
-    """Tests for Scalar correction method."""
-
     @pytest.mark.parametrize(
         "factor,expected",
         [
@@ -133,8 +106,6 @@ class TestScalar:
 
 
 class TestPower:
-    """Tests for Power correction method."""
-
     @pytest.mark.parametrize(
         "factor,expected",
         [
@@ -166,8 +137,6 @@ class TestPower:
 
 
 class TestLWCorrection:
-    """Tests for LW correction method."""
-
     def test_lw_correction_simple(self) -> None:
         """Test that the lw correction function works across the full DataFrame."""
         lw = create_timeframe([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8], "lw")
@@ -180,7 +149,7 @@ class TestLWCorrection:
 
         expected_df = pl.DataFrame(
             {
-                "time": [datetime(2025, m, 1) for m in range(1, 8)],
+                "time": [datetime(2025, 1, 1, h) for h in range(7)],
                 "lw": [
                     366.89501779404736,
                     371.93855976840695,
@@ -205,15 +174,15 @@ class TestLWCorrection:
             correction_factor=factor,
             lw_unc=lw_unc,
             ta=ta,
-            start_date=datetime(2025, 3, 1),
-            end_date=datetime(2025, 5, 31),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = LWCorrection().run(lw, config)
 
         expected_df = pl.DataFrame(
             {
-                "time": [datetime(2025, m, 1) for m in range(1, 8)],
+                "time": [datetime(2025, 1, 1, h) for h in range(7)],
                 "lw": [373.9, 381.5, 377.7449872014795, 394.1243133190569, 379.22105814566305, 387.3, 391.8],
             }
         )
@@ -221,8 +190,6 @@ class TestLWCorrection:
 
 
 class TestPaCorrection:
-    """Tests for PA correction method."""
-
     def test_pa_correction_simple(self) -> None:
         """Test that the pa correction function works across the full DataFrame."""
         pa = create_timeframe([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213], "pa")
@@ -235,7 +202,7 @@ class TestPaCorrection:
 
         expected_df = pl.DataFrame(
             {
-                "time": [datetime(2025, m, 1) for m in range(1, 8)],
+                "time": [datetime(2025, 1, 1, h) for h in range(7)],
                 "pa": [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578],
             }
         )
@@ -251,15 +218,15 @@ class TestPaCorrection:
             correction_factor=factor,
             ta=ta,
             altitude=altitude,
-            start_date=datetime(2025, 3, 1),
-            end_date=datetime(2025, 5, 31),
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = PACorrection().run(pa, config)
 
         expected_df = pl.DataFrame(
             {
-                "time": [datetime(2025, m, 1) for m in range(1, 8)],
+                "time": [datetime(2025, 1, 1, h) for h in range(7)],
                 "pa": [1007.504, 1007.391, 1002.3039, 1002.2789, 1002.2069, 1007.194, 1007.213],
             }
         )

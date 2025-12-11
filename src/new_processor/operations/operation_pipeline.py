@@ -185,7 +185,7 @@ class OperationPipeline(ABC):
     def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> None:
         """Apply a flag to the flag column
 
-        ARgs:
+        Args:
             tf: TimeFrame containing original data.
             result: The result of the operation.
             col_name: Name of the parent column.

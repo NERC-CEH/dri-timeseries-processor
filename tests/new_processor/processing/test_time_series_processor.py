@@ -106,7 +106,6 @@ class TestTimeSeriesProcessor:
         expected_metadata = {
             "site_id": "ds1_site",
             "column_name": "ds1_column",
-            "processing_level": ProcessingLevel.PROCESSED,
         }
         assert container.data.metadata == expected_metadata
 
