@@ -3,7 +3,7 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.correction.correction_methods import CorrectionMethod
 from new_processor.operations.flags.flag_methods import update_corrections_core_flags
@@ -20,7 +20,7 @@ class CorrectionPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.CORRECTION, CORRS_FLAG_SYS_NAME)
 
-    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given correction method to the TimeFrame data.
 
         Args:
@@ -40,6 +40,7 @@ class CorrectionPipeline(OperationPipeline):
             dep_ids = [dep_ids]
 
         for dep_id in dep_ids:
+            # TODO: Should we pass the container into the config rather than just the tf ?
             dep_tf = dataset_repository[dep_id].data
             dep_name = dep_tf.metadata["column_name"].lower()
 

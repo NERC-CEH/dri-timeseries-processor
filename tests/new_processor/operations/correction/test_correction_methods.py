@@ -4,7 +4,7 @@ import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
 
-from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.operations.correction.correction_methods import (
     Add,
     CorrectionMethod,
@@ -21,7 +21,7 @@ def create_method_config(
     start_date: datetime | None = None,
     end_date: datetime | None = None,
     **extra_params,
-) -> MethodConfig:
+) -> ProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -38,7 +38,7 @@ def create_method_config(
         params["correction_factor"] = correction_factor
     params.update(extra_params)
 
-    return MethodConfig(
+    return ProcessingMethodConfig(
         method="test",
         params=params,
         start_date=start_date,

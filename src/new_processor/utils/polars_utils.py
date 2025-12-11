@@ -93,3 +93,21 @@ def not_missing_expr(column_name: str) -> pl.Expr:
         Expression for not missing values
     """
     return pl.col(column_name).is_not_null() & pl.col(column_name).is_not_nan()
+
+
+def merge_multiple(inputs: list[pl.DataFrame], join_col: str, join_type: str = "full") -> pl.DataFrame:
+    """Merge multiple Polars DataFrames on a common column.
+
+    Args:
+        inputs: List of DataFrames to merge. Each must contain `join_col`.
+        join_col: Name of the column to join on.
+        join_type: Type of join to use
+    """
+    # Use the first dataframe as base
+    merged = inputs[0]
+
+    # Sequentially join all remaining dataframes
+    for other in inputs[1:]:
+        merged = merged.join(other, on=join_col, how=join_type, coalesce=True)
+
+    return merged

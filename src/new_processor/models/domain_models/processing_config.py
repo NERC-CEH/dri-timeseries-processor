@@ -17,7 +17,7 @@ from new_processor.utils.enums import ConfigurationType
 
 
 @dataclass
-class MethodConfig:
+class ProcessingMethodConfig:
     method: str
     params: dict[str, Any] = field(default_factory=dict)
     start_date: datetime | None = None
@@ -29,7 +29,7 @@ class ProcessingConfig:
     ts_id: str
     config_id: str
     config_type: ConfigurationType
-    method_configs: list[MethodConfig]
+    method_configs: list[ProcessingMethodConfig]
     annotations: dict[str, Any] = field(default_factory=dict)
 
     def all_dep_ts(self) -> list[str]:

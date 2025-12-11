@@ -9,8 +9,9 @@ from dataclasses import dataclass, field
 
 from time_stream import TimeFrame
 
+from new_processor.models.domain_models.method_config import MethodConfig
 from new_processor.models.domain_models.processing_config import ProcessingConfig
-from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from new_processor.utils.enums import ConfigurationType, ProcessingLevel
 
 
 @dataclass
@@ -28,8 +29,7 @@ class TimeSeriesContainer:
     periodicity: str
     processing_level: ProcessingLevel
     variable: str
-    method_type: MethodType | None = None
-    method: str | None = None
+    method: MethodConfig
 
     depends_on: list[str] = field(default_factory=list)
     direct_depends_on: list[str] = field(default_factory=list)

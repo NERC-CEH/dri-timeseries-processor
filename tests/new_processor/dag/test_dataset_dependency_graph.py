@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, ProcessingLevel
@@ -406,7 +406,7 @@ class TestBuildResolver:
                     ts_id=i,
                     config_id="config_id",
                     config_type=ConfigurationType.QUALITY_CONTROL,
-                    method_configs=[MethodConfig(method="method_with_dependency", params={"dep_ts": d})],
+                    method_configs=[ProcessingMethodConfig(method="method_with_dependency", params={"dep_ts": d})],
                     annotations={},
                 )
                 for d in deps

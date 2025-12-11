@@ -2,7 +2,7 @@ import logging
 
 import time_stream as ts
 
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.flags.flag_methods import update_quality_control_core_flags
 from new_processor.operations.flags.flag_names import QC_FLAG_SYS_NAME, qc_flag_column_name
@@ -19,7 +19,7 @@ class QCPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
 
-    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.
 
         Args:

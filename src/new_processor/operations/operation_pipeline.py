@@ -9,7 +9,7 @@ from typing import Iterable, TypeVar
 import time_stream as ts
 from time_stream.exceptions import FlagSystemNotFoundError
 
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.correction.correction_methods import CorrectionMethod
 from new_processor.operations.infill.infill_methods import InfillMethod
@@ -49,7 +49,9 @@ class OperationPipeline(ABC):
         self.registry = OPERATION_METHOD_REGISTRY[self.operation_type]
 
     @abstractmethod
-    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict[str, TimeSeriesContainer]) -> T:
+    def apply(
+        self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
+    ) -> T:
         """Apply a specific method to the time series data.
 
         Args:

@@ -5,7 +5,7 @@ import polars as pl
 import time_stream as ts
 from polars.testing import assert_frame_equal
 
-from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 
 
@@ -29,7 +29,7 @@ class TestCreateAggregationMethodConfig:
 
         result = pipeline._create_aggregation_method_config(container)
 
-        expected = MethodConfig(
+        expected = ProcessingMethodConfig(
             method="method_id",
             params={"aggregation_period": ts.Period.of_hours(1)},
         )

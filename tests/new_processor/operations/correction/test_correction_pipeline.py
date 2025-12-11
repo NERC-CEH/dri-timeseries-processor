@@ -5,7 +5,7 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_series_equal
 
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.correction.correction_methods import CorrectionMethod
 from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
@@ -26,7 +26,7 @@ def mock_container() -> MagicMock:
     """Create a mock TimeSeriesContainer with correction configs."""
     container = MagicMock(spec=TimeSeriesContainer)
 
-    method_config = MagicMock(spec=MethodConfig)
+    method_config = MagicMock(spec=ProcessingMethodConfig)
     method_config.method = "add"
     method_config.params = {"correction_factor": 10}
 
@@ -91,7 +91,7 @@ class TestComputeFlagMask:
 class TestApply:
     def test_returns_method_result(self, mock_timeframe: MagicMock) -> None:
         """Test that apply returns a TimeFrame"""
-        config = MagicMock(spec=MethodConfig)
+        config = MagicMock(spec=ProcessingMethodConfig)
         config.method = "add"
         config.params = {"correction_factor": 10}
 

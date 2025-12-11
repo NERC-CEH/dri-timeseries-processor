@@ -34,8 +34,8 @@ if __name__ == "__main__":
     builder = DatasetDependencyGraph(
         "cosmos",
         sites=["BUNNY"],
-        variables=["PRECIP"],
-        periodicity="P1D",
+        variables=["RN"],
+        periodicity="PT30M",
         api_router=router,
     )
     builder.build()

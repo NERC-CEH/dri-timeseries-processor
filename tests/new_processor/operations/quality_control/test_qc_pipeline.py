@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import time_stream as ts
 
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.quality_control.qc_methods import QcMethod
 from new_processor.operations.quality_control.qc_pipeline import QCPipeline
@@ -23,7 +23,7 @@ def mock_container() -> MagicMock:
     """Create a mock TimeSeriesContainer with correction configs."""
     container = MagicMock(spec=TimeSeriesContainer)
 
-    method_config = MagicMock(spec=MethodConfig)
+    method_config = MagicMock(spec=ProcessingMethodConfig)
     method_config.method = "range"
     method_config.params = {"lt": 0, "gt": 100}
 
@@ -76,7 +76,7 @@ class TestComputeFlagMask:
 class TestApply:
     def test_returns_method_result(self, mock_timeframe: MagicMock) -> None:
         """Test that apply returns a TimeFrame"""
-        config = MagicMock(spec=MethodConfig)
+        config = MagicMock(spec=ProcessingMethodConfig)
         config.method = "range"
         config.params = {"lt": 0, "gt": 100}
 

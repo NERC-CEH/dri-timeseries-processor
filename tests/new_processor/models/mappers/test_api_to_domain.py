@@ -9,7 +9,7 @@ from new_processor.models.api_models.data_processing_configuration import DataPr
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
 from new_processor.models.api_models.site import SiteItem
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.models.mappers.api_to_domain import (
@@ -273,7 +273,7 @@ class TestMapMethodConfig:
         api_model = HasCurrentConfigurationItem.model_validate(data)
         result = map_method_config(api_model, MagicMock())
 
-        expected = MethodConfig(
+        expected = ProcessingMethodConfig(
             method="method_function_name",
             params={
                 "correction_factor": 0.98787,
@@ -308,7 +308,7 @@ class TestMapMethodConfig:
         api_model = HasCurrentConfigurationItem.model_validate(data)
         result = map_method_config(api_model, MagicMock())
 
-        expected = MethodConfig(
+        expected = ProcessingMethodConfig(
             method="method_function_name",
             params={
                 "correction_factor": 0.98787,
@@ -355,7 +355,7 @@ class TestMapMethodConfig:
         api_model = HasCurrentConfigurationItem.model_validate(data)
         result = map_method_config(api_model, MagicMock())
 
-        expected = MethodConfig(
+        expected = ProcessingMethodConfig(
             method="linear_linear",
             params={"window": 1, "max_gap_size": 6},
             start_date=datetime(2013, 1, 1, 0, 30, 0),
@@ -414,7 +414,7 @@ class TestMapProcessingConfigItem:
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_raw-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
-                MethodConfig(
+                ProcessingMethodConfig(
                     method="range",
                     params={"lt": 0, "gt": 1200},
                 )
@@ -435,7 +435,7 @@ class TestMapProcessingConfigItem:
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
-                MethodConfig(
+                ProcessingMethodConfig(
                     method="linear_linear",
                     params={"max_gap_size": 6, "window": 1},
                     start_date=datetime(2013, 1, 1, 0, 30, 0),
@@ -457,7 +457,7 @@ class TestMapProcessingConfigItem:
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/sgb0ag444qc40u99nsdo8n5m0kuscic7",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
-                MethodConfig(
+                ProcessingMethodConfig(
                     method="scalar",
                     params={"correction_factor": 0.98787},
                     start_date=datetime(2020, 8, 10, 9, 30, 0),
