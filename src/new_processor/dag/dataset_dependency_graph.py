@@ -46,7 +46,7 @@ class DatasetDependencyGraph:
         network: str,
         sites: str | list[str],
         variables: str | list[str],
-        periodicity: str,
+        periodicities: str | list[str],
         api_router: MetadataRouter,
     ):
         """Initialize the dependency graph builder.
@@ -55,13 +55,13 @@ class DatasetDependencyGraph:
             network: The network identifier
             sites: List of site(s) to include.
             variables: List of variable(s) to include.
-            periodicity: ISO 8601 duration string of the periodicity of the datasets.
+            periodicities: List of ISO 8601 duration string(s) of the periodicity of the datasets.
             api_router: A router object that handles API calls.
         """
         self.network = network
         self.sites = [sites] if isinstance(sites, str) else sites
         self.variables = [variables] if isinstance(variables, str) else variables
-        self.periodicity = periodicity
+        self.periodicities = [periodicities] if isinstance(periodicities, str) else periodicities
 
         self.api_router = api_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
@@ -188,15 +188,20 @@ class DatasetDependencyGraph:
         Returns:
             List of TimeSeriesContainer objects representing root datasets.
         """
+        # TODO building of the SITE ID isn't great... can we use the site metadata to get the identifier?
         sites_params = [("originatingSite", f"{SITE_URI}/{self.network}-{site.lower()}") for site in self.sites]
         variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in self.variables]
+        periodicity_params = [
+            ("type.measure.aggregation.periodicity", periodicity) for periodicity in self.periodicities
+        ]
         other_params = [
             ("_view", "timeseries"),
-            ("type.measure.aggregation.periodicity", self.periodicity),
             ("type.processingLevel", f"{PROCESSING_LEVEL_URI}/{ProcessingLevel.PROCESSED.value}"),
         ]
 
-        response = self.api_router.fetch_dataset_by_params(tuple(sites_params + variables_params + other_params))
+        response = self.api_router.fetch_dataset_by_params(
+            tuple(sites_params + variables_params + periodicity_params + other_params)
+        )
         all_containers = self._build_dataset_containers(response)
         return all_containers
 
