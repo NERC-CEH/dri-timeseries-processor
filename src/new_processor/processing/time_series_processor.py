@@ -12,6 +12,7 @@ from datetime import datetime
 from time_stream import TimeFrame
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from new_processor.io_backend.writer import ParquetWriterInterface
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
@@ -21,6 +22,7 @@ from new_processor.operations.infill.infill_pipeline import InfillPipeline
 from new_processor.operations.quality_control.qc_pipeline import QCPipeline
 from new_processor.routers.data.data_router import DataRouter
 from new_processor.utils.enums import MethodType, OperationType
+from new_processor.utils.polars_utils import split_by_date
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,7 @@ class TimeSeriesProcessor:
         self,
         graph: DatasetDependencyGraph,
         data_router: DataRouter,
+        data_writer: ParquetWriterInterface,
         start_date: datetime,
         end_date: datetime,
     ):
@@ -52,11 +55,13 @@ class TimeSeriesProcessor:
         Args:
             graph: Dependency graph containing dataset relationships and repository of dataset containers.
             data_router: Router for retrieving raw data from storage.
+            data_writer: Handles writing data to parquet files.
             start_date: Start of the date range to process (inclusive).
             end_date: End of the date range to process (inclusive).
         """
         self.graph = graph
         self.data_router = data_router
+        self.data_writer = data_writer
         self.start_date = start_date
         self.end_date = end_date
 
@@ -89,12 +94,15 @@ class TimeSeriesProcessor:
 
             case MethodType.PROCESS:
                 self._process(container)
+                self._save(container)
 
             case MethodType.AGGREGATION:
                 self._aggregate(container)
+                self._save(container)
 
             case MethodType.DERIVATION:
                 self._derive(container)
+                self._save(container)
 
     def _load_raw(self, container: TimeSeriesContainer) -> None:
         """Load raw time-series data for a dataset and initialise a `TimeFrame`.
@@ -159,6 +167,24 @@ class TimeSeriesProcessor:
         logger.info(f"{MethodType.DERIVATION}: {container.ts_id}")
         pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
         container.data = pipeline.run(container, self.graph.datasets)
+
+    def _save(self, container: TimeSeriesContainer) -> None:
+        """Save the processed data within the given container.
+
+        Args:
+            container: Time series container of metadata and data for dataset to save.
+        """
+        data_to_write = split_by_date(container.data.df, container.data.time_name)
+        for date, df in data_to_write:
+            day = date.strftime("%Y-%m-%d")
+            key = (
+                f"network={container.network}/"
+                f"date={day}/"
+                f"site={container.source_site_identifier}/"
+                f"resolution={container.resolution}/"
+                f"data.parquet"
+            )
+            self.data_writer.write(container.source_bucket, key, df, container.data.time_name)
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only
