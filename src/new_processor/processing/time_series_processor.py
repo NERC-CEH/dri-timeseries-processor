@@ -15,6 +15,7 @@ from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
+from new_processor.operations.derivation.derivation_pipeline import DerivationPipeline
 from new_processor.operations.flags.flag_methods import add_initial_core_flags
 from new_processor.operations.infill.infill_pipeline import InfillPipeline
 from new_processor.operations.quality_control.qc_pipeline import QCPipeline
@@ -29,6 +30,7 @@ OPERATION_PIPELINES = {
     OperationType.QUALITY_CONTROL: QCPipeline(),
     OperationType.INFILLING: InfillPipeline(),
     OperationType.AGGREGATION: AggregationPipeline(),
+    OperationType.DERIVATION: DerivationPipeline(),
 }
 
 
@@ -81,7 +83,7 @@ class TimeSeriesProcessor:
 
         container = self.graph.datasets[dataset_id]
 
-        match container.method_type:
+        match container.method.method_type:
             case MethodType.LOAD:
                 self._load_raw(container)
 
@@ -92,7 +94,7 @@ class TimeSeriesProcessor:
                 self._aggregate(container)
 
             case MethodType.DERIVATION:
-                print("derive", container.method)
+                self._derive(container)
 
     def _load_raw(self, container: TimeSeriesContainer) -> None:
         """Load raw time-series data for a dataset and initialise a `TimeFrame`.
@@ -109,16 +111,8 @@ class TimeSeriesProcessor:
 
         # TODO: Note issue about the "time" name - where to get this in metadata
         tf = TimeFrame(
-            df=df,
-            time_name="time",
-            resolution=container.resolution,
-            periodicity=container.periodicity,
-        ).with_metadata(
-            {
-                "site_id": container.source_site,
-                "column_name": container.source_column,
-            }
-        )
+            df=df, time_name="time", resolution=container.resolution, periodicity=container.periodicity
+        ).with_metadata({"column_name": container.source_column})
 
         tf = add_initial_core_flags(tf)
         container.data = tf
@@ -132,18 +126,14 @@ class TimeSeriesProcessor:
         Args:
             container: Time series container of metadata and data for the dataset to process.
         """
-        # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
-        #  that's where all the configs will be found.
-        #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
-        #  Is this robust?
         logger.info(f"{MethodType.PROCESS}: {container.ts_id}")
 
         dep_container = self._get_single_dependency(container)
 
         operation_steps = [OperationType.CORRECTION, OperationType.QUALITY_CONTROL, OperationType.INFILLING]
         for operation_type in operation_steps:
-            operation_pipeline = OPERATION_PIPELINES[operation_type]
-            dep_container.data = operation_pipeline.run(dep_container, self.graph.datasets)
+            pipeline = OPERATION_PIPELINES[operation_type]
+            dep_container.data = pipeline.run(dep_container, self.graph.datasets)
 
         # shift the data into the primary container
         container.data = dep_container.data
@@ -157,8 +147,18 @@ class TimeSeriesProcessor:
         logger.info(f"{MethodType.AGGREGATION}: {container.ts_id}")
 
         dep_container = self._get_single_dependency(container)
-        aggregation_pipeline = OPERATION_PIPELINES[OperationType.AGGREGATION]
-        container.data = aggregation_pipeline.run(container, dep_container)
+        pipeline = OPERATION_PIPELINES[OperationType.AGGREGATION]
+        container.data = pipeline.run(container, dep_container)
+
+    def _derive(self, container: TimeSeriesContainer) -> None:
+        """Run derivation to create a single dataset according to the method configurations attached via metadata.
+
+        Args:
+            container: Time series container of metadata and data for dataset to create via derivation.
+        """
+        logger.info(f"{MethodType.DERIVATION}: {container.ts_id}")
+        pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
+        container.data = pipeline.run(container, self.graph.datasets)
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only

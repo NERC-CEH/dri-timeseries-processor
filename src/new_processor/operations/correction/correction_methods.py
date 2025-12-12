@@ -5,7 +5,7 @@ import time_stream as ts
 from time_stream.operation import Operation
 from time_stream.utils import get_date_filter
 
-from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.utils.enums import OperationType
 
 
@@ -24,7 +24,7 @@ class Add(CorrectionMethod):
     name = "add"
     flag_value = 1
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
@@ -42,8 +42,8 @@ class LWCorrection(CorrectionMethod):
     name = "lw_corr"
     flag_value = 2
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
-        lw_unc_tf = config.params["lw_unc"]
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+        lw_unc_tf = self._get_lw_unc(config)
         ta_tf = config.params["ta"]
 
         lw_unc_col = lw_unc_tf.metadata["column_name"]
@@ -69,6 +69,28 @@ class LWCorrection(CorrectionMethod):
             )
         )
 
+    @staticmethod
+    def _get_lw_unc(config: ProcessingMethodConfig) -> ts.TimeFrame:
+        """Retrieve the longwave radiation uncorrected (lw_unc) TimeFrame from processing configuration.
+
+        This supports processing methods that operate on either LWIN or LWOUT datasets, each of which depends on
+        a corresponding uncorrected time series (LWIN_UNC or LWOUT_UNC). To keep downstream logic generic,
+        this function resolves exactly one of these parameters and returns it as the longwave uncertainty input.
+
+        Args:
+            config: Configuration of the correction method.
+
+        Returns:
+            The lw_unc TimeFrame corresponding to either LWIN_UNC or LWOUT_UNC
+        """
+        possible_keys = {"lwin_unc", "lwout_unc"}
+        found_keys = possible_keys & config.params.keys()
+
+        if len(found_keys) != 1:
+            raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
+
+        return config.params[found_keys.pop()]
+
 
 @CorrectionMethod.register
 class Scalar(CorrectionMethod):
@@ -77,7 +99,7 @@ class Scalar(CorrectionMethod):
     name = "scalar"
     flag_value = 4
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
@@ -95,7 +117,7 @@ class PACorrection(CorrectionMethod):
     name = "pa_corr"
     flag_value = 8
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         ta_tf = config.params["ta"]
 
         primary_col = tf.metadata["column_name"]
@@ -128,7 +150,7 @@ class Power(CorrectionMethod):
     name = "power"
     flag_value = 16
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
@@ -147,5 +169,5 @@ class WDCorrection(CorrectionMethod):
     name = "wd"
     flag_value = 32
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         pass

@@ -6,9 +6,10 @@ import pytest
 import time_stream as ts
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from new_processor.models.domain_models.method_config import MethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.processing.time_series_processor import TimeSeriesProcessor
-from new_processor.utils.enums import OperationType, ProcessingLevel
+from new_processor.utils.enums import MethodType, OperationType, ProcessingLevel
 
 
 def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
@@ -28,6 +29,7 @@ def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
         source_site=ts_id + "_site",
         source_column=ts_id + "_column",
         source_dataset=ts_id + "_dataset",
+        source_site_identifier=ts_id + "_site_identifier",
         resolution="P1D",
         periodicity="P1D",
         variable=ts_id + "_variable",
@@ -36,6 +38,7 @@ def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
         qc_configs=set(),
         infill_configs=set(),
         correction_configs=set(),
+        method=MethodConfig(method_type=MethodType.LOAD),
     )
 
 
@@ -103,10 +106,7 @@ class TestTimeSeriesProcessor:
         assert isinstance(container.data, ts.TimeFrame)
 
         # Metadata should be set
-        expected_metadata = {
-            "site_id": "ds1_site",
-            "column_name": "ds1_column",
-        }
+        expected_metadata = {"column_name": "ds1_column"}
         assert container.data.metadata == expected_metadata
 
         # Core flags should have been added

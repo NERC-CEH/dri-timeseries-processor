@@ -27,6 +27,7 @@ def container() -> MagicMock:
         network="a_network",
         source_site="a_network-a_site",
         source_column="a_column_name",
+        source_site_identifier="A_SITE",
     )
 
 

@@ -3,7 +3,7 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.correction.correction_methods import CorrectionMethod
 from new_processor.operations.flags.flag_methods import update_corrections_core_flags
@@ -20,7 +20,7 @@ class CorrectionPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.CORRECTION, CORRS_FLAG_SYS_NAME)
 
-    def apply(self, tf: ts.TimeFrame, config: MethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given correction method to the TimeFrame data.
 
         Args:
@@ -31,7 +31,6 @@ class CorrectionPipeline(OperationPipeline):
         Returns:
             Result of applying the correction method.
         """
-
         params = config.params
 
         # Name any dependent timeseries with their column names
@@ -42,15 +41,6 @@ class CorrectionPipeline(OperationPipeline):
         for dep_id in dep_ids:
             dep_tf = dataset_repository[dep_id].data
             dep_name = dep_tf.metadata["column_name"].lower()
-
-            # TODO - I think we should rename "dep_ts" in the config to "lw_unc" (in this example)
-            # This is currently a workaround for the lw_corr method.  This method runs on both LWOUT and LWIN
-            # datasets, requiring the LWOUT_UNC and LWIN_UNC dependent datasets. To keep the method generic for
-            # both, the method expects the generic name of "LW_UNC" to be used.
-            if config.method == "lw_corr":
-                if dep_name in ["lwout_unc", "lwin_unc"]:
-                    dep_name = "lw_unc"
-
             params[dep_name] = dep_tf
 
         method = CorrectionMethod.get(config.method)

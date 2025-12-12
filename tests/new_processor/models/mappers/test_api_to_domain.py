@@ -9,15 +9,16 @@ from new_processor.models.api_models.data_processing_configuration import DataPr
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
 from new_processor.models.api_models.site import SiteItem
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.method_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.models.mappers.api_to_domain import (
     extract_annotations,
     extract_arguments,
     map_dataset_item,
-    map_method_config,
     map_processing_config_item,
+    map_processing_method_config,
     map_site_metadata,
 )
 from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
@@ -28,7 +29,11 @@ class TestMapDatasetItem:
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_rn_1day_processed.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
-        result = map_dataset_item(api_model.items[0], "network")
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "BUNNY"
+        site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
+
+        result = map_dataset_item(api_model.items[0], "network", site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
@@ -38,12 +43,16 @@ class TestMapDatasetItem:
             source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
             source_site="cosmos-bunny",
+            source_site_identifier="BUNNY",
             resolution="P1D",
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
             variable="Net radiation",
-            method_type=MethodType.DERIVATION,
-            method="http://fdri.ceh.ac.uk/ref/common/method/calculate-calc_daily_radiation",
+            method=MethodConfig(
+                config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_1day_processed",
+                method_type=MethodType.DERIVATION,
+                name="calculate-calc_daily_radiation",
+            ),
             depends_on=[
                 "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw",
                 "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_processed",
@@ -68,7 +77,11 @@ class TestMapDatasetItem:
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_ta_30min_raw.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
-        result = map_dataset_item(api_model.items[0], "network")
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "BUNNY"
+        site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
+
+        result = map_dataset_item(api_model.items[0], "network", site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
@@ -78,12 +91,12 @@ class TestMapDatasetItem:
             source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
             source_site="cosmos-bunny",
+            source_site_identifier="BUNNY",
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
             variable="Air temperature",
-            method_type=MethodType.LOAD,
-            method=None,
+            method=MethodConfig(method_type=MethodType.LOAD),
             depends_on=[],
             direct_depends_on=[],
             correction_configs=set(),
@@ -105,12 +118,14 @@ class TestMapDatasetItem:
             source_dataset="dataset",
             source_column="col",
             source_site="a-site",
+            source_site_identifier="BUNNY",
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
             variable="variable",
             depends_on=["dep1", "dep2", "dep3"],
             direct_depends_on=["dep1"],
+            method=MethodConfig(method_type=MethodType.LOAD),
         )
         expected = ["dep1", "dep2", "dep3"]
         assert item.all_dependencies() == expected
@@ -138,6 +153,7 @@ class TestMapDatasetItem:
             source_dataset="dataset",
             source_column="col",
             source_site="a-site",
+            source_site_identifier="BUNNY",
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
@@ -147,6 +163,7 @@ class TestMapDatasetItem:
             correction_configs={mock_config_correction},
             qc_configs={mock_config_qc},
             infill_configs={mock_config_infill},
+            method=MethodConfig(method_type=MethodType.LOAD),
         )
         expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
         assert item.all_dependencies() == expected
@@ -251,7 +268,7 @@ class TestExtractArguments:
         assert result == expected
 
 
-class TestMapMethodConfig:
+class TestMapProcessingMethodConfig:
     def test_simple_method_config(self) -> None:
         data = {
             "@id": "top_level_id",
@@ -271,9 +288,9 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model, MagicMock())
+        result = map_processing_method_config(api_model, MagicMock())
 
-        expected = MethodConfig(
+        expected = ProcessingMethodConfig(
             method="method_function_name",
             params={
                 "correction_factor": 0.98787,
@@ -306,9 +323,9 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model, MagicMock())
+        result = map_processing_method_config(api_model, MagicMock())
 
-        expected = MethodConfig(
+        expected = ProcessingMethodConfig(
             method="method_function_name",
             params={
                 "correction_factor": 0.98787,
@@ -353,9 +370,9 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model, MagicMock())
+        result = map_processing_method_config(api_model, MagicMock())
 
-        expected = MethodConfig(
+        expected = ProcessingMethodConfig(
             method="linear_linear",
             params={"window": 1, "max_gap_size": 6},
             start_date=datetime(2013, 1, 1, 0, 30, 0),
@@ -414,7 +431,7 @@ class TestMapProcessingConfigItem:
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_raw-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
-                MethodConfig(
+                ProcessingMethodConfig(
                     method="range",
                     params={"lt": 0, "gt": 1200},
                 )
@@ -435,7 +452,7 @@ class TestMapProcessingConfigItem:
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
-                MethodConfig(
+                ProcessingMethodConfig(
                     method="linear_linear",
                     params={"max_gap_size": 6, "window": 1},
                     start_date=datetime(2013, 1, 1, 0, 30, 0),
@@ -457,7 +474,7 @@ class TestMapProcessingConfigItem:
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/sgb0ag444qc40u99nsdo8n5m0kuscic7",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
-                MethodConfig(
+                ProcessingMethodConfig(
                     method="scalar",
                     params={"correction_factor": 0.98787},
                     start_date=datetime(2020, 8, 10, 9, 30, 0),

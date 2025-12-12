@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import time_stream as ts
 from time_stream.operation import Operation
 
-from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.utils.enums import OperationType
 
 
@@ -15,7 +15,17 @@ class AggregationMethod(Operation, ABC):
         pass
 
     @staticmethod
-    def _ts_aggregate(tf: ts.TimeFrame, config: MethodConfig, agg_func: str) -> ts.TimeFrame:
+    def _ts_aggregate(tf: ts.TimeFrame, config: ProcessingMethodConfig, agg_func: str) -> ts.TimeFrame:
+        """Run an aggregation using in-built methods in the Time-Stream package.
+
+        Args:
+            tf: TimeFrame to aggregate.
+            config: Configuration options for the aggregation method.
+            agg_func: The Time-Stream aggregation function to run.
+
+        Returns:
+            Aggregated TimeFrame.
+        """
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
 
@@ -33,7 +43,7 @@ class AggregationMethod(Operation, ABC):
 class Sum(AggregationMethod):
     name = "aggregate-sum"
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "sum")
 
 
@@ -41,7 +51,7 @@ class Sum(AggregationMethod):
 class Mean(AggregationMethod):
     name = "aggregate-mean"
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "mean")
 
 
@@ -49,7 +59,7 @@ class Mean(AggregationMethod):
 class Max(AggregationMethod):
     name = "aggregate-max"
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "max")
 
 
@@ -57,5 +67,5 @@ class Max(AggregationMethod):
 class Min(AggregationMethod):
     name = "aggregate-min"
 
-    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "min")

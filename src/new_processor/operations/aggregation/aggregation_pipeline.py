@@ -6,11 +6,10 @@ import logging
 
 import time_stream as ts
 
-from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.aggregation.aggregation_methods import AggregationMethod
 from new_processor.operations.flags.flag_methods import add_initial_core_flags
-from new_processor.utils.strings import extract_uri_id
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +30,15 @@ class AggregationPipeline:
         config = self._create_aggregation_method_config(container)
 
         method = AggregationMethod.get(config.method)
-        tf_agg = method.run(dep_container.data, config)
+        tf = method.run(dep_container.data, config)
 
-        tf_agg = self._rename_aggregation_columns(tf_agg, container.source_column, dep_container.source_column)
-        tf_agg = add_initial_core_flags(tf_agg)
+        tf = self._rename_aggregation_columns(tf, container.source_column, dep_container.source_column)
+        tf = add_initial_core_flags(tf)
 
-        return tf_agg
+        return tf
 
     @staticmethod
-    def _create_aggregation_method_config(container: TimeSeriesContainer) -> MethodConfig:
+    def _create_aggregation_method_config(container: TimeSeriesContainer) -> ProcessingMethodConfig:
         """Create the method config for the aggregation method.
 
         Args:
@@ -48,8 +47,8 @@ class AggregationPipeline:
         Returns:
             Method configuration properties
         """
-        return MethodConfig(
-            method=extract_uri_id(container.method),
+        return ProcessingMethodConfig(
+            method=container.method.name,
             params={"aggregation_period": ts.Period.of_iso_duration(container.periodicity)},
         )
 

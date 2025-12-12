@@ -5,10 +5,11 @@ from unittest.mock import MagicMock
 import pytest
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.method_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.utils.enums import ConfigurationType, ProcessingLevel
+from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 
 
 def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) -> TimeSeriesContainer:
@@ -29,6 +30,7 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         source_site=ts_id + "_site",
         source_column=ts_id + "_column",
         source_dataset=ts_id + "_dataset",
+        source_site_identifier=ts_id + "site_identifier",
         resolution=ts_id + "_resolution",
         periodicity=ts_id + "_periodicity",
         variable=ts_id + "_variable",
@@ -37,6 +39,7 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         qc_configs=set(),
         infill_configs=set(),
         correction_configs=set(),
+        method=MethodConfig(method_type=MethodType.LOAD),
     )
 
 
@@ -112,7 +115,7 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     monkeypatch.setattr(
         "new_processor.dag.dataset_dependency_graph.map_dataset_item",
-        lambda item, _: make_time_series_container(item["@id"]),
+        lambda item, _, __: make_time_series_container(item["@id"]),
     )
 
     monkeypatch.setattr(
@@ -406,7 +409,7 @@ class TestBuildResolver:
                     ts_id=i,
                     config_id="config_id",
                     config_type=ConfigurationType.QUALITY_CONTROL,
-                    method_configs=[MethodConfig(method="method_with_dependency", params={"dep_ts": d})],
+                    method_configs=[ProcessingMethodConfig(method="method_with_dependency", params={"dep_ts": d})],
                     annotations={},
                 )
                 for d in deps

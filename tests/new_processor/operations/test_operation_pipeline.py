@@ -5,7 +5,7 @@ import pytest
 import time_stream as ts
 from time_stream.exceptions import FlagSystemNotFoundError
 
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.operation_pipeline import OperationPipeline
 from new_processor.utils.enums import OperationType
@@ -47,7 +47,7 @@ def mock_container(mock_timeframe: MagicMock) -> MagicMock:
     container = MagicMock(spec=TimeSeriesContainer)
     container.data = mock_timeframe
 
-    method_config = MagicMock(spec=MethodConfig)
+    method_config = MagicMock(spec=ProcessingMethodConfig)
     method_config.method = "test_method"
 
     proc_config = MagicMock(spec=ProcessingConfig)

@@ -52,13 +52,8 @@ class DuckDBDataRouter(DataRouter):
         Returns:
             A Polars DataFrame containing the data.
         """
-
-        # TODO: Time column should not be hard coded. Where in metadata is best?
         # TODO: Bucket path (network=.../dataset=...) is specific to COSMOS raw bucket.  How to make this generic?
         # TODO: Network is not a partition on the RAW bucket, but is on the PROCESSED bucket - reconcile?
-        # TODO: Site ID in metadata is different (e.g. cosmos-bunny vs. BUNNY)
-
-        site_hack = container.source_site.split("-")[1].upper()
 
         partitions = [
             f"{container.network}",
@@ -75,5 +70,5 @@ class DuckDBDataRouter(DataRouter):
                 (date BETWEEN ? AND ?) AND
                 site = ?;
         """
-        params = [start_date, end_date, site_hack]
+        params = [start_date, end_date, container.source_site_identifier]
         return self.reader.read(query, params)

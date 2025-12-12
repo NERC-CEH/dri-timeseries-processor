@@ -13,22 +13,26 @@ from new_processor.models.api_models.annotation import HasAnnotationItem
 from new_processor.models.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem
+from new_processor.models.api_models.dataset_timeseries import Methodology, TimeSeriesDatasetItem
 from new_processor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
 from new_processor.models.api_models.site import SiteItem
-from new_processor.models.domain_models.processing_config import MethodConfig, ProcessingConfig
+from new_processor.models.domain_models.method_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesContainer:
+def map_dataset_item(
+    item: TimeSeriesDatasetItem, network: str, all_site_metadata: dict[str, SiteMetadata]
+) -> TimeSeriesContainer:
     """Map a Pydantic TimeSeriesDatasetItem to a domain-level TimeSeriesContainer.
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
-        network: The network that this model belongs to TODO: Ideally this would be in the metadata API response
+        network: The network that this model belongs to
+        all_site_metadata: Metadata for sites.
 
     Returns:
         A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
@@ -38,18 +42,10 @@ def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesCon
 
     processing_level = ProcessingLevel(extract_uri_id(info.processing_level.id))
     variable = info.measure.variable.pref_label[0]
-    source_site = extract_uri_id(item.originating_site[0].id)
-
-    methodology = info.methodology
-    method_config = methodology.configuration if methodology else None
-    method_type = method_config.type.id if method_config else None
-    method_current_config = method_config.has_current_configuration[0] if method_config else None
-    method = method_current_config.method.id if method_current_config and method_current_config.method else None
-
-    if method_type:
-        method_type = MethodType(extract_uri_id(method_type))
-    else:
-        method_type = MethodType.LOAD
+    metadata_site_id = item.originating_site[0].id
+    source_site = extract_uri_id(metadata_site_id)
+    source_site_identifier = all_site_metadata[metadata_site_id].alt_id
+    method_config = map_method_config(info.methodology)
 
     depends_on = [d.id for d in item.depends_on]
     direct_depends_on = [d.id for d in item.direct_depends_on]
@@ -66,11 +62,33 @@ def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesCon
         source_dataset=item.source_dataset,
         source_column=item.source_column_name,
         source_site=source_site,
-        method_type=method_type,
-        method=method,
+        source_site_identifier=source_site_identifier,
+        method=method_config,
         depends_on=depends_on,
         direct_depends_on=direct_depends_on,
     )
+
+
+def map_method_config(methodology: Methodology) -> MethodConfig:
+    """Map a dataset's methodology metadata into a MethodConfig domain model.
+
+    Args:
+        methodology: A single configuration definition for a dataset's methodology
+
+    Returns:
+        A MethodConfig object describing the method
+    """
+    # TODO: Could add a specific LOAD methodology to the metadata - yes
+    if methodology is None:
+        return MethodConfig(method_type=MethodType.LOAD)
+
+    method_config = methodology.configuration
+    method_type = MethodType(extract_uri_id(method_config.type.id))
+
+    method_current_config = method_config.has_current_configuration[0]
+    method = extract_uri_id(method_current_config.method.id) if method_current_config.method else None
+
+    return MethodConfig(config_id=method_config.id, method_type=method_type, name=method)
 
 
 def map_processing_config_item(
@@ -96,7 +114,7 @@ def map_processing_config_item(
 
     site_metadata = all_site_metadata[site_id]
 
-    method_configs = [map_method_config(cfg, site_metadata) for cfg in item.has_current_configuration or []]
+    method_configs = [map_processing_method_config(cfg, site_metadata) for cfg in item.has_current_configuration or []]
 
     return ProcessingConfig(
         ts_id=ts_id,
@@ -107,8 +125,10 @@ def map_processing_config_item(
     )
 
 
-def map_method_config(current_config: HasCurrentConfigurationItem, site_metadata: SiteMetadata) -> MethodConfig:
-    """Map a HasCurrentConfigurationItem into a MethodConfig domain model.
+def map_processing_method_config(
+    current_config: HasCurrentConfigurationItem, site_metadata: SiteMetadata
+) -> ProcessingMethodConfig:
+    """Map a HasCurrentConfigurationItem into a ProcessingMethodConfig domain model.
 
     Args:
         current_config: A single configuration definition for a method, possibly including an observation interval and
@@ -116,7 +136,7 @@ def map_method_config(current_config: HasCurrentConfigurationItem, site_metadata
         site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
-        A MethodConfig object describing a configuration of a processing method.
+        A ProcessingMethodConfig object describing a configuration of a processing method.
     """
     method = extract_uri_id(current_config.method.id)
     params = extract_arguments(current_config.argument, site_metadata)
@@ -126,7 +146,7 @@ def map_method_config(current_config: HasCurrentConfigurationItem, site_metadata
         start_date = current_config.observation_interval.start_date
         end_date = current_config.observation_interval.end_date
 
-    return MethodConfig(
+    return ProcessingMethodConfig(
         method=method,
         params=params,
         start_date=start_date,

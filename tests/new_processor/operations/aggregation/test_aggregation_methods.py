@@ -4,12 +4,12 @@ import polars as pl
 import time_stream as ts
 from polars.testing import assert_frame_equal
 
-from new_processor.models.domain_models.processing_config import MethodConfig
+from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.operations.aggregation.aggregation_methods import Max, Mean, Min, Sum
 from utils.data_creation import create_timeframe
 
 
-def create_method_config(periodicity: ts.Period) -> MethodConfig:
+def create_method_config(periodicity: ts.Period) -> ProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -18,7 +18,7 @@ def create_method_config(periodicity: ts.Period) -> MethodConfig:
     Returns:
         MethodConfig for testing
     """
-    return MethodConfig(
+    return ProcessingMethodConfig(
         method="test",
         params={"aggregation_period": periodicity},
     )
