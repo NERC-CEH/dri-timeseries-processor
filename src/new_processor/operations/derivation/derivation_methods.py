@@ -1,4 +1,6 @@
+import math
 from abc import ABC, abstractmethod
+from typing import ClassVar
 
 import polars as pl
 import time_stream as ts
@@ -11,17 +13,56 @@ from new_processor.utils.time_stream_utils import merge_multiple_timeframes
 
 class DerivationMethod(Operation, ABC):
     operation_type: OperationType.DERIVATION
+    inputs: ClassVar[tuple]
+
+    def run(self, config: ProcessingMethodConfig) -> ts.TimeFrame:
+        """Execute the common workflow to carry out a derivation calculation.
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs
+
+        Returns:
+            TimeFrame containing the calculated derived variable
+        """
+        # Extract and merge input data
+        tf_map = {name: config.params[name] for name in self.inputs}
+        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
+
+        # Get column references for calculation
+        columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
+
+        # Perform the calculation (subclass-specific)
+        calculation_expr = self.expr(columns).alias(config.params["output_col"])
+        result_df = merged_tf.df.with_columns(calculation_expr)
+
+        # Build output TimeFrame
+        return (
+            ts.TimeFrame(
+                df=result_df,
+                time_name=merged_tf.time_name,
+                resolution=config.params["resolution"],
+                periodicity=config.params["periodicity"],
+            )
+            .with_metadata({"column_name": config.params["output_col"]})
+            .select(config.params["output_col"])
+        )
 
     @abstractmethod
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Define the calculation expression for this derivation.
+
+        Args:
+            columns: Dictionary mapping variable names to Polars column expressions
+
+        Returns:
+            Polars expression that computes the derived variable
+        """
         pass
 
 
 @DerivationMethod.register
 class NetRadiation(DerivationMethod):
-    """Calculate net radiation:
-
-    RN = SWIN - SWOUT + LWIN - LWOUT
+    """Calculate net radiation
 
     Expects MethodConfig.params to contain:
     {
@@ -36,40 +77,21 @@ class NetRadiation(DerivationMethod):
     """
 
     name = "calculate-calculate_rn"
+    inputs = ("swin", "swout", "lwin", "lwout")
 
-    def run(self, config: ProcessingMethodConfig) -> ts.TimeFrame:
-        """Run net radiation calculation
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate net radiation (rn) [W m-2]
 
         Args:
-            config: Configuration parameters to run this method.
+            columns: Dict with keys of required columns for the calculation.
 
         Returns:
-            Resulting TimeFrame.
+            Polars expression computing rn
         """
-        tf_map: dict[str, ts.TimeFrame] = {name: config.params[name] for name in ("swin", "swout", "lwin", "lwout")}
-
-        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
-        time_name = merged_tf.time_name
-
-        # Extract required config
-        output_col = config.params["output_col"]
-        resolution = config.params["resolution"]
-        periodicity = config.params["periodicity"]
-
-        swin_col = pl.col(tf_map["swin"].metadata["column_name"])
-        swout_col = pl.col(tf_map["swout"].metadata["column_name"])
-        lwin_col = pl.col(tf_map["lwin"].metadata["column_name"])
-        lwout_col = pl.col(tf_map["lwout"].metadata["column_name"])
-
-        # Do the calculation
-        result = merged_tf.df.with_columns((swin_col - swout_col + lwin_col - lwout_col).alias(output_col))
-
-        # Create and return TimeFrame with the result
-        return ts.TimeFrame(
-            df=result, time_name=time_name, resolution=resolution, periodicity=periodicity
-        ).with_metadata({"column_name": output_col})
+        return columns["swin"] - columns["swout"] + columns["lwin"] - columns["lwout"]
 
 
+@DerivationMethod.register
 class PET30Min(DerivationMethod):
     """Calculate Potential Evapotranspiration (PET) (30 min).
 
@@ -92,7 +114,7 @@ class PET30Min(DerivationMethod):
         "ta": <TimeFrame> Air temperature [degC]
         "rh": <TimeFrame> Relative humidity [%]
         "ws": <TimeFrame> Wind speed at 2m height [ms-1]
-        "pa": <TimeFrame> Atmospheric pressure [kPa]
+        "pa": <TimeFrame> Atmospheric pressure [hPa]
         "output_col": <str> Required name of output
         "resolution": <str> Expected output resolution
         "periodicity": <str> Expected output periodicity
@@ -100,70 +122,47 @@ class PET30Min(DerivationMethod):
     """
 
     name = "calculate-calculate_pe"
+    inputs = ("g1", "g2", "pa", "rh", "rn", "ta", "ws")
 
-    def run(self, config: ProcessingMethodConfig) -> ts.TimeFrame:
-        tf_map: dict[str, ts.TimeFrame] = {
-            name: config.params[name] for name in ("rn", "g1", "g2", "ta", "rh", "ws", "pa")
-        }
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate potential evapotranspiration (pet) [mm day-1]
 
-        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
-        time_name = merged_tf.time_name
+        Args:
+            columns: Dict with keys of required columns for the calculation.
 
-        # Extract required config
-        output_col = config.params["output_col"]
-        resolution = config.params["resolution"]
-        periodicity = config.params["periodicity"]
-
-        rn_col = pl.col(tf_map["rn"].metadata["column_name"])
-        g1_col = pl.col(tf_map["g1"].metadata["column_name"])
-        g2_col = pl.col(tf_map["g2"].metadata["column_name"])
-        ta_col = pl.col(tf_map["ta"].metadata["column_name"])
-        rh_col = pl.col(tf_map["rh"].metadata["column_name"])
-        ws_col = pl.col(tf_map["ws"].metadata["column_name"])
-        pa_col = pl.col(tf_map["pa"].metadata["column_name"])
+        Returns:
+            Polars expression computing pet
+        """
+        g1 = columns["g1"]
+        g2 = columns["g2"]
+        pa = columns["pa"]
+        rh = columns["rh"]
+        rn = columns["rn"]
+        ta = columns["ta"]
+        ws = columns["ws"]
 
         # Soil heat flux: average of g1 and g2
         # TODO: Is this a COSMOS specific thing that we have two G columns?
-        g = pl.mean_horizontal(g1_col, g2_col)
+        #   yes - have a new dependent dataset for G
+        g = pl.mean_horizontal(g1, g2)
 
-        # Saturation vapour pressure (es)
-        # Steps taken from FAO-56 method (eq11) https://www.fao.org/4/x0490e/x0490e07.htm#calculation%20procedures
-        es = 0.6108 * ((17.27 * ta_col) / (ta_col + 237.3)).exp()
-
-        # Actual vapour pressure (ea)
-        # Steps taken from FAO-56 1-hour method (eq54) https://www.fao.org/4/x0490e/x0490e08.htm
-        ea = es * (rh_col / 100)
-
-        # Vapour pressure deficit
-        vpd = es - ea
-
-        # Slope of vapour pressure curve (delta)
-        # Steps taken from FAO-56 method (eq13) https://www.fao.org/4/x0490e/x0490e07.htm#calculation%20procedures
-        delta = (4098 * es) / ((ta_col + 237.3) ** 2)
-
-        # Latent heat of vaporization (MJ/kg)
-        # Steps taken from Harrison (1963), referenced by FAO Annex 3 https://www.fao.org/4/x0490e/x0490e0k.htm
-        #
-        #         Harrison, L.P. 1963. "Fundamental concepts and definitions relating to humidity."
-        #             In: Wexler, A. & Wildhack, W.A. (eds.) Humidity and Moisture. Vol. 3.
-        #             Reinhold Publishing Company, New York
-        lv = 2.501 - (2.361e-3 * ta_col)
-
-        # Psychrometric constant (gamma)
-        # Steps taken from FAO-56 method (eq8) https://www.fao.org/4/x0490e/x0490e07.htm#psychrometric%20constant%20(g)
-        cp = 1.013e-3
-        e_ratio = 0.622
-        gamma = (cp * (pa_col / 10)) / (e_ratio * lv)
-
-        # Convert wind speed to 2m height
-        # Steps taken from FAO-56 method (eq47) https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
         # TODO: get wind height from metadata
         wind_height = 2.6
-        ws_2m = ws_col * (4.87 / pl.ln((67.8 * wind_height) - 5.42))
+
+        es = self.saturation_vapour_pressure(ta)
+        ea = self.actual_vapour_pressure(es, rh)
+        vpd = es - ea  # Vapour pressure deficit
+        delta = self.vapour_pressure_curve_slope(es, ta)
+        lv = self.latent_heat_of_vaporization(ta)
+        gamma = self.psychrometric_constant(pa, lv)
+        ws_2m = self.wind_speed_height_correction(ws, wind_height)
 
         # Convert RN and G from W/m2 - MJ per 30 min (if upstream provides W/m2)
         # TODO: How do we know this needs doing? Interrogate units in metadata?
-        rn_mj = rn_col * 0.0018
+        #       Or have an "interim" function that does necessary unit conversions?
+        #       Or have a new dependent dataset for the converted units
+        #       Or mandate that the input variables are in W/m2 (so upstream has to deal with unit conversions)
+        rn_mj = rn * 0.0018
         g_mj = g * 0.0018
 
         # FAO constants
@@ -184,15 +183,100 @@ class PET30Min(DerivationMethod):
 
         # PET equation (FAO-56, adapted to 30-minute)
         radiation_term = 0.408 * delta * (rn_mj - g_mj)
-        aerodynamic_term = gamma * (reference_crop_type_numerator / (ta_col + 273)) * ws_2m * vpd
+        aerodynamic_term = gamma * (reference_crop_type_numerator / (ta + 273)) * ws_2m * vpd
         resistance_term = delta + gamma * (1 + (reference_crop_type_denominator * ws_2m))
 
-        pet_expr = (radiation_term + aerodynamic_term) / resistance_term
+        return (radiation_term + aerodynamic_term) / resistance_term
 
-        # Do the final calculation
-        result = merged_tf.df.with_columns(pet_expr.alias(output_col))
+    @staticmethod
+    def saturation_vapour_pressure(ta: pl.Expr) -> pl.Expr:
+        """Saturation vapour pressure (es) [kPa]
 
-        # Create and return TimeFrame with the result
-        return ts.TimeFrame(
-            df=result, time_name=time_name, resolution=resolution, periodicity=periodicity
-        ).with_metadata({"column_name": output_col})
+        Steps taken from FAO-56 method (eq11) https://www.fao.org/4/x0490e/x0490e07.htm#calculation%20procedures
+
+        Args:
+            ta: Air temperature [degC]
+
+        Returns:
+            Polars expression to calculate es
+        """
+        return 0.6108 * ((17.27 * ta) / (ta + 237.3)).exp()
+
+    @staticmethod
+    def actual_vapour_pressure(es: pl.Expr, rh: pl.Expr) -> pl.Expr:
+        """Actual vapour pressure (ea) [kPa]
+
+        Steps taken from FAO-56 1-hour method (eq54) https://www.fao.org/4/x0490e/x0490e08.htm
+
+        Args:
+            es: Saturation vapour pressure [kPa]
+            rh: Relative humidity [%]
+
+        Returns:
+            Polars expression to calculate ea
+        """
+        return es * (rh / 100)
+
+    @staticmethod
+    def vapour_pressure_curve_slope(es: pl.Expr, ta: pl.Expr) -> pl.Expr:
+        """Slope of vapour pressure curve (delta) [kPa degC-1]
+
+        Steps taken from FAO-56 method (eq13) https://www.fao.org/4/x0490e/x0490e07.htm#calculation%20procedures
+
+        Args:
+            es: Saturation vapour pressure [kPa]
+            ta: Air temperature [degC]
+
+        Returns:
+            Polars expression to calculate delta
+        """
+        return (4098 * es) / ((ta + 237.3) ** 2)
+
+    @staticmethod
+    def latent_heat_of_vaporization(ta: pl.Expr) -> pl.Expr:
+        """Latent heat of vaporization (lambda) [MJ kg-1]
+
+        Steps taken from Harrison (1963), referenced by FAO Annex 3 https://www.fao.org/4/x0490e/x0490e0k.htm
+
+        Harrison, L.P. 1963. "Fundamental concepts and definitions relating to humidity."
+            In: Wexler, A. & Wildhack, W.A. (eds.) Humidity and Moisture. Vol. 3. Reinhold Publishing Company, New York
+
+        Args:
+            ta: Air temperature [degC]
+
+        Returns:
+            Polars expression to calculate lambda
+        """
+        return 2.501 - (2.361e-3 * ta)
+
+    @staticmethod
+    def psychrometric_constant(pa: pl.Expr, lv: pl.Expr) -> pl.Expr:
+        """Psychrometric constant (gamma) [kPa degC-1]
+
+        Steps taken from FAO-56 method (eq8) https://www.fao.org/4/x0490e/x0490e07.htm#psychrometric%20constant%20(g)
+
+        Args:
+            pa: Atmospheric pressure [hPa]
+            lv: Latent heat of vaporization [MJ/kg]
+
+        Returns:
+            Polars expression to calculate gamma
+        """
+        cp = 1.013e-3  # Specific heat at constant pressure
+        e_ratio = 0.622  # Ratio molecular weight of water vapour/dry air
+        return (cp * (pa / 10)) / (e_ratio * lv)
+
+    @staticmethod
+    def wind_speed_height_correction(ws: pl.Expr, measured_height: float) -> pl.Expr:
+        """Convert wind speed to 2m height [ms-1]
+
+        Steps taken from FAO-56 method (eq47) https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
+
+        Args:
+            ws: Wind speed measured at given height [ms-1]
+            measured_height: The height the wind was measured at [m]
+
+        Returns:
+            Polars expression to calculate gamma
+        """
+        return ws * (4.87 / math.log((67.8 * measured_height) - 5.42))
