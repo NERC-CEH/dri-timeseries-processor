@@ -18,4 +18,3 @@ class MethodConfig:
     method_type: MethodType
     config_id: str | None = None
     name: str | None = None
-    uses: list[str] | None = None

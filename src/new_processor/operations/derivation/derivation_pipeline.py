@@ -36,6 +36,15 @@ class DerivationPipeline:
     def _create_derivation_method_config(
         container: TimeSeriesContainer, dataset_repository: dict[str, TimeSeriesContainer]
     ) -> ProcessingMethodConfig:
+        """Create the method config for the derivation.
+
+        Args:
+            container: Time series container containing the metadata needed for the derivation method.
+            dataset_repository: Repository for accessing additional datasets.
+
+        Returns:
+            Method configuration properties
+        """
         params: dict[str, Any] = {
             "output_col": container.source_column,
             "resolution": container.resolution,

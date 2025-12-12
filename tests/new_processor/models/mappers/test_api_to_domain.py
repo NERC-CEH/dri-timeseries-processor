@@ -47,7 +47,6 @@ class TestMapDatasetItem:
                 config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_1day_processed",
                 method_type=MethodType.DERIVATION,
                 name="calculate-calc_daily_radiation",
-                uses=["http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed"],
             ),
             depends_on=[
                 "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw",

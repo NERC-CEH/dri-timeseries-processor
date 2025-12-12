@@ -83,10 +83,7 @@ def map_method_config(methodology: Methodology) -> MethodConfig:
     method_current_config = method_config.has_current_configuration[0]
     method = extract_uri_id(method_current_config.method.id) if method_current_config.method else None
 
-    # TODO: Probably not actually that useful to have the "uses" - these are timeseries IDs, rather than dataset IDs
-    uses = [d.id for d in methodology.uses]
-
-    return MethodConfig(config_id=method_config.id, method_type=method_type, name=method, uses=uses)
+    return MethodConfig(config_id=method_config.id, method_type=method_type, name=method)
 
 
 def map_processing_config_item(
