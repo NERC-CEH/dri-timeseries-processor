@@ -9,6 +9,7 @@ from new_processor.models.api_models.data_processing_configuration import DataPr
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
 from new_processor.models.api_models.site import SiteItem
+from new_processor.models.domain_models.method_config import MethodConfig
 from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
@@ -16,8 +17,8 @@ from new_processor.models.mappers.api_to_domain import (
     extract_annotations,
     extract_arguments,
     map_dataset_item,
-    map_method_config,
     map_processing_config_item,
+    map_processing_method_config,
     map_site_metadata,
 )
 from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
@@ -42,8 +43,12 @@ class TestMapDatasetItem:
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
             variable="Net radiation",
-            method_type=MethodType.DERIVATION,
-            method="http://fdri.ceh.ac.uk/ref/common/method/calculate-calc_daily_radiation",
+            method=MethodConfig(
+                config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_1day_processed",
+                method_type=MethodType.DERIVATION,
+                name="calculate-calc_daily_radiation",
+                uses=["http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed"],
+            ),
             depends_on=[
                 "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw",
                 "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_processed",
@@ -82,8 +87,7 @@ class TestMapDatasetItem:
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
             variable="Air temperature",
-            method_type=MethodType.LOAD,
-            method=None,
+            method=MethodConfig(method_type=MethodType.LOAD),
             depends_on=[],
             direct_depends_on=[],
             correction_configs=set(),
@@ -111,6 +115,7 @@ class TestMapDatasetItem:
             variable="variable",
             depends_on=["dep1", "dep2", "dep3"],
             direct_depends_on=["dep1"],
+            method=MethodConfig(method_type=MethodType.LOAD),
         )
         expected = ["dep1", "dep2", "dep3"]
         assert item.all_dependencies() == expected
@@ -147,6 +152,7 @@ class TestMapDatasetItem:
             correction_configs={mock_config_correction},
             qc_configs={mock_config_qc},
             infill_configs={mock_config_infill},
+            method=MethodConfig(method_type=MethodType.LOAD),
         )
         expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
         assert item.all_dependencies() == expected
@@ -251,7 +257,7 @@ class TestExtractArguments:
         assert result == expected
 
 
-class TestMapMethodConfig:
+class TestMapProcessingMethodConfig:
     def test_simple_method_config(self) -> None:
         data = {
             "@id": "top_level_id",
@@ -271,7 +277,7 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model, MagicMock())
+        result = map_processing_method_config(api_model, MagicMock())
 
         expected = ProcessingMethodConfig(
             method="method_function_name",
@@ -306,7 +312,7 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model, MagicMock())
+        result = map_processing_method_config(api_model, MagicMock())
 
         expected = ProcessingMethodConfig(
             method="method_function_name",
@@ -353,7 +359,7 @@ class TestMapMethodConfig:
         }
 
         api_model = HasCurrentConfigurationItem.model_validate(data)
-        result = map_method_config(api_model, MagicMock())
+        result = map_processing_method_config(api_model, MagicMock())
 
         expected = ProcessingMethodConfig(
             method="linear_linear",

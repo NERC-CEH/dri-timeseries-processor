@@ -5,10 +5,11 @@ from unittest.mock import MagicMock
 import pytest
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from new_processor.models.domain_models.method_config import MethodConfig
 from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.site_metadata import SiteMetadata
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
-from new_processor.utils.enums import ConfigurationType, ProcessingLevel
+from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 
 
 def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) -> TimeSeriesContainer:
@@ -37,6 +38,7 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         qc_configs=set(),
         infill_configs=set(),
         correction_configs=set(),
+        method=MethodConfig(method_type=MethodType.LOAD),
     )
 
 

@@ -25,7 +25,7 @@ class TestCreateAggregationMethodConfig:
 
         container = MagicMock()
         container.periodicity = "PT1H"
-        container.method = "http://example.com/id/method_id"
+        container.method.name = "method_id"
 
         result = pipeline._create_aggregation_method_config(container)
 
