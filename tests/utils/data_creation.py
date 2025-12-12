@@ -21,7 +21,11 @@ def create_timeframe(values: list[float] | None = None, column_name: str = "valu
 
 
 def dataframe_to_timeframe(
-    df: pl.DataFrame, time_name: str = "time", resolution: str | None = None, metadata: dict | None = None
+    df: pl.DataFrame,
+    time_name: str = "time",
+    resolution: str | None = None,
+    metadata: dict | None = None,
+    time_shift: int = 0,
 ) -> ts.TimeFrame:
     """Convert a Polars DataFrame to a ts.TimeFrame object.
 
@@ -34,12 +38,13 @@ def dataframe_to_timeframe(
         time_name: Name of the time column
         resolution: Resolution if the df contains a time column
         metadata: Optional metadata to add to the TimeFrame
+        time_shift: Optional shift for the time column (useful for tests that need different time steps)
 
     Returns:
         TimeFrame object
     """
     if time_name not in df.columns:
-        date_list = [datetime(2025, 1, 1) + timedelta(hours=h) for h in range(len(df))]
+        date_list = [datetime(2025, 1, 1) + timedelta(hours=h + time_shift) for h in range(len(df))]
         df = df.with_columns(pl.Series(name=time_name, values=date_list))
         # Reorder columns to put "time" first
         df = df.select([time_name] + [col for col in df.columns if col != time_name])

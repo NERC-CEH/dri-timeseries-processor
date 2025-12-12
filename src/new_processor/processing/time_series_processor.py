@@ -113,7 +113,6 @@ class TimeSeriesProcessor:
         tf = TimeFrame(
             df=df, time_name="time", resolution=container.resolution, periodicity=container.periodicity
         ).with_metadata({"column_name": container.source_column})
-        # TODO: Do we need to do this metadata really? We could just pass the container around that has this info
 
         tf = add_initial_core_flags(tf)
         container.data = tf

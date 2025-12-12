@@ -24,7 +24,6 @@ class Add(CorrectionMethod):
     name = "add"
     flag_value = 1
 
-    # TODO: Should we pass the container into these methods rather than just the tf ?
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(

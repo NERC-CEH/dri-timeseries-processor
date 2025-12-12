@@ -6,6 +6,7 @@ from polars.testing import assert_frame_equal
 
 from new_processor.utils.polars_utils import (
     merge_dataframes,
+    merge_multiple,
     missing_expr,
     not_missing_expr,
     split_by_date,
@@ -163,3 +164,51 @@ class TestNotMissingExpr:
         df = pl.DataFrame({"value": [10, None, 30, float("nan"), 50]}, strict=False)
         result = df.with_columns(expr.alias("is_not_missing"))
         assert result["is_not_missing"].to_list() == [True, False, True, False, True]
+
+
+class TestMergeMultiple:
+    def test_merge_two(self) -> None:
+        """Merge two DataFrames with matching rows."""
+        df1 = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
+        df2 = pl.DataFrame({"id": [1, 2, 3], "b": [5, 10, 15]})
+
+        result = merge_multiple([df1, df2], join_col="id")
+        expected = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30], "b": [5, 10, 15]})
+
+        assert_frame_equal(result, expected)
+
+    def test_merge_two_offset(self) -> None:
+        """Merge two DataFrames with overlapping join column values."""
+        df1 = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
+        df2 = pl.DataFrame({"id": [2, 3, 4], "b": [5, 10, 15]})
+
+        result = merge_multiple([df1, df2], join_col="id")
+        expected = pl.DataFrame({"id": [1, 2, 3, 4], "a": [10, 20, 30, None], "b": [None, 5, 10, 15]})
+
+        assert_frame_equal(result, expected, check_row_order=False)
+
+    def test_merge_single(self) -> None:
+        """Test that a single dataframe passes through"""
+        df1 = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
+        result = merge_multiple([df1], join_col="id")
+        assert_frame_equal(result, df1)
+
+    def test_merge_multiple(self) -> None:
+        """Merge multiple DataFrames"""
+        df1 = pl.DataFrame({"id": [1, 2, 3], "a": [10, 20, 30]})
+        df2 = pl.DataFrame({"id": [1, 2, 3], "b": [5, 10, 15]})
+        df3 = pl.DataFrame({"id": [2, 3, 4], "c": [100, 200, 300]})
+        df4 = pl.DataFrame({"id": [5, 6, 7], "d": [50, 100, 150]})
+
+        result = merge_multiple([df1, df2, df3, df4], join_col="id")
+        expected = pl.DataFrame(
+            {
+                "id": [1, 2, 3, 4, 5, 6, 7],
+                "a": [10, 20, 30, None, None, None, None],
+                "b": [5, 10, 15, None, None, None, None],
+                "c": [None, 100, 200, 300, None, None, None],
+                "d": [None, None, None, None, 50, 100, 150],
+            }
+        )
+
+        assert_frame_equal(result, expected, check_row_order=False)
