@@ -24,12 +24,15 @@ from new_processor.utils.enums import ConfigurationType, MethodType, ProcessingL
 from new_processor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesContainer:
+def map_dataset_item(
+    item: TimeSeriesDatasetItem, network: str, all_site_metadata: dict[str, SiteMetadata]
+) -> TimeSeriesContainer:
     """Map a Pydantic TimeSeriesDatasetItem to a domain-level TimeSeriesContainer.
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
-        network: The network that this model belongs to TODO: Ideally this would be in the metadata API response
+        network: The network that this model belongs to
+        all_site_metadata: Metadata for sites.
 
     Returns:
         A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
@@ -39,8 +42,9 @@ def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesCon
 
     processing_level = ProcessingLevel(extract_uri_id(info.processing_level.id))
     variable = info.measure.variable.pref_label[0]
-    source_site = extract_uri_id(item.originating_site[0].id)
-
+    metadata_site_id = item.originating_site[0].id
+    source_site = extract_uri_id(metadata_site_id)
+    source_site_identifier = all_site_metadata[metadata_site_id].alt_id
     method_config = map_method_config(info.methodology)
 
     depends_on = [d.id for d in item.depends_on]
@@ -58,6 +62,7 @@ def map_dataset_item(item: TimeSeriesDatasetItem, network: str) -> TimeSeriesCon
         source_dataset=item.source_dataset,
         source_column=item.source_column_name,
         source_site=source_site,
+        source_site_identifier=source_site_identifier,
         method=method_config,
         depends_on=depends_on,
         direct_depends_on=direct_depends_on,
@@ -73,7 +78,7 @@ def map_method_config(methodology: Methodology) -> MethodConfig:
     Returns:
         A MethodConfig object describing the method
     """
-    # TODO: Could add a specific LOAD methodology to the metadata
+    # TODO: Could add a specific LOAD methodology to the metadata - yes
     if methodology is None:
         return MethodConfig(method_type=MethodType.LOAD)
 

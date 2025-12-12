@@ -31,7 +31,6 @@ class CorrectionPipeline(OperationPipeline):
         Returns:
             Result of applying the correction method.
         """
-
         params = config.params
 
         # Name any dependent timeseries with their column names
@@ -40,18 +39,8 @@ class CorrectionPipeline(OperationPipeline):
             dep_ids = [dep_ids]
 
         for dep_id in dep_ids:
-            # TODO: Should we pass the container into the config rather than just the tf ?
             dep_tf = dataset_repository[dep_id].data
             dep_name = dep_tf.metadata["column_name"].lower()
-
-            # TODO - I think we should rename "dep_ts" in the config to "lw_unc" (in this example)
-            # This is currently a workaround for the lw_corr method.  This method runs on both LWOUT and LWIN
-            # datasets, requiring the LWOUT_UNC and LWIN_UNC dependent datasets. To keep the method generic for
-            # both, the method expects the generic name of "LW_UNC" to be used.
-            if config.method == "lw_corr":
-                if dep_name in ["lwout_unc", "lwin_unc"]:
-                    dep_name = "lw_unc"
-
             params[dep_name] = dep_tf
 
         method = CorrectionMethod.get(config.method)

@@ -29,6 +29,7 @@ def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
         source_site=ts_id + "_site",
         source_column=ts_id + "_column",
         source_dataset=ts_id + "_dataset",
+        source_site_identifier=ts_id + "_site_identifier",
         resolution="P1D",
         periodicity="P1D",
         variable=ts_id + "_variable",

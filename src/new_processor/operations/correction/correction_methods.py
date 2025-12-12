@@ -43,7 +43,7 @@ class LWCorrection(CorrectionMethod):
     flag_value = 2
 
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
-        lw_unc_tf = config.params["lw_unc"]
+        lw_unc_tf = self._get_lw_unc(config)
         ta_tf = config.params["ta"]
 
         lw_unc_col = lw_unc_tf.metadata["column_name"]
@@ -68,6 +68,28 @@ class LWCorrection(CorrectionMethod):
                 .otherwise(pl.col(tf.metadata["column_name"]))
             )
         )
+
+    @staticmethod
+    def _get_lw_unc(config: ProcessingMethodConfig) -> ts.TimeFrame:
+        """Retrieve the longwave radiation uncorrected (lw_unc) TimeFrame from processing configuration.
+
+        This supports processing methods that operate on either LWIN or LWOUT datasets, each of which depends on
+        a corresponding uncorrected time series (LWIN_UNC or LWOUT_UNC). To keep downstream logic generic,
+        this function resolves exactly one of these parameters and returns it as the longwave uncertainty input.
+
+        Args:
+            config: Configuration of the correction method.
+
+        Returns:
+            The lw_unc TimeFrame corresponding to either LWIN_UNC or LWOUT_UNC
+        """
+        possible_keys = {"lwin_unc", "lwout_unc"}
+        found_keys = possible_keys & config.params.keys()
+
+        if len(found_keys) != 1:
+            raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
+
+        return config.params[found_keys.pop()]
 
 
 @CorrectionMethod.register

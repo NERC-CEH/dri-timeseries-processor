@@ -29,7 +29,11 @@ class TestMapDatasetItem:
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_rn_1day_processed.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
-        result = map_dataset_item(api_model.items[0], "network")
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "BUNNY"
+        site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
+
+        result = map_dataset_item(api_model.items[0], "network", site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
@@ -39,6 +43,7 @@ class TestMapDatasetItem:
             source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
             source_site="cosmos-bunny",
+            source_site_identifier="BUNNY",
             resolution="P1D",
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
@@ -72,7 +77,11 @@ class TestMapDatasetItem:
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_ta_30min_raw.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
-        result = map_dataset_item(api_model.items[0], "network")
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "BUNNY"
+        site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
+
+        result = map_dataset_item(api_model.items[0], "network", site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
@@ -82,6 +91,7 @@ class TestMapDatasetItem:
             source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
             source_site="cosmos-bunny",
+            source_site_identifier="BUNNY",
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
@@ -108,6 +118,7 @@ class TestMapDatasetItem:
             source_dataset="dataset",
             source_column="col",
             source_site="a-site",
+            source_site_identifier="BUNNY",
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
@@ -142,6 +153,7 @@ class TestMapDatasetItem:
             source_dataset="dataset",
             source_column="col",
             source_site="a-site",
+            source_site_identifier="BUNNY",
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,

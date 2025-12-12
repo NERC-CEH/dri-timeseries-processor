@@ -19,7 +19,7 @@ class QcMethod(Operation, ABC):
 @QcMethod.register
 class Range(QcMethod):
     name = "range"
-    flag_value = 1  # TODO : should these be in metadata?
+    flag_value = 1  # TODO : should these be in metadata? - yes
 
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return tf.qc_check(

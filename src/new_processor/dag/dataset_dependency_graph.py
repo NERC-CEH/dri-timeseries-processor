@@ -275,7 +275,8 @@ class DatasetDependencyGraph:
         """
         all_containers = []
         for item in dataset_response.items:
-            container = map_dataset_item(item, self.network)
+            # TODO: The network will eventually be in the metadata API response
+            container = map_dataset_item(item, self.network, self.site_metadata)
             self._dataset_cache[container.ts_id] = container
             all_containers.append(container)
         return all_containers

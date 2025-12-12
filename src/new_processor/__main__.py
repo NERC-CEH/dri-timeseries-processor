@@ -34,15 +34,12 @@ if __name__ == "__main__":
     builder = DatasetDependencyGraph(
         "cosmos",
         sites=["BUNNY"],
-        variables=["RN", "PE"],
+        variables=["RN"],
         periodicity="PT30M",
         api_router=router,
     )
     builder.build()
     DAG = builder.build_dag()
-
-    # for site, meta in builder.site_metadata.items():
-    #     logger.info(f"{site}: {meta}")
 
     start_date = datetime.strptime("2024-03-08", "%Y-%m-%d")
     end_date = datetime.strptime("2024-03-10", "%Y-%m-%d")

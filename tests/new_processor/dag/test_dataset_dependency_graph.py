@@ -30,6 +30,7 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         source_site=ts_id + "_site",
         source_column=ts_id + "_column",
         source_dataset=ts_id + "_dataset",
+        source_site_identifier=ts_id + "site_identifier",
         resolution=ts_id + "_resolution",
         periodicity=ts_id + "_periodicity",
         variable=ts_id + "_variable",
@@ -114,7 +115,7 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     monkeypatch.setattr(
         "new_processor.dag.dataset_dependency_graph.map_dataset_item",
-        lambda item, _: make_time_series_container(item["@id"]),
+        lambda item, _, __: make_time_series_container(item["@id"]),
     )
 
     monkeypatch.setattr(

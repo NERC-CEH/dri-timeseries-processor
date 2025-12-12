@@ -24,6 +24,7 @@ class TimeSeriesContainer:
     source_dataset: str
     source_column: str
     source_site: str
+    source_site_identifier: str
 
     resolution: str
     periodicity: str

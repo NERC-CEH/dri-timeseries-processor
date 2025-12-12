@@ -126,10 +126,6 @@ class TimeSeriesProcessor:
         Args:
             container: Time series container of metadata and data for the dataset to process.
         """
-        # TODO: The "process" method is actually done on the 'raw' version of the processed dataset.
-        #  that's where all the configs will be found.
-        #  The 'raw' dataset is held in the direct_depends_on, which we are assuming will only have one item.
-        #  Is this robust?
         logger.info(f"{MethodType.PROCESS}: {container.ts_id}")
 
         dep_container = self._get_single_dependency(container)

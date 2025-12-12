@@ -143,7 +143,7 @@ class TestLWCorrection:
         lw_unc = create_timeframe([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5], "lw_unc")
         ta = create_timeframe([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27], "ta")
         factor = 1.00924
-        config = create_method_config(correction_factor=factor, lw_unc=lw_unc, ta=ta)
+        config = create_method_config(correction_factor=factor, lwin_unc=lw_unc, ta=ta)
 
         result = LWCorrection().run(lw, config)
 
@@ -166,13 +166,13 @@ class TestLWCorrection:
     def test_lw_correction_with_date_filter(self) -> None:
         """Test that LWCorrection works with a date filter."""
         lw = create_timeframe([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8], "lw")
-        lw_unc = create_timeframe([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5], "lw_unc")
+        lw_unc = create_timeframe([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5], "lwin_unc")
         ta = create_timeframe([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27], "ta")
         factor = 1.00924
 
         config = create_method_config(
             correction_factor=factor,
-            lw_unc=lw_unc,
+            lwin_unc=lw_unc,
             ta=ta,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),

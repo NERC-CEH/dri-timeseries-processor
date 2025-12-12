@@ -158,10 +158,6 @@ class PET30Min(DerivationMethod):
         ws_2m = self.wind_speed_height_correction(ws, wind_height)
 
         # Convert RN and G from W/m2 - MJ per 30 min (if upstream provides W/m2)
-        # TODO: How do we know this needs doing? Interrogate units in metadata?
-        #       Or have an "interim" function that does necessary unit conversions?
-        #       Or have a new dependent dataset for the converted units
-        #       Or mandate that the input variables are in W/m2 (so upstream has to deal with unit conversions)
         rn_mj = rn * 0.0018
         g_mj = g * 0.0018
 
