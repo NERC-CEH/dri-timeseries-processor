@@ -25,7 +25,7 @@ if __name__ == "__main__":
     )
     connection = create_duckdb_factory()
     reader = DuckDBParquetReader(connection)
-    writer = ByteParquetWriter(storage)
+    data_writer = ByteParquetWriter(storage)
     data_router = DuckDBDataRouter(reader)
 
     # ALIC1 - LWIN / LWOUT - has a funky correction config (lw corr)
@@ -44,5 +44,5 @@ if __name__ == "__main__":
     start_date = datetime.strptime("2024-03-08", "%Y-%m-%d")
     end_date = datetime.strptime("2024-03-10", "%Y-%m-%d")
 
-    p = TimeSeriesProcessor(builder, data_router, start_date, end_date)
+    p = TimeSeriesProcessor(builder, data_router, data_writer, start_date, end_date)
     p.run()

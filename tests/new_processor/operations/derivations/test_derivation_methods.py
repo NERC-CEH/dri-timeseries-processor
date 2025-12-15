@@ -63,7 +63,7 @@ class TestNetRadiation:
         expected = dataframe_to_timeframe(pl.DataFrame({"rn": [10.9, 9.2, 6.3, 11.9]}))
 
         result = NetRadiation().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, atol=0.001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
 class TestPET30Min:
@@ -90,7 +90,7 @@ class TestPET30Min:
         expected = dataframe_to_timeframe(pl.DataFrame({"pet": [0.00573, 0.14733, 0.03617, 0.17283]}))
 
         result = PET30Min().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, atol=0.001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
     def test_saturation_vapour_pressure(self) -> None:
         # Taken from FAO56 EXAMPLE 3 https://www.fao.org/4/x0490e/x0490e07.htm
@@ -100,7 +100,7 @@ class TestPET30Min:
         result = input_df.with_columns(calc.alias("es")).select(["es"])
         expected = pl.DataFrame({"es": [1.705, 3.075]})
 
-        assert_frame_equal(result, expected, check_exact=False, atol=0.001)
+        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.001)
 
     def test_actual_vapour_pressure(self) -> None:
         # Taken from FAO56 EXAMPLE 19 https://www.fao.org/4/x0490e/x0490e08.htm
@@ -110,7 +110,7 @@ class TestPET30Min:
         result = input_df.with_columns(calc.alias("ea")).select(["ea"])
         expected = pl.DataFrame({"ea": [3.402, 3.445]})
 
-        assert_frame_equal(result, expected, check_exact=False, atol=0.001)
+        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.001)
 
     def test_vapour_pressure_curve_slope(self) -> None:
         # Taken from FAO56 EXAMPLE 18, 19 and 20 https://www.fao.org/4/x0490e/x0490e08.htm
@@ -120,7 +120,7 @@ class TestPET30Min:
         result = input_df.with_columns(calc.alias("delta")).select(["delta"])
         expected = pl.DataFrame({"delta": [0.122, 0.15, 0.22, 0.358]})
 
-        assert_frame_equal(result, expected, check_exact=False, atol=0.01)
+        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
 
     def test_latent_heat_of_vaporization(self) -> None:
         input_df = pl.DataFrame({"ta": [-20.0, 0.0, 20.0, 100.0]})
@@ -129,7 +129,7 @@ class TestPET30Min:
         result = input_df.with_columns(calc.alias("lv")).select(["lv"])
         expected = pl.DataFrame({"lv": [2.54, 2.501, 2.45, 2.26]})
 
-        assert_frame_equal(result, expected, check_exact=False, atol=0.01)
+        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
 
     def test_psychrometric_constant(self) -> None:
         # Taken from FAO56 EXAMPLE 2 https://www.fao.org/4/x0490e/x0490e07.htm#psychrometric%20constant%20(g)
@@ -140,7 +140,7 @@ class TestPET30Min:
         result = input_df.with_columns(calc.alias("gamma")).select(["gamma"])
         expected = pl.DataFrame({"gamma": [0.066, 0.054]})
 
-        assert_frame_equal(result, expected, check_exact=False, atol=0.001)
+        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.001)
 
     def test_wind_speed_height_correction(self) -> None:
         # Taken from FAO56 EXAMPLE 14 https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
@@ -150,4 +150,4 @@ class TestPET30Min:
         result = input_df.with_columns(calc.alias("ws2m")).select(["ws2m"])
         expected = pl.DataFrame({"ws2m": [2.4]})
 
-        assert_frame_equal(result, expected, check_exact=False, atol=0.01)
+        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
