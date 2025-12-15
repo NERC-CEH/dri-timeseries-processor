@@ -11,8 +11,8 @@ from new_processor.models.api_models.data_processing_configuration import DataPr
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.api_models.network import Network
 from new_processor.models.api_models.site import SiteResponse
-from new_processor.utils.enums import ConfigurationType
 from new_processor.utils.batching import batched
+from new_processor.utils.enums import ConfigurationType
 from new_processor.utils.urls import CONFIGURATION_TYPE_URI
 
 

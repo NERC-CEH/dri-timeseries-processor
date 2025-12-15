@@ -75,9 +75,7 @@ class TimeSeriesProcessor:
         logger.info(f"Start: {self.start_date}")
         logger.info(f"End: {self.end_date}")
         logger.info(f"Network: {self.graph.network}")
-        logger.info(f"Sites: {self.graph.sites or 'ALL'}")
-        logger.info(f"Variables: {self.graph.variables or 'ALL'}")
-        logger.info(f"Periodicities: {self.graph.periodicities or 'ALL'}")
+        logger.info(f"Sites: {self.graph.selection}")
         logger.info("-" * 30)
 
         for layer_idx, layer in enumerate(layers):

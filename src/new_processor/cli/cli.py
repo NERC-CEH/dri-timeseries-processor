@@ -4,13 +4,12 @@ from datetime import date, timedelta
 import isodate
 
 from new_processor.cli.selection import (
-    RunConfig,
-    ExplicitSelectionSpec,
     CrossProductSelectionSpec,
-    SelectionSpec,
     DatasetKey,
+    ExplicitSelectionSpec,
+    RunConfig,
+    SelectionSpec,
 )
-from new_processor.utils.strings import split_upper
 
 
 def parse_args(argv: list[str]) -> RunConfig:
@@ -65,15 +64,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--selection",
         nargs=3,
         action="append",
-        metavar=("SITE", "COLUMN", "PERIODICITY"),
+        metavar=("SITE", "VARIABLE", "PERIODICITY"),
         help="Repeatable explicit selection: --selection SITE1 TA PT30M --selection SITE2 PRECIP P1D",
     )
 
     # Mode B: cross-product selectors
     # Intended for a bulk processing mode - process same variables from multiple sites.
-    parser.add_argument("--sites", help="Comma-separated list, e.g. ALIC1,BUNNY")
-    parser.add_argument("--columns", help="Comma-separated list, e.g. TA,PA")
-    parser.add_argument("--periodicities", help="Comma-separated list, e.g. PT30M,P1D")
+    parser.add_argument("--sites", nargs="+", help="Space-separated list, e.g. ALIC1 BUNNY")
+    parser.add_argument("--variables", nargs="+", help="Space-separated list, e.g. TA PA")
+    parser.add_argument("--periodicities", nargs="+", help="Space-separated list, e.g. PT30M P1D")
 
     return parser
 
@@ -98,10 +97,10 @@ def _parse_date_range(lookback: timedelta, end_date: date) -> tuple[date, date]:
 def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> SelectionSpec:
     """Determine selection mode and build a SelectionSpec."""
     has_explicit_selection = args.selection is not None
-    has_cross_product = any([args.sites, args.columns, args.periodicities])
+    has_cross_product = any([args.sites, args.variables, args.periodicities])
 
     if has_explicit_selection and has_cross_product:
-        parser.error("Use either --timeseries (repeatable) OR --sites/--columns/--periodicities, not both.")
+        parser.error("Use either --selection (repeatable) OR --sites/--variables/--periodicities, not both.")
 
     if has_explicit_selection:
         return _parse_explicit_selection(args)
@@ -112,15 +111,15 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
 def _parse_explicit_selection(args: argparse.Namespace) -> SelectionSpec:
     return ExplicitSelectionSpec(
         explicit=[
-            DatasetKey(site=site.upper(), variable=column.upper(), periodicity=periodicity.upper())
-            for site, column, periodicity in args.selection
+            DatasetKey(site=site.upper(), variable=variable.upper(), periodicity=periodicity.upper())
+            for site, variable, periodicity in args.selection
         ]
     )
 
 
 def _parse_cross_product_selection(args: argparse.Namespace) -> SelectionSpec:
     return CrossProductSelectionSpec(
-        sites=split_upper(args.sites),
-        variables=split_upper(args.columns),
-        periodicities=split_upper(args.periodicities),
+        sites=args.sites,
+        variables=args.variables,
+        periodicities=args.periodicities,
     )
