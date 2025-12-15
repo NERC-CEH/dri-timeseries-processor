@@ -2,6 +2,7 @@ from datetime import datetime
 
 import polars as pl
 import pytest
+from polars.exceptions import ColumnNotFoundError
 from polars.testing import assert_frame_equal
 
 from new_processor.utils.polars_utils import (
@@ -66,7 +67,7 @@ class TestSplitByDate:
 
     def test_split_by_date_missing_time_col(self) -> None:
         df = pl.DataFrame({"a": [1, 2]})
-        with pytest.raises(pl.ColumnNotFoundError):
+        with pytest.raises(ColumnNotFoundError):
             split_by_date(df, "t")
 
 
