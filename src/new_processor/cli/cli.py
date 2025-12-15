@@ -3,7 +3,14 @@ from datetime import date, timedelta
 
 import isodate
 
-from new_processor.cli.models import ExplicitSelection, RunConfig, SelectionSpec
+from new_processor.cli.selection import (
+    RunConfig,
+    ExplicitSelectionSpec,
+    CrossProductSelectionSpec,
+    SelectionSpec,
+    DatasetKey,
+)
+from new_processor.utils.strings import split_upper
 
 
 def parse_args(argv: list[str]) -> RunConfig:
@@ -16,7 +23,7 @@ def parse_args(argv: list[str]) -> RunConfig:
         end_date=args.end_date,
     )
 
-    selection = _parse_selection(args, parser)
+    selection = _parse_selection_mode(args, parser)
 
     return RunConfig(
         network=args.network,
@@ -46,20 +53,20 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--end-date",
         type=date.fromisoformat,
-        default=date.today().isoformat(),
+        default=date.today(),
         help="End date (YYYY-MM-DD, default: today)",
     )
 
     # Mode A: explicit selections.
     # Individual dataset specifications for fine-grained control. Can be specified multiple times.
-    # Each --timeseries option is a combination of site, variable, and periodicity. "
-    # Example: --timeseries SITE1 TA PT30M --timeseries SITE2 PRECIP P1D"
+    # Each --selection option is a combination of site, variable, and periodicity. "
+    # Example: --selection SITE1 TA PT30M --selection SITE2 PRECIP P1D"
     parser.add_argument(
-        "--timeseries",
+        "--selection",
         nargs=3,
         action="append",
         metavar=("SITE", "COLUMN", "PERIODICITY"),
-        help="Repeatable explicit selection: --timeseries SITE1 TA PT30M --timeseries SITE2 PRECIP P1D",
+        help="Repeatable explicit selection: --selection SITE1 TA PT30M --selection SITE2 PRECIP P1D",
     )
 
     # Mode B: cross-product selectors
@@ -88,48 +95,32 @@ def _parse_date_range(lookback: timedelta, end_date: date) -> tuple[date, date]:
     return start_date, end_date
 
 
-def _parse_selection(args: argparse.Namespace, parser: argparse.ArgumentParser) -> SelectionSpec:
+def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> SelectionSpec:
     """Determine selection mode and build a SelectionSpec."""
-    has_timeseries = args.timeseries is not None
+    has_explicit_selection = args.selection is not None
     has_cross_product = any([args.sites, args.columns, args.periodicities])
 
-    if has_timeseries and has_cross_product:
+    if has_explicit_selection and has_cross_product:
         parser.error("Use either --timeseries (repeatable) OR --sites/--columns/--periodicities, not both.")
 
-    if not has_timeseries and not has_cross_product:
-        parser.error("You must provide either --timeseries or at least one of --sites/--columns/--periodicities.")
-
-    if has_timeseries:
-        return _parse_timeseries_selection(args)
+    if has_explicit_selection:
+        return _parse_explicit_selection(args)
     else:
         return _parse_cross_product_selection(args)
 
 
-def _parse_timeseries_selection(args: argparse.Namespace) -> SelectionSpec:
-    return SelectionSpec(
+def _parse_explicit_selection(args: argparse.Namespace) -> SelectionSpec:
+    return ExplicitSelectionSpec(
         explicit=[
-            ExplicitSelection(
-                site=site.upper(),
-                column=column.upper(),
-                periodicity=periodicity.upper(),
-            )
-            for site, column, periodicity in args.timeseries
+            DatasetKey(site=site.upper(), variable=column.upper(), periodicity=periodicity.upper())
+            for site, column, periodicity in args.selection
         ]
     )
 
 
 def _parse_cross_product_selection(args: argparse.Namespace) -> SelectionSpec:
-    return SelectionSpec(
-        sites=_split_upper(args.sites),
-        columns=_split_upper(args.columns),
-        periodicities=_split_upper(args.periodicities),
+    return CrossProductSelectionSpec(
+        sites=split_upper(args.sites),
+        variables=split_upper(args.columns),
+        periodicities=split_upper(args.periodicities),
     )
-
-
-def _split_upper(value: str | None) -> list[str] | None:
-    """Split a comma-separated string and normalise to uppercase."""
-    if value is None:
-        return None
-
-    items = [v.strip() for v in value.split(",") if v.strip()]
-    return [v.upper() for v in items] if items else None

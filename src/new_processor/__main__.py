@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from new_processor.app.run import run_from_config
+from new_processor.app.run import build_processor
 from new_processor.cli.cli import parse_args
 
 logging.basicConfig(
@@ -12,7 +12,8 @@ logging.basicConfig(
 
 def main(argv: list[str]) -> None:
     run_config = parse_args(argv)
-    run_from_config(run_config)
+    processor = build_processor(run_config)
+    processor.run()
 
 
 if __name__ == "__main__":

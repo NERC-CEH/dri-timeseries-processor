@@ -161,7 +161,7 @@ class TestFetchSite:
         self, mock_api_manager: MagicMock, minimal_site_response: dict, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         router = create_metadata_router(mock_api_manager, minimal_site_response, monkeypatch)
-        router.fetch_site("test-site")
+        router.fetch_sites("test-site")
 
         expected_url = "example_host/id/site/test-site"
         mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url)
@@ -171,5 +171,5 @@ class TestFetchSite:
     ) -> None:
         """Test that the response is parsed as DataProcessingConfiguration."""
         router = create_metadata_router(mock_api_manager, minimal_site_response, monkeypatch)
-        result = router.fetch_site("test-site")
+        result = router.fetch_sites("test-site")
         assert isinstance(result, SiteResponse)

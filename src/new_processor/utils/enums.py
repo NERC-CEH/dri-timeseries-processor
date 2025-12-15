@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class CliSelectionMode(Enum):
+    EXPLICIT = "explicit"
+    CROSS_PRODUCT = "cross_product"
+
+
 class ConfigurationType(Enum):
     CORRECTION = "correction-configuration"
     INFILLING = "infill-configuration"

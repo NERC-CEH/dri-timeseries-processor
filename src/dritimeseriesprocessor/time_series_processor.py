@@ -194,7 +194,7 @@ class TimeSeriesProcessor:
 
         for user_ts_id in self.user_ts_ids:
             site_query_parameter = build_site_query_parameter(sites=[user_ts_id.site], network=self.network)
-            column_query_parameter = build_column_query_parameter([user_ts_id.column])
+            column_query_parameter = build_column_query_parameter([user_ts_id.variable])
             periodicity_query_parameter = build_periodicity_query_parameter([user_ts_id.periodicity])
 
             self._get_ts_id_metadata(

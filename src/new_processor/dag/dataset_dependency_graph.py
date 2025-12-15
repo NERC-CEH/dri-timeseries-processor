@@ -43,25 +43,25 @@ class DatasetDependencyGraph:
 
     def __init__(
         self,
-        network: str,
-        sites: str | list[str],
-        variables: str | list[str],
-        periodicities: str | list[str],
         api_router: MetadataRouter,
+        network: str,
+        sites: list[str] | None = None,
+        variables: list[str] | None = None,
+        periodicities: list[str] | None = None,
     ):
         """Initialize the dependency graph builder.
 
         Args:
+            api_router: A router object that handles API calls.
             network: The network identifier
             sites: List of site(s) to include.
             variables: List of variable(s) to include.
             periodicities: List of ISO 8601 duration string(s) of the periodicity of the datasets.
-            api_router: A router object that handles API calls.
         """
         self.network = network
-        self.sites = [sites] if isinstance(sites, str) else sites
-        self.variables = [variables] if isinstance(variables, str) else variables
-        self.periodicities = [periodicities] if isinstance(periodicities, str) else periodicities
+        self.sites = sites if sites else []
+        self.variables = variables if variables else []
+        self.periodicities = periodicities if periodicities else []
 
         self.api_router = api_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
@@ -188,8 +188,14 @@ class DatasetDependencyGraph:
         Returns:
             List of TimeSeriesContainer objects representing root datasets.
         """
+        if not self.variables:
+            logger.warning(f"No variables provided. Fetching all variables for sites: {self.sites}")
+
+        if not self.periodicities:
+            logger.warning(f"No periodicities provided. Fetching all periodicities for sites: {self.sites}")
+
         # TODO building of the SITE ID isn't great... can we use the site metadata to get the identifier?
-        sites_params = [("originatingSite", f"{SITE_URI}/{self.network}-{site.lower()}") for site in self.sites]
+        sites_params = [("originatingSite", site) for site in self.sites]
         variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in self.variables]
         periodicity_params = [
             ("type.measure.aggregation.periodicity", periodicity) for periodicity in self.periodicities
@@ -236,35 +242,41 @@ class DatasetDependencyGraph:
         all_containers = self._build_dataset_containers(response)
         return all_containers[0]
 
-    def _fetch_configs_for_dataset(self, dataset_id: str | list[str]) -> dict[str, list[ProcessingConfig]]:
+    def _fetch_configs_for_dataset(self, dataset_ids: str | list[str]) -> dict[str, list[ProcessingConfig]]:
         """Fetch data processing configurations (QC, infilling, correction) that apply to the specified dataset(s).
 
         Args:
-            dataset_id: Single dataset ID or list of dataset IDs.
+            dataset_ids: Single dataset ID or list of dataset IDs.
 
         Returns:
             Dictionary mapping dataset IDs to their list of processing configurations.
         """
-        if not dataset_id:
+        if not dataset_ids:
             return {}
 
-        if isinstance(dataset_id, str):
-            dataset_id = [dataset_id]
+        if isinstance(dataset_ids, str):
+            dataset_ids = [dataset_ids]
 
-        config_type_params = [("type", f"{CONFIGURATION_TYPE_URI}/{ct.value}") for ct in ConfigurationType]
-        other_params = [("appliesToTimeSeries", d) for d in dataset_id]
-        response = self.api_router.fetch_processing_configs(tuple(config_type_params + other_params))
-
+        response = self.api_router.fetch_processing_configs(dataset_ids)
         dataset_configs = self._build_processing_configs(response)
         return dataset_configs
 
     def _fetch_site_metadata(self) -> None:
         """Fetches site metadata for all sites with variables being processed."""
-        for site in self.sites:
-            logger.info(f"Fetching site metadata for: {site}")
-            response = self.api_router.fetch_site_by_alt_id(site).items[0]
-            meta = map_site_metadata(response)
+        if not self.sites:
+            # If no sites provided, find all sites for the given network
+            logger.warning(f"No sites provided. Fetching all sites for: {self.network}")
+            network_response = self.api_router.fetch_network(self.network)
+            sites = [site.id for site in network_response.items[0].contains]
+            sites_response = self.api_router.fetch_sites(sites)
+        else:
+            logger.info(f"Fetching site metadata for: {self.sites}")
+            sites_response = self.api_router.fetch_site_by_alt_ids(self.sites)
+
+        for item in sites_response.items:
+            meta = map_site_metadata(item)
             self.site_metadata[meta.site_id] = meta
+            self.sites = list(self.site_metadata.keys())
 
     def _build_dataset_containers(self, dataset_response: TimeSeriesDatasetResponse) -> list[TimeSeriesContainer]:
         """Parse an API response container timeseries dataset items and convert them to the `TimeSeriesContainer`

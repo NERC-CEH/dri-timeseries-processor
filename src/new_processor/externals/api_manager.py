@@ -13,7 +13,7 @@ from requests import HTTPError
 
 logger = logging.getLogger(__name__)
 
-PAGE_SIZE = 25
+PAGE_SIZE = 500
 
 
 class MetadataAPIManager:

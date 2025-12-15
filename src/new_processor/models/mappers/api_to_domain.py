@@ -44,9 +44,11 @@ def map_dataset_item(
     variable = info.measure.variable.pref_label[0]
     metadata_site_id = item.originating_site[0].id
     source_site = extract_uri_id(metadata_site_id)
-    source_site_identifier = all_site_metadata[metadata_site_id].alt_id
-    method_config = map_method_config(info.methodology)
 
+    # TODO: Hopefully site metadata will be updated so this workaround not required - using ``_view=annotated``
+    source_site_identifier = source_site.split("-")[1].upper()
+
+    method_config = map_method_config(info.methodology)
     depends_on = [d.id for d in item.depends_on]
     direct_depends_on = [d.id for d in item.direct_depends_on]
 
