@@ -6,6 +6,7 @@ import pytest
 import time_stream as ts
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from new_processor.io_backend.writer import ByteParquetWriter
 from new_processor.models.domain_models.method_config import MethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.processing.time_series_processor import TimeSeriesProcessor
@@ -55,6 +56,13 @@ def mock_router() -> MagicMock:
     return router
 
 
+@pytest.fixture
+def mock_writer() -> MagicMock:
+    """Create a mock ParquetWriterInterface for use in tests"""
+    writer = MagicMock(spec=ByteParquetWriter)
+    return writer
+
+
 def create_mock_dag(topo_layers: list) -> MagicMock:
     """Create a mock DAG for use in tests"""
     graph = MagicMock(spec=DatasetDependencyGraph)
@@ -74,13 +82,16 @@ class TestTimeSeriesProcessor:
             pytest.param([["ds1", "ds2"], ["ds3", "ds4"]], id="multiple dataset in multiple layers"),
         ],
     )
-    def test_run_calls_process_datasets(self, topo_layers: list, mock_router: MagicMock) -> None:
+    def test_run_calls_process_datasets(
+        self, topo_layers: list, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
         """Test that the run method loops through all datasets in the graph and calls the process method on them"""
         mock_graph = create_mock_dag(topo_layers)
 
         processor = TimeSeriesProcessor(
             graph=mock_graph,
             data_router=mock_router,
+            data_writer=mock_writer,
             start_date=datetime(2025, 1, 1),
             end_date=datetime(2025, 1, 3),
         )
@@ -89,12 +100,13 @@ class TestTimeSeriesProcessor:
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
 
-    def test_load_raw(self, mock_router: MagicMock) -> None:
+    def test_load_raw(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         ds_id = "ds1"
         mock_graph = create_mock_dag([[ds_id]])
         processor = TimeSeriesProcessor(
             graph=mock_graph,
             data_router=mock_router,
+            data_writer=mock_writer,
             start_date=datetime(2023, 1, 1),
             end_date=datetime(2023, 1, 2),
         )
@@ -113,7 +125,7 @@ class TestTimeSeriesProcessor:
         assert "core_flags" in container.data.flag_systems
         assert "value_CORE_FLAG" in container.data.flag_columns
 
-    def test_process(self, mock_router: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_process(self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that _process runs all three pipelines in order and updates container.data"""
         raw_ds_id = "raw_ds1"
         processed_ds_id = "processed_ds1"
@@ -143,6 +155,7 @@ class TestTimeSeriesProcessor:
         processor = TimeSeriesProcessor(
             graph=mock_graph,
             data_router=mock_router,
+            data_writer=mock_writer,
             start_date=datetime(2023, 1, 1),
             end_date=datetime(2023, 1, 2),
         )
