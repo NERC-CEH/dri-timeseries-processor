@@ -1,4 +1,5 @@
 import argparse
+from collections import Counter
 from datetime import date, timedelta
 
 import pytest
@@ -39,7 +40,7 @@ class TestParseArgs:
 
         assert isinstance(cfg.selection, ExplicitSelectionSpec)
         queries = cfg.selection.root_queries
-        assert set(queries) == set(expected_queries)
+        assert Counter(queries) == Counter(expected_queries)
 
     @pytest.mark.parametrize(
         "selection",

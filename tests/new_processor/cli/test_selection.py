@@ -1,3 +1,5 @@
+from collections import Counter
+
 from new_processor.cli.selection import CrossProductSelectionSpec, ExplicitSelectionSpec, RootQuery
 
 
@@ -9,7 +11,7 @@ class TestExplicitSelectionSpec:
             RootQuery(sites=["B"], variables=["RH"], periodicities=["PT30M"]),
         ]
         spec = ExplicitSelectionSpec(queries)
-        assert spec.root_queries == queries
+        assert Counter(spec.root_queries) == Counter(queries)
 
     def test_deduplicates_identical_queries(self) -> None:
         """Test that requesting the same set query gets deduplicated"""
