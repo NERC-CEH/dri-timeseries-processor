@@ -93,14 +93,14 @@ class TestParseArgs:
         )
 
         assert isinstance(cfg.selection, CrossProductSelectionSpec)
-        expected_queries = [RootQuery(["SITE1", "SITE2"], ["TA", "RH"], ["P1D"])]
+        expected_queries = [RootQuery([f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"], ["TA", "RH"], ["P1D"])]
         assert cfg.selection.root_queries == expected_queries
 
     @pytest.mark.parametrize(
         "args, expected_queries",
         [
             (["--variables", "TA"], [RootQuery(None, ["TA"], None)]),
-            (["--sites", "SITE1"], [RootQuery(["SITE1"], None, None)]),
+            (["--sites", "SITE1"], [RootQuery([f"{SITE_URI}/SITE1"], None, None)]),
             (["--periodicities", "P1D"], [RootQuery(None, None, ["P1D"])]),
         ],
     )

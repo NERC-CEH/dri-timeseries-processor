@@ -196,8 +196,9 @@ def _parse_cross_product_selection(args: argparse.Namespace) -> SelectionSpec:
     Returns:
        A CrossProductSelectionSpec representing the selection constraints.
     """
+    sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
     return CrossProductSelectionSpec(
-        sites=[f"{SITE_URI}/{site}" for site in args.sites],
+        sites=sites,
         variables=args.variables,
         periodicities=args.periodicities,
     )
