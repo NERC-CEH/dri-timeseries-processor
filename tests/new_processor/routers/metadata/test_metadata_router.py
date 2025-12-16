@@ -2,10 +2,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.api_models.site import SiteResponse
 from new_processor.routers.metadata.metadata_router import MetadataRouter
+from new_processor.utils.urls import CONFIGURATION_TYPE_URI
 
 
 @pytest.fixture
@@ -137,39 +137,63 @@ class TestFetchAllDependencies:
 
 
 class TestFetchProcessingConfigs:
+    @pytest.mark.parametrize(
+        "num_ids, batch_size, expected_calls",
+        [
+            (10, 5, 2),
+            (10, 10, 1),
+            (10, 3, 4),
+            (1000, 50, 20),
+        ],
+    )
+    def test_batches(
+        self,
+        num_ids: int,
+        batch_size: int,
+        expected_calls: int,
+        mock_api_manager: MagicMock,
+        minimal_config_response: dict,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        router = create_metadata_router(mock_api_manager, minimal_config_response, monkeypatch)
+        dataset_ids = [str(n) for n in range(num_ids)]
+        router.fetch_processing_configs(dataset_ids, batch_size=batch_size)
+        assert mock_api_manager.make_paginated_api_call.call_count == expected_calls
+
     def test_constructs_correct_url(
         self, mock_api_manager: MagicMock, minimal_config_response: dict, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         router = create_metadata_router(mock_api_manager, minimal_config_response, monkeypatch)
-        query_params = (("type", "qc"), ("appliesToTimeSeries", "dataset-1"))
-        router.fetch_processing_configs(query_params)
+        dataset_ids = ["a", "b", "c"]
+        router.fetch_processing_configs(dataset_ids)
 
         expected_url = "example_host/id/data-processing-configuration"
-        mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url, query_params)
+        config_type_params = [
+            ("type", f"{CONFIGURATION_TYPE_URI}/correction-configuration"),
+            ("type", f"{CONFIGURATION_TYPE_URI}/infill-configuration"),
+            ("type", f"{CONFIGURATION_TYPE_URI}/qc"),
+        ]
+        dataset_params = [("appliesToTimeSeries", dataset_id) for dataset_id in dataset_ids]
+        mock_api_manager.make_paginated_api_call.assert_called_once_with(
+            expected_url, tuple(config_type_params + dataset_params)
+        )
 
-    def test_return_object(
-        self, mock_api_manager: MagicMock, minimal_config_response: dict, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """Test that the response is parsed as DataProcessingConfiguration."""
-        router = create_metadata_router(mock_api_manager, minimal_config_response, monkeypatch)
-        result = router.fetch_processing_configs(tuple())
-        assert isinstance(result, DataProcessingConfiguration)
 
-
-class TestFetchSite:
+class TestFetchSites:
     def test_constructs_correct_url(
         self, mock_api_manager: MagicMock, minimal_site_response: dict, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         router = create_metadata_router(mock_api_manager, minimal_site_response, monkeypatch)
-        router.fetch_sites("test-site")
+        router.fetch_sites(["test-site"])
 
-        expected_url = "example_host/id/site/test-site"
-        mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url)
+        expected_url = "example_host/id/site?_view=annotated"
+        params = (("@id", "test-site"),)
+        mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url, params)
 
     def test_return_object(
         self, mock_api_manager: MagicMock, minimal_site_response: dict, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Test that the response is parsed as DataProcessingConfiguration."""
         router = create_metadata_router(mock_api_manager, minimal_site_response, monkeypatch)
-        result = router.fetch_sites("test-site")
+        result = router.fetch_sites(["test-site"])
         assert isinstance(result, SiteResponse)
