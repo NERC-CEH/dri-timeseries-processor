@@ -68,7 +68,7 @@ class MetadataRouter:
         response = self.api_manager.make_paginated_api_call(url)
         return TimeSeriesDatasetResponse.model_validate(response)
 
-    def fetch_processing_configs(self, dataset_ids: str | list[str], batch_size=50) -> DataProcessingConfiguration:
+    def fetch_processing_configs(self, dataset_ids: list[str], batch_size: int = 50) -> DataProcessingConfiguration:
         """Fetch data processing configuration metadata (e.g. for QC, Infill, Corrections)
 
         Args:
@@ -80,9 +80,6 @@ class MetadataRouter:
         Returns:
             The parsed JSON response containing data processing configurations.
         """
-        if isinstance(dataset_ids, str):
-            dataset_ids = [dataset_ids]
-
         config_type_params = [("type", f"{CONFIGURATION_TYPE_URI}/{ct.value}") for ct in ConfigurationType]
 
         # Do this in batches in case we have a huge number of datasets to get through (built URL can be huge!)
@@ -98,7 +95,7 @@ class MetadataRouter:
 
         return DataProcessingConfiguration.model_validate(merged_response)
 
-    def fetch_sites(self, site_ids: str | list[str]) -> SiteResponse:
+    def fetch_sites(self, site_ids: list[str]) -> SiteResponse:
         """Fetch site metadata for given site ID(s).
 
         Args:
@@ -107,38 +104,20 @@ class MetadataRouter:
         Returns:
             The parsed JSON response containing site metadata.
         """
-        if isinstance(site_ids, str):
-            site_ids = [site_ids]
-
         url = f"{self.host}/id/site?_view=annotated"
         params = tuple(("@id", site_id) for site_id in site_ids)
         response = self.api_manager.make_paginated_api_call(url, params)
         return SiteResponse.model_validate(response)
 
-    def fetch_site_by_alt_ids(self, alt_site_ids: str | list[str]) -> SiteResponse:
-        """Fetch site metadata for given alt site ID(s) - the "identifier" field in the API metadata
-
-        e.g. BUNNY instead of cosmos-bunny for the COSMOS network.
-
-        # TODO: This is a bit of a workaround until we have a better mechanism for fetching site metadata, e.g. see
-            https://github.com/NERC-CEH/fdri-discovery/issues/248
+    def fetch_network(self, network: str) -> Network:
+        """Fetch network metadata for given network name
 
         Args:
-            alt_site_ids: Alternative ID(s) of the site(s) to fetch.
+            network: Network to fetch metadata for.
 
         Returns:
-            The parsed JSON response containing site metadata.
+            The parsed JSON response containing network metadata.
         """
-        if isinstance(alt_site_ids, str):
-            alt_site_ids = [alt_site_ids]
-
-        url = f"{self.host}/id/site"
-        params = tuple(("identifier", alt_site_id) for alt_site_id in alt_site_ids)
-        response = self.api_manager.make_paginated_api_call(url, params)
-        site_ids = [site["@id"] for site in response["items"]]
-        return self.fetch_sites(site_ids)
-
-    def fetch_network(self, network: str) -> Network:
         url = f"{self.host}/id/network/{network}"
         response = self.api_manager.make_paginated_api_call(url)
         return Network.model_validate(response)

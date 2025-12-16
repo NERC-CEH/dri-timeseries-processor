@@ -70,13 +70,7 @@ class TimeSeriesProcessor:
         The graph is traversed in order, ensuring dependencies are processed before the datasets that rely on them.
         """
         layers = self.graph.layered_topo_sort()
-        logger.info("-" * 30)
         logger.info("Processing pipeline started.")
-        logger.info(f"Start: {self.start_date}")
-        logger.info(f"End: {self.end_date}")
-        logger.info(f"Network: {self.graph.network}")
-        logger.info(f"Sites: {self.graph.selection}")
-        logger.info("-" * 30)
 
         for layer_idx, layer in enumerate(layers):
             logger.info(f"Processing layer {layer_idx}: {layer}")

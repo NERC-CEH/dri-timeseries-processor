@@ -5,11 +5,12 @@ import isodate
 
 from new_processor.cli.selection import (
     CrossProductSelectionSpec,
-    DatasetKey,
     ExplicitSelectionSpec,
+    RootQuery,
     RunConfig,
     SelectionSpec,
 )
+from new_processor.utils.urls import SITE_URI
 
 
 def parse_args(argv: list[str]) -> RunConfig:
@@ -111,7 +112,7 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
 def _parse_explicit_selection(args: argparse.Namespace) -> SelectionSpec:
     return ExplicitSelectionSpec(
         explicit=[
-            DatasetKey(site=site.upper(), variable=variable.upper(), periodicity=periodicity.upper())
+            RootQuery(sites=[f"{SITE_URI}/{site}"], variables=[variable], periodicities=[periodicity])
             for site, variable, periodicity in args.selection
         ]
     )

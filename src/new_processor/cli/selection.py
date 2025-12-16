@@ -14,16 +14,39 @@ Two selection modes are supported:
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
-from typing import Iterable
 
 
 @dataclass(frozen=True)
-class DatasetKey:
-    """Identifier for a single dataset dimension combination."""
+class RootQuery:
+    """Identifier for a dataset dimension combination."""
 
-    site: str
-    variable: str
-    periodicity: str
+    sites: list[str] | None = None
+    variables: list[str] | None = None
+    periodicities: list[str] | None = None
+
+    def __repr__(self) -> str:
+        return (
+            "RootQuery("
+            f"sites={self._fmt_dim(self.sites)} | "
+            f"variables={self._fmt_dim(self.variables)} | "
+            f"periodicities={self._fmt_dim(self.periodicities)}"
+            ")"
+        )
+
+    @staticmethod
+    def _fmt_dim(values: list[str] | None) -> str:
+        if values is None:
+            return "ALL"
+        if not values:
+            return "NONE"
+        return ", ".join(values)
+
+    def __hash__(self) -> int:
+        """Allow this object to be used as a dict or set key."""
+        sites_str = "/".join(self.sites or [""])
+        variables_str = "/".join(self.variables or [""])
+        periodicities_str = "/".join(self.periodicities or [""])
+        return hash(f"{sites_str}{variables_str}{periodicities_str}")
 
 
 class SelectionSpec(ABC):
@@ -31,8 +54,17 @@ class SelectionSpec(ABC):
     should be processed.
     """
 
+    def __init__(self):
+        # Use set to make sure we don't have duplicates
+        self._root_queries = list(set(self._resolve()))
+
+    @property
+    def root_queries(self) -> list[RootQuery]:
+        """The root queries of the selection specification"""
+        return self._root_queries
+
     @abstractmethod
-    def resolve(self) -> Iterable:
+    def _resolve(self) -> list[RootQuery]:
         """Resolve the selection specification into concrete constraints.
 
         Returns:
@@ -40,6 +72,12 @@ class SelectionSpec(ABC):
             be interpreted as "all" by downstream components.
         """
         pass
+
+    def __repr__(self) -> str:
+        lines = []
+        for query in self.root_queries:
+            lines.append(f"- {query}")
+        return f"SelectionSpec(\n{'\n'.join(lines)} \n)"
 
 
 class ExplicitSelectionSpec(SelectionSpec):
@@ -49,15 +87,16 @@ class ExplicitSelectionSpec(SelectionSpec):
     A full set of (site, variable, periodicity) must be provided.
     """
 
-    def __init__(self, explicit: list[DatasetKey]):
+    def __init__(self, explicit: list[RootQuery]):
         """Create an explicit selection specification.
 
         Args:
             explicit: List of explicitly selected dataset keys.
         """
         self.explicit = explicit
+        super().__init__()
 
-    def resolve(self) -> list[DatasetKey]:
+    def _resolve(self) -> list[RootQuery]:
         """Resolve explicit dataset keys into unique dimension lists.
 
         Returns:
@@ -87,18 +126,21 @@ class CrossProductSelectionSpec(SelectionSpec):
         self.sites = sites
         self.variables = variables
         self.periodicities = periodicities
+        super().__init__()
 
-    def resolve(self) -> tuple[list[str], list[str], list[str]]:
-        """Resolve cross-product constraints into dimension lists.
+    def _resolve(self) -> list[RootQuery]:
+        """Resolve cross-product constraints into dimensions.
 
         Returns:
-            Tuple of (sites, variables, periodicities)
+            List of one DatasetKey data object, specifying which cross-product datasets to process
         """
-        sites = self.sites or []
-        variables = self.variables or []
-        periodicities = self.periodicities or []
-
-        return sites, variables, periodicities
+        return [
+            RootQuery(
+                sites=self.sites,
+                variables=self.variables,
+                periodicities=self.periodicities,
+            )
+        ]
 
 
 @dataclass(frozen=True)

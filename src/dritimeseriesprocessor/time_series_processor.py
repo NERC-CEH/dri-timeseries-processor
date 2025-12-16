@@ -91,7 +91,7 @@ class TimeSeriesProcessor:
         if user_ts_ids:
             # Validate user specified timeseries ids and convert into UserTsID objects
             self.user_ts_ids = self._construct_user_ts_id_objects(user_ts_ids)
-            self.sites = sorted(set(user_ts_id.site for user_ts_id in self.user_ts_ids))
+            self.sites = sorted(set(user_ts_id.sites for user_ts_id in self.user_ts_ids))
         else:
             # Validate generic user arguments
             self.columns = parser.validate_columns(columns)
@@ -193,9 +193,9 @@ class TimeSeriesProcessor:
         processing_query_parameter = build_processing_query_parameter(level="processed")
 
         for user_ts_id in self.user_ts_ids:
-            site_query_parameter = build_site_query_parameter(sites=[user_ts_id.site], network=self.network)
-            column_query_parameter = build_column_query_parameter([user_ts_id.variable])
-            periodicity_query_parameter = build_periodicity_query_parameter([user_ts_id.periodicity])
+            site_query_parameter = build_site_query_parameter(sites=[user_ts_id.sites], network=self.network)
+            column_query_parameter = build_column_query_parameter([user_ts_id.variables])
+            periodicity_query_parameter = build_periodicity_query_parameter([user_ts_id.periodicities])
 
             self._get_ts_id_metadata(
                 site_query_parameter

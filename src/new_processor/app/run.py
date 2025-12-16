@@ -11,6 +11,7 @@ required infrastructure components, including:
 - processing orchestration
 """
 
+import logging
 from datetime import date, datetime
 
 from new_processor.cli.selection import RunConfig, SelectionSpec
@@ -23,6 +24,8 @@ from new_processor.processing.time_series_processor import TimeSeriesProcessor
 from new_processor.routers.data.data_router import DuckDBDataRouter
 from new_processor.routers.metadata.metadata_router import MetadataRouter
 from new_processor.storage.storage_client import S3StorageClient, StorageClient
+
+logger = logging.getLogger(__name__)
 
 
 def run_from_config(run_config: RunConfig) -> None:
@@ -58,6 +61,14 @@ def _build_processor(
     Returns:
         A TimeSeriesProcessor ready for running.
     """
+    logger.info("-" * 30)
+    logger.info("Setting up processor for selections:")
+    logger.info(f"Start date   : {start_date}")
+    logger.info(f"End date     : {end_date}")
+    logger.info(f"Network      : {network}")
+    logger.info(f"Root datasets: {selection}")
+    logger.info("-" * 30)
+
     cfg = app_config()
 
     metadata_router = MetadataRouter(cfg.metadata_api_url)
@@ -94,7 +105,9 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
     )
 
 
-def _build_dependency_graph(network, selection, metadata_router) -> DatasetDependencyGraph:
+def _build_dependency_graph(
+    network: str, selection: SelectionSpec, metadata_router: MetadataRouter
+) -> DatasetDependencyGraph:
     """Build the dataset dependency graph for a processing run.
 
     Args:

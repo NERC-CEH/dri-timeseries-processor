@@ -14,14 +14,14 @@ from collections import defaultdict
 from graphlib import TopologicalSorter
 
 from metadata_manager.models.schemas.sites import SiteMetadata
-from new_processor.cli.selection import SelectionSpec, ExplicitSelectionSpec, CrossProductSelectionSpec
+from new_processor.cli.selection import SelectionSpec
 from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.domain_models.processing_config import ProcessingConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.models.mappers.api_to_domain import map_dataset_item, map_processing_config_item, map_site_metadata
 from new_processor.routers.metadata.metadata_router import MetadataRouter
-from new_processor.utils.enums import ProcessingLevel, CliSelectionMode
+from new_processor.utils.enums import ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
 from new_processor.utils.urls import PROCESSING_LEVEL_URI
 
@@ -168,36 +168,42 @@ class DatasetDependencyGraph:
                 next_batch[dep_id] = dep_container
 
     def _resolve_root_datasets(self) -> list[TimeSeriesContainer]:
-        if isinstance(self.selection, ExplicitSelectionSpec):
-            containers = []
-            for dataset_selection in self.selection.resolve():
-                site = self._fetch_site_metadata(dataset_selection.site)
-                variable = dataset_selection.variable
-                periodicity = dataset_selection.periodicity
+        """Resolve and fetch the root datasets for the selection of datasets requested.
 
-                containers.append(self._fetch_root_datasets(site, variable, periodicity)[0])
+        Uses the SelectionSpec object to determine which root datasets should be fetched. This object returns a list
+        of RootQuery objects, that represent either:
+            - a fully-specified dataset request (explicit selection), or
+            - a partially-specified constraint (cross-product selection)
 
-            return containers
+        Site metadata is fetched up-front for all requested sites. If any query leaves the site dimension unconstrained,
+        site metadata is fetched for all sites in the network.
 
-        elif isinstance(self.selection, CrossProductSelectionSpec):
-            sites, variables, periodicities = self.selection.resolve()
-            if not sites:
-                logger.warning(f"No sites provided. Processing all sites for network: {self.network}")
+        For each query, datasets are fetched using the available constraints. Any unconstrained dimensions
+        (variables or periodicities) are expanded downstream during the metadata API call.
 
-            sites = self._fetch_site_metadata(sites)
+        Returns:
+            TimeSeriesContainer objects representing the root datasets from which dependency resolution will proceed.
+        """
+        # Determine which sites we need to fetch metadata for
+        requested_sites = set()
+        for query in self.selection.root_queries:
+            if not query.sites:
+                # If no site provided, we know we need to fetch all, so break early
+                break
+            requested_sites.update(query.sites)
 
-            if not variables:
-                logger.warning(f"No variables provided. Fetching all variables for sites: {sites}")
-            if not periodicities:
-                logger.warning(f"No periodicities provided. Fetching all periodicities for sites: {sites}")
+        all_site_ids = self._fetch_site_metadata(list(requested_sites))
 
-            return self._fetch_root_datasets(sites, variables, periodicities)
+        containers = set()
+        for query in self.selection.root_queries:
+            containers.update(
+                self._fetch_root_datasets(query.sites or all_site_ids, query.variables or [], query.periodicities or [])
+            )
 
-        else:
-            raise ValueError(f"Unknown selection type: {type(self.selection)}")
+        return list(containers)
 
     def _fetch_root_datasets(
-        self, sites: str | list[str], variables: str | list[str], periodicities: str | list[str]
+        self, sites: list[str], variables: list[str], periodicities: list[str]
     ) -> list[TimeSeriesContainer]:
         """Fetch processed dataset containers for the target sites and variables.
 
@@ -207,16 +213,6 @@ class DatasetDependencyGraph:
         Returns:
             List of TimeSeriesContainer objects representing root datasets.
         """
-        if isinstance(sites, str):
-            sites = [sites]
-
-        if isinstance(variables, str):
-            variables = [variables]
-
-        if isinstance(periodicities, str):
-            periodicities = [periodicities]
-
-        # TODO building of the SITE ID isn't great... can we use the site metadata to get the identifier?
         sites_params = [("originatingSite", site) for site in sites]
         variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in variables]
         periodicity_params = [("type.measure.aggregation.periodicity", periodicity) for periodicity in periodicities]
@@ -262,7 +258,7 @@ class DatasetDependencyGraph:
         all_containers = self._build_dataset_containers(response)
         return all_containers[0]
 
-    def _fetch_configs_for_dataset(self, dataset_ids: str | list[str]) -> dict[str, list[ProcessingConfig]]:
+    def _fetch_configs_for_dataset(self, dataset_ids: list[str]) -> dict[str, list[ProcessingConfig]]:
         """Fetch data processing configurations (QC, infilling, correction) that apply to the specified dataset(s).
 
         Args:
@@ -274,27 +270,26 @@ class DatasetDependencyGraph:
         if not dataset_ids:
             return {}
 
-        if isinstance(dataset_ids, str):
-            dataset_ids = [dataset_ids]
-
         response = self.metadata_router.fetch_processing_configs(dataset_ids)
         dataset_configs = self._build_processing_configs(response)
         return dataset_configs
 
-    def _fetch_site_metadata(self, sites: str | list | None = None) -> list[str]:
-        """Fetches site metadata for all sites with variables being processed."""
-        if isinstance(sites, str):
-            sites = [sites]
+    def _fetch_site_metadata(self, sites: list[str] | None = None) -> list[str]:
+        """Fetches site metadata for all sites with variables being processed. Sets the `self.sites_metadata` dict.
 
+        Args:
+            sites: Select sites to get metadata for.  If empty, will fetch all sites for given network.
+
+        Returns:
+            List of Metadata API site IDs
+        """
         if not sites:
             # If no sites provided, find all sites for the given network
             logger.warning(f"No sites provided. Fetching all sites for: {self.network}")
             network_response = self.metadata_router.fetch_network(self.network)
             sites = [site.id for site in network_response.items[0].contains]
-            sites_response = self.metadata_router.fetch_sites(sites)
-        else:
-            logger.info(f"Fetching site metadata for: {sites}")
-            sites_response = self.metadata_router.fetch_site_by_alt_ids(sites)
+
+        sites_response = self.metadata_router.fetch_sites(sites)
 
         fetched_site_ids = []
         for item in sites_response.items:
