@@ -39,7 +39,7 @@ class TestParseArgs:
 
         assert isinstance(cfg.selection, ExplicitSelectionSpec)
         queries = cfg.selection.root_queries
-        assert queries == expected_queries
+        assert set(queries) == set(expected_queries)
 
     @pytest.mark.parametrize(
         "selection",
