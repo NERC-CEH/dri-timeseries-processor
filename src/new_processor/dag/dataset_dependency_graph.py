@@ -14,7 +14,7 @@ from collections import defaultdict
 from graphlib import TopologicalSorter
 
 from metadata_manager.models.schemas.sites import SiteMetadata
-from new_processor.cli.selection import SelectionSpec
+from new_processor.cli.selection import SelectionOption
 from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.domain_models.processing_config import ProcessingConfig
@@ -43,7 +43,7 @@ class DatasetDependencyGraph:
         4. Repeating for any new datasets introduced by these direct dependencies and configuration dependencies.
     """
 
-    def __init__(self, metadata_router: MetadataRouter, network: str, selection: SelectionSpec):
+    def __init__(self, metadata_router: MetadataRouter, network: str, selection: list[SelectionOption]):
         """Initialize the dependency graph builder.
 
         Args:
@@ -170,8 +170,7 @@ class DatasetDependencyGraph:
     def _resolve_root_datasets(self) -> list[TimeSeriesContainer]:
         """Resolve and fetch the root datasets for the selection of datasets requested.
 
-        Uses the SelectionSpec object to determine which root datasets should be fetched. This object returns a list
-        of RootQuery objects, that represent either:
+        Uses the list of SelectionOption objects, that represent either:
             - a fully-specified dataset request (explicit selection), or
             - a partially-specified constraint (cross-product selection)
 
@@ -186,7 +185,7 @@ class DatasetDependencyGraph:
         """
         # Determine which sites we need to fetch metadata for
         requested_sites = set()
-        for query in self.selection.root_queries:
+        for query in self.selection:
             if not query.sites:
                 # If no site provided, we know we need to fetch all, so break early
                 break
@@ -195,7 +194,7 @@ class DatasetDependencyGraph:
         all_site_ids = self._fetch_site_metadata(list(requested_sites))
 
         containers = set()
-        for query in self.selection.root_queries:
+        for query in self.selection:
             containers.update(
                 self._fetch_root_datasets(query.sites or all_site_ids, query.variables or [], query.periodicities or [])
             )

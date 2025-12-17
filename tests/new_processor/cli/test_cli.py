@@ -9,7 +9,7 @@ from new_processor.cli.cli import _parse_date_range, _parse_lookback, parse_args
 from new_processor.cli.selection import (
     CrossProductSelectionSpec,
     ExplicitSelectionSpec,
-    RootQuery,
+    SelectionOption,
 )
 from new_processor.utils.urls import SITE_URI
 
@@ -18,12 +18,12 @@ class TestParseArgs:
     @pytest.mark.parametrize(
         "selections, expected_queries",
         [
-            ([["SITE1", "TA", "P1D"]], [RootQuery([f"{SITE_URI}/SITE1"], ["TA"], ["P1D"])]),
+            ([["SITE1", "TA", "P1D"]], [SelectionOption([f"{SITE_URI}/SITE1"], ["TA"], ["P1D"])]),
             (
                 [["SITE1", "TA", "P1D"], ["SITE2", "RH", "PT30M"]],
                 [
-                    RootQuery([f"{SITE_URI}/SITE1"], ["TA"], ["P1D"]),
-                    RootQuery([f"{SITE_URI}/SITE2"], ["RH"], ["PT30M"]),
+                    SelectionOption([f"{SITE_URI}/SITE1"], ["TA"], ["P1D"]),
+                    SelectionOption([f"{SITE_URI}/SITE2"], ["RH"], ["PT30M"]),
                 ],
             ),
         ],
@@ -31,10 +31,7 @@ class TestParseArgs:
     def test_explicit_selection(self, selections: list, expected_queries: list) -> None:
         args = ["--network", "a_network"]
         for site_id, variable, periodicity in selections:
-            args.append("--selection")
-            args.append(site_id)
-            args.append(variable)
-            args.append(periodicity)
+            args.extend(["--selection", site_id, variable, periodicity])
 
         cfg = parse_args(args)
 
@@ -93,15 +90,15 @@ class TestParseArgs:
         )
 
         assert isinstance(cfg.selection, CrossProductSelectionSpec)
-        expected_queries = [RootQuery([f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"], ["TA", "RH"], ["P1D"])]
+        expected_queries = [SelectionOption([f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"], ["TA", "RH"], ["P1D"])]
         assert cfg.selection.root_queries == expected_queries
 
     @pytest.mark.parametrize(
         "args, expected_queries",
         [
-            (["--variables", "TA"], [RootQuery(None, ["TA"], None)]),
-            (["--sites", "SITE1"], [RootQuery([f"{SITE_URI}/SITE1"], None, None)]),
-            (["--periodicities", "P1D"], [RootQuery(None, None, ["P1D"])]),
+            (["--variables", "TA"], [SelectionOption(None, ["TA"], None)]),
+            (["--sites", "SITE1"], [SelectionOption([f"{SITE_URI}/SITE1"], None, None)]),
+            (["--periodicities", "P1D"], [SelectionOption(None, None, ["P1D"])]),
         ],
     )
     def test_cross_product_with_missing_dimensions(self, args: list, expected_queries: list) -> None:

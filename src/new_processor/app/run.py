@@ -14,7 +14,7 @@ required infrastructure components, including:
 import logging
 from datetime import date, datetime
 
-from new_processor.cli.selection import RunConfig, SelectionSpec
+from new_processor.cli.selection import RunConfig, SelectionOption
 from new_processor.configuration.app_config import AppConfig, app_config
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.io_backend.duckdb_connection import create_duckdb_factory
@@ -43,7 +43,7 @@ def run_from_config(run_config: RunConfig) -> None:
 
 def _build_processor(
     network: str,
-    selection: SelectionSpec,
+    selection: list[SelectionOption],
     start_date: date | datetime,
     end_date: date | datetime,
 ) -> TimeSeriesProcessor:
@@ -106,7 +106,7 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
 
 
 def _build_dependency_graph(
-    network: str, selection: SelectionSpec, metadata_router: MetadataRouter
+    network: str, selection: list[SelectionOption], metadata_router: MetadataRouter
 ) -> DatasetDependencyGraph:
     """Build the dataset dependency graph for a processing run.
 

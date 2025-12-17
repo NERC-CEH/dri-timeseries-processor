@@ -12,13 +12,7 @@ from datetime import date, timedelta
 
 import isodate
 
-from new_processor.cli.selection import (
-    CrossProductSelectionSpec,
-    ExplicitSelectionSpec,
-    RootQuery,
-    RunConfig,
-    SelectionSpec,
-)
+from new_processor.cli.selection import RunConfig, SelectionOption
 from new_processor.utils.urls import SITE_URI
 
 
@@ -138,8 +132,8 @@ def _parse_date_range(lookback: timedelta, end_date: date) -> tuple[date, date]:
     return start_date, end_date
 
 
-def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> SelectionSpec:
-    """Determine the dataset selection mode and construct the appropriate SelectionSpec.
+def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[SelectionOption]:
+    """Determine the dataset selection mode and construct the appropriate selection options.
 
     The CLI supports two mutually exclusive selection modes:
         - Explicit selection via repeated --selection arguments
@@ -150,7 +144,7 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
         parser: ArgumentParser instance used to report validation errors.
 
     Returns:
-        A SelectionSpec instance representing user selection intent.
+        A list of SelectionOptions representing user selection intent.
     """
     has_explicit_selection = args.selection is not None
     has_cross_product = any([args.sites, args.variables, args.periodicities])
@@ -164,27 +158,25 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
         return _parse_cross_product_selection(args)
 
 
-def _parse_explicit_selection(args: argparse.Namespace) -> SelectionSpec:
+def _parse_explicit_selection(args: argparse.Namespace) -> list[SelectionOption]:
     """Parse explicit dataset selection arguments.
 
-    Each explicit selection is converted into a RootQuery representing a fully specified (site, variable, periodicity)
-    dataset request.
+    Each explicit selection is converted into a selection option representing a fully specified
+    (site, variable, periodicity) dataset request.
 
     Args:
         args: Parsed CLI arguments containing explicit selection values.
 
     Returns:
-        An ExplicitSelectionSpec representing the requested datasets.
+        A list of SelectionOptions representing user selection intent.
     """
-    return ExplicitSelectionSpec(
-        explicit=[
-            RootQuery(sites=[f"{SITE_URI}/{site}"], variables=[variable], periodicities=[periodicity])
-            for site, variable, periodicity in args.selection
-        ]
-    )
+    return [
+        (SelectionOption([f"{SITE_URI}/{site}"], [variable], [periodicity]))
+        for site, variable, periodicity in args.selection
+    ]
 
 
-def _parse_cross_product_selection(args: argparse.Namespace) -> SelectionSpec:
+def _parse_cross_product_selection(args: argparse.Namespace) -> list[SelectionOption]:
     """Parse cross-product dataset selection arguments.
 
     Constructs a selection specification with optional constraints over sites, variables, and periodicities.
@@ -194,14 +186,10 @@ def _parse_cross_product_selection(args: argparse.Namespace) -> SelectionSpec:
        args: Parsed CLI arguments containing cross-product selection values.
 
     Returns:
-       A CrossProductSelectionSpec representing the selection constraints.
+       A list of SelectionOptions representing user selection intent.
     """
     sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
-    return CrossProductSelectionSpec(
-        sites=sites,
-        variables=args.variables,
-        periodicities=args.periodicities,
-    )
+    return [SelectionOption(sites, args.variables, args.periodicities)]
 
 
 class SelectionAction(argparse.Action):
