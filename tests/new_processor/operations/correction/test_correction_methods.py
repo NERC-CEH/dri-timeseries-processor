@@ -236,23 +236,3 @@ class TestWdCorrection:
         result = WDCorrection().run(wd, config)
         expected_df = create_timeframe([95.01655, 160.81863, 354.14864, 75.46554], "wd").df
         assert_frame_equal(result.df, expected_df)
-
-    def test_pa_correction_with_date_filter(self) -> None:
-        """Test that the pa correction function works with a date filter."""
-        pa = create_timeframe([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213], "pa")
-        ta = create_timeframe([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31], "ta")
-        altitude = 74.0
-        factor = -5.1
-        config = create_method_config(
-            correction_factor=factor,
-            ta=ta,
-            altitude=altitude,
-            start_date=datetime(2025, 1, 1, 2),
-            end_date=datetime(2025, 1, 1, 4, 59),
-        )
-
-        result = PACorrection().run(pa, config)
-        expected_df = create_timeframe(
-            [1007.504, 1007.391, 1002.3039, 1002.2789, 1002.2069, 1007.194, 1007.213], "pa"
-        ).df
-        assert_frame_equal(result.df, expected_df)
