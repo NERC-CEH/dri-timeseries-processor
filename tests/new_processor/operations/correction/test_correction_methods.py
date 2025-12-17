@@ -12,6 +12,7 @@ from new_processor.operations.correction.correction_methods import (
     PACorrection,
     Power,
     Scalar,
+    WDCorrection,
 )
 from utils.data_creation import create_timeframe
 
@@ -147,20 +148,18 @@ class TestLWCorrection:
 
         result = LWCorrection().run(lw, config)
 
-        expected_df = pl.DataFrame(
-            {
-                "time": [datetime(2025, 1, 1, h) for h in range(7)],
-                "lw": [
-                    366.89501779404736,
-                    371.93855976840695,
-                    377.7449872014795,
-                    394.1243133190569,
-                    379.22105814566305,
-                    376.3027264419359,
-                    379.5942580579116,
-                ],
-            }
-        )
+        expected_df = create_timeframe(
+            [
+                366.89501779404736,
+                371.93855976840695,
+                377.7449872014795,
+                394.1243133190569,
+                379.22105814566305,
+                376.3027264419359,
+                379.5942580579116,
+            ],
+            "lw",
+        ).df
         assert_frame_equal(result.df, expected_df)
 
     def test_lw_correction_with_date_filter(self) -> None:
@@ -179,13 +178,9 @@ class TestLWCorrection:
         )
 
         result = LWCorrection().run(lw, config)
-
-        expected_df = pl.DataFrame(
-            {
-                "time": [datetime(2025, 1, 1, h) for h in range(7)],
-                "lw": [373.9, 381.5, 377.7449872014795, 394.1243133190569, 379.22105814566305, 387.3, 391.8],
-            }
-        )
+        expected_df = create_timeframe(
+            [373.9, 381.5, 377.7449872014795, 394.1243133190569, 379.22105814566305, 387.3, 391.8], "lw"
+        ).df
         assert_frame_equal(result.df, expected_df)
 
 
@@ -199,13 +194,9 @@ class TestPaCorrection:
         config = create_method_config(correction_factor=factor, ta=ta, altitude=altitude)
 
         result = PACorrection().run(pa, config)
-
-        expected_df = pl.DataFrame(
-            {
-                "time": [datetime(2025, 1, 1, h) for h in range(7)],
-                "pa": [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578],
-            }
-        )
+        expected_df = create_timeframe(
+            [1002.4489, 1002.3359, 1002.3039, 1002.2789, 1002.2069, 1002.1388, 1002.1578], "pa"
+        ).df
         assert_frame_equal(result.df, expected_df)
 
     def test_pa_correction_with_date_filter(self) -> None:
@@ -223,11 +214,45 @@ class TestPaCorrection:
         )
 
         result = PACorrection().run(pa, config)
+        expected_df = create_timeframe(
+            [1007.504, 1007.391, 1002.3039, 1002.2789, 1002.2069, 1007.194, 1007.213], "pa"
+        ).df
+        assert_frame_equal(result.df, expected_df)
 
-        expected_df = pl.DataFrame(
-            {
-                "time": [datetime(2025, 1, 1, h) for h in range(7)],
-                "pa": [1007.504, 1007.391, 1002.3039, 1002.2789, 1002.2069, 1007.194, 1007.213],
-            }
+
+class TestWdCorrection:
+    def test_wd_correction_simple(self) -> None:
+        """Test that the wd correction function works across the full DataFrame.
+
+        # Input data taken from COSMOS.LEVEL1_SOILMET_30MIN Oracle DB table:
+        #   Site: BUNNY,
+        #   Dates: [2015-04-08 19:30:00, 2017-06-01 05:00:00, 2020-10-03 03:00:00, 2024-12-03 10:00:00]
+        """
+        wd = create_timeframe([84.89191, 19.17, 185.9, 103.7], "wd")
+        ux = create_timeframe([0.204, 0.94, -3.747, -0.007], "ux")
+        uy = create_timeframe([2.324, 0.327, -0.384, 0.027], "uy")
+        config = create_method_config(ux=ux, uy=uy)
+
+        result = WDCorrection().run(wd, config)
+        expected_df = create_timeframe([95.01655, 160.81863, 354.14864, 75.46554], "wd").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_pa_correction_with_date_filter(self) -> None:
+        """Test that the pa correction function works with a date filter."""
+        pa = create_timeframe([1007.504, 1007.391, 1007.359, 1007.334, 1007.262, 1007.194, 1007.213], "pa")
+        ta = create_timeframe([12.25, 12.49, 12.58, 12.56, 12.82, 13.18, 13.31], "ta")
+        altitude = 74.0
+        factor = -5.1
+        config = create_method_config(
+            correction_factor=factor,
+            ta=ta,
+            altitude=altitude,
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
         )
+
+        result = PACorrection().run(pa, config)
+        expected_df = create_timeframe(
+            [1007.504, 1007.391, 1002.3039, 1002.2789, 1002.2069, 1007.194, 1007.213], "pa"
+        ).df
         assert_frame_equal(result.df, expected_df)
