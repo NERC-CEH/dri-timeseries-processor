@@ -175,11 +175,10 @@ class TimeSeriesProcessor:
             container: Time series container of metadata and data for dataset to save.
         """
         data_to_write = split_by_date(container.data.df, container.data.time_name)
-        for d, df in data_to_write:
-            day = d.strftime("%Y-%m-%d")
+        for data_date, df in data_to_write:
             key = (
                 f"network={container.network}/"
-                f"date={day}/"
+                f"date={data_date.strftime('%Y-%m-%d')}/"
                 f"site={container.source_site_identifier}/"
                 f"resolution={container.resolution}/"
                 f"data.parquet"

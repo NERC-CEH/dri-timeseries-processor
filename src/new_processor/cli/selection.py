@@ -17,11 +17,9 @@ class SelectionOption:
 
     def __repr__(self) -> str:
         return (
-            "SelectionOption("
             f"sites={self._fmt_dim(self.sites)} | "
             f"variables={self._fmt_dim(self.variables)} | "
             f"periodicities={self._fmt_dim(self.periodicities)}"
-            ")"
         )
 
     @staticmethod

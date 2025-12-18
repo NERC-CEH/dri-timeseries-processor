@@ -6,11 +6,7 @@ import pytest
 from freezegun import freeze_time
 
 from new_processor.cli.cli import _parse_date_range, _parse_lookback, parse_args
-from new_processor.cli.selection import (
-    CrossProductSelectionSpec,
-    ExplicitSelectionSpec,
-    SelectionOption,
-)
+from new_processor.cli.selection import SelectionOption
 from new_processor.utils.urls import SITE_URI
 
 
@@ -35,8 +31,7 @@ class TestParseArgs:
 
         cfg = parse_args(args)
 
-        assert isinstance(cfg.selection, ExplicitSelectionSpec)
-        queries = cfg.selection.root_queries
+        queries = cfg.selection
         assert Counter(queries) == Counter(expected_queries)
 
     @pytest.mark.parametrize(
@@ -47,7 +42,7 @@ class TestParseArgs:
             "SITE1 TA",
         ],
     )
-    def test_explicit_selection_error(self, selection: list) -> None:
+    def test_explicit_selection_error(self, selection: str) -> None:
         """Test that not providing a dimension in an explicit selection raises an error"""
         args = ["--network", "a_network", "--selection"]
         args.extend(selection.split(" "))
@@ -62,7 +57,7 @@ class TestParseArgs:
             "SITE1 TA",
         ],
     )
-    def test_explicit_selection_error_additional_args(self, selection: list) -> None:
+    def test_explicit_selection_error_additional_args(self, selection: str) -> None:
         """Test that not providing a dimension in an explicit selection raises an error, even when followed by
         further args. This is to test that additional args aren't stolen as the 3rd argument."""
         args = ["--network", "a_network", "--selection"]
@@ -89,9 +84,8 @@ class TestParseArgs:
             ]
         )
 
-        assert isinstance(cfg.selection, CrossProductSelectionSpec)
         expected_queries = [SelectionOption([f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"], ["TA", "RH"], ["P1D"])]
-        assert cfg.selection.root_queries == expected_queries
+        assert cfg.selection == expected_queries
 
     @pytest.mark.parametrize(
         "args, expected_queries",
@@ -103,7 +97,7 @@ class TestParseArgs:
     )
     def test_cross_product_with_missing_dimensions(self, args: list, expected_queries: list) -> None:
         cfg = parse_args(args + ["--network", "a_network"])
-        assert cfg.selection.root_queries == expected_queries
+        assert cfg.selection == expected_queries
 
     def test_explicit_and_cross_product(self) -> None:
         """Test that providing both explicit and cross product arguments raises an error"""
@@ -180,11 +174,12 @@ class TestParseLookback:
 
 
 class TestParseDateRange:
-    def test_date_range_computation(self) -> None:
+    def test_date_range_computation_with_lookback(self) -> None:
+        """Test that the lookback option generates expected date range"""
         end_date = date(2024, 3, 10)
         lookback = timedelta(days=5)
 
-        start_date, result_end = _parse_date_range(lookback, end_date)
+        start_date, result_end = _parse_date_range(None, lookback, end_date)
 
         assert result_end == end_date
         assert start_date == date(2024, 3, 5)
@@ -193,5 +188,31 @@ class TestParseDateRange:
         end_date = date(2024, 3, 10)
         lookback = timedelta(days=0)
 
-        start_date, _ = _parse_date_range(lookback, end_date)
+        start_date, _ = _parse_date_range(None, lookback, end_date)
         assert start_date == end_date
+
+    def test_date_range_computation_with_start_date(self) -> None:
+        """Test that the start date option generates expected date range"""
+        end_date = date(2024, 3, 10)
+        start_date = date(2024, 3, 1)
+
+        start_date, result_end = _parse_date_range(start_date, None, end_date)
+
+        assert result_end == end_date
+        assert start_date == start_date
+
+    def test_start_date_equals_end_date(self) -> None:
+        """Test that the error raised if start date = end date"""
+        end_date = date(2024, 3, 10)
+        start_date = date(2024, 3, 10)
+
+        with pytest.raises(argparse.ArgumentTypeError):
+            _parse_date_range(start_date, None, end_date)
+
+    def test_start_date_after_end_date(self) -> None:
+        """Test that the error raised if start date > end date"""
+        end_date = date(2024, 3, 10)
+        start_date = date(2025, 3, 10)
+
+        with pytest.raises(argparse.ArgumentTypeError):
+            _parse_date_range(start_date, None, end_date)

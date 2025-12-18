@@ -13,6 +13,7 @@ from datetime import date, timedelta
 import isodate
 
 from new_processor.cli.selection import RunConfig, SelectionOption
+from new_processor.utils.enums import CliSelectionMode
 from new_processor.utils.urls import SITE_URI
 
 
@@ -29,8 +30,9 @@ def parse_args(argv: list[str]) -> RunConfig:
     args = parser.parse_args(argv)
 
     start_date, end_date = _parse_date_range(
-        lookback=args.lookback,
+        start_date=args.start_date,
         end_date=args.end_date,
+        lookback=args.lookback,
     )
 
     selection = _parse_selection_mode(args, parser)
@@ -57,29 +59,15 @@ def _build_parser() -> argparse.ArgumentParser:
         description="Process time series data through processing pipelines",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-
-    parser.add_argument("--network", required=True)
-    parser.add_argument(
-        "--lookback",
-        type=_parse_lookback,
-        default="P2D",
-        help=(
-            "ISO8601 duration defining how far back from end-date to process. Should be a combination of "
-            "days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours"
-        ),
-    )
-    parser.add_argument(
-        "--end-date",
-        type=date.fromisoformat,
-        default=date.today(),
-        help="End date (YYYY-MM-DD, default: today)",
-    )
+    parent = _build_parent_parser()
+    subparsers = parser.add_subparsers(dest="mode", required=True)
 
     # Mode A: explicit selections.
     # Individual dataset specifications for fine-grained control. Can be specified multiple times.
     # Each --selection option is a combination of site, variable, and periodicity. "
     # Example: --selection SITE1 TA PT30M --selection SITE2 PRECIP P1D"
-    parser.add_argument(
+    selection_parser = subparsers.add_parser(CliSelectionMode.EXPLICIT.value, parents=[parent])
+    selection_parser.add_argument(
         "--selection",
         nargs=3,
         action=SelectionAction,
@@ -87,12 +75,50 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Repeatable explicit selection: --selection SITE1 TA PT30M --selection SITE2 PRECIP P1D",
     )
 
-    # Mode B: cross-product selectors
+    # Mode B: cross-product dimension selectors
     # Intended for a bulk processing mode - process same variables from multiple sites.
-    parser.add_argument("--sites", nargs="+", help="Space-separated list, e.g. ALIC1 BUNNY")
-    parser.add_argument("--variables", nargs="+", help="Space-separated list, e.g. TA PA")
-    parser.add_argument("--periodicities", nargs="+", help="Space-separated list, e.g. PT30M P1D")
+    cross_parser = subparsers.add_parser(CliSelectionMode.CROSS_PRODUCT.value, parents=[parent])
+    cross_parser.add_argument("--sites", nargs="+", help="Space-separated list, e.g. ALIC1 BUNNY")
+    cross_parser.add_argument("--variables", nargs="+", help="Space-separated list, e.g. TA PA")
+    cross_parser.add_argument("--periodicities", nargs="+", help="Space-separated list, e.g. PT30M P1D")
 
+    return parser
+
+
+def _build_parent_parser() -> argparse.ArgumentParser:
+    """Build a parent parser for the sub-parsers to use, so they can share common arguments
+
+    Returns:
+        Parent argument parser
+    """
+    parser = argparse.ArgumentParser(add_help=False)
+
+    parser.add_argument("--network", required=True)
+
+    # User should specify lookback OR start date
+    start_date_group = parser.add_mutually_exclusive_group()
+    start_date_group.add_argument(
+        "--lookback",
+        type=_parse_lookback,
+        default="P2D",
+        help=(
+            "ISO8601 duration defining how far back from end-date to process. Should be a combination of "
+            "days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours. "
+            "Cannot be used together with --start-date."
+        ),
+    )
+    start_date_group.add_argument(
+        "--start-date",
+        type=date.fromisoformat,
+        help="Start date (YYYY-MM-DD). Cannot be used together with --lookback.",
+    )
+
+    parser.add_argument(
+        "--end-date",
+        type=date.fromisoformat,
+        default=date.today(),
+        help="End date (YYYY-MM-DD, default: today)",
+    )
     return parser
 
 
@@ -118,16 +144,22 @@ def _parse_lookback(value: str) -> timedelta:
     return lookback
 
 
-def _parse_date_range(lookback: timedelta, end_date: date) -> tuple[date, date]:
+def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_date: date) -> tuple[date, date]:
     """Derive the start and end dates for processing.
 
     Args:
-        lookback: How far back from the end date to process.
+        start_date: Start date for the processing window (mutually exclusive of lookback).
         end_date: End date for the processing window.
+        lookback: How far back from the end date to process (mutually exclusive of start_date).
 
     Returns:
         Tuple of (start_date, end_date).
     """
+    if start_date is not None:
+        if start_date >= end_date:
+            raise argparse.ArgumentTypeError("--start-date must be earlier than --end-date")
+        return start_date, end_date
+
     start_date = end_date - lookback
     return start_date, end_date
 
@@ -146,16 +178,14 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
     Returns:
         A list of SelectionOptions representing user selection intent.
     """
-    has_explicit_selection = args.selection is not None
-    has_cross_product = any([args.sites, args.variables, args.periodicities])
-
-    if has_explicit_selection and has_cross_product:
-        parser.error("Use either --selection (repeatable) OR --sites/--variables/--periodicities, not both.")
-
-    if has_explicit_selection:
+    mode = CliSelectionMode(args.mode)
+    if mode == CliSelectionMode.EXPLICIT:
         return _parse_explicit_selection(args)
-    else:
+
+    if mode == CliSelectionMode.CROSS_PRODUCT:
         return _parse_cross_product_selection(args)
+
+    parser.error(f"Invalid selection mode: {args.mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
 
 
 def _parse_explicit_selection(args: argparse.Namespace) -> list[SelectionOption]:

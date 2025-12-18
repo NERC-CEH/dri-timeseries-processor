@@ -63,10 +63,10 @@ def _build_processor(
     """
     logger.info("-" * 30)
     logger.info("Setting up processor for selections:")
-    logger.info(f"Start date   : {start_date}")
-    logger.info(f"End date     : {end_date}")
-    logger.info(f"Network      : {network}")
-    logger.info(f"Root datasets: {selection}")
+    logger.info(f"Start date            : {start_date}")
+    logger.info(f"End date              : {end_date}")
+    logger.info(f"Network               : {network}")
+    logger.info(f"Dataset selections    : {'\n' + '\n'.join([str(s) for s in selection])}")
     logger.info("-" * 30)
 
     cfg = app_config()
