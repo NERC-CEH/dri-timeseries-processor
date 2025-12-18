@@ -52,6 +52,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -94,6 +95,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2" }
       ],
@@ -197,6 +199,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -239,6 +242,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1" }
       ],
@@ -281,6 +285,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -323,6 +328,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -365,6 +371,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -407,6 +414,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -449,6 +457,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -491,6 +500,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -533,6 +543,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -575,6 +586,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -617,6 +629,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_VWC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko2" }
       ],
@@ -659,6 +672,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "HS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -701,6 +715,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_UY_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -743,6 +758,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_TS_UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -785,6 +801,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -827,6 +844,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp1" }
       ],
@@ -869,6 +887,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TAU",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -911,6 +930,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_VWC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko1" }
       ],
@@ -953,6 +973,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -995,6 +1016,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_TS_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -1037,6 +1059,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp2" }
       ],
@@ -1079,6 +1102,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL10",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp3" }
       ],
@@ -1121,6 +1145,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL50",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp5" }
       ],
@@ -1163,6 +1188,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -1205,6 +1231,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_SOILEC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko2" }
       ],
@@ -1247,6 +1274,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TNR01C",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -1309,6 +1337,7 @@
         }
       ],
       "sourceColumnName": "PRECIP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -1351,6 +1380,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS_RES",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -1393,6 +1423,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -1435,6 +1466,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -1477,6 +1509,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL10",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp3" }
       ],
@@ -1519,6 +1552,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_VWC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko3" }
       ],
@@ -1561,6 +1595,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL20",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp4" }
       ],
@@ -1603,6 +1638,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -1645,6 +1681,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "U_STAR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -1687,6 +1724,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "HS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -1729,6 +1767,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2_CAL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2" }
       ],
@@ -1771,6 +1810,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp1" }
       ],
@@ -1813,6 +1853,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -1857,6 +1898,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_COR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-snow_depth" }
       ],
@@ -1901,6 +1943,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_COR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-snow_depth" }
       ],
@@ -1943,6 +1986,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD2_RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -1985,6 +2029,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2027,6 +2072,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_SOILEC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko2" }
       ],
@@ -2069,6 +2115,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -2111,6 +2158,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -2153,6 +2201,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1_CAL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1" }
       ],
@@ -2195,6 +2244,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS_RES",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2237,6 +2287,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL50",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp5" }
       ],
@@ -2279,6 +2330,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_VWC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko1" }
       ],
@@ -2321,6 +2373,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "U_STAR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2363,6 +2416,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "E_SAT_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2405,6 +2459,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -2447,6 +2502,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2_CAL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp2" }
       ],
@@ -2489,6 +2545,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2531,6 +2588,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -2573,6 +2631,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -2615,6 +2674,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RHO_A_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2659,6 +2719,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-snow_depth" }
       ],
@@ -2701,6 +2762,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL20",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp4" }
       ],
@@ -2743,6 +2805,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -2785,6 +2848,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_TS_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2827,6 +2891,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -2869,6 +2934,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -2933,6 +2999,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PRECIP_TIPPING_A",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tbr" }
       ],
@@ -2975,6 +3042,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -3017,6 +3085,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_SOILEC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko1" }
       ],
@@ -3059,6 +3128,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_SOILEC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko3" }
       ],
@@ -3101,6 +3171,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -3143,6 +3214,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -3185,6 +3257,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -3227,6 +3300,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -3291,6 +3365,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PRECIP_TIPPING_B",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tbr" }
       ],
@@ -3333,6 +3408,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_VWC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko2" }
       ],
@@ -3375,6 +3451,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1_CAL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp1" }
       ],
@@ -3417,6 +3494,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -3459,6 +3537,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -3501,6 +3580,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -3543,6 +3623,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp2" }
       ],
@@ -3585,6 +3666,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -3627,6 +3709,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_TS_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -3669,6 +3752,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -3711,6 +3795,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_UX_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -3753,6 +3838,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT2_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -3795,6 +3881,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_UX_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -3837,6 +3924,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -3879,6 +3967,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -3921,6 +4010,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "E_SAT_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -3963,6 +4053,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -4005,6 +4096,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_BARE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns_bare" }
       ],
@@ -4047,6 +4139,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -4089,6 +4182,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -4131,6 +4225,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -4173,6 +4268,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RHO_A_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -4215,6 +4311,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_UX_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -4257,6 +4354,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_SOILEC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko1" }
       ],
@@ -4299,6 +4397,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_VWC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko3" }
       ],
@@ -4341,6 +4440,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_BARE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns_bare" }
       ],
@@ -4383,6 +4483,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_UX_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -4425,6 +4526,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -4467,6 +4569,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -4509,6 +4612,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TAU",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -4551,6 +4655,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -4593,6 +4698,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -4635,6 +4741,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PROFILE_SOILEC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko3" }
       ],
@@ -4677,6 +4784,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_UY_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -4719,6 +4827,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_TS_UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -4761,6 +4870,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TNR01C",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -4805,6 +4915,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-snow_depth" }
       ],
@@ -4847,6 +4958,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -4889,6 +5001,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -4931,6 +5044,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "COV_TS_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -4973,6 +5087,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp2" }
       ],
@@ -5015,6 +5130,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STP_TSOIL2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp1" }
       ],
@@ -5057,6 +5173,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TDT1_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -5121,6 +5238,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_5M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -5160,6 +5278,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_RAINE_1MIN",
       "sourceColumnName": "RAINE_INT_1M_HR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -5221,6 +5340,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -5284,6 +5404,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-snow_depth" }
       ],
@@ -5348,6 +5469,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -5387,6 +5509,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_TS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -5429,6 +5552,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_BUCKET_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -5490,6 +5614,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TAU",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -5532,6 +5657,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD2_PERIOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -5596,6 +5722,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "CTS_MOD_CORR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -5657,6 +5784,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko3" }
       ],
@@ -5718,6 +5846,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -5779,6 +5908,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -5840,6 +5970,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -5898,6 +6029,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -5965,6 +6097,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "ALBEDO",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -6026,6 +6159,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -6068,6 +6202,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-logger" }
       ],
@@ -6110,6 +6245,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "Q_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -6171,6 +6307,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "HS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -6234,6 +6371,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_COR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-snow_depth" }
       ],
@@ -6295,6 +6433,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko1" }
       ],
@@ -6337,6 +6476,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -6398,6 +6538,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -6462,6 +6603,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT2_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -6523,6 +6665,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko2" }
       ],
@@ -6584,6 +6727,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -6645,6 +6789,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko1" }
       ],
@@ -6687,6 +6832,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1_MV",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1" }
       ],
@@ -6748,6 +6894,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -6809,6 +6956,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko2" }
       ],
@@ -6870,6 +7018,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -6934,6 +7083,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -6995,6 +7145,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -7059,6 +7210,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PE",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -7098,6 +7250,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -7140,6 +7293,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-logger" }
       ],
@@ -7204,6 +7358,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA_MAX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -7246,6 +7401,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWIN_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -7288,6 +7444,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WM_NAN_COUNT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -7352,6 +7509,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_150M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -7410,6 +7568,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -7452,6 +7611,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -7516,6 +7676,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "COSMOS_VWC_NO_SNOW",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -7555,6 +7716,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_ACCUMULATED_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -7619,6 +7781,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -7661,6 +7824,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -7725,6 +7889,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -7786,6 +7951,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RHO_A_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -7847,6 +8013,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_BARE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns_bare" }
       ],
@@ -7908,6 +8075,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD2_RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -7969,6 +8137,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UY_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -8033,6 +8202,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT2_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -8075,6 +8245,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -8139,6 +8310,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -8200,6 +8372,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -8267,6 +8440,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "ALBEDO",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -8325,6 +8499,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp2" }
       ],
@@ -8389,6 +8564,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -8431,6 +8607,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_UNC_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -8492,6 +8669,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -8553,6 +8731,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -8617,6 +8796,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PRECIP_TIPPING",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tbr" }
       ],
@@ -8681,6 +8861,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1" }
       ],
@@ -8723,6 +8904,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PRECIP_DIAG",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -8784,6 +8966,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -8845,6 +9028,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL20",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp4" }
       ],
@@ -8909,6 +9093,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL50",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp5" }
       ],
@@ -8982,6 +9167,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RN",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -9043,6 +9229,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_75M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -9101,6 +9288,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko3" }
       ],
@@ -9165,6 +9353,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp1" }
       ],
@@ -9229,6 +9418,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SNOW",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -9287,6 +9477,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "HS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -9329,6 +9520,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWIN_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -9387,6 +9579,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -9448,6 +9641,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL10",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp3" }
       ],
@@ -9512,6 +9706,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_150M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -9570,6 +9765,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko1" }
       ],
@@ -9612,6 +9808,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1" }
       ],
@@ -9654,6 +9851,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_ACCUMULATED_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -9715,6 +9913,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2" }
       ],
@@ -9757,6 +9956,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -9818,6 +10018,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_PERIOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -9879,6 +10080,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_SOILEC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko2" }
       ],
@@ -9943,6 +10145,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SMI",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -10007,6 +10210,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "COSMOS_VWC",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -10071,6 +10275,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "SIGMA_SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -10132,6 +10337,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -10171,6 +10377,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_ACCUMULATEDAL_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -10232,6 +10439,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -10290,6 +10498,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -10332,6 +10541,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WM_NAN_COUNT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -10396,6 +10606,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -10460,6 +10671,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -10521,6 +10733,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -10582,6 +10795,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -10646,6 +10860,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOS_VWC",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -10704,6 +10919,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -10765,6 +10981,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -10829,6 +11046,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_200M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -10868,6 +11086,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -10910,6 +11129,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WD_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -10976,6 +11196,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SNOWD_DISTANCE_COR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-snow_depth" }
       ],
@@ -11040,6 +11261,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp1" }
       ],
@@ -11082,6 +11304,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_ACCUMULATEDAL_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -11124,6 +11347,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH_INTERNAL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -11188,6 +11412,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_150M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -11249,6 +11474,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL10",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp3" }
       ],
@@ -11313,6 +11539,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2" }
       ],
@@ -11377,6 +11604,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "COSMOS_VWC_NO_SNOW",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -11438,6 +11666,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_25M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -11496,6 +11725,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TNR01C",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -11560,6 +11790,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "CTS_MOD_CORR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -11602,6 +11833,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_UNC_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -11663,6 +11895,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWOUT_MULT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -11727,6 +11960,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "MSLP",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -11785,6 +12019,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp1" }
       ],
@@ -11827,6 +12062,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TBR_TIP",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -11885,6 +12121,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko3" }
       ],
@@ -11927,6 +12164,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TNR01C_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -11988,6 +12226,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WS_RES",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -12030,6 +12269,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_BUCKET_LEVEL_RT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -12094,6 +12334,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_5M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -12152,6 +12393,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC15",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko1" }
       ],
@@ -12216,6 +12458,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PE",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -12280,6 +12523,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "COSMOS_VWC",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -12338,6 +12582,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TAU",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -12402,6 +12647,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "ALBEDO",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -12460,6 +12706,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC40",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-imko2" }
       ],
@@ -12521,6 +12768,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -12582,6 +12830,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -12643,6 +12892,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp1" }
       ],
@@ -12704,6 +12954,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -12768,6 +13019,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -12832,6 +13084,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_200M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -12890,6 +13143,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -12951,6 +13205,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL10",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp3" }
       ],
@@ -13012,6 +13267,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL50",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp5" }
       ],
@@ -13054,6 +13310,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -13121,6 +13378,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "MSLP",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -13182,6 +13440,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_5M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -13240,6 +13499,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -13313,6 +13573,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "CTS_MOD_CORR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -13377,6 +13638,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL20",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp4" }
       ],
@@ -13419,6 +13681,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_BUCKET_LEVEL_RT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -13461,6 +13724,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "PRECIP_TIPPING_A",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tbr" }
       ],
@@ -13503,6 +13767,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "METPAK_SAMPLES",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -13545,6 +13810,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -13587,6 +13853,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -13626,6 +13893,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SNOWD_SIGNALQUALITY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-snow_depth" }
       ],
@@ -13687,6 +13955,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp2" }
       ],
@@ -13751,6 +14020,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_150M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -13790,6 +14060,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -13832,6 +14103,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TNR01C_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -13905,6 +14177,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "CTS_MOD_CORR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -13969,6 +14242,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -14011,6 +14285,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_UNC_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -14075,6 +14350,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp1" }
       ],
@@ -14117,6 +14393,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_RAINE_1MIN",
       "sourceColumnName": "RAINE_PRECIP_TOT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -14180,6 +14457,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-snow_depth" }
       ],
@@ -14244,6 +14522,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SIGMA_SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -14283,6 +14562,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_BUCKET_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -14347,6 +14627,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_25M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -14386,6 +14667,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -14447,6 +14729,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TNR01C",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -14508,6 +14791,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -14550,6 +14834,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_PERIOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -14611,6 +14896,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -14653,6 +14939,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -14717,6 +15004,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -14775,6 +15063,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -14817,6 +15106,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WD_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -14883,6 +15173,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SNOWD_DISTANCE_COR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-snow_depth" }
       ],
@@ -14944,6 +15235,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -14986,6 +15278,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_HEATING_STATUS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -15047,6 +15340,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -15089,6 +15383,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_4",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -15131,6 +15426,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-logger" }
       ],
@@ -15192,6 +15488,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -15253,6 +15550,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -15320,6 +15618,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "MSLP",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -15378,6 +15677,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -15442,6 +15742,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT1_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -15506,6 +15807,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -15567,6 +15869,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -15609,6 +15912,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "METPAK_SAMPLES",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -15651,6 +15955,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -15709,6 +16014,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP_TIPPING",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tbr" }
       ],
@@ -15751,6 +16057,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD2_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -15793,6 +16100,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_RAINE_1MIN",
       "sourceColumnName": "RAINE_INT_LR_HR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -15835,6 +16143,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -15899,6 +16208,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "CTS_MOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -15941,6 +16251,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -16014,6 +16325,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RN",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -16053,6 +16365,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_3",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -16095,6 +16408,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWOUT_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -16159,6 +16473,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PRECIP_RAINE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-raine" }
       ],
@@ -16222,6 +16537,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SNOWD_DISTANCE_COR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-snow_depth" }
       ],
@@ -16286,6 +16602,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -16325,6 +16642,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -16367,6 +16685,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_UNC_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -16431,6 +16750,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp2" }
       ],
@@ -16495,6 +16815,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -16559,6 +16880,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp2" }
       ],
@@ -16620,6 +16942,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PROFILE_VWC65",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-imko3" }
       ],
@@ -16684,6 +17007,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -16745,6 +17069,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SNOW",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -16784,6 +17109,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWIN_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -16842,6 +17168,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_TS_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -16903,6 +17230,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -16945,6 +17273,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2_MV",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp2" }
       ],
@@ -16987,6 +17316,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_HEATING_STATUS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -17054,6 +17384,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -17112,6 +17443,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_SOILEC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -17154,6 +17486,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_LOADCELL_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -17215,6 +17548,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -17276,6 +17610,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -17340,6 +17675,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SMI",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -17401,6 +17737,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT2_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -17465,6 +17802,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "RN",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -17526,6 +17864,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "CTS_EST_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -17590,6 +17929,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_75M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -17648,6 +17988,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -17690,6 +18031,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_RAINE_1MIN",
       "sourceColumnName": "RAINE_INT_1M",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -17754,6 +18096,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT1_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -17818,6 +18161,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -17882,6 +18226,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "EFF_DEPTH",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -17940,6 +18285,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -17982,6 +18328,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_RAINE_1MIN",
       "sourceColumnName": "RAINE_INT_LR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -18024,6 +18371,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_TS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -18088,6 +18436,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -18149,6 +18498,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UX_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -18210,6 +18560,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RHO_A_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -18277,6 +18628,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "CTS_EST_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -18341,6 +18693,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp2" }
       ],
@@ -18402,6 +18755,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_SOILPERM",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -18466,6 +18820,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA_MAX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -18508,6 +18863,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_3",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -18550,6 +18906,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SNOWD_SIGNALQUALITY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-snow_depth" }
       ],
@@ -18614,6 +18971,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "CTS_MOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -18656,6 +19014,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PA_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -18717,6 +19076,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "U_STAR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -18778,6 +19138,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp2" }
       ],
@@ -18842,6 +19203,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "WD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -18906,6 +19268,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_INTEN",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -18964,6 +19327,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWIN_MULT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -19025,6 +19389,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1" }
       ],
@@ -19107,6 +19472,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PE",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -19168,6 +19534,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_INTEN",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -19229,6 +19596,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -19290,6 +19658,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "MSLP",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -19329,6 +19698,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_INTENSITY_RT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -19371,6 +19741,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_ACCUMULATED_RT_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -19432,6 +19803,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -19499,6 +19871,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "CTS_EST_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -19541,6 +19914,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1_MV",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp1" }
       ],
@@ -19605,6 +19979,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT2_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt2" }
       ],
@@ -19669,6 +20044,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "ALBEDO_SD",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -19730,6 +20106,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "SIGMA_SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -19788,6 +20165,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -19849,6 +20227,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -19891,6 +20270,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_LOADCELL_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -19955,6 +20335,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL50",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp5" }
       ],
@@ -19997,6 +20378,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_STATUS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -20039,6 +20421,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWOUT_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -20097,6 +20480,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL50",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp5" }
       ],
@@ -20139,6 +20523,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_RAINE_1MIN",
       "sourceColumnName": "RAINE_PRECIP_LR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -20203,6 +20588,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_200M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -20242,6 +20628,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -20306,6 +20693,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PRECIP_RAINE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -20367,6 +20755,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UY_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -20431,6 +20820,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -20470,6 +20860,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PRECIP_DIAG",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -20531,6 +20922,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_BARE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns_bare" }
       ],
@@ -20592,6 +20984,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -20656,6 +21049,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA_MIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -20717,6 +21111,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UX_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -20759,6 +21154,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -20823,6 +21219,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "EFF_DEPTH",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -20881,6 +21278,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD2_PERIOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -20942,6 +21340,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UX_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -20984,6 +21383,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -21048,6 +21448,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_PA",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -21109,6 +21510,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT1_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -21151,6 +21553,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -21212,6 +21615,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWIN_MULT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -21254,6 +21658,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2" }
       ],
@@ -21315,6 +21720,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD2_TEMP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns2" }
       ],
@@ -21379,6 +21785,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOS_VWC",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -21418,6 +21825,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWIN_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -21482,6 +21890,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_PA",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -21540,6 +21949,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UY",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -21604,6 +22014,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_25M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -21665,6 +22076,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_200M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -21726,6 +22138,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA_MIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -21768,6 +22181,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_INTENSITY_RT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -21832,6 +22246,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "ALBEDO_SD",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -21871,6 +22286,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -21932,6 +22348,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_VWC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -21974,6 +22391,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWOUT_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -22032,6 +22450,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-tdt1" }
       ],
@@ -22074,6 +22493,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -22135,6 +22555,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "U_STAR",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -22199,6 +22620,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -22260,6 +22682,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP_RAINE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-raine" }
       ],
@@ -22324,6 +22747,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL10",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp3" }
       ],
@@ -22388,6 +22812,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_75M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -22449,6 +22874,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_Q",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -22510,6 +22936,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "RN",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -22568,6 +22995,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "LWOUT_MULT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -22632,6 +23060,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "ALBEDO",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -22671,6 +23100,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_MULT",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -22729,6 +23159,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "COV_UX_UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -22790,6 +23221,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT1_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -22851,6 +23283,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -22893,6 +23326,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH_INTERNAL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -22954,6 +23388,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PRECIP_RAINE",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-raine" }
       ],
@@ -23036,6 +23471,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "PE",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -23075,6 +23511,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_5",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -23117,6 +23554,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "PRECIP_TIPPING_B",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tbr" }
       ],
@@ -23181,6 +23619,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "EFF_DEPTH",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -23220,6 +23659,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -23284,6 +23724,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_5M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -23342,6 +23783,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp1" }
       ],
@@ -23406,6 +23848,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PRECIP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -23467,6 +23910,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UZ",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -23509,6 +23953,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -23573,6 +24018,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -23615,6 +24061,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_PERIOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -23657,6 +24104,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWIN_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -23718,6 +24166,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "STP_TSOIL20",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-stp4" }
       ],
@@ -23782,6 +24231,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -23843,6 +24293,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD_PERIOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -23907,6 +24358,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -23949,6 +24401,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "STDEV_UX",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -23991,6 +24444,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "LWOUT_UNC",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -24052,6 +24506,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TDT2_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt2" }
       ],
@@ -24094,6 +24549,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWOUT_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr" }
       ],
@@ -24158,6 +24614,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_25M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -24219,6 +24676,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "STP_TSOIL20",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-stp4" }
       ],
@@ -24261,6 +24719,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD_DIAG_4",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-crns" }
       ],
@@ -24325,6 +24784,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "CTS_EST_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -24389,6 +24849,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "WD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -24450,6 +24911,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "E_SAT_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -24492,6 +24954,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_ACCUMULATED_RT_NRT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -24559,6 +25022,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "SIGMA_SWE_CRNS",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -24598,6 +25062,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-logger" }
       ],
@@ -24640,6 +25105,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "Q_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -24701,6 +25167,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -24762,6 +25229,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws" }
       ],
@@ -24804,6 +25272,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp2" }
       ],
@@ -24846,6 +25315,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G1_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-hfp1" }
       ],
@@ -24910,6 +25380,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PRECIP",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-pluvio" }
       ],
@@ -24974,6 +25445,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TDT1_TSOIL",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tdt1" }
       ],
@@ -25035,6 +25507,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr" }
       ],
@@ -25096,6 +25569,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "E_SAT_MEAN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem" }
       ],
@@ -25157,6 +25631,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "WS_RES",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem" }
       ],
@@ -25221,6 +25696,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "EFF_DEPTH",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -25260,6 +25736,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PRECIP_1MIN",
       "sourceColumnName": "P_STATUS",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-pluvio" }
       ],
@@ -25302,6 +25779,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "G2_MV",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2" }
       ],
@@ -25363,6 +25841,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "CTS_MOD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-crns" }
       ],
@@ -25427,6 +25906,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_75M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -25466,6 +25946,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PA_STD",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -25527,6 +26008,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws" }
       ],
@@ -25569,6 +26051,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -25633,6 +26116,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_1M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -25672,6 +26156,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GREEN_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -25714,6 +26199,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GREEN_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -25756,6 +26242,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -25798,6 +26285,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RED_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -25840,6 +26328,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GREEN_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -25882,6 +26371,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -25924,6 +26414,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RED_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -25966,6 +26457,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RED_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26008,6 +26500,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26050,6 +26543,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RED_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26092,6 +26586,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RED_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26134,6 +26629,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GREEN_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26237,6 +26733,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26279,6 +26776,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26321,6 +26819,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26363,6 +26862,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RED_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26405,6 +26905,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26469,6 +26970,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_1M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1" }
       ]
@@ -26508,6 +27010,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BLUE_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26550,6 +27053,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26592,6 +27096,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BLUE_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26634,6 +27139,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26676,6 +27182,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26718,6 +27225,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26760,6 +27268,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GREEN_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26802,6 +27311,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RED_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -26908,6 +27418,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BLUE_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -26972,6 +27483,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "D86_1M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -27011,6 +27523,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27139,6 +27652,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1HOUR",
       "sourceColumnName": "D86_1M",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         { "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny" }
       ]
@@ -27178,6 +27692,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BLUE_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27220,6 +27735,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27262,6 +27778,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GREEN_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27304,6 +27821,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RED_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27346,6 +27864,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27388,6 +27907,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BLUE_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27430,6 +27950,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BLUE_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27472,6 +27993,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BLUE_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27514,6 +28036,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "RCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27556,6 +28079,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27598,6 +28122,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "BLUE_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27640,6 +28165,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27682,6 +28208,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27724,6 +28251,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "BCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27766,6 +28294,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27808,6 +28337,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GCC_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -27850,6 +28380,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1DAY",
       "sourceColumnName": "GREEN_LAND1",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27892,6 +28423,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "RCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27934,6 +28466,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GCC_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-phenocam" }
       ],
@@ -27976,6 +28509,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_PHENOCAM_1MIN",
       "sourceColumnName": "GREEN_LAND2",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-phenocam" }
       ],
@@ -28043,6 +28577,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PRECIP_TIPPING",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         { "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-tbr" }
       ],

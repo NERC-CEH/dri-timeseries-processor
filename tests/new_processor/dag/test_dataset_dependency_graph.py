@@ -31,6 +31,7 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         source_column=ts_id + "_column",
         source_dataset=ts_id + "_dataset",
         source_site_identifier=ts_id + "site_identifier",
+        time_column_name=ts_id + "time_column_name",
         resolution=ts_id + "_resolution",
         periodicity=ts_id + "_periodicity",
         variable=ts_id + "_variable",

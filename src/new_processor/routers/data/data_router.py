@@ -64,7 +64,7 @@ class DuckDBDataRouter(DataRouter):
         partitions_str = "/".join(partitions)
         bucket_path = f"s3://{container.source_bucket}/{partitions_str}/data.parquet"
         query = f"""
-            SELECT time, {container.source_column}
+            SELECT {container.time_column_name}, {container.source_column}
             FROM read_parquet('{bucket_path}')
             WHERE
                 (date BETWEEN ? AND ?) AND
