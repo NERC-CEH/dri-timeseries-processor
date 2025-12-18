@@ -76,6 +76,7 @@ class TimeSeriesDatasetItem(IDModel):
     source_bucket: str | None = Field(None, alias="sourceBucket")
     source_dataset: str | None = Field(None, alias="sourceDataset")
     source_column_name: str | None = Field(None, alias="sourceColumnName")
+    time_column_name: str | None = Field(None, alias="sourceTimeColumnName")
     originating_facility: list[IDModel] | None = Field(None, alias="originatingFacility")
     originating_site: list[IDModel] | None = Field(None, alias="originatingSite")
     depends_on: list[IDModel] = Field(default_factory=list, alias="dependsOn")
