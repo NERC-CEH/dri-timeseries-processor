@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 
 import polars as pl
@@ -7,6 +8,7 @@ from time_stream.utils import get_date_filter
 
 from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.utils.enums import OperationType
+from new_processor.utils.time_stream_utils import merge_multiple_timeframes
 
 
 class CorrectionMethod(Operation, ABC):
@@ -161,7 +163,6 @@ class Power(CorrectionMethod):
         )
 
 
-# TODO: Placeholder implementation
 @CorrectionMethod.register
 class WDCorrection(CorrectionMethod):
     """Wind direction correction operation class."""
@@ -170,4 +171,21 @@ class WDCorrection(CorrectionMethod):
     flag_value = 32
 
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
-        pass
+        ux_tf = config.params["ux"]
+        uy_tf = config.params["uy"]
+        merged_tf = merge_multiple_timeframes([ux_tf, uy_tf])
+
+        primary_col = tf.metadata["column_name"]
+        ux_col = ux_tf.metadata["column_name"]
+        uy_col = uy_tf.metadata["column_name"]
+
+        # Core WD correction expression
+        wd_expr = (180.0 / pl.lit(math.pi)) * pl.arctan2(pl.col(ux_col), pl.col(uy_col)) + 90.0
+
+        # Wrap negatives into [0, 360)
+        wd_wrapped = pl.when(wd_expr < 0.0).then(wd_expr + 360.0).otherwise(wd_expr)
+
+        # Calculate and round to 5 decimal places
+        wd_corr = merged_tf.df.with_columns(wd_wrapped.round(5).alias(primary_col))[primary_col]
+
+        return tf.with_df(tf.df.with_columns(wd_corr.alias(primary_col)))
