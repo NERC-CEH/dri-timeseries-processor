@@ -25,7 +25,7 @@ class TestParseArgs:
         ],
     )
     def test_explicit_selection(self, selections: list, expected_queries: list) -> None:
-        args = ["--network", "a_network"]
+        args = ["from-selection", "--network", "a_network"]
         for site_id, variable, periodicity in selections:
             args.extend(["--selection", site_id, variable, periodicity])
 
@@ -71,6 +71,7 @@ class TestParseArgs:
         """Test that a cross product selection is created, when all dimensions are specified"""
         cfg = parse_args(
             [
+                "from-cross-product",
                 "--network",
                 "a_network",
                 "--sites",
@@ -96,27 +97,8 @@ class TestParseArgs:
         ],
     )
     def test_cross_product_with_missing_dimensions(self, args: list, expected_queries: list) -> None:
-        cfg = parse_args(args + ["--network", "a_network"])
+        cfg = parse_args(["from-cross-product", "--network", "a_network"] + args)
         assert cfg.selection == expected_queries
-
-    def test_explicit_and_cross_product(self) -> None:
-        """Test that providing both explicit and cross product arguments raises an error"""
-        with pytest.raises(SystemExit):
-            parse_args(
-                [
-                    "--network",
-                    "a_network",
-                    "--selection",
-                    "SITE1",
-                    "TA",
-                    "P1D",
-                    "--sites",
-                    "SITE1",
-                    "--variables",
-                    "TA",
-                    "RH",
-                ]
-            )
 
     def test_no_network_error(self) -> None:
         """Test that not providing a network raises an error"""
@@ -126,14 +108,16 @@ class TestParseArgs:
     @freeze_time("2025-01-01")
     def test_lookback_from_default(self) -> None:
         """Test that lookback works from the default end date"""
-        cfg = parse_args(["--network", "a_network", "--lookback", "P2D"])
+        cfg = parse_args(["from-cross-product", "--network", "a_network", "--lookback", "P2D"])
         assert cfg.end_date == date(2025, 1, 1)
         assert cfg.start_date == date(2024, 12, 30)
 
     @freeze_time("2025-01-01")
     def test_lookback_from_specified(self) -> None:
         """Test that lookback works from a specified end date"""
-        cfg = parse_args(["--network", "a_network", "--end-date", "2025-03-31", "--lookback", "P2D"])
+        cfg = parse_args(
+            ["from-cross-product", "--network", "a_network", "--end-date", "2025-03-31", "--lookback", "P2D"]
+        )
         assert cfg.end_date == date(2025, 3, 31)
         assert cfg.start_date == date(2025, 3, 29)
 

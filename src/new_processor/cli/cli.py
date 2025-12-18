@@ -70,6 +70,7 @@ def _build_parser() -> argparse.ArgumentParser:
     selection_parser.add_argument(
         "--selection",
         nargs=3,
+        required=True,
         action=SelectionAction,
         metavar=("SITE", "VARIABLE", "PERIODICITY"),
         help="Repeatable explicit selection: --selection SITE1 TA PT30M --selection SITE2 PRECIP P1D",
@@ -78,9 +79,15 @@ def _build_parser() -> argparse.ArgumentParser:
     # Mode B: cross-product dimension selectors
     # Intended for a bulk processing mode - process same variables from multiple sites.
     cross_parser = subparsers.add_parser(CliSelectionMode.CROSS_PRODUCT.value, parents=[parent])
-    cross_parser.add_argument("--sites", nargs="+", help="Space-separated list, e.g. ALIC1 BUNNY")
-    cross_parser.add_argument("--variables", nargs="+", help="Space-separated list, e.g. TA PA")
-    cross_parser.add_argument("--periodicities", nargs="+", help="Space-separated list, e.g. PT30M P1D")
+    cross_parser.add_argument(
+        "--sites", nargs="+", help="Space-separated list, e.g. ALIC1 BUNNY. If omitted, find all sites for network."
+    )
+    cross_parser.add_argument(
+        "--variables", nargs="+", help="Space-separated list, e.g. TA PA. If omitted, find all variables for all sites."
+    )
+    cross_parser.add_argument(
+        "--periodicities", nargs="+", help="Space-separated list, e.g. PT30M P1D. If omitted, find all periodicities."
+    )
 
     return parser
 
