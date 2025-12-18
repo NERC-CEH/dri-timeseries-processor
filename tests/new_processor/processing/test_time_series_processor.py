@@ -94,6 +94,7 @@ class TestTimeSeriesProcessor:
             data_writer=mock_writer,
             start_date=datetime(2025, 1, 1),
             end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
         )
         # override the process dataset function for this test
         processor.process_dataset = MagicMock()
@@ -109,6 +110,7 @@ class TestTimeSeriesProcessor:
             data_writer=mock_writer,
             start_date=datetime(2023, 1, 1),
             end_date=datetime(2023, 1, 2),
+            metrics=MagicMock(),
         )
 
         container = mock_graph.datasets[ds_id]
@@ -158,6 +160,7 @@ class TestTimeSeriesProcessor:
             data_writer=mock_writer,
             start_date=datetime(2023, 1, 1),
             end_date=datetime(2023, 1, 2),
+            metrics=MagicMock(),
         )
 
         raw_container = mock_graph.datasets[raw_ds_id]
