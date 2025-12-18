@@ -145,9 +145,11 @@ class TimeSeriesProcessor:
                 self.metrics.no_data.inc()
 
             else:
-                # TODO: Note issue about the "time" name - where to get this in metadata
                 tf = TimeFrame(
-                    df=df, time_name="time", resolution=container.resolution, periodicity=container.periodicity
+                    df=df,
+                    time_name=container.time_column_name,
+                    resolution=container.resolution,
+                    periodicity=container.periodicity,
                 ).with_metadata({"column_name": container.source_column})
 
                 tf = add_initial_core_flags(tf)
@@ -213,7 +215,7 @@ class TimeSeriesProcessor:
             container: Time series container of metadata and data for dataset to save.
         """
         with self.metrics.time_write.time():
-            data_to_write = split_by_date(container.data.df, container.data.time_name)
+            data_to_write = split_by_date(container.data.df, container.time_column_name)
             for data_date, df in data_to_write:
                 key = (
                     f"network={container.network}/"
@@ -222,7 +224,7 @@ class TimeSeriesProcessor:
                     f"resolution={container.resolution}/"
                     f"data.parquet"
                 )
-                self.data_writer.write(container.source_bucket, key, df, container.data.time_name)
+                self.data_writer.write(container.source_bucket, key, df, container.time_column_name)
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only

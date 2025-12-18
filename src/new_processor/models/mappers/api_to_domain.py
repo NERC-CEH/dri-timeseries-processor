@@ -63,6 +63,7 @@ def map_dataset_item(
         source_column=item.source_column_name,
         source_site=source_site,
         source_site_identifier=source_site_identifier,
+        time_column_name=item.time_column_name,
         method=method_config,
         depends_on=depends_on,
         direct_depends_on=direct_depends_on,

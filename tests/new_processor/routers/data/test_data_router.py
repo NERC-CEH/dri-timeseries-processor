@@ -28,6 +28,7 @@ def container() -> MagicMock:
         source_site="a_network-a_site",
         source_column="a_column_name",
         source_site_identifier="A_SITE",
+        time_column_name="a_time",
     )
 
 
@@ -42,7 +43,7 @@ class TestDuckDBDataRouter:
         end = datetime(2023, 1, 2)
 
         expected_query = """
-            SELECT time, a_column_name
+            SELECT a_time, a_column_name
             FROM read_parquet('s3://a_bucket/a_network/dataset=a_dataset/site=*/date=*/data.parquet')
             WHERE
                 (date BETWEEN ? AND ?) AND

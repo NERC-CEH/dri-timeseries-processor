@@ -79,6 +79,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "RN",
+      "sourceTimeColumnName": "time",
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
