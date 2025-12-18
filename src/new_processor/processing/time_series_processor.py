@@ -72,14 +72,15 @@ class TimeSeriesProcessor:
         """Execute the processing pipeline by iterating through the dependency graph.
         The graph is traversed in order, ensuring dependencies are processed before the datasets that rely on them.
         """
-        if not self.graph.datasets:
-            logger.error("No datasets found in dependency graph.")
-        else:
-            layers = self.graph.layered_topo_sort()
-            logger.info("Processing pipeline started.")
+        with self.metrics.time_pipeline.time():
+            if not self.graph.datasets:
+                logger.error("No datasets found in dependency graph.")
+            else:
+                layers = self.graph.layered_topo_sort()
+                logger.info("Processing pipeline started.")
 
-            for layer in layers:
-                self.process_layer(layer)
+                for layer in layers:
+                    self.process_layer(layer)
 
         logger.info("Processing pipeline finished. Pushing prometheus metrics.")
         self.metrics.export_metrics_to_pushgateway()

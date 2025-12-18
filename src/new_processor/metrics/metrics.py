@@ -30,6 +30,7 @@ class Metrics:
         self.time_aggregate = Histogram("time_aggregate_seconds", "Time spent aggregating data", registry=self.registry)
         self.time_derive = Histogram("time_derive_seconds", "Time spent deriving data", registry=self.registry)
         self.time_write = Histogram("time_write_seconds", "Time spent writing", registry=self.registry)
+        self.time_pipeline = Histogram("time_pipeline_seconds", "Time spent for full pipeline", registry=self.registry)
 
         self.success = Counter("runs_successful_total", "Successful pipeline runs", registry=self.registry)
         self.failed = Counter("runs_failed_total", "Failed pipeline runs", registry=self.registry)
