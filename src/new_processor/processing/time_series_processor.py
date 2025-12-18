@@ -7,7 +7,7 @@ dataset's method type.
 """
 
 import logging
-from datetime import datetime
+from datetime import date, datetime
 
 from time_stream import TimeFrame
 
@@ -47,8 +47,8 @@ class TimeSeriesProcessor:
         graph: DatasetDependencyGraph,
         data_router: DataRouter,
         data_writer: ParquetWriterInterface,
-        start_date: datetime,
-        end_date: datetime,
+        start_date: date | datetime,
+        end_date: date | datetime,
     ):
         """Initialise the processor.
 
@@ -175,11 +175,10 @@ class TimeSeriesProcessor:
             container: Time series container of metadata and data for dataset to save.
         """
         data_to_write = split_by_date(container.data.df, container.data.time_name)
-        for date, df in data_to_write:
-            day = date.strftime("%Y-%m-%d")
+        for data_date, df in data_to_write:
             key = (
                 f"network={container.network}/"
-                f"date={day}/"
+                f"date={data_date.strftime('%Y-%m-%d')}/"
                 f"site={container.source_site_identifier}/"
                 f"resolution={container.resolution}/"
                 f"data.parquet"

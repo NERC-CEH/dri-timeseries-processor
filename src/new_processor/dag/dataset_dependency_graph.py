@@ -14,56 +14,47 @@ from collections import defaultdict
 from graphlib import TopologicalSorter
 
 from metadata_manager.models.schemas.sites import SiteMetadata
+from new_processor.cli.selection import SelectionOption
 from new_processor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from new_processor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from new_processor.models.domain_models.processing_config import ProcessingConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.models.mappers.api_to_domain import map_dataset_item, map_processing_config_item, map_site_metadata
 from new_processor.routers.metadata.metadata_router import MetadataRouter
-from new_processor.utils.enums import ConfigurationType, ProcessingLevel
+from new_processor.utils.enums import ProcessingLevel
 from new_processor.utils.strings import extract_uri_id
-from new_processor.utils.urls import CONFIGURATION_TYPE_URI, PROCESSING_LEVEL_URI, SITE_URI
+from new_processor.utils.urls import PROCESSING_LEVEL_URI
 
 logger = logging.getLogger(__name__)
 
 
 class DatasetDependencyGraph:
-    """
-    Builds a dataset dependency DAG for a given set of site(s), variable(s), and resolution.
+    """Builds a dataset dependency DAG for a given set of site(s), variable(s), and periodicities.
 
-    This class orchestrates the construction of a complete dependency graph by fetching dataset metadata from an
+    If no sites / variables / periodicities provided, it will attempt to fetch all options from the metadata service.
+
+    Orchestrates the construction of a complete dependency graph by fetching dataset metadata from an
     API, resolving dependencies recursively, and attaching processing configurations.
 
     The DAG is constructed recursively by:
-        1. Fetching the target (processed) datasets (based on user input of site(s), variable(s), resolution).
+        1. Fetching the target (processed) datasets (based on user input of site(s), variable(s), periodicity(s)).
         2. Resolving direct dependencies via the `_all_dependencies.json` endpoint.
         3. Fetching all relevant data processing configurations (QC, Infill, Correction).
         4. Repeating for any new datasets introduced by these direct dependencies and configuration dependencies.
     """
 
-    def __init__(
-        self,
-        network: str,
-        sites: str | list[str],
-        variables: str | list[str],
-        periodicity: str,
-        api_router: MetadataRouter,
-    ):
+    def __init__(self, metadata_router: MetadataRouter, network: str, selection: list[SelectionOption]):
         """Initialize the dependency graph builder.
 
         Args:
+            metadata_router: A router object that handles metadata API calls.
             network: The network identifier
-            sites: List of site(s) to include.
-            variables: List of variable(s) to include.
-            periodicity: ISO 8601 duration string of the periodicity of the datasets.
-            api_router: A router object that handles API calls.
+            selection: Selection specification for which datasets should be processed.
         """
         self.network = network
-        self.sites = [sites] if isinstance(sites, str) else sites
-        self.variables = [variables] if isinstance(variables, str) else variables
-        self.periodicity = periodicity
+        self.selection = selection
 
-        self.api_router = api_router
+        self.metadata_router = metadata_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
         self.site_metadata: dict[str, SiteMetadata] = {}
         self._dataset_cache: dict[str, TimeSeriesContainer] = {}
@@ -98,11 +89,8 @@ class DatasetDependencyGraph:
         # Clear caches etc.
         self.reset()
 
-        # Fetch all site metadata
-        self._fetch_site_metadata()
-
         # Fetch the root datasets - i.e. the ones originally requested by the user.
-        root_datasets = self._fetch_root_datasets()
+        root_datasets = self._resolve_root_datasets()
 
         # Start the batch with the root datasets
         current_batch = {ds.ts_id: ds for ds in root_datasets}
@@ -179,7 +167,43 @@ class DatasetDependencyGraph:
                 dep_container = self._fetch_dataset_by_id(dep_id)
                 next_batch[dep_id] = dep_container
 
-    def _fetch_root_datasets(self) -> list[TimeSeriesContainer]:
+    def _resolve_root_datasets(self) -> list[TimeSeriesContainer]:
+        """Resolve and fetch the root datasets for the selection of datasets requested.
+
+        Uses the list of SelectionOption objects, that represent either:
+            - a fully-specified dataset request (explicit selection), or
+            - a partially-specified constraint (cross-product selection)
+
+        Site metadata is fetched up-front for all requested sites. If any query leaves the site dimension unconstrained,
+        site metadata is fetched for all sites in the network.
+
+        For each query, datasets are fetched using the available constraints. Any unconstrained dimensions
+        (variables or periodicities) are expanded downstream during the metadata API call.
+
+        Returns:
+            TimeSeriesContainer objects representing the root datasets from which dependency resolution will proceed.
+        """
+        # Determine which sites we need to fetch metadata for
+        requested_sites = set()
+        for query in self.selection:
+            if not query.sites:
+                # If no site provided, we know we need to fetch all, so break early
+                break
+            requested_sites.update(query.sites)
+
+        all_site_ids = self._fetch_site_metadata(list(requested_sites))
+
+        containers = set()
+        for query in self.selection:
+            containers.update(
+                self._fetch_root_datasets(query.sites or all_site_ids, query.variables or [], query.periodicities or [])
+            )
+
+        return list(containers)
+
+    def _fetch_root_datasets(
+        self, sites: list[str], variables: list[str], periodicities: list[str]
+    ) -> list[TimeSeriesContainer]:
         """Fetch processed dataset containers for the target sites and variables.
 
         Queries the metadata API for processed-level datasets matching the specified sites, variables, and resolution.
@@ -188,15 +212,17 @@ class DatasetDependencyGraph:
         Returns:
             List of TimeSeriesContainer objects representing root datasets.
         """
-        sites_params = [("originatingSite", f"{SITE_URI}/{self.network}-{site.lower()}") for site in self.sites]
-        variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in self.variables]
+        sites_params = [("originatingSite", site) for site in sites]
+        variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in variables]
+        periodicity_params = [("type.measure.aggregation.periodicity", periodicity) for periodicity in periodicities]
         other_params = [
             ("_view", "timeseries"),
-            ("type.measure.aggregation.periodicity", self.periodicity),
             ("type.processingLevel", f"{PROCESSING_LEVEL_URI}/{ProcessingLevel.PROCESSED.value}"),
         ]
 
-        response = self.api_router.fetch_dataset_by_params(tuple(sites_params + variables_params + other_params))
+        response = self.metadata_router.fetch_dataset_by_params(
+            tuple(sites_params + variables_params + periodicity_params + other_params)
+        )
         all_containers = self._build_dataset_containers(response)
         return all_containers
 
@@ -209,7 +235,7 @@ class DatasetDependencyGraph:
         Returns:
             List of TimeSeriesContainer objects that the specified dataset depends on.
         """
-        response = self.api_router.fetch_all_dependencies(extract_uri_id(dataset_id))
+        response = self.metadata_router.fetch_all_dependencies(extract_uri_id(dataset_id))
         all_containers = self._build_dataset_containers(response)
         return all_containers
 
@@ -227,39 +253,49 @@ class DatasetDependencyGraph:
         if dataset_id in self._dataset_cache:
             return self._dataset_cache[dataset_id]
 
-        response = self.api_router.fetch_dataset_by_id(extract_uri_id(dataset_id))
+        response = self.metadata_router.fetch_dataset_by_id(extract_uri_id(dataset_id))
         all_containers = self._build_dataset_containers(response)
         return all_containers[0]
 
-    def _fetch_configs_for_dataset(self, dataset_id: str | list[str]) -> dict[str, list[ProcessingConfig]]:
+    def _fetch_configs_for_dataset(self, dataset_ids: list[str]) -> dict[str, list[ProcessingConfig]]:
         """Fetch data processing configurations (QC, infilling, correction) that apply to the specified dataset(s).
 
         Args:
-            dataset_id: Single dataset ID or list of dataset IDs.
+            dataset_ids: Single dataset ID or list of dataset IDs.
 
         Returns:
             Dictionary mapping dataset IDs to their list of processing configurations.
         """
-        if not dataset_id:
+        if not dataset_ids:
             return {}
 
-        if isinstance(dataset_id, str):
-            dataset_id = [dataset_id]
-
-        config_type_params = [("type", f"{CONFIGURATION_TYPE_URI}/{ct.value}") for ct in ConfigurationType]
-        other_params = [("appliesToTimeSeries", d) for d in dataset_id]
-        response = self.api_router.fetch_processing_configs(tuple(config_type_params + other_params))
-
+        response = self.metadata_router.fetch_processing_configs(dataset_ids)
         dataset_configs = self._build_processing_configs(response)
         return dataset_configs
 
-    def _fetch_site_metadata(self) -> None:
-        """Fetches site metadata for all sites with variables being processed."""
-        for site in self.sites:
-            logger.info(f"Fetching site metadata for: {site}")
-            response = self.api_router.fetch_site_by_alt_id(site).items[0]
-            meta = map_site_metadata(response)
+    def _fetch_site_metadata(self, sites: list[str] | None = None) -> list[str]:
+        """Fetches site metadata for all sites with variables being processed. Sets the `self.sites_metadata` dict.
+
+        Args:
+            sites: Select sites to get metadata for.  If empty, will fetch all sites for given network.
+
+        Returns:
+            List of Metadata API site IDs
+        """
+        if not sites:
+            # If no sites provided, find all sites for the given network
+            logger.warning(f"No sites provided. Fetching all sites for: {self.network}")
+            network_response = self.metadata_router.fetch_network(self.network)
+            sites = [site.id for site in network_response.items[0].contains]
+
+        sites_response = self.metadata_router.fetch_sites(sites)
+
+        fetched_site_ids = []
+        for item in sites_response.items:
+            meta = map_site_metadata(item)
             self.site_metadata[meta.site_id] = meta
+            fetched_site_ids.append(meta.site_id)
+        return fetched_site_ids
 
     def _build_dataset_containers(self, dataset_response: TimeSeriesDatasetResponse) -> list[TimeSeriesContainer]:
         """Parse an API response container timeseries dataset items and convert them to the `TimeSeriesContainer`
