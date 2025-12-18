@@ -20,6 +20,7 @@ from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.io_backend.duckdb_connection import create_duckdb_factory
 from new_processor.io_backend.reader import DuckDBParquetReader
 from new_processor.io_backend.writer import ByteParquetWriter
+from new_processor.metrics.metrics import Metrics
 from new_processor.processing.time_series_processor import TimeSeriesProcessor
 from new_processor.routers.data.data_router import DuckDBDataRouter
 from new_processor.routers.metadata.metadata_router import MetadataRouter
@@ -76,6 +77,7 @@ def _build_processor(
     reader = DuckDBParquetReader(create_duckdb_factory())
     writer = ByteParquetWriter(storage)
     data_router = DuckDBDataRouter(reader)
+    metrics = Metrics(cfg.pushgateway_url, "timeseries-processor")
 
     graph = _build_dependency_graph(network, selection, metadata_router)
 
@@ -85,6 +87,7 @@ def _build_processor(
         data_writer=writer,
         start_date=start_date,
         end_date=end_date,
+        metrics=metrics,
     )
 
 

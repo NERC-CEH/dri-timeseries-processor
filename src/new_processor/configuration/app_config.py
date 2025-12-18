@@ -35,6 +35,7 @@ class AppConfig(ABC):
     processed_bucket: str
     metadata_api_url: str
     environment: Environment
+    pushgateway_url: str
 
     def __init__(self):
         self.load_config()
@@ -78,6 +79,7 @@ class AppConfigLocal(AppConfig):
             self.endpoint_url = cfg["endpoint_url"]
 
             self.environment = Environment.LOCAL
+            self.pushgateway_url = cfg["pushgateway_url"]
 
         except KeyNotFoundError as err:
             raise KeyError(f"Missing required local config key:\n{err}")
@@ -108,6 +110,7 @@ class AppConfigLive(AppConfig):
             self.processed_bucket = os.environ["processed_bucket"]
             self.metadata_api_url = os.environ["metadata_api_url"]
             self.environment = Environment(os.environ["environment"])
+            self.pushgateway_url = os.environ["pushgateway_url"]  # TODO : remember to add to K8s config
 
         except KeyError as err:
             raise KeyError(f"Missing required live config key:\n{err}")
