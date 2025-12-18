@@ -81,6 +81,7 @@ class TimeSeriesProcessor:
             for layer in layers:
                 self.process_layer(layer)
 
+        logger.info("Processing pipeline finished. Pushing prometheus metrics.")
         self.metrics.export_metrics_to_pushgateway()
 
     def process_layer(self, layer: list[str]) -> None:
