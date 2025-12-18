@@ -14,6 +14,7 @@ REQUIRED_LOCAL_CONFIG_KEYS = [
     "processed_bucket",
     "metadata_api_url",
     "endpoint_url",
+    "pushgateway_url",
 ]
 
 REQUIRED_LOCAL_ENV_KEYS = [
@@ -27,6 +28,7 @@ REQUIRED_LIVE_CONFIG_KEYS = [
     "level_0_bucket",
     "processed_bucket",
     "metadata_api_url",
+    "pushgateway_url",
 ]
 
 

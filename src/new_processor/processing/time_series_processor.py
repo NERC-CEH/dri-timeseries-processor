@@ -13,6 +13,7 @@ from time_stream import TimeFrame
 
 from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.io_backend.writer import ParquetWriterInterface
+from new_processor.metrics.metrics import Metrics
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from new_processor.operations.correction.correction_pipeline import CorrectionPipeline
@@ -49,6 +50,7 @@ class TimeSeriesProcessor:
         data_writer: ParquetWriterInterface,
         start_date: date | datetime,
         end_date: date | datetime,
+        metrics: Metrics,
     ):
         """Initialise the processor.
 
@@ -64,20 +66,40 @@ class TimeSeriesProcessor:
         self.data_writer = data_writer
         self.start_date = start_date
         self.end_date = end_date
+        self.metrics = metrics
 
     def run(self) -> None:
         """Execute the processing pipeline by iterating through the dependency graph.
         The graph is traversed in order, ensuring dependencies are processed before the datasets that rely on them.
         """
-        layers = self.graph.layered_topo_sort()
-        logger.info("Processing pipeline started.")
+        with self.metrics.time_pipeline.time():
+            if not self.graph.datasets:
+                logger.error("No datasets found in dependency graph.")
+            else:
+                layers = self.graph.layered_topo_sort()
+                logger.info("Processing pipeline started.")
 
-        for layer_idx, layer in enumerate(layers):
-            logger.info(f"Processing layer {layer_idx}: {layer}")
-            for dataset_id in layer:
+                for layer in layers:
+                    self.process_layer(layer)
+
+        logger.info("Processing pipeline finished. Pushing prometheus metrics.")
+        self.metrics.export_metrics_to_pushgateway()
+
+    def process_layer(self, layer: list[str]) -> None:
+        """Process an individual layer of the dependency graph.
+
+        Args:
+            layer: Datasets to process
+        """
+        logger.info(f"Processing layer: {layer}")
+        for dataset_id in layer:
+            try:
                 self.process_dataset(dataset_id)
-
-        logger.info("Processing pipeline completed successfully.")
+            except Exception:
+                self.metrics.failed.inc()
+                logger.exception(f"Processing failed for: {dataset_id}")
+            else:
+                self.metrics.success.inc()
 
     def process_dataset(self, dataset_id: str) -> None:
         """Process a single dataset according to the configured method type in its metadata.
@@ -114,16 +136,22 @@ class TimeSeriesProcessor:
         Args:
             container: Time series container of metadata and data for the dataset to load.
         """
-        logger.info(f"{MethodType.LOAD}: {container.ts_id}")
-        df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
+        with self.metrics.time_load.time():
+            logger.info(f"{MethodType.LOAD}: {container.ts_id}")
+            df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
 
-        # TODO: Note issue about the "time" name - where to get this in metadata
-        tf = TimeFrame(
-            df=df, time_name="time", resolution=container.resolution, periodicity=container.periodicity
-        ).with_metadata({"column_name": container.source_column})
+            if df.is_empty():
+                logger.warning(f"No data returned for dataset: {container.ts_id}")
+                self.metrics.no_data.inc()
 
-        tf = add_initial_core_flags(tf)
-        container.data = tf
+            else:
+                # TODO: Note issue about the "time" name - where to get this in metadata
+                tf = TimeFrame(
+                    df=df, time_name="time", resolution=container.resolution, periodicity=container.periodicity
+                ).with_metadata({"column_name": container.source_column})
+
+                tf = add_initial_core_flags(tf)
+                container.data = tf
 
     def _process(self, container: TimeSeriesContainer) -> None:
         """Process a single dataset according to the data processing configurations attached via metadata.
@@ -138,9 +166,16 @@ class TimeSeriesProcessor:
 
         dep_container = self._get_single_dependency(container)
 
-        operation_steps = [OperationType.CORRECTION, OperationType.QUALITY_CONTROL, OperationType.INFILLING]
-        for operation_type in operation_steps:
-            pipeline = OPERATION_PIPELINES[operation_type]
+        with self.metrics.time_corrections.time():
+            pipeline = OPERATION_PIPELINES[OperationType.CORRECTION]
+            dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+
+        with self.metrics.time_qc.time():
+            pipeline = OPERATION_PIPELINES[OperationType.QUALITY_CONTROL]
+            dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+
+        with self.metrics.time_infill.time():
+            pipeline = OPERATION_PIPELINES[OperationType.INFILLING]
             dep_container.data = pipeline.run(dep_container, self.graph.datasets)
 
         # shift the data into the primary container
@@ -154,9 +189,10 @@ class TimeSeriesProcessor:
         """
         logger.info(f"{MethodType.AGGREGATION}: {container.ts_id}")
 
-        dep_container = self._get_single_dependency(container)
-        pipeline = OPERATION_PIPELINES[OperationType.AGGREGATION]
-        container.data = pipeline.run(container, dep_container)
+        with self.metrics.time_aggregate.time():
+            dep_container = self._get_single_dependency(container)
+            pipeline = OPERATION_PIPELINES[OperationType.AGGREGATION]
+            container.data = pipeline.run(container, dep_container)
 
     def _derive(self, container: TimeSeriesContainer) -> None:
         """Run derivation to create a single dataset according to the method configurations attached via metadata.
@@ -165,8 +201,10 @@ class TimeSeriesProcessor:
             container: Time series container of metadata and data for dataset to create via derivation.
         """
         logger.info(f"{MethodType.DERIVATION}: {container.ts_id}")
-        pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
-        container.data = pipeline.run(container, self.graph.datasets)
+
+        with self.metrics.time_derive.time():
+            pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
+            container.data = pipeline.run(container, self.graph.datasets)
 
     def _save(self, container: TimeSeriesContainer) -> None:
         """Save the processed data within the given container.
@@ -174,16 +212,17 @@ class TimeSeriesProcessor:
         Args:
             container: Time series container of metadata and data for dataset to save.
         """
-        data_to_write = split_by_date(container.data.df, container.data.time_name)
-        for data_date, df in data_to_write:
-            key = (
-                f"network={container.network}/"
-                f"date={data_date.strftime('%Y-%m-%d')}/"
-                f"site={container.source_site_identifier}/"
-                f"resolution={container.resolution}/"
-                f"data.parquet"
-            )
-            self.data_writer.write(container.source_bucket, key, df, container.data.time_name)
+        with self.metrics.time_write.time():
+            data_to_write = split_by_date(container.data.df, container.data.time_name)
+            for data_date, df in data_to_write:
+                key = (
+                    f"network={container.network}/"
+                    f"date={data_date.strftime('%Y-%m-%d')}/"
+                    f"site={container.source_site_identifier}/"
+                    f"resolution={container.resolution}/"
+                    f"data.parquet"
+                )
+                self.data_writer.write(container.source_bucket, key, df, container.data.time_name)
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only
