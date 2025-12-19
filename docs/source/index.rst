@@ -15,7 +15,7 @@ quality-controlled, gap-filled, and derived datasets for the FDRI (Flood and Dro
    :width: 600px
 
 This documentation will provide a higher level overview of the application. For guidance on how to contribute,
-see the repository [README](https://github.com/NERC-CEH/dri-timeseries-processor).
+see the repository `README <https://github.com/NERC-CEH/dri-timeseries-processor>`_.
 
 Contents
 --------
