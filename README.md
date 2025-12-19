@@ -9,7 +9,7 @@ This pipeline processes time series data through a metadata-driven approach:
 
 1. **Fetches metadata** from the FDRI Metadata API to build a dependency graph of datasets
 2. **Processes datasets** in topological order, ensuring dependencies are satisfied
-3. **Applies operations** sequentially: corrections > quality control > infilling > aggregation/derivation
+3. **Applies operations** corrections > quality control > infilling > aggregation/derivation
 4. **Writes results** to S3 storage as partitioned parquet files
 
 ## Developer Setup
