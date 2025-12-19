@@ -1,0 +1,2328 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-range",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-g1_30min_raw-range-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-291",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-291#value",
+                "value": -150.0,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-292",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-292#value",
+                "value": 300.0,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/range",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Range"
+            ],
+            "scopeNote": [
+              "Value out of range"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-hfp_removal",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-g1_30min_raw-hfp_removal-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-298",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-298#value",
+                "value": "01:00:00",
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/time_le"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-297",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-297#value",
+                "value": "00:30:00",
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/time_ge"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/hfp_removal",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/time_le"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/time_ge"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/cosmos-specific"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Heat flux plates"
+            ],
+            "scopeNote": [
+              "Removes G1 and G2 for 0:30 and 1:00 while plates are heating up to calibrate"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-error_code",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-g1_30min_raw-error_code-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-295",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-295#value",
+                "value": 7999.0,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-296",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-296#value",
+                "value": 8999.0,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/error_code",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Error code"
+            ],
+            "scopeNote": [
+              "Find and remove known error codes"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-samples",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-g1_30min_raw-samples-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-300",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-300#value",
+                "value": 60.0,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-299",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-299#value",
+                "valueReference": {
+                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw"
+                },
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/samples",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Samples"
+            ],
+            "scopeNote": [
+              "Number of samples taken in measruring period too low"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-spike",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-g1_30min_raw-spike-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-301",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-301#value",
+                "value": 20.0,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/spike",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Spike"
+            ],
+            "scopeNote": [
+              "Spike in timeseries"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-battery_v",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-g1_30min_raw-battery_v-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-294",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-294#value",
+                "value": 10.5,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-293",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-293#value",
+                "valueReference": {
+                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw"
+                },
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Battery"
+            ],
+            "scopeNote": [
+              "Battery voltage too low"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-alic1-g1_30min_raw",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasAnnotation": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-infill-cosmos-alic1-g1_30min_raw-1",
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-infill-cosmos-alic1-g1_30min_raw-1#value",
+            "value": 1,
+            "@type": [
+              {
+                "@id": "http://schema.org/PropertyValue"
+              }
+            ]
+          },
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/priority"
+          },
+          "@type": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"
+            }
+          ]
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-alic1-g1_30min_raw-1-2013-01-01t00:30:00",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-alic1-g1_30min_raw-1-2013-01-01t00:30:00#window",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-alic1-g1_30min_raw-1-2013-01-01t00:30:00#window.value",
+                "value": 1,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-alic1-g1_30min_raw-1-2013-01-01t00:30:00#gap",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-alic1-g1_30min_raw-1-2013-01-01t00:30:00#gap.value",
+                "value": 6,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max-gap-size"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_linear",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-alic1-g1_30min_raw-1-2013-01-01t00:30:00#value",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "startDate": "2013-01-01T00:30:00"
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/etlhua55iajf7tf7eslee2eipg7dk63n",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/1omcjlk6k8kcrrolqupi7kgjndbom1dk",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2017-08-25-09:00:00-2017-08-26-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2017-08-26T00:00:00",
+            "startDate": "2017-08-25T09:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/3u64nflsj3bvhgm78ofb8ehteg11e6so",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/bkqmqvisp0l6t47usui73acq89gduo5n",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-11-02-00:00:00-2016-11-03-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-11-03T00:00:00",
+            "startDate": "2016-11-02T00:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/gjsokgphg28sd5ohboilb9nvresg872a",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pbmg2hgvj5mp4cti700b3tham8q3022o",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2017-05-16-07:30:00-2017-05-17-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2017-05-17T00:00:00",
+            "startDate": "2017-05-16T07:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/416f2lmev5k44ne3901vja8fnhco0lbu",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/p2uam7erphjcfbbptutv8el8h92v9bib",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2018-06-01-09:30:00-2018-06-02-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2018-06-02T00:00:00",
+            "startDate": "2018-06-01T09:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/bpjee70n8stcml2d4fq72v54ukfg3pm2",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/r1mdmfnighbr46dtgqrijhpq4bi78i4s",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-08-21-01:30:00-2016-08-22-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-08-22T00:00:00",
+            "startDate": "2016-08-21T01:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/s5iks3u15uddeikn3f8cufav5nbki4up",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/t3sipu6j1kkqbh0n4em5vbu3u6uhrg0q",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2017-11-10-11:30:00-2017-11-11-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2017-11-11T00:00:00",
+            "startDate": "2017-11-10T11:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/4b1dq3s3erdridrqihijp8f8ta2miamq",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/teukf88n7p08phhukmsgh7gdkh7hu5om",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-08-01-10:30:00-2016-08-02-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-08-02T00:00:00",
+            "startDate": "2016-08-01T10:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/k54l5jputdqmst80jt9iro082e71dndp",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/uhaib7eqlme6shogqvl8g413ajaj59pv",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2018-09-14-14:30:00-2018-09-15-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2018-09-15T00:00:00",
+            "startDate": "2018-09-14T14:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/sgs3ula254o1nntr5h7edpfidm4c972b",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cf5r25pnse13fli6e9o3fv5acv0s737s",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-08-22-10:30:00-2016-08-23-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-08-23T00:00:00",
+            "startDate": "2016-08-22T10:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/v011ss2vsddp28tchm2jhm7tpbp4b2hg",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ael32cbh1buvf4leadpl4o7q5gc2745h",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-07-28-14:00:00-2016-07-29-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-07-29T00:00:00",
+            "startDate": "2016-07-28T14:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/e03e40bpupkhsrvshh724hrc1phpvkab",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/0huvt08vvm9741e2ucbo3s12l8k3vi1s",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-10-05-10:00:00-2016-10-06-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-10-06T00:00:00",
+            "startDate": "2016-10-05T10:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/dmag5ommp02arkfs8rnqa41cpnob9e09",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/8cfcodcdjcla70bfcqqedq2k0erc0l6k",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-08-17-00:30:00-2016-08-18-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-08-18T00:00:00",
+            "startDate": "2016-08-17T00:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/743p4qb8ljcauesi24rukisj6taai4if",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/e09k525e2thmtvn2vpb3it7o8386an0j",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-11-19-17:00:00-2016-11-20-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-11-20T00:00:00",
+            "startDate": "2016-11-19T17:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/j89gff6pg3qg6i2tamgkmjnkhofb63a8",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/mmi7oeh9pa1f36q5lflls5del2sn5117",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-10-03-10:30:00-2016-10-04-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-10-04T00:00:00",
+            "startDate": "2016-10-03T10:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/b2mghhdnvjavkmr193d7g4vft8vhqli2",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/tke8l3gp4juhvslmb4tvukle2g18hfd6",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2018-03-12-12:00:00-2018-03-13-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2018-03-13T00:00:00",
+            "startDate": "2018-03-12T12:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/f06dqbejh2tvisoj2cmpus95mcvsjjev",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ist61qi6dc6udnda6sku8cgirdp6ud5o",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-08-02-10:00:00-2016-08-03-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-08-03T00:00:00",
+            "startDate": "2016-08-02T10:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/e4qv3f8bu1blafs7eqqt332ckse3un72",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/k9gv834c6rckl5gus8t1jch9gmiak0lb",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2018-10-29-11:30:00-2018-10-30-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2018-10-30T00:00:00",
+            "startDate": "2018-10-29T11:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/i81tocrr9vavib3fj6subsvoelf1krvj",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/dsq78c6lif0vmg6guc3pfv2t69dbtvf9",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2017-01-26-13:30:00-2017-01-27-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2017-01-27T00:00:00",
+            "startDate": "2017-01-26T13:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/310i44hbcvtv7hn60l0eu6hffl85o3i6",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/mq0j9012r78hqreual3r16tibn5fdfkp",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2016-08-20-06:30:00-2016-08-21-00:00:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2016-08-21T00:00:00",
+            "startDate": "2016-08-20T06:30:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/1c5umvj879kvneuppu0q5en8u4hgtsov",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          }
+        }
+      ],
+      "hasCurrentConfiguration": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/trk0urb98ah8vckp4a3ibk1vernlivmu",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/me3soc50n22vksv3bs91g4q0u3l2dqj7#value",
+                "value": 0.1986
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2018-12-20-10:00:00-2018-12-20-11:30:00",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "endDate": "2018-12-20T11:30:00",
+            "startDate": "2018-12-20T10:00:00"
+          }
+        }
+      ],
+      "title": [
+        "Correction Configuration for COSMOS-ALIC1-G1_30MIN_RAW"
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    }
+  ]
+}

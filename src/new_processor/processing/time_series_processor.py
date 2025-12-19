@@ -93,13 +93,14 @@ class TimeSeriesProcessor:
         """
         logger.info(f"Processing layer: {layer}")
         for dataset_id in layer:
-            try:
-                self.process_dataset(dataset_id)
-            except Exception:
-                self.metrics.failed.inc()
-                logger.exception(f"Processing failed for: {dataset_id}")
-            else:
-                self.metrics.success.inc()
+            self.process_dataset(dataset_id)
+            # try:
+            #     self.process_dataset(dataset_id)
+            # except Exception:
+            #     self.metrics.failed.inc()
+            #     logger.exception(f"Processing failed for: {dataset_id}")
+            # else:
+            #     self.metrics.success.inc()
 
     def process_dataset(self, dataset_id: str) -> None:
         """Process a single dataset according to the configured method type in its metadata.
@@ -145,12 +146,16 @@ class TimeSeriesProcessor:
                 self.metrics.no_data.inc()
 
             else:
-                tf = TimeFrame(
-                    df=df,
-                    time_name=container.time_column_name,
-                    resolution=container.resolution,
-                    periodicity=container.periodicity,
-                ).with_metadata({"column_name": container.source_column})
+                tf = (
+                    TimeFrame(
+                        df=df,
+                        time_name=container.time_column_name,
+                        resolution=container.resolution,
+                        periodicity=container.periodicity,
+                    )
+                    .with_metadata({"column_name": container.source_column})
+                    .pad()
+                )
 
                 tf = add_initial_core_flags(tf)
                 container.data = tf
