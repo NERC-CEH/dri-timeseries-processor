@@ -76,7 +76,7 @@ it is available. To configure the tests, select `pytest` as the test runner fram
 containing the tests.
 
 ### Pre commit hooks
-Run below to setup the pre-commit hooks.
+Run below to set up the pre-commit hooks.
 ```
 git config --local core.hooksPath .githooks/
 ```
@@ -106,3 +106,19 @@ The pipeline exports Prometheus metrics to a Pushgateway:
 - **Data availability**: Datasets with no data available
 
 Locally accessible at `http://localhost:9091`
+
+## Documentation
+
+To build the documentation locally:
+
+```bash
+# Install documentation dependencies (but they are included by default)
+uv sync --group docs
+
+# Build the documentation
+cd docs
+make html
+
+# View documentation
+open _build/html/index.html
+```
