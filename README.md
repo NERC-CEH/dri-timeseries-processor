@@ -12,6 +12,63 @@ This pipeline processes time series data through a metadata-driven approach:
 3. **Applies operations** corrections > quality control > infilling > aggregation/derivation
 4. **Writes results** to S3 storage as partitioned parquet files
 
+## Basic usage
+
+The processor CLI is invoked using:
+
+```bash
+python -m new_processor ... 
+```
+
+Use one of two (mutually exclusive) modes:
+
+1. Explicit: `from-selection`
+    - Individual sets of processing arguments    
+
+    ```bash
+    python -m new_processor from-selection
+     --network NETWORK
+     [--lookback DURATION | --start-date YYYY-MM-DD]
+     [--end-date YYYY-MM-DD]
+     --selection SITE VARIABLE PERIODICITY
+     [--selection SITE2 VARIABLE2 PERIODICITY2 ...]
+    ```
+   
+    **Example**:
+   
+    ```bash    
+    python -m new_processor from-selection 
+     --network cosmos 
+     --lookback P2D 
+     --selection cosmos-alic1 TA PT30M
+     --selection cosmos-bunny PA PT30M
+     --selection cosmos-bunny PRECIP P1D
+    ```
+   
+2. Cross-product: `from-cross-product`
+    - Bulk processing across processing dimensions
+
+    ```bash    
+    python -m new_processor from-cross-product 
+     --network NETWORK 
+     [--lookback DURATION | --start-date YYYY-MM-DD] 
+     [--end-date YYYY-MM-DD] 
+     [--sites SITE1 SITE2 ...] 
+     [--variables VAR1 VAR2 ...] 
+     [--periodicities PER1 PER2 ...]
+    ```
+   
+    **Example**:
+    
+    ```bash    
+    python -m new_processor from-cross-product 
+     --network cosmos 
+     --lookback P2D 
+     --sites cosmos-alic1 cosmos-bunny
+     --variables TA PA 
+     --periodicities PT30M
+    ```
+   
 ## Developer Setup
 
 This is for active development on the processing package itself.

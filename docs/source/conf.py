@@ -44,6 +44,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 mermaid_version = "11.12.0"
+mermaid_d3_zoom = True
 
 # -- Options for autodoc -----------------------------------------------------
 autosummary_generate = True

@@ -5,74 +5,71 @@ Architecture Overview
 The time series processor follows a metadata-driven, dependency-aware architecture with the several main components,
 explained below.
 
-System Architecture
-===================
+System Flow Chart
+=================
 
 .. mermaid::
+    :align: center
 
-    graph TD
+    flowchart TD
+        Start([Command Line Interface - CLI]) --> Parse[Parse Arguments]
+        Parse --> LoadConfig[Load Environment Configuration]
 
-    subgraph CLI & Configuration
-        CLI[CLI Layer]
-        RUN[RunConfig]
-        SEL[Selection Resolver]
-        DEP[Dependency Graph]
-    end
+        LoadConfig --> BuildDAG[Build Dependency Graph]
+        BuildDAG --> MetaAPI[(Metadata Store API)]
+        MetaAPI --> BuildDAG
+        BuildDAG --> TopoSort[Topological Sort<br/>Determine execution order]
 
-    subgraph Pipeline
-        PIPE[Pipeline Engine]
+        TopoSort --> Pipeline[Processing Pipeline]
+        Pipeline --> StartLayer{{For each layer in DAG}}
+        StartLayer --> StartProc{{For each dataset in layer}}
+        StartProc --> StartLayer
 
-        LOAD[Load data]
-        PROC[Process data]
-        DERI[Derive data]
-        AGG[Aggregate data]
+        StartProc --> CheckMethod{Check<br/>Method Type}
+        CheckMethod --> StartProc
 
-        AGGO[Aggregation Ops]
-        DERO[Derivation Ops]
-        CORR[Correction Ops]
-        QCO[QC Ops]
-        INFO[Infilling Ops]
+        CheckMethod -->|LOAD| LoadRaw[Read raw parquet from S3]
+        LoadRaw --> S3Reader[(S3 Storage Reader)]
+        S3Reader --> LoadRaw
+        LoadRaw --> CreateTF[Create TimeFrame<br/>Add initial flags]
+        CreateTF --> NextDataset
 
-        WRI[Write data]
-    end
+        CheckMethod -->|PROCESS| Process[Run standard processing steps]
+        Process --> RunCorr[Run Corrections]
+        RunCorr --> RunQC[Run Quality Control Checks]
+        RunQC --> RunInfill[Run Infilling]
+        RunInfill --> SaveProc[Write to S3]
+        SaveProc --> S3Writer[(S3 Storage Writer)]
+        SaveProc --> NextDataset
 
-    subgraph DataFrames
-        TF[TimeFrame]
-        PL[Polars DataFrame]
-    end
+        CheckMethod -->|AGGREGATE| Resample[Temporal Resampling]
+        Resample --> SaveAgg[Write to S3]
+        SaveAgg --> S3Writer
+        SaveAgg --> NextDataset
 
-    subgraph External
-        META[Metadata Store]
-        STORE[S3 Storage]
-    end
+        CheckMethod -->|DERIVE| Compute[Compute derived variable<br/>e.g., Net Radiation]
+        Compute --> SaveDeriv[Write to S3]
+        SaveDeriv --> S3Writer
+        SaveDeriv --> NextDataset
 
-    CLI --> RUN
-    RUN --> DEP
-    DEP --> SEL
-    DEP --> PIPE
+        NextDataset([Next dataset])
+        NextDataset -->|All done| NextLayer
+        NextLayer([Next layer])
+        NextLayer -->|All done| ExportMetrics[Export Metrics to Prometheus]
+        ExportMetrics --> PrometheusGW[(Prometheus<br/>Pushgateway)]
+        ExportMetrics --> Done([Processing Complete])
 
-    PIPE --> LOAD
-    LOAD --> STORE
-    LOAD --> PL
-    PL --> TF
-    TF --> LOAD
-    PIPE --> PROC
-    PIPE --> DERI
-    PIPE --> AGG
+        classDef setup fill:#A8D5E2,stroke:#7CA9B8,stroke-width:2px
+        classDef orchestration fill:#D4B5E8,stroke:#A78BBD,stroke-width:2px
+        classDef processing fill:#B8E6D5,stroke:#8BB8A8,stroke-width:2px
+        classDef storage fill:#C9C9C9,stroke:#9A9A9A,stroke-width:2px
+        classDef completion fill:#C8E6C9,stroke:#9AB89C,stroke-width:2px
 
-    PROC --> CORR
-    CORR --> QCO
-    QCO --> INFO
-
-    DERI --> DERO
-    AGG --> AGGO
-
-    INFO --> WRI
-    DERO --> WRI
-    AGGO --> WRI
-
-    WRI --> STORE
-    SEL --> META
+        class Start,Parse,LoadConfig setup
+        class BuildDAG,TopoSort, orchestration
+        class Pipeline,CheckMethod,StartLayer,StartProc,LoadRaw,CreateTF,Process,RunCorr,RunQC,RunInfill,Resample,Compute,SaveProc,SaveAgg,SaveDeriv,NextDataset,NextLayer processing
+        class MetaAPI,S3Reader,S3Writer,PrometheusGW storage
+        class ExportMetrics,Done completion
 
 Core Components
 ===============
@@ -104,6 +101,7 @@ Local Development
 - Reads from ``__assets__/env.cfg``
 - Uses LocalStack for S3 (``endpoint_url`` configured)
 - Sample data pre-loaded for testing
+- Prometheus metrics pushed locally
 
 Staging/Production
 ~~~~~~~~~~~~~~~~~~
@@ -334,10 +332,10 @@ The pipeline iterates over all the nodes (datasets) in topological order, ensuri
 after all its upstream dependencies have been completed and are available in memory. Each node contains instructions
 on how it should be processed. That could be one of 4 steps:
 
-- LOAD: Load raw input data into a ``TimeFrame`` object
-- PROCESS: Apply processing stages (corrections, QC, infilling - in that order)
-- AGGREGATE: Temporal aggregation, e.g. 30 minute to Daily data
-- DERIVE: Derive non-observed dataset from other datasets (e.g. calculating net radiation from the measured
+- **LOAD**: Load raw input data into a ``TimeFrame`` object
+- **PROCESS**: Apply processing stages (corrections, QC, infilling - in that order)
+- **AGGREGATE**: Temporal aggregation, e.g. 30 minute to Daily data
+- **DERIVE**: Derive non-observed dataset from other datasets (e.g. calculating net radiation from the measured
   components of radiation)
 
 This continues until the graph root nodes (i.e. the originally requested datasets) have been produced. Results of these

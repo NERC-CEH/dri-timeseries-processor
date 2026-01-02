@@ -47,7 +47,7 @@ Fine-grained control over specific site/variable/periodicity combinations.
 
 .. code-block:: bash
 
-   python -m new_processor explicit
+   python -m new_processor from-selection
      --network NETWORK
      [--lookback DURATION | --start-date YYYY-MM-DD]
      [--end-date YYYY-MM-DD]
@@ -58,7 +58,7 @@ Fine-grained control over specific site/variable/periodicity combinations.
 
 .. code-block:: bash
 
-   python -m new_processor explicit 
+   python -m new_processor from-selection
      --network cosmos 
      --lookback P2D 
      --selection cosmos-alic1 TA PT30M
@@ -86,7 +86,7 @@ Bulk processing across dimensions. Omitted dimensions process all available valu
 
 .. code-block:: bash
 
-   python -m new_processor cross-product 
+   python -m new_processor from-cross-product
      --network NETWORK 
      [--lookback DURATION | --start-date YYYY-MM-DD] 
      [--end-date YYYY-MM-DD] 
@@ -98,7 +98,7 @@ Bulk processing across dimensions. Omitted dimensions process all available valu
 
 .. code-block:: bash
 
-   python -m new_processor cross-product 
+   python -m new_processor from-cross-product
      --network cosmos 
      --lookback P2D 
      --sites cosmos-alic1 cosmos-bunny
