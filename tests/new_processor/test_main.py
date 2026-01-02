@@ -11,43 +11,34 @@ from new_processor.__main__ import main
 from new_processor.configuration.app_config import app_config
 from new_processor.storage.storage_client import S3StorageClient
 from utils.fixture_helpers import TEST_DATA_INPUT_DIR, TEST_DATA_OUTPUT_DIR
-from utils.metadata_helpers import all_metadata_api_data
+from utils.metadata_helpers import all_metadata_api_data, rewrite_buckets
 
+BUCKET = "e2e-bucket"
 CONFIG = app_config()
-
-INPUT_BUCKET = "ukceh-fdri-staging-timeseries-level-0"
-OUTPUT_BUCKET = "ukceh-fdri-staging-timeseries-processed"
 
 
 @pytest.fixture
 def storage_client() -> Iterator[S3StorageClient]:
     # setup
-    buckets = [INPUT_BUCKET, OUTPUT_BUCKET]
     storage_client = S3StorageClient("test", "test", CONFIG.AWS_DEFAULT_REGION, endpoint_url=CONFIG.endpoint_url)
 
-    # TODO: This removes buckets for every other test... need standalone buckets for end to end tests and inject them
-    #   into the config.  However, the datasets themselves have reference to the bucket (sourceBucket) so need to
-    #   reconcile that too.
     try:
-        for bucket in buckets:
-            storage_client.clear_bucket(bucket)
-            storage_client.client.delete_bucket(Bucket=bucket)
+        storage_client.clear_bucket(BUCKET)
+        storage_client.client.delete_bucket(Bucket=BUCKET)
     except:
         pass
 
-    for bucket in buckets:
-        storage_client.client.create_bucket(
-            Bucket=bucket, CreateBucketConfiguration={"LocationConstraint": CONFIG.AWS_DEFAULT_REGION}
-        )
+    storage_client.client.create_bucket(
+        Bucket=BUCKET, CreateBucketConfiguration={"LocationConstraint": CONFIG.AWS_DEFAULT_REGION}
+    )
 
-    upload_folder_to_s3(storage_client, INPUT_BUCKET, TEST_DATA_INPUT_DIR / "end_to_end")
+    upload_folder_to_s3(storage_client, BUCKET, TEST_DATA_INPUT_DIR / "end_to_end")
 
     yield storage_client
 
     # teardown
-    for bucket in buckets:
-        storage_client.clear_bucket(bucket)
-        storage_client.client.delete_bucket(Bucket=bucket)
+    storage_client.clear_bucket(BUCKET)
+    storage_client.client.delete_bucket(Bucket=BUCKET)
 
 
 def upload_folder_to_s3(storage_client, bucket, folder: Path) -> None:
@@ -66,7 +57,8 @@ def mock_api_manager(monkeypatch) -> None:
         prepped = req.prepare()
         full_url = prepped.url
         response = response_dict[full_url]
-        return response
+        # Patch the name of any sourceBucket metadata field to our end-to-end test bucket
+        return rewrite_buckets(response, BUCKET)
 
     monkeypatch.setattr("new_processor.externals.api_manager.MetadataAPIManager.make_api_call", fake_make_api_call)
 
@@ -122,7 +114,7 @@ class TestMain:
         expected_path = expected_output_dir / "network=cosmos/date=2024-03-08/site=ALIC1/resolution=PT30M/data.parquet"
 
         expected_s3_key = str(expected_path.relative_to(expected_output_dir))
-        result = pl.read_parquet(storage_client.get_bytes(OUTPUT_BUCKET, expected_s3_key))
+        result = pl.read_parquet(storage_client.get_bytes(BUCKET, expected_s3_key))
         expected = pl.read_parquet(expected_output_dir / expected_s3_key)
 
         # TODO: Work out how to test the flags

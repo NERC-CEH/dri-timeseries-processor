@@ -79,6 +79,20 @@ def ts_configurations_response():
     return meta
 
 
+def rewrite_buckets(obj, bucket):
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if key == "sourceBucket":
+                obj[key] = bucket
+            else:
+                obj[key] = rewrite_buckets(value, bucket)
+
+    if isinstance(obj, list):
+        return [rewrite_buckets(v, bucket) for v in obj]
+
+    return obj
+
+
 def all_metadata_api_data() -> dict[str, Any]:
     data = {}
 
