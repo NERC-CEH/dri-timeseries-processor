@@ -10,8 +10,6 @@ from utils.fixture_helpers import TEST_DATA_ASSETS_INVALID, TEST_DATA_ASSETS_VAL
 LIVE_ENVIRONMENTS = ["staging", "production", "staging-fake"]
 
 REQUIRED_LOCAL_CONFIG_KEYS = [
-    "level_0_bucket",
-    "processed_bucket",
     "metadata_api_url",
     "endpoint_url",
     "pushgateway_url",
@@ -25,8 +23,6 @@ REQUIRED_LOCAL_ENV_KEYS = [
 
 REQUIRED_LIVE_CONFIG_KEYS = [
     "AWS_DEFAULT_REGION",
-    "level_0_bucket",
-    "processed_bucket",
     "metadata_api_url",
     "pushgateway_url",
 ]
