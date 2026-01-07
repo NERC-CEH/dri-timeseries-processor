@@ -4,12 +4,6 @@ from pydantic import BaseModel, field_validator
 class CoreFlagItem(BaseModel):
     """
     Info on a core flag
-
-    Attributes:
-        name (str): The name of the flag
-        description (str): Description of the flag
-        symbol (List[str]): A short string symbol for the flag.
-        id (int): Flag ID value.
     """
 
     name: str

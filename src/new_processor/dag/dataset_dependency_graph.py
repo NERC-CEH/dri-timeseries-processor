@@ -64,10 +64,10 @@ class DatasetDependencyGraph:
         """Build and return the complete dependency DAG for the specified sites, variables, and resolution
 
         This is the main entry point for building the dependency graph. It:
-        1. Fetches root datasets matching the criteria
-        2. Recursively resolves all dependencies
-        3. Attaches data processing configurations (QC, Infill, Correction)
-        4. Cleans up resources (caches and API connection)
+            1. Fetches root datasets matching the criteria
+            2. Recursively resolves all dependencies
+            3. Attaches data processing configurations (QC, Infill, Correction)
+            4. Cleans up resources (caches and API connection)
 
         Handles recursion through a "batch" system where datasets are processed in iterative "batches" where each
         batch represents the current set of unresolved datasets. This approach enables data processing configuration
@@ -75,12 +75,12 @@ class DatasetDependencyGraph:
         while preserving full dependency resolution.
 
         Each iteration performs the following steps:
-        1. Fetch data processing configs (QC, infill, correction) for all datasets in the current batch.
-        2. For each dataset in current batch, get direct dependencies from the `_all_dependencies` API endpoint.
-        3. All configuration objects (QC, infilling, correction) returned from the initial query in step (1) are
-           attached to their corresponding `TimeSeriesContainer` objects.
-        4. Create next batch out of any newly discovered datasets (from either direct dependencies or
-           data processing config references)
+            1. Fetch data processing configs (QC, infill, correction) for all datasets in the current batch.
+            2. For each dataset in current batch, get direct dependencies from the `_all_dependencies` API endpoint.
+            3. All configuration objects (QC, infilling, correction) returned from the initial query in step (1) are
+               attached to their corresponding `TimeSeriesContainer` objects.
+            4. Create next batch out of any newly discovered datasets (from either direct dependencies or
+               data processing config references)
 
         The process continues until there are no new datasets left to resolve. This ensures that all datasets that
         we gather from the root datasets, direct dependencies, and data processing configurations will be resolved

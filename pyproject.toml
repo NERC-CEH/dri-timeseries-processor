@@ -38,7 +38,7 @@ license = { text = "NO LICENSE" }
 
 [dependency-groups]
 test = ["pytest", "pytest-cov", "freezegun", "awscli-local == 0.22.0", "pytest-socket"]
-docs = ["sphinx", "sphinx-copybutton", "sphinx-rtd-theme", "nbsphinx"]
+docs = ["sphinx", "sphinx-copybutton", "sphinx-rtd-theme", "nbsphinx", "sphinxcontrib.mermaid"]
 lint = ["ruff"]
 dev = [
   { include-group = "test"},
