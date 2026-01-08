@@ -33,7 +33,7 @@ class AggregationPipeline:
         tf = method.run(dep_container.data, config)
 
         tf = self._rename_aggregation_columns(tf, container.source_column, dep_container.source_column)
-        tf = add_initial_core_flags(tf)
+        tf = add_initial_core_flags(tf, init_unchecked=False)
 
         return tf
 

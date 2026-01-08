@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
+import polars as pl
 import time_stream as ts
 from time_stream.operation import Operation
 
@@ -12,7 +13,7 @@ class QcMethod(Operation, ABC):
     operation_type: OperationType.QUALITY_CONTROL
 
     @abstractmethod
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
+    def run(self, *args, **kwargs) -> pl.Series:
         pass
 
 
@@ -21,7 +22,7 @@ class Range(QcMethod):
     name = "range"
     flag_value = 1  # TODO : should these be in metadata? - yes
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "range",
             max_value=config.params["gt"],
@@ -37,7 +38,7 @@ class BatteryVoltage(QcMethod):
     name = "battery_v"
     flag_value = 2
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "comparison",
             operator="<",
@@ -52,7 +53,7 @@ class Samples(QcMethod):
     name = "samples"
     flag_value = 4
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "comparison",
             operator="<",
@@ -67,7 +68,7 @@ class ErrorCode(QcMethod):
     name = "error_code"
     flag_value = 8
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "comparison",
             operator="is_in",
@@ -82,7 +83,7 @@ class Spike(QcMethod):
     name = "spike"
     flag_value = 16
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "spike",
             threshold=config.params["gt"],
@@ -96,7 +97,7 @@ class Nr01Temp(QcMethod):
     name = "nr01_temp"
     flag_value = 32
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "range",
             max_value=config.params["gt"],
@@ -112,7 +113,7 @@ class HeatFluxPlateRemoval(QcMethod):
     name = "hfp_removal"
     flag_value = 64
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "time_range",
             max_value=datetime.strptime(config.params["time_le"], "%H:%M:%S").time(),
@@ -129,7 +130,7 @@ class PluvioDiagnostic(QcMethod):
     name = "pluvio_diag"
     flag_value = 128
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "comparison",
             operator=">",
@@ -144,7 +145,7 @@ class SnowDaySignal(QcMethod):
     name = "snowd_signal"
     flag_value = 256
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "comparison",
             operator="<",
@@ -159,7 +160,7 @@ class TdtTSoil(QcMethod):
     name = "tdt_tsoil"
     flag_value = 512
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
             "comparison",
             operator="<",

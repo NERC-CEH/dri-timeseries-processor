@@ -93,14 +93,13 @@ class TimeSeriesProcessor:
         """
         logger.info(f"Processing layer: {layer}")
         for dataset_id in layer:
-            self.process_dataset(dataset_id)
-            # try:
-            #     self.process_dataset(dataset_id)
-            # except Exception:
-            #     self.metrics.failed.inc()
-            #     logger.exception(f"Processing failed for: {dataset_id}")
-            # else:
-            #     self.metrics.success.inc()
+            try:
+                self.process_dataset(dataset_id)
+            except Exception:
+                self.metrics.failed.inc()
+                logger.exception(f"Processing failed for: {dataset_id}")
+            else:
+                self.metrics.success.inc()
 
     def process_dataset(self, dataset_id: str) -> None:
         """Process a single dataset according to the configured method type in its metadata.
@@ -225,7 +224,7 @@ class TimeSeriesProcessor:
                 key = (
                     f"network={container.network}/"
                     f"date={data_date.strftime('%Y-%m-%d')}/"
-                    f"site={container.source_site_identifier}/"
+                    f"site={container.source_site}/"
                     f"resolution={container.resolution}/"
                     f"data.parquet"
                 )

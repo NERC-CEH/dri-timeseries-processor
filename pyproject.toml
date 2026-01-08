@@ -21,6 +21,8 @@ dependencies = [
     "prometheus-client",
     "setuptools < 81",
     "time-stream",
+    "fastapi>=0.128.0",
+    "uvicorn>=0.40.0",
 ]
 name = "dritimeseriesprocessor"
 dynamic = ["version"]

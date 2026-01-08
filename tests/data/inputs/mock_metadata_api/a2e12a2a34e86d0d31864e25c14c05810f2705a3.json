@@ -1,0 +1,1501 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed/_all_dependencies",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed/_all_dependencies.geojson",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed/_all_dependencies.json",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed/_all_dependencies.rdf",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed/_all_dependencies.ttl",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed/_all_dependencies.html",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pe_30min_processed/_all_dependencies.csv"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin",
+              "prefLabel": [
+                "Incoming shortwave radiation"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin",
+              "prefLabel": [
+                "Incoming shortwave radiation"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-swin_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/swin_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/swin_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwout-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwout",
+              "prefLabel": [
+                "Outgoing longwave radiation (corrected)"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwout-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwout",
+              "prefLabel": [
+                "Outgoing longwave radiation (corrected)"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-lwout_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/lwout_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/lwout_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "LWOUT",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swout-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swout",
+              "prefLabel": [
+                "Outgoing shortwave radiation"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swout-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swout",
+              "prefLabel": [
+                "Outgoing shortwave radiation"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-swout_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/swout_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/swout_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "SWOUT",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwin-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwin",
+              "prefLabel": [
+                "Incoming longwave radiation (corrected)"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwin-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwin",
+              "prefLabel": [
+                "Incoming longwave radiation (corrected)"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-lwin_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/lwin_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/lwin_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "LWIN",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rn_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rn-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn",
+              "prefLabel": [
+                "Net radiation"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-rn_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwin_30min_processed"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swout_30min_processed"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_30min_processed"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_30min_processed-current",
+                  "method": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calculate-calculate_rn"
+                  },
+                  "argument": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_30min_processed-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/calculate-calculate_rn-round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_30min_processed-current#round.value",
+                        "value": 3
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "RN",
+      "sourceTimeColumnName": "time",
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_processed"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_processed"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_processed"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_processed"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-hpa-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa",
+              "prefLabel": [
+                "Atmospheric pressure"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/hpa",
+              "prefLabel": [
+                "hPa"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-hpa-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa",
+              "prefLabel": [
+                "Atmospheric pressure"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/hpa",
+              "prefLabel": [
+                "hPa"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-pa_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/pa_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/pa_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pa_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "PA",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/heatflux_soil-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/heatflux_soil",
+              "prefLabel": [
+                "Soil heat flux"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/heatflux_soil-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/heatflux_soil",
+              "prefLabel": [
+                "Soil heat flux"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-g2_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g2_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/g2_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/g2_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "G2",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp2"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rh_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rh-pct-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rh",
+              "prefLabel": [
+                "Relative humidity"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/pct",
+              "prefLabel": [
+                "%"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rh_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rh-pct-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rh",
+              "prefLabel": [
+                "Relative humidity"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/pct",
+              "prefLabel": [
+                "%"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-rh_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rh_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/rh_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rh_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "RH",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rh_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-rh_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-ms-1-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws",
+              "prefLabel": [
+                "Wind speed"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/ms-1",
+              "prefLabel": [
+                "ms-1"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-ms-1-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws",
+              "prefLabel": [
+                "Wind speed"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/ms-1",
+              "prefLabel": [
+                "ms-1"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-ws_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ws_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/ws_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ws_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "WS",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-degc-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
+              "prefLabel": [
+                "Air temperature"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
+              "prefLabel": [
+                "Deg Celsius"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-degc-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
+              "prefLabel": [
+                "Air temperature"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
+              "prefLabel": [
+                "Deg Celsius"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-ta_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/ta_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/heatflux_soil-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/heatflux_soil",
+              "prefLabel": [
+                "Soil heat flux"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/heatflux_soil-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/heatflux_soil",
+              "prefLabel": [
+                "Soil heat flux"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-g1_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/g1_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/g1_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/g1_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "G1",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-hfp1"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw"
+        }
+      ]
+    }
+  ]
+}

@@ -25,6 +25,7 @@ class Linear(InfillMethod):
             "linear",
             tf.metadata["column_name"],
             observation_interval=(config.start_date, config.end_date),
+            max_gap_size=config.params.get("max_gap_size"),
         )
 
 
@@ -40,4 +41,6 @@ class AltData(InfillMethod):
             alt_df=config.params["alt_df"],
             alt_data_column=config.params["alt_data_column"],
             observation_interval=(config.start_date, config.end_date),
+            max_gap_size=config.params.get("max_gap_size"),
+            correction_factor=config.params.get("correction_factor", 1),
         )

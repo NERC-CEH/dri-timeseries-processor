@@ -85,6 +85,9 @@ class AppConfigLocal(AppConfig):
         os.environ["AWS_SECRET_ACCESS_KEY"] = cfg["AWS_SECRET_ACCESS_KEY"]
         os.environ["AWS_DEFAULT_REGION"] = cfg["AWS_DEFAULT_REGION"]
 
+        if "metadata_api_url" in os.environ:
+            self.metadata_api_url = os.environ["metadata_api_url"]
+
 
 class AppConfigLive(AppConfig):
     """Loads configuration values for live environments."""

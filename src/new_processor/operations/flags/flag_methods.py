@@ -35,11 +35,13 @@ def initialise_core_flag_system(tf: ts.TimeFrame) -> ts.TimeFrame:
     return tf
 
 
-def add_initial_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
+def add_initial_core_flags(tf: ts.TimeFrame, init_unchecked=True, init_missing=True) -> ts.TimeFrame:
     """Setup core flags and initialise with "unchecked" and "missing" flags.
 
     Args:
         tf: The input ts.TimeFrame object.
+        init_unchecked: Whether to initialise the core flag with the unchecked flag
+        init_missing: Whether to check for missing values to add the missing flag to
 
     Returns:
         The ts.TimeFrame with the flag columns added
@@ -50,10 +52,13 @@ def add_initial_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
         flag_col_name = core_flag_column_name(data_col_name)
         tf.init_flag_column(data_col_name, CORE_FLAG_SYS_NAME, flag_col_name)
 
-        # Set all as unchecked
-        tf.add_flag(flag_col_name, "unchecked", pl.lit(True))
-        # Flag missing values
-        tf.add_flag(flag_col_name, "missing", missing_expr(data_col_name))
+        if init_unchecked:
+            # Set all as unchecked
+            tf.add_flag(flag_col_name, "unchecked", pl.lit(True))
+
+        if init_missing:
+            # Flag missing values
+            tf.add_flag(flag_col_name, "missing", missing_expr(data_col_name))
 
     return tf
 
@@ -78,9 +83,16 @@ def update_corrections_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
         if corrs_flag_col_name not in tf.flag_columns:
             continue
 
-        # Add corrected core flag where corrections flag is not 0.
-        expr = pl.col(corrs_flag_col_name) != 0
+        expr_has_value = ~(pl.col(data_col_name).is_null() | pl.col(data_col_name).is_nan())
+        expr_has_flag = pl.col(corrs_flag_col_name) != 0
+
+        # Add corrected core flag where corrections flag is not 0 and the correction was successful.
+        expr = expr_has_flag & expr_has_value
         tf.add_flag(core_flag_col_name, "corrected", expr)
+
+        # Add unsuccessful_correction core flag where corrections flag is not 0 and the correction was NOT successful.
+        expr = expr_has_flag & ~expr_has_value
+        tf.add_flag(core_flag_col_name, "unsuccessful_correction", expr)
 
     return tf
 

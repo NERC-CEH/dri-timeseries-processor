@@ -12,6 +12,7 @@ TEST_DATA_API_INVALID = TEST_DATA_INPUT_DIR / "api_json" / "invalid"
 TEST_DATA_ASSETS_VALID = TEST_DATA_INPUT_DIR / "__assets__" / "valid"
 TEST_DATA_ASSETS_INVALID = TEST_DATA_INPUT_DIR / "__assets__" / "invalid"
 TEST_DATA_MOCK_METADATA = TEST_DATA_INPUT_DIR / "mock_metadata_api"
+END_TO_END = Path(__file__).parent.parent / "end_to_end"
 
 
 def discover_file_test_cases(directory: str | Path, glob_pattern: str = "*") -> list[ParameterSet]:
@@ -52,3 +53,22 @@ def load_json_file(filepath: str | Path) -> dict[str, Any]:
 def load_json_string(json_str: str) -> dict[str, Any]:
     """Helper for loading JSON from a string."""
     return json.loads(json_str)
+
+
+def discover_e2e_test_cases():
+    test_cases = []
+    for test_case in load_json_file(END_TO_END / "test_cases.json")["test_cases"]:
+        test_cases.append(
+            pytest.param(
+                test_case["network"],
+                test_case["sites"],
+                test_case["measured_variables"],
+                test_case["derived_variables"],
+                test_case["aggregated_variables"],
+                test_case["periodicities"],
+                test_case["start_date"],
+                test_case["end_date"],
+                id=test_case["id"]
+            )
+        )
+    return test_cases

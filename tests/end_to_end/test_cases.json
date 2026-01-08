@@ -1,0 +1,137 @@
+{
+    "test_cases":
+      [
+        {
+            "id": "simple-one-site-one-var",
+            "description": "Test of one simple measured variable, with no processing quirks, at one site.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1"],
+            "measured_variables": ["TA"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2016-07-27",
+            "end_date": "2016-07-29"
+          },
+        {
+            "id": "simple-multiple-sites-one-var",
+            "description": "Test of one simple measured variable, with no processing quirks, at multiple sites.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1", "cosmos-holln", "cosmos-chimn"],
+            "measured_variables": ["TA"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2016-07-27",
+            "end_date": "2016-07-29"
+          },
+        {
+            "id": "simple-multiple-sites-multiple-var",
+            "description": "Test of multiple simple measured variables, with no processing quirks, at multiple sites.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1", "cosmos-holln", "cosmos-chimn"],
+            "measured_variables": ["TA", "Q", "WS"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2016-07-27",
+            "end_date": "2016-07-29"
+          },
+        {
+            "id": "wd-correction",
+            "description": "Test that the wind direction correction is applied and flagged. Note, ALIC1 should NOT be corrected.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1", "cosmos-holln", "cosmos-chimn"],
+            "measured_variables": ["WD"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2016-07-27",
+            "end_date": "2016-07-29"
+          },
+        {
+            "id": "lw-correction",
+            "description": "Test that the LW_CORR correction is applied to the radiation variables at ALIC1.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1"],
+            "measured_variables": ["LWIN", "LWOUT"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2016-07-27",
+            "end_date": "2016-07-29"
+          },
+        {
+            "id": "pa-correction",
+            "description": "Test that the PA_CORR correction is applied to the air pressure variable at HOLLN.",
+            "network": "cosmos",
+            "sites": ["cosmos-holln"],
+            "measured_variables": ["PA"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2022-03-31",
+            "end_date": "2022-04-02"
+          },
+        {
+            "id": "cts-mod-infill",
+            "description": "Test that the CTS_MOD infill, using alt data, is applied correctly at CHIMN.",
+            "network": "cosmos",
+            "sites": ["cosmos-chimn"],
+            "measured_variables": ["CTS_MOD"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
+          },
+        {
+            "id": "derived-one-site-one-var",
+            "description": "Test of one derived variable at one site.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1"],
+            "measured_variables": [],
+            "derived_variables": ["RN"],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2016-07-27",
+            "end_date": "2016-07-29"
+          },
+        {
+            "id": "derived-multiple-site-multiple-var",
+            "description": "Test of multiple variables, mixed between observed and derived, at multiple sites",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1", "cosmos-chimn"],
+            "measured_variables": ["TA", "Q", "WS"],
+            "derived_variables": ["RN", "PE"],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
+          },
+          {
+            "id": "aggregated-one-site-one-var",
+            "description": "Test of one simple aggregated variable at one site.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1"],
+            "measured_variables": [],
+            "derived_variables": [],
+            "aggregated_variables": ["TA"],
+            "periodicities": ["P1D"],
+            "start_date": "2022-03-31",
+            "end_date": "2022-04-02"
+          },
+          {
+            "id": "aggregated-multiple-site-multiple-var",
+            "description": "Test of multiple aggregated variables at multiple site.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1", "cosmos-holln", "cosmos-chimn"],
+            "measured_variables": [],
+            "derived_variables": [],
+            "aggregated_variables": ["TA", "PA", "WS"],
+            "periodicities": ["P1D"],
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
+          }
+      ]
+}

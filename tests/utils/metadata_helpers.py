@@ -1,105 +1,32 @@
-import re
-from typing import Any
-from urllib.parse import urlencode
+import hashlib
+from urllib.parse import urlparse, parse_qsl
 
-from new_processor.utils.enums import ConfigurationType
-from utils.fixture_helpers import TEST_DATA_MOCK_METADATA, load_json_file
+from tests.utils.fixture_helpers import END_TO_END, load_json_file
+from new_processor.utils.urls import SITE_URI
 
-BASE_URL = "https://dri-metadata-api.staging.eds.ceh.ac.uk/"
-PERIOD_MAP = {
-    "30min": "PT30M",
-    "1day": "P1D",
-}
+E2E_INPUT_BUCKET = "e2e-input"
+E2E_OUTPUT_BUCKET = "e2e-output"
 
 
-def network_response():
-    return {f"{BASE_URL}/id/network/cosmos": load_json_file(TEST_DATA_MOCK_METADATA / "network.json")}
+def stable_file_key(url):
+    parsed = urlparse(url)
+    path = parsed.path
+    params = sorted(parse_qsl(parsed.query))
+
+    if not params:
+        params = []
+    query = path + "&".join(f"{k}={v}" for k, v in params)
+    chars = (" ", "/", "?", "&", "=", ":", "@")
+    for char in chars:
+        query = query.replace(char, "_")
+
+    return hash_request(query)
 
 
-def sites_response():
-    metadata_dir = TEST_DATA_MOCK_METADATA / "sites"
-    meta = {}
-    for file in metadata_dir.glob("*.json"):
-        url = f"{BASE_URL}id/site?" + urlencode(
-            {"_view": "annotated", "@id": f"http://fdri.ceh.ac.uk/id/site/{file.stem}"}
-        )
-        meta[url] = load_json_file(file)
-    return meta
+def hash_request(file_key: str, length: int = 20) -> str:
+    """ Turn the (what can be very long) url-based file key into a hash.
 
-
-def ts_datasets_response():
-    metadata_dir = TEST_DATA_MOCK_METADATA / "ts_datasets"
-    meta = {}
-    for file in metadata_dir.rglob("*.json"):
-        metadata = load_json_file(file)
-
-        ds_id = file.stem
-        url = f"{BASE_URL}id/dataset/{ds_id}?" + urlencode({"_view": "timeseries"})
-        meta[url] = metadata
-
-        regex = r"^(?P<site_id>[^-]+-[^-]+)-(?P<var>[^_]+)_(?P<period>[^_]+)_(?P<level>.+)$"
-        match = re.match(regex, ds_id)
-
-        url = f"{BASE_URL}id/dataset?" + urlencode(
-            {
-                "originatingSite": f"http://fdri.ceh.ac.uk/id/site/{match['site_id']}",
-                "sourceColumnName": match["var"].upper(),
-                "type.measure.aggregation.periodicity": PERIOD_MAP[match["period"]],
-                "_view": "timeseries",
-                "type.processingLevel": f"http://fdri.ceh.ac.uk/ref/common/processing-level/{match['level']}",
-            }
-        )
-        meta[url] = metadata
-
-    return meta
-
-
-def ts_dependencies_response():
-    metadata_dir = TEST_DATA_MOCK_METADATA / "ts_dependencies"
-    meta = {}
-    for file in metadata_dir.rglob("*.json"):
-        url = f"{BASE_URL}id/dataset/{file.stem}/_all_dependencies"
-        meta[url] = load_json_file(file)
-    return meta
-
-
-def ts_configurations_response():
-    metadata_dir = TEST_DATA_MOCK_METADATA / "configurations"
-    meta = {}
-
-    for file in metadata_dir.rglob("*.json"):
-        params = [
-            ("type", f"http://fdri.ceh.ac.uk/ref/common/configuration-type/{config_type.value}")
-            for config_type in ConfigurationType
-        ]
-        params.append(("appliesToTimeSeries", f"http://fdri.ceh.ac.uk/id/dataset/{file.stem}"))
-        url = f"{BASE_URL}id/data-processing-configuration?" + urlencode(params)
-        meta[url] = load_json_file(file)
-
-    return meta
-
-
-def rewrite_buckets(obj, bucket):
-    if isinstance(obj, dict):
-        for key, value in obj.items():
-            if key == "sourceBucket":
-                obj[key] = bucket
-            else:
-                obj[key] = rewrite_buckets(value, bucket)
-
-    if isinstance(obj, list):
-        return [rewrite_buckets(v, bucket) for v in obj]
-
-    return obj
-
-
-def all_metadata_api_data() -> dict[str, Any]:
-    data = {}
-
-    data |= network_response()
-    data |= sites_response()
-    data |= ts_datasets_response()
-    data |= ts_dependencies_response()
-    data |= ts_configurations_response()
-
-    return data
+    Use the `hashlib.blake2b` hash type for consistent/persistent hashing across platforms
+    """
+    h = hashlib.blake2b(file_key.encode("utf-8"), digest_size=length)
+    return h.hexdigest()

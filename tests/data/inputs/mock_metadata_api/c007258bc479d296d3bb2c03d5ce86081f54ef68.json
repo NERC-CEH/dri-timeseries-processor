@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw?_view=timeseries",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw.html?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw.rdf?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw.csv?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw.geojson?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw.ttl?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw.json?_view=timeseries"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/lwout_unc_30min_raw",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwout_unc-wm-2-mean_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwout_unc",
+              "prefLabel": [
+                "Outgoing longwave radiation (uncorrected)"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+              "prefLabel": [
+                "Wm-2"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceColumnName": "LWOUT_UNC",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-4cr"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ]
+    }
+  ]
+}

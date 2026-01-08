@@ -10,6 +10,7 @@ import time_stream as ts
 from new_processor.models.domain_models.processing_config import ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
 from new_processor.operations.derivation.derivation_methods import DerivationMethod
+from new_processor.operations.flags.flag_methods import add_initial_core_flags
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,9 @@ class DerivationPipeline:
         config = self._create_derivation_method_config(container, dataset_repository)
         method = DerivationMethod.get(config.method)
         tf = method.run(config)
+
+        tf = add_initial_core_flags(tf, init_unchecked=False)
+
         return tf
 
     @staticmethod

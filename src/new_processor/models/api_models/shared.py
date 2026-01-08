@@ -58,7 +58,7 @@ class HasValue(IDModel):
 class ArgumentItem(IDModel):
     """Configuration argument with parameter and value."""
 
-    field_type: list[IDModel] = Field(..., alias="@type")
+    field_type: list[IDModel] | None = Field(None, alias="@type")
     has_value: HasValue = Field(..., alias="hasValue")
     parameter: IDModel
 

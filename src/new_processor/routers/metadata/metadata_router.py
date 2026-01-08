@@ -20,14 +20,15 @@ from new_processor.utils.urls import CONFIGURATION_TYPE_URI
 class MetadataRouter:
     """Route metadata API requests to the correct URL via the API manager."""
 
-    def __init__(self, host: str):
+    def __init__(self, host: str, api_manager: MetadataAPIManager | None = None):
         """Initialise the metadata router.
 
         Args:
             host: Base URL of the metadata API.
+            api_manager: Optional instance of a MetadataAPIManager object. If none, a default one will be created.
         """
         self.host = host
-        self.api_manager = MetadataAPIManager(host=self.host)
+        self.api_manager = api_manager or MetadataAPIManager(host=self.host)
 
     def fetch_dataset_by_params(self, query_params: tuple[tuple[str, str], ...]) -> TimeSeriesDatasetResponse:
         """Fetch dataset metadata using query parameters.
