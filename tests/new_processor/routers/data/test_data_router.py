@@ -23,7 +23,7 @@ def container() -> MagicMock:
     """Minimal TimeSeriesContainer fixture."""
     return MagicMock(
         source_bucket="a_bucket",
-        source_dataset="a_dataset",
+        source_dataset="a_data",
         network="a_network",
         source_site="a_network-a_site",
         source_column="a_column_name",
@@ -44,7 +44,7 @@ class TestDuckDBDataRouter:
 
         expected_query = """
             SELECT a_time, a_column_name
-            FROM read_parquet('s3://a_bucket/a_network/dataset=a_dataset/site=*/date=*/data.parquet')
+            FROM read_parquet('s3://a_bucket/a_network/dataset=a_data/site=*/date=*/data.parquet', union_by_name=true)
             WHERE
                 (date BETWEEN ? AND ?) AND
                 site = ?;

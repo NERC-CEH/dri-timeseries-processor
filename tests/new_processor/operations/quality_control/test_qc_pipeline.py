@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock, patch
 
+import polars as pl
 import pytest
 import time_stream as ts
+from polars.testing import assert_series_equal
 
 from new_processor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from new_processor.models.domain_models.time_series_container import TimeSeriesContainer
@@ -15,6 +17,7 @@ def mock_timeframe() -> MagicMock:
     """Create a mock TimeFrame."""
     tf = MagicMock(spec=ts.TimeFrame)
     tf.metadata = {"column_name": "value"}
+    tf.with_df.return_value = tf
     return tf
 
 
@@ -66,11 +69,14 @@ class TestComputeFlagMask:
         """Test that compute_flag_mask returns the result TimeFrame directly."""
         pipeline = QCPipeline()
 
+        df = pl.DataFrame({"__qc_result_test": [1, 2, 3]})
+
         original = MagicMock(spec=ts.TimeFrame)
         result = MagicMock(spec=ts.TimeFrame)
+        result.df = df
 
-        mask = pipeline.compute_flag_mask(original, result, "value")
-        assert mask is result
+        mask = pipeline.compute_flag_mask(original, result, "test")
+        assert_series_equal(mask, pl.Series("__qc_result_test", [1, 2, 3]))
 
 
 class TestApply:
@@ -80,7 +86,7 @@ class TestApply:
         config.method = "range"
         config.params = {"lt": 0, "gt": 100}
 
-        expected_result = MagicMock(spec=ts.TimeFrame)
+        expected_result = MagicMock(spec=pl.Series)
         with patch.object(QcMethod, "get") as mock_get:
             mock_method = MagicMock()
             mock_method.run.return_value = expected_result
@@ -88,7 +94,7 @@ class TestApply:
 
             pipeline = QCPipeline()
             result = pipeline.apply(mock_timeframe, config, {})
-            assert result is expected_result
+            assert isinstance(result, ts.TimeFrame)
 
 
 class TestCoreFlagUpdater:

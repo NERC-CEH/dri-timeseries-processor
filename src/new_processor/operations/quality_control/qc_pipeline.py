@@ -78,7 +78,7 @@ class QCPipeline(OperationPipeline):
         Returns:
             Result of QC check
         """
-        return result.df[self.get_qc_result_column(tf.metadata["column_name"])]
+        return result.df[self.get_qc_result_column(column_name)]
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags with the QC flag after all methods are applied.
