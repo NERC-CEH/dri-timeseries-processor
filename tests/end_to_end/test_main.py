@@ -1,27 +1,55 @@
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Iterator
-import threading
+"""
+Module to run end-to-end (E2E) tests for the time series processor.
+
+These tests are intended to run the processor as a user would, but substituting external dependencies with local
+versions:
+
+- **Metadata API** is replaced by a mock HTTP server (``MockMetadataApi``) - injected via the `metadata_api_url`
+  environment variable. This uses the cached metadata response JSONs as recorded by the `record_metadata.py` script.
+- **S3 storage** is provided by LocalStack (via ``S3StorageClient``), with isolated input and output buckets created
+  per test run.
+
+Test cases are discovered from `test_cases.json` - this is so that the `record_metadata.py` script can also have
+knowledge of which test cases are being considered and what metadata is required.
+
+The processor is initialised and executed end-to-end with known input data, and the resulting outputs in the
+are compared against known/expected Parquet files.
+"""
+
 import socket
+import threading
+from datetime import datetime, timedelta
 from http.server import HTTPServer
+from typing import Iterator
 
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
+from tests.end_to_end.mock_metadata_api.mock_api import MockMetadataApi
+from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR, TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases
+from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
+from tests.utils.s3_test_helpers import create_test_s3_bucket, remove_test_s3_bucket, upload_folder_to_s3
 
 from new_processor.__main__ import main
 from new_processor.configuration.app_config import app_config
+from new_processor.operations.flags.flag_names import (
+    core_flag_column_name,
+    corrs_flag_column_name,
+    infill_flag_column_name,
+    qc_flag_column_name,
+)
 from new_processor.storage.storage_client import S3StorageClient
-from utils.fixture_helpers import TEST_DATA_INPUT_DIR, TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases
-from tests.end_to_end.mock_metadata_api.mock_api import MockMetadataApi
-from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
-from new_processor.operations.flags.flag_names import corrs_flag_column_name, core_flag_column_name, qc_flag_column_name, infill_flag_column_name
 
 CONFIG = app_config()
 
 
 @pytest.fixture
-def metadata_api_url(monkeypatch):
+def metadata_api_url() -> Iterator[str]:
+    """Start a local mock metadata API server and yield its base URL.
+
+    Yields:
+        The base URL of the running mock metadata API.
+    """
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
@@ -32,81 +60,60 @@ def metadata_api_url(monkeypatch):
     thread.start()
     metadata_api_base_url = f"http://127.0.0.1:{port}"
 
-    yield metadata_api_base_url
-
-    server.shutdown()
+    try:
+        yield metadata_api_base_url
+    finally:
+        server.shutdown()
 
 
 @pytest.fixture
 def s3_storage_client() -> Iterator[S3StorageClient]:
-    # setup
+    """Set up the LocalStack storage client, creating test S3 buckets and upload the known input parquet data files."""
     storage_client = S3StorageClient("test", "test", CONFIG.AWS_DEFAULT_REGION, endpoint_url=CONFIG.endpoint_url)
 
     try:
+        # Clean up in case of prior interrupted runs.
         remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
         remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
-    except:
+    except Exception:
         pass
 
-    create_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
-    create_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
+    create_test_s3_bucket(E2E_INPUT_BUCKET, storage_client, CONFIG.AWS_DEFAULT_REGION)
+    create_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client, CONFIG.AWS_DEFAULT_REGION)
 
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "end_to_end")
 
-    yield storage_client
-
-    # teardown
-    remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
-    remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
-
-
-def remove_test_s3_bucket(bucket, storage_client):
-    storage_client.clear_bucket(bucket)
-    storage_client.client.delete_bucket(Bucket=bucket)
-
-
-def create_test_s3_bucket(bucket, storage_client):
-    storage_client.client.create_bucket(
-        Bucket=bucket, CreateBucketConfiguration={"LocationConstraint": CONFIG.AWS_DEFAULT_REGION}
-    )
-
-
-def upload_folder_to_s3(storage_client, bucket, folder: Path) -> None:
-    for file in folder.rglob("*.parquet"):
-        key = str(file.relative_to(folder))
-        storage_client.put_bytes(bucket, key, file.read_bytes())
+    try:
+        yield storage_client
+    finally:
+        # teardown
+        remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
+        remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
 
 
 class TestMain:
-    """End-to-end test of the timeseries processor.
-
-    Run a CLI based test for the timeseries processor and compare the outputs against a series of expected parquet
-    files.
-
-    This is designed to test running the processor end to end calling __main__.py from the command line
-    as if it were being run by the user.
-
-    It is assumed that the structure of the expected outputs will match the storage of the generated outputs on S3
-    """
+    """End-to-end tests of the timeseries processor."""
 
     @pytest.mark.parametrize(
-        "network, sites, measured_variables, derived_variables, aggregated_variables, periodicities, start_date, end_date",
-        discover_e2e_test_cases()
+        "network, sites, measured_variables, derived_variables, aggregated_variables, periodicities, start_date, "
+        "end_date",
+        discover_e2e_test_cases(),
     )
     def test_end_to_end(
-            self,
-            network,
-            sites,
-            measured_variables,
-            derived_variables,
-            aggregated_variables,
-            periodicities,
-            start_date,
-            end_date,
-            monkeypatch,
-            s3_storage_client,
-            metadata_api_url
+        self,
+        network: str,
+        sites: list[str],
+        measured_variables: list[str],
+        derived_variables: list[str],
+        aggregated_variables: list[str],
+        periodicities: list[str],
+        start_date: str,
+        end_date: str,
+        monkeypatch: pytest.MonkeyPatch,
+        s3_storage_client: S3StorageClient,
+        metadata_api_url: str,
     ) -> None:
+        """Test that the processor can run end-to-end and compare output with known output."""
         monkeypatch.setenv("metadata_api_url", metadata_api_url)
 
         all_variables = measured_variables + derived_variables + aggregated_variables
@@ -129,11 +136,11 @@ class TestMain:
 
         # run the processor
         main(cli_args)
-        pass
 
         # check the outputs
         expected_output_dir = TEST_DATA_OUTPUT_DIR / "end_to_end"
 
+        # Build list of expected flag columns to validate alongside data variables.
         flag_cols = []
         for var in all_variables:
             flag_cols.append(core_flag_column_name(var))
@@ -152,14 +159,12 @@ class TestMain:
         for date in date_range:
             for site in sites:
                 for resolution in periodicities:
-                    expected_path = expected_output_dir / f"network={network}/date={date}/site={site}/resolution={resolution}/data.parquet"
-
+                    expected_path = (
+                        expected_output_dir
+                        / f"network={network}/date={date}/site={site}/resolution={resolution}/data.parquet"
+                    )
                     expected_s3_key = str(expected_path.relative_to(expected_output_dir))
                     result = pl.read_parquet(s3_storage_client.get_bytes(E2E_OUTPUT_BUCKET, expected_s3_key))
-
-                    expected_path.parent.mkdir(parents=True, exist_ok=True)
-                    result.write_parquet(expected_path)
-
                     expected = pl.read_parquet(expected_path)
 
                     assert_frame_equal(result[check_cols], expected[check_cols])

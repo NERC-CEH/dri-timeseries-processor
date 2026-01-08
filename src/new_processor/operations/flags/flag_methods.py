@@ -35,7 +35,7 @@ def initialise_core_flag_system(tf: ts.TimeFrame) -> ts.TimeFrame:
     return tf
 
 
-def add_initial_core_flags(tf: ts.TimeFrame, init_unchecked=True, init_missing=True) -> ts.TimeFrame:
+def add_initial_core_flags(tf: ts.TimeFrame, init_unchecked: bool = True, init_missing: bool = True) -> ts.TimeFrame:
     """Setup core flags and initialise with "unchecked" and "missing" flags.
 
     Args:

@@ -11,7 +11,7 @@ from new_processor.configuration.app_config import app_config
 from new_processor.io_backend.duckdb_connection import DuckDBConnectionFactory, create_duckdb_factory
 from new_processor.io_backend.reader import DuckDBParquetReader
 from new_processor.storage.storage_client import S3StorageClient
-from utils.s3_test_helper import create_hourly_test_data
+from utils.s3_test_helpers import create_hourly_test_data
 from utils.validation_helpers import assert_unique_dates_in_dataframe
 
 DUMMY_DF = pl.DataFrame({"a": [1]})

@@ -55,7 +55,12 @@ def load_json_string(json_str: str) -> dict[str, Any]:
     return json.loads(json_str)
 
 
-def discover_e2e_test_cases():
+def discover_e2e_test_cases() -> list[ParameterSet]:
+    """Discover all test cases from the test case JSON file for use with @pytest.mark.parametrize.
+
+    Returns:
+        A list of pytest.param objects, each representing a test case.
+    """
     test_cases = []
     for test_case in load_json_file(END_TO_END / "test_cases.json")["test_cases"]:
         test_cases.append(
@@ -68,7 +73,7 @@ def discover_e2e_test_cases():
                 test_case["periodicities"],
                 test_case["start_date"],
                 test_case["end_date"],
-                id=test_case["id"]
+                id=test_case["id"],
             )
         )
     return test_cases

@@ -7,8 +7,7 @@ from tests.utils.metadata_helpers import stable_file_key
 
 
 class MockMetadataApi(BaseHTTPRequestHandler):
-
-    def _send_json(self, status: int, payload: dict):
+    def _send_json(self, status: int, payload: dict) -> None:
         data = json.dumps(payload).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -16,7 +15,7 @@ class MockMetadataApi(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def _handle(self):
+    def _handle(self) -> None:
         file_key = stable_file_key(self.path)
         file_path = Path(TEST_DATA_MOCK_METADATA / f"{file_key}.json")
 
@@ -32,5 +31,5 @@ class MockMetadataApi(BaseHTTPRequestHandler):
         else:
             self._send_json(200, json.loads(file_path.read_text()))
 
-    def do_GET(self):
+    def do_GET(self) -> None:
         self._handle()

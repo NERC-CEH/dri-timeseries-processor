@@ -1,25 +1,68 @@
-import json
-import requests
-import shutil
+"""
+Record and cache metadata API responses for end-to-end testing.
 
-from new_processor.externals.api_manager import MetadataAPIManager
-from new_processor.configuration.app_config import app_config
-from new_processor.routers.metadata.metadata_router import MetadataRouter
-from tests.utils.fixture_helpers import TEST_DATA_MOCK_METADATA, END_TO_END, load_json_file
-from new_processor.utils.urls import SITE_URI
-from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
+This module is a one-off utility used to record all metadata responses required by the end-to-end (E2E) test suite.
+It runs against the real metadata API once, records every response that would be fetched during a processing run,
+and saves those responses as JSON files.
+
+The recorded JSON files allow E2E tests to run offline, without depending on the availability of the live metadata API.
+
+How it works
+------------
+- A custom ``requests.Session`` (``MetadataCacheSession``) intercepts all HTTP requests made to the metadata API.
+- Each response is written to disk using a stable filename, derived by encoding the full HTTP URL request that was
+  made to the API.
+- The script builds a full ``DatasetDependencyGraph`` for each E2E test case, ensuring that all metadata endpoints
+  required by the processor are visited and cached.
+
+Usage pattern
+-------------
+This script is not used during normal test execution. Instead, it should be run manually:
+- when E2E test cases change
+- when metadata API behaviour or schemas change
+
+Once generated, the JSON files are treated as static test inputs and are loaded by the test suite in place of real API
+calls.
+"""
+
+import json
+import shutil
+from pathlib import Path
+from typing import Any
+
+import requests
+from tests.utils.fixture_helpers import END_TO_END, TEST_DATA_MOCK_METADATA, load_json_file
+from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET, stable_file_key
+
 from new_processor.cli.selection import SelectionOption
-from tests.utils.metadata_helpers import stable_file_key, E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
+from new_processor.configuration.app_config import app_config
+from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from new_processor.externals.api_manager import MetadataAPIManager
+from new_processor.routers.metadata.metadata_router import MetadataRouter
+from new_processor.utils.urls import SITE_URI
 
 
 class MetadataCacheSession(requests.Session):
-    """ A requests.Session that intercepts calls to the metadata api and saves response to file for testing purposes.
-    """
+    """A requests.Session that intercepts calls to the metadata api and saves response to file for testing purposes."""
+
     def __init__(self) -> None:
         super().__init__()
 
     def request(self, method: str, url: str, **kwargs) -> requests.Response:
+        """Intercept the API call, then send the request and cache its JSON response to file.
+
+        Args:
+            method: HTTP method
+            url: Request URL
+            **kwargs: Forwarded to ``requests.Session.request``
+
+        Returns:
+            The response object returned by the parent session.
+        """
         resp = super().request(method, url, **kwargs)
+
+        # For end-to-end testing, we want to control where the data is written.
+        # Overwrite the bucket names in the metadata JSON.
         metadata = rewrite_buckets(resp.json())
 
         file_key = stable_file_key(resp.url)
@@ -31,7 +74,19 @@ class MetadataCacheSession(requests.Session):
         return resp
 
 
-def rewrite_buckets(obj):
+def rewrite_buckets(obj: Any) -> Any:
+    """Recursively rewrite any sourceBucket fields to the known E2E test buckets.
+
+    Some metadata responses include S3 bucket references. In E2E tests we want these to point at the local
+    test buckets (input/output) rather than whatever bucket name is stored in the real metadata.
+
+    Args:
+        obj: Any JSON value (dict, list, str).
+
+    Returns:
+        A JSON value with bucket names renamed.
+    """
+
     if isinstance(obj, dict):
         for key, value in obj.items():
             if key == "sourceBucket":
@@ -49,25 +104,48 @@ def rewrite_buckets(obj):
     return obj
 
 
+def reset_metadata_fixture_dir(path: Path) -> None:
+    """Delete and recreate the metadata fixture directory.
+
+    Args:
+        path: Directory path to reset.
+    """
+    shutil.rmtree(path, ignore_errors=True)
+    path.mkdir(parents=True, exist_ok=True)
+
+
 def main() -> None:
-    """Update all metadata fixtures from the API."""
+    """Populate the mock metadata fixture directory for all E2E test cases.
+
+    This function:
+    1. Creates a metadata API client that uses MetadataCacheSession to intercept outgoing metadata API requests
+    2. Clears and recreates the TEST_DATA_MOCK_METADATA directory.
+    3. Loads E2E test cases from test_cases.json.
+    4. For each test case, builds a DatasetDependencyGraph, which triggers the metadata lookups that need to be cached.
+
+    After this completes, the E2E test suite can be configured to use the recorded JSON fixtures instead of calling
+    the live metadata API.
+    """
     cfg = app_config()
+
     session = MetadataCacheSession()
     api_manager = MetadataAPIManager(cfg.metadata_api_url, session)
     metadata_router = MetadataRouter(cfg.metadata_api_url, api_manager)
 
     # reset metadata json
-    shutil.rmtree(TEST_DATA_MOCK_METADATA)
-    TEST_DATA_MOCK_METADATA.mkdir()
+    reset_metadata_fixture_dir(TEST_DATA_MOCK_METADATA)
 
+    # for each test case, build dependency graph to trigger the metadata caching
     test_cases = load_json_file(END_TO_END / "test_cases.json")["test_cases"]
-
     for test_case in test_cases:
-        test_case["sites"] = [SITE_URI + "/" + site for site in test_case["sites"]]
+        # the downstream processes requires full site uris rather than standalone IDs
+        site_uris = [SITE_URI + "/" + site for site in test_case["sites"]]
 
+        # discover all the variables that are needed for this test case
         variables = test_case["measured_variables"] + test_case["derived_variables"] + test_case["aggregated_variables"]
 
-        selection = [SelectionOption(test_case["sites"], variables, test_case["periodicities"])]
+        # build the graph!
+        selection = [SelectionOption(site_uris, variables, test_case["periodicities"])]
         graph = DatasetDependencyGraph(
             network=test_case["network"], selection=selection, metadata_router=metadata_router
         )

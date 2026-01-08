@@ -62,7 +62,7 @@ class TestFetchCoreFlags:
         """Clear the LRU cache before each test."""
         fetch_core_flags.cache_clear()
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Clear the LRU cache after each test so as not to leak into downstream tests."""
         fetch_core_flags.cache_clear()
 
