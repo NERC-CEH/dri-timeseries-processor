@@ -6,7 +6,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Iterator
 
-import pytest
 from tests.utils.fixture_helpers import TEST_DATA_MOCK_METADATA
 from tests.utils.metadata_helpers import stable_file_key
 
@@ -38,17 +37,6 @@ class MockMetadataApi(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         self._handle()
-
-
-@pytest.fixture
-def metadata_api_url() -> Iterator[str]:
-    """Start a local mock metadata API server and yield its base URL.
-
-    Yields:
-        The base URL of the running mock metadata API.
-    """
-    with mock_metadata_api() as url:
-        yield url
 
 
 @contextmanager

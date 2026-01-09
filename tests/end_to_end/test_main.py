@@ -17,14 +17,15 @@ are compared against known/expected Parquet files.
 """
 
 from datetime import datetime, timedelta
+from typing import Iterator
 
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
+from tests.end_to_end.mock_metadata_api.mock_api import mock_metadata_api
 from tests.utils.fixture_helpers import TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases
 from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
-from tests.utils.s3_test_helpers import s3_storage_client
-from tests.end_to_end.mock_metadata_api.mock_api import metadata_api_url
+from tests.utils.s3_test_helpers import get_s3_storage_client
 
 from new_processor.__main__ import main
 from new_processor.operations.flags.flag_names import (
@@ -34,6 +35,23 @@ from new_processor.operations.flags.flag_names import (
     qc_flag_column_name,
 )
 from new_processor.storage.storage_client import S3StorageClient
+
+
+@pytest.fixture
+def metadata_api_url() -> Iterator[str]:
+    """Start a local mock metadata API server and yield its base URL.
+
+    Yields:
+        The base URL of the running mock metadata API.
+    """
+    with mock_metadata_api() as url:
+        yield url
+
+
+@pytest.fixture
+def s3_storage_client() -> Iterator[S3StorageClient]:
+    with get_s3_storage_client() as storage_client:
+        yield storage_client
 
 
 class TestMain:
