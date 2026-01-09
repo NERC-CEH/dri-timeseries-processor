@@ -23,6 +23,8 @@ import pytest
 from polars.testing import assert_frame_equal
 from tests.utils.fixture_helpers import TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases
 from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
+from tests.utils.s3_test_helpers import s3_storage_client
+from tests.end_to_end.mock_metadata_api.mock_api import metadata_api_url
 
 from new_processor.__main__ import main
 from new_processor.operations.flags.flag_names import (
