@@ -1,10 +1,47 @@
 import io
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Iterator
 
 import polars as pl
+import pytest
+from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR
+from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
 
+from new_processor.configuration.app_config import app_config
 from new_processor.storage.storage_client import S3StorageClient
+
+
+@pytest.fixture
+def s3_storage_client() -> Iterator[S3StorageClient]:
+    with get_s3_storage_client() as storage_client:
+        yield storage_client
+
+
+@contextmanager
+def get_s3_storage_client() -> Iterator[S3StorageClient]:
+    cfg = app_config()
+    storage_client = S3StorageClient("test", "test", cfg.AWS_DEFAULT_REGION, endpoint_url=cfg.endpoint_url)
+
+    try:
+        # Clean up in case of prior interrupted runs.
+        remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
+        remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
+    except Exception:
+        pass
+
+    create_test_s3_bucket(E2E_INPUT_BUCKET, storage_client, cfg.AWS_DEFAULT_REGION)
+    create_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client, cfg.AWS_DEFAULT_REGION)
+
+    upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "end_to_end")
+
+    try:
+        yield storage_client
+    finally:
+        # teardown
+        remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
+        remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
 
 
 def remove_test_s3_bucket(bucket: str, storage_client: S3StorageClient) -> None:

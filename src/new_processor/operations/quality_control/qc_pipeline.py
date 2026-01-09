@@ -20,6 +20,13 @@ class QCPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
 
+    def run(self, *args, **kwargs) -> ts.TimeFrame:
+        """Override the parent run method, as we need to remove QC'ed data at the end of the pipeline after all
+        QC tests have run.
+        """
+        tf = super().run(*args, **kwargs)
+        return self._remove_data(tf)
+
     def apply(self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.
 
@@ -37,11 +44,14 @@ class QCPipeline(OperationPipeline):
 
         method = QcMethod.get(config.method)
         result = method.run(tf_qc, config)
+
         result = tf.with_df(
             tf.df.with_columns(pl.Series(self.get_qc_result_column(tf.metadata["column_name"]), result))
         )
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
-        return self._remove_data(result)
+        result = result.with_df(result.df.drop(self.get_qc_result_column(tf.metadata["column_name"])))
+
+        return result
 
     def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
         """Extract the QC method configurations.
@@ -113,10 +123,10 @@ class QCPipeline(OperationPipeline):
             TimeFrame with bad data removed.
         """
         df_qc = tf.df.with_columns(
-            pl.when(self.get_qc_result_column(tf.metadata["column_name"]))
+            pl.when(pl.col(self.get_flag_column(tf.metadata["column_name"])) > 0)
             .then(None)
             .otherwise(pl.col(tf.metadata["column_name"]))
             .alias(tf.metadata["column_name"])
         )
-        tf = tf.with_df(df_qc)
-        return tf.with_df(tf.df.drop(self.get_qc_result_column(tf.metadata["column_name"])))
+
+        return tf.with_df(df_qc)

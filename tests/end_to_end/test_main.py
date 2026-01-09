@@ -16,22 +16,15 @@ The processor is initialised and executed end-to-end with known input data, and 
 are compared against known/expected Parquet files.
 """
 
-import socket
-import threading
 from datetime import datetime, timedelta
-from http.server import HTTPServer
-from typing import Iterator
 
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
-from tests.end_to_end.mock_metadata_api.mock_api import MockMetadataApi
-from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR, TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases
-from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
-from tests.utils.s3_test_helpers import create_test_s3_bucket, remove_test_s3_bucket, upload_folder_to_s3
+from tests.utils.fixture_helpers import TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases
+from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
 
 from new_processor.__main__ import main
-from new_processor.configuration.app_config import app_config
 from new_processor.operations.flags.flag_names import (
     core_flag_column_name,
     corrs_flag_column_name,
@@ -39,56 +32,6 @@ from new_processor.operations.flags.flag_names import (
     qc_flag_column_name,
 )
 from new_processor.storage.storage_client import S3StorageClient
-
-CONFIG = app_config()
-
-
-@pytest.fixture
-def metadata_api_url() -> Iterator[str]:
-    """Start a local mock metadata API server and yield its base URL.
-
-    Yields:
-        The base URL of the running mock metadata API.
-    """
-    with socket.socket() as s:
-        s.bind(("127.0.0.1", 0))
-        port = s.getsockname()[1]
-
-    server = HTTPServer(("127.0.0.1", port), MockMetadataApi)
-
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    metadata_api_base_url = f"http://127.0.0.1:{port}"
-
-    try:
-        yield metadata_api_base_url
-    finally:
-        server.shutdown()
-
-
-@pytest.fixture
-def s3_storage_client() -> Iterator[S3StorageClient]:
-    """Set up the LocalStack storage client, creating test S3 buckets and upload the known input parquet data files."""
-    storage_client = S3StorageClient("test", "test", CONFIG.AWS_DEFAULT_REGION, endpoint_url=CONFIG.endpoint_url)
-
-    try:
-        # Clean up in case of prior interrupted runs.
-        remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
-        remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
-    except Exception:
-        pass
-
-    create_test_s3_bucket(E2E_INPUT_BUCKET, storage_client, CONFIG.AWS_DEFAULT_REGION)
-    create_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client, CONFIG.AWS_DEFAULT_REGION)
-
-    upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "end_to_end")
-
-    try:
-        yield storage_client
-    finally:
-        # teardown
-        remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
-        remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
 
 
 class TestMain:

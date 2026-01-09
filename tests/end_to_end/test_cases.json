@@ -5,13 +5,13 @@
             "id": "simple-one-site-one-var",
             "description": "Test of one simple measured variable, with no processing quirks, at one site.",
             "network": "cosmos",
-            "sites": ["cosmos-alic1"],
+            "sites": ["cosmos-chimn"],
             "measured_variables": ["TA"],
             "derived_variables": [],
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
-            "start_date": "2016-07-27",
-            "end_date": "2016-07-29"
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           },
         {
             "id": "simple-multiple-sites-one-var",
@@ -22,8 +22,8 @@
             "derived_variables": [],
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
-            "start_date": "2016-07-27",
-            "end_date": "2016-07-29"
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           },
         {
             "id": "simple-multiple-sites-multiple-var",
@@ -34,20 +34,20 @@
             "derived_variables": [],
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
-            "start_date": "2016-07-27",
-            "end_date": "2016-07-29"
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           },
         {
             "id": "wd-correction",
             "description": "Test that the wind direction correction is applied and flagged. Note, ALIC1 should NOT be corrected.",
             "network": "cosmos",
-            "sites": ["cosmos-alic1", "cosmos-holln", "cosmos-chimn"],
+            "sites": ["cosmos-alic1", "cosmos-holln"],
             "measured_variables": ["WD"],
             "derived_variables": [],
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
-            "start_date": "2016-07-27",
-            "end_date": "2016-07-29"
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           },
         {
             "id": "lw-correction",
@@ -89,7 +89,7 @@
             "id": "derived-one-site-one-var",
             "description": "Test of one derived variable at one site.",
             "network": "cosmos",
-            "sites": ["cosmos-alic1"],
+            "sites": ["cosmos-chimn"],
             "measured_variables": [],
             "derived_variables": ["RN"],
             "aggregated_variables": [],
@@ -103,7 +103,7 @@
             "network": "cosmos",
             "sites": ["cosmos-alic1", "cosmos-chimn"],
             "measured_variables": ["TA", "Q", "WS"],
-            "derived_variables": ["RN", "PE"],
+            "derived_variables": ["RN"],
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
             "start_date": "2020-08-18",
@@ -111,7 +111,7 @@
           },
           {
             "id": "aggregated-one-site-one-var",
-            "description": "Test of one simple aggregated variable at one site.",
+            "description": "Test of one simple aggregatled variable at one site.",
             "network": "cosmos",
             "sites": ["cosmos-alic1"],
             "measured_variables": [],

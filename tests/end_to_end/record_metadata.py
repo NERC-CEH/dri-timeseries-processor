@@ -1,7 +1,7 @@
 """
-Record and cache metadata API responses for end-to-end testing.
+Record and cache metadata API responses for end-to-end (E2E) testing.
 
-This module is a one-off utility used to record all metadata responses required by the end-to-end (E2E) test suite.
+This module is a one-off utility used to record all metadata responses required by the E2E test suite.
 It runs against the real metadata API once, records every response that would be fetched during a processing run,
 and saves those responses as JSON files.
 
@@ -26,6 +26,7 @@ calls.
 """
 
 import json
+import logging
 import shutil
 from pathlib import Path
 from typing import Any
@@ -40,6 +41,12 @@ from new_processor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from new_processor.externals.api_manager import MetadataAPIManager
 from new_processor.routers.metadata.metadata_router import MetadataRouter
 from new_processor.utils.urls import SITE_URI
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 class MetadataCacheSession(requests.Session):
@@ -138,6 +145,7 @@ def main() -> None:
     # for each test case, build dependency graph to trigger the metadata caching
     test_cases = load_json_file(END_TO_END / "test_cases.json")["test_cases"]
     for test_case in test_cases:
+        logger.info(f"Recording metadata for test_case: {test_case['id']}")
         # the downstream processes requires full site uris rather than standalone IDs
         site_uris = [SITE_URI + "/" + site for site in test_case["sites"]]
 
@@ -153,4 +161,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    logger.info("Starting metadata recording.")
     main()
+    logger.info("Finished.")

@@ -183,16 +183,6 @@
                   },
                   "argument": [
                     {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-round"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round.value",
-                        "value": 1
-                      }
-                    },
-                    {
                       "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#threshold",
                       "parameter": {
                         "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-threshold"
@@ -200,6 +190,16 @@
                       "hasValue": {
                         "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#threshold.value",
                         "value": 39
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round.value",
+                        "value": 1
                       }
                     }
                   ]
@@ -623,16 +623,6 @@
                   },
                   "argument": [
                     {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pa_1day_processed-current#round",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-round"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pa_1day_processed-current#round.value",
-                        "value": 1
-                      }
-                    },
-                    {
                       "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pa_1day_processed-current#threshold",
                       "parameter": {
                         "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-threshold"
@@ -640,6 +630,16 @@
                       "hasValue": {
                         "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pa_1day_processed-current#threshold.value",
                         "value": 39
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pa_1day_processed-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/pa_1day_processed-current#round.value",
+                        "value": 1
                       }
                     }
                   ]
@@ -843,16 +843,6 @@
                   },
                   "argument": [
                     {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-round"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round.value",
-                        "value": 1
-                      }
-                    },
-                    {
                       "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#threshold",
                       "parameter": {
                         "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-threshold"
@@ -860,6 +850,16 @@
                       "hasValue": {
                         "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#threshold.value",
                         "value": 39
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round.value",
+                        "value": 1
                       }
                     }
                   ]

@@ -1,7 +1,12 @@
 import json
-from http.server import BaseHTTPRequestHandler
+import socket
+import threading
+from contextlib import contextmanager
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from typing import Iterator
 
+import pytest
 from tests.utils.fixture_helpers import TEST_DATA_MOCK_METADATA
 from tests.utils.metadata_helpers import stable_file_key
 
@@ -33,3 +38,31 @@ class MockMetadataApi(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         self._handle()
+
+
+@pytest.fixture
+def metadata_api_url() -> Iterator[str]:
+    """Start a local mock metadata API server and yield its base URL.
+
+    Yields:
+        The base URL of the running mock metadata API.
+    """
+    with mock_metadata_api() as url:
+        yield url
+
+
+@contextmanager
+def mock_metadata_api() -> Iterator[str]:
+    """Start a local mock metadata API server and yield its base URL."""
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+
+    server = HTTPServer(("127.0.0.1", port), MockMetadataApi)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+
+    try:
+        yield f"http://127.0.0.1:{port}"
+    finally:
+        server.shutdown()
