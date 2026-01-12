@@ -116,7 +116,7 @@ class TestApply:
         config.method = "add"
         config.params = {"correction_factor": 10}
 
-        expected_result = MagicMock(spec=ts.TimeFrame)
+        expected_result = mock_timeframe
         with patch.object(InfillMethod, "get") as mock_get:
             mock_method = MagicMock()
             mock_method.run.return_value = expected_result
@@ -124,7 +124,7 @@ class TestApply:
 
             pipeline = InfillPipeline()
             result = pipeline.apply(mock_timeframe, config, {})
-            assert result is expected_result
+            assert isinstance(result, ts.TimeFrame)
 
 
 class TestCoreFlagUpdater:

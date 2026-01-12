@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset?originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=CTS_MOD&type.measure.aggregation.periodicity=PT30M&_view=timeseries&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset.rdf?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=CTS_MOD&type.measure.aggregation.periodicity=PT30M&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+      "http://fdri.ceh.ac.uk/id/dataset.csv?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=CTS_MOD&type.measure.aggregation.periodicity=PT30M&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+      "http://fdri.ceh.ac.uk/id/dataset.geojson?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=CTS_MOD&type.measure.aggregation.periodicity=PT30M&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+      "http://fdri.ceh.ac.uk/id/dataset.ttl?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=CTS_MOD&type.measure.aggregation.periodicity=PT30M&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+      "http://fdri.ceh.ac.uk/id/dataset.json?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=CTS_MOD&type.measure.aggregation.periodicity=PT30M&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+      "http://fdri.ceh.ac.uk/id/dataset.html?_view=timeseries&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=CTS_MOD&type.measure.aggregation.periodicity=PT30M&type.processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed"
+    ],
+    "limit": 25
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cts_mod_30min_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_cts-cts-total_prec-pt30m-pt30m",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_cts",
+              "prefLabel": [
+                "Neutron counts"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts",
+              "prefLabel": [
+                "Counts"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total_prec-pt30m-pt30m",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
+              },
+              "periodicity": "PT30M",
+              "resolution": "PT30M"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cts_mod_30min_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/cts_mod_30min_raw"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cts_mod_30min_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cts_mod_30min_processed-current"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "CTS_MOD",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-crns"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod_30min_raw"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod_30min_raw"
+        }
+      ]
+    }
+  ]
+}

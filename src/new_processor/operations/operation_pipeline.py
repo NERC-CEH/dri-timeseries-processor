@@ -153,12 +153,12 @@ class OperationPipeline(ABC):
             for cfg in cfg_block.method_configs:
                 logger.info(f"Operation: {self.operation_type} | {cfg.method}")
 
-                # Run the method and apply any resulting flags
-                result = self.apply(tf, cfg, dataset_repository)
-                self._add_flag(tf, result, col_name, cfg.method)
+                # Run the method
+                tf = self.apply(tf, cfg, dataset_repository)
 
-        # Post-process core flags
+        # Update core flags
         tf = self.core_flag_updater(tf)
+
         return tf
 
     def _initialise_flag_system(self, tf: ts.TimeFrame) -> None:
@@ -196,4 +196,4 @@ class OperationPipeline(ABC):
         flag_column = self.get_flag_column(col_name)
         mask = self.compute_flag_mask(tf, result, col_name)
         if mask is not None:
-            tf.add_flag(flag_column, flag_name, mask)
+            result.add_flag(flag_column, flag_name, mask)

@@ -44,7 +44,9 @@ class CorrectionPipeline(OperationPipeline):
             params[dep_name] = dep_tf
 
         method = CorrectionMethod.get(config.method)
-        return method.run(tf, config)
+        result = method.run(tf, config)
+        self._add_flag(tf, result, tf.metadata["column_name"], config.method)
+        return result
 
     def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
         """Extract the correction method configurations.

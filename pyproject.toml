@@ -20,7 +20,7 @@ dependencies = [
     "tenacity",
     "prometheus-client",
     "setuptools < 81",
-    "time-stream",
+    "time-stream"
 ]
 name = "dritimeseriesprocessor"
 dynamic = ["version"]

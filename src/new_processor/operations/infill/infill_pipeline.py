@@ -39,7 +39,9 @@ class InfillPipeline(OperationPipeline):
             config.params["alt_data_column"] = dep_tf.metadata["column_name"]
 
         method = InfillMethod.get(config.method)
-        return method.run(tf, config)
+        result = method.run(tf, config)
+        self._add_flag(tf, result, tf.metadata["column_name"], config.method)
+        return result
 
     def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
         """Extract the infill method configurations.

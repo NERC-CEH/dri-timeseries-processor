@@ -145,12 +145,16 @@ class TimeSeriesProcessor:
                 self.metrics.no_data.inc()
 
             else:
-                tf = TimeFrame(
-                    df=df,
-                    time_name=container.time_column_name,
-                    resolution=container.resolution,
-                    periodicity=container.periodicity,
-                ).with_metadata({"column_name": container.source_column})
+                tf = (
+                    TimeFrame(
+                        df=df,
+                        time_name=container.time_column_name,
+                        resolution=container.resolution,
+                        periodicity=container.periodicity,
+                    )
+                    .with_metadata({"column_name": container.source_column})
+                    .pad()
+                )
 
                 tf = add_initial_core_flags(tf)
                 container.data = tf
@@ -220,7 +224,7 @@ class TimeSeriesProcessor:
                 key = (
                     f"network={container.network}/"
                     f"date={data_date.strftime('%Y-%m-%d')}/"
-                    f"site={container.source_site_identifier}/"
+                    f"site={container.source_site}/"
                     f"resolution={container.resolution}/"
                     f"data.parquet"
                 )

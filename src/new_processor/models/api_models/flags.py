@@ -8,7 +8,6 @@ class CoreFlagItem(BaseModel):
 
     name: str
     description: str
-    symbol: str
     id: int
 
     @field_validator("id")

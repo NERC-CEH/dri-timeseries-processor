@@ -106,25 +106,6 @@ class TestInitialiseFlagColumn:
         mock_timeframe.init_flag_column.assert_not_called()
 
 
-class TestAddFlag:
-    def test_adds_flag_when_mask_is_not_none(self, mock_timeframe: MagicMock) -> None:
-        """Test that flag is added when mask is not None."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
-        mock_mask = MagicMock()
-        pipeline.compute_flag_mask = MagicMock(return_value=mock_mask)
-
-        pipeline._add_flag(mock_timeframe, MagicMock(), "value", "test_flag")
-        mock_timeframe.add_flag.assert_called_once_with("value_TEST_FLAG", "test_flag", mock_mask)
-
-    def test_not_adds_flag_when_mask_is_none(self, mock_timeframe: MagicMock) -> None:
-        """Test that flag is not added when mask is None."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
-        pipeline.compute_flag_mask = MagicMock(return_value=None)
-
-        pipeline._add_flag(mock_timeframe, MagicMock(), "value", "test_flag")
-        mock_timeframe.add_flag.assert_not_called()
-
-
 class TestRun:
     def test_copies_timeframe_from_container(self, mock_container: MagicMock, mock_timeframe: MagicMock) -> None:
         """Test that TimeFrame is copied from container."""

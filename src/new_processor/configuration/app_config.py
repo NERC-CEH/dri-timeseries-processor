@@ -31,8 +31,6 @@ class AppConfig(ABC):
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     endpoint_url: str
-    level_0_bucket: str
-    processed_bucket: str
     metadata_api_url: str
     environment: Environment
     pushgateway_url: str
@@ -73,8 +71,6 @@ class AppConfigLocal(AppConfig):
             self.AWS_ACCESS_KEY_ID = cfg["AWS_ACCESS_KEY_ID"]
             self.AWS_SECRET_ACCESS_KEY = cfg["AWS_SECRET_ACCESS_KEY"]
 
-            self.level_0_bucket = cfg["level_0_bucket"]
-            self.processed_bucket = cfg["processed_bucket"]
             self.metadata_api_url = cfg["metadata_api_url"]
             self.endpoint_url = cfg["endpoint_url"]
 
@@ -88,6 +84,9 @@ class AppConfigLocal(AppConfig):
         os.environ["AWS_ACCESS_KEY_ID"] = cfg["AWS_ACCESS_KEY_ID"]
         os.environ["AWS_SECRET_ACCESS_KEY"] = cfg["AWS_SECRET_ACCESS_KEY"]
         os.environ["AWS_DEFAULT_REGION"] = cfg["AWS_DEFAULT_REGION"]
+
+        if "metadata_api_url" in os.environ:
+            self.metadata_api_url = os.environ["metadata_api_url"]
 
 
 class AppConfigLive(AppConfig):
@@ -106,8 +105,6 @@ class AppConfigLive(AppConfig):
         """
         try:
             self.AWS_DEFAULT_REGION = os.environ["AWS_DEFAULT_REGION"]
-            self.level_0_bucket = os.environ["level_0_bucket"]
-            self.processed_bucket = os.environ["processed_bucket"]
             self.metadata_api_url = os.environ["metadata_api_url"]
             self.environment = Environment(os.environ["environment"])
             self.pushgateway_url = os.environ["pushgateway_url"]  # TODO : remember to add to K8s config

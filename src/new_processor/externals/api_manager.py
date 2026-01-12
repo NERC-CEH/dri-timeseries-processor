@@ -19,15 +19,16 @@ PAGE_SIZE = 500
 class MetadataAPIManager:
     """Manage requests to the metadata API."""
 
-    def __init__(self, host: str) -> None:
+    def __init__(self, host: str, session: requests.Session | None = None) -> None:
         """
         Initialise the API Manager.
 
         Args:
             host: Host URL for the metadata API.
+            session: Optional instance of a requests session object. If none, a default one will be created.
         """
         self.host = host
-        self.session = requests.Session()
+        self.session = session or requests.Session()
 
     def make_api_call(self, url: str, params: list[tuple[str, str]] | dict[str, str] | None = None) -> dict[str, Any]:
         """Make a call to the metadata API.
@@ -85,7 +86,7 @@ class MetadataAPIManager:
         meta = initial_response.get("meta", {})
         items = list(initial_response.get("items", []))
 
-        if "limit" not in meta or len(items) < meta.get("limit", 0):
+        if "limit" not in meta or len(items) <= meta.get("limit", 0):
             return initial_response
 
         # Prepare for pagination
