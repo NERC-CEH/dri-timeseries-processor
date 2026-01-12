@@ -7,12 +7,12 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 import os
 
-import new_processor
+import dritimeseriesprocessor
 
 project = "Time Series Data Processing"
 copyright = "2025, UKCEH"
 author = "UKCEH"
-release = new_processor.__version__
+release = dritimeseriesprocessor.__version__
 version = release
 
 # -- General configuration ---------------------------------------------------

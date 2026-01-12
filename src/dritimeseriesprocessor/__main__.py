@@ -1,28 +1,18 @@
+import logging
 import sys
-from typing import List
 
-from dritimeseriesprocessor import parser
-from dritimeseriesprocessor.time_series_processor import TimeSeriesProcessor
+from dritimeseriesprocessor.app.run import run_from_config
+from dritimeseriesprocessor.cli.cli import parse_args
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
 
 
-def main(args: List[str]) -> None:
-    """
-    The initial function run when this file is called via the command line.
-
-    Parses the CLI args, before initialising and running the TimeSeriesProcessor class.
-    """
-    args = parser.parse_args(args)
-
-    time_series_processor = TimeSeriesProcessor(
-        user_ts_ids=args.ts_id,
-        sites=args.sites,
-        columns=args.columns,
-        periodicity=args.periodicity,
-        end_date=args.end_date,
-        period=args.period,
-        network=args.network,
-    )
-    time_series_processor.run()
+def main(argv: list[str]) -> None:
+    run_config = parse_args(argv)
+    run_from_config(run_config)
 
 
 if __name__ == "__main__":

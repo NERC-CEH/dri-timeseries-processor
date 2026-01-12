@@ -35,7 +35,7 @@ from tests.utils.fixture_helpers import END_TO_END, TEST_DATA_OUTPUT_DIR, load_j
 from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
 from tests.utils.s3_test_helpers import get_s3_storage_client
 
-from new_processor.__main__ import main as pipeline_main
+from dritimeseriesprocessor.__main__ import main as pipeline_main
 
 
 def reset_output_data_fixture_dir(path: Path) -> None:
