@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/site/multiple-items.json",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/site/multiple-items.json",
+      "http://fdri.ceh.ac.uk/id/site/multiple-items.rdf",
+      "http://fdri.ceh.ac.uk/id/site/multiple-items.html",
+      "http://fdri.ceh.ac.uk/id/site/multiple-items.csv",
+      "http://fdri.ceh.ac.uk/id/site/multiple-items.ttl",
+      "http://fdri.ceh.ac.uk/id/site/multiple-items.geojson"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/multiple-items",
+      "easting": "458884.0",
+      "northing": "329606.0",
+      "altitude": 39,
+      "hasAnnotation": [],
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/multiple-items#operating-period",
+        "startDate": "2015-01-27T00:30:00",
+        "endDate": "2099-12-31"
+      },
+      "hasPart": [],
+      "identifier": [],
+      "hasGeometry": [],
+      "@type": [],
+      "comment": [],
+      "label": [],
+      "lat": "52.86073",
+      "long": "-1.12685",
+      "observes": []
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/multiple-items",
+      "easting": "458884.0",
+      "northing": "329606.0",
+      "altitude": 39,
+      "hasAnnotation": [],
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/multiple-items#operating-period",
+        "startDate": "2015-01-27T00:30:00",
+        "endDate": "2099-12-31"
+      },
+      "hasPart": [],
+      "identifier": [],
+      "hasGeometry": [],
+      "@type": [],
+      "comment": [],
+      "label": [],
+      "lat": "52.86073",
+      "long": "-1.12685",
+      "observes": []
+    }
+  ]
+}

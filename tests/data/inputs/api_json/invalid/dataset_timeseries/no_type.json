@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/network/empty.json",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset/empty.json?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/empty.geojson?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/empty.rdf?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/empty.csv?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/empty.html?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/empty.ttl?_view=timeseries"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/network/empty",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/EnvironmentalMonitoringNetwork"
+        }
+      ],
+      "type": [],
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+      "sourceDataset": "EMPTY",
+      "sourceColumnName": "E",
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site"
+        }
+      ]
+    }
+  ]
+}

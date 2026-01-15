@@ -36,4 +36,4 @@ ENV PATH="/app/.venv/bin:$PATH" VIRTUAL_ENV="/app/.venv"
 # Unsetting entrypoint from parent image
 ENTRYPOINT []
 
-CMD ["python", "-m", "dritimeseriesprocessor", "--sites=alic1,bunny", "--periodicity=PT30M", "--columns=TA,PA,PE,PRECIP", "--period=P2D", "--network=cosmos"]
+CMD ["python", "-m", "dritimeseriesprocessor", "from-cross-product", "--network cosmos", "--sites cosmos-alic1 cosmos-bunny", "--periodicities PT30M", "--variables TA PA WS WD", "--lookback P2D"]

@@ -1,0 +1,10 @@
+{
+    "wrong_key": {
+        "corrected": {
+            "name": "Corrected",
+            "description": "Data point has been adjusted from original value.",
+            "symbol": "C",
+            "id": 1
+        }
+    }
+}

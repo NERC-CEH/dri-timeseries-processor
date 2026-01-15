@@ -1,0 +1,117 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed.json?_view=timeseries",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed.json?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed.geojson?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed.rdf?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed.csv?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed.html?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed.ttl?_view=timeseries"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_1day_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rn-mjm-2-d-total_prec-p1d-p1d",
+            "variable": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn",
+              "prefLabel": [
+                "Net radiation"
+              ]
+            },
+            "hasUnit": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/mjm-2-d",
+              "prefLabel": [
+                "MJ m-2 day-1"
+              ]
+            },
+            "aggregation": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total_prec-p1d-p1d",
+              "valueStatistic": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
+              },
+              "periodicity": "P1D",
+              "resolution": "P1D"
+            }
+          },
+          "methodology": {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-rn_1day_processed-derivation",
+            "uses": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_30min_processed"
+              }
+            ],
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_1day_processed",
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
+              },
+              "hasCurrentConfiguration": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_1day_processed-current",
+                  "method": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calc_daily_radiation"
+                  },
+                  "argument": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_1day_processed-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_1day_processed-current#round.value",
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+      "sourceDataset": "PROCESSED_DATA_1DAY",
+      "sourceColumnName": "RN",
+      "sourceTimeColumnName": "time",
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"
+        }
+      ]
+    }
+  ]
+}
