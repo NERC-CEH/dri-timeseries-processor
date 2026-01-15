@@ -52,19 +52,10 @@ class TestMapDatasetItem:
             method=MethodConfig(
                 config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_1day_processed",
                 method_type=MethodType.DERIVATION,
-                name="calculate-calc_daily_radiation",
+                name="calc_daily_radiation",
             ),
-            depends_on=[
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_processed",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_raw",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_processed",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_processed",
-                "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_raw",
-            ],
+            # TODO - this will update when metadata changes have been made
+            depends_on=["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"],
             direct_depends_on=["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"],
             correction_configs=set(),
             qc_configs=set(),
@@ -437,7 +428,7 @@ class TestMapProcessingConfigItem:
             method_configs=[
                 ProcessingMethodConfig(
                     method="range",
-                    params={"lt": 0, "gt": 1200},
+                    params={"lt": -10., "gt": 1200.},
                 )
             ],
             annotations={},
@@ -462,7 +453,7 @@ class TestMapProcessingConfigItem:
                     start_date=datetime(2013, 1, 1, 0, 30, 0),
                 )
             ],
-            annotations={"data_processing_configuration_priority": 1},
+            annotations={"priority": 1},
         )
 
         assert result == expected
