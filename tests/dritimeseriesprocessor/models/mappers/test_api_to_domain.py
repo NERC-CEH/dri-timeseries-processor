@@ -428,7 +428,7 @@ class TestMapProcessingConfigItem:
             method_configs=[
                 ProcessingMethodConfig(
                     method="range",
-                    params={"lt": -10., "gt": 1200.},
+                    params={"lt": -10.0, "gt": 1200.0},
                 )
             ],
             annotations={},

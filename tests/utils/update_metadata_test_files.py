@@ -12,7 +12,6 @@ from tests.utils.fixture_helpers import TEST_DATA_API_VALID
 from dritimeseriesprocessor.configuration.app_config import app_config
 from dritimeseriesprocessor.externals.api_manager import MetadataAPIManager
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
@@ -54,13 +53,13 @@ MAPPING = {
 }
 
 
-def main():
+def main() -> None:
     cfg = app_config()
     api_manager = MetadataAPIManager(cfg.metadata_api_url)
 
-    for dir, file_map in MAPPING.items():
+    for subdir, file_map in MAPPING.items():
         for filename, metadata_url in file_map.items():
-            output_filepath = TEST_DATA_API_VALID / dir / filename
+            output_filepath = TEST_DATA_API_VALID / subdir / filename
 
             metadata = api_manager.make_api_call(metadata_url)
             with open(output_filepath, "w") as output_file:
