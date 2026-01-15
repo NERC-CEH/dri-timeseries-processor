@@ -17,7 +17,7 @@ This pipeline processes time series data through a metadata-driven approach:
 The processor CLI is invoked using:
 
 ```bash
-python -m new_processor ... 
+python -m dritimeseriesprocessor ... 
 ```
 
 Use one of two (mutually exclusive) modes:
@@ -26,7 +26,7 @@ Use one of two (mutually exclusive) modes:
     - Individual sets of processing arguments    
 
     ```bash
-    python -m new_processor from-selection
+    python -m dritimeseriesprocessor from-selection
      --network NETWORK
      [--lookback DURATION | --start-date YYYY-MM-DD]
      [--end-date YYYY-MM-DD]
@@ -37,7 +37,7 @@ Use one of two (mutually exclusive) modes:
     **Example**:
    
     ```bash    
-    python -m new_processor from-selection 
+    python -m dritimeseriesprocessor from-selection 
      --network cosmos 
      --lookback P2D 
      --selection cosmos-alic1 TA PT30M
@@ -49,7 +49,7 @@ Use one of two (mutually exclusive) modes:
     - Bulk processing across processing dimensions
 
     ```bash    
-    python -m new_processor from-cross-product 
+    python -m dritimeseriesprocessor from-cross-product 
      --network NETWORK 
      [--lookback DURATION | --start-date YYYY-MM-DD] 
      [--end-date YYYY-MM-DD] 
@@ -61,7 +61,7 @@ Use one of two (mutually exclusive) modes:
     **Example**:
     
     ```bash    
-    python -m new_processor from-cross-product 
+    python -m dritimeseriesprocessor from-cross-product 
      --network cosmos 
      --lookback P2D 
      --sites cosmos-alic1 cosmos-bunny

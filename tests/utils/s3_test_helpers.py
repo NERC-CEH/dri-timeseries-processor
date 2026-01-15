@@ -8,8 +8,8 @@ import polars as pl
 from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR
 from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
 
-from new_processor.configuration.app_config import app_config
-from new_processor.storage.storage_client import S3StorageClient
+from dritimeseriesprocessor.configuration.app_config import app_config
+from dritimeseriesprocessor.storage.storage_client import S3StorageClient
 
 
 @contextmanager

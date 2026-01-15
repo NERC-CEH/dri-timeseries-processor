@@ -27,14 +27,14 @@ from tests.utils.fixture_helpers import TEST_DATA_OUTPUT_DIR, discover_e2e_test_
 from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
 from tests.utils.s3_test_helpers import get_s3_storage_client
 
-from new_processor.__main__ import main
-from new_processor.operations.flags.flag_names import (
+from dritimeseriesprocessor.__main__ import main
+from dritimeseriesprocessor.operations.flags.flag_names import (
     core_flag_column_name,
     corrs_flag_column_name,
     infill_flag_column_name,
     qc_flag_column_name,
 )
-from new_processor.storage.storage_client import S3StorageClient
+from dritimeseriesprocessor.storage.storage_client import S3StorageClient
 
 
 @pytest.fixture

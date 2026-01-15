@@ -68,8 +68,20 @@
                 {
                   "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_1day_processed-current",
                   "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calculate-calc_daily_radiation"
-                  }
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calc_daily_radiation"
+                  },
+                  "argument": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_1day_processed-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_1day_processed-current#round.value",
+                        "value": 1
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -85,33 +97,14 @@
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
         }
       ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_processed"
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_raw"
         }
       ],
       "directDependsOn": [

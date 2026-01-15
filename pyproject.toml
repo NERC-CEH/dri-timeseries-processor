@@ -1,45 +1,60 @@
 [build-system]
-requires = ["setuptools >= 61.0", "autosemver"]
+requires = [
+    "setuptools >= 61.0,<81",
+    "autosemver"
+]
 
 [project]
+name = "dritimeseriesprocessor"
 requires-python = ">=3.12"
+description = "Timeseries processor service."
+readme = "README.md"
+license = { text = "NO LICENSE" }
+dynamic = ["version"]
+authors = [
+    { name = "Lewis Chambers", email = "lewcha@ceh.ac.uk" },
+    { name = "Dom Ginger", email = "domgin@ceh.ac.uk" },
+    { name = "Samantha Hewkin", email = "samhew@ceh.ac.uk" },
+    { name = "Rod Scott", email = "rjsc@ceh.ac.uk" },
+    { name = "Nathan Shaw", email = "natsha@ceh.ac.uk" },
+    { name = "Richard Smith", email = "ricsmi@ceh.ac.uk" },
+    { name = "Simon Stanley", email = "simsta@ceh.ac.uk" },
+    { name = "Oliver Swain", email = "os@ceh.ac.uk" },
+]
 dependencies = [
-    "autosemver",
     "boto3>=1.34.138",
     "boto3-stubs[s3]",
     "config>=0.5.1",
-    "dri-utils",
+    "duckdb>=1.1.2",
     "httpx",
-    "moto>=5.0.10",
+    "isodate",
     "polars>=1.1.0",
+    "prometheus-client",
     "pyarrow>=17.0.0",
     "pydantic>=2.8.2",
-    "isodate",
-    "duckdb>=1.1.2",
-    "pandas",
     "tenacity",
-    "prometheus-client",
-    "setuptools < 81",
     "time-stream"
 ]
-name = "dritimeseriesprocessor"
-dynamic = ["version"]
-authors = [
-    { name = "Dom Ginger", email = "domgin@ceh.ac.uk" },
-    { name = "Nathan Shaw", email = "natsha@ceh.ac.uk" },
-    { name = "Lewis Chambers", email = "lewcha@ceh.ac.uk" },
-    { name = "Rod Scott", email = "rjsc@ceh.ac.uk" },
-    { name = "Simon Stanley", email = "simsta@ceh.ac.uk" },
-    { name = "Richard Smith", email = "ricsmi@ceh.ac.uk" },
-]
-description = "Timeseries processor service for FDRI."
-readme = "README.md"
-license = { text = "NO LICENSE" }
+
 
 [dependency-groups]
-test = ["pytest", "pytest-cov", "freezegun", "awscli-local == 0.22.0", "pytest-socket"]
-docs = ["sphinx", "sphinx-copybutton", "sphinx-rtd-theme", "nbsphinx", "sphinxcontrib.mermaid"]
-lint = ["ruff"]
+test = [
+    "awscli-local == 0.22.0",
+    "freezegun",
+    "moto>=5.0.10",
+    "pytest",
+    "pytest-cov",
+    "pytest-socket"
+]
+docs = [
+    "sphinx",
+    "sphinx-copybutton",
+    "sphinx-rtd-theme",
+    "sphinxcontrib.mermaid"
+]
+lint = [
+    "ruff"
+]
 dev = [
   { include-group = "test"},
   { include-group = "docs"},
@@ -51,14 +66,14 @@ version = { attr = "dritimeseriesprocessor.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["dritimeseriesprocessor*", "databuilder*", "metadata_manager*", "new_processor*"]
+include = ["dritimeseriesprocessor*", "databuilder*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "tests", "."]
-addopts = "--cov=dritimeseriesprocessor --cov=new_processor --cov-report=term-missing --disable-socket --allow-hosts=127.0.0.1,::1"
+addopts = "--cov=dritimeseriesprocessor --cov-report=term-missing --disable-socket --allow-hosts=127.0.0.1,::1"
 markers = ["slow: Marks slow tests"]
 filterwarnings = [
     "ignore::Warning:autosemver.*:",
@@ -68,17 +83,13 @@ filterwarnings = [
 [tool.coverage.run]
 source = [
     "src/dritimeseriesprocessor",
-    "src/new_processor"
 ]
 omit = [
-    "*__init__.py",
-    "src/dritimeseriesprocessor/__main__.py",
-    "src/dritimeseriesprocessor/metrics_exporter.py",
 ]
 
 [tool.ruff]
 src = ["src", "tests"]
-include = ["src/**.py", "testing/**.py", "tests/**.py"]
+include = ["src/**.py", "tests/**.py"]
 line-length = 120
 exclude = []
 
@@ -105,4 +116,3 @@ strict = true
 
 [tool.uv.sources]
 time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
-dri-utils = { git = "https://github.com/NERC-CEH/dri-utils.git" }

@@ -68,8 +68,30 @@
                 {
                   "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current",
                   "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/aggregate-sum"
-                  }
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/sum"
+                  },
+                  "argument": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round.value",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#threshold",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#threshold.value",
+                        "value": 27
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -86,6 +108,11 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
       ],
       "dependsOn": [

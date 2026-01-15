@@ -15,7 +15,7 @@ The processor CLI is invoked using:
 
 .. code-block:: console
 
-    python -m new_processor ...
+    python -m dritimeseriesprocessor ...
 
 The CLI accepts arguments defining:
 
@@ -47,7 +47,7 @@ Fine-grained control over specific site/variable/periodicity combinations.
 
 .. code-block:: bash
 
-   python -m new_processor from-selection
+   python -m dritimeseriesprocessor from-selection
      --network NETWORK
      [--lookback DURATION | --start-date YYYY-MM-DD]
      [--end-date YYYY-MM-DD]
@@ -58,7 +58,7 @@ Fine-grained control over specific site/variable/periodicity combinations.
 
 .. code-block:: bash
 
-   python -m new_processor from-selection
+   python -m dritimeseriesprocessor from-selection
      --network cosmos 
      --lookback P2D 
      --selection cosmos-alic1 TA PT30M
@@ -86,7 +86,7 @@ Bulk processing across dimensions. Omitted dimensions process all available valu
 
 .. code-block:: bash
 
-   python -m new_processor from-cross-product
+   python -m dritimeseriesprocessor from-cross-product
      --network NETWORK 
      [--lookback DURATION | --start-date YYYY-MM-DD] 
      [--end-date YYYY-MM-DD] 
@@ -98,7 +98,7 @@ Bulk processing across dimensions. Omitted dimensions process all available valu
 
 .. code-block:: bash
 
-   python -m new_processor from-cross-product
+   python -m dritimeseriesprocessor from-cross-product
      --network cosmos 
      --lookback P2D 
      --sites cosmos-alic1 cosmos-bunny
@@ -113,10 +113,10 @@ cosmos-bunny +PA+PT30M
 .. code-block:: bash
 
    # Process ALL sites, ALL variables, ALL periodicities
-   python -m new_processor cross-product --network cosmos --lookback P7D
+   python -m dritimeseriesprocessor cross-product --network cosmos --lookback P7D
 
    # Process ALL sites for specific variables
-   python -m new_processor cross-product 
+   python -m dritimeseriesprocessor cross-product
      --network cosmos 
      --lookback P7D 
      --variables TA PA
@@ -232,13 +232,13 @@ The CLI validates all arguments before processing. Examples include:
 .. code-block:: bash
 
    # Invalid: Missing required network
-   python -m new_processor cross-product --lookback P2D
+   python -m dritimeseriesprocessor cross-product --lookback P2D
 
    # Invalid: Time component in lookback
-   python -m new_processor cross-product --network cosmos --lookback PT6H
+   python -m dritimeseriesprocessor cross-product --network cosmos --lookback PT6H
 
    # Invalid: Both lookback and start-date
-   python -m new_processor cross-product 
+   python -m dritimeseriesprocessor cross-product
      --network cosmos 
      --lookback P2D 
      --start-date 2024-01-01

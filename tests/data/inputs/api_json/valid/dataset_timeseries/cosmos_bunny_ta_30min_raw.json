@@ -67,6 +67,11 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
         }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
       ]
     }
   ]

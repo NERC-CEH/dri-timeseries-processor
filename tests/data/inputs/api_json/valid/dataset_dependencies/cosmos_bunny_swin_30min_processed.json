@@ -57,6 +57,7 @@
       "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SWIN",
+      "sourceTimeColumnName": "time",
       "originatingFacility": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-4cr"
@@ -65,6 +66,11 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
       ]
     }

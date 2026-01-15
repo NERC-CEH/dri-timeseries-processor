@@ -1,6 +1,6 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
@@ -39,7 +39,7 @@
             ]
           },
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/data-processing-configuration-priority"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/priority"
           },
           "@type": [
             {
@@ -52,26 +52,6 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00",
           "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#window",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#window.value",
-                "value": 1,
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
-                }
-              ]
-            },
             {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#gap",
               "hasValue": {
@@ -91,10 +71,38 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#window",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#window.value",
+                "value": 1,
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                }
+              ]
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_linear"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_linear",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
           },
           "observationInterval": {
             "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#value",
@@ -104,12 +112,7 @@
               }
             ],
             "startDate": "2013-01-01T00:30:00"
-          },
-          "@type": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-            }
-          ]
+          }
         }
       ],
       "type": {

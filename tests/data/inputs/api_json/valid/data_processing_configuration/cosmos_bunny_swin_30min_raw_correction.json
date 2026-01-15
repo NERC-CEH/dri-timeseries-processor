@@ -1,6 +1,6 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration",
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
@@ -47,7 +47,32 @@
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/id/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Scalar"
+            ],
+            "scopeNote": [
+              "Multiply the value by a scale factor. E.g. y=Cx"
+            ]
           },
           "observationInterval": {
             "@id": "http://fdri.ceh.ac.uk/id/observation-interval/2020-08-10-09:30:00-2020-08-17-15:00:00",
@@ -58,12 +83,7 @@
             ],
             "endDate": "2020-08-17T15:00:00",
             "startDate": "2020-08-10T09:30:00"
-          },
-          "@type": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-            }
-          ]
+          }
         }
       ],
       "title": [

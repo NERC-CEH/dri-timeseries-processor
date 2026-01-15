@@ -5,6 +5,6 @@ Storage
 Storage client
 ===========
 
-.. automodule:: new_processor.storage.storage_client
+.. automodule:: dritimeseriesprocessor.storage.storage_client
    :members:
    :undoc-members:
