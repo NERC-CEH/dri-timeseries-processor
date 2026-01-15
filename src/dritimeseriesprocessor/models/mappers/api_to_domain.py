@@ -86,8 +86,11 @@ def map_method_config(methodology: Methodology) -> MethodConfig:
     method_config = methodology.configuration
     method_type = MethodType(extract_uri_id(method_config.type.id))
 
-    method_current_config = method_config.has_current_configuration[0]
-    method = extract_uri_id(method_current_config.method.id) if method_current_config.method else None
+    if method_config.has_current_configuration:
+        method_current_config = method_config.has_current_configuration[0]
+        method = extract_uri_id(method_current_config.method.id) if method_current_config.method else None
+    else:
+        method = None
 
     return MethodConfig(config_id=method_config.id, method_type=method_type, name=method)
 

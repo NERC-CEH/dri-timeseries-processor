@@ -102,7 +102,8 @@ class TestCoreFlagUpdater:
         """Test that update_quality_control_core_flags is called."""
         mock_method = MagicMock(return_value=MagicMock(spec=ts.TimeFrame))
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.quality_control.qc_pipeline.update_quality_control_core_flags", mock_method
+            "dritimeseriesprocessor.operations.quality_control.qc_pipeline.update_quality_control_core_flags",
+            mock_method,
         )
 
         pipeline = QCPipeline()

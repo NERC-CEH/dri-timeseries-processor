@@ -116,7 +116,8 @@ def monkeypatch_api_models(monkeypatch: pytest.MonkeyPatch, items: list) -> None
     api_model_return = SimpleNamespace(items=items)
     for api_model in api_models:
         monkeypatch.setattr(
-            f"dritimeseriesprocessor.dag.dataset_dependency_graph.{api_model}.model_validate", lambda _: api_model_return
+            f"dritimeseriesprocessor.dag.dataset_dependency_graph.{api_model}.model_validate",
+            lambda _: api_model_return,
         )
 
 

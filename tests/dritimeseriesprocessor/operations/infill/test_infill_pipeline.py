@@ -131,7 +131,9 @@ class TestCoreFlagUpdater:
     def test_calls_update_infill_core_flags(self, mock_timeframe: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that update_infill_core_flags is called."""
         mock_method = MagicMock(return_value=MagicMock(spec=ts.TimeFrame))
-        monkeypatch.setattr("dritimeseriesprocessor.operations.infill.infill_pipeline.update_infill_core_flags", mock_method)
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.infill.infill_pipeline.update_infill_core_flags", mock_method
+        )
 
         pipeline = InfillPipeline()
         pipeline.core_flag_updater(mock_timeframe)

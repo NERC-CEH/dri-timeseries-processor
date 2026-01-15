@@ -50,7 +50,7 @@ class Configuration(IDModel):
     """Configuration with type and current configuration."""
 
     type: IDModel
-    has_current_configuration: list[HasCurrentConfigurationItem] = Field(..., alias="hasCurrentConfiguration")
+    has_current_configuration: list[HasCurrentConfigurationItem] | None = Field(None, alias="hasCurrentConfiguration")
 
 
 class Methodology(IDModel):

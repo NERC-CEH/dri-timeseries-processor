@@ -113,7 +113,8 @@ class TestCoreFlagUpdater:
         """Test that update_corrections_core_flags is called."""
         mock_method = MagicMock(return_value=MagicMock(spec=ts.TimeFrame))
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.correction.correction_pipeline.update_corrections_core_flags", mock_method
+            "dritimeseriesprocessor.operations.correction.correction_pipeline.update_corrections_core_flags",
+            mock_method,
         )
 
         pipeline = CorrectionPipeline()
