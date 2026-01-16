@@ -44,15 +44,16 @@ class TestDuckDBDataRouter:
 
         expected_query = """
             SELECT a_time, a_column_name
-            FROM read_parquet('s3://a_bucket/a_network/dataset=a_data/site=*/date=*/data.parquet', union_by_name=true)
+            FROM read_parquet(
+                's3://a_bucket/a_network/dataset=a_data/site=A_SITE/date=*/data.parquet', hive_partitioning=true
+            )
             WHERE
-                (date BETWEEN ? AND ?) AND
-                site = ?;
+                (date BETWEEN ? AND ?);
         """
 
         result = router.query_by_date_range(container, start, end)
         call_query, call_params = mock_reader.read.call_args.args
 
         assert_frame_equal(result, TEST_DF)  # Return what the mock_reader returned
-        assert call_query == expected_query
-        assert call_params == [start, end, "A_SITE"]
+        assert call_query.strip() == expected_query.strip()
+        assert call_params == [start, end]

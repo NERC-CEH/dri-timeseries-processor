@@ -58,17 +58,18 @@ class DuckDBDataRouter(DataRouter):
         partitions = [
             f"{container.network}",
             f"dataset={container.source_dataset}",
-            "site=*",
+            f"site={container.source_site_identifier}",
             "date=*",
         ]
         partitions_str = "/".join(partitions)
         bucket_path = f"s3://{container.source_bucket}/{partitions_str}/data.parquet"
         query = f"""
             SELECT {container.time_column_name}, {container.source_column}
-            FROM read_parquet('{bucket_path}', union_by_name=true)
+            FROM read_parquet(
+                '{bucket_path}', hive_partitioning=true
+            )
             WHERE
-                (date BETWEEN ? AND ?) AND
-                site = ?;
+                (date BETWEEN ? AND ?);
         """
-        params = [start_date, end_date, container.source_site_identifier]
+        params = [start_date, end_date]
         return self.reader.read(query, params)
