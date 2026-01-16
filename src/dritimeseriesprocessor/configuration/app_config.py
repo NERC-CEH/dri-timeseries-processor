@@ -28,9 +28,9 @@ class AppConfig(ABC):
 
     # Required keys
     AWS_DEFAULT_REGION: str
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
-    endpoint_url: str
+    AWS_ACCESS_KEY_ID: str | None = None
+    AWS_SECRET_ACCESS_KEY: str | None = None
+    endpoint_url: str | None = None
     metadata_api_url: str
     environment: Environment
     pushgateway_url: str
@@ -107,7 +107,7 @@ class AppConfigLive(AppConfig):
             self.AWS_DEFAULT_REGION = os.environ["AWS_DEFAULT_REGION"]
             self.metadata_api_url = os.environ["metadata_api_url"]
             self.environment = Environment(os.environ["environment"])
-            self.pushgateway_url = os.environ["pushgateway_url"]  # TODO : remember to add to K8s config
+            self.pushgateway_url = os.environ["pushgateway_url"]
 
         except KeyError as err:
             raise KeyError(f"Missing required live config key:\n{err}")
