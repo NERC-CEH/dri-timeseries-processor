@@ -48,8 +48,7 @@ class TestDuckDBDataRouter:
                 's3://a_bucket/a_network/dataset=a_data/site=A_SITE/date=*/data.parquet', hive_partitioning=true
             )
             WHERE
-                (date BETWEEN ? AND ?) AND
-                site = ?;
+                (date BETWEEN ? AND ?);
         """
 
         result = router.query_by_date_range(container, start, end)
@@ -57,4 +56,4 @@ class TestDuckDBDataRouter:
 
         assert_frame_equal(result, TEST_DF)  # Return what the mock_reader returned
         assert call_query.strip() == expected_query.strip()
-        assert call_params == [start, end, "A_SITE"]
+        assert call_params == [start, end]

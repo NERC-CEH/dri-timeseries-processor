@@ -69,8 +69,7 @@ class DuckDBDataRouter(DataRouter):
                 '{bucket_path}', hive_partitioning=true
             )
             WHERE
-                (date BETWEEN ? AND ?) AND
-                site = ?;
+                (date BETWEEN ? AND ?);
         """
-        params = [start_date, end_date, container.source_site_identifier]
+        params = [start_date, end_date]
         return self.reader.read(query, params)
