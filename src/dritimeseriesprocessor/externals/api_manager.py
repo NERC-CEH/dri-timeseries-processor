@@ -55,7 +55,6 @@ class MetadataAPIManager:
             logger.error(f"Invalid JSON response from: {url}")
             raise
 
-
     def make_paginated_api_call(
         self,
         url: str,
@@ -87,7 +86,7 @@ class MetadataAPIManager:
         meta = initial_response.get("meta", {})
         items = list(initial_response.get("items", []))
 
-        if "limit" not in meta or len(items) < meta.get("limit", 0):
+        if "limit" not in meta or len(items) <= meta.get("limit", 0):
             return initial_response
 
         # Prepare for pagination
