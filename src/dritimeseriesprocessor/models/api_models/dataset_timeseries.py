@@ -56,7 +56,7 @@ class Configuration(IDModel):
 class Methodology(IDModel):
     """Methodology specification."""
 
-    uses: list[IDModel]
+    uses: list[IDModel] | None = None
     configuration: Configuration
 
 

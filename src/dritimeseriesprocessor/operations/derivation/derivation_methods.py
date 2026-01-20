@@ -92,6 +92,28 @@ class NetRadiation(DerivationMethod):
 
 
 @DerivationMethod.register
+class MeanG(DerivationMethod):
+    """Calculate the mean soil heat flux (g) from inputs from multiple soil heat flux measurements."""
+
+    name = "calc_mean_g"
+    inputs = ("g1", "g2")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate mean soil heat flux (g) [MJ m-2 30min-1]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+
+        Returns:
+            Polars expression computing g
+        """
+        g1 = columns["g1"]
+        g2 = columns["g2"]
+
+        return pl.mean_horizontal(g1, g2)
+
+
+@DerivationMethod.register
 class PET30Min(DerivationMethod):
     """Calculate Potential Evapotranspiration (PET) (30 min).
 
@@ -109,8 +131,7 @@ class PET30Min(DerivationMethod):
     Expects MethodConfig.params to contain:
     {
         "rn": <TimeFrame> Net radiation [MJ m-2 30min-1]
-        "g1": <TimeFrame> Soil heat flux density [MJ m-2 30min-1]
-        "g2": <TimeFrame> Soil heat flux density [MJ m-2 30min-1]
+        "g": <TimeFrame> Soil heat flux density [MJ m-2 30min-1]
         "ta": <TimeFrame> Air temperature [degC]
         "rh": <TimeFrame> Relative humidity [%]
         "ws": <TimeFrame> Wind speed at 2m height [ms-1]
@@ -122,7 +143,7 @@ class PET30Min(DerivationMethod):
     """
 
     name = "calculate_pe"
-    inputs = ("g1", "g2", "pa", "rh", "rn", "ta", "ws")
+    inputs = ("g", "pa", "rh", "rn", "ta", "ws")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate potential evapotranspiration (pet) [mm day-1]
@@ -133,18 +154,12 @@ class PET30Min(DerivationMethod):
         Returns:
             Polars expression computing pet
         """
-        g1 = columns["g1"]
-        g2 = columns["g2"]
+        g = columns["g"]
         pa = columns["pa"]
         rh = columns["rh"]
         rn = columns["rn"]
         ta = columns["ta"]
         ws = columns["ws"]
-
-        # Soil heat flux: average of g1 and g2
-        # TODO: Is this a COSMOS specific thing that we have two G columns?
-        #   yes - have a new dependent dataset for G
-        g = pl.mean_horizontal(g1, g2)
 
         # TODO: get wind height from metadata
         wind_height = 2.6
