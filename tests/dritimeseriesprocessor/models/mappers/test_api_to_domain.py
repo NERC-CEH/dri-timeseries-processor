@@ -526,7 +526,7 @@ class TestMapSiteMetadata:
             "long": "-0.5678",
             "altitude": 999,
             "operatingPeriod": {"@id": "operating_period_id", "startDate": "2000-01-01", "endDate": "2099-12-31"},
-            "utilisedBy": [{"@id": "utilised_by_id", "label": ["programme name"]}]
+            "utilisedBy": [{"@id": "utilised_by_id", "label": ["programme name"]}],
         }
 
         api_model = SiteItem.model_validate(data)

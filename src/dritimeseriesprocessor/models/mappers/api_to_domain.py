@@ -24,9 +24,7 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, Pr
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(
-    item: TimeSeriesDatasetItem, all_site_metadata: dict[str, SiteMetadata]
-) -> TimeSeriesContainer:
+def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, SiteMetadata]) -> TimeSeriesContainer:
     """Map a Pydantic TimeSeriesDatasetItem to a domain-level TimeSeriesContainer.
 
     Args:
