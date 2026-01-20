@@ -33,12 +33,12 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], "network", site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
             ref_id="http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_1day_processed",
-            network="network",
+            network="cosmos",
             source_bucket="ukceh-fdri-staging-timeseries-processed",
             source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
@@ -73,12 +73,12 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], "network", site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
             ref_id="http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw",
-            network="network",
+            network="cosmos",
             source_bucket="ukceh-fdri-staging-timeseries-level-0",
             source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
@@ -526,6 +526,7 @@ class TestMapSiteMetadata:
             "long": "-0.5678",
             "altitude": 999,
             "operatingPeriod": {"@id": "operating_period_id", "startDate": "2000-01-01", "endDate": "2099-12-31"},
+            "utilisedBy": [{"@id": "utilised_by_id", "label": ["programme name"]}],
         }
 
         api_model = SiteItem.model_validate(data)
@@ -540,5 +541,6 @@ class TestMapSiteMetadata:
             altitude=999.0,
             start_date=datetime(2000, 1, 1),
             end_date=datetime(2099, 12, 31),
+            network="utilised_by_id",
         )
         assert result == expected

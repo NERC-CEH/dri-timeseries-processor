@@ -67,6 +67,11 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
         }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
       ]
     }
   ]

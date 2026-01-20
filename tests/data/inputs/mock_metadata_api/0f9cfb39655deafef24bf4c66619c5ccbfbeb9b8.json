@@ -78,13 +78,13 @@
                 {
                   "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_30min_processed-current",
                   "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calculate-calculate_rn"
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calculate_rn"
                   },
                   "argument": [
                     {
                       "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_30min_processed-current#round",
                       "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/calculate-calculate_rn-round"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
                       },
                       "hasValue": {
                         "@id": "http://fdri.ceh.ac.uk/id/configuration-item/rn_30min_processed-current#round.value",
@@ -105,6 +105,11 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
       ],
       "dependsOn": [

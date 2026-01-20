@@ -26,7 +26,13 @@ class OperatingPeriod(IDModel):
     """Operating period with start and end dates."""
 
     start_date: str = Field(..., alias="startDate")
-    end_date: str = Field(..., alias="endDate")
+    end_date: str | None = Field(None, alias="endDate")
+
+
+class UtilisedBy(IDModel):
+    """Utilised by field - indicating the programme the site belongs to"""
+
+    label: list[str] | None = Field(default_factory=list)
 
 
 class SiteItem(IDModel):
@@ -51,6 +57,7 @@ class SiteItem(IDModel):
     comment: list[str] | None = Field(default_factory=list)
     label: list[str] | None = Field(default_factory=list)
     observes: list[IDModel] | None = Field(default_factory=list)
+    utilised_by: list[UtilisedBy] | None = Field(None, alias="utilisedBy")
 
 
 class SiteResponse(BaseAPIResponse):

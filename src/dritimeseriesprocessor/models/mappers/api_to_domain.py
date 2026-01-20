@@ -24,14 +24,11 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, Pr
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(
-    item: TimeSeriesDatasetItem, network: str, all_site_metadata: dict[str, SiteMetadata]
-) -> TimeSeriesContainer:
+def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, SiteMetadata]) -> TimeSeriesContainer:
     """Map a Pydantic TimeSeriesDatasetItem to a domain-level TimeSeriesContainer.
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
-        network: The network that this model belongs to
         all_site_metadata: Metadata for sites.
 
     Returns:
@@ -43,7 +40,9 @@ def map_dataset_item(
     processing_level = ProcessingLevel(extract_uri_id(info.processing_level.id))
     variable = info.measure.variable.pref_label[0]
     metadata_site_id = item.originating_site[0].id
+
     source_site = extract_uri_id(metadata_site_id)
+    source_network = extract_uri_id(item.originating_programme[0].id)
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id
 
     method_config = map_method_config(info.methodology)
@@ -53,7 +52,7 @@ def map_dataset_item(
     return TimeSeriesContainer(
         ts_id=item.id,
         ref_id=info.id,
-        network=network,
+        network=source_network,
         resolution=info.measure.aggregation.resolution,
         periodicity=info.measure.aggregation.periodicity,
         processing_level=processing_level,
@@ -243,13 +242,15 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
         A simplified SiteMetadata domain model
     """
     start_date = datetime.fromisoformat(item.operating_period.start_date)
-    end_date = datetime.fromisoformat(item.operating_period.end_date)
+    end_date = datetime.fromisoformat(item.operating_period.end_date) if item.operating_period.end_date else None
 
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None
+    network = item.utilised_by[0].id if item.utilised_by else None
 
     return SiteMetadata(
         site_id=item.id,
+        network=network,
         alt_id=alt_id,
         full_name=full_name,
         easting=item.easting,

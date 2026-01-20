@@ -4,7 +4,12 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
-from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod, NetRadiation, PET30Min
+from dritimeseriesprocessor.operations.derivation.derivation_methods import (
+    DerivationMethod,
+    MeanG,
+    NetRadiation,
+    PET30Min,
+)
 from utils.data_creation import dataframe_to_timeframe
 
 
@@ -71,14 +76,10 @@ class TestPET30Min:
         # Taken from COSMOS.LEVEL3_DATA_30MIN Oracle DB view:
         #   Site: CHOBH,
         #   Dates: [2015-03-14 04:30:00, 2017-05-30 16:30:00, 2022-01-18 09:30:00, 2023-08-21 11:00:00]
-
-        # Original G data = [-29.6453, 32.23711, -23.7416, 16.64824], for the purposes of this test, it has been
-        # duplicated for g1 and g2 values to allow both to be passed in
         config = create_method_config(
             {
                 "rn": [-68.181, 302.85, 116.2, 364.6],
-                "g1": [-29.6453, 32.23711, -23.7416, 16.64824],
-                "g2": [-29.6453, 32.23711, -23.7416, 16.64824],
+                "g": [-29.6453, 32.23711, -23.7416, 16.64824],
                 "ta": [1.977, 19.62, -2.144, 20.54],
                 "rh": [72.5, 57.62, 95.6, 65.41],
                 "ws": [2.89954, 3.204, 0.214, 2.048],
@@ -151,3 +152,20 @@ class TestPET30Min:
         expected = pl.DataFrame({"ws2m": [2.4]})
 
         assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
+
+
+class TestMeanG:
+    def test_calculation(self) -> None:
+        """Test mean G calculation - should just be a simple average between G1 and G2."""
+        config = create_method_config(
+            {
+                "g1": [1.5, 10.9, 123.4],
+                "g2": [-7.9, 0.01, 985.36],
+            },
+            "g",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"g": [-3.2, 5.455, 554.38]}))
+
+        result = MeanG().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)

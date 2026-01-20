@@ -1,18 +1,18 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw?_view=timeseries",
+    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed/_all_dependencies",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw.rdf?_view=timeseries",
-      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw.html?_view=timeseries",
-      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw.ttl?_view=timeseries",
-      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw.csv?_view=timeseries",
-      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw.geojson?_view=timeseries",
-      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw.json?_view=timeseries"
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed/_all_dependencies.json",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed/_all_dependencies.geojson",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed/_all_dependencies.rdf",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed/_all_dependencies.csv",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed/_all_dependencies.html",
+      "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed/_all_dependencies.ttl"
     ]
   },
   "items": [
@@ -66,6 +66,11 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
       ]
     }

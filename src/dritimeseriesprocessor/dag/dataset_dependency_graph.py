@@ -217,7 +217,7 @@ class DatasetDependencyGraph:
             List of TimeSeriesContainer objects representing root datasets.
         """
         sites_params = [("originatingSite", site) for site in sites]
-        variables_params = [("sourceColumnName", f"{variable.upper()}") for variable in variables]
+        variables_params = [("sourceColumnName", variable) for variable in variables]
         periodicity_params = [("type.measure.aggregation.periodicity", periodicity) for periodicity in periodicities]
         other_params = [
             ("_view", "timeseries"),
@@ -315,8 +315,7 @@ class DatasetDependencyGraph:
         """
         all_containers = []
         for item in dataset_response.items:
-            # TODO: The network will eventually be in the metadata API response
-            container = map_dataset_item(item, self.network, self.site_metadata)
+            container = map_dataset_item(item, self.site_metadata)
             self._dataset_cache[container.ts_id] = container
             all_containers.append(container)
         return all_containers
