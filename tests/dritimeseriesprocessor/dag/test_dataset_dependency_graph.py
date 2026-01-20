@@ -65,6 +65,7 @@ def make_processing_config_container(ts_id: str) -> ProcessingConfig:
 def make_site_metadata_container(site_id: str) -> SiteMetadata:
     return SiteMetadata(
         site_id=site_id,
+        network="a_network",
         alt_id="alt_it",
         full_name="full site name",
         easting=123,
@@ -127,7 +128,7 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     monkeypatch.setattr(
         "dritimeseriesprocessor.dag.dataset_dependency_graph.map_dataset_item",
-        lambda item, _, __: make_time_series_container(item["@id"]),
+        lambda item, _: make_time_series_container(item["@id"]),
     )
 
     monkeypatch.setattr(

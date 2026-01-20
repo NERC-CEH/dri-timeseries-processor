@@ -69,13 +69,13 @@
                 {
                   "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current",
                   "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/aggregate-mean"
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean"
                   },
                   "argument": [
                     {
                       "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round",
                       "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-round"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
                       },
                       "hasValue": {
                         "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#round.value",
@@ -85,7 +85,7 @@
                     {
                       "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#threshold",
                       "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/aggregate-mean-threshold"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
                       },
                       "hasValue": {
                         "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ta_1day_processed-current#threshold.value",
@@ -111,6 +111,11 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
       ],
       "dependsOn": [

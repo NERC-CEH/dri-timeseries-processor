@@ -41,7 +41,7 @@ class AggregationMethod(Operation, ABC):
 
 @AggregationMethod.register
 class Sum(AggregationMethod):
-    name = "aggregate-sum"
+    name = "sum"
 
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "sum")
@@ -49,7 +49,7 @@ class Sum(AggregationMethod):
 
 @AggregationMethod.register
 class Mean(AggregationMethod):
-    name = "aggregate-mean"
+    name = "mean"
 
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "mean")
@@ -57,7 +57,7 @@ class Mean(AggregationMethod):
 
 @AggregationMethod.register
 class Max(AggregationMethod):
-    name = "aggregate-max"
+    name = "max"
 
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "max")
@@ -65,7 +65,7 @@ class Max(AggregationMethod):
 
 @AggregationMethod.register
 class Min(AggregationMethod):
-    name = "aggregate-min"
+    name = "min"
 
     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "min")

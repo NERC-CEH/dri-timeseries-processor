@@ -67,6 +67,11 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
         }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
       ]
     },
     {
@@ -116,12 +121,7 @@
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/ws_30min_processed",
               "type": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
-              },
-              "hasCurrentConfiguration": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/ws_30min_processed-current"
-                }
-              ]
+              }
             }
           }
         }
@@ -138,6 +138,11 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
       ],
       "dependsOn": [

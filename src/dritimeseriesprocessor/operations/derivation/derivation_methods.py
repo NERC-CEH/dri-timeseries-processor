@@ -76,7 +76,7 @@ class NetRadiation(DerivationMethod):
     }
     """
 
-    name = "calculate-calculate_rn"
+    name = "calculate_rn"
     inputs = ("swin", "swout", "lwin", "lwout")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
@@ -121,7 +121,7 @@ class PET30Min(DerivationMethod):
     }
     """
 
-    name = "calculate-calculate_pe"
+    name = "calculate_pe"
     inputs = ("g1", "g2", "pa", "rh", "rn", "ta", "ws")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:

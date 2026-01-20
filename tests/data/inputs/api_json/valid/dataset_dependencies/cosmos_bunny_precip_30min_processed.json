@@ -72,16 +72,6 @@
                   },
                   "argument": [
                     {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round.value",
-                        "value": 3
-                      }
-                    },
-                    {
                       "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#threshold",
                       "parameter": {
                         "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
@@ -89,6 +79,16 @@
                       "hasValue": {
                         "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#threshold.value",
                         "value": 27
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round.value",
+                        "value": 3
                       }
                     }
                   ]
