@@ -22,6 +22,7 @@ class ProcessingMethodConfig:
     params: dict[str, Any] = field(default_factory=dict)
     start_date: datetime | None = None
     end_date: datetime | None = None
+    argument: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
