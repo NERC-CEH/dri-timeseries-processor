@@ -28,6 +28,7 @@ def get_s3_storage_client() -> Iterator[S3StorageClient]:
     create_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client, cfg.AWS_DEFAULT_REGION)
 
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "end_to_end")
+    upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "partitioned")
 
     try:
         yield storage_client

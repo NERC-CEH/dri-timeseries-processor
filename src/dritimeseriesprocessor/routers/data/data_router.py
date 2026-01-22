@@ -59,6 +59,7 @@ class DuckDBDataRouter(DataRouter):
             f"{container.network}",
             f"dataset={container.source_dataset}",
             f"site={container.source_site_identifier}",
+            "**",  # Handle optional extra partitions under site (e.g. serial_no for FDRI sites)
             "date=*",
         ]
         partitions_str = "/".join(partitions)
