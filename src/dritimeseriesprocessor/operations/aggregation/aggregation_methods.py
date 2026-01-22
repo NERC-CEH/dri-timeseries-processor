@@ -39,7 +39,7 @@ class AggregationMethod(Operation, ABC):
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))
 
         # Apply any rounding if required
-        if config.argument.get("round"):
+        if config.argument.get("round", None) is not None:
             tf_agg = tf_agg.with_df(
                 tf_agg.df.with_columns(pl.col(col_name).round(config.argument["round"]).alias(col_name))
             )

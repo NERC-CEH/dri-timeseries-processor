@@ -26,12 +26,12 @@ class TestCreateAggregationMethodConfig:
         container = MagicMock()
         container.periodicity = "PT1H"
         container.method.name = "method_id"
+        container.method.argument = {"round": 2}
 
         result = pipeline._create_aggregation_method_config(container)
 
         expected = ProcessingMethodConfig(
-            method="method_id",
-            params={"aggregation_period": ts.Period.of_hours(1)},
+            method="method_id", params={"aggregation_period": ts.Period.of_hours(1)}, argument={"round": 2}
         )
 
         assert result == expected

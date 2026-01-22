@@ -36,7 +36,7 @@ class DerivationMethod(Operation, ABC):
         result_df = merged_tf.df.with_columns(calculation_expr)
 
         # Apply any rounding if required
-        if config.argument.get("round"):
+        if config.argument.get("round", None) is not None:
             result_df = result_df.with_columns(
                 pl.col(config.params["output_col"]).round(config.argument["round"]).alias(config.params["output_col"])
             )

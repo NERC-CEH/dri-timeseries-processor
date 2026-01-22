@@ -50,6 +50,7 @@ class AggregationPipeline:
         return ProcessingMethodConfig(
             method=container.method.name,
             params={"aggregation_period": ts.Period.of_iso_duration(container.periodicity)},
+            argument=container.method.argument,
         )
 
     @staticmethod
