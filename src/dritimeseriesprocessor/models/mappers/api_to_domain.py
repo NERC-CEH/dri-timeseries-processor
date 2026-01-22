@@ -85,13 +85,14 @@ def map_method_config(methodology: Methodology) -> MethodConfig:
     method_config = methodology.configuration
     method_type = MethodType(extract_uri_id(method_config.type.id))
 
+    method = None
+    argument = {}
     if method_config.has_current_configuration:
         method_current_config = method_config.has_current_configuration[0]
         method = extract_uri_id(method_current_config.method.id) if method_current_config.method else None
-    else:
-        method = None
+        argument = extract_arguments(method_current_config.argument, site_metadata=None)
 
-    return MethodConfig(config_id=method_config.id, method_type=method_type, name=method)
+    return MethodConfig(config_id=method_config.id, method_type=method_type, name=method, argument=argument)
 
 
 def map_processing_config_item(
@@ -178,7 +179,7 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     return extracted
 
 
-def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMetadata) -> dict[str, Any]:
+def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMetadata | None) -> dict[str, Any]:
     """Extract method argument names and values from a configuration definition.
 
     Handles both direct literal values and references to other datasets.

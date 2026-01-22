@@ -53,6 +53,7 @@ class TestMapDatasetItem:
                 config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_1day_processed",
                 method_type=MethodType.DERIVATION,
                 name="calc_daily_radiation",
+                argument={"round": 1},
             ),
             # TODO - this will update when metadata changes have been made
             depends_on=["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"],

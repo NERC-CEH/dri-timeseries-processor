@@ -9,7 +9,8 @@ A core method is defined as one of:
 - AGGREGATION = derive a new variable by aggregating an existing variable
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 from dritimeseriesprocessor.utils.enums import MethodType
 
@@ -19,3 +20,4 @@ class MethodConfig:
     method_type: MethodType
     config_id: str | None = None
     name: str | None = None
+    argument: dict[str, Any] = field(default_factory=dict)

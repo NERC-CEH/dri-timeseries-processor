@@ -1,6 +1,8 @@
 from datetime import datetime
 
+import numpy as np
 import polars as pl
+import pytest
 import time_stream as ts
 from polars.testing import assert_frame_equal
 
@@ -66,3 +68,64 @@ class TestSum:
         result = Sum().run(tf, config)
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
         assert_frame_equal(result.df, expected)
+
+
+class TestRounding:
+    def test_rounding_0(self) -> None:
+        """Check a rounding value of 0 is applied correctly."""
+        initial_values = np.arange(1, 2, 0.01)
+        expected_values = np.around([26.76, 32.52, 38.28, 44.04, 7.9], 0)
+
+        tf = create_timeframe(list(initial_values))
+        config = create_method_config(ts.Period.of_days(1))
+        config.argument = {"round": 0}
+
+        result = Sum().run(tf, config)
+        expected_df = pl.DataFrame(
+            {
+                "time": [
+                    datetime(2025, 1, 1),
+                    datetime(2025, 1, 2),
+                    datetime(2025, 1, 3),
+                    datetime(2025, 1, 4),
+                    datetime(2025, 1, 5),
+                ],
+                "value": expected_values,
+            }
+        )
+        assert_frame_equal(result.df, expected_df)
+
+    def test_rounding_None(self) -> None:
+        """Check no rounding is applied when no round argument is provided."""
+        initial_values = np.arange(1, 2, 0.01)
+        expected_values = [26.76, 32.52, 38.28, 44.04, 7.9]
+
+        tf = create_timeframe(list(initial_values))
+        config = create_method_config(ts.Period.of_days(1))
+        config.argument = {}
+
+        result = Sum().run(tf, config)
+        expected_df = pl.DataFrame(
+            {
+                "time": [
+                    datetime(2025, 1, 1),
+                    datetime(2025, 1, 2),
+                    datetime(2025, 1, 3),
+                    datetime(2025, 1, 4),
+                    datetime(2025, 1, 5),
+                ],
+                "value": expected_values,
+            }
+        )
+        assert_frame_equal(result.df, expected_df)
+
+    def test_rounding_invalid(self) -> None:
+        """Check an error is raised when attempting to round with an invalid value such as -1."""
+        initial_values = np.arange(1, 2, 0.01)
+
+        tf = create_timeframe(list(initial_values))
+        config = create_method_config(ts.Period.of_days(1))
+        config.argument = {"round": -1}
+
+        with pytest.raises(OverflowError, match="out of range integral type conversion attempted"):
+            Sum().run(tf, config)

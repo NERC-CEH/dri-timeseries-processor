@@ -58,4 +58,4 @@ class DerivationPipeline:
             dep_container = dataset_repository[ds_id]
             params[dep_container.source_column.lower()] = dep_container.data
 
-        return ProcessingMethodConfig(method=container.method.name, params=params)
+        return ProcessingMethodConfig(method=container.method.name, params=params, argument=container.method.argument)
