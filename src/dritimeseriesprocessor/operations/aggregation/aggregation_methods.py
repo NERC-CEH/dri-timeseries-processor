@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import polars as pl
 import time_stream as ts
+from time_stream.enums import MissingCriteria
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
@@ -30,10 +31,15 @@ class AggregationMethod(Operation, ABC):
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
 
+        missing_criteria = None
+        if config.argument.get("threshold", None) is not None:
+            missing_criteria = (MissingCriteria.AVAILABLE, config.argument["threshold"])
+
         tf_agg = tf.aggregate(
             aggregation_period=config.params["aggregation_period"],
             aggregation_function=agg_func,
             columns=col_name,
+            missing_criteria=missing_criteria,
         ).select(agg_col_name)
 
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))
