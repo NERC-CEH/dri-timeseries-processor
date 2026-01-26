@@ -30,6 +30,7 @@ class AggregationMethod(Operation, ABC):
         """
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
+        validity_col_name = f"valid_{col_name}"
 
         missing_criteria = None
         if config.argument.get("threshold", None) is not None:
@@ -40,6 +41,18 @@ class AggregationMethod(Operation, ABC):
             aggregation_function=agg_func,
             columns=col_name,
             missing_criteria=missing_criteria,
+        ).select([agg_col_name, validity_col_name])
+
+        # Replace any rows where the validity check has failed with None. These can then be picked up
+        # during the core flag initialisation as invalid.
+        tf_agg = tf_agg.with_df(
+            tf_agg.df.with_columns(
+                pl.when(validity_col_name)
+                .then(agg_col_name)
+                .otherwise(None)
+                .cast(tf_agg.df[agg_col_name].dtype)
+                .alias(agg_col_name)
+            )
         ).select(agg_col_name)
 
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))

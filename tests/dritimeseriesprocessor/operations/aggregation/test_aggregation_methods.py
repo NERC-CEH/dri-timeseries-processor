@@ -152,7 +152,6 @@ class TestThresholdArgument:
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
         assert_frame_equal(result.df, expected)
 
-    @pytest.mark.xfail("Flag handling hasn't been added for aggregation yet.")
     def test_threshold_greater_than_df_length(self) -> None:
         """Check aggregation does not run when the threshold is greater than the length of the data."""
         tf = create_timeframe(list(range(24)))
@@ -160,5 +159,7 @@ class TestThresholdArgument:
         config.argument = {"threshold": 42}
 
         result = Sum().run(tf, config)
-        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        expected = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1)], "value": [None]}, schema=pl.Schema({"time": datetime, "value": pl.Int64})
+        )
         assert_frame_equal(result.df, expected)

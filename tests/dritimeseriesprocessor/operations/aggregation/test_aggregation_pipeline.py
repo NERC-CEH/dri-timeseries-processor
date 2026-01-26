@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import polars as pl
 import time_stream as ts
 from polars.testing import assert_frame_equal
+from time_stream.period import Period
 
 from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
@@ -55,3 +56,49 @@ class TestRenameAggregationColumns:
         pipeline = AggregationPipeline()
         result = pipeline._rename_aggregation_columns(input_tf, "value", "value")
         assert_frame_equal(result.df, expected.df)
+
+
+class TestAggregationThreshold:
+    def test_aggregation_threshold_invalid(self) -> None:
+        """Check handling of data where the aggregation threshold is not met."""
+
+        df = pl.DataFrame(
+            {
+                "time": [
+                    datetime(2025, 1, 1, 0, 0, 0),
+                    datetime(2025, 1, 1, 0, 30, 0),
+                    datetime(2025, 1, 1, 1, 0, 0),
+                    datetime(2025, 1, 1, 1, 30, 0),
+                    datetime(2025, 1, 2, 0, 0, 0),
+                    datetime(2025, 1, 2, 0, 30, 0),
+                    datetime(2025, 1, 3, 0, 0, 0),
+                    datetime(2025, 1, 3, 0, 30, 0),
+                ],
+                "value": [1, 2, 3, 4, 5, 6, 7, 8],
+            }
+        )
+        input_tf = ts.TimeFrame(df, "time", resolution=Period.of_minutes(30)).with_metadata({"column_name": "value"})
+
+        expected_df = pl.DataFrame(
+            {
+                "time": [
+                    datetime(2025, 1, 1),
+                    datetime(2025, 1, 2),
+                    datetime(2025, 1, 3),
+                ],
+                "value": [10, None, None],
+                "value_CORE_FLAG": [0, 4, 4],
+            }
+        )
+
+        container = MagicMock()
+        container.data = input_tf
+        container.periodicity = "P1D"
+        container.source_column = "value"
+        container.method.name = "sum"
+        container.method.argument = {"threshold": 3}
+
+        pipeline = AggregationPipeline()
+
+        result = pipeline.run(container, container)
+        assert_frame_equal(result.df, expected_df)
