@@ -7,7 +7,7 @@ import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Max, Mean, Min, Sum
+from dritimeseriesprocessor.operations.aggregation.aggregation_methods import WD, Max, Mean, Min, Sum
 from utils.data_creation import create_timeframe
 
 
@@ -129,3 +129,16 @@ class TestRounding:
 
         with pytest.raises(OverflowError, match="out of range integral type conversion attempted"):
             Sum().run(tf, config)
+
+
+class TestWD:
+    def test_wd_daily(self) -> None:
+        """Test that the daily wind direction aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(24 * 3)))
+        config = create_method_config(ts.Period.of_days(1))
+
+        result = WD().run(tf, config)
+        expected = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1), datetime(2025, 1, 2), datetime(2025, 1, 3)], "daily_wd": [11.5, 35.5, 59.5]}
+        )
+        assert_frame_equal(result.df.select(["time", "daily_wd"]), expected)

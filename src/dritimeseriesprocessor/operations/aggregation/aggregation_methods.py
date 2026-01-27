@@ -48,6 +48,42 @@ class AggregationMethod(Operation, ABC):
 
 
 @AggregationMethod.register
+class WD(AggregationMethod):
+    # See: https://en.wikipedia.org/wiki/Yamartino_method for formula
+    name = "agg_daily_wd"
+
+    def run(self, wd: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+        # Config specifies aggregate sum of each day
+
+        col_name = wd.metadata["column_name"]
+
+        # Calculate sin and cos of data cols
+        wd_sin_cos_tf = wd.with_df(
+            wd.df.with_columns(
+                [
+                    pl.col(col_name).radians().sin().alias("sin_value"),
+                    pl.col(col_name).radians().cos().alias("cos_value"),
+                ]
+            )
+        )
+
+        # Take daily aggregate
+        daily_wd_sin_cos_tf = wd_sin_cos_tf.aggregate("P1D", "sum")
+
+        # Calculate arctan of daily aggregate of sin/cos
+        daily_wd_tf = daily_wd_sin_cos_tf.with_df(
+            daily_wd_sin_cos_tf.df.with_columns(
+                pl.arctan2(pl.col("sum_sin_value"), pl.col("sum_cos_value")).degrees().alias("daily_wd")
+            )
+        ).select("daily_wd")
+
+        # Result should have single data column with name 'WD', same as original wd dataset.
+        daily_wd_tf = daily_wd_tf.with_df(daily_wd_tf.df.rename({"daily_wd": col_name}))
+
+        return daily_wd_tf
+
+
+@AggregationMethod.register
 class Sum(AggregationMethod):
     name = "sum"
 

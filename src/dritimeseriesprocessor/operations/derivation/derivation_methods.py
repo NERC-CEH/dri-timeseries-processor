@@ -34,6 +34,7 @@ class DerivationMethod(Operation, ABC):
         # Perform the calculation (subclass-specific)
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
         result_df = merged_tf.df.with_columns(calculation_expr)
+        print(result_df)
 
         # Apply any rounding if required
         if config.argument.get("round", None) is not None:
@@ -297,3 +298,51 @@ class PET30Min(DerivationMethod):
             Polars expression to calculate gamma
         """
         return ws * (4.87 / math.log((67.8 * measured_height) - 5.42))
+
+
+'''
+@DerivationMethod.register
+class WD(DerivationMethod):
+    name = "calc_daily_wd"
+    inputs = ("wd",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate ...
+
+        Args:
+            columns: ...
+
+        Returns:
+            Polars expression ...
+        """
+
+        wd = columns["wd"]
+
+        return wd
+
+    @staticmethod
+    def calc_daily_WD(wd: pl.Expr) -> pl.Expr:
+        """Calculate average wind direction using Yamartino method. See: https://en.wikipedia.org/wiki/Yamartino_method
+
+        Args:
+            wd: wind direction, measured in degrees
+
+        Returns:
+            daily_wd: daily wind direction, measured in degrees
+
+        """
+
+        sin_sum = ((wd.radians()).sin()).sum()  # / len(wd)
+        cos_sum = ((wd.radians()).cos()).sum()  # / len(wd)
+        daily_wd = pl.arctan2(sin_sum, cos_sum).degrees()
+
+        # No longer needed, taken care of by atan2
+        # if sin_sum.gt(0) and cos_sum.gt(0):
+        #    pass
+        # elif cos_sum.lt(0):
+        #    daily_wd += 180
+        # else:
+        #    daily_wd += 360
+
+        return daily_wd
+'''
