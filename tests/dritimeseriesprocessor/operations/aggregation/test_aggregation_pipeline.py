@@ -5,7 +5,7 @@ import polars as pl
 import time_stream as ts
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 
 
@@ -30,7 +30,7 @@ class TestCreateAggregationMethodConfig:
 
         result = pipeline._create_aggregation_method_config(container)
 
-        expected = ProcessingMethodConfig(
+        expected = DataProcessingMethodConfig(
             method="method_id", params={"aggregation_period": ts.Period.of_hours(1)}, argument={"round": 2}
         )
 

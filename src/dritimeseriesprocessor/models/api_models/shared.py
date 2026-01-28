@@ -8,7 +8,7 @@ These models ensure consistent validation and alias mapping across all API respo
 """
 
 from datetime import datetime
-from typing import Self
+from typing import Any, Self
 
 from pydantic import BaseModel, Field, model_validator
 from pydantic_core import PydanticCustomError
@@ -43,8 +43,8 @@ class HasValue(IDModel):
     """Represents a value with type information."""
 
     field_type: list[IDModel] | None = Field(None, alias="@type")
-    value: int | float | str | list[str] | None = None
-    value_reference: IDModel | None = Field(None, alias="valueReference")
+    value: list[Any] | int | float | str | list[str] | None = None
+    value_reference: IDModel | list[IDModel] | None = Field(None, alias="valueReference")
 
     @model_validator(mode="after")
     def ensure_value_or_reference(self) -> Self:
@@ -59,15 +59,33 @@ class ArgumentItem(IDModel):
     """Configuration argument with parameter and value."""
 
     field_type: list[IDModel] | None = Field(None, alias="@type")
-    has_value: HasValue = Field(..., alias="hasValue")
+    has_value: HasValue | None = Field(None, alias="hasValue")
+    has_structured_value: IDModel | None = Field(None, alias="hasStructuredValue")
     parameter: IDModel
 
+    @model_validator(mode="after")
+    def ensure_has_value_or_has_structured_value(self) -> Self:
+        if self.has_value is None and self.has_structured_value is None:
+            raise PydanticCustomError(
+                "missing_has_value_or_has_structured_value",
+                "Either 'hasValue' or 'hasStructuredValue' must be provided.",
+            )
+        return self
 
-class HasCurrentConfigurationItem(IDModel):
-    """Base configuration item with method."""
+
+class HasCurrentValue(IDModel):
+    """Has current value item with optional method."""
 
     field_type: list[IDModel] | None = Field(None, alias="@type")
     method: IDModel | None = None
+    argument: list[ArgumentItem] = Field(default_factory=list)
+    observation_interval: ObservationInterval | None = Field(None, alias="observationInterval")
+
+
+class HadValue(IDModel):
+    """Had value item"""
+
+    field_type: list[IDModel] | None = Field(None, alias="@type")
     argument: list[ArgumentItem] = Field(default_factory=list)
     observation_interval: ObservationInterval | None = Field(None, alias="observationInterval")
 

@@ -7,14 +7,17 @@ queries and dependency lookups.
 """
 
 from itertools import batched
+from typing import TypeVar
+
+from pydantic import BaseModel
 
 from dritimeseriesprocessor.externals.api_manager import MetadataAPIManager
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.network import Network
 from dritimeseriesprocessor.models.api_models.site import SiteResponse
-from dritimeseriesprocessor.utils.enums import ConfigurationType
-from dritimeseriesprocessor.utils.urls import CONFIGURATION_TYPE_URI
+
+PydanticModel = TypeVar("PydanticModel", bound=BaseModel)
 
 
 class MetadataRouter:
@@ -43,32 +46,19 @@ class MetadataRouter:
         response = self.api_manager.make_paginated_api_call(url, query_params)
         return TimeSeriesDatasetResponse.model_validate(response)
 
-    def fetch_dataset_by_id(self, dataset_id: str) -> TimeSeriesDatasetResponse:
-        """Fetch a dataset by its ID, using the `_view=timeseries` endpoint
+    def fetch_dataset_by_ids(self, dataset_ids: list[str], batch_size: int = 50) -> TimeSeriesDatasetResponse:
+        """Fetch datasets from multiple ID, using the `_view=timeseries` endpoint
 
         Args:
-            dataset_id: The dataset ID.
-
+            dataset_ids: The dataset IDs.
+            batch_size: Number of datasets to fetch datasetss for at a time. Required in case user has
+                        requested large number of datasets (e.g. all sites, all variables) which builds a URL that
+                        is too long (HTTP 414).
         Returns:
-            The parsed JSON response for the specified dataset.
+            The parsed JSON response for the specified datasets.
         """
-        url = f"{self.host}/id/dataset/{dataset_id}?_view=timeseries"
-        response = self.api_manager.make_paginated_api_call(url)
-        return TimeSeriesDatasetResponse.model_validate(response)
-
-    def fetch_all_dependencies(self, dataset_id: str) -> TimeSeriesDatasetResponse:
-        """Fetch all dependencies for a dataset. This uses the `_all_dependencies` endpoint which provides nested
-        (recursive) dependencies for a given dataset.
-
-        Args:
-            dataset_id: The dataset identifier for which dependencies should be retrieved.
-
-        Returns:
-            The parsed JSON response containing all dataset dependencies, including nested ones.
-        """
-        url = f"{self.host}/id/dataset/{dataset_id}/_all_dependencies"
-        response = self.api_manager.make_paginated_api_call(url)
-        return TimeSeriesDatasetResponse.model_validate(response)
+        url = f"{self.host}/id/dataset"
+        return self._fetch_by_batch(url, "id", dataset_ids, TimeSeriesDatasetResponse, batch_size=batch_size)
 
     def fetch_processing_configs(self, dataset_ids: list[str], batch_size: int = 50) -> DataProcessingConfiguration:
         """Fetch data processing configuration metadata (e.g. for QC, Infill, Corrections)
@@ -82,20 +72,10 @@ class MetadataRouter:
         Returns:
             The parsed JSON response containing data processing configurations.
         """
-        config_type_params = [("type", f"{CONFIGURATION_TYPE_URI}/{ct.value}") for ct in ConfigurationType]
-
-        # Do this in batches in case we have a huge number of datasets to get through (built URL can be huge!)
-        merged_response = {"meta": {}, "items": []}
-        for batch in batched(dataset_ids, batch_size):
-            dataset_params = [("appliesToTimeSeries", dataset_id) for dataset_id in batch]
-            query_params = tuple(config_type_params + dataset_params)
-            url = f"{self.host}/id/data-processing-configuration"
-            response = self.api_manager.make_paginated_api_call(url, query_params)
-
-            merged_response["meta"] = response["meta"]
-            merged_response["items"].extend(response["items"])
-
-        return DataProcessingConfiguration.model_validate(merged_response)
+        url = f"{self.host}/id/data-processing-configuration"
+        return self._fetch_by_batch(
+            url, "appliesToTimeSeries", dataset_ids, DataProcessingConfiguration, batch_size=batch_size
+        )
 
     def fetch_sites(self, site_ids: list[str]) -> SiteResponse:
         """Fetch site metadata for given site ID(s).
@@ -123,3 +103,41 @@ class MetadataRouter:
         url = f"{self.host}/id/network/{network}"
         response = self.api_manager.make_paginated_api_call(url)
         return Network.model_validate(response)
+
+    def _fetch_by_batch(
+        self,
+        url: str,
+        param: str,
+        values: list[str],
+        model: type[PydanticModel],
+        fixed_params: list[tuple[str, str]] | None = None,
+        batch_size: int = 50,
+    ) -> PydanticModel:
+        """Fetch from an endpoint in batches by repeating a query param for each value.
+
+        This helper exists to avoid HTTP 414 (URI Too Long) when requesting many IDs.
+
+        Args:
+            url: Endpoint url.
+            param: The query parameter key used for each value (e.g. "id", "appliesToTimeSeries").
+            values: List of values to repeat for given param.
+            model: Pydantic model class used to validate the merged response.
+            fixed_params: Additional query params added to every request (e.g. ("_view", "timeseries")).
+            batch_size: Number of values to use per request.
+
+        Returns:
+            A validated model built from the merged batched responses.
+        """
+
+        merged_response = {"meta": {}, "items": []}
+
+        if not fixed_params:
+            fixed_params = []
+
+        for batch in batched(values, batch_size):
+            dataset_params = [(param, batch_value) for batch_value in batch]
+            response = self.api_manager.make_paginated_api_call(url, tuple(dataset_params + fixed_params))
+            merged_response["meta"] = response["meta"]
+            merged_response["items"].extend(response["items"])
+
+        return model.model_validate(merged_response)

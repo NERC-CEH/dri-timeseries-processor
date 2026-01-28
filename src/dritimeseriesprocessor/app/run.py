@@ -38,8 +38,8 @@ def run_from_config(run_config: RunConfig) -> None:
     Args:
         run_config: Runtime configuration describing the network, dataset selection constraints, and temporal window.
     """
-    processor = _build_processor(run_config.network, run_config.selection, run_config.start_date, run_config.end_date)
-    processor.run()
+    _build_processor(run_config.network, run_config.selection, run_config.start_date, run_config.end_date)
+    # processor.run()
 
 
 def _build_processor(
@@ -80,6 +80,8 @@ def _build_processor(
     metrics = Metrics(cfg.pushgateway_url, "timeseries-processor")
 
     graph = _build_dependency_graph(network, selection, metadata_router)
+
+    logger.info(f"Found {len(graph.datasets)} datasets to process")
 
     return TimeSeriesProcessor(
         graph=graph,

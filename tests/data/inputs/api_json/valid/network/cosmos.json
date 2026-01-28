@@ -26,141 +26,15 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-glenw",
           "label": [
-            "Redmere"
+            "Glenwherry"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hillb",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-eustn",
           "label": [
-            "Hillsborough"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-stips",
-          "label": [
-            "Stiperstones"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-test1",
-          "label": [
-            "Test Site 1"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-gisbn",
-          "label": [
-            "Gisburn Forest"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hadlw",
-          "label": [
-            "Hadlow"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-nwyke",
-          "label": [
-            "North Wyke"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-finch",
-          "label": [
-            "Fincham"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-wyth1",
-          "label": [
-            "Wytham Woods"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-coclp",
-          "label": [
-            "Cockle Park"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-wrttl",
-          "label": [
-            "Writtle"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-plynl",
-          "label": [
-            "Plynlimon"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-sourh",
-          "label": [
-            "Sourhope"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-elmst",
-          "label": [
-            "Elmsett"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-stght",
-          "label": [
-            "Stoughton"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-lulln",
-          "label": [
-            "Lullington Heath"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-crich",
-          "label": [
-            "Crichton"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cardt",
-          "label": [
-            "Cardington"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-waddn",
-          "label": [
-            "Waddesdon"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-spenf",
-          "label": [
-            "Spen Farm"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-morem",
-          "label": [
-            "Moreton Morrell"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-fivet",
-          "label": [
-            "Fivemiletown"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-wimpl",
-          "label": [
-            "Wimpole"
+            "Euston"
           ]
         },
         {
@@ -176,21 +50,15 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bickl",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-glens",
           "label": [
-            "Bickley Hall"
+            "Glensaugh"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-glenw",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cardt",
           "label": [
-            "Glenwherry"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-moorh",
-          "label": [
-            "Moor House"
+            "Cardington"
           ]
         },
         {
@@ -200,27 +68,15 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-tadhm",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-sheep",
           "label": [
-            "Tadham Moor"
+            "Sheepdrove"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-eastb",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-crich",
           "label": [
-            "Easter Bush"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-harwd",
-          "label": [
-            "Harwood Forest"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-henfs",
-          "label": [
-            "Henfaes Farm"
+            "Crichton"
           ]
         },
         {
@@ -230,15 +86,189 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-riseh",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-morem",
           "label": [
-            "Riseholme"
+            "Moreton Morrell"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hadlw",
+          "label": [
+            "Hadlow"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-plynl",
+          "label": [
+            "Plynlimon"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-sourh",
+          "label": [
+            "Sourhope"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-morly",
+          "label": [
+            "Morley"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy",
+          "label": [
+            "Holme Lacy"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
+          "label": [
+            "Bunny Park"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-waddn",
+          "label": [
+            "Waddesdon"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-coclp",
+          "label": [
+            "Cockle Park"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-test1",
+          "label": [
+            "Test Site 1"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-redhl",
+          "label": [
+            "Redhill"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-gisbn",
+          "label": [
+            "Gisburn Forest"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-tadhm",
+          "label": [
+            "Tadham Moor"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-wimpl",
+          "label": [
+            "Wimpole"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-finch",
+          "label": [
+            "Fincham"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-harwd",
+          "label": [
+            "Harwood Forest"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-nwyke",
+          "label": [
+            "North Wyke"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-fivet",
+          "label": [
+            "Fivemiletown"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-eastb",
+          "label": [
+            "Easter Bush"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-henfs",
+          "label": [
+            "Henfaes Farm"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-moorh",
+          "label": [
+            "Moor House"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-spenf",
+          "label": [
+            "Spen Farm"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bickl",
+          "label": [
+            "Bickley Hall"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1",
           "label": [
             "Alice Holt"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cgarw",
+          "label": [
+            "Cwm Garw"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-wyth1",
+          "label": [
+            "Wytham Woods"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-lulln",
+          "label": [
+            "Lullington Heath"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cochn",
+          "label": [
+            "Cochno"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-elmst",
+          "label": [
+            "Elmsett"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hillb",
+          "label": [
+            "Hillsborough"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-riseh",
+          "label": [
+            "Riseholme"
           ]
         },
         {
@@ -254,51 +284,27 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-sydlg",
-          "label": [
-            "Sydling"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
-          "label": [
-            "Bunny Park"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cgarw",
-          "label": [
-            "Cwm Garw"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-rothd",
           "label": [
             "Rothamsted"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-hlacy",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-rdmer",
           "label": [
-            "Holme Lacy"
+            "Redmere"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-redhl",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-stght",
           "label": [
-            "Redhill"
+            "Stoughton"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-eustn",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-stips",
           "label": [
-            "Euston"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-morly",
-          "label": [
-            "Morley"
+            "Stiperstones"
           ]
         },
         {
@@ -308,27 +314,21 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cochn",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-sydlg",
           "label": [
-            "Cochno"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-sheep",
-          "label": [
-            "Sheepdrove"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-glens",
-          "label": [
-            "Glensaugh"
+            "Sydling"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-lodtn",
           "label": [
             "Loddington"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-wrttl",
+          "label": [
+            "Writtle"
           ]
         }
       ],

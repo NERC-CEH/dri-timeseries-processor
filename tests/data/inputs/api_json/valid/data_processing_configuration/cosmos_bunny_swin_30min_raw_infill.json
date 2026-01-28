@@ -31,7 +31,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-infill-cosmos-bunny-swin_30min_raw-1",
           "hasValue": {
             "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-infill-cosmos-bunny-swin_30min_raw-1#value",
-            "value": 1,
+            "value": [
+              1
+            ],
             "@type": [
               {
                 "@id": "http://schema.org/PropertyValue"
@@ -48,35 +50,17 @@
           ]
         }
       ],
-      "hasCurrentConfiguration": [
+      "hasCurrentValue": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#gap",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#gap.value",
-                "value": 6,
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max-gap-size"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#window",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#window.value",
-                "value": 1,
+                "value": [
+                  1
+                ],
                 "@type": [
                   {
                     "@id": "http://schema.org/PropertyValue"
@@ -85,6 +69,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#gap",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-bunny-swin_30min_raw-1-2013-01-01t00:30:00#gap.value",
+                "value": [
+                  6
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max-gap-size"
               },
               "@type": [
                 {

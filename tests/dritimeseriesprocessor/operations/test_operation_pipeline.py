@@ -5,7 +5,10 @@ import pytest
 import time_stream as ts
 from time_stream.exceptions import FlagSystemNotFoundError
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import OperationType
@@ -17,7 +20,7 @@ class MockOperationPipeline(OperationPipeline):
     def apply(self, tf: ts.TimeFrame, *args) -> ts.TimeFrame:
         return tf
 
-    def get_configs(self, container: TimeSeriesContainer) -> Iterable[ProcessingConfig]:
+    def get_configs(self, container: TimeSeriesContainer) -> Iterable[DataProcessingConfig]:
         return container.qc_configs
 
     def get_flag_column(self, column: str) -> str:
@@ -47,10 +50,10 @@ def mock_container(mock_timeframe: MagicMock) -> MagicMock:
     container = MagicMock(spec=TimeSeriesContainer)
     container.data = mock_timeframe
 
-    method_config = MagicMock(spec=ProcessingMethodConfig)
+    method_config = MagicMock(spec=DataProcessingMethodConfig)
     method_config.method = "test_method"
 
-    proc_config = MagicMock(spec=ProcessingConfig)
+    proc_config = MagicMock(spec=DataProcessingConfig)
     proc_config.method_configs = [method_config]
 
     container.qc_configs = [proc_config]

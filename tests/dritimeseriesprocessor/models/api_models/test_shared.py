@@ -4,7 +4,7 @@ from tests.utils.validation_helpers import assert_pydantic_validation_error_caus
 
 from dritimeseriesprocessor.models.api_models.shared import (
     BaseAPIResponse,
-    HasCurrentConfigurationItem,
+    HasCurrentValue,
     HasValue,
     IDModel,
     Meta,
@@ -75,7 +75,7 @@ class TestHasCurrentConfigurationItem:
     def test_optional_method(self) -> None:
         """Test that the optional method fields can be omitted."""
         data = {"@id": "config-1"}
-        model = HasCurrentConfigurationItem.model_validate(data)
+        model = HasCurrentValue.model_validate(data)
         assert model.method is None
         assert model.field_type is None
 
