@@ -48,6 +48,14 @@ class AggregationMethod(Operation, ABC):
 
 
 @AggregationMethod.register
+class DailyRad(AggregationMethod):
+    name = "daily_rad"
+
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_aggregate(tf, config, "sum")
+
+
+@AggregationMethod.register
 class Sum(AggregationMethod):
     name = "sum"
 
