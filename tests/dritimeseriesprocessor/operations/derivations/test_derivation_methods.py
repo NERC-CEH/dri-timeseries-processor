@@ -174,7 +174,6 @@ class TestMeanG:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
-<<<<<<< HEAD
 class TestRounding:
     def test_rounding_0(self) -> None:
         """Check a rounding value of 0 is applied correctly."""
@@ -227,32 +226,3 @@ class TestRounding:
 
         with pytest.raises(OverflowError, match="out of range integral type conversion attempted"):
             NetRadiation().run(config)
-=======
-'''
-class TestWD:
-    def test_calculation(self) -> None:
-        """Provide wind direction."""
-        config = create_method_config(
-            {
-                "wd": [30, 45, 90],
-            },
-            "wd",
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"wd": [30, 45, 90]}))
-
-        result = WD().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_calc_daily_WD(self) -> None:
-        """Calculate daily wind direction"""
-
-        input_df = pl.DataFrame({"wd": [30, 45, 90]})
-
-        calc = WD().calc_daily_WD(pl.col("wd"))
-        result = input_df.select(calc.alias("wd"))
-        expected = pl.DataFrame({"wd": [54.52]})
-
-        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.001)
-'''
->>>>>>> 8a7c32d (Contains daily_wd calculation as derivation (commented out, to be removed) and as an aggregation. The latter requires intercepting API for pipeline to run until metadata is updated.)

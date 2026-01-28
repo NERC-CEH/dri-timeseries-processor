@@ -69,15 +69,17 @@ class WD(AggregationMethod):
 
         # Take daily aggregate
         daily_wd_sin_cos_tf = wd_sin_cos_tf.aggregate("P1D", "sum")
+        # Replace above with self._ts_aggregate(wd_sin_cos_tf, config, "sum")?
+        # Need a way to ensure only daily aggregate is specified? Already taken care of?
 
         # Calculate arctan of daily aggregate of sin/cos
         daily_wd_tf = daily_wd_sin_cos_tf.with_df(
             daily_wd_sin_cos_tf.df.with_columns(
                 pl.arctan2(pl.col("sum_sin_value"), pl.col("sum_cos_value")).degrees().alias("daily_wd")
             )
-        ).select("daily_wd")
+        ).select("daily_wd")  # Result should have single data column
 
-        # Result should have single data column with name 'WD', same as original wd dataset.
+        # Resulting data column should have same name as original dataset.
         daily_wd_tf = daily_wd_tf.with_df(daily_wd_tf.df.rename({"daily_wd": col_name}))
 
         return daily_wd_tf
