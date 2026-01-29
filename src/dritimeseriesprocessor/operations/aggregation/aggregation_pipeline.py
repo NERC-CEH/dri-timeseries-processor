@@ -26,11 +26,11 @@ class AggregationPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.AGGREGATION)
 
-    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, _: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given aggregation method to the TimeFrame data.
 
         Args:
-            tf: Time series frame to aggregate.
+            _: Unused TimeFrame argument passed from parent class
             config: Configuration of the aggregation method.
             dataset_repository: Repository for accessing additional datasets.
 
@@ -43,7 +43,7 @@ class AggregationPipeline(OperationPipeline):
 
         method = AggregationMethod.get(config.method)
         agg_tf = method.run(dep_container.data, config)
-        agg_tf = self._rename_aggregation_columns(agg_tf, tf.metadata["column_name"], dep_container.source_column)
+        agg_tf = self._rename_aggregation_columns(agg_tf, agg_tf.metadata["column_name"], dep_container.source_column)
         agg_tf = add_initial_core_flags(agg_tf, init_unchecked=False)
         return agg_tf
 
@@ -58,7 +58,12 @@ class AggregationPipeline(OperationPipeline):
         """
         if container.method_config is None:
             raise ValueError(f"No aggregation config found for: {container.ts_id}")
-        return {container.method_config}
+
+        method_config = container.method_config
+        for config in container.method_config.method_configs:
+            config.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
+
+        return {method_config}
 
     def get_flag_column(self, column: str) -> str:
         """Not required for aggregation method."""

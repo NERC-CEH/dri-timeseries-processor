@@ -110,12 +110,6 @@ class TestInitialiseFlagColumn:
 
 
 class TestRun:
-    def test_copies_timeframe_from_container(self, mock_container: MagicMock, mock_timeframe: MagicMock) -> None:
-        """Test that TimeFrame is copied from container."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
-        pipeline.run(mock_container, {})
-        mock_timeframe.copy.assert_called_once()
-
     def test_returns_updated_timeframe(self, mock_container: MagicMock, mock_timeframe: MagicMock) -> None:
         """Test that updated TimeFrame is returned."""
         pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")

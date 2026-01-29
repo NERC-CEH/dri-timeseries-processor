@@ -58,7 +58,10 @@ class MetadataRouter:
             The parsed JSON response for the specified datasets.
         """
         url = f"{self.host}/id/dataset"
-        return self._fetch_by_batch(url, "id", dataset_ids, TimeSeriesDatasetResponse, batch_size=batch_size)
+        fixed_params = [("_view", "timeseries")]
+        return self._fetch_by_batch(
+            url, "id", dataset_ids, TimeSeriesDatasetResponse, batch_size=batch_size, fixed_params=fixed_params
+        )
 
     def fetch_processing_configs(self, dataset_ids: list[str], batch_size: int = 50) -> DataProcessingConfiguration:
         """Fetch data processing configuration metadata (e.g. for QC, Infill, Corrections)
