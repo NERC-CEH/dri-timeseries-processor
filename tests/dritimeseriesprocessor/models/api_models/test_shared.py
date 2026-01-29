@@ -1,13 +1,11 @@
 import pytest
+from driutils.metadata_api.models.shared import BaseAPIResponse, IDModel, Meta
 from pydantic import ValidationError
 from tests.utils.validation_helpers import assert_pydantic_validation_error_cause
 
 from dritimeseriesprocessor.models.api_models.shared import (
-    BaseAPIResponse,
     HasCurrentConfigurationItem,
     HasValue,
-    IDModel,
-    Meta,
 )
 
 

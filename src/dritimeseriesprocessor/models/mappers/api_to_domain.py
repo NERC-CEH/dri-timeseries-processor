@@ -9,13 +9,14 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
-from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
+from driutils.metadata_api.models.annotations import HasAnnotationItem
+from driutils.metadata_api.models.site import SiteItem
+
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import Methodology, TimeSeriesDatasetItem
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
-from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
 from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata

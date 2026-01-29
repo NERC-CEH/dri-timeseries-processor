@@ -1,8 +1,7 @@
 import pytest
+from driutils.metadata_api.models.network import Network
 from tests.utils.fixture_helpers import discover_json_test_cases, load_json_file
 from tests.utils.validation_helpers import invalid_raises, valid_parses
-
-from dritimeseriesprocessor.models.api_models.network import Network
 
 
 class TestNetwork:

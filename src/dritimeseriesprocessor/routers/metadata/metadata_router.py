@@ -8,11 +8,12 @@ queries and dependency lookups.
 
 from itertools import batched
 
-from dritimeseriesprocessor.externals.api_manager import MetadataAPIManager
+from driutils.metadata_api.api_manager import MetadataAPIManager
+from driutils.metadata_api.models.network import Network
+from driutils.metadata_api.models.site import SiteResponse
+
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
-from dritimeseriesprocessor.models.api_models.network import Network
-from dritimeseriesprocessor.models.api_models.site import SiteResponse
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.urls import CONFIGURATION_TYPE_URI
 

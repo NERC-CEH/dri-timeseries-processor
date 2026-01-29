@@ -12,14 +12,14 @@ Description:
     methods, and any dependencies (e.g., on other time series) required for processing.
 """
 
-from pydantic import Field
-
-from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
-from dritimeseriesprocessor.models.api_models.shared import (
+from driutils.metadata_api.models.annotations import HasAnnotationItem
+from driutils.metadata_api.models.shared import (
     BaseAPIResponse,
-    HasCurrentConfigurationItem,
     IDModel,
 )
+from pydantic import Field
+
+from dritimeseriesprocessor.models.api_models.shared import HasCurrentConfigurationItem
 
 
 class AppliesToTimeSeries(IDModel):

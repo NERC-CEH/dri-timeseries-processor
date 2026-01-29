@@ -1,9 +1,9 @@
 from unittest.mock import MagicMock
 
 import pytest
+from driutils.metadata_api.models.site import SiteResponse
 
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
-from dritimeseriesprocessor.models.api_models.site import SiteResponse
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.utils.urls import CONFIGURATION_TYPE_URI
 

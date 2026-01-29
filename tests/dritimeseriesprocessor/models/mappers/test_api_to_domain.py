@@ -1,14 +1,14 @@
 from datetime import datetime
 from unittest.mock import MagicMock, Mock
 
+from driutils.metadata_api.models.annotations import HasAnnotationItem
+from driutils.metadata_api.models.site import SiteItem
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
 from tests.utils.validation_helpers import valid_parses
 
-from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
-from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
 from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata

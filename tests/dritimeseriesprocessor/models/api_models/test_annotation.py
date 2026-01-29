@@ -1,9 +1,8 @@
 import pytest
+from driutils.metadata_api.models.annotations import HasAnnotationItem
 from pydantic import ValidationError
 from tests.utils.fixture_helpers import load_json_string
 from tests.utils.validation_helpers import assert_pydantic_validation_error_cause
-
-from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
 
 
 class TestAnnotation:

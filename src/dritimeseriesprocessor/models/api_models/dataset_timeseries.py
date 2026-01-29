@@ -11,9 +11,10 @@ processing level, data location, etc. Used to parse and validate dataset metadat
 domain models and building dependency graphs.
 """
 
+from driutils.metadata_api.models.shared import BaseAPIResponse, IDModel
 from pydantic import Field
 
-from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse, HasCurrentConfigurationItem, IDModel
+from dritimeseriesprocessor.models.api_models.shared import HasCurrentConfigurationItem
 
 
 class Variable(IDModel):
