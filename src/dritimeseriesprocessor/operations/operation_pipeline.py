@@ -144,7 +144,7 @@ class OperationPipeline(ABC):
         Returns:
             The updated TimeFrame after all operations and flag updates.
         """
-        tf = container.data
+        tf = container.data.copy()
 
         # Initialise the flags if required
         if self.flag_system_name:
