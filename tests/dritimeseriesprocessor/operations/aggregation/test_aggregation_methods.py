@@ -139,6 +139,6 @@ class TestWD:
 
         result = WD().run(tf, config)
         expected = pl.DataFrame(
-            {"time": [datetime(2025, 1, 1), datetime(2025, 1, 2), datetime(2025, 1, 3)], "daily_wd": [11.5, 35.5, 59.5]}
+            {"time": [datetime(2025, 1, 1), datetime(2025, 1, 2), datetime(2025, 1, 3)], "value": [11.5, 35.5, 59.5]}
         )
-        assert_frame_equal(result.df.select(["time", "daily_wd"]), expected)
+        assert_frame_equal(result.df.select(["time", "value"]), expected)

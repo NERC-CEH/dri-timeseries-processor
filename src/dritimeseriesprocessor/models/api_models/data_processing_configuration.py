@@ -34,7 +34,7 @@ class DataProcessingConfigurationItem(IDModel):
     field_type: list[IDModel] = Field(..., alias="@type")
     applies_to_time_series: list[AppliesToTimeSeries] = Field(..., alias="appliesToTimeSeries")
     has_annotation: list[HasAnnotationItem] = Field(default_factory=list, alias="hasAnnotation")
-    has_current_configuration: list[HasCurrentConfigurationItem] = Field(..., alias="hasCurrentConfiguration")
+    has_current_configuration: list[HasCurrentConfigurationItem] = Field(..., alias="hasCurrentValue")
     type: IDModel
 
 
