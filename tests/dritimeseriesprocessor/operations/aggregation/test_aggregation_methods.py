@@ -139,6 +139,6 @@ class TestMeanRad:
 
         result = MeanRad().run(tf, config)
         print(result.df)
-        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5*0.0864]})
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5 * 0.0864]})
         print(expected)
-        assert_frame_equal(result.df.with_columns(["time", "value"]), expected)
+        assert_frame_equal(result.df.select(["time", "value"]), expected)
