@@ -3,7 +3,7 @@ from datetime import datetime
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.infill.infill_methods import AltData, Linear
 from utils.data_creation import create_timeframe
 
@@ -12,7 +12,7 @@ def create_method_config(
     start_date: datetime | None = None,
     end_date: datetime | None = None,
     **extra_params,
-) -> ProcessingMethodConfig:
+) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -26,7 +26,7 @@ def create_method_config(
     params = {}
     params.update(extra_params)
 
-    return ProcessingMethodConfig(
+    return DataProcessingMethodConfig(
         method="test",
         params=params,
         start_date=start_date,

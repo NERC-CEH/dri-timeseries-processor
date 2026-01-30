@@ -23,34 +23,37 @@
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
         }
       ],
-      "type": [
+      "identifier": [
+        "COSMOS-BUNNY-TA_30MIN_RAW"
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw",
+        "prefLabel": [
+          "Raw"
+        ]
+      },
+      "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw",
-          "processingLevel": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m",
+          "prefLabel": [
+            "Mean air temperature over the preceding 30 minutes in degrees Celsius"
+          ],
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
+            "prefLabel": [
+              "Air temperature"
+            ]
           },
-          "measure": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-degc-mean_prec-pt30m-pt30m",
-            "variable": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
-              "prefLabel": [
-                "Air temperature"
-              ]
-            },
-            "hasUnit": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
-              "prefLabel": [
-                "Deg Celsius"
-              ]
-            },
-            "aggregation": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
-              "valueStatistic": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-              },
-              "periodicity": "PT30M",
-              "resolution": "PT30M"
-            }
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
+            "prefLabel": [
+              "Deg Celsius"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
+            "periodicity": "PT30M",
+            "resolution": "PT30M"
           }
         }
       ],

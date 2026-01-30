@@ -17,7 +17,7 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 @dataclass
-class ProcessingMethodConfig:
+class DataProcessingMethodConfig:
     method: str
     params: dict[str, Any] = field(default_factory=dict)
     start_date: datetime | None = None
@@ -26,11 +26,11 @@ class ProcessingMethodConfig:
 
 
 @dataclass
-class ProcessingConfig:
+class DataProcessingConfig:
     ts_id: str
     config_id: str
     config_type: ConfigurationType
-    method_configs: list[ProcessingMethodConfig]
+    method_configs: list[DataProcessingMethodConfig]
     annotations: dict[str, Any] = field(default_factory=dict)
 
     def all_dep_ts(self) -> list[str]:

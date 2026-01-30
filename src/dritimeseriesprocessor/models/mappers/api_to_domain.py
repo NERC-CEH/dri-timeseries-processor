@@ -14,10 +14,13 @@ from dritimeseriesprocessor.models.api_models.data_processing_configuration impo
     DataProcessingConfigurationItem,
 )
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import Methodology, TimeSeriesDatasetItem
-from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
@@ -35,37 +38,25 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
         A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
         processing.
     """
-    info = item.type[0]
-
-    processing_level = ProcessingLevel(extract_uri_id(info.processing_level.id))
-    variable = info.measure.variable.pref_label[0]
+    processing_level = ProcessingLevel(extract_uri_id(item.processing_level.id))
     metadata_site_id = item.originating_site[0].id
 
     source_site = extract_uri_id(metadata_site_id)
     source_network = extract_uri_id(item.originating_programme[0].id)
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id
 
-    method_config = map_method_config(info.methodology)
-    depends_on = [d.id for d in item.depends_on]
-    direct_depends_on = [d.id for d in item.direct_depends_on]
-
     return TimeSeriesContainer(
         ts_id=item.id,
-        ref_id=info.id,
         network=source_network,
-        resolution=info.measure.aggregation.resolution,
-        periodicity=info.measure.aggregation.periodicity,
+        resolution=item.measure[0].aggregation.resolution,
+        periodicity=item.measure[0].aggregation.periodicity,
         processing_level=processing_level,
-        variable=variable,
         source_bucket=item.source_bucket,
         source_dataset=item.source_dataset,
         source_column=item.source_column_name,
         source_site=source_site,
         source_site_identifier=source_site_identifier,
         time_column_name=item.time_column_name,
-        method=method_config,
-        depends_on=depends_on,
-        direct_depends_on=direct_depends_on,
     )
 
 
@@ -97,7 +88,7 @@ def map_method_config(methodology: Methodology) -> MethodConfig:
 
 def map_processing_config_item(
     item: DataProcessingConfigurationItem, all_site_metadata: dict[str, SiteMetadata]
-) -> ProcessingConfig:
+) -> DataProcessingConfig:
     """Map a DataProcessingConfigurationItem to a ProcessingConfig domain model.
 
     Some processing configurations will have "site_attribute" parameters that require fetching this metadata
@@ -118,9 +109,9 @@ def map_processing_config_item(
 
     site_metadata = all_site_metadata[site_id]
 
-    method_configs = [map_processing_method_config(cfg, site_metadata) for cfg in item.has_current_configuration or []]
+    method_configs = [map_processing_method_config(cfg, site_metadata) for cfg in item.has_current_value or []]
 
-    return ProcessingConfig(
+    return DataProcessingConfig(
         ts_id=ts_id,
         config_id=item.id,
         config_type=config_type,
@@ -130,8 +121,8 @@ def map_processing_config_item(
 
 
 def map_processing_method_config(
-    current_config: HasCurrentConfigurationItem, site_metadata: SiteMetadata
-) -> ProcessingMethodConfig:
+    current_config: HasCurrentValue, site_metadata: SiteMetadata
+) -> DataProcessingMethodConfig:
     """Map a HasCurrentConfigurationItem into a ProcessingMethodConfig domain model.
 
     Args:
@@ -150,7 +141,7 @@ def map_processing_method_config(
         start_date = current_config.observation_interval.start_date
         end_date = current_config.observation_interval.end_date
 
-    return ProcessingMethodConfig(
+    return DataProcessingMethodConfig(
         method=method,
         params=params,
         start_date=start_date,
@@ -172,7 +163,7 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            extracted[key] = ann.has_value.value
+            extracted[key] = ann.has_value.value[0]
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
@@ -197,17 +188,27 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     for arg in argument_items:
         param_name = extract_uri_id(arg.parameter.id).replace("-", "_")
         has_value = arg.has_value
+        has_structured_value = arg.has_structured_value
 
-        # Literal value
-        if has_value.value is not None:
-            # Resolve any special case where we need to extract parameter from the site metadata
-            param_name, value = resolve_site_attribute(param_name, has_value.value, site_metadata)
-            collected_args[param_name].append(value)
+        if has_value:
+            # Literal value
+            if has_value.value is not None:
+                # Resolve any special case where we need to extract parameter from the site metadata
+                param_name, value = resolve_site_attribute(param_name, has_value.value[0], site_metadata)
+                collected_args[param_name].append(value)
 
-        # Reference value (dependent dataset)
-        if has_value.value_reference is not None:
-            ref_id = has_value.value_reference.id
-            collected_args[param_name].append(ref_id)
+            # Reference value (dependent dataset)
+            if has_value.value_reference is not None:
+                refs = has_value.value_reference
+                if isinstance(refs, IDModel):
+                    refs = [has_value.value_reference]
+                for ref in refs:
+                    collected_args[param_name].append(ref.id)
+
+        if has_structured_value:
+            # Structured value e.g. wind height for PE 30min
+            # TODO not yet implemented
+            pass
 
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}

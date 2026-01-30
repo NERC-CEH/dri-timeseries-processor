@@ -9,9 +9,14 @@ from typing import Iterable, TypeVar
 import time_stream as ts
 from time_stream.exceptions import FlagSystemNotFoundError
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
+from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.utils.enums import OperationType
@@ -27,6 +32,8 @@ OPERATION_METHOD_REGISTRY = {
     OperationType.CORRECTION: CorrectionMethod._REGISTRY,
     OperationType.QUALITY_CONTROL: QcMethod._REGISTRY,
     OperationType.INFILLING: InfillMethod._REGISTRY,
+    OperationType.AGGREGATION: AggregationMethod._REGISTRY,
+    OperationType.DERIVATION: DerivationMethod._REGISTRY,
 }
 
 
@@ -37,7 +44,7 @@ class OperationPipeline(ABC):
     sorting configuration blocks, and constructing flag column names.
     """
 
-    def __init__(self, operation_type: OperationType, flag_system_name: str):
+    def __init__(self, operation_type: OperationType, flag_system_name: str | None = None):
         """Initialise the operation processor.
 
         Args:
@@ -50,7 +57,7 @@ class OperationPipeline(ABC):
 
     @abstractmethod
     def apply(
-        self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
+        self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
     ) -> T:
         """Apply a specific method to the time series data.
 
@@ -65,7 +72,7 @@ class OperationPipeline(ABC):
         pass
 
     @abstractmethod
-    def get_configs(self, container: TimeSeriesContainer) -> Iterable[ProcessingConfig]:
+    def get_configs(self, container: TimeSeriesContainer) -> Iterable[DataProcessingConfig]:
         """Extract the method configuration blocks for this operation.
 
         Args:
@@ -76,7 +83,7 @@ class OperationPipeline(ABC):
         """
         pass
 
-    def sort_configs(self, configs: Iterable[ProcessingConfig]) -> Iterable[ProcessingConfig]:
+    def sort_configs(self, configs: Iterable[DataProcessingConfig]) -> Iterable[DataProcessingConfig]:
         """Sort configuration blocks into execution order.
 
         Override this method in subclasses to define custom ordering logic.
@@ -137,12 +144,13 @@ class OperationPipeline(ABC):
         Returns:
             The updated TimeFrame after all operations and flag updates.
         """
-        tf = container.data.copy()
-        col_name = tf.metadata["column_name"]
+        tf = container.data
 
-        # Initialise the flags
-        self._initialise_flag_system(tf)
-        self._initialise_flag_column(tf, col_name)
+        # Initialise the flags if required
+        if self.flag_system_name:
+            col_name = tf.metadata["column_name"]
+            self._initialise_flag_system(tf)
+            self._initialise_flag_column(tf, col_name)
 
         # Extract the configs to run
         configs = self.get_configs(container)

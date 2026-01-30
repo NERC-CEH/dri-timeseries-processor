@@ -3,59 +3,78 @@ An orchestration class used to run derivations.
 """
 
 import logging
-from typing import Any
 
+import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
+from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
+from dritimeseriesprocessor.utils.enums import OperationType
 
 logger = logging.getLogger(__name__)
 
 
-class DerivationPipeline:
+class DerivationPipeline(OperationPipeline):
     """Pipeline for running Derivation methods on a TimeSeriesContainer."""
 
-    def run(self, container: TimeSeriesContainer, dataset_repository: dict[str, TimeSeriesContainer]) -> ts.TimeFrame:
-        """Execute the derivation workflow on the time series container.
+    def __init__(self):
+        super().__init__(OperationType.DERIVATION)
+
+    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+        """Apply the given derivation method to the TimeFrame data.
 
         Args:
-            container: Time series container of metadata and data for the primary dataset to process.
+            tf: Time series frame to derive.
+            config: Configuration of the derivation method.
             dataset_repository: Repository for accessing additional datasets.
 
         Returns:
-            The new derived TimeFrame.
+            Result of applying the derivation method.
         """
-        config = self._create_derivation_method_config(container, dataset_repository)
+        # Collect the dependency TimeFrame(s) to run derivation with
+        for dep_ts_id in config.params.get("dep_ts", []):
+            dep_container = dataset_repository[dep_ts_id]
+            config.params[dep_container.source_column.lower()] = dep_container.data
+
         method = DerivationMethod.get(config.method)
         tf = method.run(config)
-
         tf = add_initial_core_flags(tf, init_unchecked=False)
 
         return tf
 
-    @staticmethod
-    def _create_derivation_method_config(
-        container: TimeSeriesContainer, dataset_repository: dict[str, TimeSeriesContainer]
-    ) -> ProcessingMethodConfig:
-        """Create the method config for the derivation.
+    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
+        """Extract the derivation method configuration.
 
         Args:
-            container: Time series container containing the metadata needed for the derivation method.
-            dataset_repository: Repository for accessing additional datasets.
+            container: Time series container to get the derivation method configurations from.
 
         Returns:
-            Method configuration properties
+            Derivation configurations to be applied.
         """
-        params: dict[str, Any] = {
-            "output_col": container.source_column,
-            "resolution": container.resolution,
-            "periodicity": container.periodicity,
-        }
-        for ds_id in container.direct_depends_on:
-            dep_container = dataset_repository[ds_id]
-            params[dep_container.source_column.lower()] = dep_container.data
+        if container.method_config is None:
+            raise ValueError(f"No derivation config found for: {container.ts_id}")
 
-        return ProcessingMethodConfig(method=container.method.name, params=params, argument=container.method.argument)
+        for cfg in container.method_config.method_configs:
+            cfg.params["output_col"] = container.source_column
+            cfg.params["resolution"] = container.resolution
+            cfg.params["periodicity"] = container.periodicity
+
+        return {container.method_config}
+
+    def get_flag_column(self, column: str) -> str:
+        """Not required for aggregation method."""
+        pass
+
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
+        """Not required for aggregation method."""
+        pass
+
+    def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Not yet implemented for derivation method."""
+        return tf

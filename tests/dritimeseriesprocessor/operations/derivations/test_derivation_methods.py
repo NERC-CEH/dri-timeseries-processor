@@ -4,7 +4,7 @@ import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     DerivationMethod,
     MeanG,
@@ -24,7 +24,7 @@ class SimpleAddition(DerivationMethod):
 
 def create_method_config(
     data: dict[str, list[float]], output_col: str, argument: dict[str, Any] | None = None
-) -> ProcessingMethodConfig:
+) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -42,7 +42,7 @@ def create_method_config(
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
 
-    return ProcessingMethodConfig(method="test", params=params, argument=argument if argument is not None else {})
+    return DataProcessingMethodConfig(method="test", params=params, argument=argument if argument is not None else {})
 
 
 class TestDerivationMethod:

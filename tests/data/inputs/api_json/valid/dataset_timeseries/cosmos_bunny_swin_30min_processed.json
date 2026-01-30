@@ -23,51 +23,79 @@
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
         }
       ],
-      "type": [
+      "identifier": [
+        "COSMOS-BUNNY-SWIN_30MIN_PROCESSED"
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
+        "prefLabel": [
+          "Processed"
+        ]
+      },
+      "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_processed",
-          "processingLevel": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-mean_prec-wm-2-pt30m-pt30m",
+          "prefLabel": [
+            "Mean incoming shortwave radiation over preceding 30 minutes in watts per metre squared"
+          ],
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin",
+            "prefLabel": [
+              "Incoming shortwave radiation"
+            ]
           },
-          "measure": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-wm-2-mean_prec-pt30m-pt30m",
-            "variable": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin",
-              "prefLabel": [
-                "Incoming shortwave radiation"
-              ]
-            },
-            "hasUnit": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
-              "prefLabel": [
-                "Wm-2"
-              ]
-            },
-            "aggregation": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_prec-pt30m-pt30m",
-              "valueStatistic": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-              },
-              "periodicity": "PT30M",
-              "resolution": "PT30M"
-            }
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+            "prefLabel": [
+              "Wm-2"
+            ]
           },
-          "methodology": {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-swin_30min_processed-derivation",
-            "uses": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/swin_30min_raw"
-              }
-            ],
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/swin_30min_processed",
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
-              }
-            }
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-mean_prec-wm-2-pt30m-pt30m#aggregation",
+            "periodicity": "PT30M",
+            "resolution": "PT30M"
           }
         }
       ],
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min_processed",
+        "uses": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw"
+          }
+        ],
+        "rawConfiguration": "{\"COSMOS-BUNNY-SWIN_30MIN_PROCESSED\":{\"depends_on\":[\"COSMOS-BUNNY-SWIN_30MIN_RAW\"],\"derivation\":\"PROCESS\"}}",
+        "configuration": {
+          "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_processed",
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+          },
+          "hasCurrentValue": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min_processed-current",
+              "method": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/method/process"
+              },
+              "argument": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min_processed-current#dep_ts",
+                  "parameter": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                  },
+                  "hasValue": {
+                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min_processed-current#dep_ts.value",
+                    "valueReference": [
+                      {
+                        "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "SWIN",
@@ -85,16 +113,6 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
-        }
-      ],
-      "dependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw"
-        }
-      ],
-      "directDependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw"
         }
       ]
     }
