@@ -7,7 +7,7 @@ import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Max, Mean, Min, Sum
+from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Max, Mean, MeanRad, Min, Sum
 from utils.data_creation import create_timeframe
 
 
@@ -129,3 +129,16 @@ class TestRounding:
 
         with pytest.raises(OverflowError, match="out of range integral type conversion attempted"):
             Sum().run(tf, config)
+
+
+class TestMeanRad:
+    def test_mean_rad(self) -> None:
+        "Test that the daily radiation aggregation works accross the full dataframe"
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+
+        result = MeanRad().run(tf, config)
+        print(result.df)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5*0.0864]})
+        print(expected)
+        assert_frame_equal(result.df.with_columns(["time", "value"]), expected)
