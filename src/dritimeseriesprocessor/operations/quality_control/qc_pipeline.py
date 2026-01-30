@@ -3,7 +3,10 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import QC_FLAG_SYS_NAME, qc_flag_column_name
@@ -27,7 +30,7 @@ class QCPipeline(OperationPipeline):
         tf = super().run(*args, **kwargs)
         return self._remove_data(tf)
 
-    def apply(self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.
 
         Args:
@@ -53,7 +56,7 @@ class QCPipeline(OperationPipeline):
 
         return result
 
-    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
+    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
         """Extract the QC method configurations.
 
         Args:

@@ -5,7 +5,10 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_series_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
@@ -26,11 +29,11 @@ def mock_container() -> MagicMock:
     """Create a mock TimeSeriesContainer with correction configs."""
     container = MagicMock(spec=TimeSeriesContainer)
 
-    method_config = MagicMock(spec=ProcessingMethodConfig)
+    method_config = MagicMock(spec=DataProcessingMethodConfig)
     method_config.method = "range"
     method_config.params = {"lt": 0, "gt": 100}
 
-    proc_config = MagicMock(spec=ProcessingConfig)
+    proc_config = MagicMock(spec=DataProcessingConfig)
     proc_config.method_configs = [method_config]
     proc_config.config_type = ConfigurationType.QUALITY_CONTROL
 
@@ -82,7 +85,7 @@ class TestComputeFlagMask:
 class TestApply:
     def test_returns_method_result(self, mock_timeframe: MagicMock) -> None:
         """Test that apply returns a TimeFrame"""
-        config = MagicMock(spec=ProcessingMethodConfig)
+        config = MagicMock(spec=DataProcessingMethodConfig)
         config.method = "range"
         config.params = {"lt": 0, "gt": 100}
 

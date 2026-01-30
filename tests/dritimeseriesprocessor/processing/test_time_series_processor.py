@@ -7,10 +7,9 @@ import time_stream as ts
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
-from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
-from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import OperationType, ProcessingLevel
 
 
 def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
@@ -24,7 +23,6 @@ def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
     """
     return TimeSeriesContainer(
         ts_id=ts_id,
-        ref_id=ts_id + "_ref",
         network="network",
         source_bucket=ts_id + "_bucket",
         source_site=ts_id + "_site",
@@ -34,13 +32,10 @@ def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
         time_column_name="time",
         resolution="P1D",
         periodicity="P1D",
-        variable=ts_id + "_variable",
         processing_level=ProcessingLevel.PROCESSED,
-        depends_on=[],
         qc_configs=set(),
         infill_configs=set(),
         correction_configs=set(),
-        method=MethodConfig(method_type=MethodType.LOAD),
     )
 
 
@@ -167,8 +162,7 @@ class TestTimeSeriesProcessor:
         raw_container = mock_graph.datasets[raw_ds_id]
         processor._load_raw(raw_container)
         processed_container = mock_graph.datasets[processed_ds_id]
-        processed_container.direct_depends_on = [raw_ds_id]
-
+        processed_container.all_dependencies = MagicMock(return_value=[raw_ds_id])
         processor._process(processed_container)
 
         mock_corr_pipeline.run.assert_called_once()
