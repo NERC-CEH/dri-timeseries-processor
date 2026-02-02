@@ -110,7 +110,7 @@ class TimeSeriesProcessor:
 
         container = self.graph.datasets[dataset_id]
 
-        match container.method.method_type:
+        match container.method_type():
             case MethodType.LOAD:
                 self._load_raw(container)
 
@@ -196,9 +196,8 @@ class TimeSeriesProcessor:
         logger.info(f"{MethodType.AGGREGATION}: {container.ts_id}")
 
         with self.metrics.time_aggregate.time():
-            dep_container = self._get_single_dependency(container)
             pipeline = OPERATION_PIPELINES[OperationType.AGGREGATION]
-            container.data = pipeline.run(container, dep_container)
+            container.data = pipeline.run(container, self.graph.datasets)
 
     def _derive(self, container: TimeSeriesContainer) -> None:
         """Run derivation to create a single dataset according to the method configurations attached via metadata.
@@ -240,9 +239,10 @@ class TimeSeriesProcessor:
         Returns:
             Dependent time series container.
         """
-        num_dependents = len(container.direct_depends_on)
+        dependencies = container.all_dependencies()
+        num_dependents = len(dependencies)
         if num_dependents != 1:
             raise ValueError(f"Expected a single dependent dataset. Found: {num_dependents}")
 
-        dep_id = container.direct_depends_on[0]
+        dep_id = dependencies[0]
         return self.graph.datasets[dep_id]

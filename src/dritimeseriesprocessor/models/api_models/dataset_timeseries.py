@@ -13,27 +13,24 @@ domain models and building dependency graphs.
 
 from pydantic import Field
 
-from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse, HasCurrentConfigurationItem, IDModel
+from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse, HasCurrentValue, IDModel
 
 
 class Variable(IDModel):
     """Variable with label."""
 
-    label: list[str] | None = None
     pref_label: list[str] | None = Field(None, alias="prefLabel")
 
 
 class HasUnit(IDModel):
     """Unit specification with label."""
 
-    label: list[str] | None = None
     pref_label: list[str] | None = Field(None, alias="prefLabel")
 
 
 class Aggregation(IDModel):
     """Aggregation specification."""
 
-    value_statistic: IDModel = Field(..., alias="valueStatistic")
     periodicity: str
     resolution: str
 
@@ -50,29 +47,22 @@ class Configuration(IDModel):
     """Configuration with type and current configuration."""
 
     type: IDModel
-    has_current_configuration: list[HasCurrentConfigurationItem] | None = Field(None, alias="hasCurrentConfiguration")
+    has_current_configuration: list[HasCurrentValue] | None = Field(None, alias="hasCurrentConfiguration")
 
 
 class Methodology(IDModel):
     """Methodology specification."""
 
-    uses: list[IDModel] | None = None
     configuration: Configuration
-
-
-class TypeItem(IDModel):
-    """Type item with processing level and measure."""
-
-    processing_level: IDModel = Field(..., alias="processingLevel")
-    measure: Measure
-    methodology: Methodology | None = None
 
 
 class TimeSeriesDatasetItem(IDModel):
     """Time series dataset item."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
-    type: list[TypeItem] = Field(..., min_length=1, max_length=1)
+    processing_level: IDModel = Field(..., alias="processingLevel")
+    measure: list[Measure]
+    methodology: Methodology | None = None
     source_bucket: str | None = Field(None, alias="sourceBucket")
     source_dataset: str | None = Field(None, alias="sourceDataset")
     source_column_name: str | None = Field(None, alias="sourceColumnName")
@@ -80,8 +70,6 @@ class TimeSeriesDatasetItem(IDModel):
     originating_facility: list[IDModel] | None = Field(None, alias="originatingFacility")
     originating_site: list[IDModel] | None = Field(None, alias="originatingSite")
     originating_programme: list[IDModel] | None = Field(None, alias="originatingProgramme")
-    depends_on: list[IDModel] = Field(default_factory=list, alias="dependsOn")
-    direct_depends_on: list[IDModel] = Field(default_factory=list, alias="directDependsOn")
 
 
 class TimeSeriesDatasetResponse(BaseAPIResponse):

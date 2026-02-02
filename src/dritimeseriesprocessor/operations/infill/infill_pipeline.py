@@ -3,7 +3,10 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_infill_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import INFILL_FLAG_SYS_NAME, infill_flag_column_name
@@ -20,7 +23,7 @@ class InfillPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.INFILLING, INFILL_FLAG_SYS_NAME)
 
-    def apply(self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given infill method to the TimeFrame data.
 
         Args:
@@ -43,7 +46,7 @@ class InfillPipeline(OperationPipeline):
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         return result
 
-    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
+    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
         """Extract the infill method configurations.
 
         Args:
@@ -54,7 +57,7 @@ class InfillPipeline(OperationPipeline):
         """
         return container.infill_configs
 
-    def sort_configs(self, configs: set[ProcessingConfig]) -> list[ProcessingConfig]:
+    def sort_configs(self, configs: set[DataProcessingConfig]) -> list[DataProcessingConfig]:
         """Sort the infilling configs into the correct order based on their "priority"
 
         Args:

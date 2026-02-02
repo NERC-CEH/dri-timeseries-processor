@@ -35,7 +35,7 @@ class HasCurrentValueItem(IDModel):
     field_type: list[IDModel] = Field(..., alias="@type")
     interval: Interval | None = None
     qualifier: list[QualifierItem]
-    value_reference: list[IDModel] = Field(..., alias="valueReference")
+    value_reference: list[IDModel] = Field(default_factory=list, alias="valueReference")
 
 
 class HasValueSeries(IDModel):

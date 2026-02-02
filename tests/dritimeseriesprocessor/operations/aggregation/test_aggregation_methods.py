@@ -6,12 +6,12 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_frame_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Max, Mean, Min, Sum
 from utils.data_creation import create_timeframe
 
 
-def create_method_config(periodicity: ts.Period) -> ProcessingMethodConfig:
+def create_method_config(periodicity: ts.Period) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -20,7 +20,7 @@ def create_method_config(periodicity: ts.Period) -> ProcessingMethodConfig:
     Returns:
         MethodConfig for testing
     """
-    return ProcessingMethodConfig(
+    return DataProcessingMethodConfig(
         method="test",
         params={"aggregation_period": periodicity},
     )

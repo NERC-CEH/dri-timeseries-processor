@@ -7,10 +7,12 @@ from tests.utils.validation_helpers import valid_parses
 from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
-from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentConfigurationItem
+from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue
 from dritimeseriesprocessor.models.api_models.site import SiteItem
-from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.models.mappers.api_to_domain import (
@@ -21,7 +23,7 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
     map_processing_method_config,
     map_site_metadata,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 
 
 class TestMapDatasetItem:
@@ -37,7 +39,6 @@ class TestMapDatasetItem:
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
-            ref_id="http://fdri.ceh.ac.uk/ref/cosmos/time-series/rn_1day_processed",
             network="cosmos",
             source_bucket="ukceh-fdri-staging-timeseries-processed",
             source_dataset="PROCESSED_DATA_1DAY",
@@ -48,19 +49,10 @@ class TestMapDatasetItem:
             resolution="P1D",
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
-            variable="Net radiation",
-            method=MethodConfig(
-                config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/rn_1day_processed",
-                method_type=MethodType.DERIVATION,
-                name="calc_daily_radiation",
-                argument={"round": 1},
-            ),
-            # TODO - this will update when metadata changes have been made
-            depends_on=["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"],
-            direct_depends_on=["http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"],
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
+            method_config=None,
             data=None,
         )
 
@@ -78,7 +70,6 @@ class TestMapDatasetItem:
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
-            ref_id="http://fdri.ceh.ac.uk/ref/cosmos/time-series/ta_30min_raw",
             network="cosmos",
             source_bucket="ukceh-fdri-staging-timeseries-level-0",
             source_dataset="LIVE_SOILMET_30MIN",
@@ -89,24 +80,24 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            variable="Air temperature",
-            method=MethodConfig(method_type=MethodType.LOAD),
-            depends_on=[],
-            direct_depends_on=[],
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
+            method_config=None,
             data=None,
         )
 
         assert result == expected
 
-    def test_all_dependencies_no_configs(self) -> None:
+    def test_all_dependencies(self) -> None:
         """Test that the all_dependencies method returns valid list, when there are no qc/correction/infill configs"""
+
+        mock_method_config = Mock(spec=DataProcessingConfig)
+        mock_method_config.config_type = ConfigurationType.PROCESS
+        mock_method_config.all_dep_ts.return_value = ["dep1", "dep2", "dep3"]
 
         item = TimeSeriesContainer(
             ts_id="test_id",
-            ref_id="test_ref_id",
             network="network",
             source_bucket="bucket",
             source_dataset="dataset",
@@ -117,10 +108,7 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            variable="variable",
-            depends_on=["dep1", "dep2", "dep3"],
-            direct_depends_on=["dep1"],
-            method=MethodConfig(method_type=MethodType.LOAD),
+            method_config=mock_method_config,
         )
         expected = ["dep1", "dep2", "dep3"]
         assert item.all_dependencies() == expected
@@ -128,21 +116,24 @@ class TestMapDatasetItem:
     def test_all_dependencies_with_configs(self) -> None:
         """Test that the all_dependencies method returns valid list, when there are a qc/correction/infill configs"""
 
-        mock_config_qc = Mock(spec=ProcessingConfig)
+        mock_method_config = Mock(spec=DataProcessingConfig)
+        mock_method_config.config_type = ConfigurationType.PROCESS
+        mock_method_config.all_dep_ts.return_value = ["dep1", "dep2", "dep3"]
+
+        mock_config_qc = Mock(spec=DataProcessingConfig)
         mock_config_qc.config_type = ConfigurationType.QUALITY_CONTROL
         mock_config_qc.all_dep_ts.return_value = ["dep1", "dep4"]
 
-        mock_config_correction = Mock(spec=ProcessingConfig)
+        mock_config_correction = Mock(spec=DataProcessingConfig)
         mock_config_correction.config_type = ConfigurationType.QUALITY_CONTROL
         mock_config_correction.all_dep_ts.return_value = ["dep4", "dep5"]
 
-        mock_config_infill = Mock(spec=ProcessingConfig)
+        mock_config_infill = Mock(spec=DataProcessingConfig)
         mock_config_infill.config_type = ConfigurationType.QUALITY_CONTROL
         mock_config_infill.all_dep_ts.return_value = []
 
         item = TimeSeriesContainer(
             ts_id="test_id",
-            ref_id="test_ref_id",
             network="network",
             source_bucket="bucket",
             source_dataset="dataset",
@@ -153,13 +144,10 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            variable="variable",
-            depends_on=["dep1", "dep2", "dep3"],
-            direct_depends_on=["dep1"],
             correction_configs={mock_config_correction},
             qc_configs={mock_config_qc},
             infill_configs={mock_config_infill},
-            method=MethodConfig(method_type=MethodType.LOAD),
+            method_config=mock_method_config,
         )
         expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
         assert item.all_dependencies() == expected
@@ -173,7 +161,7 @@ class TestExtractArguments:
                 "@id": "arg1_id",
                 "hasValue": {
                     "@id": "value1_id",
-                    "valueReference": {"@id": "http://fdri.ceh.ac.uk/id/dataset/dependent-dataset_id"},
+                    "valueReference": [{"@id": "http://fdri.ceh.ac.uk/id/dataset/dependent-dataset_id"}],
                     "@type": [{"@id": "http://schema.org/PropertyValue"}],
                 },
                 "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"},
@@ -183,7 +171,7 @@ class TestExtractArguments:
                 "@id": "arg2_id",
                 "hasValue": {
                     "@id": "value2_id",
-                    "value": 10.5,
+                    "value": [10.5],
                     "@type": [{"@id": "http://schema.org/PropertyValue"}],
                 },
                 "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"},
@@ -206,7 +194,7 @@ class TestExtractArguments:
                 "@id": "arg1_id",
                 "hasValue": {
                     "@id": "value1_id",
-                    "value": "string value",
+                    "value": ["string value"],
                     "@type": [{"@id": "http://schema.org/PropertyValue"}],
                 },
                 "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/a-string-value"},
@@ -228,7 +216,7 @@ class TestExtractArguments:
                 "@id": "arg1_id",
                 "hasValue": {
                     "@id": "value1_id",
-                    "value": 1,
+                    "value": [1],
                     "@type": [{"@id": "http://schema.org/PropertyValue"}],
                 },
                 "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/same_name_value"},
@@ -238,7 +226,7 @@ class TestExtractArguments:
                 "@id": "arg2_id",
                 "hasValue": {
                     "@id": "value2_id",
-                    "value": 2,
+                    "value": [2],
                     "@type": [{"@id": "http://schema.org/PropertyValue"}],
                 },
                 "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/same_name_value"},
@@ -248,7 +236,7 @@ class TestExtractArguments:
                 "@id": "arg3_id",
                 "hasValue": {
                     "@id": "value3_id",
-                    "value": 3,
+                    "value": [3],
                     "@type": [{"@id": "http://schema.org/PropertyValue"}],
                 },
                 "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/same_name_value"},
@@ -273,7 +261,7 @@ class TestMapProcessingMethodConfig:
                     "@id": "arg1_id",
                     "hasValue": {
                         "@id": "value1_id",
-                        "value": 0.98787,
+                        "value": [0.98787],
                     },
                     "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"},
                     "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
@@ -283,10 +271,10 @@ class TestMapProcessingMethodConfig:
             "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"}],
         }
 
-        api_model = HasCurrentConfigurationItem.model_validate(data)
+        api_model = HasCurrentValue.model_validate(data)
         result = map_processing_method_config(api_model, MagicMock())
 
-        expected = ProcessingMethodConfig(
+        expected = DataProcessingMethodConfig(
             method="method_function_name",
             params={
                 "correction_factor": 0.98787,
@@ -302,7 +290,7 @@ class TestMapProcessingMethodConfig:
                     "@id": "arg1_id",
                     "hasValue": {
                         "@id": "value1_id",
-                        "value": 0.98787,
+                        "value": [0.98787],
                     },
                     "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"},
                     "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
@@ -318,10 +306,10 @@ class TestMapProcessingMethodConfig:
             "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"}],
         }
 
-        api_model = HasCurrentConfigurationItem.model_validate(data)
+        api_model = HasCurrentValue.model_validate(data)
         result = map_processing_method_config(api_model, MagicMock())
 
-        expected = ProcessingMethodConfig(
+        expected = DataProcessingMethodConfig(
             method="method_function_name",
             params={
                 "correction_factor": 0.98787,
@@ -339,7 +327,7 @@ class TestMapProcessingMethodConfig:
                     "@id": "arg1_id",
                     "hasValue": {
                         "@id": "value1_id",
-                        "value": 1,
+                        "value": [1],
                         "@type": [{"@id": "http://schema.org/PropertyValue"}],
                     },
                     "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"},
@@ -349,7 +337,7 @@ class TestMapProcessingMethodConfig:
                     "@id": "arg2_id",
                     "hasValue": {
                         "@id": "value2_id",
-                        "value": 6,
+                        "value": [6],
                         "@type": [{"@id": "http://schema.org/PropertyValue"}],
                     },
                     "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max-gap-size"},
@@ -365,10 +353,10 @@ class TestMapProcessingMethodConfig:
             "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"}],
         }
 
-        api_model = HasCurrentConfigurationItem.model_validate(data)
+        api_model = HasCurrentValue.model_validate(data)
         result = map_processing_method_config(api_model, MagicMock())
 
-        expected = ProcessingMethodConfig(
+        expected = DataProcessingMethodConfig(
             method="linear_linear",
             params={"window": 1, "max_gap_size": 6},
             start_date=datetime(2013, 1, 1, 0, 30, 0),
@@ -382,7 +370,7 @@ class TestExtractAnnotations:
         data = [
             {
                 "@id": "top_level_id",
-                "hasValue": {"@id": "value1_id", "value": 1, "@type": [{"@id": "http://schema.org/PropertyValue"}]},
+                "hasValue": {"@id": "value1_id", "value": [1], "@type": [{"@id": "http://schema.org/PropertyValue"}]},
                 "property": {"@id": "http://fdri.ceh.ac.uk/ref/common/cop/data-processing-configuration-priority"},
                 "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"}],
             }
@@ -397,13 +385,17 @@ class TestExtractAnnotations:
         data = [
             {
                 "@id": "top_level_id1",
-                "hasValue": {"@id": "value1_id", "value": 1, "@type": [{"@id": "http://schema.org/PropertyValue"}]},
+                "hasValue": {"@id": "value1_id", "value": [1], "@type": [{"@id": "http://schema.org/PropertyValue"}]},
                 "property": {"@id": "http://fdri.ceh.ac.uk/ref/common/cop/data-processing-configuration-priority"},
                 "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"}],
             },
             {
                 "@id": "top_level_id2",
-                "hasValue": {"@id": "value2_id", "value": "abc", "@type": [{"@id": "http://schema.org/PropertyValue"}]},
+                "hasValue": {
+                    "@id": "value2_id",
+                    "value": ["abc"],
+                    "@type": [{"@id": "http://schema.org/PropertyValue"}],
+                },
                 "property": {"@id": "http://fdri.ceh.ac.uk/ref/common/cop/another-annotation"},
                 "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"}],
             },
@@ -422,12 +414,12 @@ class TestMapProcessingConfigItem:
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
-        expected = ProcessingConfig(
+        expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_raw-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
-                ProcessingMethodConfig(
+                DataProcessingMethodConfig(
                     method="range",
                     params={"lt": -10.0, "gt": 1200.0},
                 )
@@ -443,12 +435,12 @@ class TestMapProcessingConfigItem:
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
-        expected = ProcessingConfig(
+        expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
-                ProcessingMethodConfig(
+                DataProcessingMethodConfig(
                     method="linear_linear",
                     params={"max_gap_size": 6, "window": 1},
                     start_date=datetime(2013, 1, 1, 0, 30, 0),
@@ -465,12 +457,12 @@ class TestMapProcessingConfigItem:
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
-        expected = ProcessingConfig(
+        expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/sgb0ag444qc40u99nsdo8n5m0kuscic7",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
-                ProcessingMethodConfig(
+                DataProcessingMethodConfig(
                     method="scalar",
                     params={"correction_factor": 0.98787},
                     start_date=datetime(2020, 8, 10, 9, 30, 0),
@@ -479,40 +471,6 @@ class TestMapProcessingConfigItem:
             ],
             annotations={},
         )
-
-        assert result == expected
-
-    def test_get_all_dep_ts(self) -> None:
-        """Test that we can extract all dependent timeseries Ids from all processing configurations"""
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json"
-        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
-
-        result = []
-        for item in api_model.items:
-            result.extend(map_processing_config_item(item, MagicMock()).all_dep_ts())
-
-        expected = [
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw",
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-scans_30min_raw",
-        ]
-
-        assert result == expected
-
-    def test_get_all_dep_ts_with_multiple_deps_in_config(self) -> None:
-        """Test that get all deps works when a single config has multiple dependencies.
-        Added this as we were getting a failure for the Long wave correction config that has 2 dependencies.
-        """
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_lwin_30min_raw_correction.json"
-        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
-
-        result = []
-        for item in api_model.items:
-            result.extend(map_processing_config_item(item, MagicMock()).all_dep_ts())
-
-        expected = [
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw",
-            "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
-        ]
 
         assert result == expected
 
