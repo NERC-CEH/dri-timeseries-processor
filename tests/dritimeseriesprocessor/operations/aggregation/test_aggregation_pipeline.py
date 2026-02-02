@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import MagicMock
 
 import polars as pl
 import time_stream as ts
@@ -72,12 +73,17 @@ class TestAggregationThreshold:
 
         container = MagicMock()
         container.data = input_tf
-        container.periodicity = "P1D"
         container.source_column = "value"
-        container.method.name = "sum"
-        container.method.argument = {"threshold": 3}
+
+        config = MagicMock()
+        config.params = {"dep_ts": "ts_1", "aggregation_period": "P1D"}
+        config.data=input_tf
+        config.method = "sum"
+        config.argument ={"threshold": 3}
+
+        dataset_repository = {"ts_1": container}
 
         pipeline = AggregationPipeline()
 
-        result = pipeline.run(container, container)
+        result = pipeline.apply(config=config, dataset_repository=dataset_repository)
         assert_frame_equal(result.df, expected_df)
