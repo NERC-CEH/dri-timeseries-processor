@@ -77,9 +77,9 @@ class TestAggregationThreshold:
 
         config = MagicMock()
         config.params = {"dep_ts": "ts_1", "aggregation_period": "P1D"}
-        config.data=input_tf
+        config.data = input_tf
         config.method = "sum"
-        config.argument ={"threshold": 3}
+        config.argument = {"threshold": 3}
 
         dataset_repository = {"ts_1": container}
 
