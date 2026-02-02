@@ -6,7 +6,7 @@ import time_stream as ts
 from time_stream.operation import Operation
 from time_stream.utils import get_date_filter
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import OperationType
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
@@ -26,7 +26,7 @@ class Add(CorrectionMethod):
     name = "add"
     flag_value = 1
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
@@ -44,7 +44,7 @@ class LWCorrection(CorrectionMethod):
     name = "lw_corr"
     flag_value = 2
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         lw_unc_tf = self._get_lw_unc(config)
         ta_tf = config.params["ta"]
 
@@ -72,7 +72,7 @@ class LWCorrection(CorrectionMethod):
         )
 
     @staticmethod
-    def _get_lw_unc(config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def _get_lw_unc(config: DataProcessingMethodConfig) -> ts.TimeFrame:
         """Retrieve the longwave radiation uncorrected (lw_unc) TimeFrame from processing configuration.
 
         This supports processing methods that operate on either LWIN or LWOUT datasets, each of which depends on
@@ -101,7 +101,7 @@ class Scalar(CorrectionMethod):
     name = "scalar"
     flag_value = 4
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
@@ -119,7 +119,7 @@ class PACorrection(CorrectionMethod):
     name = "pa_corr"
     flag_value = 8
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         ta_tf = config.params["ta"]
 
         primary_col = tf.metadata["column_name"]
@@ -152,7 +152,7 @@ class Power(CorrectionMethod):
     name = "power"
     flag_value = 16
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(
             tf.df.with_columns(
@@ -170,7 +170,7 @@ class WDCorrection(CorrectionMethod):
     name = "wd"
     flag_value = 32
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         ux_tf = config.params["ux"]
         uy_tf = config.params["uy"]
         merged_tf = merge_multiple_timeframes([ux_tf, uy_tf])

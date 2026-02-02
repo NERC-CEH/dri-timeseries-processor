@@ -21,27 +21,39 @@
       "hasRepresentativePoint": {
         "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01#geo-latlong"
       },
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01#operating-period",
+        "startDate": "2025-06-23T12:00:00"
+      },
+      "utilisedBy": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri",
+          "label": [
+            "FDRI Programme"
+          ]
+        }
+      ],
       "hasPart": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-hmp"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-raine"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-aws_anem"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-logger"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-na"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-logger"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-aws_anem"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-hmp"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-ws",
           "label": [
             "WS"
           ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-raine"
         }
       ],
       "identifier": [
@@ -74,19 +86,19 @@
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation_inten"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa"
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/albedo"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/revolutions"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/voltage_batt"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/soc_batt"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/voltage_batt"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air"
@@ -98,10 +110,10 @@
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwin"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation"

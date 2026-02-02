@@ -23,34 +23,37 @@
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
         }
       ],
-      "type": [
+      "identifier": [
+        "COSMOS-BUNNY-PRECIP_1MIN_RAW"
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw",
+        "prefLabel": [
+          "Raw"
+        ]
+      },
+      "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_1min_raw",
-          "processingLevel": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/precipitation-total_prec-mm-pt1m-pt1m",
+          "prefLabel": [
+            "Total precipitation over the preceding minute in millimetres"
+          ],
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation",
+            "prefLabel": [
+              "Precipitation"
+            ]
           },
-          "measure": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/precipitation-mm-total_prec-pt1m-pt1m",
-            "variable": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation",
-              "prefLabel": [
-                "Precipitation"
-              ]
-            },
-            "hasUnit": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/mm",
-              "prefLabel": [
-                "mm"
-              ]
-            },
-            "aggregation": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total_prec-pt1m-pt1m",
-              "valueStatistic": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-              },
-              "periodicity": "PT1M",
-              "resolution": "PT1M"
-            }
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/mm",
+            "prefLabel": [
+              "mm"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/precipitation-total_prec-mm-pt1m-pt1m#aggregation",
+            "periodicity": "PT1M",
+            "resolution": "PT1M"
           }
         }
       ],

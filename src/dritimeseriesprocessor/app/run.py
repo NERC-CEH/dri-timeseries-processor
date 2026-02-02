@@ -81,6 +81,8 @@ def _build_processor(
 
     graph = _build_dependency_graph(network, selection, metadata_router)
 
+    logger.info(f"Found {len(graph.datasets)} datasets to process")
+
     return TimeSeriesProcessor(
         graph=graph,
         data_router=data_router,

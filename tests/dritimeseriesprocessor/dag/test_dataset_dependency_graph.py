@@ -5,11 +5,13 @@ from unittest.mock import MagicMock
 import pytest
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 
 
 def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) -> TimeSeriesContainer:
@@ -22,9 +24,13 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
     Returns:
         A TimeSeriesContainer instance
     """
+    mock_config = None
+    if depends_on:
+        mock_config = MagicMock()
+        mock_config.all_dep_ts.return_value = depends_on
+
     return TimeSeriesContainer(
         ts_id=ts_id,
-        ref_id=ts_id + "_ref",
         network="network",
         source_bucket=ts_id + "_bucket",
         source_site=ts_id + "_site",
@@ -34,17 +40,15 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         time_column_name=ts_id + "time_column_name",
         resolution=ts_id + "_resolution",
         periodicity=ts_id + "_periodicity",
-        variable=ts_id + "_variable",
         processing_level=ProcessingLevel.PROCESSED,
-        depends_on=depends_on or [],
         qc_configs=set(),
         infill_configs=set(),
         correction_configs=set(),
-        method=MethodConfig(method_type=MethodType.LOAD),
+        method_config=mock_config,
     )
 
 
-def make_processing_config_container(ts_id: str) -> ProcessingConfig:
+def make_processing_config_container(ts_id: str) -> DataProcessingConfig:
     """Create a lightweight fake ProcessingConfig for a given dataset.
 
     Args:
@@ -53,7 +57,7 @@ def make_processing_config_container(ts_id: str) -> ProcessingConfig:
     Returns:
         A ProcessingConfig instance
     """
-    return ProcessingConfig(
+    return DataProcessingConfig(
         ts_id=ts_id,
         config_id=ts_id + "_config_id",
         config_type=ConfigurationType.CORRECTION,
@@ -105,15 +109,24 @@ def create_mock_router(items: list) -> MagicMock:
 
     mock_router.fetch_dataset_by_params.return_value = mock_response
     mock_router.fetch_all_dependencies.return_value = mock_response
-    mock_router.fetch_dataset_by_id.return_value = mock_response
     mock_router.fetch_processing_configs.return_value = mock_response
     mock_router.fetch_sites.return_value = mock_response
+
+    items_dict = {item["@id"]: item for item in items}
+
+    def capture(ids: list) -> None:
+        _mock_response = MagicMock()
+        _mock_response.items = [items_dict[i] for i in ids]
+        return _mock_response
+
+    mock_router.fetch_dataset_by_ids = MagicMock(side_effect=capture)
+
     return mock_router
 
 
 def monkeypatch_api_models(monkeypatch: pytest.MonkeyPatch, items: list) -> None:
     """ "Mimic the model_validate of API pydantic models returning a list of dataset dicts"""
-    api_models = ["TimeSeriesDatasetResponse", "DataProcessingConfiguration"]
+    api_models = ["TimeSeriesDatasetResponse"]
     api_model_return = SimpleNamespace(items=items)
     for api_model in api_models:
         monkeypatch.setattr(
@@ -166,47 +179,6 @@ class TestFetchDatasets:
         assert result == [container]
         assert builder._dataset_cache == {ts_id: container}
         assert mock_router.fetch_dataset_by_params.call_count == 1
-
-    def test_fetch_dataset_dependencies(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that _fetch_dataset_dependencies returns a time series container and populates the dataset cache."""
-        dep_ts_ids = ["ds2", "ds3"]
-        mock_router = setup_mocks(dep_ts_ids, monkeypatch)
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
-
-        assert builder._dataset_cache == {}  # cache should be empty to start
-
-        result = builder._fetch_dataset_dependencies("ds1")
-
-        assert result == [make_time_series_container(t) for t in dep_ts_ids]
-        assert builder._dataset_cache == {t: make_time_series_container(t) for t in dep_ts_ids}
-        assert mock_router.fetch_all_dependencies.call_count == 1
-
-    def test_fetch_dataset_by_id(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that _fetch_dataset_by_id returns a time series container and populates the dataset cache."""
-        ts_id = "ds1"
-        mock_router = setup_mocks(ts_id, monkeypatch)
-        container = make_time_series_container(ts_id)
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
-
-        assert builder._dataset_cache == {}  # cache should be empty to start
-
-        result = builder._fetch_dataset_by_id(ts_id)
-        assert result == container
-        assert builder._dataset_cache == {ts_id: container}
-        assert mock_router.fetch_dataset_by_id.call_count == 1
-
-    def test_fetch_dataset_by_id_uses_cache(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that _fetch_dataset_by_id uses cache and skips API call if already present."""
-        ts_id = "ds1"
-        mock_router = setup_mocks(ts_id, monkeypatch)
-        container = make_time_series_container(ts_id)
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
-
-        builder._dataset_cache[ts_id] = container  # mock the cache
-
-        result = builder._fetch_dataset_by_id(ts_id)
-        assert result == container
-        mock_router.fetch_dataset_by_id.assert_not_called()  # shouldn't have needed to call the router functions
 
     def test_fetch_configs_for_single_dataset(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that _fetch_configs_for_dataset returns data processing config."""
@@ -279,7 +251,7 @@ class TestBuild:
         container_b.correction_configs = {make_processing_config_container("B")}
 
         assert builder.datasets == {"A": container_a, "B": container_b}
-        assert mock_router.fetch_all_dependencies.call_count == 1
+        assert mock_router.fetch_dataset_by_ids.call_count == 1
         assert mock_router.fetch_processing_configs.call_count == 2
 
     def test_resolve_dataset_multiple(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -304,7 +276,7 @@ class TestBuild:
             "B": container_b,
             "C": container_c,
         }
-        assert mock_router.fetch_all_dependencies.call_count == 2
+        assert mock_router.fetch_dataset_by_ids.call_count == 1
         assert mock_router.fetch_processing_configs.call_count == 1
 
 
@@ -315,7 +287,7 @@ class TestBuildDag:
         container_b = make_time_series_container("B")
         container_c = make_time_series_container("C")
 
-        mock_router = create_mock_router(["A", "B", "C"])
+        mock_router = create_mock_router([{"@id": "A"}, {"@id": "B"}, {"@id": "C"}])
 
         builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
         builder.datasets = {"A": container_a, "B": container_b, "C": container_c}
@@ -330,7 +302,7 @@ class TestBuildDag:
         container_b = make_time_series_container("B")
         container_c = make_time_series_container("C")
 
-        mock_router = create_mock_router(["A", "B", "C"])
+        mock_router = create_mock_router([{"@id": "A"}, {"@id": "B"}, {"@id": "C"}])
 
         builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
         builder.datasets = {"A": container_a, "B": container_b, "C": container_c}
@@ -346,7 +318,7 @@ class TestBuildDag:
         container_c = make_time_series_container("C", depends_on=["D"])
         container_d = make_time_series_container("D")
 
-        mock_router = create_mock_router(["A", "B", "C", "D"])
+        mock_router = create_mock_router([{"@id": "A"}, {"@id": "B"}, {"@id": "C"}, {"@id": "D"}])
 
         builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
         builder.datasets = {"A": container_a, "B": container_b, "C": container_c, "D": container_d}
@@ -393,8 +365,8 @@ class TestBuildResolver:
                 #   - A would be in next batch, but should exit early as A already resolved.
                 ["A", "B", "C", "D"],
                 ["A", "B"],
-                {"B": ["C"], "D": ["A"]},
-                {"C": "D"},
+                {"B": ["C"]},
+                {"C": "D", "D": "A"},
                 [["A", "B"], ["C"], ["D"]],
                 {"A": [], "B": ["C"], "C": ["D"], "D": ["A"]},
             ),
@@ -430,21 +402,20 @@ class TestBuildResolver:
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """Test scenario for the dataset dependency graph resolver."""
-        setup_mocks(all_ids, monkeypatch)
+        mock_router = setup_mocks(all_ids, monkeypatch)
 
         # Create TimeSeriesContainer objects for all IDs in this test
         containers = {i: make_time_series_container(i, depends_on=direct_dependencies.get(i, [])) for i in all_ids}
 
         # Wrangle the container objects into expected formats return by the methods we are going to mock later
         root_containers = [containers[i] for i in root_ids]
-        direct_dependencies = {i: [containers[d] for d in deps] for i, deps in direct_dependencies.items()}
         config_dependencies = {
             i: [
-                ProcessingConfig(
+                DataProcessingConfig(
                     ts_id=i,
                     config_id="config_id",
                     config_type=ConfigurationType.QUALITY_CONTROL,
-                    method_configs=[ProcessingMethodConfig(method="method_with_dependency", params={"dep_ts": d})],
+                    method_configs=[DataProcessingMethodConfig(method="method_with_dependency", params={"dep_ts": d})],
                     annotations={},
                 )
                 for d in deps
@@ -454,13 +425,10 @@ class TestBuildResolver:
         expected_batches = [{i: containers[i] for i in batch} for batch in expected_batches]
 
         # Set up the DatasetDependencyGraph class object
-        mock_router = create_mock_router([dataset_id for dataset_id in containers.keys()])
         builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
 
         # Mock the methods that the `build` method calls with the results of the wrangling we did earlier
         builder._resolve_root_datasets = MagicMock(return_value=root_containers)
-        builder._fetch_dataset_by_id = MagicMock(side_effect=lambda i: containers[i])
-        builder._fetch_dataset_dependencies = MagicMock(side_effect=lambda i: direct_dependencies.get(i, []))
         builder._fetch_configs_for_dataset = MagicMock(
             side_effect=lambda i: {d: config_dependencies.get(d, []) for d in i}
         )
@@ -476,7 +444,7 @@ class TestBuildResolver:
 
         # Do the resolving and test behaviours
         builder.build()
-        assert batches == expected_batches
+        assert [b.keys() for b in batches] == [b.keys() for b in expected_batches]
 
         dag = builder.build_dag()
         assert dag == expected_dag

@@ -5,7 +5,6 @@ import pytest
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.site import SiteResponse
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
-from dritimeseriesprocessor.utils.urls import CONFIGURATION_TYPE_URI
 
 
 @pytest.fixture
@@ -98,44 +97,6 @@ class TestFetchDatasetByParams:
         assert isinstance(result, TimeSeriesDatasetResponse)
 
 
-class TestFetchDatasetById:
-    def test_constructs_correct_url(
-        self, mock_api_manager: MagicMock, minimal_dataset_response: dict, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        router = create_metadata_router(mock_api_manager, minimal_dataset_response, monkeypatch)
-        router.fetch_dataset_by_id("test-id")
-
-        expected_url = "example_host/id/dataset/test-id?_view=timeseries"
-        mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url)
-
-    def test_return_object(
-        self, mock_api_manager: MagicMock, minimal_dataset_response: dict, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """Test that the response is parsed as TimeSeriesDatasetResponse."""
-        router = create_metadata_router(mock_api_manager, minimal_dataset_response, monkeypatch)
-        result = router.fetch_dataset_by_id("test-id")
-        assert isinstance(result, TimeSeriesDatasetResponse)
-
-
-class TestFetchAllDependencies:
-    def test_constructs_correct_url(
-        self, mock_api_manager: MagicMock, minimal_dataset_response: dict, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        router = create_metadata_router(mock_api_manager, minimal_dataset_response, monkeypatch)
-        router.fetch_all_dependencies("test-id")
-
-        expected_url = "example_host/id/dataset/test-id/_all_dependencies"
-        mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url)
-
-    def test_return_object(
-        self, mock_api_manager: MagicMock, minimal_dataset_response: dict, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """Test that the response is parsed as TimeSeriesDatasetResponse."""
-        router = create_metadata_router(mock_api_manager, minimal_dataset_response, monkeypatch)
-        result = router.fetch_all_dependencies("test-id")
-        assert isinstance(result, TimeSeriesDatasetResponse)
-
-
 class TestFetchProcessingConfigs:
     @pytest.mark.parametrize(
         "num_ids, batch_size, expected_calls",
@@ -168,15 +129,8 @@ class TestFetchProcessingConfigs:
         router.fetch_processing_configs(dataset_ids)
 
         expected_url = "example_host/id/data-processing-configuration"
-        config_type_params = [
-            ("type", f"{CONFIGURATION_TYPE_URI}/correction-configuration"),
-            ("type", f"{CONFIGURATION_TYPE_URI}/infill-configuration"),
-            ("type", f"{CONFIGURATION_TYPE_URI}/qc"),
-        ]
         dataset_params = [("appliesToTimeSeries", dataset_id) for dataset_id in dataset_ids]
-        mock_api_manager.make_paginated_api_call.assert_called_once_with(
-            expected_url, tuple(config_type_params + dataset_params)
-        )
+        mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url, tuple(dataset_params))
 
 
 class TestFetchSites:

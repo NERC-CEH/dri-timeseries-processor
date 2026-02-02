@@ -23,81 +23,103 @@
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
         }
       ],
-      "type": [
+      "identifier": [
+        "COSMOS-BUNNY-PRECIP_30MIN_RAW"
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw",
+        "prefLabel": [
+          "Raw"
+        ]
+      },
+      "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_30min_raw",
-          "processingLevel": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/precipitation-total_prec-mm-pt30m-pt30m",
+          "prefLabel": [
+            "Total precipitation over the preceding 30 minutes in millimetres"
+          ],
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation",
+            "prefLabel": [
+              "Precipitation"
+            ]
           },
-          "measure": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/precipitation-mm-total_prec-pt30m-pt30m",
-            "variable": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation",
-              "prefLabel": [
-                "Precipitation"
-              ]
-            },
-            "hasUnit": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/unit/mm",
-              "prefLabel": [
-                "mm"
-              ]
-            },
-            "aggregation": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total_prec-pt30m-pt30m",
-              "valueStatistic": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-              },
-              "periodicity": "PT30M",
-              "resolution": "PT30M"
-            }
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/mm",
+            "prefLabel": [
+              "mm"
+            ]
           },
-          "methodology": {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-precip_30min_raw-derivation",
-            "uses": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/time-series/precip_1min_raw"
-              }
-            ],
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/precip_30min_raw",
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
-              },
-              "hasCurrentConfiguration": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current",
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/sum"
-                  },
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#round.value",
-                        "value": 3
-                      }
-                    },
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#threshold",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/precip_30min_raw-current#threshold.value",
-                        "value": 27
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/precipitation-total_prec-mm-pt30m-pt30m#aggregation",
+            "periodicity": "PT30M",
+            "resolution": "PT30M"
           }
         }
       ],
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-precip_30min_raw",
+        "uses": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_1min_raw"
+          }
+        ],
+        "rawConfiguration": "{\"COSMOS-BUNNY-PRECIP_30MIN_RAW\":{\"depends_on\":[\"COSMOS-BUNNY-PRECIP_1MIN_RAW\"],\"derivation\":\"AGGREGATE\",\"method\":\"sum\",\"args\":{\"threshold\":27,\"round\":3}}}",
+        "configuration": {
+          "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-precip_30min_raw",
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
+          },
+          "hasCurrentValue": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-precip_30min_raw-current",
+              "method": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/method/sum"
+              },
+              "argument": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-precip_30min_raw-current#dep_ts",
+                  "parameter": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                  },
+                  "hasValue": {
+                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-precip_30min_raw-current#dep_ts.value",
+                    "valueReference": [
+                      {
+                        "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_1min_raw"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-precip_30min_raw-current#threshold",
+                  "parameter": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+                  },
+                  "hasValue": {
+                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-precip_30min_raw-current#threshold.value",
+                    "value": [
+                      27
+                    ]
+                  }
+                },
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-precip_30min_raw-current#round",
+                  "parameter": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                  },
+                  "hasValue": {
+                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-precip_30min_raw-current#round.value",
+                    "value": [
+                      3
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
       "sourceColumnName": "PRECIP",
       "sourceTimeColumnName": "time",
       "originatingFacility": [
@@ -113,16 +135,6 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
-        }
-      ],
-      "dependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_1min_raw"
-        }
-      ],
-      "directDependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_1min_raw"
         }
       ]
     }

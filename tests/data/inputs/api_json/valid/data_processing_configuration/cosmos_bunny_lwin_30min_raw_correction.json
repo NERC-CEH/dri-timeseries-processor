@@ -26,7 +26,7 @@
           }
         }
       ],
-      "hasCurrentConfiguration": [
+      "hasCurrentValue": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/atacf0pmcimqqi0vbnqote76hefae8nh",
           "argument": [
@@ -34,7 +34,9 @@
               "@id": "http://fdri.ceh.ac.uk/id/argument/v9iv2dameg8t2egqfhcromflkvd1mi8q",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/v9iv2dameg8t2egqfhcromflkvd1mi8q#value",
-                "value": 1.00924
+                "value": [
+                  1.00924
+                ]
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
@@ -46,12 +48,14 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/tbuvti8a3250fv4mr3jsmunmkeg3rc8d",
+              "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/tbuvti8a3250fv4mr3jsmunmkeg3rc8d#value",
-                "valueReference": {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw"
-                },
+                "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg#value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed"
+                  }
+                ],
                 "@type": [
                   {
                     "@id": "http://schema.org/PropertyValue"
@@ -71,9 +75,11 @@
               "@id": "http://fdri.ceh.ac.uk/id/argument/n00ssnthejn9jd3mifbn7c5t80ih1hjq",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/n00ssnthejn9jd3mifbn7c5t80ih1hjq#value",
-                "valueReference": {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw"
-                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw"
+                  }
+                ],
                 "@type": [
                   {
                     "@id": "http://schema.org/PropertyValue"
