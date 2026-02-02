@@ -7,7 +7,7 @@ import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Max, Mean, Min, Sum
+from dritimeseriesprocessor.operations.aggregation.aggregation_methods import WD, Max, Mean, Min, Sum
 from utils.data_creation import create_timeframe
 
 
@@ -70,7 +70,7 @@ class TestSum:
         assert_frame_equal(result.df, expected)
 
 
-class WD:
+class TestWD:
     def test_angular_mean(self) -> None:
         """Test that the angular mean, e.g. daily wind direction, aggregation works across the full DataFrame."""
         tf = create_timeframe(list(range(24 * 3)))
