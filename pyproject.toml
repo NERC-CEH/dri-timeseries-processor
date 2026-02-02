@@ -46,12 +46,7 @@ test = [
     "pytest-cov",
     "pytest-socket"
 ]
-docs = [
-    "sphinx",
-    "sphinx-copybutton",
-    "sphinx-rtd-theme",
-    "sphinxcontrib.mermaid"
-]
+docs = []
 lint = [
     "ruff"
 ]
