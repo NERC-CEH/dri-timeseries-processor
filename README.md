@@ -68,7 +68,9 @@ Use one of two (mutually exclusive) modes:
      --variables TA PA 
      --periodicities PT30M
     ```
-   
+
+See [CLI Usage](docs/cli_usage.md) for more info.
+
 ## Developer Setup
 
 This is for active development on the processing package itself.
@@ -166,16 +168,4 @@ Locally accessible at `http://localhost:9091`
 
 ## Documentation
 
-To build the documentation locally:
-
-```bash
-# Install documentation dependencies (but they are included by default)
-uv sync --group docs
-
-# Build the documentation
-cd docs
-make html
-
-# View documentation
-open _build/html/index.html
-```
+Available in [docs folder](docs/index.md).
