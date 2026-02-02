@@ -6,7 +6,7 @@ import polars as pl
 import time_stream as ts
 from time_stream.operation import Operation
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import OperationType
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
@@ -15,7 +15,7 @@ class DerivationMethod(Operation, ABC):
     operation_type: OperationType.DERIVATION
     inputs: ClassVar[tuple]
 
-    def run(self, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         """Execute the common workflow to carry out a derivation calculation.
 
         Args:

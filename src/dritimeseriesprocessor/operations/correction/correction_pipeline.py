@@ -3,7 +3,10 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import update_corrections_core_flags
@@ -20,7 +23,7 @@ class CorrectionPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.CORRECTION, CORRS_FLAG_SYS_NAME)
 
-    def apply(self, tf: ts.TimeFrame, config: ProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given correction method to the TimeFrame data.
 
         Args:
@@ -48,7 +51,7 @@ class CorrectionPipeline(OperationPipeline):
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         return result
 
-    def get_configs(self, container: TimeSeriesContainer) -> set[ProcessingConfig]:
+    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
         """Extract the correction method configurations.
 
         Args:

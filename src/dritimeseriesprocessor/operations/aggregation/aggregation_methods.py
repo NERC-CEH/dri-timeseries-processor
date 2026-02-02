@@ -4,7 +4,7 @@ import polars as pl
 import time_stream as ts
 from time_stream.operation import Operation
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import OperationType
 
 
@@ -16,7 +16,7 @@ class AggregationMethod(Operation, ABC):
         pass
 
     @staticmethod
-    def _ts_aggregate(tf: ts.TimeFrame, config: ProcessingMethodConfig, agg_func: str) -> ts.TimeFrame:
+    def _ts_aggregate(tf: ts.TimeFrame, config: DataProcessingMethodConfig, agg_func: str) -> ts.TimeFrame:
         """Run an aggregation using in-built methods in the Time-Stream package.
 
         Args:
@@ -83,7 +83,7 @@ class MeanRad(AggregationMethod):
 class Sum(AggregationMethod):
     name = "sum"
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "sum")
 
 
@@ -91,7 +91,7 @@ class Sum(AggregationMethod):
 class Mean(AggregationMethod):
     name = "mean"
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "mean")
 
 
@@ -99,7 +99,7 @@ class Mean(AggregationMethod):
 class Max(AggregationMethod):
     name = "max"
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "max")
 
 
@@ -107,5 +107,5 @@ class Max(AggregationMethod):
 class Min(AggregationMethod):
     name = "min"
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "min")

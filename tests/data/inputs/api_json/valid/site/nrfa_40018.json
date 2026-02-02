@@ -18,8 +18,8 @@
   "items": [
     {
       "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018",
-      "easting": "553029",
-      "northing": "164280",
+      "easting": 553029.0,
+      "northing": 164280.0,
       "altitude": 44.1,
       "hasAnnotation": [
         {
@@ -29,7 +29,9 @@
           },
           "hasValue": {
             "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area.value",
-            "value": 118.4
+            "value": [
+              118.4
+            ]
           }
         },
         {
@@ -39,13 +41,23 @@
           },
           "hasValue": {
             "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-identifier.value",
-            "value": "451320001"
+            "value": [
+              "451320001"
+            ]
           }
         }
       ],
       "hasRepresentativePoint": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-latlong"
       },
+      "utilisedBy": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/nrfa",
+          "label": [
+            "NRFA Programme"
+          ]
+        }
+      ],
       "identifier": [
         "40018"
       ],
@@ -80,16 +92,16 @@
       "label": [
         "Darent at Lullingstone"
       ],
-      "lat": "51.356986942291414",
-      "long": "0.1964190449649131",
+      "lat": 51.356986942291414,
+      "long": 0.1964190449649131,
       "qualifiedAttribution": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-attribution",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#organisation-attribution",
           "hasRole": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator-organisation"
           },
           "agent": {
-            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-ea-ksl"
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-organisation-ea"
           },
           "@type": [
             {
@@ -98,12 +110,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#organisation-attribution",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-attribution",
           "hasRole": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator-organisation"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator"
           },
           "agent": {
-            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-organisation-ea"
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-ea-ksl"
           },
           "@type": [
             {

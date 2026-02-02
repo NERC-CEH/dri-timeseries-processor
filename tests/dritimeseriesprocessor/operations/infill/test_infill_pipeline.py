@@ -5,7 +5,10 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_series_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import ProcessingConfig, ProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
@@ -26,11 +29,11 @@ def mock_container() -> MagicMock:
     """Create a mock TimeSeriesContainer with correction configs."""
     container = MagicMock(spec=TimeSeriesContainer)
 
-    method_config = MagicMock(spec=ProcessingMethodConfig)
+    method_config = MagicMock(spec=DataProcessingMethodConfig)
     method_config.method = "linear"
     method_config.params = {}
 
-    proc_config = MagicMock(spec=ProcessingConfig)
+    proc_config = MagicMock(spec=DataProcessingConfig)
     proc_config.method_configs = [method_config]
     proc_config.config_type = ConfigurationType.INFILLING
     proc_config.annotations = {"priority": 1}
@@ -68,13 +71,13 @@ class TestGetFlagColumn:
 class TestSortConfigs:
     def test_sorts_configs_by_priority(self) -> None:
         """Test that configs are sorted by priority annotation."""
-        config1 = MagicMock(spec=ProcessingConfig)
+        config1 = MagicMock(spec=DataProcessingConfig)
         config1.annotations = {"priority": 3}
 
-        config2 = MagicMock(spec=ProcessingConfig)
+        config2 = MagicMock(spec=DataProcessingConfig)
         config2.annotations = {"priority": 1}
 
-        config3 = MagicMock(spec=ProcessingConfig)
+        config3 = MagicMock(spec=DataProcessingConfig)
         config3.annotations = {"priority": 2}
 
         configs = {config1, config2, config3}
@@ -112,7 +115,7 @@ class TestComputeFlagMask:
 class TestApply:
     def test_returns_method_result(self, mock_timeframe: MagicMock) -> None:
         """Test that apply returns a TimeFrame"""
-        config = MagicMock(spec=ProcessingMethodConfig)
+        config = MagicMock(spec=DataProcessingMethodConfig)
         config.method = "add"
         config.params = {"correction_factor": 10}
 

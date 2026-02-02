@@ -26,7 +26,7 @@
           }
         }
       ],
-      "hasCurrentConfiguration": [
+      "hasCurrentValue": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/8hsjou1qtvd4bo5rcsu0mfp2vm4usmbv",
           "argument": [
@@ -34,7 +34,9 @@
               "@id": "http://fdri.ceh.ac.uk/id/argument/v3v0i0mv72ums7rkgrblcrgjo0p2dgba",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/v3v0i0mv72ums7rkgrblcrgjo0p2dgba#value",
-                "value": 0.98787
+                "value": [
+                  0.98787
+                ]
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"

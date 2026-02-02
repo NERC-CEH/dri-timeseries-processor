@@ -49,7 +49,7 @@ class TestAnnotation:
                                 }
                             }
                         ],
-                        "valueReference": {"@id": "http://fdri.ceh.ac.uk/id/value/v1"}
+                        "valueReference": [{"@id": "http://fdri.ceh.ac.uk/id/value/v1"}]
                     }
                 ]
             }
