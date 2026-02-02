@@ -56,7 +56,7 @@ class MeanRad(AggregationMethod):
 
     name = "mean_rad"
 
-    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         col_name = tf.metadata["column_name"]
 
         tf_agg = tf.aggregate("P1D", "mean")
