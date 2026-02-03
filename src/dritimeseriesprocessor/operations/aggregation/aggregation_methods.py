@@ -58,22 +58,24 @@ class MeanRad(AggregationMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         col_name = tf.metadata["column_name"]
+        agg_period = config.params["aggregation_period"]
+        seconds_in_agg_period = int(agg_period.pl_interval[:-1])
 
-        tf_agg = tf.aggregate("P1D", "mean")
+        tf_agg = tf.aggregate(agg_period.iso_duration, "mean")
         tf_agg = tf_agg.with_df(
             tf_agg.df.with_columns(
-                (pl.col(f"mean_{col_name}") * 0.0864).alias("MJm-2day-1")  # Convert units
+                (pl.col(f"mean_{col_name}") * seconds_in_agg_period / 10**6).alias(f"mean_{col_name}_converted")
             )
-        ).select("MJm-2day-1")
+        ).select(f"mean_{col_name}_converted")
 
         # Adds flag column: states whether or not the threshold number of data points is met.
         tf_agg.register_flag_system("qc_flags", {"HEIGHT": 1})
-        tf_agg.init_flag_column("MJm-2day-1", "qc_flags")
+        tf_agg.init_flag_column(f"mean_{col_name}_converted", "qc_flags")
         if tf.df.height >= config.params["threshold"]:
-            tf_agg.add_flag("MJm-2day-1__flag__qc_flags", 1)
+            tf_agg.add_flag(f"mean_{col_name}_converted__flag__qc_flags", 1)
 
         # Resulting data column should have same name as original dataset with flag column
-        tf_agg = tf_agg.with_df(tf_agg.df.rename({"MJm-2day-1": col_name}))
+        tf_agg = tf_agg.with_df(tf_agg.df.rename({f"mean_{col_name}_converted": col_name}))
 
         return tf_agg
 
