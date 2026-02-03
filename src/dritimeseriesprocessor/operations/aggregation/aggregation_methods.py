@@ -62,15 +62,14 @@ class MeanRad(AggregationMethod):
         tf_agg = tf.aggregate("P1D", "mean")
         tf_agg = tf_agg.with_df(
             tf_agg.df.with_columns(
-                (pl.col("mean_value") * 0.0864).alias("MJm-2day-1")  # Convert units
+                (pl.col(f"mean_{col_name}") * 0.0864).alias("MJm-2day-1")  # Convert units
             )
         ).select("MJm-2day-1")
 
         # Adds flag column: states whether or not the threshold number of data points is met.
-        print(tf_agg.columns)
         tf_agg.register_flag_system("qc_flags", {"HEIGHT": 1})
         tf_agg.init_flag_column("MJm-2day-1", "qc_flags")
-        if tf.df.height >= 24:  # config.threshold
+        if tf.df.height >= config.params["threshold"]:
             tf_agg.add_flag("MJm-2day-1__flag__qc_flags", 1)
 
         # Resulting data column should have same name as original dataset with flag column

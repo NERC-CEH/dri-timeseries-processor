@@ -22,7 +22,7 @@ def create_method_config(periodicity: ts.Period) -> DataProcessingMethodConfig:
     """
     return DataProcessingMethodConfig(
         method="test",
-        params={"aggregation_period": periodicity},
+        params={"aggregation_period": periodicity, "threshold": 43},
     )
 
 
