@@ -141,7 +141,7 @@ def join_time_intervals(
         the matched interval value (or null if no interval applies).
     """
     intervals_df = pl.DataFrame(
-        intervals, orient="row", schema=("start", "end", value_name)
+        intervals, orient="row", schema={"start": pl.Utf8, "end": pl.Utf8, value_name: pl.Float64},
     ).with_columns(
         pl.col("start").str.strptime(pl.Datetime, strict=True),
         pl.col("end").str.strptime(pl.Datetime, strict=True),

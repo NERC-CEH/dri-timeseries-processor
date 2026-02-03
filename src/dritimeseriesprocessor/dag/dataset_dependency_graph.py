@@ -338,7 +338,9 @@ class DatasetDependencyGraph:
                     attribute_value = getattr(deployment, attribute)
                     attribute_values.append((start_date, end_date, attribute_value))
 
-                method_config.params[f"{sensor}-{attribute}"] = attribute_values
+                # TODO - this needs to be made more generic.  What if a calculation needed height of more than 1 sensor?
+                # see https://github.com/NERC-CEH/fdri-discovery/issues/310
+                method_config.params[f"{attribute}"] = attribute_values
 
 
     def build_dag(self) -> dict[str, list[str]]:
