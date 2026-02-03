@@ -111,3 +111,40 @@ def merge_multiple(inputs: list[pl.DataFrame], join_col: str, join_type: str = "
         merged = merged.join(other, on=join_col, how=join_type, coalesce=True)
 
     return merged
+
+
+def join_time_intervals(
+    intervals: list[tuple[str | datetime, str | datetime | None, float]],
+    df: pl.DataFrame,
+    time_name: str,
+    value_name: str
+) -> pl.DataFrame:
+    """Join time-varying interval values onto a DataFrame using an as-of interval lookup.
+
+    Each interval is defined by a (start, end, value) tuple, where:
+      - start is inclusive
+      - end is exclusive (or open-ended if None)
+
+    For each row in the DataFrame, the function finds the most recent interval whose start time is less than or
+    equal to the row's time, and whose end time (if present) is greater than the row's time. Uses the Polars
+    `join_asof` with a backward strategy.
+
+    Args:
+        intervals: List of (start, end, value) tuples defining the intervals. `start` and `end` may be ISO-8601 strings
+                   or datetime objects. `end=None` indicates an open-ended interval.
+        df: Input DataFrame to join to
+        time_name: Name of time column in the DataFrame
+        value_name: Name of value column in the interval tuples
+
+    Returns:
+        A new DataFrame with all original columns preserved, plus an additional column named `value_name` containing
+        the matched interval value (or null if no interval applies).
+    """
+    intervals_df = pl.DataFrame(
+        intervals, orient="row", schema=("start", "end", value_name)
+    ).with_columns(
+        pl.col("start").str.strptime(pl.Datetime, strict=True),
+        pl.col("end").str.strptime(pl.Datetime, strict=True),
+    ).sort("start")
+
+    return df.join_asof(intervals_df, left_on=time_name, right_on="start", strategy="backward").drop(["start", "end"])

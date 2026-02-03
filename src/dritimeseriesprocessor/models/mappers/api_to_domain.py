@@ -13,17 +13,16 @@ from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationIte
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from dritimeseriesprocessor.models.api_models.dataset_timeseries import Methodology, TimeSeriesDatasetItem
-from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel
+from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem
+from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel, HasStructuredValue
 from dritimeseriesprocessor.models.api_models.site import SiteItem
-from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
@@ -58,32 +57,6 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
         source_site_identifier=source_site_identifier,
         time_column_name=item.time_column_name,
     )
-
-
-def map_method_config(methodology: Methodology) -> MethodConfig:
-    """Map a dataset's methodology metadata into a MethodConfig domain model.
-
-    Args:
-        methodology: A single configuration definition for a dataset's methodology
-
-    Returns:
-        A MethodConfig object describing the method
-    """
-    # TODO: Could add a specific LOAD methodology to the metadata - yes
-    if methodology is None:
-        return MethodConfig(method_type=MethodType.LOAD)
-
-    method_config = methodology.configuration
-    method_type = MethodType(extract_uri_id(method_config.type.id))
-
-    method = None
-    argument = {}
-    if method_config.has_current_configuration:
-        method_current_config = method_config.has_current_configuration[0]
-        method = extract_uri_id(method_current_config.method.id) if method_current_config.method else None
-        argument = extract_arguments(method_current_config.argument, site_metadata=None)
-
-    return MethodConfig(config_id=method_config.id, method_type=method_type, name=method, argument=argument)
 
 
 def map_processing_config_item(
@@ -206,9 +179,10 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                     collected_args[param_name].append(ref.id)
 
         if has_structured_value:
-            # Structured value e.g. wind height for PE 30min
-            # TODO not yet implemented
-            pass
+            # Resolve any special case where we need to extract deployment information for a sensor
+            # e.g. wind height for PE 30min
+            structured_value_params = resolve_structured_value(param_name, has_structured_value, site_metadata)
+            collected_args[param_name].append(structured_value_params)
 
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}
@@ -232,6 +206,14 @@ def resolve_site_attribute(param_name: str, value: str, site_metadata: SiteMetad
     actual_param = value.lower()
     actual_value = getattr(site_metadata, actual_param)
     return actual_param, actual_value
+
+
+def resolve_structured_value(param_name: str, value: HasStructuredValue, site_metadata: SiteMetadata):
+    if param_name.lower() != "deployment_attribute":
+        return {param_name: value}
+
+    params = extract_arguments(value.argument, site_metadata)
+    return params
 
 
 def map_site_metadata(item: SiteItem) -> SiteMetadata:

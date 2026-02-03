@@ -55,12 +55,18 @@ class HasValue(IDModel):
         return self
 
 
+class HasStructuredValue(IDModel):
+    """Represents a structured value, that can be used to link to other metadata."""
+
+    argument: list["ArgumentItem"] = Field(default_factory=list)
+
+
 class ArgumentItem(IDModel):
     """Configuration argument with parameter and value."""
 
     field_type: list[IDModel] | None = Field(None, alias="@type")
     has_value: HasValue | None = Field(None, alias="hasValue")
-    has_structured_value: IDModel | None = Field(None, alias="hasStructuredValue")
+    has_structured_value: HasStructuredValue | None = Field(None, alias="hasStructuredValue")
     parameter: IDModel
 
     @model_validator(mode="after")
