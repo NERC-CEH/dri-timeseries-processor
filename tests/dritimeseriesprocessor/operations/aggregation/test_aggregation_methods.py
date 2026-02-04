@@ -138,7 +138,5 @@ class TestMeanRad:
         config = create_method_config(ts.Period.of_days(1))
 
         result = MeanRad().run(tf, config)
-        print(result.df)
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5 * 0.0864]})
-        print(expected)
         assert_frame_equal(result.df.select(["time", "value"]), expected)
