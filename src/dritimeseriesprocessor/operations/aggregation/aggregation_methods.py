@@ -49,34 +49,21 @@ class AggregationMethod(Operation, ABC):
 
 @AggregationMethod.register
 class MeanRad(AggregationMethod):
-    # Radiation is measured as W m-2
-    # Daily radiation should be output as MJ m-2 day-1
-    # MJ m-2 day-1 = 0.0864* W m-2
+    # Radiation is measured as: W m-2 = Js-1 m-2
+    # Mean radiation should be output as MJ[aggregation period]-1 m-2
+    # e.g. MJday-1 m-2 = (seconds in a day/10**6)*Js-1 m-2
     # See https://www.fao.org/4/x0490e/x0490e0i.htm for conversion
 
     name = "mean_rad"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         col_name = tf.metadata["column_name"]
-        agg_period = config.params["aggregation_period"]
-        seconds_in_agg_period = int(agg_period.pl_interval[:-1])
+        seconds_in_agg_period = config.params["aggregation_period"].timedelta.total_seconds()
 
-        tf_agg = tf.aggregate(agg_period.iso_duration, "mean")
+        tf_agg = self._ts_aggregate(tf, config, "mean")
         tf_agg = tf_agg.with_df(
-            tf_agg.df.with_columns(
-                (pl.col(f"mean_{col_name}") * seconds_in_agg_period / 10**6).alias(f"mean_{col_name}_converted")
-            )
-        ).select(f"mean_{col_name}_converted")
-
-        # Adds flag column: states whether or not the threshold number of data points is met.
-        tf_agg.register_flag_system("qc_flags", {"HEIGHT": 1})
-        tf_agg.init_flag_column(f"mean_{col_name}_converted", "qc_flags")
-        if tf.df.height >= config.params["threshold"]:
-            tf_agg.add_flag(f"mean_{col_name}_converted__flag__qc_flags", 1)
-
-        # Resulting data column should have same name as original dataset with flag column
-        tf_agg = tf_agg.with_df(tf_agg.df.rename({f"mean_{col_name}_converted": col_name}))
-
+            tf_agg.df.with_columns((pl.col(col_name) * seconds_in_agg_period / 10**6).alias(col_name))
+        )
         return tf_agg
 
 
