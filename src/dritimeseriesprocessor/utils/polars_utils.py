@@ -117,7 +117,7 @@ def join_time_intervals(
     intervals: list[tuple[str | datetime, str | datetime | None, float]],
     df: pl.DataFrame,
     time_name: str,
-    value_name: str
+    value_name: str,
 ) -> pl.DataFrame:
     """Join time-varying interval values onto a DataFrame using an as-of interval lookup.
 
@@ -140,11 +140,17 @@ def join_time_intervals(
         A new DataFrame with all original columns preserved, plus an additional column named `value_name` containing
         the matched interval value (or null if no interval applies).
     """
-    intervals_df = pl.DataFrame(
-        intervals, orient="row", schema={"start": pl.Utf8, "end": pl.Utf8, value_name: pl.Float64},
-    ).with_columns(
-        pl.col("start").str.strptime(pl.Datetime, strict=True),
-        pl.col("end").str.strptime(pl.Datetime, strict=True),
-    ).sort("start")
+    intervals_df = (
+        pl.DataFrame(
+            intervals,
+            orient="row",
+            schema={"start": pl.Utf8, "end": pl.Utf8, value_name: pl.Float64},
+        )
+        .with_columns(
+            pl.col("start").str.strptime(pl.Datetime, strict=True),
+            pl.col("end").str.strptime(pl.Datetime, strict=True),
+        )
+        .sort("start")
+    )
 
     return df.join_asof(intervals_df, left_on=time_name, right_on="start", strategy="backward").drop(["start", "end"])

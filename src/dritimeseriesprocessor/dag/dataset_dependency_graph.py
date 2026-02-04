@@ -26,7 +26,7 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
 )
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.utils.enums import ProcessingLevel
-from dritimeseriesprocessor.utils.urls import PROCESSING_LEVEL_URI, PLATFORM_URI
+from dritimeseriesprocessor.utils.urls import PLATFORM_URI, PROCESSING_LEVEL_URI
 
 logger = logging.getLogger(__name__)
 
@@ -340,7 +340,6 @@ class DatasetDependencyGraph:
 
                     value[f"{param}.value"] = attribute_values
                     pass
-
 
     def build_dag(self) -> dict[str, list[str]]:
         """Construct the DAG structure from resolved datasets.

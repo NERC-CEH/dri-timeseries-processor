@@ -91,9 +91,9 @@ class TestPET30Min:
             "pet",
         )
 
-        config.params["wind_height"]= {
+        config.params["wind_height"] = {
             "wind_height.source": "deployment",
-            "wind_height.value": [("1900-01-01T00:00:00", None, 2.6)]
+            "wind_height.value": [("1900-01-01T00:00:00", None, 2.6)],
         }
 
         expected = dataframe_to_timeframe(pl.DataFrame({"pet": [0.00573, 0.14733, 0.03617, 0.17283]}))
@@ -153,7 +153,7 @@ class TestPET30Min:
 
     def test_wind_speed_height_correction(self) -> None:
         # Taken from FAO56 EXAMPLE 14 https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
-        input_df = pl.DataFrame({"ws": [3.2], "height": [10.]})
+        input_df = pl.DataFrame({"ws": [3.2], "height": [10.0]})
 
         calc = PET30Min().wind_speed_height_correction(pl.col("ws"), pl.col("height"))
         result = input_df.with_columns(calc.alias("ws2m")).select(["ws2m"])
