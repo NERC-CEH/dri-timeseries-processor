@@ -46,7 +46,7 @@ class MetadataAPIManager:
         try:
             response = self.session.get(url=url, params=params, timeout=30)
             response.raise_for_status()
-            logger.info(f"Accessed: {response.url}")
+            logger.debug(f"Accessed: {response.url}")
             return response.json()
         except HTTPError as e:
             logger.error(f"Failed to fetch data: {e}")

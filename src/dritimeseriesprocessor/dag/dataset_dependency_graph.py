@@ -234,14 +234,6 @@ class DatasetDependencyGraph:
             tuple(sites_params + variables_params + periodicity_params + other_params)
         )
         all_containers = self._build_dataset_containers(response)
-
-        # FOR TESTING: intercept API and override metadata. DERIVATION -> AGGREGATION
-        # from dritimeseriesprocessor.utils.enums import MethodType
-
-        # wd = all_containers[0]
-        # wd.method.method_type = MethodType.AGGREGATION
-        # wd.method.name = "agg_daily_wd"
-
         return all_containers
 
     def _fetch_configs_for_dataset(self, dataset_ids: list[str]) -> dict[str, list[DataProcessingConfig]]:
