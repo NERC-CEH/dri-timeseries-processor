@@ -121,10 +121,11 @@ class TestMain:
 
         for date in date_range:
             for site in sites:
+                s3_site_id = site.split("-")[1].upper()
                 for resolution in periodicities:
                     expected_path = (
                         expected_output_dir
-                        / f"network={network}/date={date}/site={site}/resolution={resolution}/data.parquet"
+                        / f"{network}/resolution={resolution}/site={s3_site_id}/date={date}/data.parquet"
                     )
                     expected_s3_key = str(expected_path.relative_to(expected_output_dir))
                     result = pl.read_parquet(s3_storage_client.get_bytes(E2E_OUTPUT_BUCKET, expected_s3_key))

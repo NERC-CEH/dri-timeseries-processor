@@ -162,7 +162,7 @@ class OperationPipeline(ABC):
                 logger.info(f"Operation: {self.operation_type} | {cfg.method}")
 
                 # Run the method
-                tf = self.apply(tf, cfg, dataset_repository)
+                tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)
 
         # Update core flags
         tf = self.core_flag_updater(tf)

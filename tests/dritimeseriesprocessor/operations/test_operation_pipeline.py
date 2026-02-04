@@ -17,7 +17,7 @@ from dritimeseriesprocessor.utils.enums import OperationType
 class MockOperationPipeline(OperationPipeline):
     """Implementation of OperationPipeline for testing."""
 
-    def apply(self, tf: ts.TimeFrame, *args) -> ts.TimeFrame:
+    def apply(self, tf: ts.TimeFrame, *_, **__) -> ts.TimeFrame:
         return tf
 
     def get_configs(self, container: TimeSeriesContainer) -> Iterable[DataProcessingConfig]:
