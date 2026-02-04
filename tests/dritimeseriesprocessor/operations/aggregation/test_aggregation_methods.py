@@ -129,4 +129,3 @@ class TestRounding:
 
         with pytest.raises(OverflowError, match="out of range integral type conversion attempted"):
             Sum().run(tf, config)
-            

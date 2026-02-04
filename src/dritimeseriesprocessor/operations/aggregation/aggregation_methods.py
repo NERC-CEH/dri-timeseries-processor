@@ -64,6 +64,14 @@ class Mean(AggregationMethod):
 
 
 @AggregationMethod.register
+class MeanSum(AggregationMethod):
+    name = "mean_sum"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_aggregate(tf, config, "mean_sum")
+
+
+@AggregationMethod.register
 class Max(AggregationMethod):
     name = "max"
 
@@ -77,27 +85,3 @@ class Min(AggregationMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "min")
-
-
-@AggregationMethod.register
-class PE(AggregationMethod):
-
-    name = "mean_pe"
-
-    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        col_name = tf.metadata["column_name"]
-        agg_period = config.params["aggregation_period"]
-
-        tf_agg = tf.with_df(tf.df.filter(pl.col(col_name) > 0)).aggregate(agg_period.iso_duration, "mean_sum")
-        tf_agg = tf_agg.select(f"mean_sum_{col_name}")
-
-        # Adds flag column: states whether or not the threshold number of data points is met.
-        tf_agg.register_flag_system("qc_flags", {"HEIGHT": 1})
-        tf_agg.init_flag_column(f"mean_sum_{col_name}", "qc_flags")
-        if tf.df.height >= config.params["threshold"]: #44
-            tf_agg.add_flag(f"mean_sum__flag__qc_flags", 1)
-
-        # Resulting data column should have same name as original dataset with flag column
-        tf_agg = tf_agg.with_df(tf_agg.df.rename({f"mean_sum_{col_name}": col_name}))
-
-        return tf_agg
