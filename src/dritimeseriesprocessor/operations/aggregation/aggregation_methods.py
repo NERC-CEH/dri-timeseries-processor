@@ -51,7 +51,7 @@ class AggregationMethod(Operation, ABC):
 class MeanRad(AggregationMethod):
     # Radiation is measured as: W m-2 = Js-1 m-2
     # Mean radiation should be output as MJ[aggregation period]-1 m-2
-    # e.g. MJday-1 m-2 = (seconds in a day/10**6)*Js-1 m-2
+    # e.g. MJday-1 m-2 = (seconds in a day/10^6)*Js-1 m-2
     # See https://www.fao.org/4/x0490e/x0490e0i.htm for conversion
 
     name = "mean_rad"
@@ -62,7 +62,7 @@ class MeanRad(AggregationMethod):
 
         tf_agg = self._ts_aggregate(tf, config, "mean")
         tf_agg = tf_agg.with_df(
-            tf_agg.df.with_columns((pl.col(col_name) * seconds_in_agg_period / 10**6).alias(col_name))
+            tf_agg.df.with_columns((pl.col(col_name) * seconds_in_agg_period / 1e6).alias(col_name))
         )
         return tf_agg
 
