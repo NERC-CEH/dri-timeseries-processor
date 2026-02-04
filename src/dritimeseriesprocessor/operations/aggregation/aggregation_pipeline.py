@@ -26,7 +26,7 @@ class AggregationPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.AGGREGATION)
 
-    def apply(self, _: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(self, config: DataProcessingMethodConfig, dataset_repository: dict, *_, **__) -> ts.TimeFrame:
         """Apply the given aggregation method to the TimeFrame data.
 
         Args:
