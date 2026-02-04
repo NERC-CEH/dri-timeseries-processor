@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import polars as pl
 import time_stream as ts
+from time_stream.enums import MissingCriteria
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -29,11 +30,29 @@ class AggregationMethod(Operation, ABC):
         """
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
+        validity_col_name = f"valid_{col_name}"
+
+        missing_criteria = None
+        if config.argument.get("threshold", None) is not None:
+            missing_criteria = (MissingCriteria.AVAILABLE, config.argument["threshold"])
 
         tf_agg = tf.aggregate(
             aggregation_period=config.params["aggregation_period"],
             aggregation_function=agg_func,
             columns=col_name,
+            missing_criteria=missing_criteria,
+        ).select([agg_col_name, validity_col_name])
+
+        # Replace any rows where the validity check has failed with None. These can then be picked up
+        # during the core flag initialisation as invalid.
+        tf_agg = tf_agg.with_df(
+            tf_agg.df.with_columns(
+                pl.when(validity_col_name)
+                .then(agg_col_name)
+                .otherwise(None)
+                .cast(tf_agg.df[agg_col_name].dtype)
+                .alias(agg_col_name)
+            )
         ).select(agg_col_name)
 
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))
@@ -69,6 +88,13 @@ class MeanSum(AggregationMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "mean_sum")
+
+
+class WD(AggregationMethod):
+    name = "angular_mean"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_aggregate(tf, config, "angular_mean")
 
 
 @AggregationMethod.register

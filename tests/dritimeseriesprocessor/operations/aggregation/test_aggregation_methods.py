@@ -7,7 +7,7 @@ import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Max, Mean, Min, Sum
+from dritimeseriesprocessor.operations.aggregation.aggregation_methods import WD, Max, Mean, Min, Sum
 from utils.data_creation import create_timeframe
 
 
@@ -70,6 +70,19 @@ class TestSum:
         assert_frame_equal(result.df, expected)
 
 
+class TestWD:
+    def test_angular_mean(self) -> None:
+        """Test that the angular mean, e.g. daily wind direction, aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(24 * 3)))
+        config = create_method_config(ts.Period.of_days(1))
+
+        result = WD().run(tf, config)
+        expected = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1), datetime(2025, 1, 2), datetime(2025, 1, 3)], "value": [11.5, 35.5, 59.5]}
+        )
+        assert_frame_equal(result.df.select(["time", "value"]), expected)
+
+
 class TestRounding:
     def test_rounding_0(self) -> None:
         """Check a rounding value of 0 is applied correctly."""
@@ -129,3 +142,37 @@ class TestRounding:
 
         with pytest.raises(OverflowError, match="out of range integral type conversion attempted"):
             Sum().run(tf, config)
+
+
+class TestThresholdArgument:
+    def test_threshold_less_than_df_length(self) -> None:
+        """Check aggregation runs when the threshold is less than the length of the data."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.argument = {"threshold": 1}
+
+        result = Sum().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        assert_frame_equal(result.df, expected)
+
+    def test_threshold_equal_to_df_length(self) -> None:
+        """Check aggregation runs when the threshold is equal to the length of the data."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.argument = {"threshold": 24}
+
+        result = Sum().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        assert_frame_equal(result.df, expected)
+
+    def test_threshold_greater_than_df_length(self) -> None:
+        """Check aggregation does not run when the threshold is greater than the length of the data."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.argument = {"threshold": 42}
+
+        result = Sum().run(tf, config)
+        expected = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1)], "value": [None]}, schema=pl.Schema({"time": datetime, "value": pl.Int64})
+        )
+        assert_frame_equal(result.df, expected)
