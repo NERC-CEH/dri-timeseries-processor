@@ -133,7 +133,7 @@ class TestRounding:
 
 class TestMeanRad:
     def test_mean_rad(self) -> None:
-        "Test that the daily radiation aggregation works accross the full dataframe"
+        "Test that the daily radiation aggregation works across the full dataframe"
         tf = create_timeframe(list(range(24)))
         config = create_method_config(ts.Period.of_days(1))
 
