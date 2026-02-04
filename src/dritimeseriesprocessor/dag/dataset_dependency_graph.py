@@ -324,11 +324,11 @@ class DatasetDependencyGraph:
         for method_config in mapped_config.method_configs:
             deployment_attribute = method_config.params.get("deployment_attribute")
             if deployment_attribute:
-                sensor = deployment_attribute["deployment_attribute.sensor"]
+                platform = deployment_attribute["deployment_attribute.platform"]
                 attribute = deployment_attribute["deployment_attribute.attribute"]
 
                 # Send this to the deployment API endpoint to get the value of the requested attribute
-                platform_id = f"{PLATFORM_URI}/{sensor}"
+                platform_id = f"{PLATFORM_URI}/{platform}"
                 deployment_info = self.metadata_router.fetch_deployment_by_platform(platform_id)
 
                 attribute_values = []
