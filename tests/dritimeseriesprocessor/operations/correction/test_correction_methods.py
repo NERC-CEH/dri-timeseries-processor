@@ -86,6 +86,25 @@ class TestAdd:
         run_function_with_date_filter_test(10, [1.0, 2.0, 13.0, 14.0, 15.0, 6.0, 7.0], Add())
 
 
+class TestClip:
+    @pytest.mark.parametrize(
+        "factor,expected",
+        [
+            (100, [101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0]),
+            (0, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),
+            (-1, [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]),
+            (10.5, [11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5]),
+        ],
+    )
+    def test_clip_simple(self, factor: float, expected: list[float]) -> None:
+        """Test that the add function works across the full DataFrame."""
+        run_function_test(factor, expected, Add())
+
+    def test_clip_with_date_filter(self) -> None:
+        """Test that the add function works with a date filter."""
+        run_function_with_date_filter_test(10, [1.0, 2.0, 13.0, 14.0, 15.0, 6.0, 7.0], Add())
+
+
 class TestScalar:
     @pytest.mark.parametrize(
         "factor,expected",
@@ -108,7 +127,7 @@ class TestScalar:
 
 class TestPower:
     @pytest.mark.parametrize(
-        "factor,expected",
+        "inequality,cap",
         [
             (2, [1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0]),
             (3, [1.0, 8.0, 27.0, 64.0, 125.0, 216.0, 343.0]),

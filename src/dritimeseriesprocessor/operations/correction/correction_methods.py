@@ -38,6 +38,44 @@ class Add(CorrectionMethod):
 
 
 @CorrectionMethod.register
+class Clip(CorrectionMethod):
+    """
+    Sets all values above or below a given value to that value.
+    config.metadata["inequality"] is either "above" or "below".
+    config.metadata["cap"] is the value the data should be clipped at from above or below.
+    Example:
+    config.metadata["inequality"] = "below"
+    config.metadata["cap"] = 0
+    => data below 0 is set to 0
+    Used for e.g. PE.
+    """
+
+    name = "clip"
+    flag_value = 1  # How to choose this?
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        col_name = tf.metadata["column_name"]
+        inequality = config.params["inequality"]
+        cap = config.params["cap"]
+
+        tf.df.select(
+            pl.col("time"),
+            pl.when(inequality == "above")
+            .then(
+                pl.when(pl.col(col_name) > cap)  # Clips from above
+                .then(cap)
+                .otherwise(pl.col(col_name))
+            )
+            .otherwise(
+                pl.when(pl.col(col_name) < cap)  # Clips from below
+                .then(cap)
+                .otherwise(pl.col(col_name))
+            ),
+        )
+        return
+
+
+@CorrectionMethod.register
 class LWCorrection(CorrectionMethod):
     """Long wave correction operation class."""
 
