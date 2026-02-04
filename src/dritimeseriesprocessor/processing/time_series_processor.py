@@ -221,11 +221,8 @@ class TimeSeriesProcessor:
             data_to_write = split_by_date(container.data.df, container.time_column_name)
             for data_date, df in data_to_write:
                 key = (
-                    f"network={container.network}/"
-                    f"date={data_date.strftime('%Y-%m-%d')}/"
-                    f"site={container.source_site}/"
-                    f"resolution={container.resolution}/"
-                    f"data.parquet"
+                    f"{container.network}/resolution={container.resolution}/site={container.source_site_identifier}/"
+                    f"date={data_date.strftime('%Y-%m-%d')}/data.parquet"
                 )
                 self.data_writer.write(container.source_bucket, key, df, container.time_column_name)
 
