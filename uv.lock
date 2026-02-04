@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 
 [[package]]
@@ -1978,8 +1978,8 @@ wheels = [
 
 [[package]]
 name = "time-stream"
-version = "0.0.100"
-source = { git = "https://github.com/NERC-CEH/time-stream.git#d1d67705a32eed639b8b951b01d6d11ec8476fd4" }
+version = "0.0.104"
+source = { git = "https://github.com/NERC-CEH/time-stream.git#91c5e807b2a99e3d8e50de3eba2c732884351a78" }
 dependencies = [
     { name = "altair" },
     { name = "autosemver" },

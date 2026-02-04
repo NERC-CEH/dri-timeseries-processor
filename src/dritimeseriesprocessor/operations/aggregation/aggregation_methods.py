@@ -83,6 +83,14 @@ class Mean(AggregationMethod):
 
 
 @AggregationMethod.register
+class WD(AggregationMethod):
+    name = "angular_mean"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_aggregate(tf, config, "angular_mean")
+
+
+@AggregationMethod.register
 class Max(AggregationMethod):
     name = "max"
 
