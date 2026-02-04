@@ -322,25 +322,24 @@ class DatasetDependencyGraph:
             mapped_config: Data processing configuration that may have deployment attribute to resolve
         """
         for method_config in mapped_config.method_configs:
-            deployment_attribute = method_config.params.get("deployment_attribute")
-            if deployment_attribute:
-                platform = deployment_attribute["deployment_attribute.platform"]
-                attribute = deployment_attribute["deployment_attribute.attribute"]
+            for param, value in method_config.params.items():
+                if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
+                    platform = value[f"{param}.platform"]
+                    attribute = value[f"{param}.attribute"]
 
-                # Send this to the deployment API endpoint to get the value of the requested attribute
-                platform_id = f"{PLATFORM_URI}/{platform}"
-                deployment_info = self.metadata_router.fetch_deployment_by_platform(platform_id)
+                    # Send this to the deployment API endpoint to get the value of the requested attribute
+                    platform_id = f"{PLATFORM_URI}/{platform}"
+                    deployment_info = self.metadata_router.fetch_deployment_by_platform(platform_id)
 
-                attribute_values = []
-                for deployment in deployment_info.items:
-                    start_date = deployment.start_date
-                    end_date = deployment.end_date
-                    attribute_value = getattr(deployment, attribute)
-                    attribute_values.append((start_date, end_date, attribute_value))
+                    attribute_values = []
+                    for deployment in deployment_info.items:
+                        start_date = deployment.start_date
+                        end_date = deployment.end_date
+                        attribute_value = getattr(deployment, attribute)
+                        attribute_values.append((start_date, end_date, attribute_value))
 
-                # TODO - this needs to be made more generic.  What if a calculation needed height of more than 1 sensor?
-                # see https://github.com/NERC-CEH/fdri-discovery/issues/310
-                method_config.params[f"{attribute}"] = attribute_values
+                    value[f"{param}.value"] = attribute_values
+                    pass
 
 
     def build_dag(self) -> dict[str, list[str]]:

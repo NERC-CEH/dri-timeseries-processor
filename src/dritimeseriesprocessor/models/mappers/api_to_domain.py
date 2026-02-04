@@ -14,7 +14,7 @@ from dritimeseriesprocessor.models.api_models.data_processing_configuration impo
     DataProcessingConfigurationItem,
 )
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem
-from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel, HasStructuredValue
+from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
@@ -181,7 +181,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         if has_structured_value:
             # Resolve any special case where we need to extract deployment information for a sensor
             # e.g. wind height for PE 30min
-            structured_value_params = resolve_structured_value(param_name, has_structured_value, site_metadata)
+            structured_value_params = extract_arguments(has_structured_value.argument, site_metadata)
             collected_args[param_name].append(structured_value_params)
 
     # Flatten singleton lists
@@ -206,14 +206,6 @@ def resolve_site_attribute(param_name: str, value: str, site_metadata: SiteMetad
     actual_param = value.lower()
     actual_value = getattr(site_metadata, actual_param)
     return actual_param, actual_value
-
-
-def resolve_structured_value(param_name: str, value: HasStructuredValue, site_metadata: SiteMetadata):
-    if param_name.lower() != "deployment_attribute":
-        return {param_name: value}
-
-    params = extract_arguments(value.argument, site_metadata)
-    return params
 
 
 def map_site_metadata(item: SiteItem) -> SiteMetadata:

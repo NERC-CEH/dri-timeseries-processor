@@ -32,18 +32,14 @@ class DerivationMethod(Operation, ABC):
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
 
         # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
-        deployment_attribute = config.params.get("deployment_attribute")
-        if deployment_attribute:
-            attribute = deployment_attribute["deployment_attribute.attribute"]
-            deployment_values = config.params[attribute]
-
-            # Join the deployment values to the main DataFrame
-            merged_tf = merged_tf.with_df(
-                join_time_intervals(deployment_values, merged_tf.df, merged_tf.time_name, attribute)
-            )
-
-            # Make sure the deployment value column is available to any calculation method that needs it
-            columns[attribute] = pl.col(attribute)
+        for param, value in config.params.items():
+            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
+                # Join the deployment values to the main DataFrame
+                merged_tf = merged_tf.with_df(
+                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
+                )
+                # Make sure the deployment value column is available to any calculation method that needs it
+                columns[param] = pl.col(param)
 
         # Perform the calculation (subclass-specific)
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
@@ -180,9 +176,7 @@ class PET30Min(DerivationMethod):
         rn = columns["rn"]
         ta = columns["ta"]
         ws = columns["ws"]
-
-        # TODO - this needs to be made more generic.  What if a calculation needed height of more than 1 sensor?
-        wind_height = columns["deployedHeight"]
+        wind_height = columns["wind_height"]
 
         es = self.saturation_vapour_pressure(ta)
         ea = self.actual_vapour_pressure(es, rh)
