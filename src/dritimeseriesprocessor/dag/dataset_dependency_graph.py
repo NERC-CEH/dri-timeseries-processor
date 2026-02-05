@@ -339,7 +339,6 @@ class DatasetDependencyGraph:
                         attribute_values.append((start_date, end_date, attribute_value))
 
                     value[f"{param}.value"] = attribute_values
-                    pass
 
     def build_dag(self) -> dict[str, list[str]]:
         """Construct the DAG structure from resolved datasets.

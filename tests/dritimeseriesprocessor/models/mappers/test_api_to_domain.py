@@ -177,6 +177,36 @@ class TestExtractArguments:
                 "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"},
                 "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
             },
+            {
+                "@id": "arg2_id",
+                "hasStructuredValue": {
+                    "@id": "arg2_id_structured_value",
+                    "argument": [
+                        {
+                            "@id": "nested_arg1_id",
+                            "hasValue": {
+                                "@id": "nested_value1_id",
+                                "valueReference": [{"@id": "http://fdri.ceh.ac.uk/id/dataset/dependent-dataset_id2"}],
+                                "@type": [{"@id": "http://schema.org/PropertyValue"}],
+                            },
+                            "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"},
+                            "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
+                        },
+                        {
+                            "@id": "nested_arg2_id",
+                            "hasValue": {
+                                "@id": "nested_value2_id",
+                                "value": [-999],
+                                "@type": [{"@id": "http://schema.org/PropertyValue"}],
+                            },
+                            "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/some_value.number"},
+                            "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
+                        },
+                    ],
+                },
+                "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/some_value"},
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
+            },
         ]
 
         api_model = [ArgumentItem.model_validate(arg) for arg in data]
@@ -184,6 +214,10 @@ class TestExtractArguments:
         expected = {
             "dep_ts": "http://fdri.ceh.ac.uk/id/dataset/dependent-dataset_id",
             "lt": 10.5,
+            "some_value": {
+                "dep_ts": "http://fdri.ceh.ac.uk/id/dataset/dependent-dataset_id2",
+                "some_value.number": -999,
+            },
         }
         assert result == expected
 

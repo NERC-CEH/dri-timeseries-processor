@@ -7,13 +7,15 @@ Example API call:
 Represents the metadata for a **deployment** of instrumentation at a given site.
 """
 
+from datetime import datetime
+
 from pydantic import Field
 
 from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse, IDModel
 
 
 class DeployedSystem(IDModel):
-    serialNumber: int | str
+    serialNumber: int | str | None = None
     label: list[str]
     type: IDModel
 
@@ -22,9 +24,9 @@ class DeploymentItem(IDModel):
     """Deployment item with containers and labels."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
-    label: list[str]
-    start_date: str = Field(..., alias="startedAtTime")
-    end_date: str | None = Field(None, alias="endedAtTime")
+    label: list[str] | None = None
+    start_date: datetime = Field(..., alias="startedAtTime")
+    end_date: datetime | None = Field(None, alias="endedAtTime")
     deployedHeight: float | None = None
     deployedSystem: list[DeployedSystem] = Field(default_factory=list)
 

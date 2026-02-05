@@ -57,57 +57,6 @@
           }
         }
       ],
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-rn_1day_processed",
-        "uses": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"
-          }
-        ],
-        "rawConfiguration": "{\"COSMOS-BUNNY-RN_1DAY_PROCESSED\":{\"depends_on\":[\"COSMOS-BUNNY-RN_30MIN_PROCESSED\"],\"derivation\":\"CALCULATE\",\"method\":\"calc_daily_radiation\",\"args\":{\"round\":1}}}",
-        "configuration": {
-          "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-rn_1day_processed",
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
-          },
-          "hasCurrentValue": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day_processed-current",
-              "method": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/method/calc_daily_radiation"
-              },
-              "argument": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day_processed-current#round",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day_processed-current#round.value",
-                    "value": [
-                      1
-                    ]
-                  }
-                },
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day_processed-current#dep_ts",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day_processed-current#dep_ts.value",
-                    "valueReference": [
-                      {
-                        "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      },
       "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "RN",

@@ -31,23 +31,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/atacf0pmcimqqi0vbnqote76hefae8nh",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/v9iv2dameg8t2egqfhcromflkvd1mi8q",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/v9iv2dameg8t2egqfhcromflkvd1mi8q#value",
-                "value": [
-                  1.00924
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg#value",
@@ -64,6 +47,23 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/v9iv2dameg8t2egqfhcromflkvd1mi8q",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/v9iv2dameg8t2egqfhcromflkvd1mi8q#value",
+                "value": [
+                  1.00924
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
               },
               "@type": [
                 {
@@ -120,6 +120,9 @@
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
+            "notation": [
+              "LW_CORR"
+            ],
             "prefLabel": [
               "Long wave correction"
             ],

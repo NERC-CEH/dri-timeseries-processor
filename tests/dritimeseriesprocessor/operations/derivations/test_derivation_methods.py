@@ -30,6 +30,7 @@ def create_method_config(
     Args:
         data: List of data objects needed for the calculation
         output_col: Name of the output column expected in the result
+        argument: Dict of arguments to add to the config
 
     Returns:
         MethodConfig for testing

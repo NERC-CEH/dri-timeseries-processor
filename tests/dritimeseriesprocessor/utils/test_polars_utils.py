@@ -6,6 +6,7 @@ from polars.exceptions import ColumnNotFoundError
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.utils.polars_utils import (
+    join_time_intervals,
     merge_dataframes,
     merge_multiple,
     missing_expr,
@@ -213,3 +214,97 @@ class TestMergeMultiple:
         )
 
         assert_frame_equal(result, expected, check_row_order=False)
+
+
+class TestJoinTimeIntervals:
+    df = pl.DataFrame(
+        {
+            "time": [
+                datetime(2019, 9, 10),
+                datetime(2019, 9, 11),
+                datetime(2019, 9, 12),
+            ],
+            "value": [1, 2, 3],
+        }
+    )
+
+    def test_join_single_interval(self) -> None:
+        intervals = [
+            (datetime(2019, 9, 1), None, 2.1),
+        ]
+        expected = pl.DataFrame(
+            {
+                "time": [datetime(2019, 9, 10), datetime(2019, 9, 11), datetime(2019, 9, 12)],
+                "value": [1, 2, 3],
+                "interval_value": [2.1, 2.1, 2.1],
+            }
+        )
+        result = join_time_intervals(intervals, self.df, "time", "interval_value")
+        assert_frame_equal(result, expected)
+
+    def test_join_multiple_intervals(self) -> None:
+        intervals = [
+            (datetime(2019, 9, 1), datetime(2019, 9, 11), 2.8),
+            (datetime(2019, 9, 11), None, 2.1),
+        ]
+        expected = pl.DataFrame(
+            {
+                "time": [datetime(2019, 9, 10), datetime(2019, 9, 11), datetime(2019, 9, 12)],
+                "value": [1, 2, 3],
+                "interval_value": [2.8, 2.1, 2.1],
+            }
+        )
+        result = join_time_intervals(intervals, self.df, "time", "interval_value")
+        assert_frame_equal(result, expected)
+
+    def test_join_interval_rows_before_first_interval_none(self) -> None:
+        """Test that any rows in the parent df that are before any of the intervals are given a None value"""
+        intervals = [
+            (datetime(2019, 9, 11), None, 2.1),
+        ]
+        expected = pl.DataFrame(
+            {
+                "time": [datetime(2019, 9, 10), datetime(2019, 9, 11), datetime(2019, 9, 12)],
+                "value": [1, 2, 3],
+                "interval_value": [None, 2.1, 2.1],
+            }
+        )
+        result = join_time_intervals(intervals, self.df, "time", "interval_value")
+        assert_frame_equal(result, expected)
+
+    def test_interval_gaps(self) -> None:
+        intervals = [(datetime(2019, 9, 1), datetime(2019, 9, 10, 12), 2.1), (datetime(2019, 9, 11, 12), None, 2.1)]
+        expected = pl.DataFrame(
+            {
+                "time": [datetime(2019, 9, 10), datetime(2019, 9, 11), datetime(2019, 9, 12)],
+                "value": [1, 2, 3],
+                "interval_value": [2.1, None, 2.1],
+            }
+        )
+        result = join_time_intervals(intervals, self.df, "time", "interval_value")
+        assert_frame_equal(result, expected)
+
+    def test_end_before_start_raises(self) -> None:
+        intervals = [
+            (datetime(2019, 9, 30), datetime(2019, 9, 1), 1.0),
+        ]
+        with pytest.raises(ValueError):
+            join_time_intervals(intervals, self.df, "time", "interval_value")
+
+    def test_overlapping_intervals_raises(self) -> None:
+        intervals = [
+            (datetime(2019, 9, 1), datetime(2019, 9, 30), 1.0),
+            (datetime(2019, 9, 29), datetime(2019, 10, 1), 2.0),
+        ]
+        with pytest.raises(ValueError):
+            join_time_intervals(intervals, self.df, "time", "interval_value")
+
+    def test_multiple_open_ended_raises(self) -> None:
+        intervals = [(datetime(2019, 9, 1), None, 1.0), (datetime(2019, 9, 29), None, 2.0)]
+        with pytest.raises(ValueError):
+            join_time_intervals(intervals, self.df, "time", "interval_value")
+
+    def test_open_ended_not_last_raises(self) -> None:
+        intervals = [(datetime(2019, 9, 1), None, 1.0), (datetime(2019, 9, 29), datetime(2019, 10, 5), 2.0)]
+        with pytest.raises(ValueError):
+            join_time_intervals(intervals, self.df, "time", "interval_value")
