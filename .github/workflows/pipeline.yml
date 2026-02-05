@@ -10,7 +10,6 @@ permissions:
   id-token: write
   actions: read
 
-
 jobs:
 
   test-python:
@@ -19,19 +18,6 @@ jobs:
       use_uv: true
       coverage_threshold: 90
       localstack_profile_name: localstack
-
-  build-docs:
-    uses: NERC-CEH/dri-cicd/.github/workflows/build-docs.yml@main
-    with:
-      use_uv: true
-      pages_artifact_name: pages-artifact
-
-  deploy-docs:
-    needs: [ build-docs ]
-    if: github.ref == 'refs/heads/main'  # Only run deploy-docs on main
-    uses: NERC-CEH/dri-cicd/.github/workflows/deploy-docs.yml@main
-    with:
-      pages_artifact_name: pages-artifact
 
   build-test-deploy-docker:
     needs: [test-python]
