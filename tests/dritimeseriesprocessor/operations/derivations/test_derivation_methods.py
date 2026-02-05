@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 import polars as pl
@@ -94,7 +95,7 @@ class TestPET30Min:
 
         config.params["wind_height"] = {
             "wind_height.source": "deployment",
-            "wind_height.value": [("1900-01-01T00:00:00", None, 2.6)],
+            "wind_height.value": [(datetime(1900, 1, 1), None, 2.6)],
         }
 
         expected = dataframe_to_timeframe(pl.DataFrame({"pet": [0.00573, 0.14733, 0.03617, 0.17283]}))
