@@ -47,7 +47,7 @@ QC behaviour is defined by metadata, which specifies:
 
 ### QC Methods
 
-All QC methods are registered in `operations/qc/qc_methods.py`.
+All QC methods are registered in `operations/quality_control/qc_methods.py`.
 
 ```python
  @QcMethod.register
@@ -78,7 +78,7 @@ Infilling behaviour is defined by metadata, which specifies:
 
 ### Infilling Methods
 
-All infilling methods are registered in `operations/infilling/infilling_methods.py`.
+All infilling methods are registered in `operations/infill/infill_methods.py`.
 
 ```python
  @InfillingMethod.register
