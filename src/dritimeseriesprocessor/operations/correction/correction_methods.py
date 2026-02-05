@@ -41,11 +41,11 @@ class Add(CorrectionMethod):
 class Clip(CorrectionMethod):
     """
     Sets all values above or below a given value to that value.
-    config.metadata["inequality"] is either "above" or "below".
-    config.metadata["cap"] is the value the data should be clipped at from above or below.
+    config.metadata["max"] is the value the data should be clipped at from above.
+    config.metadata["min"] is the value the data should be clipped at from below.
     Example:
-    config.metadata["inequality"] = "below"
-    config.metadata["cap"] = 0
+    config.metadata["max"] = None
+    config.metadata["min"] = 0
     => data below 0 is set to 0
     Used for e.g. PE.
     """
@@ -55,20 +55,20 @@ class Clip(CorrectionMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         col_name = tf.metadata["column_name"]
-        inequality = config.params["inequality"]
-        cap = config.params["cap"]
+        min_threshold = config.params["min"]
+        max_threshold = config.params["max"]
 
         tf.df.select(
             pl.col("time"),
-            pl.when(inequality == "above")
+            pl.when(max_threshold is not None)
             .then(
-                pl.when(pl.col(col_name) > cap)  # Clips from above
-                .then(cap)
+                pl.when(pl.col(col_name) > max_threshold)  # Clips from above
+                .then(max_threshold)
                 .otherwise(pl.col(col_name))
             )
             .otherwise(
-                pl.when(pl.col(col_name) < cap)  # Clips from below
-                .then(cap)
+                pl.when(pl.col(col_name) < min_threshold)  # Clips from below
+                .then(min_threshold)
                 .otherwise(pl.col(col_name))
             ),
         )
