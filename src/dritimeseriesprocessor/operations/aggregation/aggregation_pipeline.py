@@ -14,6 +14,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
+from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import OperationType
 
@@ -44,7 +45,7 @@ class AggregationPipeline(OperationPipeline):
         method = AggregationMethod.get(config.method)
         agg_tf = method.run(dep_container.data, config)
         agg_tf = self._rename_aggregation_columns(agg_tf, agg_tf.metadata["column_name"], dep_container.source_column)
-        agg_tf = add_initial_core_flags(agg_tf, init_unchecked=False)
+        agg_tf = add_initial_core_flags(agg_tf, init_unchecked=False, init_missing=False)
         return agg_tf
 
     def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
@@ -74,8 +75,43 @@ class AggregationPipeline(OperationPipeline):
         pass
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
-        """Not yet implemented for aggregation method."""
-        return tf
+        """Update core flags after aggregation method has been applied.
+
+        Args:
+            tf: TimeFrame with flags to update.
+
+        Returns:
+            Timeframe with updated core flags
+        """
+        col_name = tf.metadata["column_name"]
+        core_flag_col_name = core_flag_column_name(col_name)
+        actual_count_col_name = f"count_{col_name}"
+        expected_count_col_name = f"expected_count_{tf.time_name}"
+        valid_col_name = f"valid_{col_name}"
+
+        # Not all values present, but above threshold values present: Data stays, flagged as "estimate"
+        expr = (pl.col(actual_count_col_name) != pl.col(expected_count_col_name)) & pl.col(valid_col_name)
+        tf.add_flag(core_flag_col_name, "estimated", expr)
+
+        # Not enough values present: Data removed, flagged as "removed".
+        expr = (pl.col(actual_count_col_name) != pl.col(expected_count_col_name)) & ~pl.col(valid_col_name)
+        tf.add_flag(core_flag_col_name, "removed", expr)
+
+        # No values present: No data, flagged as "missing".
+        expr = pl.col(actual_count_col_name) == 0
+        tf.add_flag(core_flag_col_name, "missing", expr)
+
+        # Remove data from any rows that failed the threshold check
+        tf = tf.with_df(
+            tf.df.with_columns(
+                pl.when(~pl.col(valid_col_name))
+                .then(None)
+                .otherwise(pl.col(col_name))
+                .cast(tf.df[col_name].dtype)
+                .alias(col_name)
+            )
+        )
+        return tf.select([col_name], include_flag_columns=True)
 
     @staticmethod
     def _rename_aggregation_columns(tf: ts.TimeFrame, parent_col: str, dep_col: str) -> ts.TimeFrame:
