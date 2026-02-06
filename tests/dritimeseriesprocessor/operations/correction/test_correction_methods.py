@@ -243,10 +243,10 @@ class TestClip:
     def test_clip_simple(self) -> None:
         """Test that the clip function works across the full DataFrame."""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
-        config = create_method_config(min_threshold=0)
+        config = create_method_config(min=0)
 
         result = Clip().run(pe, config)
         expected_df = create_timeframe([0, 0, 0, 1, 2, 3], "pe").df
         assert_frame_equal(result.df, expected_df)
 
-    # Does this method need a date filter? Will probably apply to all dates.
+    # Date filter
