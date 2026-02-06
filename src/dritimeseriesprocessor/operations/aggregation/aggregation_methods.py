@@ -83,7 +83,7 @@ class Mean(AggregationMethod):
 
 
 @AggregationMethod.register
-class WD(AggregationMethod):
+class AngularMean(AggregationMethod):
     name = "angular_mean"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:

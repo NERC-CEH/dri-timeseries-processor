@@ -27,6 +27,15 @@ class AggregationPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(OperationType.AGGREGATION)
 
+    def run(self, *args, **kwargs) -> ts.TimeFrame:
+        """Override the parent run method, as we need to remove any invalid aggregation data and do some column
+        manipulation after the pipeline has finished
+        """
+        tf = super().run(*args, **kwargs)
+        tf = self._remove_data(tf)
+        tf = self._select_columns(tf)
+        return tf
+
     def apply(self, config: DataProcessingMethodConfig, dataset_repository: dict, *_, **__) -> ts.TimeFrame:
         """Apply the given aggregation method to the TimeFrame data.
 
@@ -101,17 +110,7 @@ class AggregationPipeline(OperationPipeline):
         expr = pl.col(actual_count_col_name) == 0
         tf.add_flag(core_flag_col_name, "missing", expr)
 
-        # Remove data from any rows that failed the threshold check
-        tf = tf.with_df(
-            tf.df.with_columns(
-                pl.when(~pl.col(valid_col_name))
-                .then(None)
-                .otherwise(pl.col(col_name))
-                .cast(tf.df[col_name].dtype)
-                .alias(col_name)
-            )
-        )
-        return tf.select([col_name], include_flag_columns=True)
+        return tf
 
     @staticmethod
     def _rename_aggregation_columns(tf: ts.TimeFrame, parent_col: str, dep_col: str) -> ts.TimeFrame:
@@ -128,3 +127,39 @@ class AggregationPipeline(OperationPipeline):
         tf = tf.with_df(tf.df.rename({dep_col: parent_col}))
         tf.metadata["column_name"] = parent_col
         return tf
+
+    @staticmethod
+    def _remove_data(tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Remove data from any rows that failed the aggregation threshold check
+
+        Args:
+            tf: TimeFrame to remove data from
+
+        Returns:
+            TimeFrame with bad data removed
+        """
+        col_name = tf.metadata["column_name"]
+        valid_col_name = f"valid_{col_name}"
+
+        return tf.with_df(
+            tf.df.with_columns(
+                pl.when(~pl.col(valid_col_name))
+                .then(None)
+                .otherwise(pl.col(col_name))
+                .cast(tf.df[col_name].dtype)
+                .alias(col_name)
+            )
+        )
+
+    @staticmethod
+    def _select_columns(tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Final selection of the required aggregation column from the TimeFrame
+
+        Args:
+            tf: TimeFrame to select columns from
+
+        Returns:
+            TimeFrame with selected columns
+        """
+        col_name = tf.metadata["column_name"]
+        return tf.select([col_name], include_flag_columns=True)

@@ -1,7 +1,6 @@
 from typing import Any
 
 import polars as pl
-import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -22,9 +21,7 @@ class SimpleAddition(DerivationMethod):
         return columns["a"] + columns["b"]
 
 
-def create_method_config(
-    data: dict[str, list[float]], output_col: str, argument: dict[str, Any] | None = None
-) -> DataProcessingMethodConfig:
+def create_method_config(data: dict[str, list[float]], output_col: str) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -42,7 +39,7 @@ def create_method_config(
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
 
-    return DataProcessingMethodConfig(method="test", params=params, argument=argument if argument is not None else {})
+    return DataProcessingMethodConfig(method="test", params=params)
 
 
 class TestDerivationMethod:
@@ -172,57 +169,3 @@ class TestMeanG:
 
         result = MeanG().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestRounding:
-    def test_rounding_0(self) -> None:
-        """Check a rounding value of 0 is applied correctly."""
-        config = create_method_config(
-            {
-                "swin": [22.9, 19.3, 14, 25.1],
-                "swout": [4.9, 4.2, 3, 5.5],
-                "lwin": [24.1, 26, 26.2, 23.1],
-                "lwout": [31.2, 31.9, 30.9, 30.8],
-            },
-            "rn",
-            argument={"round": 0},
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"rn": [11.0, 9.0, 6.0, 12.0]}))
-
-        result = NetRadiation().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_rounding_None(self) -> None:
-        """Check no rounding is applied when no round argument is provided."""
-        config = create_method_config(
-            {
-                "swin": [22.9, 19.3, 14, 25.1],
-                "swout": [4.9, 4.2, 3, 5.5],
-                "lwin": [24.1, 26, 26.2, 23.1],
-                "lwout": [31.2, 31.9, 30.9, 30.8],
-            },
-            "rn",
-            argument={},
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"rn": [10.9, 9.2, 6.3, 11.9]}))
-
-        result = NetRadiation().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_rounding_invalid(self) -> None:
-        """Check an error is raised when attempting to round with an invalid value such as -1."""
-        config = create_method_config(
-            {
-                "swin": [22.9, 19.3, 14, 25.1],
-                "swout": [4.9, 4.2, 3, 5.5],
-                "lwin": [24.1, 26, 26.2, 23.1],
-                "lwout": [31.2, 31.9, 30.9, 30.8],
-            },
-            "rn",
-            argument={"round": -5},
-        )
-
-        with pytest.raises(OverflowError, match="out of range integral type conversion attempted"):
-            NetRadiation().run(config)
