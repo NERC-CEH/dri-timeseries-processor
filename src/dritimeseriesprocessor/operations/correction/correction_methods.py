@@ -38,44 +38,6 @@ class Add(CorrectionMethod):
 
 
 @CorrectionMethod.register
-class Clip(CorrectionMethod):
-    """
-    Sets all values above or below a given value to that value.
-    config.metadata["max"] is the value the data should be clipped at from above.
-    config.metadata["min"] is the value the data should be clipped at from below.
-    Example:
-    config.metadata["max"] = None
-    config.metadata["min"] = 0
-    => data below 0 is set to 0
-    Used for e.g. PE.
-    """
-
-    name = "clip"
-    flag_value = 1  # How to choose this?
-
-    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        col_name = tf.metadata["column_name"]
-        min_threshold = config.params["min"]
-        max_threshold = config.params["max"]
-
-        tf.df.select(
-            pl.col("time"),
-            pl.when(max_threshold is not None)
-            .then(
-                pl.when(pl.col(col_name) > max_threshold)  # Clips from above
-                .then(max_threshold)
-                .otherwise(pl.col(col_name))
-            )
-            .otherwise(
-                pl.when(pl.col(col_name) < min_threshold)  # Clips from below
-                .then(min_threshold)
-                .otherwise(pl.col(col_name))
-            ),
-        )
-        return
-
-
-@CorrectionMethod.register
 class LWCorrection(CorrectionMethod):
     """Long wave correction operation class."""
 
@@ -227,3 +189,31 @@ class WDCorrection(CorrectionMethod):
         wd_corr = merged_tf.df.with_columns(wd_wrapped.round(5).alias(primary_col))[primary_col]
 
         return tf.with_df(tf.df.with_columns(wd_corr.alias(primary_col)))
+    
+    
+@CorrectionMethod.register
+class Clip(CorrectionMethod):
+    """
+    Sets all values above or below a given value to that value.
+    config.params["max"] is the value the data should be clipped at from above.
+    config.params["min"] is the value the data should be clipped at from below.
+    Example:
+    config.params["max"] = None
+    config.params["min"] = 0
+    => data below 0 is set to 0
+    Used for e.g. PE.
+    """
+
+    name = "clip"
+    flag_value = 64
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        col_name = tf.metadata["column_name"]
+        
+        min_threshold = config.params.get("min")
+        max_threshold = config.params.get("max")
+        #Should raise a warning if no min or max specified in clip params?
+            
+        tf_clipped = tf.with_df(tf.df.with_columns(pl.col(col_name).clip(min_threshold, max_threshold)))
+        
+        return tf_clipped

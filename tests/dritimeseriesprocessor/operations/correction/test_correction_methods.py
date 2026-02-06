@@ -7,6 +7,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import (
     Add,
+    Clip,
     CorrectionMethod,
     LWCorrection,
     PACorrection,
@@ -82,25 +83,6 @@ class TestAdd:
         run_function_test(factor, expected, Add())
 
     def test_add_with_date_filter(self) -> None:
-        """Test that the add function works with a date filter."""
-        run_function_with_date_filter_test(10, [1.0, 2.0, 13.0, 14.0, 15.0, 6.0, 7.0], Add())
-
-
-class TestClip:
-    @pytest.mark.parametrize(
-        "factor,expected",
-        [
-            (100, [101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0]),
-            (0, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),
-            (-1, [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]),
-            (10.5, [11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5]),
-        ],
-    )
-    def test_clip_simple(self, factor: float, expected: list[float]) -> None:
-        """Test that the add function works across the full DataFrame."""
-        run_function_test(factor, expected, Add())
-
-    def test_clip_with_date_filter(self) -> None:
         """Test that the add function works with a date filter."""
         run_function_with_date_filter_test(10, [1.0, 2.0, 13.0, 14.0, 15.0, 6.0, 7.0], Add())
 
@@ -255,3 +237,17 @@ class TestWdCorrection:
         result = WDCorrection().run(wd, config)
         expected_df = create_timeframe([95.01655, 160.81863, 354.14864, 75.46554], "wd").df
         assert_frame_equal(result.df, expected_df)
+
+
+class TestClip:
+    def test_clip_simple(self) -> None:
+        """Test that the clip function works across the full DataFrame."""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(min_threshold = 0)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([0, 0, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    #Does this method need a date filter? Will probably apply to all dates.
+        
