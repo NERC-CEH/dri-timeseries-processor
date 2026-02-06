@@ -189,8 +189,8 @@ class WDCorrection(CorrectionMethod):
         wd_corr = merged_tf.df.with_columns(wd_wrapped.round(5).alias(primary_col))[primary_col]
 
         return tf.with_df(tf.df.with_columns(wd_corr.alias(primary_col)))
-    
-    
+
+
 @CorrectionMethod.register
 class Clip(CorrectionMethod):
     """
@@ -209,11 +209,11 @@ class Clip(CorrectionMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         col_name = tf.metadata["column_name"]
-        
+
         min_threshold = config.params.get("min")
         max_threshold = config.params.get("max")
-        #Should raise a warning if no min or max specified in clip params?
-            
+        # Should raise a warning if no min or max specified in clip params?
+
         tf_clipped = tf.with_df(tf.df.with_columns(pl.col(col_name).clip(min_threshold, max_threshold)))
-        
+
         return tf_clipped
