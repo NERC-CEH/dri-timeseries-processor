@@ -18,14 +18,14 @@
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
         }
       ],
       "identifier": [
-        "COSMOS-ALIC1-TA_30MIN_PROCESSED"
+        "COSMOS-CHIMN-TA_30MIN_PROCESSED"
       ],
       "processingLevel": {
         "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
@@ -58,57 +58,18 @@
           }
         }
       ],
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min_processed",
-        "uses": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"
-          }
-        ],
-        "rawConfiguration": "{\"COSMOS-ALIC1-TA_30MIN_PROCESSED\":{\"depends_on\":[\"COSMOS-ALIC1-TA_30MIN_RAW\"],\"derivation\":\"PROCESS\"}}",
-        "configuration": {
-          "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min_processed",
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
-          },
-          "hasCurrentValue": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min_processed-current",
-              "method": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/method/process"
-              },
-              "argument": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min_processed-current#dep_ts",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min_processed-current#dep_ts.value",
-                    "valueReference": [
-                      {
-                        "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      },
       "sourceBucket": "e2e-output",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingFacility": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws"
         }
       ],
       "originatingSite": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
         }
       ],
       "originatingProgramme": [
@@ -158,45 +119,6 @@
           }
         }
       ],
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min_processed",
-        "uses": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw"
-          }
-        ],
-        "rawConfiguration": "{\"COSMOS-HOLLN-TA_30MIN_PROCESSED\":{\"depends_on\":[\"COSMOS-HOLLN-TA_30MIN_RAW\"],\"derivation\":\"PROCESS\"}}",
-        "configuration": {
-          "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min_processed",
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
-          },
-          "hasCurrentValue": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_30min_processed-current",
-              "method": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/method/process"
-              },
-              "argument": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_30min_processed-current#dep_ts",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_30min_processed-current#dep_ts.value",
-                    "valueReference": [
-                      {
-                        "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      },
       "sourceBucket": "e2e-output",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TA",
@@ -218,14 +140,14 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
         }
       ],
       "identifier": [
-        "COSMOS-CHIMN-TA_30MIN_PROCESSED"
+        "COSMOS-ALIC1-TA_30MIN_PROCESSED"
       ],
       "processingLevel": {
         "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
@@ -258,57 +180,18 @@
           }
         }
       ],
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min_processed",
-        "uses": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw"
-          }
-        ],
-        "rawConfiguration": "{\"COSMOS-CHIMN-TA_30MIN_PROCESSED\":{\"depends_on\":[\"COSMOS-CHIMN-TA_30MIN_RAW\"],\"derivation\":\"PROCESS\"}}",
-        "configuration": {
-          "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min_processed",
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
-          },
-          "hasCurrentValue": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min_processed-current",
-              "method": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/method/process"
-              },
-              "argument": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min_processed-current#dep_ts",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min_processed-current#dep_ts.value",
-                    "valueReference": [
-                      {
-                        "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      },
       "sourceBucket": "e2e-output",
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingFacility": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
         }
       ],
       "originatingSite": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
         }
       ],
       "originatingProgramme": [
