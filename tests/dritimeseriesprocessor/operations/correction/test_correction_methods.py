@@ -109,7 +109,7 @@ class TestScalar:
 
 class TestPower:
     @pytest.mark.parametrize(
-        "inequality,cap",
+        "factor, expected",
         [
             (2, [1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0]),
             (3, [1.0, 8.0, 27.0, 64.0, 125.0, 216.0, 343.0]),

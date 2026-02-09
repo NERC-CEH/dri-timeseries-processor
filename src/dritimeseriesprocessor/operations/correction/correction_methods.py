@@ -214,7 +214,7 @@ class Clip(CorrectionMethod):
         max_threshold = config.params.get("max")
 
         if min_threshold is None and max_threshold is None:
-            raise ValueError("Missing metadata parameter. At least one of MIN or MAX must be specified in CLIP method")
+            raise ValueError("Missing metadata parameter. At least one threshold must be specified in Clip method")
 
         tf_clipped = tf.with_df(tf.df.with_columns(pl.col(col_name).clip(min_threshold, max_threshold)))
 
