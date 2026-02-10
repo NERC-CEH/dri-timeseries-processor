@@ -297,3 +297,30 @@ class PET30Min(DerivationMethod):
             Polars expression to calculate gamma
         """
         return ws * (4.87 / math.log((67.8 * measured_height) - 5.42))
+
+
+@DerivationMethod.register
+class Q(DerivationMethod):
+    """Calculate absolute humidity from relative humidity and air temperature.
+    Required for water vapour correction to CRS counts.
+    """
+
+    name = "calculate_q"
+    inputs = ("ta", "rh")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate absolute humidity Q [g m-3] (grams per cubic meter)
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+
+        Returns:
+            Polars expression computing Q
+        """
+        ta = columns["ta"]
+        rh = columns["rh"]
+
+        Q1 = ((17.67 * ta) / (ta + 243.5)).exp()
+        Q2 = 273.15 + ta
+
+        return (6.112 * Q1 * rh * 2.1674) / Q2
