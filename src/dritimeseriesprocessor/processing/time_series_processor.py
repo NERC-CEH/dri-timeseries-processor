@@ -116,7 +116,8 @@ class TimeSeriesProcessor:
 
             case MethodType.PROCESS:
                 self._process(container)
-                self._save(container)
+                # if "30min_processed" not in dataset_id[16:]:
+                #    self._save(container)
 
             case MethodType.AGGREGATION:
                 self._aggregate(container)
@@ -124,7 +125,7 @@ class TimeSeriesProcessor:
 
             case MethodType.DERIVATION:
                 self._derive(container)
-                self._save(container)
+                # self._save(container)
 
     def _load_raw(self, container: TimeSeriesContainer) -> None:
         """Load raw time-series data for a dataset and initialise a `TimeFrame`.

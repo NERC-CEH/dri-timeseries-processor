@@ -110,6 +110,7 @@ class MeanSum(AggregationMethod):
         return self._ts_aggregate(tf, config, "mean_sum")
 
 
+@AggregationMethod.register
 class WD(AggregationMethod):
     name = "angular_mean"
 
