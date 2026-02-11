@@ -31,11 +31,11 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cts_mod2_30min_raw-error_code-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2882",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2881",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2882#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2881#value",
                 "value": [
-                  8999.0
+                  7999.0
                 ],
                 "@type": [
                   {
@@ -53,11 +53,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2881",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2882",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2881#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2882#value",
                 "value": [
-                  7999.0
+                  8999.0
                 ],
                 "@type": [
                   {
@@ -89,6 +89,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Error code"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -193,6 +196,9 @@
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "label": [
+              "Battery"
+            ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
             },
@@ -293,6 +299,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Range"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -397,6 +406,9 @@
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "label": [
+              "Samples"
+            ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
             },
@@ -472,6 +484,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Spike"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
