@@ -6,11 +6,11 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
+    AbsoluteHumidity,
     DerivationMethod,
-    MeanG,
+    MeanSoilHeatFlux,
     NetRadiation,
-    PET30Min,
-    Q,
+    PotentialEvapotranspiration30Min,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -75,7 +75,7 @@ class TestNetRadiation:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
-class TestPET30Min:
+class TestPotentialEvapotranspiration30Min:
     def test_calculation(self) -> None:
         # Taken from COSMOS.LEVEL3_DATA_30MIN Oracle DB view:
         #   Site: CHOBH,
@@ -94,14 +94,14 @@ class TestPET30Min:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"pet": [0.00573, 0.14733, 0.03617, 0.17283]}))
 
-        result = PET30Min().run(config)
+        result = PotentialEvapotranspiration30Min().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
     def test_saturation_vapour_pressure(self) -> None:
         # Taken from FAO56 EXAMPLE 3 https://www.fao.org/4/x0490e/x0490e07.htm
         input_df = pl.DataFrame({"ta": [15.0, 24.5]})
 
-        calc = PET30Min().saturation_vapour_pressure(pl.col("ta"))
+        calc = PotentialEvapotranspiration30Min().saturation_vapour_pressure(pl.col("ta"))
         result = input_df.with_columns(calc.alias("es")).select(["es"])
         expected = pl.DataFrame({"es": [1.705, 3.075]})
 
@@ -111,7 +111,7 @@ class TestPET30Min:
         # Taken from FAO56 EXAMPLE 19 https://www.fao.org/4/x0490e/x0490e08.htm
         input_df = pl.DataFrame({"rh": [90, 52], "es": [3.78, 6.625]})
 
-        calc = PET30Min().actual_vapour_pressure(pl.col("es"), pl.col("rh"))
+        calc = PotentialEvapotranspiration30Min().actual_vapour_pressure(pl.col("es"), pl.col("rh"))
         result = input_df.with_columns(calc.alias("ea")).select(["ea"])
         expected = pl.DataFrame({"ea": [3.402, 3.445]})
 
@@ -121,7 +121,7 @@ class TestPET30Min:
         # Taken from FAO56 EXAMPLE 18, 19 and 20 https://www.fao.org/4/x0490e/x0490e08.htm
         input_df = pl.DataFrame({"es": [1.997, 2.58, 3.78, 6.625], "ta": [16.9, 20.7, 28, 38]})
 
-        calc = PET30Min().vapour_pressure_curve_slope(pl.col("es"), pl.col("ta"))
+        calc = PotentialEvapotranspiration30Min().vapour_pressure_curve_slope(pl.col("es"), pl.col("ta"))
         result = input_df.with_columns(calc.alias("delta")).select(["delta"])
         expected = pl.DataFrame({"delta": [0.122, 0.15, 0.22, 0.358]})
 
@@ -130,7 +130,7 @@ class TestPET30Min:
     def test_latent_heat_of_vaporization(self) -> None:
         input_df = pl.DataFrame({"ta": [-20.0, 0.0, 20.0, 100.0]})
 
-        calc = PET30Min().latent_heat_of_vaporization(pl.col("ta"))
+        calc = PotentialEvapotranspiration30Min().latent_heat_of_vaporization(pl.col("ta"))
         result = input_df.with_columns(calc.alias("lv")).select(["lv"])
         expected = pl.DataFrame({"lv": [2.54, 2.501, 2.45, 2.26]})
 
@@ -141,7 +141,7 @@ class TestPET30Min:
         # Taken from FAO56 EXAMPLE 18 https://www.fao.org/4/x0490e/x0490e08.htm
         input_df = pl.DataFrame({"lv": [2.45, 2.46], "pa": [1001.0, 818.0]})
 
-        calc = PET30Min().psychrometric_constant(pl.col("pa"), pl.col("lv"))
+        calc = PotentialEvapotranspiration30Min().psychrometric_constant(pl.col("pa"), pl.col("lv"))
         result = input_df.with_columns(calc.alias("gamma")).select(["gamma"])
         expected = pl.DataFrame({"gamma": [0.066, 0.054]})
 
@@ -151,16 +151,16 @@ class TestPET30Min:
         # Taken from FAO56 EXAMPLE 14 https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
         input_df = pl.DataFrame({"ws": [3.2]})
 
-        calc = PET30Min().wind_speed_height_correction(pl.col("ws"), 10.0)
+        calc = PotentialEvapotranspiration30Min().wind_speed_height_correction(pl.col("ws"), 10.0)
         result = input_df.with_columns(calc.alias("ws2m")).select(["ws2m"])
         expected = pl.DataFrame({"ws2m": [2.4]})
 
         assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
 
 
-class TestMeanG:
+class TestMeanSoilHeatFlux:
     def test_calculation(self) -> None:
-        """Test mean G calculation - should just be a simple average between G1 and G2."""
+        """Test mean soil heat flux (G) calculation - should just be a simple average between G1 and G2."""
         config = create_method_config(
             {
                 "g1": [1.5, 10.9, 123.4],
@@ -171,7 +171,7 @@ class TestMeanG:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"g": [-3.2, 5.455, 554.38]}))
 
-        result = MeanG().run(config)
+        result = MeanSoilHeatFlux().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
@@ -229,9 +229,9 @@ class TestRounding:
             NetRadiation().run(config)
 
 
-class TestQ:
+class TestAbsoluteHumidity:
     def test_calculation(self) -> None:
-        """Test Q calculation."""
+        """Test absolute humidity (Q) calculation."""
         config = create_method_config(
             {
                 "ta": [1.977, 19.62, -2.144, 20.54],
@@ -242,5 +242,5 @@ class TestQ:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"q": [4.025, 9.736, 3.994, 11.664]}))
 
-        result = Q().run(config)
+        result = AbsoluteHumidity().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
