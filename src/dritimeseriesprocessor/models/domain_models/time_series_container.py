@@ -21,8 +21,8 @@ class TimeSeriesContainer:
     ts_id: str
     network: str
 
-    source_bucket: str
-    source_dataset: str
+    source_bucket: str | None
+    source_dataset: str | None
     source_column: str
     source_site: str
     source_site_identifier: str

@@ -7,6 +7,7 @@ dataset's method type.
 """
 
 import logging
+from collections import defaultdict
 from datetime import date, datetime
 
 from time_stream import TimeFrame
@@ -24,6 +25,7 @@ from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipe
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
 from dritimeseriesprocessor.utils.enums import MethodType, OperationType
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
+from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +83,8 @@ class TimeSeriesProcessor:
 
                 for layer in layers:
                     self.process_layer(layer)
+
+                self.save_datasets()
 
         logger.info("Processing pipeline finished. Pushing prometheus metrics.")
         self.metrics.export_metrics_to_pushgateway()
@@ -243,3 +247,22 @@ class TimeSeriesProcessor:
 
         dep_id = dependencies[0]
         return self.graph.datasets[dep_id]
+
+    def save_datasets(self):
+        with self.metrics.time_write.time():
+            # Collect the datasets of each dataset group - these will be datasets that are all being saved to the
+            # same file, so can be grouped together in one save rather than doing individual saves.
+            dataset_groups = defaultdict(list)
+            for ds_id, container in self.graph.datasets:
+                if container.source_dataset:
+                    dataset_groups[container.source_dataset].append(ds_id)
+
+            for dataset_group, containers in dataset_groups.items():
+                group_tf = merge_multiple_timeframes([c.data for c in containers])
+                data_to_write = split_by_date(group_tf.df, group_tf.time_column_name)
+                for data_date, df in data_to_write:
+                    key = (
+                        f"{container.network}/resolution={container.resolution}/site={container.source_site_identifier}/"
+                        f"date={data_date.strftime('%Y-%m-%d')}/data.parquet"
+                    )
+                    self.data_writer.write(container.source_bucket, key, df, container.time_column_name)

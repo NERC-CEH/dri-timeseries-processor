@@ -69,6 +69,9 @@
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
+            "notation": [
+              "SCALAR"
+            ],
             "prefLabel": [
               "Scalar"
             ],
