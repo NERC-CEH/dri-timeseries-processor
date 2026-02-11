@@ -58,69 +58,6 @@
           }
         }
       ],
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_1day_processed",
-        "uses": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed"
-          }
-        ],
-        "rawConfiguration": "{\"COSMOS-ALIC1-TA_1DAY_PROCESSED\":{\"depends_on\":[\"COSMOS-ALIC1-TA_30MIN_PROCESSED\"],\"derivation\":\"AGGREGATE\",\"method\":\"mean\",\"args\":{\"threshold\":39,\"round\":1}}}",
-        "configuration": {
-          "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_1day_processed",
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
-          },
-          "hasCurrentValue": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current",
-              "method": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean"
-              },
-              "argument": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#round",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#round.value",
-                    "value": [
-                      1
-                    ]
-                  }
-                },
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#dep_ts",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#dep_ts.value",
-                    "valueReference": [
-                      {
-                        "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#threshold",
-                  "parameter": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-                  },
-                  "hasValue": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#threshold.value",
-                    "value": [
-                      39
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      },
       "sourceBucket": "e2e-output",
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA",
