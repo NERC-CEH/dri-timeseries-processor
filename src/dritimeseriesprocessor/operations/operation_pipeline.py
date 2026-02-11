@@ -6,6 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Iterable, TypeVar
 
+import polars as pl
 import time_stream as ts
 from time_stream.exceptions import FlagSystemNotFoundError
 
@@ -163,6 +164,7 @@ class OperationPipeline(ABC):
 
                 # Run the method
                 tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)
+                tf = self.apply_rounding(tf, cfg)
 
         # Update core flags
         tf = self.core_flag_updater(tf)
@@ -205,3 +207,21 @@ class OperationPipeline(ABC):
         mask = self.compute_flag_mask(tf, result, col_name)
         if mask is not None:
             result.add_flag(flag_column, flag_name, mask)
+
+    @staticmethod
+    def apply_rounding(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        """Apply any rounding to the resulting TimeFrame data (if required by metadata)
+
+        Args:
+            tf: TimeFrame containing data to round.
+            config: Configuration options containing round parameter.
+
+        Returns:
+            TimeFrame with rounded data.
+        """
+        round_decimals = config.params.get("round")
+        if round_decimals is None:
+            return tf
+
+        col_name = tf.metadata["column_name"]
+        return tf.with_df(tf.df.with_columns(pl.col(col_name).round(round_decimals).alias(col_name)))
