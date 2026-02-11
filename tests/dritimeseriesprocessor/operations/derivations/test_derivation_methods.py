@@ -8,6 +8,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     DerivationMethod,
     MeanG,
+    MeanSeaLevelPressure,
     NetRadiation,
     PET30Min,
 )
@@ -171,6 +172,24 @@ class TestMeanG:
         expected = dataframe_to_timeframe(pl.DataFrame({"g": [-3.2, 5.455, 554.38]}))
 
         result = MeanG().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestMeanSeaLevelPressure:
+    def test_calculation(self) -> None:
+        """Test mean sea level pressure (mslp) calculation - a simple calculation with pa and ta."""
+        config = create_method_config(
+            {
+                "ta": [1.977, 19.62, -2.144, 20.54],
+                "pa": [1024.0, 1011.365, 1033.649, 1020.695],
+                "altitude": [0, 1, 2, 3],
+            },
+            "mslp",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"mslp": [1024.0, 1011.483, 1033.909, 1021.051]}))
+
+        result = MeanSeaLevelPressure().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
