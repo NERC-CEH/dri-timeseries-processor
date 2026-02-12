@@ -8,6 +8,7 @@ dataset's method type.
 
 import logging
 from collections import defaultdict
+from concurrent.futures import as_completed, ThreadPoolExecutor
 from datetime import date, datetime
 
 from time_stream import TimeFrame
@@ -15,7 +16,7 @@ from time_stream import TimeFrame
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer, check_common_attributes
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
@@ -23,7 +24,7 @@ from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_cor
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
-from dritimeseriesprocessor.utils.enums import MethodType, OperationType
+from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
@@ -84,7 +85,7 @@ class TimeSeriesProcessor:
                 for layer in layers:
                     self.process_layer(layer)
 
-                self.save_datasets()
+                self._save_datasets()
 
         logger.info("Processing pipeline finished. Pushing prometheus metrics.")
         self.metrics.export_metrics_to_pushgateway()
@@ -120,15 +121,12 @@ class TimeSeriesProcessor:
 
             case MethodType.PROCESS:
                 self._process(container)
-                self._save(container)
 
             case MethodType.AGGREGATION:
                 self._aggregate(container)
-                self._save(container)
 
             case MethodType.DERIVATION:
                 self._derive(container)
-                self._save(container)
 
     def _load_raw(self, container: TimeSeriesContainer) -> None:
         """Load raw time-series data for a dataset and initialise a `TimeFrame`.
@@ -215,21 +213,6 @@ class TimeSeriesProcessor:
             pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
             container.data = pipeline.run(container, self.graph.datasets)
 
-    def _save(self, container: TimeSeriesContainer) -> None:
-        """Save the processed data within the given container.
-
-        Args:
-            container: Time series container of metadata and data for dataset to save.
-        """
-        with self.metrics.time_write.time():
-            data_to_write = split_by_date(container.data.df, container.time_column_name)
-            for data_date, df in data_to_write:
-                key = (
-                    f"{container.network}/resolution={container.resolution}/site={container.source_site_identifier}/"
-                    f"date={data_date.strftime('%Y-%m-%d')}/data.parquet"
-                )
-                self.data_writer.write(container.source_bucket, key, df, container.time_column_name)
-
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only
         a single dependency.
@@ -248,21 +231,76 @@ class TimeSeriesProcessor:
         dep_id = dependencies[0]
         return self.graph.datasets[dep_id]
 
-    def save_datasets(self):
-        with self.metrics.time_write.time():
-            # Collect the datasets of each dataset group - these will be datasets that are all being saved to the
-            # same file, so can be grouped together in one save rather than doing individual saves.
-            dataset_groups = defaultdict(list)
-            for ds_id, container in self.graph.datasets:
-                if container.source_dataset:
-                    dataset_groups[container.source_dataset].append(ds_id)
+    def _save_datasets(self, max_workers: int = 10, max_submitted: int = 64) -> None:
+        """Determine which datasets to save, pool them together in groups that are being saved to the same
+        parquet file, then do some concurrent save tasks.
 
-            for dataset_group, containers in dataset_groups.items():
-                group_tf = merge_multiple_timeframes([c.data for c in containers])
-                data_to_write = split_by_date(group_tf.df, group_tf.time_column_name)
-                for data_date, df in data_to_write:
-                    key = (
-                        f"{container.network}/resolution={container.resolution}/site={container.source_site_identifier}/"
-                        f"date={data_date.strftime('%Y-%m-%d')}/data.parquet"
-                    )
-                    self.data_writer.write(container.source_bucket, key, df, container.time_column_name)
+        Args:
+            max_workers: Maximum number of thread workers to initialise
+            max_submitted: Maximum number of tasks to submit to the pool at once
+        """
+
+        def await_submission_slot(_submitted_tasks: list) -> None:
+            """Wait for any submitted task to complete, propagate its exception, and free one slot.
+
+            Args:
+                _submitted_tasks: List of submitted tasks.
+            """
+            done = next(as_completed(_submitted_tasks))  # get the next finished task
+            done.result()  # propagate any potential errors from this task
+            _submitted_tasks.remove(done)  # remove it from the submitted tasks so that a new task can be added
+
+        with self.metrics.time_write.time():
+            # Set up a thread pool so that multiple save tasks can be executed concurrently.
+            #   A bounded ThreadPoolExecutor should be suitable here because S3 writes are I/O-bound and benefit from
+            #   concurrency without increasing CPU load.
+            with ThreadPoolExecutor(max_workers=max_workers) as pool:
+                # Keep track of number of tasks being submitted, otherwise can run into memory issues because each
+                # submitted task contains everything it needs in memory and is not garbage-collected until the task
+                # executes
+                submitted_tasks = []
+
+                # Loop over collection of save tasks to submit to the pool
+                for task in  self._build_save_tasks():
+                    task = pool.submit(self.data_writer.write, *task)
+                    submitted_tasks.append(task)
+
+                    if len(submitted_tasks) >= max_submitted:
+                        await_submission_slot(submitted_tasks)
+
+                # Tidy up remaining tasks
+                for task in as_completed(submitted_tasks):
+                    task.result()
+
+
+    def _build_save_tasks(self):
+        # Collect the datasets of each resolution - these will be datasets that are all being saved to the
+        # same file, so can be grouped together in one save rather than doing individual saves.
+        # TODO: May need to rethink the resolution partition here.  What if datasets had same resolution but
+        #   different periodicity / time anchors etc.
+        dataset_groupings = defaultdict(list)
+        for ds_id, container in self.graph.datasets.items():
+            if container.processing_level == ProcessingLevel.PROCESSED:
+                dataset_groupings[
+                    f"{container.network}-{container.source_site_identifier}-{container.resolution}"
+                ].append(container)
+
+        for dataset_group, containers in dataset_groupings.items():
+            # Double check all containers have the same properties
+            network, site_id, resolution, bucket = check_common_attributes(
+                containers, ["network", "source_site_identifier", "resolution", "source_bucket"]
+            )
+
+            # Merge the data for all containers
+            group_tf = merge_multiple_timeframes([c.data for c in containers])
+
+            # Data saved "per day", so split the grouped data by day
+            data_to_write = split_by_date(group_tf.df, group_tf.time_name)
+
+            # Yield specific save tasks
+            for data_date, df in data_to_write:
+                key = (
+                    f"{network}/resolution={resolution}/site={site_id}/"
+                    f"date={data_date:%Y-%m-%d}/data.parquet"
+                )
+                yield bucket, key, df, group_tf.time_name

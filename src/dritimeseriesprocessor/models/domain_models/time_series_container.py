@@ -7,6 +7,7 @@ for use in the DAG builder and data processing pipeline.
 
 import logging
 from dataclasses import dataclass, field
+from typing import Any
 
 from time_stream import TimeFrame
 
@@ -89,3 +90,33 @@ class TimeSeriesContainer:
     def __hash__(self) -> int:
         """Allow this container to be used as a dict or set key."""
         return hash(self.ts_id)
+
+
+def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any] | None:
+    """Check if all the containers have the same value for each of the given attributes.
+
+    Args:
+        containers: List of containers to check attributes for.
+        attr: Single or multiple attributes to check for.
+
+    Returns:
+        The common value(s) of each of the attribute(s).
+    """
+    if not containers:
+        return None
+
+    if isinstance(attr, str):
+        attr = [attr]
+
+    values = []
+    first = containers[0]
+    for a in attr:
+        base = getattr(first, a)
+        if not all([getattr(item, a) == base for item in containers]):
+            raise ValueError(f"Not all containers have the same attribute value: {a}")
+        values.append(base)
+
+    if len(values) == 1:
+        return values[0]
+    else:
+        return values

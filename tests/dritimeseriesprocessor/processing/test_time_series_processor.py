@@ -7,36 +7,9 @@ import time_stream as ts
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
-from dritimeseriesprocessor.utils.enums import OperationType, ProcessingLevel
-
-
-def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
-    """Create a lightweight fake TimeSeriesContainer for use in tests.
-
-    Args:
-        ts_id: The time series ID.
-
-    Returns:
-        A TimeSeriesContainer instance
-    """
-    return TimeSeriesContainer(
-        ts_id=ts_id,
-        network="network",
-        source_bucket=ts_id + "_bucket",
-        source_site=ts_id + "_site",
-        source_column=ts_id + "_column",
-        source_dataset=ts_id + "_dataset",
-        source_site_identifier=ts_id + "_site_identifier",
-        time_column_name="time",
-        resolution="P1D",
-        periodicity="P1D",
-        processing_level=ProcessingLevel.PROCESSED,
-        qc_configs=set(),
-        infill_configs=set(),
-        correction_configs=set(),
-    )
+from dritimeseriesprocessor.utils.enums import OperationType
+from utils.data_creation import make_time_series_container
 
 
 @pytest.fixture
@@ -94,6 +67,7 @@ class TestTimeSeriesProcessor:
         )
         # override the process dataset function for this test
         processor.process_dataset = MagicMock()
+        processor._save_datasets = MagicMock()
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
 
@@ -170,3 +144,26 @@ class TestTimeSeriesProcessor:
         mock_qc_pipeline.run.assert_called_once()
         assert raw_container.data == tf_result
         assert processed_container.data == tf_result
+
+    def test_save_datasets(self, monkeypatch, processor):
+        monkeypatch.setattr("your_module.ThreadPoolExecutor", ImmediateExecutor)
+        monkeypatch.setattr("your_module.as_completed", lambda tasks: iter(tasks))
+
+        # Make lots of (date, df) pairs
+        fake_tf = MagicMock(df=object(), time_name="t")
+        monkeypatch.setattr("your_module.merge_multiple_timeframes", lambda _: fake_tf)
+        monkeypatch.setattr(
+            "your_module.split_by_date",
+            lambda *_: [(processor._dt("2026-02-10"), "df1"),
+                        (processor._dt("2026-02-11"), "df2"),
+                        (processor._dt("2026-02-12"), "df3")],
+        )
+
+        processor.data_writer.write = MagicMock()
+
+        await_mock = MagicMock()
+        monkeypatch.setattr("your_module.await_submission_slot", await_mock)
+
+        processor._save_datasets(max_workers=2, max_submitted=2)
+
+        assert await_mock.call_count >= 1
