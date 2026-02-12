@@ -216,6 +216,15 @@ class Clip(CorrectionMethod):
         if min_threshold is None and max_threshold is None:
             raise ValueError("Missing metadata parameter. At least one threshold must be specified in Clip method")
 
-        tf_clipped = tf.with_df(tf.df.with_columns(pl.col(col_name).clip(min_threshold, max_threshold)))
+        # Return when date filter is promoted to an abstract method:
+        # tf_clipped = tf.with_df(tf.df.with_columns(pl.col(col_name).clip(min_threshold, max_threshold)))
 
-        return tf_clipped
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
+
+        return tf.with_df(
+            tf.df.with_columns(
+                pl.when(date_filter)
+                .then(pl.col(col_name).clip(min_threshold, max_threshold))
+                .otherwise(pl.col(tf.metadata["column_name"]))
+            )
+        )

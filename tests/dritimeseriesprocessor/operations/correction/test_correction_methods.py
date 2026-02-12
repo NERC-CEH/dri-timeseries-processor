@@ -241,7 +241,8 @@ class TestWdCorrection:
 
 class TestClip:
     def test_clip_simple(self) -> None:
-        """Test that the clip function works across the full DataFrame."""
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(min=0)
 
@@ -249,5 +250,15 @@ class TestClip:
         expected_df = create_timeframe([0, 0, 0, 1, 2, 3], "pe").df
         assert_frame_equal(result.df, expected_df)
 
-    # def test_clip_with_date_filter(self) -> None:
-    #    """Test that the clip correction function works with a date filter."""
+    def test_clip_with_date_filter(self) -> None:
+        """Test clip correction function works with a date filter."""
+        pe = create_timeframe([-3, -2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(
+            min=0,
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
+        )
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-3, -2, 0, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
