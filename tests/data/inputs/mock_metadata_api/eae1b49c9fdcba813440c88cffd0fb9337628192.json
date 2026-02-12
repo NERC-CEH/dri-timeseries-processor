@@ -17,76 +17,6 @@
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min_processed",
-      "appliesToTimeSeries": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-          }
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current#dep_ts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current#dep_ts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/process",
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min_processed",
       "appliesToTimeSeries": [
         {
@@ -138,6 +68,76 @@
           },
           "interval": {
             "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ux_30min_processed-current.interval",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
+            ],
+            "startDate": "2025-03-28T12:00:00+00:00"
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/process"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min_processed",
+      "appliesToTimeSeries": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed",
+          "originatingSite": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+          }
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current#dep_ts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current#dep_ts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/process",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          },
+          "interval": {
+            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_processed-current.interval",
             "@type": [
               {
                 "@id": "http://purl.org/dc/terms/PeriodOfTime"

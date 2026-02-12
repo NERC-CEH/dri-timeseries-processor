@@ -36,16 +36,16 @@
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min_processed-current#dep_ts.value",
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_processed"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_processed"
                   },
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_processed"
                   },
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_processed"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_processed"
                   },
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_processed"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_processed"
                   }
                 ],
                 "@type": [
