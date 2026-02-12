@@ -25,6 +25,8 @@ class DerivationMethod(Operation, ABC):
             TimeFrame containing the calculated derived variable
         """
 
+        self.config = config
+
         # Extract and merge input data
         tf_map = {name: config.params[name] for name in self.inputs}
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
@@ -119,7 +121,7 @@ class MeanSeaLevelPressure(DerivationMethod):
     """Calculate the mean sea level pressure (mslp) from inputs PA and TA."""
 
     name = "calculate_mslp"
-    inputs = ("pa", "ta", "altitude")
+    inputs = ("pa", "ta")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean sea level pressure (mslp) [hPa]
@@ -132,7 +134,7 @@ class MeanSeaLevelPressure(DerivationMethod):
         Returns:
             Polars expression computing mslp
         """
-        altitude = pl.col("altitude")  # self.config.params["altitude"].df
+        altitude = self.config.params["altitude"]
         pa = columns["pa"]
         ta = columns["ta"]
 
