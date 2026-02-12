@@ -23,3 +23,23 @@ find "$LOCAL_DIR" -type f -name "*.parquet" | while read -r FILEPATH; do
     # Upload the file to the S3 bucket
     awslocal s3api put-object --bucket "$BUCKET" --key "$S3_KEY" --body "$FILEPATH"
 done
+
+echo "########### Load flux fixtures into level-0 bucket #########"
+FLUX_LOCAL_DIR="/var/lib/localstack/flux-fixtures"
+FLUX_BUCKET="ukceh-fdri-staging-timeseries-level-0"
+
+find "$FLUX_LOCAL_DIR" -type f | while read -r FILEPATH; do
+  RELATIVE_PATH="${FILEPATH#$FLUX_LOCAL_DIR/}"
+
+  case "$RELATIVE_PATH" in
+    local_config/*|*/local_config/*)
+      # local-only config used by template rendering, not uploaded to S3
+      continue
+      ;;
+  esac
+
+  awslocal s3api put-object \
+    --bucket "$FLUX_BUCKET" \
+    --key "$RELATIVE_PATH" \
+    --body "$FILEPATH" >/dev/null
+done

@@ -1,0 +1,1 @@
+"""EddyPro template resources."""

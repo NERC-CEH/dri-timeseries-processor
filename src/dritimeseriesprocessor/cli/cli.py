@@ -15,9 +15,23 @@ import isodate
 from dritimeseriesprocessor.cli.selection import RunConfig, SelectionOption
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
 from dritimeseriesprocessor.utils.urls import SITE_URI
+from dataclasses import dataclass
 
 
-def parse_args(argv: list[str]) -> RunConfig:
+@dataclass(frozen=True)
+class FluxArgs:
+    """CLI-derived args for local Flux/EddyPro mode (PoC).
+
+    This is intentionally minimal and not part of the timeseries selection model.
+    """
+
+    network: str
+    sites: list[str]
+    start_date: date
+    end_date: date
+
+
+def parse_args(argv: list[str]) -> RunConfig | FluxArgs:
     """Parse CLI arguments and construct a validated RunConfig.
 
     Args:
@@ -28,6 +42,10 @@ def parse_args(argv: list[str]) -> RunConfig:
     """
     parser = _build_parser()
     args = parser.parse_args(argv)
+
+    mode = CliSelectionMode(args.mode)
+    if mode is CliSelectionMode.FLUX:
+        return _parse_flux_args(args, parser)
 
     start_date, end_date = _parse_date_range(
         start_date=args.start_date,
@@ -43,6 +61,22 @@ def parse_args(argv: list[str]) -> RunConfig:
         start_date=start_date,
         end_date=end_date,
     )
+
+def _parse_flux_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> FluxArgs:
+    """Parse CLI args for the experimental Flux/EddyPro mode."""
+    start_date, end_date = _parse_date_range(
+        start_date=args.start_date,
+        end_date=args.end_date,
+        lookback=args.lookback,
+    )
+
+    return FluxArgs(
+        network=args.network,
+        sites=list(args.sites),
+        start_date=start_date,
+        end_date=end_date,
+    )
+
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -87,6 +121,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     cross_parser.add_argument(
         "--periodicities", nargs="+", help="Space-separated list, e.g. PT30M P1D. If omitted, find all periodicities."
+    )
+
+    # Mode C: Flux/EddyPro
+    flux_parser = subparsers.add_parser(CliSelectionMode.FLUX.value, parents=[parent])
+    flux_parser.add_argument(
+        "--sites", nargs="+", required=True, help="One or more site ids, e.g. --sites PLYNL or --sites PLYNL ABCD1",
     )
 
     return parser

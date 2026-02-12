@@ -12,11 +12,14 @@ required infrastructure components, including:
 """
 
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, time
 
+from dritimeseriesprocessor.cli.cli import FluxArgs
 from dritimeseriesprocessor.cli.selection import RunConfig, SelectionOption
 from dritimeseriesprocessor.configuration.app_config import AppConfig, app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from dritimeseriesprocessor.eddypro.run_config import load_eddypro_run_config
+from dritimeseriesprocessor.eddypro.runner import run_eddypro
 from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_factory
 from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
@@ -25,11 +28,12 @@ from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesPr
 from dritimeseriesprocessor.routers.data.data_router import DuckDBDataRouter
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
+from dritimeseriesprocessor.utils.enums import Environment
 
 logger = logging.getLogger(__name__)
 
 
-def run_from_config(run_config: RunConfig) -> None:
+def run_from_config(run_config: RunConfig | FluxArgs) -> None:
     """Execute a processing run from a valid RunConfig made of user args.
 
     Resolve the dataset selection defined in the RunConfig, construct a fully-configured
@@ -38,6 +42,29 @@ def run_from_config(run_config: RunConfig) -> None:
     Args:
         run_config: Runtime configuration describing the network, dataset selection constraints, and temporal window.
     """
+    if isinstance(run_config, FluxArgs):
+        cfg = app_config()
+        storage = _build_storage(cfg)
+
+        for site in run_config.sites:
+            site_cfg = load_eddypro_run_config(site=site, network=run_config.network, cfg=cfg)
+
+            start = datetime.combine(run_config.start_date, time.min)
+            end = datetime.combine(run_config.end_date, time.max.replace(microsecond=0))
+
+            rc = run_eddypro(
+                storage_client=storage,
+                network=run_config.network,
+                site=site,
+                start=start,
+                end=end,
+                site_cfg=site_cfg,
+            )
+            if rc != 0:
+                raise SystemExit(rc)
+
+        return
+
     processor = _build_processor(run_config.network, run_config.selection, run_config.start_date, run_config.end_date)
     processor.run()
 

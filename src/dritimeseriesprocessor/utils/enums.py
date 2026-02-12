@@ -4,6 +4,7 @@ from enum import Enum
 class CliSelectionMode(Enum):
     EXPLICIT = "from-selection"
     CROSS_PRODUCT = "from-cross-product"
+    FLUX = "flux"
 
 
 class ConfigurationType(Enum):

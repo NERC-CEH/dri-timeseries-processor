@@ -1,0 +1,21 @@
+{
+  "network": "flux",
+  "project": {
+    "title": "PLYNL_processing",
+    "id": "PLYNL_EPv7.0.9",
+    "file_prototype": "raw_flux_yyyy_mm_dd_HHMM.dat"
+  },
+  "site": {
+    "name": "Plynlimon",
+    "id": "PLYNL",
+    "latitude": 52.453337,
+    "longitude": -3.762572,
+    "altitude": 529
+  },
+  "storage": {
+    "source_bucket": "ukceh-fdri-staging-timeseries-level-0",
+    "source_dataset": "raw_flux",
+    "destination_bucket": "ukceh-fdri-staging-timeseries-processed",
+    "destination_dataset": "eddypro_flux"
+  }
+}
