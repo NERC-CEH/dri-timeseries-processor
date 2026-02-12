@@ -3,6 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 import time_stream as ts
+from polars.testing import assert_frame_equal
+from tests.utils.data_creation import create_timeframe
 from time_stream.exceptions import FlagSystemNotFoundError
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
@@ -52,6 +54,7 @@ def mock_container(mock_timeframe: MagicMock) -> MagicMock:
 
     method_config = MagicMock(spec=DataProcessingMethodConfig)
     method_config.method = "test_method"
+    method_config.params = {}
 
     proc_config = MagicMock(spec=DataProcessingConfig)
     proc_config.method_configs = [method_config]
@@ -118,3 +121,58 @@ class TestRun:
 
         result = pipeline.run(mock_container, {})
         assert result is updated_tf
+
+
+class TestApplyRounding:
+    @pytest.mark.parametrize(
+        "decimals, expected",
+        [
+            (1, [1.2, 2.3, 3.5]),
+            (0, [1.0, 2.0, 3.0]),
+            (None, [1.234, 2.345, 3.456]),
+        ],
+    )
+    def test_apply_rounding(self, mock_container: MagicMock, decimals: int, expected: list) -> None:
+        """Test that updated TimeFrame is returned."""
+        tf = create_timeframe([1.234, 2.345, 3.456])
+
+        config = MagicMock(spec=DataProcessingMethodConfig)
+        config.method = "test_method"
+        config.params = {"round": decimals}
+
+        method_config = MagicMock(spec=DataProcessingConfig)
+        method_config.method_configs = [config]
+
+        mock_container.data = tf
+        mock_container.qc_configs = [method_config]
+
+        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_rounding")
+        result = pipeline.run(mock_container, {})
+
+        expected = create_timeframe(expected)
+        assert_frame_equal(result.df["time", "value"], expected.df["time", "value"])
+
+    @pytest.mark.parametrize("decimals", [-1, 0.5, -1.5])
+    def test_apply_rounding_invalid(self, mock_container: MagicMock, decimals: int) -> None:
+        """Test that updated TimeFrame is returned."""
+        tf = create_timeframe([1.234, 2.345, 3.456])
+
+        config = MagicMock(spec=DataProcessingMethodConfig)
+        config.method = "test_method"
+        config.params = {"round": decimals}
+
+        method_config = MagicMock(spec=DataProcessingConfig)
+        method_config.method_configs = [config]
+
+        mock_container.data = tf
+        mock_container.qc_configs = [method_config]
+
+        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_rounding")
+        with pytest.raises(
+            (OverflowError, TypeError),
+            match=(
+                "out of range integral type conversion attempted|"
+                "argument 'decimals': 'float' object cannot be interpreted as an integer"
+            ),
+        ):
+            pipeline.run(mock_container, {})

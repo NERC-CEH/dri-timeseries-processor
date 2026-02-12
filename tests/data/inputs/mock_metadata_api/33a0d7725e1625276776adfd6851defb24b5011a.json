@@ -507,28 +507,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min_raw-range-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-118",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-118#value",
-                "value": [
-                  50.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-117",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-117#value",
@@ -543,6 +521,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-118",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-118#value",
+                "value": [
+                  50.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
               },
               "@type": [
                 {
@@ -712,11 +712,11 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min_raw-error_code-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-121",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-122",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-121#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-122#value",
                 "value": [
-                  7999.0
+                  8999.0
                 ],
                 "@type": [
                   {
@@ -734,11 +734,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-122",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-121",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-122#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-121#value",
                 "value": [
-                  8999.0
+                  7999.0
                 ],
                 "@type": [
                   {
