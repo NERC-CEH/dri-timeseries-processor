@@ -249,4 +249,5 @@ class TestClip:
         expected_df = create_timeframe([0, 0, 0, 1, 2, 3], "pe").df
         assert_frame_equal(result.df, expected_df)
 
-    # Date filter
+    # def test_clip_with_date_filter(self) -> None:
+    #    """Test that the clip correction function works with a date filter."""
