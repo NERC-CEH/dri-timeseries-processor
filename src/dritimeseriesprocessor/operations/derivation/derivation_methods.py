@@ -24,6 +24,9 @@ class DerivationMethod(Operation, ABC):
         Returns:
             TimeFrame containing the calculated derived variable
         """
+
+        self.config = config
+
         # Extract and merge input data
         tf_map = {name: config.params[name] for name in self.inputs}
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
@@ -111,6 +114,33 @@ class MeanSoilHeatFlux(DerivationMethod):
         g2 = columns["g2"]
 
         return pl.mean_horizontal(g1, g2)
+
+
+@DerivationMethod.register
+class MeanSeaLevelPressure(DerivationMethod):
+    """Calculate the mean sea level pressure (mslp) from inputs PA and TA."""
+
+    name = "calculate_mslp"
+    inputs = ("pa", "ta")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate mean sea level pressure (mslp) [hPa]
+        See US Standard Atmosphere, eq. 33a:
+        https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf
+        See also: https://www.fao.org/4/x0490e/x0490e07.htm
+        Args:
+            columns: Dict with keys of required columns for the calculation: pa and ta.
+            -pa: Atmospheric Pressure [hPa]
+            -ta: Air Temperature [Celsius]
+
+        Returns:
+            Polars expression computing mslp
+        """
+        altitude = self.config.params["altitude"]
+        pa = columns["pa"]
+        ta = columns["ta"]
+
+        return pa * (1 - ((0.0065 * altitude) / (ta + (0.0065 * altitude) + 273.15))).pow(-5.257)
 
 
 @DerivationMethod.register

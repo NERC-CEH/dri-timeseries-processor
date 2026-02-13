@@ -7,6 +7,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidity,
     DerivationMethod,
+    MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
     PotentialEvapotranspiration30Min,
@@ -39,6 +40,7 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["output_col"] = output_col
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
+    params["altitude"] = 74
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -169,6 +171,23 @@ class TestMeanSoilHeatFlux:
         expected = dataframe_to_timeframe(pl.DataFrame({"g": [-3.2, 5.455, 554.38]}))
 
         result = MeanSoilHeatFlux().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestMeanSeaLevelPressure:
+    def test_calculation(self) -> None:
+        """Test mean sea level pressure (mslp) calculation - a simple calculation with pa and ta."""
+        config = create_method_config(
+            {
+                "ta": [1.977, 19.62, -2.144, 20.54],
+                "pa": [1024.0, 1011.365, 1033.649, 1020.695],
+            },
+            "mslp",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"mslp": [1033.446, 1020.131, 1043.330, 1029.514]}))
+
+        result = MeanSeaLevelPressure().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
