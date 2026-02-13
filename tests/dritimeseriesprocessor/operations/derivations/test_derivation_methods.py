@@ -40,6 +40,7 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["output_col"] = output_col
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
+    params["altitude"] = 74
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -180,12 +181,11 @@ class TestMeanSeaLevelPressure:
             {
                 "ta": [1.977, 19.62, -2.144, 20.54],
                 "pa": [1024.0, 1011.365, 1033.649, 1020.695],
-                "altitude": [0, 1, 2, 3],
             },
             "mslp",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"mslp": [1024.0, 1011.483, 1033.909, 1021.051]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"mslp": [1033.446, 1020.131, 1043.330, 1029.514]}))
 
         result = MeanSeaLevelPressure().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
