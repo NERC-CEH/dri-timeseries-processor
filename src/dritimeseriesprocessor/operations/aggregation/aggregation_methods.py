@@ -83,6 +83,14 @@ class Mean(AggregationMethod):
 
 
 @AggregationMethod.register
+class MeanSum(AggregationMethod):
+    name = "mean_sum"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_aggregate(tf, config, "mean_sum")
+
+
+@AggregationMethod.register
 class AngularMean(AggregationMethod):
     name = "angular_mean"
 

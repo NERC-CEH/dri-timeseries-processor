@@ -7,6 +7,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import (
     Add,
+    Clip,
     CorrectionMethod,
     LWCorrection,
     PACorrection,
@@ -108,7 +109,7 @@ class TestScalar:
 
 class TestPower:
     @pytest.mark.parametrize(
-        "factor,expected",
+        "factor, expected",
         [
             (2, [1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0]),
             (3, [1.0, 8.0, 27.0, 64.0, 125.0, 216.0, 343.0]),
@@ -235,4 +236,81 @@ class TestWdCorrection:
 
         result = WDCorrection().run(wd, config)
         expected_df = create_timeframe([95.01655, 160.81863, 354.14864, 75.46554], "wd").df
+        assert_frame_equal(result.df, expected_df)
+
+
+class TestClip:
+    def test_clip_simple_min_only(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(min=0)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([0, 0, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_max_only(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(max=0)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-2, -1, 0, 0, 0, 0], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_min_and_max(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(min=-1, max=1)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-1, -1, 0, 1, 1, 1], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_no_min_or_max(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config()
+
+        with pytest.raises(ValueError) as excinfo:
+            Clip().run(pe, config)
+        assert str(excinfo.value) == (
+            "Missing metadata parameter. At least one threshold must be specified in Clip method"
+        )
+
+    def test_clip_simple_min_out_of_range(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(min=-3)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-2, -1, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_max_out_of_range(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(max=4)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-2, -1, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_with_date_filter(self) -> None:
+        """Test clip correction function works with a date filter."""
+        pe = create_timeframe([-3, -2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(
+            min=0,
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
+        )
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-3, -2, 0, 0, 1, 2, 3], "pe").df
         assert_frame_equal(result.df, expected_df)
