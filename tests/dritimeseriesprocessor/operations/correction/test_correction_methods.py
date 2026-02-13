@@ -240,7 +240,7 @@ class TestWdCorrection:
 
 
 class TestClip:
-    def test_clip_simple(self) -> None:
+    def test_clip_simple_min_only(self) -> None:
         """Test clip function works across the full DataFrame.
         Uses made up test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
@@ -248,6 +248,59 @@ class TestClip:
 
         result = Clip().run(pe, config)
         expected_df = create_timeframe([0, 0, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_max_only(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(max=0)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-2, -1, 0, 0, 0, 0], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_min_and_max(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(min=-1, max=1)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-1, -1, 0, 1, 1, 1], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_no_min_or_max(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config()
+
+        with pytest.raises(ValueError) as excinfo:
+            Clip().run(pe, config)
+        # expected_df = create_timeframe([-2, -1, 0, 1, 2, 3], "pe").df
+        assert str(excinfo.value) == (
+            "Missing metadata parameter.At least one threshold must be specified in Clip method"
+        )
+
+    def test_clip_simple_min_out_of_range(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(min=-3)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-2, -1, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+    def test_clip_simple_max_out_of_range(self) -> None:
+        """Test clip function works across the full DataFrame.
+        Uses made up test values as none of the derivation test values gives negative results"""
+        pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
+        config = create_method_config(max=4)
+
+        result = Clip().run(pe, config)
+        expected_df = create_timeframe([-2, -1, 0, 1, 2, 3], "pe").df
         assert_frame_equal(result.df, expected_df)
 
     def test_clip_with_date_filter(self) -> None:

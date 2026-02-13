@@ -116,7 +116,7 @@ class TimeSeriesProcessor:
 
             case MethodType.PROCESS:
                 self._process(container)
-                self._process(container)
+                self._save(container)
 
             case MethodType.AGGREGATION:
                 self._aggregate(container)
