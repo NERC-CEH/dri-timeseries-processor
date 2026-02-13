@@ -278,7 +278,6 @@ class TestClip:
 
         with pytest.raises(ValueError) as excinfo:
             Clip().run(pe, config)
-        # expected_df = create_timeframe([-2, -1, 0, 1, 2, 3], "pe").df
         assert str(excinfo.value) == (
             "Missing metadata parameter. At least one threshold must be specified in Clip method"
         )
