@@ -125,7 +125,9 @@ class MeanSeaLevelPressure(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean sea level pressure (mslp) [hPa]
-
+        See US Standard Atmosphere, eq. 33a:
+        https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf
+        See also: https://www.fao.org/4/x0490e/x0490e07.htm
         Args:
             columns: Dict with keys of required columns for the calculation: pa and ta.
             -pa: Atmospheric Pressure [hPa]
