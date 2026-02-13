@@ -22,7 +22,7 @@ from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_cor
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
-from dritimeseriesprocessor.utils.enums import MethodType, OperationType
+from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
 
 logger = logging.getLogger(__name__)
@@ -116,15 +116,18 @@ class TimeSeriesProcessor:
 
             case MethodType.PROCESS:
                 self._process(container)
-                self._save(container)
+                if container.processing_level == ProcessingLevel.PROCESSED:
+                    self._save(container)
 
             case MethodType.AGGREGATION:
                 self._aggregate(container)
-                self._save(container)
+                if container.processing_level == ProcessingLevel.PROCESSED:
+                    self._save(container)
 
             case MethodType.DERIVATION:
                 self._derive(container)
-                self._save(container)
+                if container.processing_level == ProcessingLevel.PROCESSED:
+                    self._save(container)
 
     def _load_raw(self, container: TimeSeriesContainer) -> None:
         """Load raw time-series data for a dataset and initialise a `TimeFrame`.
