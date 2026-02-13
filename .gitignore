@@ -164,3 +164,7 @@ cython_debug/
 
 # Testing temp directory
 testing/data/temp/*
+
+#Testing code in jupyter
+sandbox/
+sandbox.ipynb
