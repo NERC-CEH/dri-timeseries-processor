@@ -8,15 +8,19 @@ dataset's method type.
 
 import logging
 from collections import defaultdict
-from concurrent.futures import as_completed, ThreadPoolExecutor
+from collections.abc import Iterator
 from datetime import date, datetime
 
-from time_stream import TimeFrame
+import polars as pl
+import time_stream as ts
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer, check_common_attributes
+from dritimeseriesprocessor.models.domain_models.time_series_container import (
+    TimeSeriesContainer,
+    check_common_attributes,
+)
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
@@ -26,6 +30,7 @@ from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipe
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
 from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
+from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 logger = logging.getLogger(__name__)
@@ -148,7 +153,7 @@ class TimeSeriesProcessor:
 
             else:
                 tf = (
-                    TimeFrame(
+                    ts.TimeFrame(
                         df=df,
                         time_name=container.time_column_name,
                         resolution=container.resolution,
@@ -231,51 +236,34 @@ class TimeSeriesProcessor:
         dep_id = dependencies[0]
         return self.graph.datasets[dep_id]
 
-    def _save_datasets(self, max_workers: int = 10, max_submitted: int = 64) -> None:
+    def _save_datasets(self) -> None:
         """Determine which datasets to save, pool them together in groups that are being saved to the same
         parquet file, then do some concurrent save tasks.
-
-        Args:
-            max_workers: Maximum number of thread workers to initialise
-            max_submitted: Maximum number of tasks to submit to the pool at once
         """
-
-        def await_submission_slot(_submitted_tasks: list) -> None:
-            """Wait for any submitted task to complete, propagate its exception, and free one slot.
-
-            Args:
-                _submitted_tasks: List of submitted tasks.
-            """
-            done = next(as_completed(_submitted_tasks))  # get the next finished task
-            done.result()  # propagate any potential errors from this task
-            _submitted_tasks.remove(done)  # remove it from the submitted tasks so that a new task can be added
-
         with self.metrics.time_write.time():
-            # Set up a thread pool so that multiple save tasks can be executed concurrently.
-            #   A bounded ThreadPoolExecutor should be suitable here because S3 writes are I/O-bound and benefit from
-            #   concurrency without increasing CPU load.
-            with ThreadPoolExecutor(max_workers=max_workers) as pool:
-                # Keep track of number of tasks being submitted, otherwise can run into memory issues because each
-                # submitted task contains everything it needs in memory and is not garbage-collected until the task
-                # executes
-                submitted_tasks = []
+            tasks = self._build_save_tasks()
+            run_threaded_tasks(tasks, self.data_writer.write)
 
-                # Loop over collection of save tasks to submit to the pool
-                for task in  self._build_save_tasks():
-                    task = pool.submit(self.data_writer.write, *task)
-                    submitted_tasks.append(task)
+    def _build_save_tasks(self) -> Iterator[tuple[str, str, pl.DataFrame, str]]:
+        """Build save tasks for processed datasets.
 
-                    if len(submitted_tasks) >= max_submitted:
-                        await_submission_slot(submitted_tasks)
+        This method groups processed datasets that are written to the same Parquet output, merges their timeframes,
+        splits the merged data by day, and yields arguments needed for the actual save tasks.
 
-                # Tidy up remaining tasks
-                for task in as_completed(submitted_tasks):
-                    task.result()
+        Each yielded task contains all information required to perform a single write operation, but doesn't do
+        the actual saving. This separation allows the caller to execute the tasks synchronously or concurrently.
 
+        Yields:
+            Tuples of the form:
+                (
+                    bucket (str) : The S3 bucket to write to
+                    key (str) : The full S3 object key for the parquet file
+                    df (pl.DataFrame) : The dataframe to be written
+                    time_column_name (str) : The name of the time column in df
+                )
 
-    def _build_save_tasks(self):
-        # Collect the datasets of each resolution - these will be datasets that are all being saved to the
-        # same file, so can be grouped together in one save rather than doing individual saves.
+        Using Yield to produce a generator so that we're not holding all dataframes in memory simultaneously.
+        """
         # TODO: May need to rethink the resolution partition here.  What if datasets had same resolution but
         #   different periodicity / time anchors etc.
         dataset_groupings = defaultdict(list)
@@ -299,8 +287,5 @@ class TimeSeriesProcessor:
 
             # Yield specific save tasks
             for data_date, df in data_to_write:
-                key = (
-                    f"{network}/resolution={resolution}/site={site_id}/"
-                    f"date={data_date:%Y-%m-%d}/data.parquet"
-                )
+                key = f"{network}/resolution={resolution}/site={site_id}/date={data_date:%Y-%m-%d}/data.parquet"
                 yield bucket, key, df, group_tf.time_name
