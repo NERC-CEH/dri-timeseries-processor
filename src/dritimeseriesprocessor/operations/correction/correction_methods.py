@@ -189,3 +189,42 @@ class WDCorrection(CorrectionMethod):
         wd_corr = merged_tf.df.with_columns(wd_wrapped.round(5).alias(primary_col))[primary_col]
 
         return tf.with_df(tf.df.with_columns(wd_corr.alias(primary_col)))
+
+
+@CorrectionMethod.register
+class Clip(CorrectionMethod):
+    """
+    Sets all values above or below a given value to that value.
+    config.params["max"] is the value the data should be clipped at from above.
+    config.params["min"] is the value the data should be clipped at from below.
+    Example:
+    config.params["max"] = None
+    config.params["min"] = 0
+    => data below 0 is set to 0
+    Used for e.g. PE.
+    """
+
+    name = "clip"
+    flag_value = 64
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        col_name = tf.metadata["column_name"]
+
+        min_threshold = config.params.get("min")
+        max_threshold = config.params.get("max")
+
+        if min_threshold is None and max_threshold is None:
+            raise ValueError("Missing metadata parameter. At least one threshold must be specified in Clip method")
+
+        # Return when date filter is promoted to an abstract method:
+        # tf_clipped = tf.with_df(tf.df.with_columns(pl.col(col_name).clip(min_threshold, max_threshold)))
+
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
+
+        return tf.with_df(
+            tf.df.with_columns(
+                pl.when(date_filter)
+                .then(pl.col(col_name).clip(min_threshold, max_threshold))
+                .otherwise(pl.col(tf.metadata["column_name"]))
+            )
+        )
