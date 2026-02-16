@@ -3,6 +3,9 @@ from datetime import datetime, timedelta
 import polars as pl
 import time_stream as ts
 
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.utils.enums import ProcessingLevel
+
 
 def create_timeframe(values: list[float] | None = None, column_name: str = "value") -> ts.TimeFrame:
     """Create a test TimeFrame with sequential hourly timestamps.
@@ -53,3 +56,30 @@ def dataframe_to_timeframe(
     if metadata:
         tf = tf.with_metadata(metadata)
     return tf
+
+
+def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
+    """Create a lightweight fake TimeSeriesContainer for use in tests.
+
+    Args:
+        ts_id: The time series ID.
+
+    Returns:
+        A TimeSeriesContainer instance
+    """
+    return TimeSeriesContainer(
+        ts_id=ts_id,
+        network="network",
+        source_bucket=ts_id + "_bucket",
+        source_site=ts_id + "_site",
+        source_column=ts_id + "_column",
+        source_dataset=ts_id + "_dataset",
+        source_site_identifier=ts_id + "_site_identifier",
+        time_column_name="time",
+        resolution="P1D",
+        periodicity="P1D",
+        processing_level=ProcessingLevel.PROCESSED,
+        qc_configs=set(),
+        infill_configs=set(),
+        correction_configs=set(),
+    )
