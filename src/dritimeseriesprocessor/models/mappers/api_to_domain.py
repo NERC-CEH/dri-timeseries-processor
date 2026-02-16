@@ -96,7 +96,7 @@ def map_processing_config_item(
 def map_processing_method_config(
     current_config: HasCurrentValue, site_metadata: SiteMetadata
 ) -> DataProcessingMethodConfig:
-    """Map a HasCurrentConfigurationItem into a ProcessingMethodConfig domain model.
+    """Map an API response for a data processing method configuration into a domain model.
 
     Args:
         current_config: A single configuration definition for a method, possibly including an observation interval and
@@ -104,7 +104,7 @@ def map_processing_method_config(
         site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
-        A ProcessingMethodConfig object describing a configuration of a processing method.
+        A domain model object describing a configuration of a processing method.
     """
     method = extract_uri_id(current_config.method.id)
     params = extract_arguments(current_config.argument, site_metadata)
@@ -149,7 +149,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     Handles both direct literal values and references to other datasets.
 
     Args:
-        argument_items: List of ArgumentItems from a HasCurrentConfigurationItem model.
+        argument_items: List of ArgumentItems from a HasCurrentValue model.
         site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
@@ -179,8 +179,8 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                     collected_args[param_name].append(ref.id)
 
         if has_structured_value:
-            # Resolve any special case where we need to extract deployment information for a sensor
-            # e.g. wind height for PE 30min
+            # Extract any nested structured value arguments. This will be, used for example, for cases where we need
+            # to extract deployment information for a sensor e.g. wind height for PE 30min
             structured_value_params = extract_arguments(has_structured_value.argument, site_metadata)
             collected_args[param_name].append(structured_value_params)
 
