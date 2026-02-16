@@ -32,6 +32,7 @@ from dritimeseriesprocessor.utils.enums import MethodType, OperationType, Proces
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
+from dritimeseriesprocessor.utils.timer import log_duration
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,8 @@ class TimeSeriesProcessor:
                 for layer in layers:
                     self.process_layer(layer)
 
+                logger.info("-" * 30)
+                logger.info("Collecting and saving datasets.")
                 self._save_datasets()
 
         logger.info("Processing pipeline finished. Pushing prometheus metrics.")
@@ -236,6 +239,7 @@ class TimeSeriesProcessor:
         dep_id = dependencies[0]
         return self.graph.datasets[dep_id]
 
+    @log_duration("Saving datasets time taken: ", footer=True)
     def _save_datasets(self) -> None:
         """Determine which datasets to save, pool them together in groups that are being saved to the same
         parquet file, then do some concurrent save tasks.
