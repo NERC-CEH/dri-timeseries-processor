@@ -13,17 +13,16 @@ from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationIte
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from dritimeseriesprocessor.models.api_models.dataset_timeseries import Methodology, TimeSeriesDatasetItem
+from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel
 from dritimeseriesprocessor.models.api_models.site import SiteItem
-from dritimeseriesprocessor.models.domain_models.method_config import MethodConfig
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
@@ -58,32 +57,6 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
         source_site_identifier=source_site_identifier,
         time_column_name=item.time_column_name,
     )
-
-
-def map_method_config(methodology: Methodology) -> MethodConfig:
-    """Map a dataset's methodology metadata into a MethodConfig domain model.
-
-    Args:
-        methodology: A single configuration definition for a dataset's methodology
-
-    Returns:
-        A MethodConfig object describing the method
-    """
-    # TODO: Could add a specific LOAD methodology to the metadata - yes
-    if methodology is None:
-        return MethodConfig(method_type=MethodType.LOAD)
-
-    method_config = methodology.configuration
-    method_type = MethodType(extract_uri_id(method_config.type.id))
-
-    method = None
-    argument = {}
-    if method_config.has_current_configuration:
-        method_current_config = method_config.has_current_configuration[0]
-        method = extract_uri_id(method_current_config.method.id) if method_current_config.method else None
-        argument = extract_arguments(method_current_config.argument, site_metadata=None)
-
-    return MethodConfig(config_id=method_config.id, method_type=method_type, name=method, argument=argument)
 
 
 def map_processing_config_item(
@@ -123,7 +96,7 @@ def map_processing_config_item(
 def map_processing_method_config(
     current_config: HasCurrentValue, site_metadata: SiteMetadata
 ) -> DataProcessingMethodConfig:
-    """Map a HasCurrentConfigurationItem into a ProcessingMethodConfig domain model.
+    """Map an API response for a data processing method configuration into a domain model.
 
     Args:
         current_config: A single configuration definition for a method, possibly including an observation interval and
@@ -131,7 +104,7 @@ def map_processing_method_config(
         site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
-        A ProcessingMethodConfig object describing a configuration of a processing method.
+        A domain model object describing a configuration of a processing method.
     """
     method = extract_uri_id(current_config.method.id)
     params = extract_arguments(current_config.argument, site_metadata)
@@ -176,7 +149,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     Handles both direct literal values and references to other datasets.
 
     Args:
-        argument_items: List of ArgumentItems from a HasCurrentConfigurationItem model.
+        argument_items: List of ArgumentItems from a HasCurrentValue model.
         site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
@@ -206,9 +179,10 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                     collected_args[param_name].append(ref.id)
 
         if has_structured_value:
-            # Structured value e.g. wind height for PE 30min
-            # TODO not yet implemented
-            pass
+            # Extract any nested structured value arguments. This will be, used for example, for cases where we need
+            # to extract deployment information for a sensor e.g. wind height for PE 30min
+            structured_value_params = extract_arguments(has_structured_value.argument, site_metadata)
+            collected_args[param_name].append(structured_value_params)
 
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}

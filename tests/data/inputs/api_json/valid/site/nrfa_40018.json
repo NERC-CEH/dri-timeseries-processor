@@ -20,7 +20,6 @@
       "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018",
       "easting": 553029.0,
       "northing": 164280.0,
-      "altitude": 44.1,
       "hasAnnotation": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area",
@@ -92,16 +91,17 @@
       "label": [
         "Darent at Lullingstone"
       ],
+      "altitude": 44.1,
       "lat": 51.356986942291414,
       "long": 0.1964190449649131,
       "qualifiedAttribution": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#organisation-attribution",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-attribution",
           "hasRole": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator-organisation"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator"
           },
           "agent": {
-            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-organisation-ea"
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-ea-ksl"
           },
           "@type": [
             {
@@ -110,12 +110,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-attribution",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#organisation-attribution",
           "hasRole": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator-organisation"
           },
           "agent": {
-            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-ea-ksl"
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-organisation-ea"
           },
           "@type": [
             {

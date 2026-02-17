@@ -18,6 +18,128 @@
   },
   "items": [
     {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "identifier": [
+        "COSMOS-HOLLN-TA_30MIN_PROCESSED"
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
+        "prefLabel": [
+          "Processed"
+        ]
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m",
+          "prefLabel": [
+            "Mean air temperature over the preceding 30 minutes in degrees Celsius"
+          ],
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
+            "prefLabel": [
+              "Air temperature"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
+            "prefLabel": [
+              "Deg Celsius"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
+            "periodicity": "PT30M",
+            "resolution": "PT30M"
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "identifier": [
+        "COSMOS-ALIC1-TA_30MIN_PROCESSED"
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
+        "prefLabel": [
+          "Processed"
+        ]
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m",
+          "prefLabel": [
+            "Mean air temperature over the preceding 30 minutes in degrees Celsius"
+          ],
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
+            "prefLabel": [
+              "Air temperature"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
+            "prefLabel": [
+              "Deg Celsius"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
+            "periodicity": "PT30M",
+            "resolution": "PT30M"
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceColumnName": "TA",
+      "sourceTimeColumnName": "time",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ]
+    },
+    {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed",
       "@type": [
         {
@@ -140,67 +262,6 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
-        }
-      ],
-      "identifier": [
-        "COSMOS-HOLLN-TA_30MIN_PROCESSED"
-      ],
-      "processingLevel": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
-        "prefLabel": [
-          "Processed"
-        ]
-      },
-      "measure": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m",
-          "prefLabel": [
-            "Mean air temperature over the preceding 30 minutes in degrees Celsius"
-          ],
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
-            "prefLabel": [
-              "Air temperature"
-            ]
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
-            "prefLabel": [
-              "Deg Celsius"
-            ]
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
-          }
-        }
-      ],
-      "sourceBucket": "e2e-output",
-      "sourceDataset": "PROCESSED_DATA_30MIN",
-      "sourceColumnName": "TA",
-      "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws"
-        }
-      ],
-      "originatingSite": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-        }
-      ],
-      "originatingProgramme": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-rh_30min_processed",
       "@type": [
         {
@@ -253,67 +314,6 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-        }
-      ],
-      "originatingProgramme": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
-        }
-      ],
-      "identifier": [
-        "COSMOS-ALIC1-TA_30MIN_PROCESSED"
-      ],
-      "processingLevel": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
-        "prefLabel": [
-          "Processed"
-        ]
-      },
-      "measure": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m",
-          "prefLabel": [
-            "Mean air temperature over the preceding 30 minutes in degrees Celsius"
-          ],
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
-            "prefLabel": [
-              "Air temperature"
-            ]
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/degc",
-            "prefLabel": [
-              "Deg Celsius"
-            ]
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
-          }
-        }
-      ],
-      "sourceBucket": "e2e-output",
-      "sourceDataset": "PROCESSED_DATA_30MIN",
-      "sourceColumnName": "TA",
-      "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
-        }
-      ],
-      "originatingSite": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
         }
       ],
       "originatingProgramme": [

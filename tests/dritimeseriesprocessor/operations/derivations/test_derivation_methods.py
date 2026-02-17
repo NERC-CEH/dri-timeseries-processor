@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 import polars as pl
@@ -29,6 +30,7 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     Args:
         data: List of data objects needed for the calculation
         output_col: Name of the output column expected in the result
+        argument: Dict of arguments to add to the config
 
     Returns:
         MethodConfig for testing
@@ -91,6 +93,11 @@ class TestPotentialEvapotranspiration30Min:
             "pet",
         )
 
+        config.params["wind_height"] = {
+            "wind_height.source": "deployment",
+            "wind_height.value": [(datetime(1900, 1, 1), None, 2.6)],
+        }
+
         expected = dataframe_to_timeframe(pl.DataFrame({"pet": [0.00573, 0.14733, 0.03617, 0.17283]}))
 
         result = PotentialEvapotranspiration30Min().run(config)
@@ -148,9 +155,9 @@ class TestPotentialEvapotranspiration30Min:
 
     def test_wind_speed_height_correction(self) -> None:
         # Taken from FAO56 EXAMPLE 14 https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
-        input_df = pl.DataFrame({"ws": [3.2]})
+        input_df = pl.DataFrame({"ws": [3.2], "height": [10.0]})
 
-        calc = PotentialEvapotranspiration30Min().wind_speed_height_correction(pl.col("ws"), 10.0)
+        calc = PotentialEvapotranspiration30Min().wind_speed_height_correction(pl.col("ws"), pl.col("height"))
         result = input_df.with_columns(calc.alias("ws2m")).select(["ws2m"])
         expected = pl.DataFrame({"ws2m": [2.4]})
 

@@ -1,4 +1,3 @@
-import math
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
@@ -8,6 +7,7 @@ from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 
@@ -33,6 +33,16 @@ class DerivationMethod(Operation, ABC):
 
         # Get column references for calculation
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
+
+        # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
+        for param, value in config.params.items():
+            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
+                # Join the deployment values to the main DataFrame
+                merged_tf = merged_tf.with_df(
+                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
+                )
+                # Make sure the deployment value column is available to any calculation method that needs it
+                columns[param] = pl.col(param)
 
         # Perform the calculation (subclass-specific)
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
@@ -190,9 +200,7 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
         rn = columns["rn"]
         ta = columns["ta"]
         ws = columns["ws"]
-
-        # TODO: get wind height from metadata
-        wind_height = 2.6
+        wind_height = columns["wind_height"]
 
         es = self.saturation_vapour_pressure(ta)
         ea = self.actual_vapour_pressure(es, rh)
@@ -308,7 +316,7 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
         return (cp * (pa / 10)) / (e_ratio * lv)
 
     @staticmethod
-    def wind_speed_height_correction(ws: pl.Expr, measured_height: float) -> pl.Expr:
+    def wind_speed_height_correction(ws: pl.Expr, measured_height: pl.Expr) -> pl.Expr:
         """Convert wind speed to 2m height [ms-1]
 
         Steps taken from FAO-56 method (eq47) https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
@@ -318,9 +326,9 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
             measured_height: The height the wind was measured at [m]
 
         Returns:
-            Polars expression to calculate gamma
+            Polars expression to calculate wind speed height correction
         """
-        return ws * (4.87 / math.log((67.8 * measured_height) - 5.42))
+        return ws * (4.87 / ((67.8 * measured_height) - 5.42).log())
 
 
 @DerivationMethod.register

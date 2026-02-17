@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/deployment?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/deployment.html?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.rdf?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.json?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.csv?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.ttl?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.geojson?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem"
+    ]
+  },
+  "items": []
+}
