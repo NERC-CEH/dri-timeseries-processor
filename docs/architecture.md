@@ -46,7 +46,7 @@ NextDataset([Next dataset])
 NextDataset -->|All datasets done| NextLayer
 NextLayer([Next layer])
 NextLayer -->|All layers done| SaveDatasets[Collect datasets and write to S3]
-SaveDatasets --> S3Writer
+SaveDatasets --> S3Writer[(S3 Storage Writer)]
 SaveDatasets --> ExportMetrics[Export Metrics to Prometheus]
 ExportMetrics --> PrometheusGW[(Prometheus<br/>Pushgateway)]
 ExportMetrics --> Done([Processing Complete])
