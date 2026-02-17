@@ -135,11 +135,11 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min_raw-error_code-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-1236",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-1237",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-1236#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-1237#value",
                 "value": [
-                  7999.0
+                  8999.0
                 ],
                 "@type": [
                   {
@@ -157,11 +157,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-1237",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-1236",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-1237#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-1236#value",
                 "value": [
-                  8999.0
+                  7999.0
                 ],
                 "@type": [
                   {

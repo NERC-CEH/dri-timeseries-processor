@@ -4,39 +4,13 @@ from unittest.mock import MagicMock
 import polars as pl
 import pytest
 import time_stream as ts
+from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.utils.enums import OperationType, ProcessingLevel
-
-
-def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
-    """Create a lightweight fake TimeSeriesContainer for use in tests.
-
-    Args:
-        ts_id: The time series ID.
-
-    Returns:
-        A TimeSeriesContainer instance
-    """
-    return TimeSeriesContainer(
-        ts_id=ts_id,
-        network="network",
-        source_bucket=ts_id + "_bucket",
-        source_site=ts_id + "_site",
-        source_column=ts_id + "_column",
-        source_dataset=ts_id + "_dataset",
-        source_site_identifier=ts_id + "_site_identifier",
-        time_column_name="time",
-        resolution="P1D",
-        periodicity="P1D",
-        processing_level=ProcessingLevel.PROCESSED,
-        qc_configs=set(),
-        infill_configs=set(),
-        correction_configs=set(),
-    )
+from utils.data_creation import create_timeframe, make_time_series_container
 
 
 @pytest.fixture
@@ -94,6 +68,7 @@ class TestTimeSeriesProcessor:
         )
         # override the process dataset function for this test
         processor.process_dataset = MagicMock()
+        processor._save_datasets = MagicMock()
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
 
@@ -170,3 +145,55 @@ class TestTimeSeriesProcessor:
         mock_qc_pipeline.run.assert_called_once()
         assert raw_container.data == tf_result
         assert processed_container.data == tf_result
+
+    def test_build_save_tasks(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        ds_ids = ["ds1", "ds2", "ds3"]
+        mock_graph = create_mock_dag([[ds_id] for ds_id in ds_ids])
+
+        # ensure all the containers have the required attributes for saving / key building
+        for ds_id, container in mock_graph.datasets.items():
+            container.processing_level = ProcessingLevel.PROCESSED
+            container.network = "my_network"
+            container.source_site_identifier = "SITE_A"
+            container.resolution = "PT30M"
+            container.source_bucket = "my_bucket"
+            container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        # All ds_ids should be grouped together, so we should only have 2 save tasks for the 2 days of data
+        expected_df = mock_graph.datasets["ds1"].data.df
+        expected_df = expected_df.with_columns([pl.Series(f"{ds_id}-col", [i for i in range(48)]) for ds_id in ds_ids])
+
+        expected = [
+            (
+                "my_bucket",
+                "my_network/resolution=PT30M/site=SITE_A/date=2025-01-01/data.parquet",
+                expected_df.filter(pl.col("time").cast(pl.Date) == pl.date(2025, 1, 1)),
+                "time",
+            ),
+            (
+                "my_bucket",
+                "my_network/resolution=PT30M/site=SITE_A/date=2025-01-02/data.parquet",
+                expected_df.filter(pl.col("time").cast(pl.Date) == pl.date(2025, 1, 2)),
+                "time",
+            ),
+        ]
+
+        for idx, result in enumerate(processor._build_save_tasks()):
+            result_bucket, result_key, result_df, result_time_name = result
+            expected_bucket, expected_key, expected_df, expected_time_name = expected[idx]
+
+            assert result_bucket == expected_bucket
+            assert result_key == expected_key
+            assert_frame_equal(result_df, expected_df)
+            assert result_time_name == expected_time_name

@@ -7,14 +7,20 @@ dataset's method type.
 """
 
 import logging
+from collections import defaultdict
+from collections.abc import Iterator
 from datetime import date, datetime
 
-from time_stream import TimeFrame
+import polars as pl
+import time_stream as ts
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.time_series_container import (
+    TimeSeriesContainer,
+    check_common_attributes,
+)
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
@@ -24,6 +30,8 @@ from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipe
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
 from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
+from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
+from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +90,8 @@ class TimeSeriesProcessor:
                 for layer in layers:
                     self.process_layer(layer)
 
+                self._save_datasets()
+
         logger.info("Processing pipeline finished. Pushing prometheus metrics.")
         self.metrics.export_metrics_to_pushgateway()
 
@@ -116,18 +126,12 @@ class TimeSeriesProcessor:
 
             case MethodType.PROCESS:
                 self._process(container)
-                if container.processing_level == ProcessingLevel.PROCESSED:
-                    self._save(container)
 
             case MethodType.AGGREGATION:
                 self._aggregate(container)
-                if container.processing_level == ProcessingLevel.PROCESSED:
-                    self._save(container)
 
             case MethodType.DERIVATION:
                 self._derive(container)
-                if container.processing_level == ProcessingLevel.PROCESSED:
-                    self._save(container)
 
     def _load_raw(self, container: TimeSeriesContainer) -> None:
         """Load raw time-series data for a dataset and initialise a `TimeFrame`.
@@ -149,7 +153,7 @@ class TimeSeriesProcessor:
 
             else:
                 tf = (
-                    TimeFrame(
+                    ts.TimeFrame(
                         df=df,
                         time_name=container.time_column_name,
                         resolution=container.resolution,
@@ -214,21 +218,6 @@ class TimeSeriesProcessor:
             pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
             container.data = pipeline.run(container, self.graph.datasets)
 
-    def _save(self, container: TimeSeriesContainer) -> None:
-        """Save the processed data within the given container.
-
-        Args:
-            container: Time series container of metadata and data for dataset to save.
-        """
-        with self.metrics.time_write.time():
-            data_to_write = split_by_date(container.data.df, container.time_column_name)
-            for data_date, df in data_to_write:
-                key = (
-                    f"{container.network}/resolution={container.resolution}/site={container.source_site_identifier}/"
-                    f"date={data_date.strftime('%Y-%m-%d')}/data.parquet"
-                )
-                self.data_writer.write(container.source_bucket, key, df, container.time_column_name)
-
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only
         a single dependency.
@@ -246,3 +235,57 @@ class TimeSeriesProcessor:
 
         dep_id = dependencies[0]
         return self.graph.datasets[dep_id]
+
+    def _save_datasets(self) -> None:
+        """Determine which datasets to save, pool them together in groups that are being saved to the same
+        parquet file, then do some concurrent save tasks.
+        """
+        with self.metrics.time_write.time():
+            tasks = self._build_save_tasks()
+            run_threaded_tasks(tasks, self.data_writer.write)
+
+    def _build_save_tasks(self) -> Iterator[tuple[str, str, pl.DataFrame, str]]:
+        """Build save tasks for processed datasets.
+
+        This method groups processed datasets that are written to the same Parquet output, merges their timeframes,
+        splits the merged data by day, and yields arguments needed for the actual save tasks.
+
+        Each yielded task contains all information required to perform a single write operation, but doesn't do
+        the actual saving. This separation allows the caller to execute the tasks synchronously or concurrently.
+
+        Yields:
+            Tuples of the form:
+                (
+                    bucket (str) : The S3 bucket to write to
+                    key (str) : The full S3 object key for the parquet file
+                    df (pl.DataFrame) : The dataframe to be written
+                    time_column_name (str) : The name of the time column in df
+                )
+
+        Using Yield to produce a generator so that we're not holding all dataframes in memory simultaneously.
+        """
+        # TODO: May need to rethink the resolution partition here.  What if datasets had same resolution but
+        #   different periodicity / time anchors etc.
+        dataset_groupings = defaultdict(list)
+        for ds_id, container in self.graph.datasets.items():
+            if container.processing_level == ProcessingLevel.PROCESSED:
+                dataset_groupings[
+                    f"{container.network}-{container.source_site_identifier}-{container.resolution}"
+                ].append(container)
+
+        for dataset_group, containers in dataset_groupings.items():
+            # Double check all containers have the same properties
+            network, site_id, resolution, bucket = check_common_attributes(
+                containers, ["network", "source_site_identifier", "resolution", "source_bucket"]
+            )
+
+            # Merge the data for all containers
+            group_tf = merge_multiple_timeframes([c.data for c in containers])
+
+            # Data saved "per day", so split the grouped data by day
+            data_to_write = split_by_date(group_tf.df, group_tf.time_name)
+
+            # Yield specific save tasks
+            for data_date, df in data_to_write:
+                key = f"{network}/resolution={resolution}/site={site_id}/date={data_date:%Y-%m-%d}/data.parquet"
+                yield bucket, key, df, group_tf.time_name
