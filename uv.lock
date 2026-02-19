@@ -501,8 +501,8 @@ wheels = [
 
 [[package]]
 name = "dri-utils"
-version = "0.0.24"
-source = { git = "https://github.com/NERC-CEH/dri-utils.git#13c162e5bc4fbcbbc518f57ed6677551c6f61623" }
+version = "0.0.25"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git#e759a543c415120632c50e6c5c7d9cf59882b73b" }
 dependencies = [
     { name = "autosemver" },
     { name = "boto3" },
