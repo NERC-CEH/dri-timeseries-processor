@@ -1,9 +1,6 @@
 # N.B. The Python versions in the builder and prod images must match.
 # Make sure to update *both* FROM lines when making changes!
 
-ARG EDDYPRO_IMAGE=654654490827.dkr.ecr.eu-west-2.amazonaws.com/eddypro-engine:latest
-FROM ${EDDYPRO_IMAGE} AS eddypro
-
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
@@ -28,22 +25,13 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Build production container
 FROM python:3.12-slim AS prod
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    libgfortran5 \
-    p7zip-full \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=eddypro /opt/eddypro/bin /opt/eddypro/bin
-
 COPY --from=builder --chown=python:python /python /python
 
 # Copy the application from the builder
 COPY --from=builder --chown=app:app /app /app
 
 # Place executables in the environment at the front of the path
-ENV PATH="/opt/eddypro/bin:/app/.venv/bin:$PATH" VIRTUAL_ENV="/app/.venv"
+ENV PATH="/app/.venv/bin:$PATH" VIRTUAL_ENV="/app/.venv"
 
 # Unsetting entrypoint from parent image
 ENTRYPOINT []

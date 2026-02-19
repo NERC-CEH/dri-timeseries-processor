@@ -17,6 +17,9 @@ class SiteMetadata:
     lat: float | None = None
     lon: float | None = None
     altitude: float | None = None
+    canopy_height: float | None = None
+    displacement_height: float | None = None
+    roughness_length: float | None = None
     start_date: datetime | None = None
     end_date: datetime | None = None
 

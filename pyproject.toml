@@ -80,6 +80,10 @@ source = [
     "src/dritimeseriesprocessor",
 ]
 omit = [
+    "*/dritimeseriesprocessor/operations/eddypro/*",
+    "*/dritimeseriesprocessor/processing/eddypro_processor.py",
+    "*/dritimeseriesprocessor/routers/data/flux_data_router.py",
+    "*/dritimeseriesprocessor/routers/metadata/flux_metadata_loader.py",
 ]
 
 [tool.ruff]

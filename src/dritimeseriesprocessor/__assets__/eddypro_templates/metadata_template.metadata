@@ -1,17 +1,17 @@
 ;GHG_METADATA
 [Project]
-title={{PROJECT_TITLE}}
-id={{PROJECT_ID}}
+title=
+id=
 creation_date=2019-07-16T12:28:35
 last_change_date=2024-11-01T21:50:35
-start_date={{PROJECT_START_DATE}}
-end_date={{PROJECT_END_DATE}}
-file_name={{METADATA_FILE_NAME}}
+start_date=
+end_date=
+file_name=
 sw_version=6.2.1
 ini_version=3.2.1
 
 [Files]
-data_path={{DATA_PATH}}
+data_path=
 saved_native=0
 timestamp=0
 iso_format=0
@@ -20,14 +20,14 @@ enable_processing=1
 tstamp_end=0
 
 [Site]
-site_name={{SITE_NAME}}
-site_id={{SITE_ID}}
-altitude={{ALTITUDE}}
-latitude={{LATITUDE}}
-longitude={{LONGITUDE}}
-canopy_height=0
-displacement_height=0
-roughness_length=0
+site_name=
+site_id=
+altitude=
+latitude=
+longitude=
+canopy_height=
+displacement_height=
+roughness_length=
 
 [Station]
 station_name=

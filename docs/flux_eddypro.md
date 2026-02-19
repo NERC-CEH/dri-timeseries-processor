@@ -2,24 +2,29 @@
 
 This repo contains an Flux processing path that runs **LI-COR EddyPro** locally and shuttles inputs/outputs via S3 (LocalStack for dev).
 
-This is not part of the main time-series “selection model” and is intentionally kept separate while we iterate.
+This is a separate CLI mode that uses the same dependency-graph model, but runs a file-based workflow via the EddyPro
+binary instead of the in-memory time-series operation pipeline.
 
 ## What This Does
 
-The `flux` CLI mode:
+The `eddypro` CLI mode:
 
 - Downloads raw flux files for a site + day from S3
 - Downloads site ancillary inputs (dynamic metadata + biomet) from S3
-- Renders EddyPro config files from templates + a local per-site JSON config
+- Builds run-specific EddyPro config files from templates + local metadata fixtures
 - Runs `eddypro_rp` then `eddypro_fcc`
-- Uploads generated configs, logs, and outputs back to S3
+- Uploads EddyPro outputs back to S3 (processed bucket)
 
 Relevant code:
 
 - CLI parsing: `src/dritimeseriesprocessor/cli/cli.py`
 - Run entrypoint: `src/dritimeseriesprocessor/app/run.py`
-- EddyPro runner + templates: `src/dritimeseriesprocessor/eddypro/runner.py`, `src/dritimeseriesprocessor/eddypro/templates/`
-- Local run config loader: `src/dritimeseriesprocessor/eddypro/run_config.py`
+- EddyPro processor: `src/dritimeseriesprocessor/processing/eddypro_processor.py`
+- S3 router: `src/dritimeseriesprocessor/routers/data/flux_data_router.py`
+- Local metadata loader: `src/dritimeseriesprocessor/routers/metadata/flux_metadata_loader.py`
+- EddyPro pipeline (config + runner): `src/dritimeseriesprocessor/operations/eddypro/`
+- Templates: `src/dritimeseriesprocessor/__assets__/eddypro_templates/`
+- Local metadata fixtures: `src/dritimeseriesprocessor/__metadata__/eddypro/`
 
 ## Requirements (Local Dev)
 
@@ -69,18 +74,15 @@ command -v eddypro_fcc
 
 ## S3 Layout Expected
 
-The runner uses these prefixes (for `network=flux`, `site=PLYNL`, `source_dataset=raw_flux`):
+The runner uses these prefixes (for `network=fdri`, `site=PLYNL`, `source_dataset=Flux`):
 
 - Raw inputs:
-  - `flux/dataset=raw_flux/site=PLYNL/date=YYYY-MM-DD/`
+  - `fdri/dataset=Flux/site=PLYNL/date=YYYY-MM-DD/`
 - Ancillary inputs:
-  - `flux/ancillary/dynamic_metadata/site=PLYNL/`
-  - `flux/ancillary/biomet/site=PLYNL/`
+  - `fdri/ancillary/dynamic_metadata/site=PLYNL/`
+  - `fdri/ancillary/biomet/site=PLYNL/`
 - Outputs (to the processed bucket):
-  - `flux/dataset=eddypro_flux/site=PLYNL/date=YYYY-MM-DD/`
-    - `generated/` (rendered `.eddypro` + `.metadata`)
-    - `logs/` (`eddypro_rp.log`, `eddypro_fcc.log`)
-    - `output/PLYNL/` (EddyPro outputs)
+  - `fdri/dataset=<PROCESSED_DATASET>/site=PLYNL/date=YYYY-MM-DD/` (EddyPro output files)
 
 ## Local Fixtures
 
@@ -88,9 +90,8 @@ LocalStack initialisation uploads everything under `flux-data/` into the level-0
 
 Current example fixtures are under:
 
-- `flux-data/flux/dataset=raw_flux/site=PLYNL/date=2024-08-14/`
-- `flux-data/flux/ancillary/dynamic_metadata/site=PLYNL/`
-- `flux-data/flux/local_config/site=PLYNL/site_config.json` (local-only, not uploaded)
+- `flux-data/fdri/dataset=Flux/site=PLYNL/date=2024-08-14/`
+- `flux-data/fdri/ancillary/dynamic_metadata/site=PLYNL/`
 
 
 ## Running It
@@ -98,8 +99,8 @@ Current example fixtures are under:
 Example (single site):
 
 ```bash
-python -m dritimeseriesprocessor flux \
-  --network flux \
+python -m dritimeseriesprocessor eddypro \
+  --network fdri \
   --sites PLYNL \
   --start-date 2024-08-14 \
   --end-date 2024-08-15
@@ -107,17 +108,19 @@ python -m dritimeseriesprocessor flux \
 
 ## Adding Another Site
 
-1. Add local config JSON:
-   - `flux-data/flux/local_config/site=<SITE>/site_config.json`
-2. Add fixtures for LocalStack upload:
-   - `flux-data/flux/dataset=<SOURCE_DATASET>/site=<SITE>/date=YYYY-MM-DD/...`
-   - `flux-data/flux/ancillary/dynamic_metadata/site=<SITE>/...`
-   - `flux-data/flux/ancillary/biomet/site=<SITE>/...`
+1. Add/update local metadata fixtures:
+   - `src/dritimeseriesprocessor/__metadata__/eddypro/sites.json`
+   - `src/dritimeseriesprocessor/__metadata__/eddypro/datasets.json`
+   - `src/dritimeseriesprocessor/__metadata__/eddypro/eddypro_configs.json`
+2. Add fixtures for LocalStack upload (raw + ancillary):
+   - `flux-data/fdri/dataset=<SOURCE_DATASET>/site=<SITE>/date=YYYY-MM-DD/...`
+   - `flux-data/fdri/ancillary/dynamic_metadata/site=<SITE>/...`
+   - `flux-data/fdri/ancillary/biomet/site=<SITE>/...`
 3. Restart LocalStack to reload fixtures:
    - `docker compose down && docker compose up -d`
 
 ## Status / Limitations
 
 - This is for demonstrating the integration pattern (S3 fixtures → template rendering → EddyPro run → S3 artifacts).
-- Per-site configuration is currently loaded from `flux-data/.../local_config/...`.
-- The runner creates a scratch workdir under `/tmp/driflux/eddypro/` and cleans it up at the end of the run.
+- Per-site configuration and datasets are currently loaded from `src/dritimeseriesprocessor/__metadata__/eddypro/`.
+- Runs use a temporary working directory per site and clean it up at the end.

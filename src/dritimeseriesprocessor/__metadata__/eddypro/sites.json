@@ -1,0 +1,15 @@
+{
+  "PLYNL": {
+    "site_id": "http://fdri.ceh.ac.uk/id/site/flux-plynl",
+    "network": "http://fdri.ceh.ac.uk/id/programme/flux",
+    "alt_id": "PLYNL",
+    "full_name": "Plynlimon",
+    "lat": 52.45,
+    "lon": -3.75,
+    "altitude": 540.0,
+    "easting": 284000,
+    "northing": 287000,
+    "displacement_height": 0.0,
+    "roughness_length": 0.01
+  }
+}

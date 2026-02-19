@@ -4,7 +4,7 @@ from enum import Enum
 class CliSelectionMode(Enum):
     EXPLICIT = "from-selection"
     CROSS_PRODUCT = "from-cross-product"
-    FLUX = "flux"
+    EDDYPRO = "eddypro"
 
 
 class ConfigurationType(Enum):
@@ -22,6 +22,7 @@ class ConfigurationType(Enum):
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
     PROCESS = "process"
+    EDDYPRO = "eddypro"
 
 
 class MethodType(Enum):
@@ -31,6 +32,7 @@ class MethodType(Enum):
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
     LOAD = "load"
+    EDDYPRO = "eddypro"
 
 
 class OperationType(Enum):
@@ -44,6 +46,7 @@ class OperationType(Enum):
     QUALITY_CONTROL = "quality_control"
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
+    EDDYPRO = "eddypro"
 
 
 class ProcessingLevel(Enum):
