@@ -11,7 +11,7 @@ import logging
 
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID
 
-from dritimeseriesprocessor.externals.api_manager import MetadataAPIManager
+from driutils.metadata_api.api_manager import MetadataAPIManager
 
 logging.basicConfig(
     level=logging.INFO,

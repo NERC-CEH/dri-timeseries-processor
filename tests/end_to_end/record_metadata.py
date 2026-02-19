@@ -32,13 +32,13 @@ from pathlib import Path
 from typing import Any
 
 import requests
+from driutils.metadata_api.api_manager import MetadataAPIManager
 from tests.utils.fixture_helpers import END_TO_END, TEST_DATA_MOCK_METADATA, load_json_file
 from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET, stable_file_key
 
 from dritimeseriesprocessor.cli.selection import SelectionOption
 from dritimeseriesprocessor.configuration.app_config import app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from dritimeseriesprocessor.externals.api_manager import MetadataAPIManager
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.utils.urls import SITE_URI
 

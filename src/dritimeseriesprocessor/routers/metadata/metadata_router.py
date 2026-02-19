@@ -9,9 +9,9 @@ queries and dependency lookups.
 from itertools import batched
 from typing import TypeVar
 
+from driutils.metadata_api.api_manager import MetadataAPIManager
 from pydantic import BaseModel
 
-from dritimeseriesprocessor.externals.api_manager import MetadataAPIManager
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.deployment import Deployment

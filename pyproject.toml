@@ -26,6 +26,7 @@ dependencies = [
     "boto3-stubs[s3]",
     "config>=0.5.1",
     "duckdb>=1.1.2",
+    "dri-utils @ git+https://github.com/NERC-CEH/dri-utils.git",
     "httpx",
     "isodate",
     "polars>=1.1.0",
