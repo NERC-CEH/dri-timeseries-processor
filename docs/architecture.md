@@ -34,24 +34,20 @@ CheckMethod -->|PROCESS| Process[Run standard processing steps]
 Process --> RunCorr[Run Corrections]
 RunCorr --> RunQC[Run Quality Control Checks]
 RunQC --> RunInfill[Run Infilling]
-RunInfill --> SaveProc[Write to S3]
-SaveProc --> S3Writer[(S3 Storage Writer)]
-SaveProc --> NextDataset
+RunInfill --> NextDataset
 
 CheckMethod -->|AGGREGATE| Resample[Temporal Resampling]
-Resample --> SaveAgg[Write to S3]
-SaveAgg --> S3Writer
-SaveAgg --> NextDataset
+Resample --> NextDataset
 
 CheckMethod -->|DERIVE| Compute[Compute derived variable<br/>e.g., Net Radiation]
-Compute --> SaveDeriv[Write to S3]
-SaveDeriv --> S3Writer
-SaveDeriv --> NextDataset
+Compute --> NextDataset
 
 NextDataset([Next dataset])
-NextDataset -->|All done| NextLayer
+NextDataset -->|All datasets done| NextLayer
 NextLayer([Next layer])
-NextLayer -->|All done| ExportMetrics[Export Metrics to Prometheus]
+NextLayer -->|All layers done| SaveDatasets[Collect datasets and write to S3]
+SaveDatasets --> S3Writer[(S3 Storage Writer)]
+SaveDatasets --> ExportMetrics[Export Metrics to Prometheus]
 ExportMetrics --> PrometheusGW[(Prometheus<br/>Pushgateway)]
 ExportMetrics --> Done([Processing Complete])
 
@@ -283,6 +279,21 @@ on how it should be processed. That could be one of 4 steps:
 
 This continues until the graph root nodes (i.e. the originally requested datasets) have been produced. Results of these
 datasets are saved using the configured output locations.
+
+#### Saving strategy - pooling and concurrent saves
+
+To improve performance while processing multiple datasets, instead of saving each dataset individually after it's 
+processing stage is completed, we instead wait until all datasets have been processed. Then, we can pool together
+datasets that we know are going to be saved to the same output parquet file in S3 - i.e. a group of datasets
+that have the same network, site ID and resolution. If we imagine we have 20 datasets in a group, this reduces the 
+number of save actions from 20 down to 1. 
+
+Additionally, we have a threading strategy that allows us to run multiple save actions concurrently. This is used 
+because we save datasets in "per day" parquet files. Imagine a processing run that is processing data for 1 week - 
+i.e. 7 days, so 7 individual save actions. We know these are being saved to separate locations in S3, so it is 
+safe to run the save actions concurrently. The mechanism for concurrency is using multiple "threads" rather 
+than multiple processes. This should work as the save actions are I/O bound rather than CPU bound, so we can kick off 
+multiple threads within the same shared process. 
 
 ### 6. I/O Backend
 

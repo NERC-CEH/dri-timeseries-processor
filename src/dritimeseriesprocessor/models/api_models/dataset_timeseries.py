@@ -3,8 +3,6 @@ Pydantic models for the Time Series Dataset, with timeseries view, metadata endp
 
 Example API call:
     https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/{dataset_id}.json?_view=timeseries
-    https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/{dataset_id}/_dependencies.json
-    https://dri-metadata-api.staging.eds.ceh.ac.uk/id/dataset/{dataset_id}/_all_dependencies.json
 
 Represents metadata describing time series datasets, including their measurement details (variable, unit, resolution),
 processing level, data location, etc. Used to parse and validate dataset metadata before mapping to
