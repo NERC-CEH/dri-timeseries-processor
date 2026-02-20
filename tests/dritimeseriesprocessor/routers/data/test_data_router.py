@@ -29,7 +29,7 @@ def router(mock_reader: MagicMock) -> DuckDBDataRouter:
     return DuckDBDataRouter(mock_reader)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def s3_storage_client() -> Iterator[S3StorageClient]:
     with get_s3_storage_client() as storage_client:
         yield storage_client
