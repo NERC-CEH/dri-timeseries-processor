@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterator
 
 import polars as pl
-from tests.utils.fixture_helpers import TEST_DATA_INPUT_DIR
+from tests.utils.fixture_helpers import PARQUET_DATA_INPUT_DIR, TEST_DATA_INPUT_DIR
 from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
 
 from dritimeseriesprocessor.configuration.app_config import app_config
@@ -27,7 +27,7 @@ def get_s3_storage_client() -> Iterator[S3StorageClient]:
     create_test_s3_bucket(E2E_INPUT_BUCKET, storage_client, cfg.AWS_DEFAULT_REGION)
     create_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client, cfg.AWS_DEFAULT_REGION)
 
-    upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "end_to_end")
+    upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, PARQUET_DATA_INPUT_DIR)
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "partitioned")
 
     try:

@@ -69,3 +69,7 @@ class DuckDBParquetReader(ParquetReaderInterface):
         except duckdb.InvalidInputException:
             logger.error(f"Parquet file contained corrupt data.\nQuery: {query}")
             raise
+
+        except duckdb.IOException:
+            logger.warning("No parquet files found. Returning empty DataFrame.")
+            return pl.DataFrame()

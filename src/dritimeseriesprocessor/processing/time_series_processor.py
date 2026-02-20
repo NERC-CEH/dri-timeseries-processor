@@ -284,7 +284,7 @@ class TimeSeriesProcessor:
             )
 
             # Merge the data for all containers
-            group_tf = merge_multiple_timeframes([c.data for c in containers])
+            group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])
 
             # Data saved "per day", so split the grouped data by day
             data_to_write = split_by_date(group_tf.df, group_tf.time_name)
