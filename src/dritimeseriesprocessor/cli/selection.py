@@ -50,4 +50,4 @@ class RunConfig:
     selection: list[SelectionOption]
     start_date: date
     end_date: date
-    mode: CliSelectionMode = CliSelectionMode.EXPLICIT
+    mode: CliSelectionMode

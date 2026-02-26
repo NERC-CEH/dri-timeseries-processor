@@ -99,7 +99,7 @@ class EddyProPipeline:
             end_date=end_date,
         )
 
-        # Run EddyPro (rp then fcc)
+        # Run EddyPro (eddypro_rp = raw data processor; eddypro_fcc = flux computation/corrections)
         result = self._runner.run(
             project_file=project_file,
             output_dir=output_dir,

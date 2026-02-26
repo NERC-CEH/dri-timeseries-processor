@@ -1,5 +1,8 @@
 """Runner for EddyPro binary processing (eddypro_rp and eddypro_fcc).
 
+eddypro_rp = Raw data Processor
+eddypro_fcc = Flux Computation / Corrections
+
 EddyPro binaries (eddypro_rp and eddypro_fcc) are expected to be on PATH in both
 local development and production containers.
 """

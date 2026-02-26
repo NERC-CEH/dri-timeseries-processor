@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from dritimeseriesprocessor.storage.storage_client import StorageClient
@@ -32,24 +32,30 @@ class FluxDataRouter:
 
         S3 layout: {network}/dataset={dataset}/site={site}/date=YYYY-MM-DD/<files>
 
-        Filters keys by date partition. Downloads to local_dir preserving only the
-        filename (not the S3 directory structure).
+        Lists keys only under each date partition prefix (rather than listing the
+        entire site prefix and filtering). Downloads to local_dir preserving only
+        the filename (not the S3 directory structure).
 
         Returns local_dir.
         """
-        prefix = f"{network}/dataset={dataset}/site={site}/"
-        all_keys = self._storage.list_keys_with_prefix(bucket, prefix)
         local_dir.mkdir(parents=True, exist_ok=True)
 
         count = 0
-        for key in all_keys:
-            # Extract the date from the partition: .../date=2024-08-14/...
-            key_date = self._extract_date_from_key(key)
-            if key_date and start_date <= key_date <= end_date:
+        current = start_date
+        while current <= end_date:
+            date_prefix = f"{network}/dataset={dataset}/site={site}/date={current.isoformat()}/"
+            keys = self._storage.list_keys_with_prefix(bucket, date_prefix)
+            if not keys:
+                logger.debug("No raw files found for site %s under %s", site, date_prefix)
+                current += timedelta(days=1)
+                continue
+
+            for key in keys:
                 filename = key.rsplit("/", 1)[-1]
                 local_path = local_dir / filename
                 self._storage.download_file(bucket, key, local_path)
                 count += 1
+            current += timedelta(days=1)
 
         logger.info("Downloaded %d raw files for site %s", count, site)
         return local_dir
@@ -133,14 +139,3 @@ class FluxDataRouter:
             run_date,
         )
         return count
-
-    @staticmethod
-    def _extract_date_from_key(key: str) -> date | None:
-        """Extract date from a hive partition key like .../date=2024-08-14/..."""
-        for part in key.split("/"):
-            if part.startswith("date="):
-                try:
-                    return date.fromisoformat(part[5:])
-                except ValueError:
-                    return None
-        return None
