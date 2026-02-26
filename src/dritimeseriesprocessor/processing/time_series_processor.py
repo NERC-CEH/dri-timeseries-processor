@@ -7,12 +7,10 @@ dataset's method type.
 """
 
 import logging
-from collections import defaultdict
 from collections.abc import Iterator
 from datetime import date, datetime
 
 import polars as pl
-import time_stream as ts
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
@@ -20,6 +18,7 @@ from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
     TimeSeriesContainer,
     check_common_attributes,
+    group_containers,
 )
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
@@ -85,6 +84,12 @@ class TimeSeriesProcessor:
             if not self.graph.datasets:
                 logger.error("No datasets found in dependency graph.")
             else:
+                # Collect all the "LOAD" datasets (can remove from the graph as we will have done their processing)
+                load_containers = [c for c in self.graph.datasets.values() if c.method_type() == MethodType.LOAD]
+                logger.info(f"Collecting and loading [{len(load_containers)}] datasets.")
+                self._batch_load_raw(load_containers)
+
+                # Sort the containers into an order that guarantees dependency resolution
                 layers = self.graph.layered_topo_sort()
                 logger.info("Processing pipeline started.")
 
@@ -104,7 +109,6 @@ class TimeSeriesProcessor:
         Args:
             layer: Datasets to process
         """
-        logger.info(f"Processing layer: {layer}")
         for dataset_id in layer:
             try:
                 self.process_dataset(dataset_id)
@@ -125,7 +129,8 @@ class TimeSeriesProcessor:
 
         match container.method_type():
             case MethodType.LOAD:
-                self._load_raw(container)
+                # Already handled by the initial batch loading
+                pass
 
             case MethodType.PROCESS:
                 self._process(container)
@@ -136,38 +141,42 @@ class TimeSeriesProcessor:
             case MethodType.DERIVATION:
                 self._derive(container)
 
-    def _load_raw(self, container: TimeSeriesContainer) -> None:
-        """Load raw time-series data for a dataset and initialise a `TimeFrame`.
+    @log_duration("Loading datasets time taken: ", footer=True)
+    def _batch_load_raw(self, *containers: TimeSeriesContainer) -> None:
+        """Load raw time-series data for multiple datasets in grouped batches.
 
-        The DataRouter is used to retrieve the data, which is then wrapped into a `TimeFrame` with resolution and
-        periodicity from metadata. Core flags are initialised and the resulting `TimeFrame` is stored on the
-        container.
+        Containers are grouped by network, site, resolution, and source dataset so that a single query
+        can retrieve all columns for each group in one read. Each container's data is then extracted from
+        the combined result and initialised into a TimeFrame.
 
         Args:
-            container: Time series container of metadata and data for the dataset to load.
+           containers: List of the containers to load.
         """
+        common_keys = ["network", "source_site_identifier", "resolution", "source_dataset"]
+        groupings = group_containers(containers, common_keys)
+
         with self.metrics.time_load.time():
-            logger.info(f"{MethodType.LOAD}: {container.ts_id}")
-            df = self.data_router.query_by_date_range(container, self.start_date, self.end_date)
-
-            if df.is_empty():
-                logger.warning(f"No data returned for dataset: {container.ts_id}")
-                self.metrics.no_data.inc()
-
-            else:
-                tf = (
-                    ts.TimeFrame(
-                        df=df,
-                        time_name=container.time_column_name,
-                        resolution=container.resolution,
-                        periodicity=container.periodicity,
-                    )
-                    .with_metadata({"column_name": container.source_column})
-                    .pad()
+            for dataset_group, containers in groupings.items():
+                combined_df = self.data_router.query_by_date_range(
+                    *containers, start_date=self.start_date, end_date=self.end_date
                 )
 
-                tf = add_initial_core_flags(tf)
-                container.data = tf
+                if combined_df.is_empty():
+                    logger.warning(f"No data returned for datasets in group: {dataset_group}")
+                    self.metrics.no_data.inc()
+                    continue
+
+                for container in containers:
+                    col = container.source_column
+                    df = combined_df.select([container.time_column_name, col])
+
+                    if df.is_empty():
+                        logger.warning(f"No data returned for dataset: {container.ts_id}")
+                        self.metrics.no_data.inc()
+                        continue
+
+                    container.init_timeframe(df)
+                    container.data = add_initial_core_flags(container.data)
 
     def _process(self, container: TimeSeriesContainer) -> None:
         """Process a single dataset according to the data processing configurations attached via metadata.
@@ -268,20 +277,13 @@ class TimeSeriesProcessor:
 
         Using Yield to produce a generator so that we're not holding all dataframes in memory simultaneously.
         """
-        # TODO: May need to rethink the resolution partition here.  What if datasets had same resolution but
-        #   different periodicity / time anchors etc.
-        dataset_groupings = defaultdict(list)
-        for ds_id, container in self.graph.datasets.items():
-            if container.processing_level == ProcessingLevel.PROCESSED:
-                dataset_groupings[
-                    f"{container.network}-{container.source_site_identifier}-{container.resolution}"
-                ].append(container)
+        common_keys = ["network", "source_site_identifier", "resolution", "source_bucket"]
+        processed = [c for c in self.graph.datasets.values() if c.processing_level == ProcessingLevel.PROCESSED]
+        groupings = group_containers(processed, common_keys)
 
-        for dataset_group, containers in dataset_groupings.items():
+        for dataset_group, containers in groupings.items():
             # Double check all containers have the same properties
-            network, site_id, resolution, bucket = check_common_attributes(
-                containers, ["network", "source_site_identifier", "resolution", "source_bucket"]
-            )
+            network, site_id, resolution, bucket = check_common_attributes(containers, common_keys)
 
             # Merge the data for all containers
             group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])

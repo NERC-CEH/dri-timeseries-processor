@@ -6,10 +6,12 @@ for use in the DAG builder and data processing pipeline.
 """
 
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any
 
-from time_stream import TimeFrame
+import polars as pl
+import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
@@ -38,7 +40,7 @@ class TimeSeriesContainer:
     qc_configs: set[DataProcessingConfig] = field(default_factory=set)
     infill_configs: set[DataProcessingConfig] = field(default_factory=set)
 
-    data: TimeFrame | None = None
+    data: ts.TimeFrame | None = None
 
     def all_dependencies(self) -> list[str]:
         """Return a deduplicated list of all dependencies."""
@@ -87,9 +89,51 @@ class TimeSeriesContainer:
             return MethodType.LOAD
         return MethodType(self.method_config.config_type.value)
 
+    def init_timeframe(self, df: pl.DataFrame) -> None:
+        """Wrap a DataFrame in a TimeFrame, apply initial flags, and store it on the container.
+
+        If the DataFrame is empty, a warning is logged and the container's data is left unset.
+
+        Args:
+            df: The raw DataFrame to wrap.
+        """
+        if df.is_empty():
+            return
+
+        tf = (
+            ts.TimeFrame(
+                df=df,
+                time_name=self.time_column_name,
+                resolution=self.resolution,
+                periodicity=self.periodicity,
+            )
+            .with_metadata({"column_name": self.source_column})
+            .pad()
+        )
+        self.data = tf
+
     def __hash__(self) -> int:
         """Allow this container to be used as a dict or set key."""
         return hash(self.ts_id)
+
+
+def group_containers(
+    containers: tuple[TimeSeriesContainer, ...], attributes: list[str]
+) -> dict[tuple, list[TimeSeriesContainer]]:
+    """Group containers by a composite key derived from the given attributes.
+
+    Args:
+        containers: The containers to group.
+        attributes: Container attribute names to form the grouping key.
+
+    Returns:
+        A dictionary mapping attribute tuples to lists of containers sharing those attribute values.
+    """
+    groupings: dict[tuple, list[TimeSeriesContainer]] = defaultdict(list)
+    for container in containers:
+        key = tuple(getattr(container, attr) for attr in attributes)
+        groupings[key].append(container)
+    return groupings
 
 
 def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any] | None:
