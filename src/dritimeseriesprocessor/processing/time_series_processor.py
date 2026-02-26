@@ -87,7 +87,7 @@ class TimeSeriesProcessor:
                 # Collect all the "LOAD" datasets (can remove from the graph as we will have done their processing)
                 load_containers = [c for c in self.graph.datasets.values() if c.method_type() == MethodType.LOAD]
                 logger.info(f"Collecting and loading [{len(load_containers)}] datasets.")
-                self._batch_load_raw(load_containers)
+                self._batch_load_raw(*load_containers)
 
                 # Sort the containers into an order that guarantees dependency resolution
                 layers = self.graph.layered_topo_sort()
@@ -278,7 +278,7 @@ class TimeSeriesProcessor:
         Using Yield to produce a generator so that we're not holding all dataframes in memory simultaneously.
         """
         common_keys = ["network", "source_site_identifier", "resolution", "source_bucket"]
-        processed = [c for c in self.graph.datasets.values() if c.processing_level == ProcessingLevel.PROCESSED]
+        processed = tuple([c for c in self.graph.datasets.values() if c.processing_level == ProcessingLevel.PROCESSED])
         groupings = group_containers(processed, common_keys)
 
         for dataset_group, containers in groupings.items():

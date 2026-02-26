@@ -168,3 +168,5 @@ testing/data/temp/*
 #Testing code in jupyter
 sandbox/
 sandbox.ipynb
+
+CLAUDE.md
