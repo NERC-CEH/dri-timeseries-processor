@@ -45,12 +45,12 @@ def _copy_files(dst: os.PathLike, src: Optional[os.PathLike] = None) -> None:
 
 
 def initialise_directory(dst: os.PathLike, src: Optional[os.PathLike] = None, purge: bool = False) -> None:
-    """Initializes a directory and populates it with Parquet files
+    """Initialises a directory and populates it with Parquet files
 
     Args:
         dst: The destination directory.
         src: The source directory, defaults to the data directory
-        urge: Purges files if the directory already exists
+        purge: Purges files if the directory already exists
     """
 
     _create_directory(dst, purge)

@@ -48,12 +48,12 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg",
+              "@id": "http://fdri.ceh.ac.uk/id/argument/n00ssnthejn9jd3mifbn7c5t80ih1hjq",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg#value",
+                "@id": "http://fdri.ceh.ac.uk/id/argument/n00ssnthejn9jd3mifbn7c5t80ih1hjq#value",
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw"
                   }
                 ],
                 "@type": [
@@ -72,12 +72,12 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/n00ssnthejn9jd3mifbn7c5t80ih1hjq",
+              "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/n00ssnthejn9jd3mifbn7c5t80ih1hjq#value",
+                "@id": "http://fdri.ceh.ac.uk/id/argument/0h75h6l6sjovefodg44ho8qfdbthsgsg#value",
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed"
                   }
                 ],
                 "@type": [
@@ -120,6 +120,9 @@
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
+            "notation": [
+              "LW_CORR"
+            ],
             "prefLabel": [
               "Long wave correction"
             ],

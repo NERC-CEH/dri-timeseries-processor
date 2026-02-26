@@ -9,11 +9,12 @@ queries and dependency lookups.
 from itertools import batched
 from typing import TypeVar
 
+from driutils.metadata_api.api_manager import MetadataAPIManager
 from pydantic import BaseModel
 
-from dritimeseriesprocessor.externals.api_manager import MetadataAPIManager
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from dritimeseriesprocessor.models.api_models.deployment import Deployment
 from dritimeseriesprocessor.models.api_models.network import Network
 from dritimeseriesprocessor.models.api_models.site import SiteResponse
 
@@ -106,6 +107,20 @@ class MetadataRouter:
         url = f"{self.host}/id/network/{network}"
         response = self.api_manager.make_paginated_api_call(url)
         return Network.model_validate(response)
+
+    def fetch_deployment_by_platform(self, platform: str) -> Deployment:
+        """Fetch deployment metadata for the given platform ID
+
+        Args:
+            platform: Platform to fetch deployment metadata for.
+
+        Returns:
+            The parsed JSON response containing deployment metadata.
+        """
+        url = f"{self.host}/id/deployment"
+        params = (("deployedOnPlatform", platform),)
+        response = self.api_manager.make_paginated_api_call(url, params)
+        return Deployment.model_validate(response)
 
     def _fetch_by_batch(
         self,

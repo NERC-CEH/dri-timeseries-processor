@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from io import BytesIO
 
 import polars as pl
+from botocore.exceptions import ClientError
 
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
 from dritimeseriesprocessor.utils.polars_utils import merge_dataframes
@@ -44,7 +45,7 @@ class ByteParquetWriter(ParquetWriterInterface):
         """
         exceptions_to_catch = [FileNotFoundError]
         if isinstance(self.storage, S3StorageClient):
-            exceptions_to_catch.append(self.storage.client.exceptions.NoSuchKey)
+            exceptions_to_catch.extend([self.storage.client.exceptions.NoSuchKey, ClientError])
 
         try:
             existing_bytes = self.storage.get_bytes(bucket, key)

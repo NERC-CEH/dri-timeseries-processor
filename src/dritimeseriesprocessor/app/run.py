@@ -30,10 +30,12 @@ from dritimeseriesprocessor.routers.metadata.flux_metadata_loader import FluxMet
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
+from dritimeseriesprocessor.utils.timer import log_duration
 
 logger = logging.getLogger(__name__)
 
 
+@log_duration("Total time taken: ", header=True)
 def run_from_config(run_config: RunConfig) -> None:
     """Execute a processing run from a valid RunConfig made of user args.
 
@@ -148,8 +150,6 @@ def _build_processor(
 
     graph = _build_dependency_graph(network, selection, metadata_router)
 
-    logger.info(f"Found {len(graph.datasets)} datasets to process")
-
     return TimeSeriesProcessor(
         graph=graph,
         data_router=data_router,
@@ -177,6 +177,7 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
     )
 
 
+@log_duration("Dependency graph build duration: ", footer=True)
 def _build_dependency_graph(
     network: str, selection: list[SelectionOption], metadata_router: MetadataRouter
 ) -> DatasetDependencyGraph:
@@ -190,6 +191,8 @@ def _build_dependency_graph(
     Returns:
         A DatasetDependencyGraph ready for execution.
     """
+    logger.info("Gathering metadata and building dataset dependency graph.")
     graph = DatasetDependencyGraph(network=network, selection=selection, metadata_router=metadata_router)
     graph.build()
+    logger.info(f"Found {len(graph.datasets)} datasets to process.")
     return graph

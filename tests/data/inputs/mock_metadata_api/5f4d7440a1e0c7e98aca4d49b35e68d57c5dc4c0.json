@@ -69,6 +69,9 @@
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
+            "notation": [
+              "SCALAR"
+            ],
             "prefLabel": [
               "Scalar"
             ],
@@ -152,6 +155,9 @@
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
+            "notation": [
+              "SCALAR"
+            ],
             "prefLabel": [
               "Scalar"
             ],
@@ -198,9 +204,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cts_mod_30min_raw-battery_v-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2863",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2753",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2863#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2753#value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-battv_30min_raw"
@@ -222,9 +228,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2864",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2754",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2864#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2754#value",
                 "value": [
                   10.5
                 ],
@@ -261,6 +267,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Battery"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -301,9 +310,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cts_mod_30min_raw-range-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2862",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2752",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2862#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2752#value",
                 "value": [
                   1400.0
                 ],
@@ -323,9 +332,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2861",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2751",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2861#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2751#value",
                 "value": [
                   100.0
                 ],
@@ -362,6 +371,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Range"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -402,9 +414,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cts_mod_30min_raw-samples-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2867",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2757",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2867#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2757#value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw"
@@ -426,9 +438,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2868",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2758",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2868#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2758#value",
                 "value": [
                   60.0
                 ],
@@ -465,6 +477,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Samples"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -505,11 +520,11 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cts_mod_30min_raw-error_code-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2865",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2756",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2865#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2756#value",
                 "value": [
-                  7999.0
+                  8999.0
                 ],
                 "@type": [
                   {
@@ -527,11 +542,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2866",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2755",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2866#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2755#value",
                 "value": [
-                  8999.0
+                  7999.0
                 ],
                 "@type": [
                   {
@@ -563,6 +578,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Error code"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -627,28 +645,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-chimn-cts_mod_30min_raw-1-2020-01-22t13:00:00",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-configuration-cosmos-chimn-cts_mod_30min_raw-1-2020-01-22t13:00:00-cosmos-chimn-cts_mod2_30min_processed#correction-factor",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-configuration-cosmos-chimn-cts_mod_30min_raw-1-2020-01-22t13:00:00-cosmos-chimn-cts_mod2_30min_processed#correction-factor.value",
-                "value": [
-                  1.00776
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-chimn-cts_mod_30min_raw-1-2020-01-22t13:00:00#alt-data",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-cosmos-chimn-cts_mod_30min_raw-1-2020-01-22t13:00:00#alt-data.value",
@@ -671,6 +667,28 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-configuration-cosmos-chimn-cts_mod_30min_raw-1-2020-01-22t13:00:00-cosmos-chimn-cts_mod2_30min_processed#correction-factor",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alt_data-configuration-cosmos-chimn-cts_mod_30min_raw-1-2020-01-22t13:00:00-cosmos-chimn-cts_mod2_30min_processed#correction-factor.value",
+                "value": [
+                  1.00776
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                }
+              ]
             }
           ],
           "method": {
@@ -687,6 +705,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Alternate Data"
             ],
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
@@ -771,6 +792,9 @@
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "label": [
+              "Alternate Data"
+            ],
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
@@ -814,9 +838,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cts_mod_30min_raw-spike-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2860",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/current-2750",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2860#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/current-2750#value",
                 "value": [
                   200.0
                 ],
@@ -850,6 +874,9 @@
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Spike"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"

@@ -5,6 +5,7 @@ from typing import Any
 import pytest
 from _pytest.mark.structures import ParameterSet
 
+PARQUET_DATA_INPUT_DIR = Path(__file__).parent.parent.parent / "parquet-data"
 TEST_DATA_INPUT_DIR = Path(__file__).parent.parent / "data" / "inputs"
 TEST_DATA_OUTPUT_DIR = Path(__file__).parent.parent / "data" / "outputs"
 TEST_DATA_API_VALID = TEST_DATA_INPUT_DIR / "api_json" / "valid"

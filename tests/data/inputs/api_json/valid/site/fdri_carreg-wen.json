@@ -35,25 +35,25 @@
       ],
       "hasPart": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-raine"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-logger"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-ws",
+          "label": [
+            "WS"
+          ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-na"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-aws_anem"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-logger"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-raine"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-hmp"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-ws",
-          "label": [
-            "WS"
-          ]
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-aws_anem"
         }
       ],
       "identifier": [

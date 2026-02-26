@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/deployment?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/deployment.geojson?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.html?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.csv?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.ttl?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.json?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.rdf?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-aws_anem-aws_anem-140318-1",
+      "deployedHeight": 2.6,
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of AWS_ANEM 140318 to AWS_ANEM at CHIMN"
+      ],
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws_anem",
+        "isPartOf": {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+          "label": [
+            "Chimney Meadows"
+          ]
+        }
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/sensor/cosmos-aws_anem-140318",
+          "serialNumber": "140318",
+          "label": [
+            "AWS_ANEM 140318"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/cosmos/monitoring-system-type/aws_anem"
+          }
+        }
+      ]
+    }
+  ]
+}

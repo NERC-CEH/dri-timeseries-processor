@@ -1,4 +1,3 @@
-import math
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
@@ -8,6 +7,7 @@ from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 
@@ -24,6 +24,9 @@ class DerivationMethod(Operation, ABC):
         Returns:
             TimeFrame containing the calculated derived variable
         """
+
+        self.config = config
+
         # Extract and merge input data
         tf_map = {name: config.params[name] for name in self.inputs}
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
@@ -31,15 +34,19 @@ class DerivationMethod(Operation, ABC):
         # Get column references for calculation
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
 
+        # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
+        for param, value in config.params.items():
+            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
+                # Join the deployment values to the main DataFrame
+                merged_tf = merged_tf.with_df(
+                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
+                )
+                # Make sure the deployment value column is available to any calculation method that needs it
+                columns[param] = pl.col(param)
+
         # Perform the calculation (subclass-specific)
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
         result_df = merged_tf.df.with_columns(calculation_expr)
-
-        # Apply any rounding if required
-        if config.argument.get("round", None) is not None:
-            result_df = result_df.with_columns(
-                pl.col(config.params["output_col"]).round(config.argument["round"]).alias(config.params["output_col"])
-            )
 
         # Build output TimeFrame
         return (
@@ -98,7 +105,7 @@ class NetRadiation(DerivationMethod):
 
 
 @DerivationMethod.register
-class MeanG(DerivationMethod):
+class MeanSoilHeatFlux(DerivationMethod):
     """Calculate the mean soil heat flux (g) from inputs from multiple soil heat flux measurements."""
 
     name = "calc_mean_g"
@@ -120,7 +127,34 @@ class MeanG(DerivationMethod):
 
 
 @DerivationMethod.register
-class PET30Min(DerivationMethod):
+class MeanSeaLevelPressure(DerivationMethod):
+    """Calculate the mean sea level pressure (mslp) from inputs PA and TA."""
+
+    name = "calculate_mslp"
+    inputs = ("pa", "ta")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate mean sea level pressure (mslp) [hPa]
+        See US Standard Atmosphere, eq. 33a:
+        https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf
+        See also: https://www.fao.org/4/x0490e/x0490e07.htm
+        Args:
+            columns: Dict with keys of required columns for the calculation: pa and ta.
+            -pa: Atmospheric Pressure [hPa]
+            -ta: Air Temperature [Celsius]
+
+        Returns:
+            Polars expression computing mslp
+        """
+        altitude = self.config.params["altitude"]
+        pa = columns["pa"]
+        ta = columns["ta"]
+
+        return pa * (1 - ((0.0065 * altitude) / (ta + (0.0065 * altitude) + 273.15))).pow(-5.257)
+
+
+@DerivationMethod.register
+class PotentialEvapotranspiration30Min(DerivationMethod):
     """Calculate Potential Evapotranspiration (PET) (30 min).
 
     Steps taken from Penman-Monteith Evapotranspiration (FAO-56 Method)
@@ -166,9 +200,7 @@ class PET30Min(DerivationMethod):
         rn = columns["rn"]
         ta = columns["ta"]
         ws = columns["ws"]
-
-        # TODO: get wind height from metadata
-        wind_height = 2.6
+        wind_height = columns["wind_height"]
 
         es = self.saturation_vapour_pressure(ta)
         ea = self.actual_vapour_pressure(es, rh)
@@ -284,7 +316,7 @@ class PET30Min(DerivationMethod):
         return (cp * (pa / 10)) / (e_ratio * lv)
 
     @staticmethod
-    def wind_speed_height_correction(ws: pl.Expr, measured_height: float) -> pl.Expr:
+    def wind_speed_height_correction(ws: pl.Expr, measured_height: pl.Expr) -> pl.Expr:
         """Convert wind speed to 2m height [ms-1]
 
         Steps taken from FAO-56 method (eq47) https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
@@ -294,6 +326,45 @@ class PET30Min(DerivationMethod):
             measured_height: The height the wind was measured at [m]
 
         Returns:
-            Polars expression to calculate gamma
+            Polars expression to calculate wind speed height correction
         """
-        return ws * (4.87 / math.log((67.8 * measured_height) - 5.42))
+        return ws * (4.87 / ((67.8 * measured_height) - 5.42).log())
+
+
+@DerivationMethod.register
+class AbsoluteHumidity(DerivationMethod):
+    """Calculate absolute humidity ('Q') from relative humidity and air temperature.
+    Required for water vapour correction to CRS counts.
+    Saturation vapour pressure, Psat (when relative humidity is 100%), is given by eq. 10 in Bolton's paper:
+    https://doi.org/10.1175/1520-0493(1980)108%3C1046:TCOEPT%3E2.0.CO;2
+    Relative humidity 100%:
+    Psat = 6.11 exp((17.67 T)/(T + 243.5))
+    Relative humidity of any value:
+    Psat = 6.11 exp((17.67 T)/(T + 243.5))*rh/100
+    Ideal gas formula: PV = nRT, => n = PV/(RT)
+    molecular weight of water = 18.02 grams/mol
+    Q = 18.02 * n
+    => Q = 6.11 exp((17.67 T)/(T + 243.5))*rh*18.02/(100*R*(ta + 273.15))
+         = 6.11 exp((17.67 T)/(T + 243.5))*rh*2.1674/(ta + 273.15)
+    Q units: gram m^-3
+    """
+
+    name = "calculate_q"
+    inputs = ("ta", "rh")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate absolute humidity Q [g m-3] (grams per cubic meter)
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "ta": air temperature measured in Celsius.
+            - "rh": relative humidity, measured as a percentage.
+        Returns:
+            Polars expression computing absolute humidity, Q
+        """
+        ta = columns["ta"]
+        rh = columns["rh"]
+
+        Q1 = ((17.67 * ta) / (ta + 243.5)).exp()
+        Q2 = 273.15 + ta
+
+        return (6.112 * Q1 * rh * 2.1674) / Q2
