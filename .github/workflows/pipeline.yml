@@ -28,3 +28,16 @@ jobs:
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+
+  build-test-deploy-docker-eddypro:
+    needs: [test-python]
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
+    with:
+      use_uv: true
+      package_name: dritimeseriesprocessor
+      docker_target: prod-eddypro
+      tag_suffix: -eddypro
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
