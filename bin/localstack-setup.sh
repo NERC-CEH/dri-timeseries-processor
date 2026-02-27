@@ -23,3 +23,20 @@ find "$LOCAL_DIR" -type f -name "*.parquet" | while read -r FILEPATH; do
     # Upload the file to the S3 bucket
     awslocal s3api put-object --bucket "$BUCKET" --key "$S3_KEY" --body "$FILEPATH"
 done
+
+echo "########### Load flux data into level-0 bucket ###########"
+
+FLUX_DIR="/var/lib/localstack/flux-data"
+
+# Loop through all files in the flux-data directory and its subdirectories
+find "$FLUX_DIR" -type f | while read -r FILEPATH; do
+    # Extract the relative path after the base directory
+    RELATIVE_PATH="${FILEPATH#$FLUX_DIR/}"
+
+    # Construct the S3 key
+    S3_KEY="$RELATIVE_PATH"
+
+    # Upload the file to the S3 bucket
+    echo "Uploading $S3_KEY"
+    awslocal s3api put-object --bucket "$BUCKET" --key "$S3_KEY" --body "$FILEPATH"
+done

@@ -65,6 +65,11 @@ class TimeSeriesContainer:
             elif config.config_type == ConfigurationType.CORRECTION:
                 self.correction_configs.add(config)
 
+            elif config.config_type == ConfigurationType.EDDYPRO:
+                if self.method_config and self.method_config is not config:
+                    raise ValueError(f"A method config already exists: {self.method_config}")
+                self.method_config = config
+
             elif config.config_type in (
                 ConfigurationType.AGGREGATION,
                 ConfigurationType.DERIVATION,

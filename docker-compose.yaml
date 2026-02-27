@@ -14,6 +14,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./bin/localstack-setup.sh:/etc/localstack/init/ready.d/init-aws.sh"
       - "./parquet-data:/var/lib/localstack/parquet-data"
+      - "./flux-data:/var/lib/localstack/flux-data"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566"]
       interval: 10s

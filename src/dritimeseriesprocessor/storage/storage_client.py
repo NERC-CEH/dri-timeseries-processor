@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import boto3
 
@@ -28,6 +29,21 @@ class StorageClient(ABC):
             key: Name of object containing the data.
             data: The bytes to be written.
         """
+        pass
+
+    @abstractmethod
+    def download_file(self, bucket: str, key: str, local_path: Path) -> None:
+        """Download a single object from storage to a local file path."""
+        pass
+
+    @abstractmethod
+    def list_keys_with_prefix(self, bucket: str, prefix: str) -> list[str]:
+        """List all object keys in a bucket that start with the given prefix."""
+        pass
+
+    @abstractmethod
+    def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
+        """Upload a local file to storage."""
         pass
 
     @abstractmethod
@@ -107,6 +123,21 @@ class S3StorageClient(StorageClient):
             data: Data to write to S3.
         """
         self.client.put_object(Bucket=bucket, Key=key, Body=data)
+
+    def download_file(self, bucket: str, key: str, local_path: Path) -> None:
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        self.client.download_file(bucket, key, str(local_path))
+
+    def list_keys_with_prefix(self, bucket: str, prefix: str) -> list[str]:
+        paginator = self.client.get_paginator("list_objects_v2")
+        keys = []
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                keys.append(obj["Key"])
+        return keys
+
+    def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
+        self.client.upload_file(str(local_path), bucket, key)
 
     def list_keys(self, bucket: str) -> list[str]:
         """List all the keys in S3 bucket.
