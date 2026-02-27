@@ -207,9 +207,6 @@ class EddyProProcessor:
             latitude=site_meta.lat,
             longitude=site_meta.lon,
             altitude=site_meta.altitude,
-            canopy_height=site_meta.canopy_height,
-            displacement_height=site_meta.displacement_height,
-            roughness_length=site_meta.roughness_length,
             file_prototype=file_prototype,
         )
 

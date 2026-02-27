@@ -60,9 +60,6 @@ class FluxMetadataLoader:
                 lat=site_data.get("lat"),
                 lon=site_data.get("lon"),
                 altitude=site_data.get("altitude"),
-                canopy_height=site_data.get("canopy_height"),
-                displacement_height=site_data.get("displacement_height"),
-                roughness_length=site_data.get("roughness_length"),
                 easting=site_data.get("easting"),
                 northing=site_data.get("northing"),
             )

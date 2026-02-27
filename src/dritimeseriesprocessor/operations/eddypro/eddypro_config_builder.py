@@ -20,9 +20,6 @@ class EddyProSiteConfig:
 
     Contains values that change per-site and are injected into the
     template .eddypro project file.
-
-    Note: canopy_height is NOT included here — it comes from the
-    dynamic_metadata.txt file which EddyPro reads directly.
     """
 
     site_id: str
@@ -30,9 +27,6 @@ class EddyProSiteConfig:
     longitude: float
     altitude: float
     file_prototype: str
-    canopy_height: float | None = None
-    displacement_height: float | None = None
-    roughness_length: float | None = None
 
 
 class EddyProConfigBuilder:
@@ -113,8 +107,8 @@ class EddyProConfigBuilder:
     ) -> Path:
         """Write a site-specific metadata file to the working directory.
 
-        Populates core site fields (lat/lon/altitude, canopy height etc) so EddyPro
-        doesn't default them to zero.
+        Populates core site fields (lat/lon/altitude) so EddyPro doesn't default them
+        to zero.
 
         Args:
             template_path: Path to the template .metadata file.
@@ -144,12 +138,6 @@ class EddyProConfigBuilder:
             config.set("Site", "altitude", f"{self._site_config.altitude}")
             config.set("Site", "latitude", f"{self._site_config.latitude}")
             config.set("Site", "longitude", f"{self._site_config.longitude}")
-            if self._site_config.canopy_height is not None:
-                config.set("Site", "canopy_height", f"{self._site_config.canopy_height}")
-            if self._site_config.displacement_height is not None:
-                config.set("Site", "displacement_height", f"{self._site_config.displacement_height}")
-            if self._site_config.roughness_length is not None:
-                config.set("Site", "roughness_length", f"{self._site_config.roughness_length}")
 
         self._write_eddypro_ini(config, output_file, self.METADATA_HEADER)
         logger.info("Copied metadata file to: %s", output_file)
