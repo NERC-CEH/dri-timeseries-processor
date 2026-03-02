@@ -111,6 +111,8 @@ class TimeSeriesProcessor:
             except Exception:
                 self.metrics.failed.inc()
                 logger.exception(f"Processing failed for: {dataset_id}")
+                self.graph.datasets[dataset_id].processed = False
+                logger.info(f"Processing failed tag added to: {dataset_id}")
             else:
                 self.metrics.success.inc()
 
@@ -122,6 +124,12 @@ class TimeSeriesProcessor:
         """
 
         container = self.graph.datasets[dataset_id]
+        for dataset in container.all_dependencies():
+            if hasattr(self.graph.datasets[dataset], "processed"):
+                logger.info(f"Dependency of: {dataset_id} has processing failed tag")
+                self.graph.datasets[dataset_id].processed = False
+                logger.info(f"Processing failed tag added to: {dataset_id}")
+                break
 
         match container.method_type():
             case MethodType.LOAD:
