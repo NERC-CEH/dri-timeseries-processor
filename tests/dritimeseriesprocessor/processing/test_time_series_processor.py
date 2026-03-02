@@ -8,8 +8,8 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
-from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesContainer, TimeSeriesProcessor
-from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
+from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
+from dritimeseriesprocessor.utils.enums import OperationType, ProcessingLevel
 from utils.data_creation import create_timeframe, make_time_series_container
 
 
@@ -152,19 +152,12 @@ class TestTimeSeriesProcessor:
         The failure can happen at any of LOAD, PROCESS, AGGREGATE and DERIVE stages.
         Test that process tag is dynamically added to dataset, set to false if any dataset dependency fails processing.
         """
-
         topo_layers = [["ds1", "ds2"], ["ds3"]]
         mock_graph = create_mock_dag(topo_layers)
-
         ds1 = mock_graph.datasets["ds1"]
         ds2 = mock_graph.datasets["ds2"]
         ds3 = mock_graph.datasets["ds3"]
-
         ds3.all_dependencies = MagicMock(return_value=["ds1", "ds2"])
-
-        ds1.method_type = MagicMock(return_value=MethodType.LOAD)  # Any MethodType works.
-        ds2.method_type = MagicMock(return_value=MethodType.PROCESS)
-        ds3.method_type = MagicMock(return_value=MethodType.AGGREGATION)
 
         processor = TimeSeriesProcessor(
             graph=mock_graph,
@@ -175,36 +168,22 @@ class TestTimeSeriesProcessor:
             metrics=MagicMock(),
         )
 
-        # def force_fail_ds2(container) -> None:
-        #    if container is ds2:
-        #        raise Exception("boom")
-        #    return None
+        real_process_dataset = processor.process_dataset
 
-        id_by_container = {v: k for k, v in mock_graph.datasets.items()}
+        def fail_inside_process_dataset(dataset_id: str) -> None:
+            if dataset_id == "ds2":
+                raise Exception("boom during process_dataset")
+            return real_process_dataset(dataset_id)
 
-        def process_side_effect(container: TimeSeriesContainer) -> None:
-            if id_by_container.get(container) == "ds2":
-                raise Exception("boom")
-            return None
-
-        # Cause ds2's processing to fail by forcing exception during processing
         processor._load_raw = MagicMock()
-        processor.process_dataset = MagicMock(side_effect=process_side_effect)
-        processor._process = MagicMock()
-        processor._aggregate = MagicMock()
-        processor._derive = MagicMock()
+        processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
         processor._save_datasets = MagicMock()
-        processor._build_save_tasks = MagicMock()
-
-        # IMPORTANT: Do NOT mock processor.process_dataset here, real dependency logic required
         processor.run()
 
         assert not hasattr(ds1, "processed")
-
         assert hasattr(ds2, "processed")
         assert ds2.processed is False
         assert processor.metrics.failed.inc.call_count == 1
-
         assert hasattr(ds3, "processed")
         assert ds3.processed is False
 

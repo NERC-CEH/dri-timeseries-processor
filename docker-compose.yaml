@@ -1,6 +1,6 @@
 services:
   # local stack container for local testing of AWS services
-  # intialises with localscript-setup.sh
+  # initialises with localscript-setup.sh
   localstack:
     container_name: "tsp_localstack"
     image: localstack/localstack:3.4
