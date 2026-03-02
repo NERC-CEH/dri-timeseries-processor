@@ -152,12 +152,16 @@ class TestTimeSeriesProcessor:
         The failure can happen at any of LOAD, PROCESS, AGGREGATE and DERIVE stages.
         Test that process tag is dynamically added to dataset, set to false if any dataset dependency fails processing.
         """
-        topo_layers = [["ds1", "ds2"], ["ds3"]]
+        topo_layers = [["ds1", "ds2"], ["ds3", "ds4"]]
         mock_graph = create_mock_dag(topo_layers)
+
         ds1 = mock_graph.datasets["ds1"]
         ds2 = mock_graph.datasets["ds2"]
         ds3 = mock_graph.datasets["ds3"]
+        ds4 = mock_graph.datasets["ds4"]
+
         ds3.all_dependencies = MagicMock(return_value=["ds1", "ds2"])
+        ds4.all_dependencies = MagicMock(return_value=["ds1"])
 
         processor = TimeSeriesProcessor(
             graph=mock_graph,
@@ -186,6 +190,7 @@ class TestTimeSeriesProcessor:
         assert processor.metrics.failed.inc.call_count == 1
         assert hasattr(ds3, "processed")
         assert ds3.processed is False
+        assert not hasattr(ds4, "processed")
 
     def test_build_save_tasks(
         self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
