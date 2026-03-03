@@ -133,7 +133,7 @@ theoretically could be anything.
 ### Variable Names
 
 Uses the variable IDs as found in the `sourceColumnName` field within the FDRI metadata API datasets end point.
-These are specific for any given site (though typically all sites in a network will have the same colum names).
+These are specific for any given site (though typically all sites in a network will have the same column names).
 
 **Examples (for COSMOS network):**
 
