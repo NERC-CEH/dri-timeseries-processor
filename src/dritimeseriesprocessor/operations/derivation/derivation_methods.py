@@ -154,31 +154,6 @@ class MeanSeaLevelPressure(DerivationMethod):
 
 
 @DerivationMethod.register
-class QFactor(DerivationMethod):
-    "Calculate factor Q from Q 1hour processed data and REF_Q0, a site annotation"
-
-    name = "calc_factor_Q"
-    inupts = "Q"
-
-    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """Calculate Q factor [units = None]
-        See
-
-        Args:
-            columns: Dict with keys of required columns for the calculation.
-            -q: Mean Seal Level Pressure, Q [hPa]
-
-        Returns:
-            Polars expression computing Q factor
-        """
-
-        REF_Q0 = self.config.params["REF_Q0"]
-        Q = columns["q"]
-
-        return 1 + 0.0054 * (Q - REF_Q0)
-
-
-@DerivationMethod.register
 class PotentialEvapotranspiration30Min(DerivationMethod):
     """Calculate Potential Evapotranspiration (PET) (30 min).
 
