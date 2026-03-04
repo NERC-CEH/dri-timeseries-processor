@@ -213,3 +213,20 @@ class TestAbsoluteHumidity:
 
         result = AbsoluteHumidity().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestAtmosphericPressureFactor:
+    def test_calculation(self) -> None:
+        """Test absolute humidity (Q) calculation."""
+        config = create_method_config(
+            {
+                "ta": [1.977, 19.62, -2.144, 20.54],
+                "rh": [72.5, 57.62, 95.6, 65.41],
+            },
+            "q",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"q": [4.025, 9.736, 3.994, 11.664]}))
+
+        result = AbsoluteHumidity().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
