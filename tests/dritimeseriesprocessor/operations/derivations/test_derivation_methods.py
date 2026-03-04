@@ -43,6 +43,7 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
     params["altitude"] = 74
+    params["L"] = 137.04156
 
     return DataProcessingMethodConfig(method="test", params=params)
 
