@@ -29,7 +29,7 @@ from dritimeseriesprocessor.models.api_models.shared import (
 class appliesToDataset(IDModel):
     """Time series application specification."""
 
-    originating_site: IDModel = Field(..., alias="originatingSite")
+    originating_site: list[IDModel] = Field(..., alias="originatingSite")
 
 
 class DataProcessingConfigurationItem(IDModel):
