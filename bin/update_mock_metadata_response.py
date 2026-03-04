@@ -38,19 +38,19 @@ MULTI_FILE_BASE_URLS_MAPPING = {
     # Correction Configurations
     (
         "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
-        "ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToDataset=http://fdri.ceh.ac."
+        "ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToTimeSeries=http://fdri.ceh.ac."
         "uk/id/dataset/cosmos-"
     ): "correction_configurations",
     # Infill Configurations
     (
         "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
-        "ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToDataset=http://fdri.ceh.ac.uk/"
+        "ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/"
         "id/dataset/cosmos-"
     ): "infill_configurations",
     # QC Configurations
     (
         "https://dri-metadata-api.staging.eds.ceh.ac.uk/id/data-processing-configuration.json?type=http://fdri."
-        "ceh.ac.uk/ref/common/configuration-type/qc&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-"
+        "ceh.ac.uk/ref/common/configuration-type/qc&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-"
     ): "qc_configurations",
 }
 
