@@ -1,24 +1,24 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToTimeSeries=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw"
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-g2_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-tnr01c_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g1_30min_raw&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-g2_30min_raw"
     ]
   },
   "items": [
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/etlhua55iajf7tf7eslee2eipg7dk63n",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -105,7 +105,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/3u64nflsj3bvhgm78ofb8ehteg11e6so",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -192,7 +192,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/gjsokgphg28sd5ohboilb9nvresg872a",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -279,7 +279,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/416f2lmev5k44ne3901vja8fnhco0lbu",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -366,7 +366,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/bpjee70n8stcml2d4fq72v54ukfg3pm2",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -453,7 +453,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/p8s0jm862nuihaua2mf73b40tq97mj4k",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -540,7 +540,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/p4psjpun9pulstk26jk49griogg9jbvu",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -627,7 +627,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/gr0g4i3mk17887kd3onqu9n3o8oanpcj",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -714,7 +714,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/jrgl1h31aumuebkijk7d0139kh4is4t1",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -801,7 +801,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/fotamr8m42rniu538s654c5nglmgit0k",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -888,7 +888,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/s5iks3u15uddeikn3f8cufav5nbki4up",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -975,7 +975,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/4b1dq3s3erdridrqihijp8f8ta2miamq",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -1062,7 +1062,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/k54l5jputdqmst80jt9iro082e71dndp",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -1149,7 +1149,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/ranm6d5p2r3m0gsojsn7kmsdnpjgt2dj",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -1236,7 +1236,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/r5furufu9qpgl9c7k632af0e6d864pq1",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -1323,7 +1323,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/sgs3ula254o1nntr5h7edpfidm4c972b",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -1410,7 +1410,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/v011ss2vsddp28tchm2jhm7tpbp4b2hg",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -1497,7 +1497,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/i92dbdmh761mvgutq7jh4cr41kmaveab",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -1584,7 +1584,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/uvlnvr6qe2j9tsnstvpn1q8h3edd4f0o",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -1671,7 +1671,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/e03e40bpupkhsrvshh724hrc1phpvkab",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -1758,7 +1758,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/dbci60ck0eh31gpkct78iseu8l743snt",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -1845,7 +1845,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/dmag5ommp02arkfs8rnqa41cpnob9e09",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -1932,7 +1932,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/1c47oe02b40khf7kj89c7ike389dqdd1",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2019,7 +2019,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/m4uhhio91b6ial2fm8nc0viek2e9cklf",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2106,7 +2106,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/743p4qb8ljcauesi24rukisj6taai4if",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -2193,7 +2193,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/upuvq4j5i104j67d9juoc4r7qe3hgb6p",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2280,7 +2280,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/1jm7903i8u8lv3nnvqvq7k8pigggou91",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2367,7 +2367,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/01s0rd1kqeds77qusl9alou1fobma5lr",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2454,7 +2454,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/6dqcau9eu3eerfj5e0233avk1of9lkjk",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2541,7 +2541,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/j89gff6pg3qg6i2tamgkmjnkhofb63a8",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -2628,7 +2628,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/48gie1625h1jsvqtb37chb15bk5cl950",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2715,7 +2715,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/b2mghhdnvjavkmr193d7g4vft8vhqli2",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -2802,7 +2802,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/esji76lv1l02m6ung42b7finap22tn8c",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2889,7 +2889,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/9683j2l839ahgkrqotrkvhergf56jqgd",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -2976,7 +2976,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/f06dqbejh2tvisoj2cmpus95mcvsjjev",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -3063,7 +3063,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/e4qv3f8bu1blafs7eqqt332ckse3un72",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -3150,7 +3150,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/dlvo2rq0975t4ojl57arkg3b1e2s9a81",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -3237,7 +3237,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/i81tocrr9vavib3fj6subsvoelf1krvj",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -3324,7 +3324,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/310i44hbcvtv7hn60l0eu6hffl85o3i6",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -3411,7 +3411,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/1c5umvj879kvneuppu0q5en8u4hgtsov",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -3498,7 +3498,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g2_30min_raw-spike",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
           "originatingSite": {
@@ -3577,7 +3577,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-tnr01c_30min_raw-battery_v",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-tnr01c_30min_raw",
           "originatingSite": {
@@ -3683,7 +3683,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g2_30min_raw-battery_v",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
           "originatingSite": {
@@ -3789,7 +3789,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g1_30min_raw-samples",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
           "originatingSite": {
@@ -3895,7 +3895,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g1_30min_raw-hfp_removal",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
           "originatingSite": {
@@ -3999,7 +3999,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-spike",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -4078,7 +4078,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g2_30min_raw-samples",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
           "originatingSite": {
@@ -4184,7 +4184,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g2_30min_raw-hfp_removal",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
           "originatingSite": {
@@ -4288,7 +4288,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min_raw-spike",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
           "originatingSite": {
@@ -4367,7 +4367,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g1_30min_raw-spike",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
           "originatingSite": {
@@ -4446,7 +4446,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-battery_v",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -4552,7 +4552,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-tnr01c_30min_raw-error_code",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-tnr01c_30min_raw",
           "originatingSite": {
@@ -4653,7 +4653,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min_raw-battery_v",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
           "originatingSite": {
@@ -4759,7 +4759,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g2_30min_raw-battery_v",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -4865,7 +4865,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-tnr01c_30min_raw-range",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-tnr01c_30min_raw",
           "originatingSite": {
@@ -4969,7 +4969,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-hfp_removal",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -5073,7 +5073,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g2_30min_raw-range",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -5177,7 +5177,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-error_code",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -5278,7 +5278,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-samples",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -5384,7 +5384,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g2_30min_raw-hfp_removal",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -5488,7 +5488,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g2_30min_raw-samples",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -5594,7 +5594,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g2_30min_raw-range",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
           "originatingSite": {
@@ -5698,7 +5698,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g1_30min_raw-error_code",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
           "originatingSite": {
@@ -5799,7 +5799,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g2_30min_raw-error_code",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -5900,7 +5900,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min_raw-error_code",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
           "originatingSite": {
@@ -6001,7 +6001,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g2_30min_raw-error_code",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
           "originatingSite": {
@@ -6102,7 +6102,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-tnr01c_30min_raw-spike",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-tnr01c_30min_raw",
           "originatingSite": {
@@ -6181,7 +6181,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g1_30min_raw-range",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -6285,7 +6285,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-g2_30min_raw-spike",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -6364,7 +6364,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g1_30min_raw-battery_v",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
           "originatingSite": {
@@ -6470,7 +6470,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-g1_30min_raw-range",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
           "originatingSite": {
@@ -6574,7 +6574,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min_raw-range",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
           "originatingSite": {
@@ -6678,7 +6678,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-alic1-g1_30min_raw",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g1_30min_raw",
           "originatingSite": {
@@ -6792,7 +6792,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-chimn-tnr01c_30min_raw",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-tnr01c_30min_raw",
           "originatingSite": {
@@ -6906,7 +6906,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-alic1-g2_30min_raw",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g2_30min_raw",
           "originatingSite": {
@@ -7020,7 +7020,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-chimn-g1_30min_raw",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
           "originatingSite": {
@@ -7134,7 +7134,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-chimn-g2_30min_raw",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
           "originatingSite": {
@@ -7248,7 +7248,7 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-alic1-tnr01c_30min_raw",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_raw",
           "originatingSite": {

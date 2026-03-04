@@ -75,8 +75,8 @@ def map_processing_config_item(
         A ProcessingConfig domain object containing annotations and a list of MethodConfig objects which provide
         specific method configurations for use in the processing pipeline
     """
-    ts_id = item.applies_to_time_series[0].id
-    site_id = item.applies_to_time_series[0].originating_site.id
+    ts_id = item.applies_to_dataset[0].id
+    site_id = item.applies_to_dataset[0].originating_site.id
     config_type = ConfigurationType(extract_uri_id(item.type.id))
     annotations = extract_annotations(item.has_annotation)
 
