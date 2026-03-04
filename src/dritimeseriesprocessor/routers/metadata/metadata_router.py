@@ -78,7 +78,7 @@ class MetadataRouter:
         """
         url = f"{self.host}/id/data-processing-configuration"
         return self._fetch_by_batch(
-            url, "appliesToTimeSeries", dataset_ids, DataProcessingConfiguration, batch_size=batch_size
+            url, "appliesToDataset", dataset_ids, DataProcessingConfiguration, batch_size=batch_size
         )
 
     def fetch_sites(self, site_ids: list[str]) -> SiteResponse:

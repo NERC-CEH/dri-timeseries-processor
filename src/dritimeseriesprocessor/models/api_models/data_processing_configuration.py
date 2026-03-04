@@ -26,17 +26,17 @@ from dritimeseriesprocessor.models.api_models.shared import (
 )
 
 
-class AppliesToTimeSeries(IDModel):
+class AppliesToDataset(IDModel):
     """Time series application specification."""
 
-    originating_site: IDModel = Field(..., alias="originatingSite")
+    originating_site: list[IDModel] = Field(..., alias="originatingSite")
 
 
 class DataProcessingConfigurationItem(IDModel):
     """Data processing configuration item."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
-    applies_to_time_series: list[AppliesToTimeSeries] = Field(..., alias="appliesToTimeSeries")
+    applies_to_time_series: list[AppliesToDataset] = Field(..., alias="appliesToDataset")
     has_annotation: list[HasAnnotationItem] = Field(default_factory=list, alias="hasAnnotation")
     has_current_value: list[HasCurrentValue] | None = Field(default_factory=list, alias="hasCurrentValue")
     had_value: list[HadValue] | None = Field(default_factory=list, alias="hadValue")

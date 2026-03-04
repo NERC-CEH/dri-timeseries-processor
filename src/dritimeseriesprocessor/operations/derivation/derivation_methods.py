@@ -154,31 +154,6 @@ class MeanSeaLevelPressure(DerivationMethod):
 
 
 @DerivationMethod.register
-class QFactor(DerivationMethod):
-    "Calculate factor Q from Q 1hour processed data and REF_Q0, a site annotation"
-
-    name = "calc_factor_Q"
-    inupts = "Q"
-
-    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """Calculate Q factor [units = None]
-        See
-
-        Args:
-            columns: Dict with keys of required columns for the calculation.
-            -q: Mean Seal Level Pressure, Q [hPa]
-
-        Returns:
-            Polars expression computing Q factor
-        """
-
-        REF_Q0 = self.config.params["REF_Q0"]
-        Q = columns["q"]
-
-        return 1 + 0.0054 * (Q - REF_Q0)
-
-
-@DerivationMethod.register
 class PotentialEvapotranspiration30Min(DerivationMethod):
     """Calculate Potential Evapotranspiration (PET) (30 min).
 
@@ -393,3 +368,32 @@ class AbsoluteHumidity(DerivationMethod):
         Q2 = 273.15 + ta
 
         return (6.112 * Q1 * rh * 2.1674) / Q2
+
+
+@DerivationMethod.register
+class FactorAbsoluteHumidity(DerivationMethod):
+    """Calculate correction factor for absolute humidity Q.
+    This factor is used to correct neutron counts.
+    Emperical structure contant: 0.0054.
+    See Ronsolem et al. (2013) and Andreasen et al. (2017)
+    Uses processed data from absolute humidity Q and REF_Q0.
+    REF_Q0 is a site annotation.
+    """
+
+    name = "calc_factor_Q"
+    inputs = "q"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate absolute humidity correction factor to neutron counts.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            -q:  Q [g m-3] (grams per cubic meter)
+
+        Returns:
+            Polars expression for absolute humidity factor, [units = None]
+        """
+
+        REF_Q0 = self.config.params["REF_Q0"]
+        Q = columns["q"]
+
+        return 1 + 0.0054 * (Q - REF_Q0)
