@@ -21,9 +21,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -108,9 +110,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -246,9 +250,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -384,9 +390,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -471,9 +479,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -602,9 +612,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -706,9 +718,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -807,9 +821,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -911,9 +927,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1017,9 +1035,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1123,9 +1143,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1229,9 +1251,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1335,9 +1359,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1441,9 +1467,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1547,9 +1575,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1653,9 +1683,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1759,9 +1791,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1860,9 +1894,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -1964,9 +2000,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2068,9 +2106,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2199,9 +2239,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2305,9 +2347,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2406,9 +2450,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2510,9 +2556,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2616,9 +2664,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2717,9 +2767,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2823,9 +2875,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -2929,9 +2983,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3033,9 +3089,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3134,9 +3192,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3265,9 +3325,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3396,9 +3458,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3502,9 +3566,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3603,9 +3669,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3704,9 +3772,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3810,9 +3880,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -3914,9 +3986,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4020,9 +4094,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4121,9 +4197,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4225,9 +4303,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4331,9 +4411,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_processed",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4401,9 +4483,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4471,9 +4555,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-g_30min_processed",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4566,9 +4652,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g_30min_processed",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -4661,9 +4749,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasAnnotation": [
@@ -4775,9 +4865,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasAnnotation": [
@@ -4889,9 +4981,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasAnnotation": [
@@ -5003,9 +5097,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasAnnotation": [
@@ -5117,9 +5213,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasAnnotation": [
@@ -5231,9 +5329,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasAnnotation": [
@@ -5345,9 +5445,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
+            }
+          ]
         }
       ],
       "hasAnnotation": [
@@ -5459,9 +5561,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-swout_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
         }
       ],
       "hasAnnotation": [

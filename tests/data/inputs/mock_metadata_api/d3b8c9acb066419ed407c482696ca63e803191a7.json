@@ -21,9 +21,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -122,9 +124,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -228,9 +232,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -334,9 +340,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -438,9 +446,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
@@ -539,9 +549,11 @@
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+            }
+          ]
         }
       ],
       "hasCurrentValue": [
