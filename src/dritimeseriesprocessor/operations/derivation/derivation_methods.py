@@ -381,7 +381,7 @@ class AtmosphericPressureFactor(DerivationMethod):
     """
 
     name = "calc_factor_PA"
-    inputs = "pa"
+    inputs = ("pa",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate atmospheric pressure correction factor to neutron counts.

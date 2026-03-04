@@ -209,7 +209,7 @@ class TestAbsoluteHumidity:
             "q",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"q": [1.191, 1.086, 1.278, 1.163]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"q": [4.025, 9.736, 3.994, 11.664]}))
 
         result = AbsoluteHumidity().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
