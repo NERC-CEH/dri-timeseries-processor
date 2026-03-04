@@ -387,7 +387,7 @@ class FactorAbsoluteHumidity(DerivationMethod):
         """Calculate absolute humidity correction factor to neutron counts.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            -q:  Q [g m-3] (grams per cubic meter)
+            q:  Q [g m-3] (grams per cubic meter)
 
         Returns:
             Polars expression for absolute humidity factor, [units = None]
