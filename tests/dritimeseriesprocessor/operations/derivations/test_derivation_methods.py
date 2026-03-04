@@ -7,8 +7,8 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidity,
+    AbsoluteHumidityFactor,
     DerivationMethod,
-    FactorAbsoluteHumidity,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
@@ -229,5 +229,5 @@ class TestAbsoluteHumidityFactor:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.977, 1.008, 0.977, 1.018]}))
 
-        result = FactorAbsoluteHumidity().run(config)
+        result = AbsoluteHumidityFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)

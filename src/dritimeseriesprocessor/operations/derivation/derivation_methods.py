@@ -371,7 +371,7 @@ class AbsoluteHumidity(DerivationMethod):
 
 
 @DerivationMethod.register
-class FactorAbsoluteHumidity(DerivationMethod):
+class AbsoluteHumidityFactor(DerivationMethod):
     """Calculate correction factor for absolute humidity Q.
     This factor is used to correct neutron counts.
     Emperical structure contant: 0.0054.
