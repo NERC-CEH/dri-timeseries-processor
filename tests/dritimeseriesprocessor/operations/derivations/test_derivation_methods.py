@@ -11,6 +11,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
+    NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
 )
 from utils.data_creation import dataframe_to_timeframe
@@ -43,6 +44,8 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
     params["altitude"] = 74
+    params["REF_C0"] = 152.035  # cosmos-holln
+    params["GAMMA"] = 1.29291  # cosmos-holln
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -212,4 +215,15 @@ class TestAbsoluteHumidity:
         expected = dataframe_to_timeframe(pl.DataFrame({"q": [4.025, 9.736, 3.994, 11.664]}))
 
         result = AbsoluteHumidity().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestNeutronIntensityFactor:
+    def test_calculation(self) -> None:
+        """Test incoming neutron intensity factor calculation."""
+        config = create_method_config({"cts": [1.977, 19.62, -2.144, 20.54]}, "factor_inten")
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_inten": [4.025, 9.736, 3.994, 11.664]}))
+
+        result = NeutronIntensityFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)

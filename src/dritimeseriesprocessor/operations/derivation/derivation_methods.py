@@ -368,3 +368,32 @@ class AbsoluteHumidity(DerivationMethod):
         Q2 = 273.15 + ta
 
         return (6.112 * Q1 * rh * 2.1674) / Q2
+
+
+@DerivationMethod.register
+class NeutronIntensityFactor(DerivationMethod):
+    """Calculate correction factor for the incoming neutron count intensity.
+    See COSMOS documentation
+    GAMMA: Scaling factor to adjust for geomagnetic effects
+    REF_C0: Site annotation to account for neutron counts due to site calibration
+    cts: From NMDB_COUNTS at JUNG site.
+    """
+
+    name = "calc_factor_inten"
+    inputs = ("cts",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate incoming neutron count intensity correction factor.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            cts: NMDB_COUNTS
+
+        Returns:
+            Polars expression for incoming neutron count intensity factor, [units = None]
+        """
+
+        C0 = self.config.params["REF_C0"]
+        GAMMA = self.config.params["GAMMA"]
+        C = columns["cts"]
+
+        return 1 / (((C / C0) - 1) * GAMMA + 1)
