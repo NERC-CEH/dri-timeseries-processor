@@ -76,6 +76,22 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
+          "identifier": [
+            "COSMOS-ALIC1-LWIN_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
+          "identifier": [
+            "COSMOS-ALIC1-LWIN_30MIN_RAW"
+          ]
+        }
       ]
     },
     {
@@ -136,6 +152,22 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+          "identifier": [
+            "COSMOS-ALIC1-LWOUT_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
+          "identifier": [
+            "COSMOS-ALIC1-LWOUT_30MIN_RAW"
+          ]
         }
       ]
     }

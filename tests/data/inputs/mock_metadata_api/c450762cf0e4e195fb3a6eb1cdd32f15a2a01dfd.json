@@ -320,6 +320,22 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-PA_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-PA_30MIN_RAW"
+          ]
+        }
       ]
     },
     {
@@ -380,6 +396,22 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-TA_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-TA_30MIN_RAW"
+          ]
         }
       ]
     },
@@ -442,6 +474,22 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-rh_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-RH_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-rh_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-RH_30MIN_RAW"
+          ]
+        }
       ]
     },
     {
@@ -503,6 +551,22 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-WS_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-WS_30MIN_RAW"
+          ]
+        }
       ]
     },
     {
@@ -558,6 +622,46 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_processed",
+          "identifier": [
+            "COSMOS-CHIMN-G1_30MIN_PROCESSED"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-G2_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-G1_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_processed",
+          "identifier": [
+            "COSMOS-CHIMN-G2_30MIN_PROCESSED"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g2_30min_processed",
+          "identifier": [
+            "COSMOS-CHIMN-G2_30MIN_PROCESSED"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g1_30min_processed",
+          "identifier": [
+            "COSMOS-CHIMN-G1_30MIN_PROCESSED"
+          ]
         }
       ]
     }
