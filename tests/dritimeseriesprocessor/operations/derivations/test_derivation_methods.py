@@ -533,9 +533,10 @@ class TestIsSnowDay:
 class TestNeutronIntensityFactor:
     def test_calculation(self) -> None:
         """Test incoming neutron intensity factor calculation."""
-        config = create_method_config({"cts": [1.977, 19.62, -2.144, 20.54]}, "factor_inten")
+        config = create_method_config({"cts": [150.1, 151.2, 153.3, 154.4]}, "factor_inten")
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_inten": [4.025, 9.736, 3.994, 11.664]}))
+        # Expected values should be positive
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_inten": [1.016, 1.007, 0.989, 0.980]}))
 
         result = NeutronIntensityFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
