@@ -76,6 +76,22 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-TA_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-TA_30MIN_RAW"
+          ]
+        }
       ]
     }
   ]

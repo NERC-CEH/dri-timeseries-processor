@@ -76,6 +76,22 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw",
+          "identifier": [
+            "COSMOS-HOLLN-TA_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw",
+          "identifier": [
+            "COSMOS-HOLLN-TA_30MIN_RAW"
+          ]
+        }
       ]
     },
     {
@@ -157,14 +173,14 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/scans_metpak-total_prec-unitless-pt30m-pt30m",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m",
           "prefLabel": [
-            "Total number of scans over the preceding 30 minutes (unitless)"
+            "Total number of samples over the preceding 30 minutes (unitless)"
           ],
           "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/scans_metpak",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/samples_count",
             "prefLabel": [
-              "Number of MetPak samples within interval"
+              "Number of samples"
             ]
           },
           "hasUnit": {
@@ -174,7 +190,7 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/scans_metpak-total_prec-unitless-pt30m-pt30m#aggregation",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m#aggregation",
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
