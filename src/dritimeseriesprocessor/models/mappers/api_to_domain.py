@@ -76,7 +76,7 @@ def map_processing_config_item(
         specific method configurations for use in the processing pipeline
     """
     ts_id = item.applies_to_time_series[0].id
-    site_id = item.applies_to_time_series[0].originating_site.id
+    site_id = item.applies_to_time_series[0].originating_site[0].id
     config_type = ConfigurationType(extract_uri_id(item.type.id))
     annotations = extract_annotations(item.has_annotation)
 

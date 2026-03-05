@@ -390,6 +390,7 @@ class NeutronIntensityFactor(DerivationMethod):
 
         Returns:
             Polars expression for incoming neutron count intensity factor, [units = None]
+            Values should be positive.
         """
 
         C0 = self.config.params["REF_C0"]
