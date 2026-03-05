@@ -129,7 +129,7 @@ class TestFetchProcessingConfigs:
         router.fetch_processing_configs(dataset_ids)
 
         expected_url = "example_host/id/data-processing-configuration"
-        dataset_params = [("appliesToTimeSeries", dataset_id) for dataset_id in dataset_ids]
+        dataset_params = [("appliesToDataset", dataset_id) for dataset_id in dataset_ids]
         mock_api_manager.make_paginated_api_call.assert_called_once_with(expected_url, tuple(dataset_params))
 
 

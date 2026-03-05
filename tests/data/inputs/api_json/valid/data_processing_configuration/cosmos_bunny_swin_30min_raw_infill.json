@@ -1,29 +1,31 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration"
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw&type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration"
     ]
   },
   "items": [
     {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
-      "appliesToTimeSeries": [
+      "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-          "originatingSite": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
-          }
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny"
+            }
+          ]
         }
       ],
       "hasAnnotation": [

@@ -78,7 +78,7 @@ class MetadataRouter:
         """
         url = f"{self.host}/id/data-processing-configuration"
         return self._fetch_by_batch(
-            url, "appliesToTimeSeries", dataset_ids, DataProcessingConfiguration, batch_size=batch_size
+            url, "appliesToDataset", dataset_ids, DataProcessingConfiguration, batch_size=batch_size
         )
 
     def fetch_sites(self, site_ids: list[str]) -> SiteResponse:
@@ -137,7 +137,7 @@ class MetadataRouter:
 
         Args:
             url: Endpoint url.
-            param: The query parameter key used for each value (e.g. "id", "appliesToTimeSeries").
+            param: The query parameter key used for each value (e.g. "id", "appliesToDataset").
             values: List of values to repeat for given param.
             model: Pydantic model class used to validate the merged response.
             fixed_params: Additional query params added to every request (e.g. ("_view", "timeseries")).

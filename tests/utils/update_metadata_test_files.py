@@ -22,10 +22,10 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://dri-metadata-api-dev.staging.eds.ceh.ac.uk"
 MAPPING = {
     "data_processing_configuration": {
-        "cosmos_bunny_lwin_30min_raw_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw",
-        "cosmos_bunny_swin_30min_raw_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-        "cosmos_bunny_swin_30min_raw_infill.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-        "cosmos_bunny_swin_30min_raw_qc.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc&appliesToTimeSeries=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
+        "cosmos_bunny_lwin_30min_raw_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw",
+        "cosmos_bunny_swin_30min_raw_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
+        "cosmos_bunny_swin_30min_raw_infill.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
+        "cosmos_bunny_swin_30min_raw_qc.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
     },
     "dataset_timeseries": {
         "cosmos_bunny_precip_30min_raw.json": f"{BASE_URL}/id/dataset/cosmos-bunny-precip_30min_raw.json?_view=timeseries",
