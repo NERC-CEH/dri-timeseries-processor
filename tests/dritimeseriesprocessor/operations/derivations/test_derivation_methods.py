@@ -7,6 +7,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidity,
+    AbsoluteHumidityFactor,
     Albedo,
     AtmosphericPressureFactor,
     DerivationMethod,
@@ -221,6 +222,21 @@ class TestAbsoluteHumidity:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
 
+class TestAbsoluteHumidityFactor:
+    def test_calculation(self) -> None:
+        """Test absolute humidity correction factor calculation."""
+        config = create_method_config(
+            {
+                "q": [4.025, 9.736, 3.994, 11.664],
+            },
+            "factor_q",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.977, 1.008, 0.977, 1.018]}))
+        result = AbsoluteHumidityFactor().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
 class TestAtmosphericPressureFactor:
     def test_calculation(self) -> None:
         """Test atmospheric pressure factor calculation."""
@@ -230,7 +246,6 @@ class TestAtmosphericPressureFactor:
         )
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.191, 1.086, 1.278, 1.163]}))
-
         result = AtmosphericPressureFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
