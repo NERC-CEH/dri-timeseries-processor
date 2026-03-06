@@ -8,6 +8,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidity,
     AbsoluteHumidityFactor,
+    AtmosphericPressureFactor,
     DerivationMethod,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
@@ -45,6 +46,7 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["resolution"] = "PT1H"
     params["altitude"] = 74  # cosmos-holln
     params["REF_Q0"] = 8.27  # cosmos-holln
+    params["L"] = 137.04156  # cosmos-holln
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -228,6 +230,18 @@ class TestAbsoluteHumidityFactor:
         )
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.977, 1.008, 0.977, 1.018]}))
-
         result = AbsoluteHumidityFactor().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestAtmosphericPressureFactor:
+    def test_calculation(self) -> None:
+        """Test atmospheric pressure factor calculation."""
+        config = create_method_config(
+            {"pa": [1024.0, 1011.365, 1033.649, 1020.695]},
+            "factor_pa",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.191, 1.086, 1.278, 1.163]}))
+        result = AtmosphericPressureFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)

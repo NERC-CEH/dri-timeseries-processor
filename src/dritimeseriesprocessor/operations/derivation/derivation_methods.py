@@ -407,3 +407,33 @@ class AbsoluteHumidityFactor(DerivationMethod):
         Q = columns["q"]
 
         return 1 + 0.0054 * (Q - REF_Q0)
+
+
+class AtmosphericPressureFactor(DerivationMethod):
+    """Calculate correction factor for atmospheric pressure, PA.
+    This factor is used to correct neutron counts.
+    See CRNPy correction factor, Desilets & Zreda, 2003: https://doi.org/10.1016/S0012-821X(02)01088-9
+    Uses processed data from atmospheric pressure.
+    Barometric attenuation length, L is a site annotation.
+    P0: "Arbitrary reference pressure [hPa]: Zreda et al. (2012) HESS" - set to a constant of 1000.0
+    See: https://doi.org/10.5194/hess-16-4079-2012
+    """
+
+    name = "calc_factor_PA"
+    inputs = ("pa",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate atmospheric pressure correction factor to neutron counts.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            pa:  PA [hPa]
+
+        Returns:
+            Polars expression for atmospheric pressure factor, [units = None]
+        """
+
+        L = self.config.params["L"]
+        PA = columns["pa"]
+        P0 = 1000
+
+        return ((PA - P0) / L).exp()
