@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
@@ -368,3 +369,74 @@ class AbsoluteHumidity(DerivationMethod):
         Q2 = 273.15 + ta
 
         return (6.112 * Q1 * rh * 2.1674) / Q2
+
+
+@DerivationMethod.register
+class Albedo(DerivationMethod):
+    """
+    Calculate albedo from incoming and outgoing short wave radiation.
+    Calculation uses latitude site attribute.
+    See reference: https://www.fao.org/4/x0490e/x0490e07.htm
+
+    This calculation does not account for correction due to site being on a slope.
+    This is accounted for in a correction method.
+    """
+
+    name = "calc_albedo"
+    inputs = ("swin", "swout")
+
+    def solar_zenith(date_times: str, latitude: float) -> pl.Expr:
+        """
+        Calculate angle of the sun from the vertical
+        Taken from https://en.wikipedia.org/wiki/Solar_zenith_angle, with some
+        approximations
+
+        """
+
+        # Convert latitude to radians
+        phi = latitude * math.pi / 180
+
+        # Hour angle h (radians)
+        h = (pl.col(date_times).dt.hour() + pl.col(date_times).dt.minute() / 60 - 12) * (2 * math.pi / 24)
+
+        # Day of year (N)
+        N = pl.col(date_times).dt.ordinal_day()
+
+        # Declination delta (radians)
+        delta = -(23.44 * math.pi / 180) * pl.cos((2 * math.pi / 365) * (N + 10))
+
+        # cos(theta_s)
+        cos_theta_s = pl.sin(phi) * pl.sin(delta) + pl.cos(phi) * pl.cos(delta) * pl.cos(h)
+
+        # Return solar zenith angle in radians
+        return pl.arccos(cos_theta_s)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate albedo [units = None] (fraction)
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "swin": Shortwave incoming radiation [W m-2]
+            - "swout": Shortwave outgoing radiation [" m-2]
+        Returns:
+            Polars expression computing albedo.
+        """
+        swin = columns["swin"]
+        swout = columns["swout"]
+        latitude = self.config.params["LATITUDE"]
+        albedo = swout / swin
+
+        # Remove night time values
+        df = pl.DataFrame({"ALBEDO": albedo, "SWIN": swin})
+        df["THETA_S"] = self.solar_zenith(df.index, latitude)
+
+        # Calculate theoretical estimate of SWIN for clear sky
+        df["SWIN_CLEAR"] = pl.cos(df["THETA_S"])
+        # Eliminate "negative nightime SWIN"
+        df.loc[df.SWIN_CLEAR <= 0, "ALBEDO"] = pl.nan
+
+        albedo = df["ALBEDO"].copy()
+
+        albedo[albedo < 0.0] = 0.0
+        albedo[albedo > 1.0] = 1.0
+
+        return albedo
