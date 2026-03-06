@@ -390,7 +390,6 @@ class Albedo(DerivationMethod):
         Calculate angle of the sun from the vertical
         Taken from https://en.wikipedia.org/wiki/Solar_zenith_angle, with some
         approximations
-
         """
 
         # Convert latitude to radians
