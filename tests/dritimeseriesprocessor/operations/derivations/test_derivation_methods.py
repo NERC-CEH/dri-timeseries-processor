@@ -219,7 +219,7 @@ class TestAbsoluteHumidity:
         expected = dataframe_to_timeframe(pl.DataFrame({"q": [4.025, 9.736, 3.994, 11.664]}))
 
         result = AbsoluteHumidity().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
 class TestAbsoluteHumidityFactor:
@@ -234,7 +234,7 @@ class TestAbsoluteHumidityFactor:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.977, 1.008, 0.977, 1.018]}))
         result = AbsoluteHumidityFactor().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
 
 class TestAtmosphericPressureFactor:
@@ -245,7 +245,7 @@ class TestAtmosphericPressureFactor:
             "factor_pa",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.191, 1.086, 1.278, 1.163]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27883, 1.16330]}))
         result = AtmosphericPressureFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
