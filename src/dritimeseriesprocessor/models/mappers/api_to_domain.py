@@ -167,8 +167,13 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
             # Literal value
             if has_value.value is not None:
                 # Resolve any special case where we need to extract parameter from the site metadata
-                param_name, value = resolve_site_attribute(param_name, has_value.value[0], site_metadata)
-                collected_args[param_name].append(value)
+
+                if param_name == "site_attribute":
+                    param_name, values = resolve_site_attribute(has_value.value, site_metadata)
+                    collected_args[param_name].append(values)
+                elif param_name == "annotation":
+                    values = getattr(site_metadata, param_name)
+                    collected_args[param_name].append(values)
 
             # Reference value (dependent dataset)
             if has_value.value_reference is not None:
@@ -189,7 +194,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     return params
 
 
-def resolve_site_attribute(param_name: str, value: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
+def resolve_site_attribute(values: list[str], site_metadata: SiteMetadata) -> tuple[str, Any]:
     """Resolve any special case where we need to extract parameter from the site metadata.
 
     Args:
@@ -200,12 +205,11 @@ def resolve_site_attribute(param_name: str, value: str, site_metadata: SiteMetad
     Returns:
         Resolved parameter name and value.
     """
-    if param_name.lower() != "site_attribute":
-        return param_name, value
-
-    actual_param = value.lower()
-    actual_value = getattr(site_metadata, actual_param)
-    return actual_param, actual_value
+    actual_values = []
+    for value in values:
+        actual_param = value.lower()
+        actual_values.append(getattr(site_metadata, actual_param))
+    return actual_param, actual_values
 
 
 def map_site_metadata(item: SiteItem) -> SiteMetadata:
