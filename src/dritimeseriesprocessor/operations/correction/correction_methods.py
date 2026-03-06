@@ -241,7 +241,7 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
     name = "albedo_south_slope_correction"
     flag_value = 128
 
-    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+    def albedo_south_slope_correction(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         s_max = 1200
         s_min_fc = 0.333333
         theta_g = config.params.get("theta_g")
@@ -273,8 +273,7 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
         # Apply a stronger correction to the albedo for clear days. The correction
         # mimics angling the radiometer to match the slope.
         # Assume that neither the solar rays nor the slope has any east-west
-        # gradient (valid on southerly aspects around solar noon only)!!
-
+        # gradient (valid on southerly aspects around solar noon only)
         tf = tf.with_df(
             tf.df.with_columns(
                 pl.col("ALBEDO")
@@ -283,9 +282,15 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
                     - pl.col("BETA")
                     + pl.col("BETA") * pl.cos(pl.col("THETA_S")) / pl.cos(pl.col("THETA_S"))
                     - theta_g
-                )
+                ).alias("ALBEDO")
             )
         )
-        # date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
+        return
 
-        return tf
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
+        return tf.with_df(
+            tf.df.with_columns(
+                pl.when(date_filter).then(self.albedo_south_slope_correction(tf, config)).otherwise(pl.col("ALBEDO"))
+            )
+        )

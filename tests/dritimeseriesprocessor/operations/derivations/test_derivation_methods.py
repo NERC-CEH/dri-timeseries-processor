@@ -7,6 +7,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidity,
+    Albedo,
     AtmosphericPressureFactor,
     DerivationMethod,
     MeanSeaLevelPressure,
@@ -43,8 +44,11 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["output_col"] = output_col
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
-    params["altitude"] = 74  # cosmos-holln
-    params["L"] = 137.04156  # cosmos-holln
+
+    # cosmos-holln site attributes/annotations
+    params["altitude"] = 74
+    params["L"] = 137.04156
+    params["LATITUDE"] = 54.110665
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -214,7 +218,7 @@ class TestAbsoluteHumidity:
         expected = dataframe_to_timeframe(pl.DataFrame({"q": [4.025, 9.736, 3.994, 11.664]}))
 
         result = AbsoluteHumidity().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
 
 class TestAtmosphericPressureFactor:
@@ -228,4 +232,18 @@ class TestAtmosphericPressureFactor:
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.191, 1.086, 1.278, 1.163]}))
 
         result = AtmosphericPressureFactor().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
+
+
+class TestAlbedo:
+    def test_albedo(self) -> None:
+        """Test albedo calculation, without south slope correction"""
+        config = create_method_config(
+            {"swin": [22.9, 19.3, 14, 25.1], "swout": [4.9, 4.2, 3, 5.5]},
+            "albedo",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"albedo": [1.191, 1.086, 1.278, 1.163]}))
+
+        result = Albedo().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
