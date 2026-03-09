@@ -128,8 +128,7 @@ celerybeat.pid
 .venv
 env/
 venv/
-light-env
-light-env/
+jupyter-venv/
 ENV/
 env.bak/
 venv.bak/

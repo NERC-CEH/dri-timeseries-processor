@@ -171,9 +171,12 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                 if param_name == "site_attribute":
                     param_name, values = resolve_site_attribute(has_value.value, site_metadata)
                     collected_args[param_name].append(values)
-                elif param_name == "annotation":
-                    values = getattr(site_metadata, param_name)
-                    collected_args[param_name].append(values)
+                # elif param_name == "annotation":
+                # for param in has_value.value:
+                # values = getattr(site_metadata, param)
+                #        collected_args[param_name].append(values)
+                # else:
+                #    collected_args[param_name].append(has_value.value)
 
             # Reference value (dependent dataset)
             if has_value.value_reference is not None:
