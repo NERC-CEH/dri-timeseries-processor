@@ -1,109 +1,102 @@
 """End-to-end EddyPro processing pipeline.
 
-Orchestrates: config generation -> binary execution -> output collection.
+Orchestrates the complete EddyPro workflow for a single site:
+  1. Write EddyPro project (.eddypro) and instrument (.metadata) config files.
+  2. Run eddypro_rp then eddypro_fcc via EddyProRunner.
+  3. Upload raw EddyPro output directory to S3 for archival.
 """
 
 import logging
-import shutil
+import tempfile
 from datetime import date
 from pathlib import Path
 
+from dritimeseriesprocessor import PACKAGE_ROOT
+from dritimeseriesprocessor.io_backend.flux_io import FluxS3Client
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
+from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.operations.eddypro.eddypro_config_builder import EddyProConfigBuilder
-from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProResult, EddyProRunner
+from dritimeseriesprocessor.operations.eddypro.eddypro_metadata_mapper import EddyProMetadataMapper
+from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
 
 logger = logging.getLogger(__name__)
 
+_TEMPLATES_DIR = PACKAGE_ROOT / "__assets__" / "eddypro_templates"
+_PROJECT_TEMPLATE = _TEMPLATES_DIR / "processing_template.eddypro"
+_METADATA_TEMPLATE = _TEMPLATES_DIR / "metadata_template.metadata"
+
 
 class EddyProPipeline:
-    """Orchestrates the full EddyPro processing flow.
-
-    Steps:
-      1. Create working subdirectories (config/, output/)
-      2. Build the .eddypro project file from the template
-      3. Copy the .metadata file from the template
-      4. Copy biomet and dynamic metadata files if provided
-      5. Run eddypro_rp and eddypro_fcc
-      6. Return the result (output lives in output_dir)
-    """
+    """Orchestrates the full EddyPro processing flow for a single site."""
 
     def __init__(
         self,
         runner: EddyProRunner,
-        config_builder: EddyProConfigBuilder,
-        project_template: Path,
-        metadata_template: Path,
+        config_builder_cls: type[EddyProConfigBuilder] = EddyProConfigBuilder,
     ) -> None:
         self._runner = runner
-        self._config_builder = config_builder
-        self._project_template = project_template
-        self._metadata_template = metadata_template
+        self._config_builder_cls = config_builder_cls
 
     def run(
         self,
         raw_data_dir: Path,
-        working_dir: Path,
+        method_config: DataProcessingConfig,
+        site_metadata: SiteMetadata,
         start_date: date,
         end_date: date,
-        biomet_file: Path | None = None,
-        dynamic_metadata_file: Path | None = None,
-    ) -> EddyProResult:
-        """Run the full EddyPro processing pipeline.
+        flux_s3_client: FluxS3Client,
+        network: str,
+        processed_source_bucket: str,
+        processed_dataset: str,
+    ) -> None:
+        if not site_metadata.alt_id:
+            raise ValueError(f"Site metadata missing alt_id (required for EddyPro): {site_metadata.site_id}")
+        site_id = site_metadata.alt_id
 
-        Args:
-            raw_data_dir: Directory containing raw .dat files.
-            working_dir: Base working directory for this run.
-            start_date: Processing window start date.
-            end_date: Processing window end date.
-            biomet_file: Optional path to biomet CSV file.
-            dynamic_metadata_file: Optional path to dynamic metadata file.
+        run_spec = EddyProMetadataMapper().build_run_spec(method_config, site_metadata)
+        config_builder = self._config_builder_cls(run_spec=run_spec)
 
-        Returns:
-            EddyProResult with return codes, captured output, and output directory.
-        """
-        config_dir = working_dir / "config"
-        output_dir = working_dir / "output"
-        config_dir.mkdir(parents=True, exist_ok=True)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix=f"eddypro_{site_id}_") as tmpdir:
+            working_dir = Path(tmpdir)
+            logger.info("EddyPro working directory: %s", working_dir)
 
-        logger.info("EddyPro pipeline starting: working_dir=%s", working_dir)
+            config_dir = working_dir / "config"
+            output_dir = working_dir / "output"
+            config_dir.mkdir(parents=True, exist_ok=True)
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Prepare optional ancillary files in the config directory
-        local_biomet = None
-        if biomet_file:
-            local_biomet = config_dir / biomet_file.name
-            shutil.copy2(biomet_file, local_biomet)
-            logger.info("Copied biomet file to: %s", local_biomet)
+            project_file = config_builder.build_project_file(
+                template_path=_PROJECT_TEMPLATE,
+                working_dir=config_dir,
+                raw_data_dir=raw_data_dir,
+                output_dir=output_dir,
+                start_date=start_date,
+                end_date=end_date,
+            )
+            config_builder.build_metadata_file(
+                template_path=_METADATA_TEMPLATE,
+                working_dir=config_dir,
+                start_date=start_date,
+                end_date=end_date,
+            )
 
-        local_dynamic_metadata = None
-        if dynamic_metadata_file:
-            local_dynamic_metadata = config_dir / dynamic_metadata_file.name
-            shutil.copy2(dynamic_metadata_file, local_dynamic_metadata)
-            logger.info("Copied dynamic metadata file to: %s", local_dynamic_metadata)
+            logger.info("Running EddyPro for site %s (window: %s to %s)", site_id, start_date, end_date)
+            result = self._runner.run(project_file=project_file, output_dir=output_dir)
+            logger.info(
+                "EddyPro completed for site %s (rp=%d, fcc=%d)",
+                site_id,
+                result.return_code_rp,
+                result.return_code_fcc,
+            )
 
-        # Build project and metadata files
-        project_file = self._config_builder.build_project_file(
-            template_path=self._project_template,
-            working_dir=config_dir,
-            raw_data_dir=raw_data_dir,
-            output_dir=output_dir,
-            start_date=start_date,
-            end_date=end_date,
-            biomet_file=local_biomet,
-            dynamic_metadata_file=local_dynamic_metadata,
-        )
+            flux_s3_client.upload_output_files(
+                bucket=processed_source_bucket,
+                output_dir=result.output_dir,
+                network=network,
+                site=site_id,
+                processed_dataset=processed_dataset,
+                start_date=start_date,
+                end_date=end_date,
+            )
 
-        self._config_builder.build_metadata_file(
-            template_path=self._metadata_template,
-            working_dir=config_dir,
-            start_date=start_date,
-            end_date=end_date,
-        )
-
-        # Run EddyPro (eddypro_rp = raw data processor; eddypro_fcc = flux computation/corrections)
-        result = self._runner.run(
-            project_file=project_file,
-            output_dir=output_dir,
-        )
-
-        logger.info("EddyPro pipeline completed: rp=%d, fcc=%d", result.return_code_rp, result.return_code_fcc)
-        return result
+            logger.info("EddyPro pipeline complete for site %s", site_id)

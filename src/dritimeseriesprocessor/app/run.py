@@ -14,18 +14,16 @@ required infrastructure components, including:
 import logging
 from datetime import date, datetime
 
-from dritimeseriesprocessor import PACKAGE_ROOT
 from dritimeseriesprocessor.cli.selection import RunConfig, SelectionOption
 from dritimeseriesprocessor.configuration.app_config import AppConfig, app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_factory
+from dritimeseriesprocessor.io_backend.flux_io import FluxS3Client
 from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
 from dritimeseriesprocessor.metrics.metrics import Metrics
-from dritimeseriesprocessor.processing.eddypro_processor import EddyProProcessor
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.routers.data.data_router import DuckDBDataRouter
-from dritimeseriesprocessor.routers.data.flux_data_router import FluxDataRouter
 from dritimeseriesprocessor.routers.metadata.flux_metadata_loader import FluxMetadataLoader
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
@@ -45,77 +43,21 @@ def run_from_config(run_config: RunConfig) -> None:
     Args:
         run_config: Runtime configuration describing the network, dataset selection constraints, and temporal window.
     """
-    if run_config.mode == CliSelectionMode.EDDYPRO:
-        _run_eddypro(run_config)
-        return
-
-    processor = _build_processor(run_config.network, run_config.selection, run_config.start_date, run_config.end_date)
-    processor.run()
-
-
-def _run_eddypro(run_config: RunConfig) -> None:
-    """Run EddyPro processing.
-
-    For local development, metadata is loaded from JSON fixtures via FluxMetadataLoader.
-    This produces the same domain model objects (TimeSeriesContainer, SiteMetadata) that
-    the real MetadataRouter + DAG builder would produce in production.
-    """
-    cfg = app_config()
-    storage = _build_storage(cfg)
-    flux_router = FluxDataRouter(storage)
-
-    # Extract site identifiers from selection options
-    sites = _extract_sites_from_selection(run_config.selection)
-
-    loader = FluxMetadataLoader(network=run_config.network, sites=sites)
-    datasets = loader.load_datasets()
-    site_metadata = loader.load_site_metadata()
-
-    # Build a dependency graph for ordering (mirrors the time-series pipeline).
-    # For local runs we populate it from fixtures; in production this should be built
-    # from the metadata API via `graph.build()`.
-    graph = DatasetDependencyGraph(
-        metadata_router=MetadataRouter(cfg.metadata_api_url),
-        network=run_config.network,
-        selection=run_config.selection,
-    )
-    graph.datasets = datasets
-    graph.site_metadata = site_metadata
-
-    templates_dir = PACKAGE_ROOT / "__assets__" / "eddypro_templates"
-
-    processor = EddyProProcessor(
-        graph=graph,
-        flux_data_router=flux_router,
-        project_template=templates_dir / "processing_template.eddypro",
-        metadata_template=templates_dir / "metadata_template.metadata",
-        start_date=run_config.start_date,
-        end_date=run_config.end_date,
+    processor = _build_processor(
+        run_config.network,
+        run_config.selection,
+        run_config.start_date,
+        run_config.end_date,
+        run_config.mode,
     )
     processor.run()
-
-
-def _extract_sites_from_selection(selection: list[SelectionOption]) -> list[str]:
-    """Extract a deduplicated, sorted list of site identifiers from selection options.
-
-    Args:
-        selection: Selection options from the RunConfig.
-
-    Returns:
-        Sorted list of unique site identifiers.
-    """
-    sites = set()
-    for option in selection:
-        if option.sites:
-            sites.update(option.sites)
-    return sorted(sites)
-
 
 def _build_processor(
     network: str,
     selection: list[SelectionOption],
     start_date: date | datetime,
     end_date: date | datetime,
+    mode: CliSelectionMode,
 ) -> TimeSeriesProcessor:
     """Build a TimeSeriesProcessor object.
 
@@ -148,7 +90,20 @@ def _build_processor(
     data_router = DuckDBDataRouter(reader)
     metrics = Metrics(cfg.pushgateway_url, "timeseries-processor")
 
-    graph = _build_dependency_graph(network, selection, metadata_router)
+    if mode == CliSelectionMode.EDDYPRO:
+        selected_sites: list[str] = []
+        for item in selection:
+            selected_sites.extend(item.sites or [])
+
+        loader = FluxMetadataLoader(network=network, sites=selected_sites or None)
+        local_graph_data = loader.load()
+        graph = DatasetDependencyGraph(network=network, selection=selection, metadata_router=metadata_router)
+        graph.datasets = local_graph_data.datasets
+        graph.site_metadata = local_graph_data.site_metadata
+    else:
+        graph = _build_dependency_graph(network, selection, metadata_router)
+
+    flux_s3_client = FluxS3Client(storage_client=storage) if mode == CliSelectionMode.EDDYPRO else None
 
     return TimeSeriesProcessor(
         graph=graph,
@@ -157,6 +112,7 @@ def _build_processor(
         start_date=start_date,
         end_date=end_date,
         metrics=metrics,
+        flux_s3_client=flux_s3_client,
     )
 
 
