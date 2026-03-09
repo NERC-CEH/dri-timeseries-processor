@@ -45,7 +45,6 @@ jobs:
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}
-      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
   
   build-test-deploy-docker-production:
     if: ${{ github.ref_name == 'production' || github.head_ref == 'production' }}
@@ -58,7 +57,6 @@ jobs:
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_PRODUCTION }}
-      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
 
   build-test-deploy-docker-eddypro-current:
     needs: [test-python]
