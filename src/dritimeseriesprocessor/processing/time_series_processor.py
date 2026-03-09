@@ -108,10 +108,11 @@ class TimeSeriesProcessor:
         for dataset_id in layer:
             try:
                 self.process_dataset(dataset_id)
-            except Exception:
+            except Exception as err:
                 self.metrics.failed.inc()
                 self.graph.datasets[dataset_id].processed = False
                 logger.info(f"Processing failed tag added to: {dataset_id}")
+                logger.error(err)
             else:
                 self.metrics.success.inc()
 

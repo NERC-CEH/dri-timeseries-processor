@@ -19,6 +19,7 @@ class SiteMetadata:
     altitude: float | None = None
     start_date: datetime | None = None
     end_date: datetime | None = None
+    annotations: dict | None = None
 
     def __hash__(self) -> int:
         """Allow this container to be used as a dict or set key."""

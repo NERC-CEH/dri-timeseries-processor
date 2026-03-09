@@ -420,7 +420,7 @@ class AbsoluteHumidityFactor(DerivationMethod):
     """
 
     name = "calc_factor_Q"
-    inputs = "q"
+    inputs = ("q",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity correction factor to neutron counts.

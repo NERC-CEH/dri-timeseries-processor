@@ -136,7 +136,10 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            extracted[key] = ann.has_value.value[0]
+            if ann.has_value.value is None:
+                extracted[key] = None
+            else:
+                extracted[key] = ann.has_value.value[0]
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
@@ -171,12 +174,13 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                 if param_name == "site_attribute":
                     param_name, values = resolve_site_attribute(has_value.value, site_metadata)
                     collected_args[param_name].append(values)
-                # elif param_name == "annotation":
-                # for param in has_value.value:
-                # values = getattr(site_metadata, param)
-                #        collected_args[param_name].append(values)
-                # else:
-                #    collected_args[param_name].append(has_value.value)
+                elif param_name == "annotation":
+                    for param in has_value.value:
+                        # Handle not exist
+                        values = site_metadata.annotations[param.lower()]  # .get? #getattr(site_metadata, param)
+                        collected_args[param].append(values)
+                else:
+                    collected_args[param_name].append(has_value.value)
 
             # Reference value (dependent dataset)
             if has_value.value_reference is not None:
@@ -230,6 +234,7 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None
     network = item.utilised_by[0].id if item.utilised_by else None
+    annotations = extract_annotations(item.has_annotation)
 
     return SiteMetadata(
         site_id=item.id,
@@ -243,4 +248,5 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
         altitude=item.altitude,
         start_date=start_date,
         end_date=end_date,
+        annotations=annotations,
     )
