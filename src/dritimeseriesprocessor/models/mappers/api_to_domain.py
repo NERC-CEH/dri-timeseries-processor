@@ -137,7 +137,14 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any] 
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
+<<<<<<< HEAD
             extracted[key] = ann.has_value.value[0] if ann.has_value.value else ann.has_value.value_reference[0]
+=======
+            if ann.has_value.value is None:
+                extracted[key] = None
+            else:
+                extracted[key] = ann.has_value.value[0]
+>>>>>>> 075d24a (Add annotations to site_metadata)
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
@@ -214,7 +221,11 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None
     network = item.utilised_by[0].id if item.utilised_by else None
+<<<<<<< HEAD
     annotations = extract_annotations(item.has_annotation) if item.has_annotation else None
+=======
+    annotations = extract_annotations(item.has_annotation)
+>>>>>>> 075d24a (Add annotations to site_metadata)
 
     return SiteMetadata(
         site_id=item.id,
