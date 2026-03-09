@@ -1,6 +1,9 @@
 from datetime import datetime
 
-from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig, DataProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.operations.eddypro.eddypro_metadata_mapper import EddyProMetadataMapper
 from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import EddyProColumnSpec, EddyProInstrumentSpec

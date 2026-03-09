@@ -62,7 +62,9 @@ class TestFluxS3Client:
             end_date=date(2026, 1, 21),
         )
 
-        uploaded = sorted((args[1], args[2]) for args, _ in [call_item for call_item in storage.upload_file.call_args_list])
+        uploaded = sorted(
+            (args[1], args[2]) for args, _ in [call_item for call_item in storage.upload_file.call_args_list]
+        )
         expected = sorted(
             [
                 (

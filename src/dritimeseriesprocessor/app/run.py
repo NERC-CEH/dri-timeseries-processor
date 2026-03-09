@@ -52,6 +52,7 @@ def run_from_config(run_config: RunConfig) -> None:
     )
     processor.run()
 
+
 def _build_processor(
     network: str,
     selection: list[SelectionOption],

@@ -173,7 +173,8 @@ class LocalEddyProMetadataSource:
                             "aggregation": {
                                 "@id": (
                                     dataset.get("aggregation_id")
-                                    or f"http://fdri.ceh.ac.uk/ref/common/aggregation/{dataset['dataset_id'].rsplit('/', 1)[-1]}"
+                                    or "http://fdri.ceh.ac.uk/ref/common/aggregation/"
+                                    f"{dataset['dataset_id'].rsplit('/', 1)[-1]}"
                                 ),
                                 "periodicity": dataset["periodicity"],
                                 "resolution": dataset["resolution"],
@@ -201,11 +202,7 @@ class LocalEddyProMetadataSource:
         configs_data: dict[str, Any],
         datasets: TimeSeriesDatasetResponse,
     ) -> DataProcessingConfiguration:
-        dataset_site_map = {
-            item.id: item.originating_site[0].id
-            for item in datasets.items
-            if item.originating_site
-        }
+        dataset_site_map = {item.id: item.originating_site[0].id for item in datasets.items if item.originating_site}
         items = []
 
         for config in configs_data.get("processing_configs", []):
@@ -307,7 +304,13 @@ class LocalEddyProMetadataSource:
             },
         }
 
-    def _build_value_argument(self, param_name: str, value: Any, base_id: str, as_reference: bool = False) -> dict[str, Any]:
+    def _build_value_argument(
+        self,
+        param_name: str,
+        value: Any,
+        base_id: str,
+        as_reference: bool = False,
+    ) -> dict[str, Any]:
         has_value: dict[str, Any] = {
             "@id": f"http://fdri.ceh.ac.uk/id/config-value/{base_id}",
         }
@@ -354,11 +357,7 @@ class LocalEddyProMetadataSource:
             return response
 
         wanted = _identifier_aliases(*self._requested_sites)
-        filtered = [
-            item
-            for item in response.items
-            if _identifier_aliases(item.id, *(item.identifier or [])) & wanted
-        ]
+        filtered = [item for item in response.items if _identifier_aliases(item.id, *(item.identifier or [])) & wanted]
         return SiteResponse(meta=response.meta, items=filtered)
 
     def _filter_datasets(self, response: TimeSeriesDatasetResponse, sites: SiteResponse) -> TimeSeriesDatasetResponse:

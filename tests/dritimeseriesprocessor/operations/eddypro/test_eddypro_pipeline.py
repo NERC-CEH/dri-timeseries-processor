@@ -68,7 +68,11 @@ class TestEddyProPipeline:
     def test_run_builds_configs_runs_eddypro_and_uploads_outputs(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        def fake_build_run_spec(self, config: DataProcessingConfig, site_metadata: SiteMetadata) -> EddyProRunSpec:
+        def fake_build_run_spec(
+            self: object,
+            config: DataProcessingConfig,
+            site_metadata: SiteMetadata,
+        ) -> EddyProRunSpec:
             return EddyProRunSpec(site_code="PLYNL")
 
         monkeypatch.setattr(

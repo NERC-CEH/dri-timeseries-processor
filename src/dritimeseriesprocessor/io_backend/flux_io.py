@@ -13,8 +13,6 @@ import logging
 from datetime import date, timedelta
 from pathlib import Path
 
-import polars as pl
-
 from dritimeseriesprocessor.storage.storage_client import StorageClient
 
 logger = logging.getLogger(__name__)

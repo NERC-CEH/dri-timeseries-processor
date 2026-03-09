@@ -30,10 +30,7 @@ class FluxMetadataLoader:
     def load(self) -> LocalFluxGraphData:
         fixture_set = self._source.load()
 
-        site_metadata = {
-            site.site_id: site
-            for site in (map_site_metadata(item) for item in fixture_set.sites.items)
-        }
+        site_metadata = {site.site_id: site for site in (map_site_metadata(item) for item in fixture_set.sites.items)}
 
         datasets = {
             dataset.ts_id: dataset
@@ -41,8 +38,7 @@ class FluxMetadataLoader:
         }
 
         processing_configs = [
-            map_processing_config_item(item, site_metadata)
-            for item in fixture_set.processing_configs.items
+            map_processing_config_item(item, site_metadata) for item in fixture_set.processing_configs.items
         ]
         processing_configs_by_dataset = self._group_processing_configs(processing_configs)
 

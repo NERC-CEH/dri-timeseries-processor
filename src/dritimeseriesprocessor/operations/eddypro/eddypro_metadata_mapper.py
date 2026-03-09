@@ -47,22 +47,22 @@ class EddyProMetadataMapper:
 
         columns: list[EddyProColumnSpec] = []
         for item in column_items:
-            item = item or {}
+            item_data = item or {}
             columns.append(
                 EddyProColumnSpec(
-                    variable=str(item.get("variable") or "ignore"),
-                    instrument=str(item.get("instrument") or item.get("instrument_role") or ""),
-                    measure_type=str(item.get("measure_type") or ""),
-                    unit_in=str(item.get("unit_in") or ""),
-                    min_value=str(item.get("min_value") or "0.000000"),
-                    max_value=str(item.get("max_value") or "0.000000"),
-                    conversion=str(item.get("conversion") or ""),
-                    unit_out=str(item.get("unit_out") or ""),
-                    a_value=str(item.get("a_value") or "1.000000"),
-                    b_value=str(item.get("b_value") or "0.000000"),
-                    nom_timelag=str(item.get("nom_timelag") or "0.00"),
-                    min_timelag=str(item.get("min_timelag") or "0.00"),
-                    max_timelag=str(item.get("max_timelag") or "0.00"),
+                    variable=str(item_data.get("variable") or "ignore"),
+                    instrument=str(item_data.get("instrument") or item_data.get("instrument_role") or ""),
+                    measure_type=str(item_data.get("measure_type") or ""),
+                    unit_in=str(item_data.get("unit_in") or ""),
+                    min_value=str(item_data.get("min_value") or "0.000000"),
+                    max_value=str(item_data.get("max_value") or "0.000000"),
+                    conversion=str(item_data.get("conversion") or ""),
+                    unit_out=str(item_data.get("unit_out") or ""),
+                    a_value=str(item_data.get("a_value") or "1.000000"),
+                    b_value=str(item_data.get("b_value") or "0.000000"),
+                    nom_timelag=str(item_data.get("nom_timelag") or "0.00"),
+                    min_timelag=str(item_data.get("min_timelag") or "0.00"),
+                    max_timelag=str(item_data.get("max_timelag") or "0.00"),
                 )
             )
         return columns
@@ -72,10 +72,8 @@ class EddyProMetadataMapper:
         instruments: list[EddyProInstrumentSpec] = []
 
         for item in instrument_items:
-            item = item or {}
+            item_data = item or {}
             instruments.append(
-                EddyProInstrumentSpec(
-                    fields={str(k): "" if v is None else str(v) for k, v in item.items()}
-                )
+                EddyProInstrumentSpec(fields={str(k): "" if v is None else str(v) for k, v in item_data.items()})
             )
         return instruments
