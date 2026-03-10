@@ -149,7 +149,7 @@ class TestTimeSeriesProcessor:
         assert raw_container.data == tf_result
         assert processed_container.data == tf_result
 
-    def test_processing_failure_of_dependency(mock_router: MagicMock, mock_writer: MagicMock) -> None:
+    def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """
         Test that process tag is dynamically added to dataset and set to false when dataset fails processing.
         The failure can happen at any of LOAD, PROCESS, AGGREGATE and DERIVE stages.
@@ -182,7 +182,7 @@ class TestTimeSeriesProcessor:
                 raise Exception("boom during process_dataset")
             return real_process_dataset(dataset_id)
 
-        processor._load_raw = MagicMock()
+        processor._batch_load_raw = MagicMock()
         processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
         processor._save_datasets = MagicMock()
         processor.run()
