@@ -376,28 +376,28 @@ class NeutronIntensityFactor(DerivationMethod):
     See COSMOS documentation
     GAMMA: Scaling factor to adjust for geomagnetic effects
     REF_C0: Site annotation to account for neutron counts due to site calibration
-    cts: From NMDB_COUNTS at JUNG site.
+    crns_count: From NMDB_COUNTS at JUNG site.
     """
 
     name = "calc_factor_inten"
-    inputs = ("cts",)
+    inputs = ("crns-count",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate incoming neutron count intensity correction factor.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            cts: NMDB_COUNTS
+            crns-count: NMDB CRNS-COUNT
 
         Returns:
             Polars expression for incoming neutron count intensity factor, [units = None]
             Values should be positive.
         """
 
-        C0 = self.config.params["REF_C0"]
+        ref_C0 = self.config.params["REF_C0"]
         GAMMA = self.config.params["GAMMA"]
-        C = columns["cts"]
+        CRNS_count = columns["crns-count"]
 
-        return 1 / (((C / C0) - 1) * GAMMA + 1)
+        return 1 / (((CRNS_count / ref_C0) - 1) * GAMMA + 1)
 
 
 class AbsoluteHumidityFactor(DerivationMethod):

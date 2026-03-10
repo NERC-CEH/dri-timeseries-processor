@@ -41,6 +41,13 @@ class DataProcessingConfig:
                     deps.update(dep_ts_ids)
                 else:
                     deps.add(dep_ts_ids)
+
+            if "load_dep_ts" in method_config.params:
+                dep_ts_ids = method_config.params["load_dep_ts"]
+                if isinstance(dep_ts_ids, list):
+                    deps.update(dep_ts_ids)
+                else:
+                    deps.add(dep_ts_ids)
         return sorted(deps)
 
     def __hash__(self) -> int:
