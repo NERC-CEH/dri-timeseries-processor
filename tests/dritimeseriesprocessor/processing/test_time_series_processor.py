@@ -68,6 +68,7 @@ class TestTimeSeriesProcessor:
         )
         # override the process dataset function for this test
         processor.process_dataset = MagicMock()
+        processor._batch_load_raw = MagicMock()
         processor._save_datasets = MagicMock()
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
@@ -85,13 +86,14 @@ class TestTimeSeriesProcessor:
         )
 
         container = mock_graph.datasets[ds_id]
-        processor._load_raw(container)
+        container.source_column = "value"  # Need to set this as the generic name of the mock dataframe
+        processor._batch_load_raw(container)
 
         mock_router.query_by_date_range.assert_called_once()
         assert isinstance(container.data, ts.TimeFrame)
 
         # Metadata should be set
-        expected_metadata = {"column_name": "ds1_column"}
+        expected_metadata = {"column_name": "value"}
         assert container.data.metadata == expected_metadata
 
         # Core flags should have been added
@@ -135,7 +137,8 @@ class TestTimeSeriesProcessor:
         )
 
         raw_container = mock_graph.datasets[raw_ds_id]
-        processor._load_raw(raw_container)
+        raw_container.source_column = "value"
+        processor._batch_load_raw(raw_container)
         processed_container = mock_graph.datasets[processed_ds_id]
         processed_container.all_dependencies = MagicMock(return_value=[raw_ds_id])
         processor._process(processed_container)
@@ -146,7 +149,7 @@ class TestTimeSeriesProcessor:
         assert raw_container.data == tf_result
         assert processed_container.data == tf_result
 
-    def test_processing_failure_of_dependency(mock_router: MagicMock, mock_writer: MagicMock) -> None:
+    def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """
         Test that process tag is dynamically added to dataset and set to false when dataset fails processing.
         The failure can happen at any of LOAD, PROCESS, AGGREGATE and DERIVE stages.
@@ -179,7 +182,7 @@ class TestTimeSeriesProcessor:
                 raise Exception("boom during process_dataset")
             return real_process_dataset(dataset_id)
 
-        processor._load_raw = MagicMock()
+        processor._batch_load_raw = MagicMock()
         processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
         processor._save_datasets = MagicMock()
         processor.run()

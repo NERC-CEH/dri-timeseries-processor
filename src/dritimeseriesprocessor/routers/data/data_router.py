@@ -8,7 +8,10 @@ from datetime import datetime
 import polars as pl
 
 from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.time_series_container import (
+    TimeSeriesContainer,
+    check_common_attributes,
+)
 
 
 class DataRouter(ABC):
@@ -20,12 +23,12 @@ class DataRouter(ABC):
 
     @abstractmethod
     def query_by_date_range(
-        self, container: TimeSeriesContainer, start_date: datetime, end_date: datetime
+        self, *containers: TimeSeriesContainer, start_date: datetime, end_date: datetime
     ) -> pl.DataFrame:
         """Retrieve data for specified date range.
 
         Args:
-            container: Contains metadata required for building the dataset query.
+            containers: One or more containers with metadata required for building the dataset query.
             start_date: Start of the date range (inclusive).
             end_date: End of the date range (inclusive).
 
@@ -40,37 +43,40 @@ class DuckDBDataRouter(DataRouter):
         self.reader = reader
 
     def query_by_date_range(
-        self, container: TimeSeriesContainer, start_date: datetime, end_date: datetime
+        self, *containers: TimeSeriesContainer, start_date: datetime, end_date: datetime
     ) -> pl.DataFrame:
         """Retrieve data for data range using DuckDB SQL query.
 
         Args:
-            container: Contains metadata required for building the dataset query.
+            containers: One or more containers with metadata required for building the dataset query.
             start_date: Start of the date range (inclusive).
             end_date: End of the date range (inclusive).
 
         Returns:
             A Polars DataFrame containing the data.
         """
-        # TODO: Bucket path (network=.../dataset=...) is specific to COSMOS raw bucket.  How to make this generic?
-        # TODO: Network is not a partition on the RAW bucket, but is on the PROCESSED bucket - reconcile?
+        network, site_id, resolution, bucket, source_dataset, time_column_name = check_common_attributes(
+            list(containers),
+            ["network", "source_site_identifier", "resolution", "source_bucket", "source_dataset", "time_column_name"],
+        )
+
+        columns = ", ".join([c.source_column for c in containers])
 
         partitions = [
-            f"{container.network}",
-            f"dataset={container.source_dataset}",
-            f"site={container.source_site_identifier}",
-            "**",  # Handle optional extra partitions under site (e.g. serial_no for FDRI sites)
+            f"{network}",
+            f"dataset={source_dataset}",
+            f"site={site_id}",
+            "**",
             "date=*",
         ]
         partitions_str = "/".join(partitions)
-        bucket_path = f"s3://{container.source_bucket}/{partitions_str}/data.parquet"
+        bucket_path = f"s3://{bucket}/{partitions_str}/data.parquet"
         query = f"""
-            SELECT {container.time_column_name}, {container.source_column}
+            SELECT {time_column_name}, {columns}
             FROM read_parquet(
                 '{bucket_path}', hive_partitioning=true
             )
             WHERE
                 (date BETWEEN ? AND ?);
         """
-        params = [start_date, end_date]
-        return self.reader.read(query, params)
+        return self.reader.read(query, [start_date, end_date])
