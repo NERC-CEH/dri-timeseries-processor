@@ -35,14 +35,14 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-pt30m-pt30m",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ux-mean_prec-ms-1-pt30m-pt30m",
           "prefLabel": [
-            "Mean wind speed over the preceding 30 minutes in meters per second"
+            "Mean X component of wind speed over the preceding 30 minutes in meters per second"
           ],
           "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ux",
             "prefLabel": [
-              "Wind speed"
+              "X component of wind speed"
             ]
           },
           "hasUnit": {
@@ -52,7 +52,7 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-pt30m-pt30m#aggregation",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ux-mean_prec-ms-1-pt30m-pt30m#aggregation",
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -96,14 +96,14 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-pt30m-pt30m",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/uy-mean_prec-ms-1-pt30m-pt30m",
           "prefLabel": [
-            "Mean wind speed over the preceding 30 minutes in meters per second"
+            "Mean Y component of wind speed over the preceding 30 minutes in meters per second"
           ],
           "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/uy",
             "prefLabel": [
-              "Wind speed"
+              "Y component of wind speed"
             ]
           },
           "hasUnit": {
@@ -113,7 +113,7 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-pt30m-pt30m#aggregation",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/uy-mean_prec-ms-1-pt30m-pt30m#aggregation",
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }

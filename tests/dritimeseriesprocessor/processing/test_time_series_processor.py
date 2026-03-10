@@ -149,6 +149,61 @@ class TestTimeSeriesProcessor:
         assert raw_container.data == tf_result
         assert processed_container.data == tf_result
 
+    def test_processing_failure_of_dependency(mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """
+        Test that process tag is dynamically added to dataset and set to false when dataset fails processing.
+        The failure can happen at any of LOAD, PROCESS, AGGREGATE and DERIVE stages.
+        Test that process tag is dynamically added to dataset, set to false if any dataset dependency fails processing.
+        """
+        topo_layers = [["ds1", "ds2"], ["ds3", "ds4"]]
+        mock_graph = create_mock_dag(topo_layers)
+
+        ds1 = mock_graph.datasets["ds1"]
+        ds2 = mock_graph.datasets["ds2"]
+        ds3 = mock_graph.datasets["ds3"]
+        ds4 = mock_graph.datasets["ds4"]
+
+        ds3.all_dependencies = MagicMock(return_value=["ds1", "ds2"])
+        ds4.all_dependencies = MagicMock(return_value=["ds1"])
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        real_process_dataset = processor.process_dataset
+
+        def fail_inside_process_dataset(dataset_id: str) -> None:
+            if dataset_id == "ds2":
+                raise Exception("boom during process_dataset")
+            return real_process_dataset(dataset_id)
+
+        processor._load_raw = MagicMock()
+        processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
+        processor._save_datasets = MagicMock()
+        processor.run()
+
+        # Check that ds1 does not have a "processed" attribute, independent of failing dataset, ds2.
+        assert not hasattr(ds1, "processed")
+
+        # Check that failing dataset ds2 has been given a "processed" and this attribute is set to False.
+        assert hasattr(ds2, "processed")
+        assert ds2.processed is False
+        # Check that dataset ds2, and ONLY ds2, has failed
+        assert processor.metrics.failed.inc.call_count == 1
+
+        # Check that ds3, which depends on failing dataset ds2, has been given a "processed" attribute
+        # and this attribute is set to False.
+        assert hasattr(ds3, "processed")
+        assert ds3.processed is False
+
+        # Check that ds4 does not have a "processed" attribute, independent of failing dataset, ds2
+        assert not hasattr(ds4, "processed")
+
     def test_build_save_tasks(
         self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
     ) -> None:

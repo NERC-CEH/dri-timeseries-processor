@@ -128,6 +128,8 @@ celerybeat.pid
 .venv
 env/
 venv/
+light-env
+light-env/
 ENV/
 env.bak/
 venv.bak/
@@ -170,3 +172,5 @@ sandbox/
 sandbox.ipynb
 
 CLAUDE.md
+
+.githooks/pre-commit-local.yml

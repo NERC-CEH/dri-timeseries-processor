@@ -4,7 +4,7 @@ Command-line interface parsing for time series processing runs.
 This module is responsible for parsing CLI arguments to capture user intent regarding:
 - which network to process
 - the temporal processing window
-- dataset selection mode (explicit or cross-product), with specific arguments
+- dataset selection mode (explicit, cross-product, or eddypro), with specific arguments
 """
 
 import argparse
@@ -38,6 +38,7 @@ def parse_args(argv: list[str]) -> RunConfig:
     selection = _parse_selection_mode(args, parser)
 
     return RunConfig(
+        mode=CliSelectionMode(args.mode),
         network=args.network,
         selection=selection,
         start_date=start_date,
@@ -49,7 +50,7 @@ def _build_parser() -> argparse.ArgumentParser:
     """Construct and return the ArgumentParser for the CLI.
 
     Defines all supported command-line options, including network selection, temporal parameters, and
-    dataset selection modes (explicit and cross-product).
+    dataset selection modes (explicit, cross-product, eddypro).
 
     Returns:
         A configured ArgumentParser instance.
@@ -87,6 +88,13 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     cross_parser.add_argument(
         "--periodicities", nargs="+", help="Space-separated list, e.g. PT30M P1D. If omitted, find all periodicities."
+    )
+
+    # Mode C: EddyPro flux processing
+    # File-based processing via EddyPro binary — operates on entire sites, not individual variables.
+    eddypro_parser = subparsers.add_parser(CliSelectionMode.EDDYPRO.value, parents=[parent])
+    eddypro_parser.add_argument(
+        "--sites", required=True, nargs="+", help="Space-separated site identifiers, e.g. PLYNL"
     )
 
     return parser
@@ -174,7 +182,7 @@ def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_d
 def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[SelectionOption]:
     """Determine the dataset selection mode and construct the appropriate selection options.
 
-    The CLI supports two mutually exclusive selection modes:
+    The CLI supports three mutually exclusive selection modes:
         - Explicit selection via repeated --selection arguments
         - Cross-product selection via --sites / --variables / --periodicities
 
@@ -192,7 +200,10 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
     if mode == CliSelectionMode.CROSS_PRODUCT:
         return _parse_cross_product_selection(args)
 
-    parser.error(f"Invalid selection mode: {args.mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
+    if mode == CliSelectionMode.EDDYPRO:
+        return _parse_eddypro_selection(args)
+
+    parser.error(f"Invalid selection mode: {mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
 
 
 def _parse_explicit_selection(args: argparse.Namespace) -> list[SelectionOption]:
@@ -227,6 +238,21 @@ def _parse_cross_product_selection(args: argparse.Namespace) -> list[SelectionOp
     """
     sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
     return [SelectionOption(sites, args.variables, args.periodicities)]
+
+
+def _parse_eddypro_selection(args: argparse.Namespace) -> list[SelectionOption]:
+    """Parse EddyPro site selection arguments.
+
+    EddyPro operates at site level — no variables or periodicities. Each site becomes
+    a SelectionOption with sites set and variables/periodicities left as None.
+
+    Args:
+        args: Parsed CLI arguments containing EddyPro selection values.
+
+    Returns:
+        A list of SelectionOptions representing user selection intent.
+    """
+    return [SelectionOption(sites=args.sites)]
 
 
 class SelectionAction(argparse.Action):

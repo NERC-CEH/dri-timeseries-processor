@@ -368,3 +368,72 @@ class AbsoluteHumidity(DerivationMethod):
         Q2 = 273.15 + ta
 
         return (6.112 * Q1 * rh * 2.1674) / Q2
+
+
+@DerivationMethod.register
+class AbsoluteHumidityFactor(DerivationMethod):
+    """Calculate correction factor for absolute humidity Q.
+    This factor is used to correct neutron counts.
+    Emperical structure contant: 0.0054.
+    See references:
+
+    1.  Rosolem, R., W. J. Shuttleworth, M. Zreda, T. E. Franz, X. Zeng, and S. A. Kurc, 2013:
+        The Effect of Atmospheric Water Vapor on Neutron Count in the Cosmic-Ray Soil Moisture Observing System.
+        J. Hydrometeor., 14, 1659–1671, https://doi.org/10.1175/JHM-D-12-0120.1
+
+    2.  M. Andreasen, K.H. Jensen, D. Desilets, T.E. Franz, M. Zreda, H.R. Bogena, and M.C. Looms. 2017.
+        Status and perspectives on the cosmic-ray neutron method for soil moisture estimation
+        and other environmental science applications.
+        Vadose Zone J. 16(8). doi:10.2136/vzj2017.04.0086
+
+    Uses processed data from absolute humidity Q and REF_Q0.
+    REF_Q0 is a site annotation.
+    """
+
+    name = "calc_factor_Q"
+    inputs = "q"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate absolute humidity correction factor to neutron counts.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            q:  Q [g m-3] (grams per cubic meter)
+
+        Returns:
+            Polars expression for absolute humidity factor, [units = None]
+        """
+
+        REF_Q0 = self.config.params["REF_Q0"]
+        Q = columns["q"]
+
+        return 1 + 0.0054 * (Q - REF_Q0)
+
+
+class AtmosphericPressureFactor(DerivationMethod):
+    """Calculate correction factor for atmospheric pressure, PA.
+    This factor is used to correct neutron counts.
+    See CRNPy correction factor, Desilets & Zreda, 2003: https://doi.org/10.1016/S0012-821X(02)01088-9
+    Uses processed data from atmospheric pressure.
+    Barometric attenuation length, L is a site annotation.
+    P0: "Arbitrary reference pressure [hPa]: Zreda et al. (2012) HESS" - set to a constant of 1000.0
+    See: https://doi.org/10.5194/hess-16-4079-2012
+    """
+
+    name = "calc_factor_PA"
+    inputs = ("pa",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate atmospheric pressure correction factor to neutron counts.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            pa:  PA [hPa]
+
+        Returns:
+            Polars expression for atmospheric pressure factor, [units = None]
+        """
+
+        L = self.config.params["L"]
+        PA = columns["pa"]
+        P0 = 1000
+
+        return ((PA - P0) / L).exp()

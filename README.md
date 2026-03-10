@@ -114,7 +114,7 @@ ruff check --fix
 ```
 
 ### Formatting
-Formating uses ruff using the config in pyproject.toml which follows the default black settings.
+Formatting uses ruff using the config in pyproject.toml which follows the default black settings.
 ```
 ruff format .
 ```

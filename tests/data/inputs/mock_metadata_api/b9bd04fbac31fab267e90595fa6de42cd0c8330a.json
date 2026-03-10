@@ -35,14 +35,14 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_cts-total_prec-cts-pt30m-pt30m",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-total_prec-cts-pt30m-pt30m",
           "prefLabel": [
-            "Total neutron counts over the preceding 30 minutes"
+            "Total neutron count over the preceding 30 minutes"
           ],
           "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_cts",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
             "prefLabel": [
-              "Neutron counts"
+              "Neutron count"
             ]
           },
           "hasUnit": {
@@ -52,7 +52,7 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_cts-total_prec-cts-pt30m-pt30m#aggregation",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-total_prec-cts-pt30m-pt30m#aggregation",
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -75,6 +75,22 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-CTS_MOD_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-CTS_MOD_30MIN_RAW"
+          ]
         }
       ]
     }

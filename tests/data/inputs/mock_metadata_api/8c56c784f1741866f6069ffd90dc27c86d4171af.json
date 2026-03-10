@@ -30,6 +30,9 @@
       "startedAtTime": "2020-02-12T00:00:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws_anem",
+        "label": [
+          "Sensor slot AWS_ANEM at CHIMN"
+        ],
         "isPartOf": {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
           "label": [

@@ -1,0 +1,30 @@
+{
+  "PLYNL": {
+    "raw": {
+      "ts_id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
+      "network": "fdri",
+      "source_bucket": "ukceh-fdri-staging-timeseries-level-0",
+      "source_dataset": "Flux",
+      "source_column": "flux",
+      "source_site": "flux-plynl",
+      "source_site_identifier": "PLYNL",
+      "time_column_name": "TIMESTAMP",
+      "resolution": "PT30M",
+      "periodicity": "PT30M",
+      "processing_level": "raw"
+    },
+    "processed": {
+      "ts_id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed",
+      "network": "fdri",
+      "source_bucket": "ukceh-fdri-staging-timeseries-processed",
+      "source_dataset": "flux_processed",
+      "source_column": "flux",
+      "source_site": "flux-plynl",
+      "source_site_identifier": "PLYNL",
+      "time_column_name": "datetime",
+      "resolution": "PT30M",
+      "periodicity": "PT30M",
+      "processing_level": "processed"
+    }
+  }
+}
