@@ -59,7 +59,7 @@ class TestDuckDBDataRouter:
                 (date BETWEEN ? AND ?);
         """
 
-        result = router.query_by_date_range(container, start, end)
+        result = router.query_by_date_range(container, start_date=start, end_date=end)
         call_query, call_params = mock_reader.read.call_args.args
 
         assert_frame_equal(result, TEST_DF)  # Return what the mock_reader returned
@@ -92,6 +92,6 @@ class TestDuckDBDataRouter:
             }
         )
 
-        result = router.query_by_date_range(container, start, end)
+        result = router.query_by_date_range(container, start_date=start, end_date=end)
 
         assert_frame_equal(result, expected)
