@@ -42,7 +42,10 @@ class DataProcessingConfig:
                 else:
                     deps.add(dep_ts_ids)
 
+<<<<<<< HEAD
             # Needed to load containers in tsp
+=======
+>>>>>>> e9e103a (Add nmdb dataset to cosmos dependencies. Update cts variable name to crns-count to reflect column name in nmdb timeseries ids in fdri discovery)
             if "load_dep_ts" in method_config.params:
                 dep_ts_ids = method_config.params["load_dep_ts"]
                 if isinstance(dep_ts_ids, list):
