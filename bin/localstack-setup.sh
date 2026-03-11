@@ -44,6 +44,7 @@ done
 
 echo "########### Load flux data into level-0 bucket ###########"
 
+BUCKET="ukceh-fdri-staging-timeseries-level-0"
 FLUX_DIR="/var/lib/localstack/flux-data"
 
 # Loop through all files in the flux-data directory and its subdirectories
