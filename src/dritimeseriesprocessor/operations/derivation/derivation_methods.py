@@ -452,7 +452,7 @@ class Albedo(DerivationMethod):
         swin_clear = pl.cos(theta_s)
         albedo_day = pl.when(swin_clear > 0).then(albedo).otherwise(None)
 
-        return albedo_day.clip(0.0, 1.0).alias("ALBEDO")
+        return albedo_day.clip(0.0, 1.0)
 
 
 class AbsoluteHumidityFactor(DerivationMethod):
