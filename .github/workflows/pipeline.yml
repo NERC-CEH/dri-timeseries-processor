@@ -72,34 +72,6 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
-  build-test-deploy-docker-eddypro-staging:
-    needs: [test-python]
-    if: ${{ github.event_name == 'push' && github.ref_name == 'staging' }}
-    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
-    with:
-      use_uv: true
-      package_name: dritimeseriesprocessor
-      docker_target: prod-eddypro
-      tag_suffix: -eddypro
-      branch: staging
-    secrets:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}
-
-  build-test-deploy-docker-eddypro-production:
-    needs: [test-python]
-    if: ${{ github.event_name == 'push' && github.ref_name == 'production' }}
-    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
-    with:
-      use_uv: true
-      package_name: dritimeseriesprocessor
-      docker_target: prod-eddypro
-      tag_suffix: -eddypro
-      branch: production
-    secrets:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_PRODUCTION }}
-
   create-main-to-staging-pr:
     needs: [build-test-deploy-docker-current, build-test-deploy-docker-eddypro-current]
     if: ${{ needs.build-test-deploy-docker-current.result == 'success' }}
@@ -109,7 +81,7 @@ jobs:
       head: main
 
   create-staging-to-production-pr:
-    needs: [build-test-deploy-docker-staging, build-test-deploy-docker-eddypro-staging]
+    needs: [build-test-deploy-docker-staging]
     if: ${{ needs.build-test-deploy-docker-staging.result == 'success' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/auto-create-pr.yml@main
     with:
