@@ -3,12 +3,15 @@ on:
   push:
     branches:
       - main
+      - staging
+      - production
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
   actions: read
+  pull-requests: write
 
 jobs:
 
@@ -19,17 +22,43 @@ jobs:
       coverage_threshold: 90
       localstack_profile_name: localstack
 
-  build-test-deploy-docker:
+  build-test-deploy-docker-current:
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
     needs: [test-python]
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
       package_name: dritimeseriesprocessor
+      branch: main
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
-  build-test-deploy-docker-eddypro:
+  build-test-deploy-docker-staging:
+    if: ${{ github.event_name == 'push' && github.ref_name == 'staging' }}
+    needs: [test-python]
+    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
+    with:
+      use_uv: true
+      package_name: dritimeseriesprocessor
+      branch: staging
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}
+  
+  build-test-deploy-docker-production:
+    if: ${{ github.event_name == 'push' && github.ref_name == 'production' }}
+    needs: [test-python]
+    uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
+    with:
+      use_uv: true
+      package_name: dritimeseriesprocessor
+      branch: production
+    secrets:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_PRODUCTION }}
+
+  build-test-deploy-docker-eddypro-current:
     needs: [test-python]
     if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
@@ -38,6 +67,23 @@ jobs:
       package_name: dritimeseriesprocessor
       docker_target: prod-eddypro
       tag_suffix: -eddypro
+      branch: main
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+
+  create-main-to-staging-pr:
+    needs: [build-test-deploy-docker-current, build-test-deploy-docker-eddypro-current]
+    if: ${{ needs.build-test-deploy-docker-current.result == 'success' }}
+    uses: NERC-CEH/dri-cicd/.github/workflows/auto-create-pr.yml@main
+    with:
+      base: staging
+      head: main
+
+  create-staging-to-production-pr:
+    needs: [build-test-deploy-docker-staging]
+    if: ${{ needs.build-test-deploy-docker-staging.result == 'success' }}
+    uses: NERC-CEH/dri-cicd/.github/workflows/auto-create-pr.yml@main
+    with:
+      base: production
+      head: staging
