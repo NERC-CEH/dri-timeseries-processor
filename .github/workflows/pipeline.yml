@@ -35,7 +35,7 @@ jobs:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
 
   build-test-deploy-docker-staging:
-    if: ${{ github.ref_name == 'staging' || github.head_ref == 'staging' }}
+    if: ${{ github.event_name == 'push' && github.ref_name == 'staging' }}
     needs: [test-python]
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
@@ -47,7 +47,7 @@ jobs:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}
   
   build-test-deploy-docker-production:
-    if: ${{ github.ref_name == 'production' || github.head_ref == 'production' }}
+    if: ${{ github.event_name == 'push' && github.ref_name == 'production' }}
     needs: [test-python]
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
