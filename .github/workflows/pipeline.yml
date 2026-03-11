@@ -23,7 +23,7 @@ jobs:
       localstack_profile_name: localstack
 
   build-test-deploy-docker-current:
-    if: ${{ github.ref_name == 'main' || github.head_ref == 'main' }}
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
     needs: [test-python]
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
