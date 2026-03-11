@@ -225,7 +225,7 @@ class Clip(CorrectionMethod):
             tf.df.with_columns(
                 pl.when(date_filter)
                 .then(pl.col(col_name).clip(min_threshold, max_threshold))
-                .otherwise(pl.col(tf.metadata["column_name"]))
+                .otherwise(pl.col(col_name))
             )
         )
 
@@ -235,62 +235,39 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
     """
     For sites on a slope, correct the albedo according to the angle of slope
     and the angle of the sun (according to the time of year).
+    Valid on southerly aspects around solar noon only.
+    See:
     s_max and s_min_fc should be the same across all UK sites, so are hardcoded here.
     """
 
     name = "albedo_south_slope_correction"
     flag_value = 128
 
-    def albedo_south_slope_correction(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         s_max = 1200
         s_min_fc = 0.333333
+
         theta_g = config.params.get("theta_g")
+        theta_s_tf = config.params["theta_s"]
+
+        primary_col = tf.metadata["column_name"]
+        theta_s_col = theta_s_tf.metadata["column_name"]
 
         # Calculate theoretical estimate of SWIN for clear sky
-        tf = tf.with_df(s_max * pl.cos(tf.df.with_columns(pl.col("THETA_S"))).alias("SWIN_CLEAR"))
+        swin_clear_expr = s_max * pl.cos(pl.col(theta_s_col))
 
-        # Beta varies from 1 on clear days, to 0 if SWIN is less than s_min_fac of
-        # the theoretical clear sky value.
-        tf = tf.with_df(
-            (
-                (tf.df.with_columns(pl.col("SWIN")) - s_min_fc * tf.df.with_columns(pl.col("SWIN_CLEAR")))
-                / ((1 - s_min_fc) * tf.df.with_columns(pl.col("SWIN_CLEAR")))
-            ).alias("BETA")
-        )
+        # Beta varies from 1 on clear days, to 0 if SWIN is less than s_min_fac
+        beta_expr = ((swin_clear_expr - s_min_fc * swin_clear_expr) / ((1 - s_min_fc) * swin_clear_expr)).clip(0, 1)
 
-        # Limit to [0,1]. Update all non-ull values, leaving the rest unchanged
+        # Apply a stronger correction to the albedo for clear days.
         tf = tf.with_df(
             tf.df.with_columns(
-                pl.when(pl.col("BETA") > 1)
-                .then(1)
-                .when(pl.col("BETA") < 0)
-                .then(0)
-                .otherwise(pl.col("BETA"))
-                .alias("BETA")
+                pl.col(primary_col)
+                * (1 - beta_expr + beta_expr * pl.cos(pl.col("THETA_S")) / pl.cos(pl.col("THETA_S") - theta_g)).alias(
+                    "ALBEDO"
+                )
             )
         )
 
-        # Apply a stronger correction to the albedo for clear days. The correction
-        # mimics angling the radiometer to match the slope.
-        # Assume that neither the solar rays nor the slope has any east-west
-        # gradient (valid on southerly aspects around solar noon only)
-        tf = tf.with_df(
-            tf.df.with_columns(
-                pl.col("ALBEDO")
-                * (
-                    1
-                    - pl.col("BETA")
-                    + pl.col("BETA") * pl.cos(pl.col("THETA_S")) / pl.cos(pl.col("THETA_S"))
-                    - theta_g
-                ).alias("ALBEDO")
-            )
-        )
-        return
-
-    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter).then(self.albedo_south_slope_correction(tf, config)).otherwise(pl.col("ALBEDO"))
-            )
-        )
+        return tf.with_df(tf.df.with_columns(pl.when(date_filter).then(tf).otherwise(pl.col(primary_col))))
