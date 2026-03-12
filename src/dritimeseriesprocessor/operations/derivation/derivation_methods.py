@@ -397,7 +397,9 @@ class SolarZenith(DerivationMethod):
             Polars expression computing solar zenith angle, theta_s.
         """
         latitude = self.config.params["LATITUDE"]
-        date_times = columns["times"]
+        swin_tf = self.config.params["swin"]
+        time_name = swin_tf.time_name
+        date_times = swin_tf[time_name]
 
         # hour angle [radians]: used solar noon ~ 12:00
         h = (date_times.dt.hour() + (date_times.dt.minute() / pl.lit(60.0)) - pl.lit(12.0)) * (2.0 * math.pi / 24.0)
@@ -429,7 +431,7 @@ class Albedo(DerivationMethod):
     """
 
     name = "calc_albedo"
-    inputs = ("swin", "swout", "theta_s")
+    inputs = ("swin", "swout", "solar_zenith")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate albedo [unitless fraction]
@@ -437,13 +439,13 @@ class Albedo(DerivationMethod):
             columns: Dict with keys of required columns for the calculation.
             - "swin": Shortwave incoming radiation [W m-2]
             - "swout": Shortwave outgoing radiation [W m-2]
-            - "theta_s": Solar zenith angle [radians]
+            - "solar_zenith": Solar zenith angle [radians]
         Returns:
             Polars expression computing albedo (null at night or where invalid).
         """
         swin = columns["swin"]
         swout = columns["swout"]
-        theta_s = columns["THETA_S"]
+        theta_s = columns["solar_zenith"]
 
         # Albedo
         albedo = pl.when((swin.is_not_null()) & (swin > 0)).then(swout / swin).otherwise(None)
