@@ -72,4 +72,5 @@ class DuckDBParquetReader(ParquetReaderInterface):
 
         except duckdb.IOException:
             # No parquet file found, so return an empty dataframe
-            return pl.DataFrame()
+            raise
+            # return pl.DataFrame()

@@ -41,6 +41,7 @@ class TimeSeriesContainer:
     infill_configs: set[DataProcessingConfig] = field(default_factory=set)
 
     data: ts.TimeFrame | None = None
+    failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
 
     def all_dependencies(self) -> list[str]:
         """Return a deduplicated list of all dependencies."""
