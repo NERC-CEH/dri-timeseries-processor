@@ -128,11 +128,7 @@ pytest
 Test data is automatically loaded into LocalStack S3 on container initialization.
 
 #### Detecting tests using VSCode
-VSCode has a useful test runner, allowing running and debugging of all tests within the repository. To allow VSCode to 
-detect the tests, use the `Configure Tests` option accessed either via the help menu (select "Show All Commands" and 
-type "Configure Tests" in the search bar), or via the test runner panel and select the "Configure Tests" button if 
-it is available. To configure the tests, select `pytest` as the test runner framework and `testing` as the directory 
-containing the tests.
+VSCode has a useful test runner, allowing running and debugging of all tests within the repository. To allow VSCode to detect the tests, use the `Configure Tests` option accessed either via the help menu (select "Show All Commands" and type "Configure Tests" in the search bar), or via the test runner panel and select the "Configure Tests" button if it is available. To configure the tests, select `pytest` as the test runner framework and `testing` as the directory containing the tests.
 
 ### Pre commit hooks
 Run below to set up the pre-commit hooks.
