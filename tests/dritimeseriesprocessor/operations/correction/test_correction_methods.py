@@ -7,6 +7,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import (
     Add,
+    AlbedoSouthSlopeCorrection,
     Clip,
     CorrectionMethod,
     LWCorrection,
@@ -242,7 +243,7 @@ class TestWdCorrection:
 class TestClip:
     def test_clip_simple_min_only(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(min=0)
 
@@ -252,7 +253,7 @@ class TestClip:
 
     def test_clip_simple_max_only(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(max=0)
 
@@ -262,7 +263,7 @@ class TestClip:
 
     def test_clip_simple_min_and_max(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(min=-1, max=1)
 
@@ -272,7 +273,7 @@ class TestClip:
 
     def test_clip_simple_no_min_or_max(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config()
 
@@ -284,7 +285,7 @@ class TestClip:
 
     def test_clip_simple_min_out_of_range(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(min=-3)
 
@@ -294,7 +295,7 @@ class TestClip:
 
     def test_clip_simple_max_out_of_range(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(max=4)
 
@@ -313,4 +314,16 @@ class TestClip:
 
         result = Clip().run(pe, config)
         expected_df = create_timeframe([-3, -2, 0, 0, 1, 2, 3], "pe").df
+        assert_frame_equal(result.df, expected_df)
+
+
+class TestAlbedoSouthSlopeCorrection:
+    def test_albedo_south_slope_correction(self) -> None:
+        """Test albedo south slope correction works across the full dataframe.
+        Uses fictitious test values as none of the derivation test values gives negative results"""
+        albedo = create_timeframe([-2, -1, 0, 1, 2, 3], "albedo")
+        config = create_method_config(theta_g=0.3)
+
+        result = AlbedoSouthSlopeCorrection().run(albedo, config)
+        expected_df = create_timeframe([0, 0, 0, 1, 2, 3], "albedo").df
         assert_frame_equal(result.df, expected_df)

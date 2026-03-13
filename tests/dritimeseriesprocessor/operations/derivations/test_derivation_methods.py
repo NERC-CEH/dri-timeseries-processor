@@ -15,6 +15,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     MeanSoilHeatFlux,
     NetRadiation,
     PotentialEvapotranspiration30Min,
+    SolarZenith,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -250,11 +251,25 @@ class TestAtmosphericPressureFactor:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
 
+class TestSolarZenith:
+    def test_albedo(self) -> None:
+        """Test solar zenith calculation"""
+        config = create_method_config(
+            {"swin": [22.9, 19.3, 14, 25.1]},
+            "solar_zenith",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"solar_zenith": [1.191, 1.086, 1.278, 1.163]}))
+
+        result = SolarZenith().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
 class TestAlbedo:
     def test_albedo(self) -> None:
-        """Test albedo calculation, without south slope correction"""
+        """Test albedo calculation"""
         config = create_method_config(
-            {"swin": [22.9, 19.3, 14, 25.1], "swout": [4.9, 4.2, 3, 5.5]},
+            {"swin": [22.9, 19.3, 14, 25.1], "swout": [4.9, 4.2, 3, 5.5], "solar_zenith": [4.9, 4.2, 3, 5.5]},
             "albedo",
         )
 
