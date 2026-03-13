@@ -399,7 +399,7 @@ class SolarZenith(DerivationMethod):
         latitude = self.config.params["LATITUDE"]
         swin_tf = self.config.params["swin"]
         time_name = swin_tf.time_name
-        date_times = swin_tf[time_name]
+        date_times = swin_tf.df[time_name]
 
         # hour angle [radians]: used solar noon ~ 12:00
         h = (date_times.dt.hour() + (date_times.dt.minute() / pl.lit(60.0)) - pl.lit(12.0)) * (2.0 * math.pi / 24.0)
@@ -408,16 +408,16 @@ class SolarZenith(DerivationMethod):
         N = date_times.dt.ordinal_day()
 
         # Declination delta (radians)
-        delta = -pl.lit(23.44 * math.pi / 180.0) * pl.cos((2.0 * math.pi / 365.0) * (N + pl.lit(10.0)))
+        delta = -pl.lit(23.44 * math.pi / 180.0) * ((2.0 * math.pi / 365.0) * (N + pl.lit(10.0))).cos()
 
         # Convert latitude to radians
         phi = pl.lit(latitude * math.pi / 180)
 
         # cos(theta_s)
-        cos_theta_s = pl.sin(phi) * pl.sin(delta) + pl.cos(phi) * pl.cos(delta) * pl.cos(h)
+        cos_theta_s = phi.sin() * delta.sin() + phi.cos() * delta.cos() * h.cos()
 
         # Return solar zenith angle in radians
-        return pl.arccos(cos_theta_s.clip(-1, 1))
+        return cos_theta_s.arccos().clip(-1, 1)
 
 
 @DerivationMethod.register
@@ -451,7 +451,7 @@ class Albedo(DerivationMethod):
         albedo = pl.when((swin.is_not_null()) & (swin > 0)).then(swout / swin).otherwise(None)
 
         # Remove night time values
-        swin_clear = pl.cos(theta_s)
+        swin_clear = theta_s.cos()
         albedo_day = pl.when(swin_clear > 0).then(albedo).otherwise(None)
 
         return albedo_day.clip(0.0, 1.0)

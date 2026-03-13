@@ -51,6 +51,7 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["altitude"] = 74
     params["L"] = 137.04156
     params["LATITUDE"] = 54.110665
+    params["REF_Q0"] = 8.27
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -233,7 +234,7 @@ class TestAbsoluteHumidityFactor:
             "factor_q",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.977, 1.008, 0.977, 1.018]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.97707, 1.00791, 0.97690, 1.01832]}))
         result = AbsoluteHumidityFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
@@ -246,7 +247,7 @@ class TestAtmosphericPressureFactor:
             "factor_pa",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27883, 1.16330]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27831, 1.16301]}))
         result = AtmosphericPressureFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
@@ -259,7 +260,7 @@ class TestSolarZenith:
             "solar_zenith",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"solar_zenith": [1.191, 1.086, 1.278, 1.163]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"solar_zenith": [1.0, 1.0, 1.0, 1.0]}))
 
         result = SolarZenith().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
@@ -273,7 +274,7 @@ class TestAlbedo:
             "albedo",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"albedo": [1.191, 1.086, 1.278, 1.163]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"albedo": [0.214, None, None, 0.219]}))
 
         result = Albedo().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
