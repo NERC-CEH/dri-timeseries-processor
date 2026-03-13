@@ -319,12 +319,18 @@ class TestClip:
 
 class TestAlbedoSouthSlopeCorrection:
     def test_albedo_south_slope_correction(self) -> None:
-        """Test albedo south slope correction works across the full dataframe."""
-        albedo = create_timeframe([0.214, None, None, 0.219], "albedo")
-        solar_zenith = create_timeframe([1, 1, 1, 1], "solar_zenith")
+        """Test albedo south slope correction works across the full dataframe.
+        The albedo and solar zenith data were obtained from their respective derivation methods,
+        which were generated using fictitious data.
+        To test this method, both day and night times should be used.
+        """
+        albedo = create_timeframe([None, 0.183, 0.171, 0.229, 0.186, 0.275, 0.247, 0.174, None], "albedo")
+        solar_zenith = create_timeframe([1.618, 1.506, 1.419, 1.365, 1.346, 1.365, 1.419, 1.506, 1.617], "solar_zenith")
 
         config = create_method_config(solar_zenith=solar_zenith, theta_g=0.3128764)
 
         result = AlbedoSouthSlopeCorrection().run(albedo, config)
-        expected_df = create_timeframe([0.149565, None, None, 0.153059], "albedo").df
+        expected_df = create_timeframe(
+            [None, 0.032132, 0.057701, 0.094, 0.080, 0.113, 0.083, 0.0305, None], "albedo"
+        ).df
         assert_frame_equal(result.df, expected_df)

@@ -52,7 +52,14 @@ def dataframe_to_timeframe(
         # Reorder columns to put "time" first
         df = df.select([time_name] + [col for col in df.columns if col != time_name])
         resolution = "PT1H"
-    tf = ts.TimeFrame(df=df, time_name=time_name, resolution=resolution)
+
+    tf = ts.TimeFrame(
+        df=df,
+        time_name=time_name,
+        resolution=resolution,
+        offset=f"+T{time_shift}H" if time_shift != 0 else None,
+    )
+
     if metadata:
         tf = tf.with_metadata(metadata)
     return tf

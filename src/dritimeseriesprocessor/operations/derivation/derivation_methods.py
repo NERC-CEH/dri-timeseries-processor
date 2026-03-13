@@ -49,13 +49,13 @@ class DerivationMethod(Operation, ABC):
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
         result_df = merged_tf.df.with_columns(calculation_expr)
 
-        # Build output TimeFrame
         return (
             ts.TimeFrame(
                 df=result_df,
                 time_name=merged_tf.time_name,
                 resolution=config.params["resolution"],
                 periodicity=config.params["periodicity"],
+                **({"offset": config.params["offset"]} if config.params.get("offset") else {}),
             )
             .with_metadata({"column_name": config.params["output_col"]})
             .select(config.params["output_col"])
@@ -377,7 +377,7 @@ class SolarZenith(DerivationMethod):
     Calculate angle of the sun from the vertical [radians]
     Taken from https://en.wikipedia.org/wiki/Solar_zenith_angle, with some approximations.
 
-    theta_s is solar zenith; 0 = overhead, π/2 = horizon, π = nadir)
+    theta_s is solar zenith in radians; 0 = overhead, pi/2 = horizon, pi = nadir)
     cos(theta_s) > 0 means sun above horizon, proxy for daylight hours.
     """
 
@@ -402,7 +402,7 @@ class SolarZenith(DerivationMethod):
         date_times = swin_tf.df[time_name]
 
         # hour angle [radians]: used solar noon ~ 12:00
-        h = (date_times.dt.hour() + (date_times.dt.minute() / pl.lit(60.0)) - pl.lit(12.0)) * (2.0 * math.pi / 24.0)
+        h = (date_times.dt.hour() + date_times.dt.minute() / pl.lit(60.0) - pl.lit(12.0)) * (2.0 * math.pi / 24.0)
 
         # number of days after beginning of year
         N = date_times.dt.ordinal_day()
@@ -411,13 +411,13 @@ class SolarZenith(DerivationMethod):
         delta = -pl.lit(23.44 * math.pi / 180.0) * ((2.0 * math.pi / 365.0) * (N + pl.lit(10.0))).cos()
 
         # Convert latitude to radians
-        phi = pl.lit(latitude * math.pi / 180)
+        phi = pl.lit(latitude * math.pi / 180.0)
 
         # cos(theta_s)
         cos_theta_s = phi.sin() * delta.sin() + phi.cos() * delta.cos() * h.cos()
 
         # Return solar zenith angle in radians
-        return cos_theta_s.arccos().clip(-1, 1)
+        return cos_theta_s.arccos()
 
 
 @DerivationMethod.register

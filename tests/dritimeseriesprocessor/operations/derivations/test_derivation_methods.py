@@ -28,7 +28,11 @@ class SimpleAddition(DerivationMethod):
         return columns["a"] + columns["b"]
 
 
-def create_method_config(data: dict[str, list[float]], output_col: str) -> DataProcessingMethodConfig:
+def create_method_config(
+    data: dict[str, list[float]],
+    output_col: str,
+    time_shift: int = 0,
+) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -40,7 +44,11 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
         MethodConfig for testing
     """
     params: dict[str, Any] = {
-        column_name: dataframe_to_timeframe(pl.DataFrame({column_name: values}), metadata={"column_name": column_name})
+        column_name: dataframe_to_timeframe(
+            df=pl.DataFrame({column_name: values}),
+            metadata={"column_name": column_name},
+            time_shift=time_shift,
+        )
         for column_name, values in data.items()
     }
     params["output_col"] = output_col
@@ -48,9 +56,9 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     params["resolution"] = "PT1H"
 
     # cosmos-holln site attributes/annotations
-    params["altitude"] = 74
-    params["L"] = 137.04156
-    params["LATITUDE"] = 54.110665
+    params["altitude"] = 74  # [M]
+    params["L"] = 137.04156  # [M]
+    params["LATITUDE"] = 54.110665  # [degrees]
     params["REF_Q0"] = 8.27
 
     return DataProcessingMethodConfig(method="test", params=params)
@@ -254,13 +262,47 @@ class TestAtmosphericPressureFactor:
 
 class TestSolarZenith:
     def test_albedo(self) -> None:
-        """Test solar zenith calculation"""
+        """Test solar zenith calculation
+        Using fictitious data as swin data is not used, only datetimes amd latitude are used.
+        To test this method, both day and night times should be used.
+        """
         config = create_method_config(
-            {"swin": [22.9, 19.3, 14, 25.1]},
+            {"swin": list(map(float, range(24)))},
             "solar_zenith",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"solar_zenith": [1.0, 1.0, 1.0, 1.0]}))
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "solar_zenith": [
+                        2.599,
+                        2.564,
+                        2.472,
+                        2.343,
+                        2.198,
+                        2.045,
+                        1.893,
+                        1.749,
+                        1.618,
+                        1.506,
+                        1.419,
+                        1.365,
+                        1.346,
+                        1.365,
+                        1.419,
+                        1.506,
+                        1.617,
+                        1.749,
+                        1.893,
+                        2.045,
+                        2.197,
+                        2.344,
+                        2.472,
+                        2.564,
+                    ]
+                }
+            )
+        )
 
         result = SolarZenith().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
@@ -268,13 +310,125 @@ class TestSolarZenith:
 
 class TestAlbedo:
     def test_albedo(self) -> None:
-        """Test albedo calculation"""
+        """Test albedo calculation.
+        Use fictitious test data, not enough test data available.
+        To test this method, both day and night times should be used."""
         config = create_method_config(
-            {"swin": [22.9, 19.3, 14, 25.1], "swout": [4.9, 4.2, 3, 5.5], "solar_zenith": [4.9, 4.2, 3, 5.5]},
+            {
+                "swin": [
+                    22.9,
+                    17.7,
+                    21.0,
+                    26.0,
+                    15.5,
+                    18.5,
+                    22.0,
+                    24.2,
+                    20.6,
+                    20.2,
+                    24.6,
+                    16.6,
+                    26.9,
+                    17.1,
+                    23.1,
+                    17.2,
+                    13.9,
+                    21.1,
+                    25.5,
+                    20.9,
+                    15.0,
+                    16.6,
+                    21.2,
+                    18.0,
+                ],
+                "swout": [
+                    2.6,
+                    4.0,
+                    5.6,
+                    3.0,
+                    5.9,
+                    2.8,
+                    4.0,
+                    5.4,
+                    3.8,
+                    3.7,
+                    4.2,
+                    3.8,
+                    5.0,
+                    4.7,
+                    5.7,
+                    3.0,
+                    2.6,
+                    5.4,
+                    3.0,
+                    4.5,
+                    3.3,
+                    5.7,
+                    5.5,
+                    4.3,
+                ],
+                "solar_zenith": [
+                    2.599,
+                    2.564,
+                    2.472,
+                    2.343,
+                    2.198,
+                    2.045,
+                    1.893,
+                    1.749,
+                    1.618,
+                    1.506,
+                    1.419,
+                    1.365,
+                    1.346,
+                    1.365,
+                    1.419,
+                    1.506,
+                    1.617,
+                    1.749,
+                    1.893,
+                    2.045,
+                    2.197,
+                    2.344,
+                    2.472,
+                    2.564,
+                ],
+            },
             "albedo",
         )
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"albedo": [0.214, None, None, 0.219]}))
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "albedo": [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        0.183,
+                        0.171,
+                        0.229,
+                        0.186,
+                        0.275,
+                        0.247,
+                        0.174,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ]
+                }
+            )
+        )
 
         result = Albedo().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)

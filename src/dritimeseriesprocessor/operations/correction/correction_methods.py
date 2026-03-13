@@ -265,9 +265,11 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
             tf.df.with_columns(
                 pl.when(date_filter)
                 .then(
-                    pl.col(primary_col)
-                    * (1 - beta_expr + beta_expr * theta_s_expr.cos())
-                    / (theta_s_expr - theta_g).cos()
+                    (
+                        pl.col(primary_col)
+                        * (1 - beta_expr + beta_expr * theta_s_expr.cos())
+                        / (theta_s_expr - theta_g).cos()
+                    ).clip(0, 1)
                 )
                 .otherwise(pl.col(primary_col))
             )
