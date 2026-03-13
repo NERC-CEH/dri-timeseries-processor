@@ -135,8 +135,8 @@ class TimeSeriesProcessor:
                 self.process_dataset(dataset_id)
             except Exception:
                 self.metrics.failed.inc()
-                self.graph.datasets[dataset_id].processed = False
-                logger.info(f"Processing failed tag added to: {dataset_id}")
+                self.graph.datasets[dataset_id].failed = True
+                logger.exception(f"Processing failed. Failed status added to container: {dataset_id}")
             else:
                 self.metrics.success.inc()
 
@@ -148,11 +148,11 @@ class TimeSeriesProcessor:
         """
 
         container = self.graph.datasets[dataset_id]
-        for dataset in container.all_dependencies():
-            if hasattr(self.graph.datasets[dataset], "processed"):
-                self.graph.datasets[dataset_id].processed = False
-                logger.info(f"Processing failed tag added to: {dataset_id}")
-                break
+        for dep_id in container.all_dependencies():
+            if self.graph.datasets[dep_id].failed:
+                container.failed = True
+                logger.error(f"Skipping {dataset_id} - dependency {dep_id} failed")
+                return
 
         match container.method_type():
             case MethodType.LOAD:
@@ -190,22 +190,33 @@ class TimeSeriesProcessor:
 
         with self.metrics.time_load.time():
             for dataset_group, containers in groupings.items():
-                combined_df = self.data_router.query_by_date_range(
-                    *containers, start_date=self.start_date, end_date=self.end_date
-                )
+                try:
+                    combined_df = self.data_router.query_by_date_range(
+                        *containers, start_date=self.start_date, end_date=self.end_date
+                    )
 
-                if combined_df.is_empty():
-                    logger.warning(f"No data returned for datasets in group: {dataset_group}")
-                    self.metrics.no_data.inc()
+                    if combined_df.is_empty():
+                        raise ValueError(f"No data returned for group: {dataset_group}")
+
+                except Exception:
+                    for container in containers:
+                        self.metrics.no_data.inc()
+                        container.failed = True
+                    logger.exception(f"Failed to load data for group: {dataset_group}")
                     continue
 
                 for container in containers:
                     col = container.source_column
-                    df = combined_df.select([container.time_column_name, col])
+                    try:
+                        df = combined_df.select([container.time_column_name, col])
 
-                    if df.is_empty():
-                        logger.warning(f"No data returned for dataset: {container.ts_id}")
+                        if df.is_empty():
+                            raise ValueError(f"No data returned for dataset: {container.ts_id}")
+
+                    except Exception:
                         self.metrics.no_data.inc()
+                        container.failed = True
+                        logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
 
                     container.init_timeframe(df)
@@ -361,10 +372,16 @@ class TimeSeriesProcessor:
         """
         common_keys = ["network", "source_site_identifier", "resolution", "source_bucket"]
         processed = tuple(
-            c
-            for c in self.graph.datasets.values()
-            if c.processing_level == ProcessingLevel.PROCESSED and c.data is not None
+            [
+                c
+                for c in self.graph.datasets.values()
+                if c.processing_level == ProcessingLevel.PROCESSED and not c.failed and c.data is not None
+            ]
         )
+        if not processed:
+            logger.warning("No datasets available to be saved.")
+            return
+
         groupings = group_containers(processed, common_keys)
 
         for dataset_group, containers in groupings.items():
