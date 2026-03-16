@@ -437,3 +437,22 @@ class AtmosphericPressureFactor(DerivationMethod):
         P0 = 1000
 
         return ((PA - P0) / L).exp()
+
+
+class IsSnowDay(DerivationMethod):
+    """Calculate if snow day. True is snow, False if not."""
+
+    name = "is_snow_day"
+    inputs = ("albedo",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate if snow day. True is snow, False if not.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - snow: SNOW [unitless]
+
+        Returns: Polars expression with boolean values.
+        """
+        snow_expr = pl.when(pl.col("albedo") > 0.5).then(1).otherwise(0).alias("snow")
+
+        return snow_expr
