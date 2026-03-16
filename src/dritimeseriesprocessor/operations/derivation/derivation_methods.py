@@ -387,7 +387,7 @@ class SolarZenith(DerivationMethod):
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
         Calculate angle of the sun from the vertical [radians]
-        Uses: site attribute LATITUDE [m]
+        Uses: site attribute LAT [degrees]
 
         Args:
             columns: Dict with keys of required columns for the calculation.
@@ -396,7 +396,7 @@ class SolarZenith(DerivationMethod):
         Returns:
             Polars expression computing solar zenith angle, theta_s.
         """
-        latitude = self.config.params["LATITUDE"]
+        latitude = self.config.params["lat"]
         swin_tf = self.config.params["swin"]
         time_name = swin_tf.time_name
         date_times = swin_tf.df[time_name]
@@ -483,7 +483,7 @@ class AbsoluteHumidityFactor(DerivationMethod):
         """Calculate absolute humidity correction factor to neutron counts.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - "q":  Q [g m-3] (grams per cubic meter)
+            - "q":  Q   (grams per cubic meter)
 
         Returns:
             Polars expression for absolute humidity factor, [units = None]

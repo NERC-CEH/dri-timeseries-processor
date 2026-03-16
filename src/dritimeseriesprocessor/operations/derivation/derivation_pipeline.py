@@ -37,8 +37,17 @@ class DerivationPipeline(OperationPipeline):
         Returns:
             Result of applying the derivation method.
         """
-        # Collect the dependency TimeFrame(s) to run derivation with
-        for dep_ts_id in config.params.get("dep_ts", []):
+
+        dep_ts_values = config.params.get("dep_ts", [])
+
+        if dep_ts_values is None:
+            dep_ts_list = []
+        elif isinstance(dep_ts_values, str):
+            dep_ts_list = [dep_ts_values]
+        else:
+            dep_ts_list = dep_ts_values
+
+        for dep_ts_id in dep_ts_list:
             dep_container = dataset_repository[dep_ts_id]
             config.params[dep_container.source_column.lower()] = dep_container.data
 

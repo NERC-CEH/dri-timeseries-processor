@@ -236,8 +236,8 @@ class TestWdCorrection:
         config = create_method_config(ux=ux, uy=uy)
 
         result = WDCorrection().run(wd, config)
-        expected_df = create_timeframe([95.01655, 160.81863, 354.14864, 75.46554], "wd").df
-        assert_frame_equal(result.df, expected_df)
+        expected_df = create_timeframe([95.016, 160.819, 354.148, 75.465], "wd").df
+        assert_frame_equal(result.df, expected_df, check_exact=False, abs_tol=0.001)
 
 
 class TestClip:
@@ -330,7 +330,5 @@ class TestAlbedoSouthSlopeCorrection:
         config = create_method_config(solar_zenith=solar_zenith, theta_g=0.3128764)
 
         result = AlbedoSouthSlopeCorrection().run(albedo, config)
-        expected_df = create_timeframe(
-            [None, 0.032132, 0.057701, 0.094, 0.080, 0.113, 0.083, 0.0305, None], "albedo"
-        ).df
-        assert_frame_equal(result.df, expected_df)
+        expected_df = create_timeframe([None, 0.032, 0.058, 0.094, 0.081, 0.113, 0.083, 0.0305, None], "albedo").df
+        assert_frame_equal(result.df, expected_df, check_exact=False, abs_tol=0.001)

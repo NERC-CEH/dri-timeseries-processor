@@ -58,8 +58,8 @@ def create_method_config(
     # cosmos-holln site attributes/annotations
     params["altitude"] = 74  # [M]
     params["L"] = 137.04156  # [M]
-    params["LATITUDE"] = 54.110665  # [degrees]
-    params["REF_Q0"] = 8.27
+    params["lat"] = 54.110665  # [degrees]
+    params["REF_Q0"] = 8.27  # [g m-3]
 
     return DataProcessingMethodConfig(method="test", params=params)
 
