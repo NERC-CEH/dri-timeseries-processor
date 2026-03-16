@@ -8,7 +8,7 @@ dataset's method type.
 
 import logging
 from collections.abc import Iterator
-from datetime import date, datetime
+from datetime import datetime
 
 import polars as pl
 
@@ -56,8 +56,8 @@ class TimeSeriesProcessor:
         graph: DatasetDependencyGraph,
         data_router: DataRouter,
         data_writer: ParquetWriterInterface,
-        start_date: date | datetime,
-        end_date: date | datetime,
+        start_date: datetime,
+        end_date: datetime,
         metrics: Metrics,
     ):
         """Initialise the processor.
