@@ -11,6 +11,7 @@ giving knowledge of which datasets need to be processed before others.
 
 import logging
 from collections import defaultdict
+from datetime import datetime
 from graphlib import TopologicalSorter
 
 from dritimeseriesprocessor.cli.selection import SelectionOption
@@ -35,6 +36,8 @@ class DatasetDependencyGraph:
     """Builds a dataset dependency DAG for a given set of site(s), variable(s), and periodicities.
 
     If no sites / variables / periodicities provided, it will attempt to fetch all options from the metadata service.
+    A start and end date can be optionally provided, which can limit the sites that are fetched from the metadata
+    service to those that are operational during that given window.
 
     Orchestrates the construction of a complete dependency graph by fetching dataset metadata from an
     API, resolving dependencies recursively, and attaching processing configurations.
@@ -46,16 +49,27 @@ class DatasetDependencyGraph:
         4. Repeating for any new datasets introduced by these dependencies.
     """
 
-    def __init__(self, metadata_router: MetadataRouter, network: str, selection: list[SelectionOption]):
+    def __init__(
+        self,
+        metadata_router: MetadataRouter,
+        network: str,
+        selection: list[SelectionOption],
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ):
         """Initialise the dependency graph builder.
 
         Args:
             metadata_router: A router object that handles metadata API calls.
             network: The network identifier
             selection: Selection specification for which datasets should be processed.
+            start_date: Start of the date window to check for operational sites  (inclusive).
+            end_date: End of the date window to check for operational sites (inclusive).
         """
         self.network = network
         self.selection = selection
+        self.start_date = start_date
+        self.end_date = end_date
 
         self.metadata_router = metadata_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
@@ -264,16 +278,18 @@ class DatasetDependencyGraph:
         if not sites:
             # If no sites provided, find all sites for the given network
             logger.warning(f"No sites provided. Fetching all sites for: {self.network}")
-            network_response = self.metadata_router.fetch_network(self.network)
-            sites = [site.id for site in network_response.items[0].contains]
-
-        sites_response = self.metadata_router.fetch_sites(sites)
+            sites_response = self.metadata_router.fetch_sites_by_network(self.network)
+        else:
+            sites_response = self.metadata_router.fetch_sites(sites)
 
         fetched_site_ids = []
         for item in sites_response.items:
             meta = map_site_metadata(item)
-            self.site_metadata[meta.site_id] = meta
-            fetched_site_ids.append(meta.site_id)
+            # Filter sites to only those that are "active".  By default, if start and end date not provide, all sites
+            # are considered active.
+            if meta.is_active(window_start=self.start_date, window_end=self.end_date):
+                self.site_metadata[meta.site_id] = meta
+                fetched_site_ids.append(meta.site_id)
         return fetched_site_ids
 
     def _build_dataset_containers(self, dataset_response: TimeSeriesDatasetResponse) -> list[TimeSeriesContainer]:

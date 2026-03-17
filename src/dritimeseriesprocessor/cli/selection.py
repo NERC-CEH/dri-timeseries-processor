@@ -4,7 +4,7 @@ other entry points)
 """
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime
 
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
 
@@ -48,6 +48,6 @@ class RunConfig:
 
     network: str
     selection: list[SelectionOption]
-    start_date: date
-    end_date: date
+    start_date: datetime
+    end_date: datetime
     mode: CliSelectionMode
