@@ -453,6 +453,7 @@ class IsSnowDay(DerivationMethod):
 
         Returns: Polars expression with boolean values.
         """
+
         snow_expr = pl.when(pl.col("albedo") > 0.5).then(1).otherwise(0).alias("snow")
 
         return snow_expr
