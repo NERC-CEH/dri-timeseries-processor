@@ -236,7 +236,6 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
     For sites on a slope, correct the albedo according to the angle of slope
     and the angle of the sun (according to the time of year).
     Valid on southerly aspects around solar noon only.
-    See:
     s_max and s_min_fc should be the same across all UK sites, so are hardcoded here.
     """
 

@@ -173,5 +173,3 @@ sandbox/
 CLAUDE.md
 
 .githooks/pre-commit-local.yml
-jupyter-venv
-jupyter-venv/

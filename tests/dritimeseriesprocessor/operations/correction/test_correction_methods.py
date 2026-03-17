@@ -320,7 +320,7 @@ class TestClip:
 class TestAlbedoSouthSlopeCorrection:
     def test_albedo_south_slope_correction(self) -> None:
         """Test albedo south slope correction works across the full dataframe.
-        The albedo and solar zenith data were obtained from their respective derivation methods,
+        The albedo and solar zenith data were obtained from their respective derivation method tests,
         which were generated using fictitious data.
         To test this method, both day and night times should be used.
         """

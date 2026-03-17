@@ -377,7 +377,7 @@ class SolarZenith(DerivationMethod):
     Calculate angle of the sun from the vertical [radians]
     Taken from https://en.wikipedia.org/wiki/Solar_zenith_angle, with some approximations.
 
-    theta_s is solar zenith in radians; 0 = overhead, pi/2 = horizon, pi = nadir)
+    theta_s is solar zenith in radians; 0 = overhead, pi/2 = horizon, pi = nadir
     cos(theta_s) > 0 means sun above horizon, proxy for daylight hours.
     """
 
@@ -394,7 +394,7 @@ class SolarZenith(DerivationMethod):
             - "swin": Shortwave incoming radiation [W m-2]
 
         Returns:
-            Polars expression computing solar zenith angle, theta_s.
+            Polars expression for solar zenith angle, theta_s in radians.
         """
         latitude = self.config.params["lat"]
         swin_tf = self.config.params["swin"]
@@ -441,7 +441,7 @@ class Albedo(DerivationMethod):
             - "swout": Shortwave outgoing radiation [W m-2]
             - "solar_zenith": Solar zenith angle [radians]
         Returns:
-            Polars expression computing albedo (null at night or where invalid).
+            Polars expression for albedo. Value is null at night or where invalid, otherwise between 0 and 1.
         """
         swin = columns["swin"]
         swout = columns["swout"]
@@ -483,7 +483,7 @@ class AbsoluteHumidityFactor(DerivationMethod):
         """Calculate absolute humidity correction factor to neutron counts.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - "q":  Q   (grams per cubic meter)
+            - "q":  Q [g m-3] (grams per cubic meter)
 
         Returns:
             Polars expression for absolute humidity factor, [units = None]

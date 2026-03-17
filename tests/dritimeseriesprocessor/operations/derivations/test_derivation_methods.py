@@ -263,7 +263,7 @@ class TestAtmosphericPressureFactor:
 class TestSolarZenith:
     def test_albedo(self) -> None:
         """Test solar zenith calculation
-        Using fictitious data as swin data is not used, only datetimes amd latitude are used.
+        Using fictitious data as swin data is not used, only datetimes and latitude are used.
         To test this method, both day and night times should be used.
         """
         config = create_method_config(
@@ -311,7 +311,7 @@ class TestSolarZenith:
 class TestAlbedo:
     def test_albedo(self) -> None:
         """Test albedo calculation.
-        Use fictitious test data, not enough test data available.
+        Use fictitious test data, not enough test data available. Data was randomly generated.
         To test this method, both day and night times should be used."""
         config = create_method_config(
             {
