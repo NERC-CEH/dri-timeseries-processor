@@ -20,10 +20,10 @@ The processor CLI is invoked using:
 python -m dritimeseriesprocessor ... 
 ```
 
-Use one of two (mutually exclusive) modes:
+Use one of two (mutually exclusive) processing modes, or the utility command:
 
 1. Explicit: `from-selection`
-    - Individual sets of processing arguments    
+    - Individual sets of processing arguments
 
     ```bash
     python -m dritimeseriesprocessor from-selection
@@ -33,40 +33,57 @@ Use one of two (mutually exclusive) modes:
      --selection SITE VARIABLE PERIODICITY
      [--selection SITE2 VARIABLE2 PERIODICITY2 ...]
     ```
-   
+
     **Example**:
-   
-    ```bash    
-    python -m dritimeseriesprocessor from-selection 
-     --network cosmos 
-     --lookback P2D 
+
+    ```bash
+    python -m dritimeseriesprocessor from-selection
+     --network cosmos
+     --lookback P2D
      --selection cosmos-alic1 TA PT30M
      --selection cosmos-bunny PA PT30M
      --selection cosmos-bunny PRECIP P1D
     ```
-   
+
 2. Cross-product: `from-cross-product`
     - Bulk processing across processing dimensions
 
-    ```bash    
-    python -m dritimeseriesprocessor from-cross-product 
-     --network NETWORK 
-     [--lookback DURATION | --start-date YYYY-MM-DD] 
-     [--end-date YYYY-MM-DD] 
-     [--sites SITE1 SITE2 ...] 
-     [--variables VAR1 VAR2 ...] 
+    ```bash
+    python -m dritimeseriesprocessor from-cross-product
+     --network NETWORK
+     [--lookback DURATION | --start-date YYYY-MM-DD]
+     [--end-date YYYY-MM-DD]
+     [--sites SITE1 SITE2 ...]
+     [--variables VAR1 VAR2 ...]
      [--periodicities PER1 PER2 ...]
     ```
-   
+
     **Example**:
-    
-    ```bash    
-    python -m dritimeseriesprocessor from-cross-product 
-     --network cosmos 
-     --lookback P2D 
+
+    ```bash
+    python -m dritimeseriesprocessor from-cross-product
+     --network cosmos
+     --lookback P2D
      --sites cosmos-alic1 cosmos-bunny
-     --variables TA PA 
+     --variables TA PA
      --periodicities PT30M
+    ```
+
+3. List sites: `list-sites`
+    - Writes a JSON array of active site IDs for a network to `/tmp/sites.json`
+    - Sites not open during the requested date window are excluded
+
+    ```bash
+    python -m dritimeseriesprocessor list-sites
+     --network NETWORK
+     [--lookback DURATION | --start-date YYYY-MM-DD]
+     [--end-date YYYY-MM-DD]
+    ```
+
+    **Example**:
+
+    ```bash
+    python -m dritimeseriesprocessor list-sites --network cosmos --lookback P2D
     ```
 
 See [CLI Usage](docs/cli_usage.md) for more info.
