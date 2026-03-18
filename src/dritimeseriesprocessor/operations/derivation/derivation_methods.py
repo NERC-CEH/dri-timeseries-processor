@@ -449,11 +449,43 @@ class IsSnowDay(DerivationMethod):
         """Calculate if snow day. True is snow, False if not.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - snow: SNOW [unitless]
+            - albedo: ALBEDO, measure of reflection with values between 0 and 1 [unitless fraction]
 
         Returns: Polars expression with boolean values.
         """
+        albedo_tf = self.config.params["albedo"]
 
-        snow_expr = pl.when(pl.col("albedo") > 0.5).then(1).otherwise(0).alias("snow")
+        df = (
+            albedo_tf.df.sort(albedo_tf.time_name)
+            .with_columns([pl.col("albedo").shift().alias("albedo_prev")])
+            .with_columns(
+                [
+                    pl.when(pl.col("albedo_prev").is_null())
+                    .then(
+                        pl.when(pl.col("albedo") >= 0.5)
+                        .then(True)
+                        .when(pl.col("albedo") < 0.35)
+                        .then(False)
+                        .otherwise(None)
+                    )
+                    .when(pl.col("albedo_prev") >= 0.5)
+                    .then(
+                        pl.when(pl.col("albedo") >= 0.35)
+                        .then(True)
+                        .when(pl.col("albedo") < 0.35)
+                        .then(False)
+                        .otherwise(None)
+                    )
+                    .otherwise(
+                        pl.when(pl.col("albedo") >= 0.5)
+                        .then(True)
+                        .when(pl.col("albedo") < 0.5)
+                        .then(False)
+                        .otherwise(None)
+                    )
+                    .alias("is_snow_day")
+                ]
+            )
+        )
 
-        return snow_expr
+        return df["is_snow_day"]

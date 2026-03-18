@@ -10,6 +10,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidityFactor,
     AtmosphericPressureFactor,
     DerivationMethod,
+    IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
@@ -244,4 +245,90 @@ class TestAtmosphericPressureFactor:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.191, 1.086, 1.278, 1.163]}))
         result = AtmosphericPressureFactor().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestIsSnowDay:
+    def test_is_snow_day(self) -> None:
+        "Test calculation that checks if it is a snow day"
+        config = create_method_config(
+            {
+                "albedo": [
+                    # prev = null (first item has no previous)
+                    None,
+                    0.20,  # prev=null, today<0.35 → False
+                    None,
+                    0.40,  # prev=null, today 0.35–0.5 → None
+                    None,
+                    0.60,  # prev=null, today>=0.5 → True
+                    # prev < 0.5
+                    0.10,
+                    None,  # today null → None
+                    0.10,
+                    0.20,  # today<0.5 → False
+                    0.10,
+                    0.40,  # today<0.5 → False
+                    0.10,
+                    0.60,  # today>=0.5 → True
+                    # prev in [0.35, 0.5)
+                    0.45,
+                    None,  # today null → None
+                    0.45,
+                    0.20,  # today<0.5 → False
+                    0.45,
+                    0.40,  # today<0.5 → False
+                    0.45,
+                    0.60,  # today>=0.5 → True
+                    # prev >= 0.5
+                    0.65,
+                    None,  # today null → None
+                    0.65,
+                    0.20,  # today<0.35 → False
+                    0.65,
+                    0.40,  # today>=0.35 → True
+                    0.65,
+                    0.60,  # today>=0.35 → True
+                ]
+            },
+            "is_snow_day",
+        )
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "is_snow_day": [
+                        None,
+                        False,
+                        None,
+                        None,
+                        None,
+                        True,
+                        False,
+                        None,
+                        False,
+                        False,
+                        False,
+                        False,
+                        False,
+                        True,
+                        True,
+                        None,
+                        None,
+                        False,
+                        False,
+                        False,
+                        False,
+                        True,
+                        True,
+                        None,
+                        True,
+                        False,
+                        True,
+                        True,
+                        True,
+                        True,
+                    ]
+                }
+            )
+        )
+        result = IsSnowDay().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
