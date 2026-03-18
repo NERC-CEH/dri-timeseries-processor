@@ -43,23 +43,19 @@ def create_method_config(
     Returns:
         MethodConfig for testing
     """
-    params: dict[str, Any] = {
-        column_name: dataframe_to_timeframe(
-            df=pl.DataFrame({column_name: values}),
-            metadata={"column_name": column_name},
-            time_shift=time_shift,
-        )
-        for column_name, values in data.items()
-    }
+    params: dict[str, Any] = {}
+    if data:
+        params = {
+            column_name: dataframe_to_timeframe(
+                df=pl.DataFrame({column_name: values}),
+                metadata={"column_name": column_name},
+                time_shift=time_shift,
+            )
+            for column_name, values in data.items()
+        }
     params["output_col"] = output_col
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
-
-    # cosmos-holln site attributes/annotations
-    params["altitude"] = 74  # [M]
-    params["L"] = 137.04156  # [M]
-    params["lat"] = 54.110665  # [degrees]
-    params["REF_Q0"] = 8.27  # [g m-3]
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -208,6 +204,7 @@ class TestMeanSeaLevelPressure:
             },
             "mslp",
         )
+        config.params["altitude"] = 74  # [M] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"mslp": [1033.446, 1020.131, 1043.330, 1029.514]}))
 
@@ -241,6 +238,7 @@ class TestAbsoluteHumidityFactor:
             },
             "factor_q",
         )
+        config.params["REF_Q0"] = 8.27  # [g m-3] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.97707, 1.00791, 0.97690, 1.01832]}))
         result = AbsoluteHumidityFactor().run(config)
@@ -254,6 +252,7 @@ class TestAtmosphericPressureFactor:
             {"pa": [1024.0, 1011.365, 1033.649, 1020.695]},
             "factor_pa",
         )
+        config.params["L"] = 137.04156  # [M] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27831, 1.16301]}))
         result = AtmosphericPressureFactor().run(config)
@@ -261,15 +260,13 @@ class TestAtmosphericPressureFactor:
 
 
 class TestSolarZenith:
-    def test_albedo(self) -> None:
+    def test_solar_zenith(self) -> None:
         """Test solar zenith calculation
-        Using fictitious data as swin data is not used, only datetimes and latitude are used.
+        Only datetimes and latitude are used.
         To test this method, both day and night times should be used.
         """
-        config = create_method_config(
-            {"swin": list(map(float, range(24)))},
-            "solar_zenith",
-        )
+        config = create_method_config({"swin": list(map(float, range(24)))}, "solar_zenith")
+        config.params["lat"] = 54.110665  # [degrees] holln
 
         expected = dataframe_to_timeframe(
             pl.DataFrame(

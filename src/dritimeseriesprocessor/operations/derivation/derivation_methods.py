@@ -1,4 +1,3 @@
-import math
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
@@ -365,10 +364,10 @@ class AbsoluteHumidity(DerivationMethod):
         ta = columns["ta"]
         rh = columns["rh"]
 
-        Q1 = ((17.67 * ta) / (ta + 243.5)).exp()
-        Q2 = 273.15 + ta
+        q1 = ((17.67 * ta) / (ta + 243.5)).exp()
+        q2 = 273.15 + ta
 
-        return (6.112 * Q1 * rh * 2.1674) / Q2
+        return (6.112 * q1 * rh * 2.1674) / q2
 
 
 @DerivationMethod.register
@@ -391,7 +390,7 @@ class SolarZenith(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - "swin": Shortwave incoming radiation [W m-2]
+            - "swin": Shortwave incoming radiation [W m-2] (Not used, datetimes only)
 
         Returns:
             Polars expression for solar zenith angle, theta_s in radians.
@@ -402,16 +401,16 @@ class SolarZenith(DerivationMethod):
         date_times = swin_tf.df[time_name]
 
         # hour angle [radians]: used solar noon ~ 12:00
-        h = (date_times.dt.hour() + date_times.dt.minute() / pl.lit(60.0) - pl.lit(12.0)) * (2.0 * math.pi / 24.0)
+        h = (date_times.dt.hour() + date_times.dt.minute() / 60.0 - 12.0) * (pl.lit(15).radians())
 
         # number of days after beginning of year
-        N = date_times.dt.ordinal_day()
+        ordinal_days = date_times.dt.ordinal_day()
 
         # Declination delta (radians)
-        delta = -pl.lit(23.44 * math.pi / 180.0) * ((2.0 * math.pi / 365.0) * (N + pl.lit(10.0))).cos()
+        delta = -pl.lit(23.44).radians() * (pl.lit(ordinal_days + 10.0).radians()).cos()
 
         # Convert latitude to radians
-        phi = pl.lit(latitude * math.pi / 180.0)
+        phi = pl.lit(latitude).radians()
 
         # cos(theta_s)
         cos_theta_s = phi.sin() * delta.sin() + phi.cos() * delta.cos() * h.cos()
@@ -450,13 +449,14 @@ class Albedo(DerivationMethod):
         # Albedo
         albedo = pl.when((swin.is_not_null()) & (swin > 0)).then(swout / swin).otherwise(None)
 
-        # Remove night time values
+        # Remove nighttime values
         swin_clear = theta_s.cos()
         albedo_day = pl.when(swin_clear > 0).then(albedo).otherwise(None)
 
         return albedo_day.clip(0.0, 1.0)
 
 
+@DerivationMethod.register
 class AbsoluteHumidityFactor(DerivationMethod):
     """Calculate correction factor for absolute humidity Q.
     This factor is used to correct neutron counts.
@@ -489,12 +489,13 @@ class AbsoluteHumidityFactor(DerivationMethod):
             Polars expression for absolute humidity factor, [units = None]
         """
 
-        REF_Q0 = self.config.params["REF_Q0"]
-        Q = columns["q"]
+        ref_q0 = self.config.params["REF_Q0"]
+        q = columns["q"]
 
-        return 1 + 0.0054 * (Q - REF_Q0)
+        return 1 + 0.0054 * (q - ref_q0)
 
 
+@DerivationMethod.register
 class AtmosphericPressureFactor(DerivationMethod):
     """Calculate correction factor for atmospheric pressure, PA.
     This factor is used to correct neutron counts.
@@ -518,8 +519,8 @@ class AtmosphericPressureFactor(DerivationMethod):
             Polars expression for atmospheric pressure factor, [units = None]
         """
 
-        L = self.config.params["L"]
-        PA = columns["pa"]
-        P0 = 1000
+        barometric_attenuation_length = self.config.params["L"]
+        pa = columns["pa"]
+        p0 = 1000
 
-        return ((PA - P0) / L).exp()
+        return ((pa - p0) / barometric_attenuation_length).exp()
