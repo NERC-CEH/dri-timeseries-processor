@@ -1,6 +1,6 @@
 import argparse
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 from freezegun import freeze_time
@@ -109,8 +109,8 @@ class TestParseArgs:
     def test_lookback_from_default(self) -> None:
         """Test that lookback works from the default end date"""
         cfg = parse_args(["from-cross-product", "--network", "a_network", "--lookback", "P2D"])
-        assert cfg.end_date == date(2025, 1, 1)
-        assert cfg.start_date == date(2024, 12, 30)
+        assert cfg.end_date == datetime(2025, 1, 1)
+        assert cfg.start_date == datetime(2024, 12, 30)
 
     @freeze_time("2025-01-01")
     def test_lookback_from_specified(self) -> None:
@@ -118,8 +118,8 @@ class TestParseArgs:
         cfg = parse_args(
             ["from-cross-product", "--network", "a_network", "--end-date", "2025-03-31", "--lookback", "P2D"]
         )
-        assert cfg.end_date == date(2025, 3, 31)
-        assert cfg.start_date == date(2025, 3, 29)
+        assert cfg.end_date == datetime(2025, 3, 31)
+        assert cfg.start_date == datetime(2025, 3, 29)
 
     def test_lookback_with_time_component_error(self) -> None:
         with pytest.raises(SystemExit):
@@ -165,15 +165,15 @@ class TestParseDateRange:
 
         start_date, result_end = _parse_date_range(None, lookback, end_date)
 
-        assert result_end == end_date
-        assert start_date == date(2024, 3, 5)
+        assert result_end == datetime(2024, 3, 10)
+        assert start_date == datetime(2024, 3, 5)
 
     def test_zero_lookback(self) -> None:
         end_date = date(2024, 3, 10)
         lookback = timedelta(days=0)
 
         start_date, _ = _parse_date_range(None, lookback, end_date)
-        assert start_date == end_date
+        assert start_date == datetime(2024, 3, 10)
 
     def test_date_range_computation_with_start_date(self) -> None:
         """Test that the start date option generates expected date range"""
@@ -182,8 +182,8 @@ class TestParseDateRange:
 
         start_date, result_end = _parse_date_range(start_date, None, end_date)
 
-        assert result_end == end_date
-        assert start_date == start_date
+        assert result_end == datetime(2024, 3, 10)
+        assert start_date == datetime(2024, 3, 1)
 
     def test_start_date_equals_end_date(self) -> None:
         """Test that the error raised if start date = end date"""

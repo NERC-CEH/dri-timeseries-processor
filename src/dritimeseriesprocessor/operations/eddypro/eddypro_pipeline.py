@@ -96,7 +96,6 @@ class EddyProPipeline:
                 site=site_id,
                 processed_dataset=processed_dataset,
                 start_date=start_date,
-                end_date=end_date,
             )
 
             logger.info("EddyPro pipeline complete for site %s", site_id)

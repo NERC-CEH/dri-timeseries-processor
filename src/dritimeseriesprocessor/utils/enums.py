@@ -5,6 +5,7 @@ class CliSelectionMode(Enum):
     EXPLICIT = "from-selection"
     CROSS_PRODUCT = "from-cross-product"
     EDDYPRO = "eddypro"
+    LIST_SITES = "list-sites"
 
 
 class ConfigurationType(Enum):

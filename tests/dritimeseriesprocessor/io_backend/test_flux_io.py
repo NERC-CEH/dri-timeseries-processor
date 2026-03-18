@@ -59,7 +59,6 @@ class TestFluxS3Client:
             site="PLYNL",
             processed_dataset="eddypro-full-output",
             start_date=date(2026, 1, 20),
-            end_date=date(2026, 1, 21),
         )
 
         uploaded = sorted(

@@ -72,7 +72,6 @@ class FluxS3Client:
         site: str,
         processed_dataset: str,
         start_date: date,
-        end_date: date,
     ) -> None:
         """Upload all EddyPro output files from output_dir to S3 for archival."""
         count = 0

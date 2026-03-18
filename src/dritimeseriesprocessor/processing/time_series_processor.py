@@ -9,7 +9,7 @@ dataset's method type.
 import logging
 import tempfile
 from collections.abc import Iterator
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 
 import polars as pl
@@ -62,8 +62,8 @@ class TimeSeriesProcessor:
         graph: DatasetDependencyGraph,
         data_router: DataRouter,
         data_writer: ParquetWriterInterface,
-        start_date: date | datetime,
-        end_date: date | datetime,
+        start_date: datetime,
+        end_date: datetime,
         metrics: Metrics,
         flux_s3_client: FluxS3Client | None = None,
     ):
@@ -233,6 +233,8 @@ class TimeSeriesProcessor:
         site_meta = self.graph.site_metadata.get(container.source_site) or self.graph.site_metadata.get(
             f"{SITE_URI}/{container.source_site}"
         )
+        start_date = self.start_date.date()
+        end_date = self.end_date.date()
         tmp = tempfile.TemporaryDirectory(prefix=f"eddypro_raw_{site_meta.alt_id}_")
         self._raw_dirs[container.ts_id] = tmp
 
@@ -241,8 +243,8 @@ class TimeSeriesProcessor:
             site=site_meta.alt_id,
             dataset=container.source_dataset,
             network=container.network,
-            start_date=self.start_date,
-            end_date=self.end_date,
+            start_date=start_date,
+            end_date=end_date,
             local_dir=Path(tmp.name),
         )
 
@@ -310,13 +312,15 @@ class TimeSeriesProcessor:
         site_meta = self.graph.site_metadata.get(container.source_site) or self.graph.site_metadata.get(
             f"{SITE_URI}/{container.source_site}"
         )
+        start_date = self.start_date.date()
+        end_date = self.end_date.date()
 
         EddyProPipeline(runner=EddyProRunner()).run(
             raw_data_dir=Path(self._raw_dirs[raw_container.ts_id].name),
             method_config=container.method_config,
             site_metadata=site_meta,
-            start_date=self.start_date,
-            end_date=self.end_date,
+            start_date=start_date,
+            end_date=end_date,
             flux_s3_client=self.flux_s3_client,
             network=container.network,
             processed_source_bucket=container.source_bucket,

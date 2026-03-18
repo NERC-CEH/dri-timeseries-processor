@@ -136,7 +136,6 @@ class TestEddyProPipeline:
             site="PLYNL",
             processed_dataset="eddypro-full-output",
             start_date=date(2026, 1, 20),
-            end_date=date(2026, 1, 21),
         )
         assert "path" in captured_work_dir
         assert not captured_work_dir["path"].exists()
