@@ -33,11 +33,7 @@ class EddyProRunner:
     """Runs the EddyPro binary processing steps (eddypro_rp then eddypro_fcc)"""
 
     def __init__(self) -> None:
-        """Resolve eddypro_rp and eddypro_fcc from PATH.
-
-        Raises:
-            FileNotFoundError: If either eddypro_rp or eddypro_fcc cannot be found.
-        """
+        """Resolve the EddyPro binaries from PATH."""
         self._rp_path = self._find_binary("eddypro_rp")
         self._fcc_path = self._find_binary("eddypro_fcc")
         logger.info("EddyPro binaries resolved: rp=%s, fcc=%s", self._rp_path, self._fcc_path)
@@ -48,21 +44,7 @@ class EddyProRunner:
         output_dir: Path,
         environment: str = "production",
     ) -> EddyProResult:
-        """Run both EddyPro processing steps sequentially.
-
-        Step 1: eddypro_rp (raw processor) reads raw 20Hz files and produces
-        half-hourly fluxes.
-        Step 2: eddypro_fcc (flux correction) applies spectral corrections
-        to the eddypro_rp output.
-
-        Args:
-            project_file: Path to the .eddypro project file.
-            output_dir: Directory where EddyPro writes output.
-            environment: Environment string passed to EddyPro.
-
-        Returns:
-            EddyProResult with both return codes and captured output.
-        """
+        """Run both EddyPro steps and return their outputs."""
         work_dir = output_dir.parent
         (work_dir / environment / "tmp").mkdir(parents=True, exist_ok=True)
 
@@ -132,14 +114,7 @@ class EddyProRunner:
 
     @staticmethod
     def _find_binary(name: str) -> str:
-        """Find the path to an EddyPro binary on PATH.
-
-        Args:
-            name: Binary name (e.g. "eddypro_rp").
-
-        Returns:
-            Full path to the binary.
-        """
+        """Return the path to an EddyPro binary on PATH."""
         found = shutil.which(name)
         if found:
             return found
