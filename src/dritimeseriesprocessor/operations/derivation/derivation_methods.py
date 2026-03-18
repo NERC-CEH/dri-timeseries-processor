@@ -440,7 +440,19 @@ class AtmosphericPressureFactor(DerivationMethod):
 
 
 class IsSnowDay(DerivationMethod):
-    """Calculate if snow day. True is snow, False if not."""
+    """Calculate if snow day. True is snow, False if not.
+    If today's albedo is None, then is_snow_day is None.
+    albedo >= 0.5 is a proxy for is_snow_day = True
+    albedo < 0.35 is a proxy for is_snow_day = False
+
+    It is more likely that today is (not) a snow day if yesterday was (not).
+
+    If there was snow the previous day, i.e. the previous day's albedo >= 0.5, then
+    the current day is a snow day if the albedo > 0.35.
+
+    If there was no snow the previous day, i.e. the previous day's albedo < 0.5, then
+    the current day is a snow day if the albedo >= 0.5.
+    """
 
     name = "is_snow_day"
     inputs = ("albedo",)

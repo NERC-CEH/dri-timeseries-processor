@@ -250,44 +250,43 @@ class TestAtmosphericPressureFactor:
 
 class TestIsSnowDay:
     def test_is_snow_day(self) -> None:
-        "Test calculation that checks if it is a snow day"
+        """
+        Test calculation that checks if it is a snow day
+        All possible combinations are tested.
+        """
         config = create_method_config(
             {
                 "albedo": [
-                    # prev = null (first item has no previous)
                     None,
-                    0.20,  # prev=null, today<0.35 → False
+                    0.20,
                     None,
-                    0.40,  # prev=null, today 0.35–0.5 → None
+                    0.40,
                     None,
-                    0.60,  # prev=null, today>=0.5 → True
-                    # prev < 0.5
+                    0.60,
                     0.10,
-                    None,  # today null → None
+                    None,
                     0.10,
-                    0.20,  # today<0.5 → False
+                    0.20,
                     0.10,
-                    0.40,  # today<0.5 → False
+                    0.40,
                     0.10,
-                    0.60,  # today>=0.5 → True
-                    # prev in [0.35, 0.5)
+                    0.60,
                     0.45,
-                    None,  # today null → None
+                    None,
                     0.45,
-                    0.20,  # today<0.5 → False
+                    0.20,
                     0.45,
-                    0.40,  # today<0.5 → False
+                    0.40,
                     0.45,
-                    0.60,  # today>=0.5 → True
-                    # prev >= 0.5
+                    0.60,
                     0.65,
-                    None,  # today null → None
+                    None,
                     0.65,
-                    0.20,  # today<0.35 → False
+                    0.20,
                     0.65,
-                    0.40,  # today>=0.35 → True
+                    0.40,
                     0.65,
-                    0.60,  # today>=0.35 → True
+                    0.60,
                 ]
             },
             "is_snow_day",
