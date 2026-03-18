@@ -246,18 +246,22 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
         s_max = 1200
         s_min_fc = 0.333333
 
-        theta_g = config.params.get("theta_g")
+        swin_tf = config.params["swin"]
         theta_s_tf = config.params["solar_zenith"]
+        theta_g = config.params.get("theta_g")
 
         primary_col = tf.metadata["column_name"]
+        swin_col = swin_tf.metadata["column_name"]
         theta_s_col = theta_s_tf.metadata["column_name"]
+
+        swin_expr = swin_tf.df[swin_col]
         theta_s_expr = theta_s_tf.df[theta_s_col]
 
         # Calculate theoretical estimate of SWIN for clear sky
         swin_clear_expr = s_max * theta_s_expr.cos()
 
         # Beta varies from 1 on clear days, to 0 if SWIN is less than s_min_fac
-        beta_expr = ((swin_clear_expr - s_min_fc * swin_clear_expr) / ((1 - s_min_fc) * swin_clear_expr)).clip(0, 1)
+        beta_expr = ((swin_expr - s_min_fc * swin_clear_expr) / ((1 - s_min_fc) * swin_clear_expr)).clip(0, 1)
 
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
         return tf.with_df(

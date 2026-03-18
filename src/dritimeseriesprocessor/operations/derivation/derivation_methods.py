@@ -407,7 +407,8 @@ class SolarZenith(DerivationMethod):
         ordinal_days = date_times.dt.ordinal_day()
 
         # Declination delta (radians)
-        delta = -pl.lit(23.44).radians() * (pl.lit(ordinal_days + 10.0).radians()).cos()
+        axis_tilt = 23.44  # tilt of the Earth, degrees
+        delta = -pl.lit(axis_tilt).radians() * (pl.lit((360 / 365) * (ordinal_days + 10.0)).radians()).cos()
 
         # Convert latitude to radians
         phi = pl.lit(latitude).radians()
