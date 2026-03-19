@@ -95,7 +95,9 @@ def _build_parser() -> argparse.ArgumentParser:
     # File-based processing via EddyPro binary — operates on entire sites, not individual variables.
     eddypro_parser = subparsers.add_parser(CliSelectionMode.EDDYPRO.value, parents=[parent])
     eddypro_parser.add_argument(
-        "--sites", required=True, nargs="+", help="Space-separated site identifiers, e.g. PLYNL"
+        "--sites",
+        nargs="+",
+        help="Space-separated site identifiers, e.g. PLYNL. If omitted, process all sites for network.",
     )
 
     # Utility command: list all site IDs for a network as a JSON array.
@@ -251,8 +253,11 @@ def _parse_cross_product_selection(args: argparse.Namespace) -> list[SelectionOp
 def _parse_eddypro_selection(args: argparse.Namespace) -> list[SelectionOption]:
     """Parse EddyPro site selection arguments.
 
-    EddyPro operates at site level — no variables or periodicities. Each site becomes
-    a SelectionOption with sites set and variables/periodicities left as None.
+    EddyPro operates at site level — no variables or periodicities.
+
+    If ``--sites`` is provided, the selection is restricted to those site identifiers.
+    If omitted, sites are left unconstrained (ALL) and will be expanded downstream by
+    the execution mode (e.g. local fixtures in EddyPro dev mode).
 
     Args:
         args: Parsed CLI arguments containing EddyPro selection values.

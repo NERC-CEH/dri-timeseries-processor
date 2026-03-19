@@ -1,179 +1,57 @@
-"""
-Local metadata loader for EddyPro / flux processing.
+"""Load local EddyPro metadata into graph-ready domain objects."""
 
-Provides access to flux site metadata, dataset definitions, and EddyPro-specific configuration
-from local JSON fixtures. Produces the same domain model objects (TimeSeriesContainer, SiteMetadata,
-DataProcessingConfig) that the real MetadataRouter + DAG builder would produce in production.
+from __future__ import annotations
 
-This loader exists to enable local development without a running metadata API.
-"""
+from dataclasses import dataclass
 
-import json
-import logging
-
-from dritimeseriesprocessor import PACKAGE_ROOT
-from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
-    DataProcessingMethodConfig,
-)
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.operations.eddypro.eddypro_config_builder import EddyProSiteConfig
-from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
+from dritimeseriesprocessor.models.mappers.api_to_domain import (
+    map_dataset_item,
+    map_processing_config_item,
+    map_site_metadata,
+)
+from dritimeseriesprocessor.routers.metadata.local_eddypro_metadata_source import LocalEddyProMetadataSource
 
-logger = logging.getLogger(__name__)
+
+@dataclass(frozen=True)
+class LocalFluxGraphData:
+    datasets: dict[str, TimeSeriesContainer]
+    site_metadata: dict[str, SiteMetadata]
 
 
 class FluxMetadataLoader:
-    """Loads EddyPro metadata from local JSON fixtures for local development.
+    """Build local graph data from the EddyPro fixtures."""
 
-    In production, this data comes from the FDRI Metadata API via the DAG builder.
-    This loader produces the same domain model objects, enabling local development
-    without a running metadata API.
-    """
+    def __init__(self, network: str, sites: list[str] | None) -> None:
+        self._source = LocalEddyProMetadataSource(network=network, sites=sites)
 
-    METADATA_DIR = PACKAGE_ROOT / "__metadata__" / "eddypro"
+    def load(self) -> LocalFluxGraphData:
+        fixture_set = self._source.load()
 
-    def __init__(self, network: str, sites: list[str]) -> None:
-        self._network = network
-        self._sites = sites
+        site_metadata = {site.site_id: site for site in (map_site_metadata(item) for item in fixture_set.sites.items)}
 
-    def load_site_metadata(self) -> dict[str, SiteMetadata]:
-        """Load site metadata from sites.json.
+        datasets = {
+            dataset.ts_id: dataset
+            for dataset in (map_dataset_item(item, site_metadata) for item in fixture_set.datasets.items)
+        }
 
-        Returns:
-            Dict keyed by site_id URI (e.g. "http://fdri.ceh.ac.uk/id/site/flux-plynl").
-        """
-        data = self._load_json("sites.json")
-        result: dict[str, SiteMetadata] = {}
+        processing_configs = [
+            map_processing_config_item(item, site_metadata) for item in fixture_set.processing_configs.items
+        ]
+        processing_configs_by_dataset = self._group_processing_configs(processing_configs)
 
-        for site_key in self._sites:
-            if site_key not in data:
-                raise KeyError(f"Site {site_key!r} not found in sites.json. Available: {list(data.keys())}")
+        for dataset_id, configs in processing_configs_by_dataset.items():
+            if dataset_id not in datasets:
+                continue
+            datasets[dataset_id].attach_configs(configs)
 
-            site_data = data[site_key]
-            metadata = SiteMetadata(
-                site_id=site_data["site_id"],
-                network=site_data["network"],
-                alt_id=site_data.get("alt_id"),
-                full_name=site_data.get("full_name"),
-                lat=site_data.get("lat"),
-                lon=site_data.get("lon"),
-                altitude=site_data.get("altitude"),
-                easting=site_data.get("easting"),
-                northing=site_data.get("northing"),
-            )
-            result[metadata.site_id] = metadata
+        return LocalFluxGraphData(datasets=datasets, site_metadata=site_metadata)
 
-        logger.info("Loaded site metadata for %d sites", len(result))
-        return result
-
-    def load_datasets(self) -> dict[str, TimeSeriesContainer]:
-        """Load dataset definitions from datasets.json"""
-        data = self._load_json("datasets.json")
-        eddypro_cfg = self._load_json("eddypro_configs.json")
-        containers: dict[str, TimeSeriesContainer] = {}
-
-        for site_key in self._sites:
-            if site_key not in data:
-                raise KeyError(f"Site {site_key!r} not found in datasets.json. Available: {list(data.keys())}")
-
-            site_data = data[site_key]
-            raw_container = self._build_container(site_data["raw"])
-            processed_container = self._build_container(site_data["processed"])
-
-            site_eddypro = eddypro_cfg.get(site_key, {})
-            params = {"dep_ts": raw_container.ts_id}
-            for key in (
-                "file_prototype",
-                "master_sonic",
-                "acquisition_frequency",
-                "file_duration",
-                "avrg_len",
-                "sw_version",
-            ):
-                if key in site_eddypro:
-                    params[key] = site_eddypro[key]
-
-            # Wire up the dependency: processed depends on raw via eddypro config
-            eddypro_config = DataProcessingConfig(
-                ts_id=processed_container.ts_id,
-                config_id=f"local-eddypro-{site_key}",
-                config_type=ConfigurationType.EDDYPRO,
-                method_configs=[
-                    DataProcessingMethodConfig(
-                        method="eddypro",
-                        params=params,
-                    )
-                ],
-            )
-            processed_container.attach_configs([eddypro_config])
-
-            containers[raw_container.ts_id] = raw_container
-            containers[processed_container.ts_id] = processed_container
-
-        logger.info("Loaded %d dataset containers", len(containers))
-        return containers
-
-    def load_eddypro_site_configs(self) -> dict[str, EddyProSiteConfig]:
-        """Load EddyPro-specific site configs from eddypro_configs.json.
-
-        Returns:
-            Dict keyed by site identifier (e.g. "PLYNL").
-        """
-        data = self._load_json("eddypro_configs.json")
-        configs: dict[str, EddyProSiteConfig] = {}
-
-        for site_key in self._sites:
-            if site_key not in data:
-                raise KeyError(f"Site {site_key!r} not found in eddypro_configs.json. Available: {list(data.keys())}")
-
-            site_data = data[site_key]
-            configs[site_key] = EddyProSiteConfig(
-                site_id=site_data["site_id"],
-                latitude=site_data["latitude"],
-                longitude=site_data["longitude"],
-                altitude=site_data["altitude"],
-                file_prototype=site_data["file_prototype"],
-            )
-
-        logger.info("Loaded EddyPro site configs for %d sites", len(configs))
-        return configs
-
-    def _build_container(self, definition: dict) -> TimeSeriesContainer:
-        """Build a TimeSeriesContainer from a dataset definition dict.
-
-        Args:
-            definition: A dataset definition from datasets.json.
-
-        Returns:
-            A populated TimeSeriesContainer.
-        """
-        return TimeSeriesContainer(
-            ts_id=definition["ts_id"],
-            network=definition["network"],
-            source_bucket=definition["source_bucket"],
-            source_dataset=definition["source_dataset"],
-            source_column=definition["source_column"],
-            source_site=definition["source_site"],
-            source_site_identifier=definition["source_site_identifier"],
-            time_column_name=definition["time_column_name"],
-            resolution=definition["resolution"],
-            periodicity=definition["periodicity"],
-            processing_level=ProcessingLevel(definition["processing_level"]),
-        )
-
-    @classmethod
-    def _load_json(cls, filename: str) -> dict:
-        """Load a JSON file from the eddypro metadata directory.
-
-        Args:
-            filename: Name of the JSON file to load.
-
-        Returns:
-            Parsed JSON data.
-        """
-        path = cls.METADATA_DIR / filename
-        if not path.exists():
-            raise FileNotFoundError(f"Metadata fixture not found: {path}")
-        return json.loads(path.read_text())
+    @staticmethod
+    def _group_processing_configs(configs: list[DataProcessingConfig]) -> dict[str, list[DataProcessingConfig]]:
+        grouped: dict[str, list[DataProcessingConfig]] = {}
+        for config in configs:
+            grouped.setdefault(config.ts_id, []).append(config)
+        return grouped
