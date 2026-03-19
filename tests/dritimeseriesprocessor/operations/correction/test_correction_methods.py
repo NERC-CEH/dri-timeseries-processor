@@ -324,11 +324,25 @@ class TestAlbedoSouthSlopeCorrection:
         which were generated using fictitious data.
         To test this method, both day and night times should be used.
         """
+        swin = create_timeframe(
+            [
+                20.6,
+                20.2,
+                24.6,
+                16.6,
+                26.9,
+                17.1,
+                23.1,
+                17.2,
+                13.9,
+            ],
+            "swin",
+        )
         albedo = create_timeframe([None, 0.183, 0.171, 0.229, 0.186, 0.275, 0.247, 0.174, None], "albedo")
         solar_zenith = create_timeframe([1.618, 1.506, 1.419, 1.365, 1.346, 1.365, 1.419, 1.506, 1.617], "solar_zenith")
 
-        config = create_method_config(solar_zenith=solar_zenith, theta_g=0.3128764)
+        config = create_method_config(swin=swin, solar_zenith=solar_zenith, theta_g=0.3128764)
 
         result = AlbedoSouthSlopeCorrection().run(albedo, config)
-        expected_df = create_timeframe([None, 0.032, 0.058, 0.094, 0.081, 0.113, 0.083, 0.0305, None], "albedo").df
+        expected_df = create_timeframe([None, 0.496, 0.381, 0.462, 0.363, 0.555, 0.551, 0.472, None], "albedo").df
         assert_frame_equal(result.df, expected_df, check_exact=False, abs_tol=0.001)
