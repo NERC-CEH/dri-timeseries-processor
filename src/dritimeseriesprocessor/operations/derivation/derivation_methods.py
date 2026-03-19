@@ -425,7 +425,7 @@ class Albedo(DerivationMethod):
     """
     Calculate albedo from incoming and outgoing short wave radiation.
     See reference: https://www.fao.org/4/x0490e/x0490e07.htm
-
+    See: https://onlinelibrary.wiley.com/doi/epdf/10.1002/hyp.14048
     This calculation does not account for correction due to site being on a slope.
     This is accounted for in a correction method.
     """
