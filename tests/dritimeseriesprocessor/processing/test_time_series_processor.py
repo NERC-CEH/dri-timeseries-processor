@@ -150,10 +150,8 @@ class TestTimeSeriesProcessor:
         assert processed_container.data == tf_result
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
-        """
-        Test that process tag is dynamically added to dataset and set to false when dataset fails processing.
+        """Test that failed tag is set to True when dataset fails processing.
         The failure can happen at any of LOAD, PROCESS, AGGREGATE and DERIVE stages.
-        Test that process tag is dynamically added to dataset, set to false if any dataset dependency fails processing.
         """
         topo_layers = [["ds1", "ds2"], ["ds3", "ds4"]]
         mock_graph = create_mock_dag(topo_layers)
@@ -187,22 +185,140 @@ class TestTimeSeriesProcessor:
         processor._save_datasets = MagicMock()
         processor.run()
 
-        # Check that ds1 does not have a "processed" attribute, independent of failing dataset, ds2.
-        assert not hasattr(ds1, "processed")
+        # ds1 should not be marked as failed
+        assert not ds1.failed
 
-        # Check that failing dataset ds2 has been given a "processed" and this attribute is set to False.
-        assert hasattr(ds2, "processed")
-        assert ds2.processed is False
-        # Check that dataset ds2, and ONLY ds2, has failed
+        # ds2 raised an exception, so it should be marked as failed
+        assert ds2.failed
+        # Only ds2 should have triggered the metrics failure counter
         assert processor.metrics.failed.inc.call_count == 1
 
-        # Check that ds3, which depends on failing dataset ds2, has been given a "processed" attribute
-        # and this attribute is set to False.
-        assert hasattr(ds3, "processed")
-        assert ds3.processed is False
+        # ds3 depends on ds2, so it should be marked as failed too
+        assert ds3.failed
 
-        # Check that ds4 does not have a "processed" attribute, independent of failing dataset, ds2
-        assert not hasattr(ds4, "processed")
+        # ds4 depends only on ds1, so it should not be marked as failed
+        assert not ds4.failed
+
+    def test_batch_load_marks_all_containers_failed_on_query_error(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """When the data router raises, all containers in the group should be marked as failed."""
+        mock_graph = create_mock_dag([["ds1", "ds2"]])
+        mock_router.query_by_date_range.side_effect = RuntimeError("connection failed")
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        ds1 = mock_graph.datasets["ds1"]
+        ds2 = mock_graph.datasets["ds2"]
+        ds1.source_column = "value"
+        ds2.source_column = "value"
+
+        processor._batch_load_raw(ds1, ds2)
+
+        assert ds1.failed
+        assert ds2.failed
+        assert ds1.data is None
+        assert ds2.data is None
+
+    def test_batch_load_marks_all_containers_failed_on_empty_result(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """When the data router returns an empty DataFrame, all containers in the group should be marked as failed."""
+        mock_graph = create_mock_dag([["ds1", "ds2"]])
+        mock_router.query_by_date_range.return_value = pl.DataFrame()
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        ds1 = mock_graph.datasets["ds1"]
+        ds2 = mock_graph.datasets["ds2"]
+        ds1.source_column = "value"
+        ds2.source_column = "value"
+
+        processor._batch_load_raw(ds1, ds2)
+
+        assert ds1.failed
+        assert ds2.failed
+
+    def test_batch_load_marks_single_container_failed_on_missing_column(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """When a container's column is missing from the result, only that container should be marked as failed."""
+        mock_graph = create_mock_dag([["ds1", "ds2"]])
+        # The returned DataFrame has "value" but not "missing_col"
+        mock_router.query_by_date_range.return_value = pl.DataFrame(
+            {
+                "time": [datetime(2025, 1, 1), datetime(2025, 1, 2)],
+                "value": [10, 20],
+            }
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        ds1 = mock_graph.datasets["ds1"]
+        ds2 = mock_graph.datasets["ds2"]
+        ds1.source_column = "value"
+        ds2.source_column = "missing_col"
+
+        processor._batch_load_raw(ds1, ds2)
+
+        assert not ds1.failed
+        assert ds1.data is not None
+        assert ds2.failed
+        assert ds2.data is None
+
+    def test_build_save_tasks_excludes_failed_containers(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Failed containers should be excluded from save tasks."""
+        ds_ids = ["ds1", "ds2"]
+        mock_graph = create_mock_dag([[ds_id] for ds_id in ds_ids])
+
+        for ds_id, container in mock_graph.datasets.items():
+            container.processing_level = ProcessingLevel.PROCESSED
+            container.network = "my_network"
+            container.source_site_identifier = "SITE_A"
+            container.resolution = "PT30M"
+            container.source_bucket = "my_bucket"
+            container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
+
+        # Mark ds2 as failed
+        mock_graph.datasets["ds2"].failed = True
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        tasks = list(processor._build_save_tasks())
+
+        # Only ds1 data should be present - 2 tasks for 2 days
+        assert len(tasks) == 2
+        for _, _, df, _ in tasks:
+            assert "ds1-col" in df.columns
+            assert "ds2-col" not in df.columns
 
     def test_build_save_tasks(
         self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch

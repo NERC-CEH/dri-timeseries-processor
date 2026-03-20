@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Iterator
 
 import pytest
@@ -59,6 +60,11 @@ class TestS3StorageClient:
         result = storage_client.list_keys(LOCALSTACK_TEST_BUCKET)
         assert result == []
 
+    def test_list_keys_with_prefix(self, storage_client_with_files: S3StorageClient) -> None:
+        result = storage_client_with_files.list_keys_with_prefix(LOCALSTACK_TEST_BUCKET, "dir/")
+        expected = ["dir/file2.txt", "dir/nested/file3.txt"]
+        assert sorted(result) == sorted(expected)
+
     @pytest.mark.parametrize("file_name", ["file1.txt", "dir/file2.txt", "dir/nested/file3.txt"])
     def test_delete_key(self, file_name: str, storage_client_with_files: S3StorageClient) -> None:
         # check the key exists to start with
@@ -80,3 +86,20 @@ class TestS3StorageClient:
         result = storage_client_with_files.list_keys(LOCALSTACK_TEST_BUCKET)
         # now should have 0 files
         assert result == []
+
+    def test_upload_file(self, tmp_path: Path, storage_client: S3StorageClient) -> None:
+        local_file = tmp_path / "upload.txt"
+        local_file.write_bytes(b"uploaded")
+
+        storage_client.upload_file(LOCALSTACK_TEST_BUCKET, "uploaded/upload.txt", local_file)
+
+        result = storage_client.get_bytes(LOCALSTACK_TEST_BUCKET, "uploaded/upload.txt")
+        assert result == b"uploaded"
+
+    def test_download_file(self, tmp_path: Path, storage_client_with_files: S3StorageClient) -> None:
+        local_path = tmp_path / "downloads" / "file2.txt"
+
+        storage_client_with_files.download_file(LOCALSTACK_TEST_BUCKET, "dir/file2.txt", local_path)
+
+        assert local_path.exists()
+        assert local_path.read_bytes() == b"file2"

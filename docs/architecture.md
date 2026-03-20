@@ -68,10 +68,11 @@ class ExportMetrics,Done completion
 
 ### 1. Command line interface (CLI)
 
-Command line interface supporting two processing modes:
+Command line interface supporting two processing modes and one utility command:
 
 - **Explicit mode**: Fine-grained control over specific site/variable/periodicity combinations
 - **Cross-product mode**: Bulk processing across dimensions
+- **List-sites**: Output active site IDs for a network as a JSON array
 
 See [CLI Usage](cli_usage.md).
 
@@ -146,8 +147,11 @@ All processing decisions are driven by metadata fetched from the FDRI metadata A
  /id/site/{site_id}
      - Fetch site metadata (location, altitude, etc.)
 
+ /id/site?utilisedBy={programme_uri}/{network}
+     - Fetch all sites for a given network
+
  /id/network/{network_id}
-     - Fetch network metadata (sites in network)
+     - Fetch network metadata
 
 ```
 
@@ -185,6 +189,10 @@ Constructs a complete directed acyclic graph (DAG) of dataset dependencies by:
 
 This process produces a complete graph of the state of dependencies, where each node represents a dataset, and
 each edge represents a dependency.
+
+When no explicit sites are provided, all sites for the network are fetched from the metadata API. In both cases,
+sites whose operating period does not overlap the requested date window are excluded before the graph is built - i.e.
+a site that closed before the window start, or had not yet opened by the window end, will not be processed.
 
 The resolver guarantees that the graph is acyclic. If a cycle is detected (e.g., dataset A depends on dataset B which
 depends on dataset A), the resolver will fail.

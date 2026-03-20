@@ -41,6 +41,7 @@ class TimeSeriesContainer:
     infill_configs: set[DataProcessingConfig] = field(default_factory=set)
 
     data: ts.TimeFrame | None = None
+    failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
 
     def all_dependencies(self) -> list[str]:
         """Return a deduplicated list of all dependencies."""
@@ -67,15 +68,12 @@ class TimeSeriesContainer:
             elif config.config_type == ConfigurationType.CORRECTION:
                 self.correction_configs.add(config)
 
-            elif config.config_type == ConfigurationType.EDDYPRO:
-                if self.method_config and self.method_config is not config:
-                    raise ValueError(f"A method config already exists: {self.method_config}")
-                self.method_config = config
-
             elif config.config_type in (
                 ConfigurationType.AGGREGATION,
                 ConfigurationType.DERIVATION,
                 ConfigurationType.PROCESS,
+                ConfigurationType.EDDYPRO,
+                ConfigurationType.LOAD_LOCAL_COPY,
             ):
                 # Should only ever have one of these
                 if self.method_config:

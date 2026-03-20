@@ -5,6 +5,7 @@ class CliSelectionMode(Enum):
     EXPLICIT = "from-selection"
     CROSS_PRODUCT = "from-cross-product"
     EDDYPRO = "eddypro"
+    LIST_SITES = "list-sites"
 
 
 class ConfigurationType(Enum):
@@ -23,6 +24,7 @@ class ConfigurationType(Enum):
     AGGREGATION = "aggregate"
     PROCESS = "process"
     EDDYPRO = "eddypro"
+    LOAD_LOCAL_COPY = "load-local-copy"
 
 
 class MethodType(Enum):
@@ -33,6 +35,7 @@ class MethodType(Enum):
     AGGREGATION = "aggregate"
     LOAD = "load"
     EDDYPRO = "eddypro"
+    LOAD_LOCAL_COPY = "load-local-copy"
 
 
 class OperationType(Enum):
@@ -46,7 +49,6 @@ class OperationType(Enum):
     QUALITY_CONTROL = "quality_control"
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
-    EDDYPRO = "eddypro"
 
 
 class ProcessingLevel(Enum):

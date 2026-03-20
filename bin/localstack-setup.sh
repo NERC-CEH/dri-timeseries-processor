@@ -9,52 +9,12 @@ awslocal s3api create-bucket --bucket ukceh-fdri-staging-timeseries-processed --
 
 echo "########### Load parquet data into level-0 bucket #########"
 
-BUCKET="ukceh-fdri-staging-timeseries-level-0"
-LOCAL_DIR="/var/lib/localstack/parquet-data/raw"
-
-# Loop through all parquet files in the directory and its subdirectories
-find "$LOCAL_DIR" -type f -name "*.parquet" | while read -r FILEPATH; do
-    # Extract the relative path after the base directory
-    RELATIVE_PATH="${FILEPATH#$LOCAL_DIR/}"
-
-    # Construct the S3 key
-    S3_KEY="$RELATIVE_PATH"
-
-    # Upload the file to the S3 bucket
-    awslocal s3api put-object --bucket "$BUCKET" --key "$S3_KEY" --body "$FILEPATH"
-done
+awslocal s3 cp /var/lib/localstack/parquet-data/raw/ s3://ukceh-fdri-staging-timeseries-level-0/ --recursive
 
 echo "########### Load parquet data into processed bucket #########"
 
-BUCKET="ukceh-fdri-staging-timeseries-processed"
-LOCAL_DIR="/var/lib/localstack/parquet-data/processed"
-
-# Loop through all parquet files in the directory and its subdirectories
-find "$LOCAL_DIR" -type f -name "*.parquet" | while read -r FILEPATH; do
-    # Extract the relative path after the base directory
-    RELATIVE_PATH="${FILEPATH#$LOCAL_DIR/}"
-
-    # Construct the S3 key
-    S3_KEY="$RELATIVE_PATH"
-
-    # Upload the file to the S3 bucket
-    awslocal s3api put-object --bucket "$BUCKET" --key "$S3_KEY" --body "$FILEPATH"
-done
-
+awslocal s3 cp /var/lib/localstack/parquet-data/processed/ s3://ukceh-fdri-staging-timeseries-processed/ --recursive
 
 echo "########### Load flux data into level-0 bucket ###########"
 
-FLUX_DIR="/var/lib/localstack/flux-data"
-
-# Loop through all files in the flux-data directory and its subdirectories
-find "$FLUX_DIR" -type f | while read -r FILEPATH; do
-    # Extract the relative path after the base directory
-    RELATIVE_PATH="${FILEPATH#$FLUX_DIR/}"
-
-    # Construct the S3 key
-    S3_KEY="$RELATIVE_PATH"
-
-    # Upload the file to the S3 bucket
-    echo "Uploading $S3_KEY"
-    awslocal s3api put-object --bucket "$BUCKET" --key "$S3_KEY" --body "$FILEPATH"
-done
+awslocal s3 cp /var/lib/localstack/flux-data/ s3://ukceh-fdri-staging-timeseries-level-0/ --recursive
