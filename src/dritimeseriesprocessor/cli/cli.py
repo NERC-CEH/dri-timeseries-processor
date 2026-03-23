@@ -8,12 +8,13 @@ This module is responsible for parsing CLI arguments to capture user intent rega
 """
 
 import argparse
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import isodate
 
 from dritimeseriesprocessor.cli.selection import RunConfig, SelectionOption
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
+from dritimeseriesprocessor.utils.time_utils import to_datetime
 from dritimeseriesprocessor.utils.urls import SITE_URI
 
 
@@ -49,8 +50,8 @@ def parse_args(argv: list[str]) -> RunConfig:
 def _build_parser() -> argparse.ArgumentParser:
     """Construct and return the ArgumentParser for the CLI.
 
-    Defines all supported command-line options, including network selection, temporal parameters, and
-    dataset selection modes (explicit, cross-product, eddypro).
+    Defines all supported command-line options, including network selection, temporal parameters,
+    dataset selection modes (explicit, cross-product, eddypro), and utility commands (list-sites).
 
     Returns:
         A configured ArgumentParser instance.
@@ -94,8 +95,14 @@ def _build_parser() -> argparse.ArgumentParser:
     # File-based processing via EddyPro binary — operates on entire sites, not individual variables.
     eddypro_parser = subparsers.add_parser(CliSelectionMode.EDDYPRO.value, parents=[parent])
     eddypro_parser.add_argument(
-        "--sites", required=True, nargs="+", help="Space-separated site identifiers, e.g. PLYNL"
+        "--sites",
+        nargs="+",
+        help="Space-separated site identifiers, e.g. PLYNL. If omitted, process all sites for network.",
     )
+
+    # Utility command: list all site IDs for a network as a JSON array.
+    # Used by the Argo workflow fan-out step. Routed in __main__.py before parse_args is called.
+    subparsers.add_parser(CliSelectionMode.LIST_SITES.value, parents=[parent])
 
     return parser
 
@@ -159,8 +166,8 @@ def _parse_lookback(value: str) -> timedelta:
     return lookback
 
 
-def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_date: date) -> tuple[date, date]:
-    """Derive the start and end dates for processing.
+def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_date: date) -> tuple[datetime, datetime]:
+    """Derive the start and end dates for processing, normalising both to datetime objects
 
     Args:
         start_date: Start date for the processing window (mutually exclusive of lookback).
@@ -173,13 +180,13 @@ def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_d
     if start_date is not None:
         if start_date >= end_date:
             raise argparse.ArgumentTypeError("--start-date must be earlier than --end-date")
-        return start_date, end_date
+        return to_datetime(start_date), to_datetime(end_date)
 
     start_date = end_date - lookback
-    return start_date, end_date
+    return to_datetime(start_date), to_datetime(end_date)
 
 
-def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[SelectionOption]:
+def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[SelectionOption] | None:
     """Determine the dataset selection mode and construct the appropriate selection options.
 
     The CLI supports three mutually exclusive selection modes:
@@ -202,6 +209,9 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
 
     if mode == CliSelectionMode.EDDYPRO:
         return _parse_eddypro_selection(args)
+
+    if mode == CliSelectionMode.LIST_SITES:
+        return None
 
     parser.error(f"Invalid selection mode: {mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
 
@@ -243,8 +253,11 @@ def _parse_cross_product_selection(args: argparse.Namespace) -> list[SelectionOp
 def _parse_eddypro_selection(args: argparse.Namespace) -> list[SelectionOption]:
     """Parse EddyPro site selection arguments.
 
-    EddyPro operates at site level — no variables or periodicities. Each site becomes
-    a SelectionOption with sites set and variables/periodicities left as None.
+    EddyPro operates at site level — no variables or periodicities.
+
+    If ``--sites`` is provided, the selection is restricted to those site identifiers.
+    If omitted, sites are left unconstrained (ALL) and will be expanded downstream by
+    the execution mode (e.g. local fixtures in EddyPro dev mode).
 
     Args:
         args: Parsed CLI arguments containing EddyPro selection values.

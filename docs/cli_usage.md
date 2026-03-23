@@ -21,12 +21,13 @@ The CLI accepts arguments defining:
 
 ## Processing Modes
 
-The CLI supports two dataset selection modes:
+The CLI supports two dataset selection modes and one utility command:
 
 1. **explicit**: Allowing users to request datasets explicitly or;
 2. **cross-product**: Allowing user to build dataset combinations.
+3. **list-sites**: Listing all active sites for a network.
 
-These modes are **mutually exclusive**.
+The two processing modes are **mutually exclusive**.
 
 ### Explicit Mode
 
@@ -117,6 +118,35 @@ python -m dritimeseriesprocessor cross-product
   --network cosmos 
   --lookback P7D 
   --variables TA PA
+```
+
+### List-Sites Mode
+
+Outputs a JSON array of active site IDs for a given network to `/tmp/sites.json`. Sites whose operating period does
+not overlap the requested date window are excluded.
+
+Intended for use in Argo Workflows fan-out steps, where the output is captured as a step result and passed as input
+to downstream processing steps.
+
+**Syntax**:
+
+```bash
+python -m dritimeseriesprocessor list-sites
+  --network NETWORK
+  [--lookback DURATION | --start-date YYYY-MM-DD]
+  [--end-date YYYY-MM-DD]
+```
+
+**Example**:
+
+```bash
+python -m dritimeseriesprocessor list-sites --network cosmos --lookback P2D
+```
+
+This writes to `/tmp/sites.json`:
+
+```json
+["cosmos-alic1", "cosmos-bunny", "cosmos-eustn"]
 ```
 
 ### Site Names
