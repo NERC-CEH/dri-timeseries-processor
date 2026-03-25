@@ -48,7 +48,6 @@ class DerivationMethod(Operation, ABC):
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
         result_df = merged_tf.df.with_columns(calculation_expr)
 
-        # Build output TimeFrame
         return (
             ts.TimeFrame(
                 df=result_df,
@@ -364,10 +363,97 @@ class AbsoluteHumidity(DerivationMethod):
         ta = columns["ta"]
         rh = columns["rh"]
 
-        Q1 = ((17.67 * ta) / (ta + 243.5)).exp()
-        Q2 = 273.15 + ta
+        q1 = ((17.67 * ta) / (ta + 243.5)).exp()
+        q2 = 273.15 + ta
 
-        return (6.112 * Q1 * rh * 2.1674) / Q2
+        return (6.112 * q1 * rh * 2.1674) / q2
+
+
+@DerivationMethod.register
+class SolarZenith(DerivationMethod):
+    """
+    Calculate angle of the sun from the vertical [radians]
+    Taken from https://en.wikipedia.org/wiki/Solar_zenith_angle, with some approximations.
+
+    theta_s is solar zenith in radians; 0 = overhead, pi/2 = horizon, pi = nadir
+    cos(theta_s) > 0 means sun above horizon, proxy for daylight hours.
+    """
+
+    name = "solar_zenith"
+    inputs = ("swin",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate angle of the sun from the vertical [radians]
+        Uses: site attribute LAT [degrees]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "swin": Shortwave incoming radiation [W m-2] (Not used, datetimes only)
+
+        Returns:
+            Polars expression for solar zenith angle, theta_s in radians.
+        """
+        latitude = self.config.params["lat"]
+        swin_tf = self.config.params["swin"]
+        time_name = swin_tf.time_name
+        date_times = swin_tf.df[time_name]
+
+        # hour angle [radians]: used solar noon ~ 12:00
+        h = (date_times.dt.hour() + date_times.dt.minute() / 60.0 - 12.0) * (pl.lit(15).radians())
+
+        # number of days after beginning of year
+        ordinal_days = date_times.dt.ordinal_day()
+
+        # Declination delta (radians)
+        axis_tilt = 23.44  # tilt of the Earth, degrees
+        delta = -pl.lit(axis_tilt).radians() * (pl.lit((360 / 365) * (ordinal_days + 10.0)).radians()).cos()
+
+        # Convert latitude to radians
+        phi = pl.lit(latitude).radians()
+
+        # cos(theta_s)
+        cos_theta_s = phi.sin() * delta.sin() + phi.cos() * delta.cos() * h.cos()
+
+        # Return solar zenith angle in radians
+        return cos_theta_s.arccos()
+
+
+@DerivationMethod.register
+class Albedo(DerivationMethod):
+    """
+    Calculate albedo from incoming and outgoing short wave radiation.
+    See reference: https://www.fao.org/4/x0490e/x0490e07.htm
+    See: https://onlinelibrary.wiley.com/doi/epdf/10.1002/hyp.14048
+    This calculation does not account for correction due to site being on a slope.
+    This is accounted for in a correction method.
+    """
+
+    name = "calc_albedo"
+    inputs = ("swin", "swout", "solar_zenith")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate albedo [unitless fraction]
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "swin": Shortwave incoming radiation [W m-2]
+            - "swout": Shortwave outgoing radiation [W m-2]
+            - "solar_zenith": Solar zenith angle [radians]
+        Returns:
+            Polars expression for albedo. Value is null at night or where invalid, otherwise between 0 and 1.
+        """
+        swin = columns["swin"]
+        swout = columns["swout"]
+        theta_s = columns["solar_zenith"]
+
+        # Albedo
+        albedo = pl.when((swin.is_not_null()) & (swin > 0)).then(swout / swin).otherwise(None)
+
+        # Remove nighttime values
+        swin_clear = theta_s.cos()
+        albedo_day = pl.when(swin_clear > 0).then(albedo).otherwise(None)
+
+        return albedo_day.clip(0.0, 1.0)
 
 
 @DerivationMethod.register
@@ -397,18 +483,19 @@ class AbsoluteHumidityFactor(DerivationMethod):
         """Calculate absolute humidity correction factor to neutron counts.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            q:  Q [g m-3] (grams per cubic meter)
+            - "q":  Q [g m-3] (grams per cubic meter)
 
         Returns:
             Polars expression for absolute humidity factor, [units = None]
         """
 
-        REF_Q0 = self.config.params["REF_Q0"]
-        Q = columns["q"]
+        ref_q0 = self.config.params["REF_Q0"]
+        q = columns["q"]
 
-        return 1 + 0.0054 * (Q - REF_Q0)
+        return 1 + 0.0054 * (q - ref_q0)
 
 
+@DerivationMethod.register
 class AtmosphericPressureFactor(DerivationMethod):
     """Calculate correction factor for atmospheric pressure, PA.
     This factor is used to correct neutron counts.
@@ -426,14 +513,14 @@ class AtmosphericPressureFactor(DerivationMethod):
         """Calculate atmospheric pressure correction factor to neutron counts.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            pa:  PA [hPa]
+            - "pa":  PA [hPa]
 
         Returns:
             Polars expression for atmospheric pressure factor, [units = None]
         """
 
-        L = self.config.params["L"]
-        PA = columns["pa"]
-        P0 = 1000
+        barometric_attenuation_length = self.config.params["L"]
+        pa = columns["pa"]
+        p0 = 1000
 
-        return ((PA - P0) / L).exp()
+        return ((pa - p0) / barometric_attenuation_length).exp()

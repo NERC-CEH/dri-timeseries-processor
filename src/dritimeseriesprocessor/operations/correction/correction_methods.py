@@ -225,6 +225,56 @@ class Clip(CorrectionMethod):
             tf.df.with_columns(
                 pl.when(date_filter)
                 .then(pl.col(col_name).clip(min_threshold, max_threshold))
-                .otherwise(pl.col(tf.metadata["column_name"]))
+                .otherwise(pl.col(col_name))
+            )
+        )
+
+
+@CorrectionMethod.register
+class AlbedoSouthSlopeCorrection(CorrectionMethod):
+    """
+    For sites on a slope, correct the albedo according to the angle of slope
+    and the angle of the sun (according to the time of year).
+    Valid on southerly aspects around solar noon only.
+    s_max and s_min_fc should be the same across all UK sites, so are hardcoded here.
+    See: https://onlinelibrary.wiley.com/doi/epdf/10.1002/hyp.14048
+    """
+
+    name = "albedo_south_slope_correction"
+    flag_value = 128
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        s_max = 1200
+        s_min_fc = 0.333333
+
+        swin_tf = config.params["swin"]
+        theta_s_tf = config.params["solar_zenith"]
+        theta_g = config.params.get("theta_g")
+
+        primary_col = tf.metadata["column_name"]
+        swin_col = swin_tf.metadata["column_name"]
+        theta_s_col = theta_s_tf.metadata["column_name"]
+
+        swin_expr = swin_tf.df[swin_col]
+        theta_s_expr = theta_s_tf.df[theta_s_col]
+
+        # Calculate theoretical estimate of SWIN for clear sky
+        swin_clear_expr = s_max * theta_s_expr.cos()
+
+        # Beta varies from 1 on clear days, to 0 if SWIN is less than s_min_fac
+        beta_expr = ((swin_expr - s_min_fc * swin_clear_expr) / ((1 - s_min_fc) * swin_clear_expr)).clip(0, 1)
+
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
+        return tf.with_df(
+            tf.df.with_columns(
+                pl.when(date_filter)
+                .then(
+                    (
+                        pl.col(primary_col)
+                        * (1 - beta_expr + beta_expr * theta_s_expr.cos())
+                        / (theta_s_expr - theta_g).cos()
+                    ).clip(0, 1)
+                )
+                .otherwise(pl.col(primary_col))
             )
         )
