@@ -31,7 +31,6 @@ class SimpleAddition(DerivationMethod):
 def create_method_config(
     data: dict[str, list[float]],
     output_col: str,
-    time_shift: int = 0,
 ) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
 
@@ -49,7 +48,6 @@ def create_method_config(
             column_name: dataframe_to_timeframe(
                 df=pl.DataFrame({column_name: values}),
                 metadata={"column_name": column_name},
-                time_shift=time_shift,
             )
             for column_name, values in data.items()
         }
