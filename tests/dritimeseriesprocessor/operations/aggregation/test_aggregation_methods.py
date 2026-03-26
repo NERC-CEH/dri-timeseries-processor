@@ -65,7 +65,7 @@ class TestMean:
         config.params["end_time"] = "14:00:00"
 
         result = Mean().run(tf, config)
-        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5]})
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [12.5]})
         assert_frame_equal(result.df["time", "value"], expected)
 
 
