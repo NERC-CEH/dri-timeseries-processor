@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 import polars as pl
 import time_stream as ts
@@ -35,11 +36,16 @@ class AggregationMethod(Operation, ABC):
         if config.params.get("threshold", None) is not None:
             missing_criteria = (MissingCriteria.AVAILABLE, config.params["threshold"])
 
+        start_time = datetime.strptime(config.params.get("start_time"), "%H:%M:%S").time()
+        end_time = datetime.strptime(config.params.get("end_time"), "%H:%M:%S").time()
+        time_window = (start_time, end_time)
+
         tf_agg = tf.aggregate(
             aggregation_period=config.params["aggregation_period"],
             aggregation_function=agg_func,
             columns=col_name,
             missing_criteria=missing_criteria,
+            time_window=time_window,
         )
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))
 

@@ -57,6 +57,17 @@ class TestMean:
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5]})
         assert_frame_equal(result.df["time", "value"], expected)
 
+    def test_mean_with_time_window(self) -> None:
+        """Test that the mean aggregation works when a time window is specified."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.params["start_time"] = "10:30:00"
+        config.params["end_time"] = "14:00:00"
+
+        result = Mean().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5]})
+        assert_frame_equal(result.df["time", "value"], expected)
+
 
 class TestSum:
     def test_sum(self) -> None:
