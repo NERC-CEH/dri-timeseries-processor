@@ -473,6 +473,8 @@ class TestIsSnowDay:
             },
             "is_snow_day",
         )
+        config.params["column_name"] = "ALBEDO"
+
         expected = dataframe_to_timeframe(
             pl.DataFrame(
                 {

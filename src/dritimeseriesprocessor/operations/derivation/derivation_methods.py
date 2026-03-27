@@ -555,39 +555,31 @@ class IsSnowDay(DerivationMethod):
         """
         # Use timeframe rather than columns as need to access datetimes as well as values
         albedo_tf = self.config.params["albedo"]
+        albedo_tf = albedo_tf.with_df(albedo_tf.df.rename({"albedo": "ALBEDO"}).sort(albedo_tf.time_name))
 
-        df = (
-            albedo_tf.df.sort(albedo_tf.time_name)
-            # Need to use case that matches metadata here
-            .with_columns([pl.col("ALBEDO").shift().alias("ALBEDO_prev")])
-            .with_columns(
-                [
-                    pl.when(pl.col("ALBEDO_prev").is_null())
-                    .then(
-                        pl.when(pl.col("ALBEDO") >= 0.5)
-                        .then(True)
-                        .when(pl.col("ALBEDO") < 0.35)
-                        .then(False)
-                        .otherwise(None)
-                    )
-                    .when(pl.col("ALBEDO_prev") >= 0.5)
-                    .then(
-                        pl.when(pl.col("ALBEDO") >= 0.35)
-                        .then(True)
-                        .when(pl.col("ALBEDO") < 0.35)
-                        .then(False)
-                        .otherwise(None)
-                    )
-                    .otherwise(
-                        pl.when(pl.col("ALBEDO") >= 0.5)
-                        .then(True)
-                        .when(pl.col("ALBEDO") < 0.5)
-                        .then(False)
-                        .otherwise(None)
-                    )
-                    .alias("is_snow_day")
-                ]
-            )
+        df = albedo_tf.df.with_columns([pl.col("ALBEDO").shift().alias("ALBEDO_prev")]).with_columns(
+            [
+                pl.when(pl.col("ALBEDO_prev").is_null())
+                .then(
+                    pl.when(pl.col("ALBEDO") >= 0.5)
+                    .then(True)
+                    .when(pl.col("ALBEDO") < 0.35)
+                    .then(False)
+                    .otherwise(None)
+                )
+                .when(pl.col("ALBEDO_prev") >= 0.5)
+                .then(
+                    pl.when(pl.col("ALBEDO") >= 0.35)
+                    .then(True)
+                    .when(pl.col("ALBEDO") < 0.35)
+                    .then(False)
+                    .otherwise(None)
+                )
+                .otherwise(
+                    pl.when(pl.col("ALBEDO") >= 0.5).then(True).when(pl.col("ALBEDO") < 0.5).then(False).otherwise(None)
+                )
+                .alias("is_snow_day")
+            ]
         )
 
         return df["is_snow_day"]
