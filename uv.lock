@@ -1942,8 +1942,8 @@ wheels = [
 
 [[package]]
 name = "time-stream"
-version = "0.0.105"
-source = { git = "https://github.com/NERC-CEH/time-stream.git#6605c9b9f826fc870759ea8f4eaf5a2c1ce4ebcb" }
+version = "0.0.119"
+source = { git = "https://github.com/NERC-CEH/time-stream.git#cb4a433c5acd2b3f659b82839ae1a46e1f543c9d" }
 dependencies = [
     { name = "altair" },
     { name = "autosemver" },
