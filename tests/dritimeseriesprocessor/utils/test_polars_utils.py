@@ -153,8 +153,8 @@ class TestMergeDataframes:
 class TestMissingExpr:
     def test_missing_expr(self) -> None:
         """Test the expression for detecting missing values."""
-        expr = missing_expr("value")
         df = pl.DataFrame({"value": [10, None, 30, float("nan"), 50]}, strict=False)
+        expr = missing_expr(df, "value")
         result = df.with_columns(expr.alias("is_missing"))
         assert result["is_missing"].to_list() == [False, True, False, True, False]
 
