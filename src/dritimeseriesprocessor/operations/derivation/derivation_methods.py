@@ -533,6 +533,8 @@ class IsSnowDay(DerivationMethod):
     albedo >= 0.5 is a proxy for is_snow_day = True
     albedo < 0.35 is a proxy for is_snow_day = False
 
+    See: https://doi.org/10.1002/hyp.14048
+
     It is more likely that today is (not) a snow day if yesterday was (not).
 
     If there was snow the previous day, i.e. the previous day's albedo >= 0.5, then

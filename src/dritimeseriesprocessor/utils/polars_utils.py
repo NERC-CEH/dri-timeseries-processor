@@ -101,7 +101,7 @@ def not_missing_expr(column_name: str, dtype: pl.DataType) -> pl.Expr:
     if dtype.is_float():
         return col.is_not_null() & col.is_not_nan()
     else:
-        col.is_not_null()
+        return col.is_not_null()
 
 
 def merge_multiple(inputs: list[pl.DataFrame], join_col: str, join_type: str = "full") -> pl.DataFrame:
