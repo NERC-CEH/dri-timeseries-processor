@@ -526,6 +526,7 @@ class AtmosphericPressureFactor(DerivationMethod):
         return ((pa - p0) / barometric_attenuation_length).exp()
 
 
+@DerivationMethod.register
 class IsSnowDay(DerivationMethod):
     """Calculate if snow day. True is snow, False if not.
     If today's albedo is None, then is_snow_day is None.
@@ -552,33 +553,35 @@ class IsSnowDay(DerivationMethod):
 
         Returns: Polars expression with boolean values.
         """
+        # Use timeframe rather than columns as need to access datetimes as well as values
         albedo_tf = self.config.params["albedo"]
 
         df = (
             albedo_tf.df.sort(albedo_tf.time_name)
-            .with_columns([pl.col("albedo").shift().alias("albedo_prev")])
+            # Need to use case that matches metadata here
+            .with_columns([pl.col("ALBEDO").shift().alias("ALBEDO_prev")])
             .with_columns(
                 [
-                    pl.when(pl.col("albedo_prev").is_null())
+                    pl.when(pl.col("ALBEDO_prev").is_null())
                     .then(
-                        pl.when(pl.col("albedo") >= 0.5)
+                        pl.when(pl.col("ALBEDO") >= 0.5)
                         .then(True)
-                        .when(pl.col("albedo") < 0.35)
+                        .when(pl.col("ALBEDO") < 0.35)
                         .then(False)
                         .otherwise(None)
                     )
-                    .when(pl.col("albedo_prev") >= 0.5)
+                    .when(pl.col("ALBEDO_prev") >= 0.5)
                     .then(
-                        pl.when(pl.col("albedo") >= 0.35)
+                        pl.when(pl.col("ALBEDO") >= 0.35)
                         .then(True)
-                        .when(pl.col("albedo") < 0.35)
+                        .when(pl.col("ALBEDO") < 0.35)
                         .then(False)
                         .otherwise(None)
                     )
                     .otherwise(
-                        pl.when(pl.col("albedo") >= 0.5)
+                        pl.when(pl.col("ALBEDO") >= 0.5)
                         .then(True)
-                        .when(pl.col("albedo") < 0.5)
+                        .when(pl.col("ALBEDO") < 0.5)
                         .then(False)
                         .otherwise(None)
                     )

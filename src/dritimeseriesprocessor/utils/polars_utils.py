@@ -71,7 +71,7 @@ def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.
     return combined_df
 
 
-def missing_expr(column_name: str) -> pl.Expr:
+def missing_expr(df: pl.DataFrame, column_name: str) -> pl.Expr:
     """Return expression for missing values in column.
 
     Args:
@@ -80,7 +80,15 @@ def missing_expr(column_name: str) -> pl.Expr:
     Returns:
         Expression for missing values
     """
-    return pl.col(column_name).is_null() | pl.col(column_name).is_nan()
+    dtype = df.schema[column_name]
+
+    col = pl.col(column_name)
+
+    if dtype.is_float():
+        return col.is_null() | col.is_nan()
+    else:
+        # booleans, ints, strings cannot contain NaN
+        return col.is_null()
 
 
 def not_missing_expr(column_name: str) -> pl.Expr:
