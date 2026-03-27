@@ -554,32 +554,13 @@ class IsSnowDay(DerivationMethod):
         Returns: Polars expression with boolean values.
         """
         # Use timeframe rather than columns as need to access datetimes as well as values
-        albedo_tf = self.config.params["albedo"]
-        albedo_df = albedo_tf.df.rename({name: "ALBEDO" for name in albedo_tf.df.columns if name.lower() == "albedo"})
-
-        df = albedo_df.with_columns([pl.col("ALBEDO").shift().alias("ALBEDO_prev")]).with_columns(
-            [
-                pl.when(pl.col("ALBEDO_prev").is_null())
-                .then(
-                    pl.when(pl.col("ALBEDO") >= 0.5)
-                    .then(True)
-                    .when(pl.col("ALBEDO") < 0.35)
-                    .then(False)
-                    .otherwise(None)
-                )
-                .when(pl.col("ALBEDO_prev") >= 0.5)
-                .then(
-                    pl.when(pl.col("ALBEDO") >= 0.35)
-                    .then(True)
-                    .when(pl.col("ALBEDO") < 0.35)
-                    .then(False)
-                    .otherwise(None)
-                )
-                .otherwise(
-                    pl.when(pl.col("ALBEDO") >= 0.5).then(True).when(pl.col("ALBEDO") < 0.5).then(False).otherwise(None)
-                )
-                .alias("is_snow_day")
-            ]
+        albedo = columns["albedo"]
+        albedo_prev = albedo.shift()
+        expr = (
+            pl.when(albedo_prev.is_null())
+            .then(pl.when(albedo >= 0.5).then(True).when(albedo < 0.35).then(False).otherwise(None))
+            .when(albedo_prev >= 0.5)
+            .then(pl.when(albedo >= 0.35).then(True).when(albedo < 0.35).then(False).otherwise(None))
+            .otherwise(pl.when(albedo >= 0.5).then(True).when(albedo < 0.5).then(False).otherwise(None))
         )
-
-        return df["is_snow_day"]
+        return expr

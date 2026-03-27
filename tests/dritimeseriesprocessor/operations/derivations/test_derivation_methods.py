@@ -514,4 +514,4 @@ class TestIsSnowDay:
             )
         )
         result = IsSnowDay().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+        assert_frame_equal(result.df, expected.df)
