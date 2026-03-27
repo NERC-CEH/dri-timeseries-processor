@@ -555,9 +555,9 @@ class IsSnowDay(DerivationMethod):
         """
         # Use timeframe rather than columns as need to access datetimes as well as values
         albedo_tf = self.config.params["albedo"]
-        albedo_tf = albedo_tf.with_df(albedo_tf.df.rename({"albedo": "ALBEDO"}).sort(albedo_tf.time_name))
+        albedo_df = albedo_tf.df.rename({name: "ALBEDO" for name in albedo_tf.df.columns if name.lower() == "albedo"})
 
-        df = albedo_tf.df.with_columns([pl.col("ALBEDO").shift().alias("ALBEDO_prev")]).with_columns(
+        df = albedo_df.with_columns([pl.col("ALBEDO").shift().alias("ALBEDO_prev")]).with_columns(
             [
                 pl.when(pl.col("ALBEDO_prev").is_null())
                 .then(
