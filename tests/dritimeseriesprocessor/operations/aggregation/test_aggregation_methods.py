@@ -99,6 +99,7 @@ def test_aggregation_methods(
     else:
         assert result.df.is_empty()
 
+    result = agg_cls().run(tf, config)
 
 class TestSum:
     def test_sum(self) -> None:
