@@ -473,7 +473,8 @@ class TestIsSnowDay:
             },
             "is_snow_day",
         )
-        config.params["column_name"] = "ALBEDO"
+        config.params["albedo_min_threshold"] = 0.35
+        config.params["albedo_max_threshold"] = 0.5
 
         expected = dataframe_to_timeframe(
             pl.DataFrame(
