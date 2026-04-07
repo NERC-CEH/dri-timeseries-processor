@@ -11,6 +11,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     Albedo,
     AtmosphericPressureFactor,
     DerivationMethod,
+    IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
@@ -427,3 +428,91 @@ class TestAlbedo:
 
         result = Albedo().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestIsSnowDay:
+    def test_is_snow_day(self) -> None:
+        """
+        Test calculation that checks if it is a snow day
+        All possible combinations are tested.
+        """
+        config = create_method_config(
+            {
+                "albedo": [
+                    None,
+                    0.20,
+                    None,
+                    0.40,
+                    None,
+                    0.60,
+                    0.10,
+                    None,
+                    0.10,
+                    0.20,
+                    0.10,
+                    0.40,
+                    0.10,
+                    0.60,
+                    0.45,
+                    None,
+                    0.45,
+                    0.20,
+                    0.45,
+                    0.40,
+                    0.45,
+                    0.60,
+                    0.65,
+                    None,
+                    0.65,
+                    0.20,
+                    0.65,
+                    0.40,
+                    0.65,
+                    0.60,
+                ]
+            },
+            "is_snow_day",
+        )
+        config.params["albedo_min_threshold"] = 0.35
+        config.params["albedo_max_threshold"] = 0.5
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "is_snow_day": [
+                        None,
+                        False,
+                        None,
+                        None,
+                        None,
+                        True,
+                        False,
+                        None,
+                        False,
+                        False,
+                        False,
+                        False,
+                        False,
+                        True,
+                        True,
+                        None,
+                        None,
+                        False,
+                        False,
+                        False,
+                        False,
+                        True,
+                        True,
+                        None,
+                        True,
+                        False,
+                        True,
+                        True,
+                        True,
+                        True,
+                    ]
+                }
+            )
+        )
+        result = IsSnowDay().run(config)
+        assert_frame_equal(result.df, expected.df)

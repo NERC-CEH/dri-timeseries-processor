@@ -58,7 +58,7 @@ def add_initial_core_flags(tf: ts.TimeFrame, init_unchecked: bool = True, init_m
 
         if init_missing:
             # Flag missing values
-            tf.add_flag(flag_col_name, "missing", missing_expr(data_col_name))
+            tf.add_flag(flag_col_name, "missing", missing_expr(data_col_name, tf.df[data_col_name].dtype))
 
     return tf
 
@@ -118,11 +118,11 @@ def update_quality_control_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
             continue
 
         # Remove unchecked flag where there is a non-null QC flag.
-        expr = not_missing_expr(qc_flag_col_name)
+        expr = not_missing_expr(qc_flag_col_name, tf.df[qc_flag_col_name].dtype)
         tf.remove_flag(core_flag_col_name, "unchecked", expr)
 
         # Add removed flag (and remove corrected flag) where the data value is missing and QC flag is not 0
-        expr = (missing_expr(data_col_name)) & (pl.col(qc_flag_col_name) != 0)
+        expr = (missing_expr(data_col_name, tf.df[data_col_name].dtype)) & (pl.col(qc_flag_col_name) != 0)
         tf.add_flag(core_flag_col_name, "removed", expr)
         tf.remove_flag(core_flag_col_name, "corrected", expr)
 
