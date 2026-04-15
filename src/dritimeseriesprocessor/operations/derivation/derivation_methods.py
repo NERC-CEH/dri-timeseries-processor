@@ -524,3 +524,68 @@ class AtmosphericPressureFactor(DerivationMethod):
         p0 = 1000
 
         return ((pa - p0) / barometric_attenuation_length).exp()
+
+
+@DerivationMethod.register
+class IsSnowDay(DerivationMethod):
+    """Calculate if snow day. True is snow, False if not.
+    If today's albedo is None, then is_snow_day is None.
+
+    albedo >= albedo_max_threshold is a proxy for is_snow_day = True
+    albedo < albedo_min_threshold is a proxy for is_snow_day = False
+
+    Normally: albedo_min_threshold = 0.5, albedo_max_threshold = 0.35
+    See: https://doi.org/10.1002/hyp.14048
+
+    It is more likely that today is (not) a snow day if yesterday was (not).
+
+    If there was snow the previous day, i.e. the previous day's albedo >= 0.5, then
+    the current day is a snow day if the albedo > 0.35.
+
+    If there was no snow the previous day, i.e. the previous day's albedo < 0.5, then
+    the current day is a snow day if the albedo >= 0.5.
+    """
+
+    name = "is_snow_day"
+    inputs = ("albedo",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate if snow day. True is snow, False if not.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - albedo: ALBEDO, measure of reflection with values between 0 and 1 [unitless fraction]
+
+        Returns: Polars expression with boolean values.
+        """
+        # Use timeframe rather than columns as need to access datetimes as well as values
+        albedo = columns["albedo"]
+        albedo_min_threshold = self.config.params["albedo_min_threshold"]
+        albedo_max_threshold = self.config.params["albedo_max_threshold"]
+
+        albedo_prev = albedo.shift()
+        expr = (
+            pl.when(albedo_prev.is_null())
+            .then(
+                pl.when(albedo >= albedo_max_threshold)
+                .then(True)
+                .when(albedo < albedo_min_threshold)
+                .then(False)
+                .otherwise(None)
+            )
+            .when(albedo_prev >= albedo_max_threshold)
+            .then(
+                pl.when(albedo >= albedo_min_threshold)
+                .then(True)
+                .when(albedo < albedo_min_threshold)
+                .then(False)
+                .otherwise(None)
+            )
+            .otherwise(
+                pl.when(albedo >= albedo_max_threshold)
+                .then(True)
+                .when(albedo < albedo_max_threshold)
+                .then(False)
+                .otherwise(None)
+            )
+        )
+        return expr
