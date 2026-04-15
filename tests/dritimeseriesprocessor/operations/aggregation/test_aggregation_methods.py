@@ -6,7 +6,15 @@ import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AngularMean, Max, Mean, MeanRad, Min, Sum
+from dritimeseriesprocessor.operations.aggregation.aggregation_methods import (
+    AngularMean,
+    Max,
+    Mean,
+    MeanRad,
+    Min,
+    StandardDeviation,
+    Sum,
+)
 from utils.data_creation import create_timeframe
 
 
@@ -115,3 +123,16 @@ class TestThresholdArgument:
         result = Sum().run(tf, config)
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
         assert_frame_equal(result.df["time", "value"], expected["time", "value"])
+
+
+class TestStandardDeviation:
+    def test_standard_deviation(self) -> None:
+        """Test that the sum aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.params["start_time"] = "10:30:00"
+        config.params["end_time"] = "14:00:00"
+
+        result = StandardDeviation().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        assert_frame_equal(result.df["time", "value"], expected)
