@@ -8,18 +8,25 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import (
 <<<<<<< HEAD
+<<<<<<< HEAD
     AggregationMethod,
 =======
 >>>>>>> dcc62bc (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
+=======
+>>>>>>> 81524a3 (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
     AngularMean,
     Max,
     Mean,
     MeanRad,
     Min,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     StandardDeviation,
 >>>>>>> dcc62bc (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
+=======
+    StandardDeviation,
+>>>>>>> 81524a3 (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
     Sum,
 )
 from utils.data_creation import create_timeframe
@@ -91,3 +98,65 @@ def test_aggregation_methods(
         assert_frame_equal(result.df["time", "value"], expected_df)
     else:
         assert result.df.is_empty()
+
+
+class TestSum:
+    def test_sum(self) -> None:
+        """Test that the sum aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+
+        result = Sum().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        assert_frame_equal(result.df["time", "value"], expected)
+
+
+class TestAngularMean:
+    def test_angular_mean(self) -> None:
+        """Test that the angular mean, e.g. daily wind direction, aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(24 * 3)))
+        config = create_method_config(ts.Period.of_days(1))
+
+        result = AngularMean().run(tf, config)
+        expected = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1), datetime(2025, 1, 2), datetime(2025, 1, 3)], "value": [11.5, 35.5, 59.5]}
+        )
+        assert_frame_equal(result.df["time", "value"], expected)
+
+
+class TestMeanRad:
+    def test_mean_rad(self) -> None:
+        """Test that the daily radiation aggregation works across the full dataframe"""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+
+        result = MeanRad().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [0.9936]})
+        assert_frame_equal(result.df["time", "value"], expected)
+
+
+class TestThresholdArgument:
+    @pytest.mark.parametrize("threshold", [1, 24, 42])
+    def test_threshold(self, threshold: int) -> None:
+        """Check aggregation for different threshold values"""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.argument = {"threshold": threshold}
+
+        result = Sum().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        assert_frame_equal(result.df["time", "value"], expected["time", "value"])
+
+
+class TestStandardDeviation:
+    def test_standard_deviation(self) -> None:
+        """Test that the sum aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.params["start_time"] = "10:30:00"
+        config.params["end_time"] = "14:00:00"
+
+        result = StandardDeviation().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        assert_frame_equal(result.df["time", "value"], expected)
+>>>>>>> 81524a3 (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
