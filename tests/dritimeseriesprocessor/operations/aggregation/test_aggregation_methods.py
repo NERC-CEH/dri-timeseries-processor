@@ -7,12 +7,19 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import (
+<<<<<<< HEAD
     AggregationMethod,
+=======
+>>>>>>> dcc62bc (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
     AngularMean,
     Max,
     Mean,
     MeanRad,
     Min,
+<<<<<<< HEAD
+=======
+    StandardDeviation,
+>>>>>>> dcc62bc (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
     Sum,
 )
 from utils.data_creation import create_timeframe
