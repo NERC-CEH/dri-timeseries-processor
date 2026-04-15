@@ -111,6 +111,7 @@ def create_mock_router(items: list) -> MagicMock:
     mock_router.fetch_all_dependencies.return_value = mock_response
     mock_router.fetch_processing_configs.return_value = mock_response
     mock_router.fetch_sites.return_value = mock_response
+    mock_router.fetch_sites_by_network.return_value = mock_response
 
     items_dict = {item["@id"]: item for item in items}
 
@@ -170,7 +171,7 @@ class TestFetchDatasets:
         ts_id = "ds1"
         container = make_time_series_container("ds1")
         mock_router = setup_mocks(ts_id, monkeypatch)
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
 
         assert builder._dataset_cache == {}  # cache should be empty to start
 
@@ -185,7 +186,7 @@ class TestFetchDatasets:
         ts_id = "ds1"
         mock_router = setup_mocks(ts_id, monkeypatch)
         container = make_processing_config_container(ts_id)
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
 
         result = builder._fetch_configs_for_dataset([ts_id])
 
@@ -201,7 +202,9 @@ class TestFetchDatasets:
     )
     def test_get_site_metadata(self, sites: str | list, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_router = setup_mocks(sites, monkeypatch)
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(
+            mock_router, "a_network", MagicMock(), datetime(2026, 1, 1), datetime(2026, 1, 2)
+        )
 
         builder._fetch_site_metadata(sites)
         result = builder.site_metadata
@@ -221,7 +224,9 @@ class TestFetchDatasets:
         mock_network_response.items[0].contains = create_network_sites(all_site_ids)
         mock_router.fetch_network.return_value = mock_network_response
 
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(
+            mock_router, "a_network", MagicMock(), datetime(2026, 1, 1), datetime(2026, 1, 2)
+        )
 
         result = builder._fetch_site_metadata()
 
@@ -230,8 +235,7 @@ class TestFetchDatasets:
         for site_id, container in builder.site_metadata.items():
             assert container == make_site_metadata_container(site_id)
 
-        assert mock_router.fetch_network.call_count == 1
-        assert mock_router.fetch_sites.call_count == 1
+        assert mock_router.fetch_sites_by_network.call_count == 1
 
 
 class TestBuild:
@@ -242,7 +246,7 @@ class TestBuild:
 
         mock_router = setup_mocks(["A", "B"], monkeypatch)
 
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
         builder._resolve_root_datasets = MagicMock(return_value=[container_a])
         builder.build()
 
@@ -262,7 +266,7 @@ class TestBuild:
 
         mock_router = setup_mocks(["A", "B", "C"], monkeypatch)
 
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
         builder._resolve_root_datasets = MagicMock(return_value=[container_a, container_b, container_c])
         builder.build()
 
@@ -289,7 +293,7 @@ class TestBuildDag:
 
         mock_router = create_mock_router([{"@id": "A"}, {"@id": "B"}, {"@id": "C"}])
 
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
         builder.datasets = {"A": container_a, "B": container_b, "C": container_c}
 
         dag = builder.build_dag()
@@ -304,7 +308,7 @@ class TestBuildDag:
 
         mock_router = create_mock_router([{"@id": "A"}, {"@id": "B"}, {"@id": "C"}])
 
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
         builder.datasets = {"A": container_a, "B": container_b, "C": container_c}
 
         dag = builder.build_dag()
@@ -320,7 +324,7 @@ class TestBuildDag:
 
         mock_router = create_mock_router([{"@id": "A"}, {"@id": "B"}, {"@id": "C"}, {"@id": "D"}])
 
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
         builder.datasets = {"A": container_a, "B": container_b, "C": container_c, "D": container_d}
 
         dag = builder.build_dag()
@@ -425,7 +429,7 @@ class TestBuildResolver:
         expected_batches = [{i: containers[i] for i in batch} for batch in expected_batches]
 
         # Set up the DatasetDependencyGraph class object
-        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock())
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
 
         # Mock the methods that the `build` method calls with the results of the wrangling we did earlier
         builder._resolve_root_datasets = MagicMock(return_value=root_containers)
@@ -451,7 +455,7 @@ class TestBuildResolver:
 
 
 class TestTopoSort:
-    builder = DatasetDependencyGraph(MagicMock(), "a_network", MagicMock())
+    builder = DatasetDependencyGraph(MagicMock(), "a_network", MagicMock(), MagicMock(), MagicMock())
 
     test_cases_good = [
         # Flat example - A depends on B, B depends on C, C no dependencies

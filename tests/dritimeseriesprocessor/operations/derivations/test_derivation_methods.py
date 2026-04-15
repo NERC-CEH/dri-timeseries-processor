@@ -8,13 +8,16 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidity,
     AbsoluteHumidityFactor,
+    Albedo,
     AtmosphericPressureFactor,
     DerivationMethod,
+    IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
+    SolarZenith,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -27,7 +30,10 @@ class SimpleAddition(DerivationMethod):
         return columns["a"] + columns["b"]
 
 
-def create_method_config(data: dict[str, list[float]], output_col: str) -> DataProcessingMethodConfig:
+def create_method_config(
+    data: dict[str, list[float]],
+    output_col: str,
+) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
 
     Args:
@@ -38,16 +44,18 @@ def create_method_config(data: dict[str, list[float]], output_col: str) -> DataP
     Returns:
         MethodConfig for testing
     """
-    params: dict[str, Any] = {
-        column_name: dataframe_to_timeframe(pl.DataFrame({column_name: values}), metadata={"column_name": column_name})
-        for column_name, values in data.items()
-    }
+    params: dict[str, Any] = {}
+    if data:
+        params = {
+            column_name: dataframe_to_timeframe(
+                df=pl.DataFrame({column_name: values}),
+                metadata={"column_name": column_name},
+            )
+            for column_name, values in data.items()
+        }
     params["output_col"] = output_col
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
-    params["altitude"] = 74  # cosmos-holln
-    params["REF_Q0"] = 8.27  # cosmos-holln
-    params["L"] = 137.04156  # cosmos-holln
 
     return DataProcessingMethodConfig(method="test", params=params)
 
@@ -196,6 +204,7 @@ class TestMeanSeaLevelPressure:
             },
             "mslp",
         )
+        config.params["altitude"] = 74  # [M] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"mslp": [1033.446, 1020.131, 1043.330, 1029.514]}))
 
@@ -240,10 +249,11 @@ class TestAbsoluteHumidityFactor:
             },
             "factor_q",
         )
+        config.params["REF_Q0"] = 8.27  # [g m-3] holln
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.977, 1.008, 0.977, 1.018]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.97707, 1.00791, 0.97690, 1.01832]}))
         result = AbsoluteHumidityFactor().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
 
 
 class TestAtmosphericPressureFactor:
@@ -253,7 +263,268 @@ class TestAtmosphericPressureFactor:
             {"pa": [1024.0, 1011.365, 1033.649, 1020.695]},
             "factor_pa",
         )
+        config.params["L"] = 137.04156  # [M] holln
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.191, 1.086, 1.278, 1.163]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27831, 1.16301]}))
         result = AtmosphericPressureFactor().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
+
+
+class TestSolarZenith:
+    def test_solar_zenith(self) -> None:
+        """Test solar zenith calculation
+        Only datetimes and latitude are used.
+        To test this method, both day and night times should be used.
+        """
+        config = create_method_config({"swin": list(map(float, range(24)))}, "solar_zenith")
+        config.params["lat"] = 54.110665  # [degrees] holln
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "solar_zenith": [
+                        2.599,
+                        2.564,
+                        2.472,
+                        2.343,
+                        2.198,
+                        2.045,
+                        1.893,
+                        1.749,
+                        1.618,
+                        1.506,
+                        1.419,
+                        1.365,
+                        1.346,
+                        1.365,
+                        1.419,
+                        1.506,
+                        1.617,
+                        1.749,
+                        1.893,
+                        2.045,
+                        2.197,
+                        2.344,
+                        2.472,
+                        2.564,
+                    ]
+                }
+            )
+        )
+
+        result = SolarZenith().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestAlbedo:
+    def test_albedo(self) -> None:
+        """Test albedo calculation.
+        Use fictitious test data, not enough test data available. Data was randomly generated.
+        To test this method, both day and night times should be used."""
+        config = create_method_config(
+            {
+                "swin": [
+                    22.9,
+                    17.7,
+                    21.0,
+                    26.0,
+                    15.5,
+                    18.5,
+                    22.0,
+                    24.2,
+                    20.6,
+                    20.2,
+                    24.6,
+                    16.6,
+                    26.9,
+                    17.1,
+                    23.1,
+                    17.2,
+                    13.9,
+                    21.1,
+                    25.5,
+                    20.9,
+                    15.0,
+                    16.6,
+                    21.2,
+                    18.0,
+                ],
+                "swout": [
+                    2.6,
+                    4.0,
+                    5.6,
+                    3.0,
+                    5.9,
+                    2.8,
+                    4.0,
+                    5.4,
+                    3.8,
+                    3.7,
+                    4.2,
+                    3.8,
+                    5.0,
+                    4.7,
+                    5.7,
+                    3.0,
+                    2.6,
+                    5.4,
+                    3.0,
+                    4.5,
+                    3.3,
+                    5.7,
+                    5.5,
+                    4.3,
+                ],
+                "solar_zenith": [
+                    2.599,
+                    2.564,
+                    2.472,
+                    2.343,
+                    2.198,
+                    2.045,
+                    1.893,
+                    1.749,
+                    1.618,
+                    1.506,
+                    1.419,
+                    1.365,
+                    1.346,
+                    1.365,
+                    1.419,
+                    1.506,
+                    1.617,
+                    1.749,
+                    1.893,
+                    2.045,
+                    2.197,
+                    2.344,
+                    2.472,
+                    2.564,
+                ],
+            },
+            "albedo",
+        )
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "albedo": [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        0.183,
+                        0.171,
+                        0.229,
+                        0.186,
+                        0.275,
+                        0.247,
+                        0.174,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ]
+                }
+            )
+        )
+
+        result = Albedo().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestIsSnowDay:
+    def test_is_snow_day(self) -> None:
+        """
+        Test calculation that checks if it is a snow day
+        All possible combinations are tested.
+        """
+        config = create_method_config(
+            {
+                "albedo": [
+                    None,
+                    0.20,
+                    None,
+                    0.40,
+                    None,
+                    0.60,
+                    0.10,
+                    None,
+                    0.10,
+                    0.20,
+                    0.10,
+                    0.40,
+                    0.10,
+                    0.60,
+                    0.45,
+                    None,
+                    0.45,
+                    0.20,
+                    0.45,
+                    0.40,
+                    0.45,
+                    0.60,
+                    0.65,
+                    None,
+                    0.65,
+                    0.20,
+                    0.65,
+                    0.40,
+                    0.65,
+                    0.60,
+                ]
+            },
+            "is_snow_day",
+        )
+        config.params["albedo_min_threshold"] = 0.35
+        config.params["albedo_max_threshold"] = 0.5
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "is_snow_day": [
+                        None,
+                        False,
+                        None,
+                        None,
+                        None,
+                        True,
+                        False,
+                        None,
+                        False,
+                        False,
+                        False,
+                        False,
+                        False,
+                        True,
+                        True,
+                        None,
+                        None,
+                        False,
+                        False,
+                        False,
+                        False,
+                        True,
+                        True,
+                        None,
+                        True,
+                        False,
+                        True,
+                        True,
+                        True,
+                        True,
+                    ]
+                }
+            )
+        )
+        result = IsSnowDay().run(config)
+        assert_frame_equal(result.df, expected.df)

@@ -7,12 +7,15 @@ dataset's method type.
 """
 
 import logging
+import tempfile
 from collections.abc import Iterator
-from datetime import date, datetime
+from datetime import datetime
+from pathlib import Path
 
 import polars as pl
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
+from dritimeseriesprocessor.io_backend.flux_io import FluxS3Client
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
@@ -23,6 +26,8 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
+from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
+from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
 from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
@@ -32,6 +37,7 @@ from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 from dritimeseriesprocessor.utils.timer import log_duration
+from dritimeseriesprocessor.utils.urls import SITE_URI
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +62,10 @@ class TimeSeriesProcessor:
         graph: DatasetDependencyGraph,
         data_router: DataRouter,
         data_writer: ParquetWriterInterface,
-        start_date: date | datetime,
-        end_date: date | datetime,
+        start_date: datetime,
+        end_date: datetime,
         metrics: Metrics,
+        flux_s3_client: FluxS3Client | None = None,
     ):
         """Initialise the processor.
 
@@ -68,6 +75,9 @@ class TimeSeriesProcessor:
             data_writer: Handles writing data to parquet files.
             start_date: Start of the date range to process (inclusive).
             end_date: End of the date range to process (inclusive).
+            metrics: Metrics reporter.
+            flux_s3_client: S3 client for raw .dat file download and EddyPro output upload.
+                            Required only when the graph contains EDDYPRO datasets.
         """
         self.graph = graph
         self.data_router = data_router
@@ -75,33 +85,44 @@ class TimeSeriesProcessor:
         self.start_date = start_date
         self.end_date = end_date
         self.metrics = metrics
+        self.flux_s3_client = flux_s3_client
+
+        # Staged raw input for EddyPro dependencies.
+        self._raw_dirs: dict[str, tempfile.TemporaryDirectory] = {}
 
     def run(self) -> None:
         """Execute the processing pipeline by iterating through the dependency graph.
         The graph is traversed in order, ensuring dependencies are processed before the datasets that rely on them.
         """
-        with self.metrics.time_pipeline.time():
-            if not self.graph.datasets:
-                logger.error("No datasets found in dependency graph.")
-            else:
-                # Collect all the "LOAD" datasets (can remove from the graph as we will have done their processing)
-                load_containers = [c for c in self.graph.datasets.values() if c.method_type() == MethodType.LOAD]
-                logger.info(f"Collecting and loading [{len(load_containers)}] datasets.")
-                self._batch_load_raw(*load_containers)
+        try:
+            with self.metrics.time_pipeline.time():
+                if not self.graph.datasets:
+                    logger.error("No datasets found in dependency graph.")
+                else:
+                    # Collect all the "LOAD" datasets (can remove from the graph as we will have done their processing)
+                    load_containers = [c for c in self.graph.datasets.values() if c.method_type() == MethodType.LOAD]
+                    logger.info(f"Collecting and loading [{len(load_containers)}] datasets.")
+                    self._batch_load_raw(*load_containers)
 
-                # Sort the containers into an order that guarantees dependency resolution
-                layers = self.graph.layered_topo_sort()
-                logger.info("Processing pipeline started.")
+                    layers = self.graph.layered_topo_sort()
+                    logger.info("Processing pipeline started.")
 
-                for layer in layers:
-                    self.process_layer(layer)
+                    for layer in layers:
+                        self.process_layer(layer)
 
-                logger.info("-" * 30)
-                logger.info("Collecting and saving datasets.")
-                self._save_datasets()
+                    logger.info("-" * 30)
+                    logger.info("Collecting and saving datasets.")
+                    self._save_datasets()
 
-        logger.info("Processing pipeline finished. Pushing prometheus metrics.")
-        self.metrics.export_metrics_to_pushgateway()
+            logger.info("Processing pipeline finished. Pushing prometheus metrics.")
+            self.metrics.export_metrics_to_pushgateway()
+        finally:
+            for tmp in self._raw_dirs.values():
+                try:
+                    tmp.cleanup()
+                except Exception:
+                    logger.exception("Failed to clean up temporary directory.")
+            self._raw_dirs.clear()
 
     def process_layer(self, layer: list[str]) -> None:
         """Process an individual layer of the dependency graph.
@@ -112,11 +133,10 @@ class TimeSeriesProcessor:
         for dataset_id in layer:
             try:
                 self.process_dataset(dataset_id)
-            except Exception as err:
+            except Exception:
                 self.metrics.failed.inc()
-                self.graph.datasets[dataset_id].processed = False
-                logger.info(f"Processing failed tag added to: {dataset_id}")
-                logger.error(err)
+                self.graph.datasets[dataset_id].failed = True
+                logger.exception(f"Processing failed. Failed status added to container: {dataset_id}")
             else:
                 self.metrics.success.inc()
 
@@ -128,16 +148,19 @@ class TimeSeriesProcessor:
         """
 
         container = self.graph.datasets[dataset_id]
-        for dataset in container.all_dependencies():
-            if hasattr(self.graph.datasets[dataset], "processed"):
-                self.graph.datasets[dataset_id].processed = False
-                logger.info(f"Processing failed tag added to: {dataset_id}")
-                break
+        for dep_id in container.all_dependencies():
+            if self.graph.datasets[dep_id].failed:
+                container.failed = True
+                logger.error(f"Skipping {dataset_id} - dependency {dep_id} failed")
+                return
 
         match container.method_type():
             case MethodType.LOAD:
                 # Already handled by the initial batch loading
                 pass
+
+            case MethodType.LOAD_LOCAL_COPY:
+                self._load_local_copy(container)
 
             case MethodType.PROCESS:
                 self._process(container)
@@ -147,6 +170,9 @@ class TimeSeriesProcessor:
 
             case MethodType.DERIVATION:
                 self._derive(container)
+
+            case MethodType.EDDYPRO:
+                self._run_eddypro(container)
 
     @log_duration("Loading datasets time taken: ", footer=True)
     def _batch_load_raw(self, *containers: TimeSeriesContainer) -> None:
@@ -164,26 +190,63 @@ class TimeSeriesProcessor:
 
         with self.metrics.time_load.time():
             for dataset_group, containers in groupings.items():
-                combined_df = self.data_router.query_by_date_range(
-                    *containers, start_date=self.start_date, end_date=self.end_date
-                )
+                try:
+                    combined_df = self.data_router.query_by_date_range(
+                        *containers, start_date=self.start_date, end_date=self.end_date
+                    )
 
-                if combined_df.is_empty():
-                    logger.warning(f"No data returned for datasets in group: {dataset_group}")
-                    self.metrics.no_data.inc()
+                    if combined_df.is_empty():
+                        raise ValueError(f"No data returned for group: {dataset_group}")
+
+                except Exception:
+                    for container in containers:
+                        self.metrics.no_data.inc()
+                        container.failed = True
+                    logger.exception(f"Failed to load data for group: {dataset_group}")
                     continue
 
                 for container in containers:
                     col = container.source_column
-                    df = combined_df.select([container.time_column_name, col])
+                    try:
+                        df = combined_df.select([container.time_column_name, col])
 
-                    if df.is_empty():
-                        logger.warning(f"No data returned for dataset: {container.ts_id}")
+                        if df.is_empty():
+                            raise ValueError(f"No data returned for dataset: {container.ts_id}")
+
+                    except Exception:
                         self.metrics.no_data.inc()
+                        container.failed = True
+                        logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
 
                     container.init_timeframe(df)
                     container.data = add_initial_core_flags(container.data)
+
+    def _load_local_copy(self, container: TimeSeriesContainer) -> None:
+        """Download raw .dat files from S3 into a temp directory for a downstream EddyPro run.
+
+        Args:
+            container: Raw flux dataset whose files should be staged locally.
+        """
+        logger.info(f"{MethodType.LOAD_LOCAL_COPY}: {container.ts_id}")
+
+        site_meta = self.graph.site_metadata.get(container.source_site) or self.graph.site_metadata.get(
+            f"{SITE_URI}/{container.source_site}"
+        )
+        start_date = self.start_date.date()
+        end_date = self.end_date.date()
+        tmp = tempfile.TemporaryDirectory(prefix=f"eddypro_raw_{site_meta.alt_id}_")
+        self._raw_dirs[container.ts_id] = tmp
+
+        self.flux_s3_client.download_raw_dat_files(
+            bucket=container.source_bucket,
+            site=site_meta.alt_id,
+            dataset=container.source_dataset,
+            network=container.network,
+            start_date=start_date,
+            end_date=end_date,
+            local_dir=Path(tmp.name),
+        )
 
     def _process(self, container: TimeSeriesContainer) -> None:
         """Process a single dataset according to the data processing configurations attached via metadata.
@@ -237,6 +300,33 @@ class TimeSeriesProcessor:
             pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
             container.data = pipeline.run(container, self.graph.datasets)
 
+    def _run_eddypro(self, container: TimeSeriesContainer) -> None:
+        """Run EddyPro for a flux site using the raw files staged by `_load_local_copy`.
+
+        Args:
+            container: Processed flux dataset whose method_type is EDDYPRO.
+        """
+        logger.info(f"{MethodType.EDDYPRO}: {container.ts_id}")
+
+        raw_container = self._get_single_dependency(container)
+        site_meta = self.graph.site_metadata.get(container.source_site) or self.graph.site_metadata.get(
+            f"{SITE_URI}/{container.source_site}"
+        )
+        start_date = self.start_date.date()
+        end_date = self.end_date.date()
+
+        EddyProPipeline(runner=EddyProRunner()).run(
+            raw_data_dir=Path(self._raw_dirs[raw_container.ts_id].name),
+            method_config=container.method_config,
+            site_metadata=site_meta,
+            start_date=start_date,
+            end_date=end_date,
+            flux_s3_client=self.flux_s3_client,
+            network=container.network,
+            processed_source_bucket=container.source_bucket,
+            processed_dataset=container.source_dataset,
+        )
+
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only
         a single dependency.
@@ -285,7 +375,17 @@ class TimeSeriesProcessor:
         Using Yield to produce a generator so that we're not holding all dataframes in memory simultaneously.
         """
         common_keys = ["network", "source_site_identifier", "resolution", "source_bucket"]
-        processed = tuple([c for c in self.graph.datasets.values() if c.processing_level == ProcessingLevel.PROCESSED])
+        processed = tuple(
+            [
+                c
+                for c in self.graph.datasets.values()
+                if c.processing_level == ProcessingLevel.PROCESSED and not c.failed and c.data is not None
+            ]
+        )
+        if not processed:
+            logger.warning("No datasets available to be saved.")
+            return
+
         groupings = group_containers(processed, common_keys)
 
         for dataset_group, containers in groupings.items():

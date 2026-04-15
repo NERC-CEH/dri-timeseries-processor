@@ -128,6 +128,7 @@ celerybeat.pid
 .venv
 env/
 venv/
+jupyter-venv
 jupyter-venv/
 ENV/
 env.bak/
@@ -168,7 +169,6 @@ testing/data/temp/*
 
 #Testing code in jupyter
 sandbox/
-sandbox.ipynb
 
 CLAUDE.md
 

@@ -17,6 +17,7 @@ from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeri
 from dritimeseriesprocessor.models.api_models.deployment import Deployment
 from dritimeseriesprocessor.models.api_models.network import Network
 from dritimeseriesprocessor.models.api_models.site import SiteResponse
+from dritimeseriesprocessor.utils.urls import PROGRAMME_URI
 
 PydanticModel = TypeVar("PydanticModel", bound=BaseModel)
 
@@ -92,6 +93,20 @@ class MetadataRouter:
         """
         url = f"{self.host}/id/site?_view=annotated"
         params = tuple(("@id", site_id) for site_id in site_ids)
+        response = self.api_manager.make_paginated_api_call(url, params)
+        return SiteResponse.model_validate(response)
+
+    def fetch_sites_by_network(self, network: str) -> SiteResponse:
+        """Fetch site metadata for all sites in a given network
+
+        Args:
+            network: Network to fetch site metadata for.
+
+        Returns:
+            The parsed JSON response containing site metadata.
+        """
+        url = f"{self.host}/id/site?_view=annotated"
+        params = (("utilisedBy", f"{PROGRAMME_URI}/{network}"),)
         response = self.api_manager.make_paginated_api_call(url, params)
         return SiteResponse.model_validate(response)
 
