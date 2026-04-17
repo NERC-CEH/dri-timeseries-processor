@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -8,8 +9,10 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
+from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
-from dritimeseriesprocessor.utils.enums import OperationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, OperationType, ProcessingLevel
 from utils.data_creation import create_timeframe, make_time_series_container
 
 
@@ -148,6 +151,124 @@ class TestTimeSeriesProcessor:
         mock_qc_pipeline.run.assert_called_once()
         assert raw_container.data == tf_result
         assert processed_container.data == tf_result
+
+    def test_load_local_copy_downloads_raw_files_using_container_site_fields(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        container = make_time_series_container("raw_flux")
+        container.source_bucket = "raw-bucket"
+        container.source_site = "flux-plynl"
+        container.source_site_identifier = "PLYNL"
+        container.source_dataset = "Flux"
+        container.network = "fdri"
+
+        mock_graph = create_mock_dag([["raw_flux"]])
+        mock_graph.datasets["raw_flux"] = container
+
+        flux_s3_client = MagicMock()
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+            flux_s3_client=flux_s3_client,
+        )
+
+        processor._load_local_copy(container)
+
+        assert container.ts_id in processor._raw_dirs
+        local_dir = Path(processor._raw_dirs[container.ts_id].name)
+        assert local_dir.name.startswith("eddypro_raw_PLYNL_")
+        flux_s3_client.download_raw_dat_files.assert_called_once_with(
+            bucket="raw-bucket",
+            site="flux-plynl",
+            dataset="Flux",
+            network="fdri",
+            start_date=datetime(2025, 1, 1).date(),
+            end_date=datetime(2025, 1, 2).date(),
+            local_dir=local_dir,
+        )
+
+    def test_run_eddypro_passes_raw_dependency_and_ancillary_containers(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        raw_container = make_time_series_container("raw_flux")
+        raw_container.method_type = MagicMock(return_value=MethodType.LOAD_LOCAL_COPY)
+        raw_container.source_site = "flux-plynl"
+
+        ancillary_container = make_time_series_container("ancillary")
+        ancillary_container.method_type = MagicMock(return_value=MethodType.LOAD)
+
+        eddypro_container = make_time_series_container("eddypro_output")
+        eddypro_container.method_type = MagicMock(return_value=MethodType.EDDYPRO)
+        eddypro_container.source_site = "flux-plynl"
+        eddypro_container.network = "fdri"
+        eddypro_container.source_bucket = "processed-bucket"
+        eddypro_container.source_dataset = "eddypro-full-output"
+        eddypro_container.method_config = DataProcessingConfig(
+            ts_id="eddypro_output",
+            config_id="config-1",
+            config_type=ConfigurationType.EDDYPRO,
+            method_configs=[],
+        )
+        eddypro_container.all_dependencies = MagicMock(return_value=["raw_flux", "ancillary"])
+
+        mock_graph = create_mock_dag([["raw_flux", "ancillary"], ["eddypro_output"]])
+        mock_graph.datasets = {
+            "raw_flux": raw_container,
+            "ancillary": ancillary_container,
+            "eddypro_output": eddypro_container,
+        }
+        mock_graph.site_metadata = {
+            "http://fdri.ceh.ac.uk/id/site/flux-plynl": SiteMetadata(
+                site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
+                network="fdri",
+                alt_id="PLYNL",
+            )
+        }
+
+        pipeline_run = MagicMock()
+        pipeline_instance = MagicMock()
+        pipeline_instance.run = pipeline_run
+
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.EddyProPipeline",
+            MagicMock(return_value=pipeline_instance),
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.EddyProRunner",
+            MagicMock(return_value=MagicMock()),
+        )
+
+        flux_s3_client = MagicMock()
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+            flux_s3_client=flux_s3_client,
+        )
+        processor._raw_dirs[raw_container.ts_id] = MagicMock(name="/tmp/staged_raw_dir")
+        processor._raw_dirs[raw_container.ts_id].name = "/tmp/staged_raw_dir"
+
+        processor._run_eddypro(eddypro_container)
+
+        pipeline_run.assert_called_once_with(
+            raw_data_dir=Path("/tmp/staged_raw_dir"),
+            method_config=eddypro_container.method_config,
+            site_metadata=mock_graph.site_metadata["http://fdri.ceh.ac.uk/id/site/flux-plynl"],
+            start_date=datetime(2025, 1, 1).date(),
+            end_date=datetime(2025, 1, 2).date(),
+            ancillary_containers=[ancillary_container],
+            flux_s3_client=flux_s3_client,
+            network="fdri",
+            processed_source_bucket="processed-bucket",
+            processed_dataset="eddypro-full-output",
+        )
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Test that failed tag is set to True when dataset fails processing.
