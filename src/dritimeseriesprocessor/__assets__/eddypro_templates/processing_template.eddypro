@@ -384,7 +384,7 @@ biom_tstamp_ref=end
 biom_ta=2
 biom_pa=4
 biom_rh=3
-biom_rg=0
+biom_rg=5
 biom_lwin=0
 biom_ppfd=0
 
