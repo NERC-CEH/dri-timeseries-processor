@@ -3,7 +3,7 @@
     {
       "site_id": "http://fdri.ceh.ac.uk/id/site/flux-plynl",
       "network": "fdri",
-      "alt_id": "PLYNL",
+      "alt_id": "flux-plynl",
       "identifiers": [
         "flux-plynl",
         "PLYNL"
