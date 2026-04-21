@@ -155,8 +155,26 @@ class TestStandardDeviation:
         config = create_method_config(ts.Period.of_days(1))
         config.params["start_time"] = "10:30:00"
         config.params["end_time"] = "14:00:00"
+        config.argument = {"threshold": 7}
 
         result = StandardDeviation().run(tf, config)
-        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [1.290994]})
+        assert_frame_equal(result.df["time", "value"], expected)
+
+    def test_standard_deviation_below_threshold(self) -> None:
+        """Test that the sum aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(9, 13)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.params["start_time"] = "10:30:00"
+        config.params["end_time"] = "14:00:00"
+        config.argument = {"threshold": 7}
+
+        result = StandardDeviation().run(tf, config)
+        expected = pl.DataFrame(
+            schema={
+                "time": pl.Datetime("us"),
+                "value": pl.Float64,
+            }
+        )
         assert_frame_equal(result.df["time", "value"], expected)
 >>>>>>> 81524a3 (Add StandardDeviation method to aggregation methods. Add unit test. ToDo: Test unit test and pipeline with new metadata)
