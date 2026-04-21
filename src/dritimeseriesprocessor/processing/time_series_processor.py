@@ -190,6 +190,8 @@ class TimeSeriesProcessor:
 
         with self.metrics.time_load.time():
             for dataset_group, containers in groupings.items():
+                dataset_group = dataset_group[:3] + dataset_group[3].replace("PROCESSED", "RAW")
+                containers[0].processing_level = ProcessingLevel.RAW
                 try:
                     combined_df = self.data_router.query_by_date_range(
                         *containers, start_date=self.start_date, end_date=self.end_date
