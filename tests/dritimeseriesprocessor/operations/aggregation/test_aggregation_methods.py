@@ -79,6 +79,7 @@ def test_aggregation_methods(
     if mode == "time_window":
         config.params["start_time"] = "10:30:00"
         config.params["end_time"] = "14:00:00"
+        config.argument = {"threshold": 7}
 
     elif mode == "window_outside_data":
         config.params["start_time"] = "20:00:00"
