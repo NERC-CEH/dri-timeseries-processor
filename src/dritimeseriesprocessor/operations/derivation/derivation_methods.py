@@ -479,11 +479,11 @@ class NeutronIntensityFactor(DerivationMethod):
             Values should be positive.
         """
 
-        ref_C0 = self.config.params["REF_C0"]
-        GAMMA = self.config.params["GAMMA"]
-        CRNS_count = columns["crns-count"]
+        ref_c0 = self.config.params["REF_C0"]
+        gamma = self.config.params["GAMMA"]
+        crns_count = columns["crns-count"]
 
-        return 1 / (((CRNS_count / ref_C0) - 1) * GAMMA + 1)
+        return 1 / (((crns_count / ref_c0) - 1) * gamma + 1)
 
 
 class AbsoluteHumidityFactor(DerivationMethod):

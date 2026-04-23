@@ -232,10 +232,12 @@ class TestAbsoluteHumidity:
 class TestNeutronIntensityFactor:
     def test_calculation(self) -> None:
         """Test incoming neutron intensity factor calculation."""
-        config = create_method_config({"cts": [150.1, 151.2, 153.3, 154.4]}, "factor_inten")
+        config = create_method_config({"crns-count": [150.1, 151.2, 153.3, 154.4]}, "calc_factor_inten")
+        config.params["REF_C0"] = 152.03496  # holln
+        config.params["GAMMA"] = 1.29291  # holln
 
         # Expected values should be positive
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_inten": [1.016, 1.007, 0.989, 0.980]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"calc_factor_inten": [1.016, 1.007, 0.989, 0.980]}))
         result = NeutronIntensityFactor().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
