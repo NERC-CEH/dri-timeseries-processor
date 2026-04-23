@@ -417,33 +417,6 @@ class SolarZenith(DerivationMethod):
 
         # Return solar zenith angle in radians
         return cos_theta_s.arccos()
-        
-class NeutronIntensityFactor(DerivationMethod):
-    """Calculate correction factor for the incoming neutron count intensity.
-    See COSMOS documentation
-    GAMMA: Scaling factor to adjust for geomagnetic effects
-    REF_C0: Site annotation to account for neutron counts due to site calibration
-    crns_count: From NMDB_COUNTS at JUNG site.
-    """
-
-    name = "calc_factor_inten"
-    inputs = ("crns-count",)  
-    
-    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """_summary_
-
-        Args:
-            columns (dict[str, pl.Expr]): _description_
-            crns-count: NMDB CRNS-COUNT
-
-        Returns:
-            pl.Expr: _description_
-        """
-        ref_C0 = self.config.params["REF_C0"]
-        GAMMA = self.config.params["GAMMA"]
-        CRNS_count = columns["crns-count"]
-
-        return 1 / (((CRNS_count / ref_C0) - 1) * GAMMA + 1)
 
 
 @DerivationMethod.register
