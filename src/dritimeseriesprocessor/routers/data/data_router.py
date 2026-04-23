@@ -62,14 +62,28 @@ class DuckDBDataRouter(DataRouter):
 
         columns = ", ".join([c.source_column for c in containers])
 
-        partitions = [
+        partitions_raw = [
             f"{network}",
             f"dataset={source_dataset}",
             f"site={site_id}",
             "**",
             "date=*",
         ]
-        partitions_str = "/".join(partitions)
+
+        partitions_processed = [
+            f"{network}",
+            f"resolution={resolution}",
+            f"site={site_id}",
+            "**",
+            "date=*",
+        ]
+
+        if "PROCESSED" in source_dataset:
+            partition = partitions_processed
+        else:
+            partition = partitions_raw
+
+        partitions_str = "/".join(partition)
         bucket_path = f"s3://{bucket}/{partitions_str}/data.parquet"
         query = f"""
             SELECT {time_column_name}, {columns}
