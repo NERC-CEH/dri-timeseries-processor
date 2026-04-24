@@ -141,10 +141,8 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            if ann.has_value.value is None:
-                extracted[key] = None
-            else:
-                extracted[key] = ann.has_value.value[0]
+            attr = getattr(ann.has_value.value)
+            extracted[key] = attr[0] if attr else None
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
@@ -177,7 +175,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                 # Resolve any special case where we need to extract parameter from the site metadata
 
                 if param_name == "site_attribute":
-                    param_name, val = resolve_site_parameter(has_value.value[0], site_metadata)  # Must use zero index.
+                    param_name, val = resolve_site_attribute(has_value.value[0], site_metadata)  # Must use zero index.
                     collected_args[param_name].append(val)
                 elif param_name == "annotation":
                     for param in ast.literal_eval((has_value.value[0]).lower()):
@@ -205,7 +203,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     return params
 
 
-def resolve_site_parameter(param: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
+def resolve_site_attribute(param: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
     """Resolve any special case where we need to extract parameter from the site metadata.
 
     Args:
