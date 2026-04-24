@@ -5,6 +5,7 @@ These mappers extract the fields actually required by the pipeline and flatten n
 domain-level objects.
 """
 
+import ast
 from collections import defaultdict
 from datetime import datetime
 from typing import Any

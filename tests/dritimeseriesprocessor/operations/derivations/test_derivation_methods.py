@@ -234,12 +234,17 @@ class TestNeutronIntensityFactor:
         """Test incoming neutron intensity factor calculation."""
         config = create_method_config({"crns-count": [150.1, 151.2, 153.3, 154.4]}, "calc_factor_inten")
 <<<<<<< HEAD
+<<<<<<< HEAD
         config.params["ref_c0"] = 152.03496  # holln
         config.params["gamma"] = 1.29291  # holln
 =======
         config.params["REF_C0"] = 152.03496  # holln
         config.params["GAMMA"] = 1.29291  # holln
 >>>>>>> 7579e0b (Update unit test for calc_factor_inten)
+=======
+        config.params["ref_c0"] = 152.03496  # holln
+        config.params["gamma"] = 1.29291  # holln
+>>>>>>> 87fe4c2 (Ensure time column name the same for saving different networks together)
 
         # Expected values should be positive
         expected = dataframe_to_timeframe(pl.DataFrame({"calc_factor_inten": [1.016, 1.007, 0.989, 0.980]}))
