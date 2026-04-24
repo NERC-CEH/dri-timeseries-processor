@@ -176,15 +176,14 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                 # Resolve any special case where we need to extract parameter from the site metadata
 
                 if param_name == "site_attribute":
-                    param_name, val = resolve_site_attribute(has_value.value, site_metadata)
+                    param_name, val = resolve_site_attribute(has_value.value[0], site_metadata)  # Must use zero index.
                     collected_args[param_name].append(val)
                 elif param_name == "annotation":
                     for param in has_value.value:
-                        # Handle not exist
-                        values = site_metadata.annotations[param.lower()]  # .get? #getattr(site_metadata, param)
+                        values = site_metadata.annotations[param.lower()]
                         collected_args[param].append(values)
                 else:
-                    collected_args[param_name].append(has_value.value[0])
+                    collected_args[param_name].append(has_value.value[0])  # Must use zero index.
 
             # Reference value (dependent dataset)
             if has_value.value_reference is not None:
@@ -205,7 +204,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     return params
 
 
-def resolve_site_attribute(values: list[str], site_metadata: SiteMetadata) -> tuple[str, Any]:
+def resolve_site_attribute(value: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
     """Resolve any special case where we need to extract parameter from the site metadata.
 
     Args:
@@ -216,11 +215,9 @@ def resolve_site_attribute(values: list[str], site_metadata: SiteMetadata) -> tu
     Returns:
         Resolved parameter name and value.
     """
-    actual_values = []
-    for value in values:
-        actual_param = value.lower()
-        actual_values.append(getattr(site_metadata, actual_param))
-    return actual_param, actual_values
+    actual_param = value.lower()
+    actual_value = getattr(site_metadata, actual_param)
+    return actual_param, actual_value
 
 
 def map_site_metadata(item: SiteItem) -> SiteMetadata:
