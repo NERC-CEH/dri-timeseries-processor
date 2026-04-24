@@ -5,6 +5,7 @@ These mappers extract the fields actually required by the pipeline and flatten n
 domain-level objects.
 """
 
+import ast
 from collections import defaultdict
 from datetime import datetime
 from typing import Any
@@ -176,12 +177,12 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                 # Resolve any special case where we need to extract parameter from the site metadata
 
                 if param_name == "site_attribute":
-                    param_name, val = resolve_site_attribute(has_value.value[0], site_metadata)  # Must use zero index.
+                    param_name, val = resolve_site_parameter(has_value.value[0], site_metadata)  # Must use zero index.
                     collected_args[param_name].append(val)
                 elif param_name == "annotation":
-                    for param in has_value.value:
-                        values = site_metadata.annotations[param.lower()]
-                        collected_args[param].append(values)
+                    for param in ast.literal_eval((has_value.value[0]).lower()):
+                        value = site_metadata.annotations.get(param)
+                        collected_args[param].append(value)
                 else:
                     collected_args[param_name].append(has_value.value[0])  # Must use zero index.
 
@@ -204,18 +205,17 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     return params
 
 
-def resolve_site_attribute(value: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
+def resolve_site_parameter(param: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
     """Resolve any special case where we need to extract parameter from the site metadata.
 
     Args:
-        param_name: The name of the parameter to resolve.
-        value: The value of the parameter.
+        param: The name of the parameter to resolve.
         site_metadata: Metadata for the site this processing configuration applies to.
 
     Returns:
         Resolved parameter name and value.
     """
-    actual_param = value.lower()
+    actual_param = param.lower()
     actual_value = getattr(site_metadata, actual_param)
     return actual_param, actual_value
 

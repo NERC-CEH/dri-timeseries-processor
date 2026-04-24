@@ -38,7 +38,11 @@ class DerivationPipeline(OperationPipeline):
             Result of applying the derivation method.
         """
 
-        dep_ts_values = config.params.get("dep_ts", [])
+        dep_ts_values = []
+        if "dep_ts" in config.params:
+            dep_ts_values = config.params["dep_ts"]
+        elif "load_dep_ts" in config.params:
+            dep_ts_values = config.params["load_dep_ts"]
 
         if dep_ts_values is None:
             dep_ts_list = []
