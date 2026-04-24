@@ -44,8 +44,10 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
     source_site = extract_uri_id(metadata_site_id)
     source_network = extract_uri_id(item.originating_programme[0].id)
 
+    # The current logic is for a COSMOS dataset with a dependency on an NMDB dataset.
+    # Different logic may be required for different networks.
     if metadata_site_id not in all_site_metadata:
-        source_site_identifier = "JUNG"
+        source_site_identifier = source_site.split("-")[1].upper()  # Must be upper to load NMDB data from s3 bucket.
     else:
         source_site_identifier = all_site_metadata[metadata_site_id].alt_id
 
@@ -141,7 +143,7 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            attr = getattr(ann.has_value.value)
+            attr = getattr(ann.has_value, "value")
             extracted[key] = attr[0] if attr else None
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
