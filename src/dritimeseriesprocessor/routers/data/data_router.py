@@ -60,7 +60,7 @@ class DuckDBDataRouter(DataRouter):
             ["network", "source_site_identifier", "resolution", "source_bucket", "source_dataset", "time_column_name"],
         )
 
-        columns = ", ".join([f'"{c.source_column}"' if "-" in c.source_coulmn else c.source_column for c in containers])
+        columns = ", ".join([f'"{c.source_column}"' if "-" in c.source_column else c.source_column for c in containers])
 
         partitions_raw = [
             f"{network}",
