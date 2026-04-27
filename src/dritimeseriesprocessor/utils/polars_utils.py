@@ -47,7 +47,7 @@ def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.
         return df1
 
     if join_col not in df1.columns or join_col not in df1.columns:
-        if "time" in df2.columns:
+        if "timestamp" in df1.columns:
             df2 = df2.rename({"time": "timestamp"})
         else:
             raise ValueError(f"join_col '{join_col}' must exist in both DataFrames.")

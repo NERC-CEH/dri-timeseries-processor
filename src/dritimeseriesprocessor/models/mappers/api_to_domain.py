@@ -129,7 +129,7 @@ def map_processing_method_config(
     )
 
 
-def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
+def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any] | None:
     """Extract annotation key–value pairs from the configuration item.
 
     Args:
@@ -235,7 +235,7 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None
     network = item.utilised_by[0].id if item.utilised_by else None
-    annotations = extract_annotations(item.has_annotation)
+    annotations = extract_annotations(item.has_annotation) if item.has_annotation else None
 
     return SiteMetadata(
         site_id=item.id,
