@@ -122,3 +122,11 @@ class Min(AggregationMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "min")
+
+
+@AggregationMethod.register
+class StandardDeviation(AggregationMethod):
+    name = "stdev"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_aggregate(tf, config, "stdev")
