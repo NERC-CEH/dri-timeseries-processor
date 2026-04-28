@@ -49,7 +49,7 @@ class AltDataStatic(InfillMethod):
 @InfillMethod.register
 class AltDataDynamic(InfillMethod):
     name = "alt_data_dynamic"
-    flag_value = 2
+    flag_value = 4
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return tf.infill(
