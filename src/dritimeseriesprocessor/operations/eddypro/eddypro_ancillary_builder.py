@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from pathlib import Path
 
 import polars as pl
@@ -10,6 +11,49 @@ import polars as pl
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 
 logger = logging.getLogger(__name__)
+
+
+def _accumulate_into_frame(
+    containers: list[TimeSeriesContainer],
+    source_order: Sequence[str],
+) -> tuple[pl.DataFrame, list[str]]:
+    """Join supported container series on a shared EddyPro DateTime axis."""
+    df: pl.DataFrame | None = None
+    requested: list[str] = []
+    for c in containers:
+        if not c.source_column or c.source_column not in source_order:
+            continue
+        source_col = c.source_column
+        if source_col not in requested:
+            requested.append(source_col)
+        if c.data is None:
+            continue
+
+        time_col = c.time_column_name
+        src = c.data.df
+        if time_col not in src.columns or source_col not in src.columns:
+            continue
+        if df is not None and source_col in df.columns:
+            continue
+
+        series = (
+            src.select(
+                pl.col(time_col).cast(pl.Datetime).alias("DateTime"),
+                pl.col(source_col).cast(pl.Float64, strict=False).alias(source_col),
+            )
+            .drop_nulls("DateTime")
+            .unique(subset=["DateTime"], keep="first")
+            .sort("DateTime")
+        )
+        if df is None:
+            df = series
+        else:
+            df = df.join(series, on="DateTime", how="full", coalesce=True).sort("DateTime")
+
+    if df is None:
+        df = pl.DataFrame({"DateTime": pl.Series([], dtype=pl.Datetime)})
+
+    return df, requested
 
 
 class EddyProBiometBuilder:
@@ -32,11 +76,6 @@ class EddyProBiometBuilder:
         "G_PLATE_1_1_1",
         "G_PLATE_1_1_2",
     ]
-
-    @classmethod
-    def _supports(cls, source_column: str | None) -> bool:
-        """Return True if source_column is a recognised biomet variable."""
-        return bool(source_column and source_column in cls._SOURCE_ORDER)
 
     def build(
         self,
@@ -64,40 +103,7 @@ class EddyProBiometBuilder:
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        df: pl.DataFrame | None = None
-        requested: list[str] = []
-        for c in containers:
-            if not self._supports(c.source_column):
-                continue
-            source_col = c.source_column
-            if source_col and source_col not in requested:
-                requested.append(source_col)
-            if c.data is None:
-                continue
-            time_col = c.time_column_name
-            src = c.data.df
-            if time_col not in src.columns or source_col not in src.columns:
-                continue
-            if df is not None and source_col in df.columns:
-                continue
-
-            series = (
-                src.select(
-                    pl.col(time_col).cast(pl.Datetime).alias("DateTime"),
-                    pl.col(source_col).cast(pl.Float64, strict=False).alias(source_col),
-                )
-                .drop_nulls("DateTime")
-                .unique(subset=["DateTime"], keep="first")
-                .sort("DateTime")
-            )
-            if df is None:
-                df = series
-            else:
-                df = df.join(series, on="DateTime", how="full", coalesce=True).sort("DateTime")
-
-        if df is None:
-            df = pl.DataFrame({"DateTime": pl.Series([], dtype=pl.Datetime)})
-
+        df, requested = _accumulate_into_frame(containers, self._SOURCE_ORDER)
         requested_set = {name for name in requested if name}
         ordered_value_cols = [name for name in self._SOURCE_ORDER if name in requested_set]
         ordered_value_cols.extend(sorted(requested_set.difference(self._SOURCE_ORDER)))
@@ -114,9 +120,8 @@ class EddyProBiometBuilder:
                 f"No usable biomet data found for the current run window. Requested columns: {ordered_value_cols}"
             )
 
-        if ordered_value_cols:
-            df = df.drop_nulls(ordered_value_cols)
-            df = df.with_columns([pl.col(name).round(2).alias(name) for name in ordered_value_cols])
+        df = df.drop_nulls(ordered_value_cols)
+        df = df.with_columns([pl.col(name).round(2).alias(name) for name in ordered_value_cols])
 
         df = df.with_columns(pl.col("DateTime").dt.strftime("%Y-%m-%d %H:%M").alias("TIMESTAMP_1")).sort("DateTime")
         ordered_cols = ["TIMESTAMP_1", *ordered_value_cols]
@@ -151,11 +156,6 @@ class EddyProDynamicMetadataBuilder:
         "height_canopy": "m",
     }
 
-    @classmethod
-    def _supports(cls, source_column: str | None) -> bool:
-        """Return True if source_column is a recognised dynamic metadata variable."""
-        return bool(source_column and source_column in cls._SOURCE_ORDER)
-
     def build(
         self,
         containers: list[TimeSeriesContainer],
@@ -174,42 +174,7 @@ class EddyProDynamicMetadataBuilder:
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        df: pl.DataFrame | None = None
-        requested: list[str] = []
-        for c in containers:
-            if not self._supports(c.source_column):
-                continue
-            source_col = c.source_column
-            if source_col and source_col not in requested:
-                requested.append(source_col)
-            if c.data is None:
-                continue
-
-            time_col = c.time_column_name
-            src = c.data.df
-            if time_col not in src.columns or source_col not in src.columns:
-                continue
-            if df is not None and source_col in df.columns:
-                continue
-
-            series = (
-                src.select(
-                    pl.col(time_col).cast(pl.Datetime).alias("DateTime"),
-                    pl.col(source_col).cast(pl.Float64, strict=False).alias(source_col),
-                )
-                .drop_nulls("DateTime")
-                .unique(subset=["DateTime"], keep="first")
-                .sort("DateTime")
-            )
-
-            if df is None:
-                df = series
-            else:
-                df = df.join(series, on="DateTime", how="full", coalesce=True).sort("DateTime")
-
-        if df is None:
-            df = pl.DataFrame({"DateTime": pl.Series([], dtype=pl.Datetime)})
-
+        df, requested = _accumulate_into_frame(containers, self._SOURCE_ORDER)
         requested_set = {name for name in requested if name}
         ordered_value_cols = [name for name in self._SOURCE_ORDER if name in requested_set]
         ordered_value_cols.extend(sorted(requested_set.difference(self._SOURCE_ORDER)))
