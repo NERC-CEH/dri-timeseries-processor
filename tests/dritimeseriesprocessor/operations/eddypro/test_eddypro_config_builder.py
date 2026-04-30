@@ -61,8 +61,11 @@ class TestEddyProConfigBuilder:
         assert config.get("Project", "pr_end_date") == "2026-01-21"
         assert config.get("Project", "sw_version") == "7.0.9"
         assert config.get("Project", "proj_file").endswith("PLYNL.metadata")
+        assert config.get("Project", "use_dyn_md_file") == "0"
+        assert config.get("Project", "dyn_metadata_file") == ""
         assert config.get("Project", "use_biom") == "0"
         assert config.get("Project", "biom_file") == ""
+        assert config.get("Project", "biom_dir") == ""
         assert config.get("RawProcess_General", "data_path") == str(tmp_path / "raw")
         assert config.get("Project", "col_diag_anem") == "2"
         assert config.get("Project", "col_co2") == "3"
