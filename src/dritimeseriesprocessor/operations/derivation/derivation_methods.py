@@ -458,11 +458,13 @@ class Albedo(DerivationMethod):
 
 @DerivationMethod.register
 class NeutronIntensityFactor(DerivationMethod):
-    """Calculate correction factor for the incoming neutron count intensity.
-    See COSMOS documentation
+    """Calculate incoming neutron count intensity correction factor using a background reference station.
+    See COSMOS supporting documentation.
+    See "COSMOS: the COsmic-ray Soil Moisture Observing System" https://hess.copernicus.org/articles/16/4079/2012/
+    See "Intensity correction factors for a cosmic ray neutron sensor": https://zenodo.org/records/4569062
     GAMMA: Scaling factor to adjust for geomagnetic effects
     REF_C0: Site annotation to account for neutron counts due to site calibration
-    crns_count: From NMDB_COUNTS at JUNG site.
+    crns_count: Neutron counts from reference station
     """
 
     name = "calc_factor_inten"
@@ -472,7 +474,7 @@ class NeutronIntensityFactor(DerivationMethod):
         """Calculate incoming neutron count intensity correction factor.
         Args:
             columns: Dict with keys of required columns for the calculation.
-            crns-count: NMDB CRNS-COUNT
+            crns-count: cosmic ray neutron sensor counts from reference station
 
         Returns:
             Polars expression for incoming neutron count intensity factor, [units = None]

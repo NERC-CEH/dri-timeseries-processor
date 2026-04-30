@@ -60,8 +60,10 @@ class DuckDBDataRouter(DataRouter):
             ["network", "source_site_identifier", "resolution", "source_bucket", "source_dataset", "time_column_name"],
         )
 
+        # Ensure columns with hyphens can be parsed by SQL
         columns = ", ".join([f'"{c.source_column}"' if "-" in c.source_column else c.source_column for c in containers])
 
+        # ToDo: partitions will be consolidated into a single partition. See FPM-998.
         partitions_raw = [
             f"{network}",
             f"dataset={source_dataset}",

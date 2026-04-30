@@ -175,16 +175,15 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
             # Literal value
             if has_value.value is not None:
                 # Resolve any special case where we need to extract parameter from the site metadata
-
-                if param_name == "site_attribute":
-                    param_name, val = resolve_site_attribute(has_value.value[0], site_metadata)  # Must use zero index.
-                    collected_args[param_name].append(val)
-                elif param_name == "annotation":
-                    for param in ast.literal_eval((has_value.value[0]).lower()):
-                        value = site_metadata.annotations.get(param)
-                        collected_args[param].append(value)
+                value = has_value.value[0]
+                if param_name == "annotation":
+                    for param in ast.literal_eval(value.lower()):
+                        collected_args[param].append(site_metadata.annotations.get(param))
                 else:
-                    collected_args[param_name].append(has_value.value[0])  # Must use zero index.
+                    if param_name == "site_attribute":
+                        param_name = value.lower()
+                        value = getattr(site_metadata, param_name)
+                    collected_args[param_name].append(value)
 
             # Reference value (dependent dataset)
             if has_value.value_reference is not None:
@@ -203,21 +202,6 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}
     return params
-
-
-def resolve_site_attribute(param: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
-    """Resolve any special case where we need to extract parameter from the site metadata.
-
-    Args:
-        param: The name of the parameter to resolve.
-        site_metadata: Metadata for the site this processing configuration applies to.
-
-    Returns:
-        Resolved parameter name and value.
-    """
-    actual_param = param.lower()
-    actual_value = getattr(site_metadata, actual_param)
-    return actual_param, actual_value
 
 
 def map_site_metadata(item: SiteItem) -> SiteMetadata:
