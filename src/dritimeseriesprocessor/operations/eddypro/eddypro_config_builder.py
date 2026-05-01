@@ -27,6 +27,8 @@ class EddyProConfigBuilder:
         output_dir: Path,
         start_date: date,
         end_date: date,
+        biomet_file: Path | None = None,
+        dynamic_metadata_file: Path | None = None,
     ) -> Path:
         """Write the project file for one run."""
         working_dir.mkdir(parents=True, exist_ok=True)
@@ -64,12 +66,23 @@ class EddyProConfigBuilder:
         metadata_file = working_dir / f"{site_id}.metadata"
         config.set("Project", "proj_file", str(metadata_file))
 
-        config.set("Project", "use_dyn_md_file", "0")
-        config.set("Project", "dyn_metadata_file", "")
-        config.set("Project", "use_biom", "0")
-        config.set("Project", "biom_file", "")
-        if config.has_option("Project", "biom_dir"):
-            config.set("Project", "biom_dir", "")
+        if dynamic_metadata_file is not None:
+            config.set("Project", "use_dyn_md_file", "1")
+            config.set("Project", "dyn_metadata_file", str(dynamic_metadata_file))
+        else:
+            config.set("Project", "use_dyn_md_file", "0")
+            config.set("Project", "dyn_metadata_file", "")
+
+        if biomet_file is not None:
+            config.set("Project", "use_biom", "2")
+            config.set("Project", "biom_file", str(biomet_file))
+            if config.has_option("Project", "biom_dir"):
+                config.set("Project", "biom_dir", str(biomet_file.parent))
+        else:
+            config.set("Project", "use_biom", "0")
+            config.set("Project", "biom_file", "")
+            if config.has_option("Project", "biom_dir"):
+                config.set("Project", "biom_dir", "")
 
         config.set("RawProcess_General", "data_path", str(raw_data_dir))
 

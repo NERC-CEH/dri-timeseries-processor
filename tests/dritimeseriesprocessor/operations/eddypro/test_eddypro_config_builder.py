@@ -61,8 +61,11 @@ class TestEddyProConfigBuilder:
         assert config.get("Project", "pr_end_date") == "2026-01-21"
         assert config.get("Project", "sw_version") == "7.0.9"
         assert config.get("Project", "proj_file").endswith("PLYNL.metadata")
+        assert config.get("Project", "use_dyn_md_file") == "0"
+        assert config.get("Project", "dyn_metadata_file") == ""
         assert config.get("Project", "use_biom") == "0"
         assert config.get("Project", "biom_file") == ""
+        assert config.get("Project", "biom_dir") == ""
         assert config.get("RawProcess_General", "data_path") == str(tmp_path / "raw")
         assert config.get("Project", "col_diag_anem") == "2"
         assert config.get("Project", "col_co2") == "3"
@@ -71,6 +74,37 @@ class TestEddyProConfigBuilder:
         assert config.get("Project", "col_cell_t") == "6"
         assert config.get("Project", "col_int_p") == "7"
         assert config.get("Project", "col_air_p") == "8"
+
+    def test_build_project_file_populates_ancillary_file_settings(self, tmp_path: Path) -> None:
+        builder = EddyProConfigBuilder(
+            run_spec=EddyProRunSpec(
+                site_code="PLYNL",
+                software_version="7.0.9",
+                file_prototype="TOA5_*.dat",
+                columns=[EddyProColumnSpec(variable="u")],
+            )
+        )
+
+        biomet_file = tmp_path / "inputs" / "biomet.csv"
+        dynamic_metadata_file = tmp_path / "inputs" / "dynamic_metadata.txt"
+
+        project_path = builder.build_project_file(
+            template_path=PACKAGE_ROOT / "__assets__" / "eddypro_templates" / "processing_template.eddypro",
+            working_dir=tmp_path / "config",
+            raw_data_dir=tmp_path / "raw",
+            output_dir=tmp_path / "output",
+            start_date=date(2026, 1, 20),
+            end_date=date(2026, 1, 21),
+            biomet_file=biomet_file,
+            dynamic_metadata_file=dynamic_metadata_file,
+        )
+
+        config = read_ini(project_path)
+        assert config.get("Project", "use_dyn_md_file") == "1"
+        assert config.get("Project", "dyn_metadata_file") == str(dynamic_metadata_file)
+        assert config.get("Project", "use_biom") == "2"
+        assert config.get("Project", "biom_file") == str(biomet_file)
+        assert config.get("Project", "biom_dir") == str(biomet_file.parent)
 
     def test_build_metadata_file_populates_site_instrument_and_columns(self, tmp_path: Path) -> None:
         builder = EddyProConfigBuilder(

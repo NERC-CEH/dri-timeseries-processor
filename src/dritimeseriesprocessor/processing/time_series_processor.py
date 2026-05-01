@@ -229,18 +229,14 @@ class TimeSeriesProcessor:
             container: Raw flux dataset whose files should be staged locally.
         """
         logger.info(f"{MethodType.LOAD_LOCAL_COPY}: {container.ts_id}")
-
-        site_meta = self.graph.site_metadata.get(container.source_site) or self.graph.site_metadata.get(
-            f"{SITE_URI}/{container.source_site}"
-        )
         start_date = self.start_date.date()
         end_date = self.end_date.date()
-        tmp = tempfile.TemporaryDirectory(prefix=f"eddypro_raw_{site_meta.alt_id}_")
+        tmp = tempfile.TemporaryDirectory(prefix=f"eddypro_raw_{container.source_site_identifier}_")
         self._raw_dirs[container.ts_id] = tmp
 
         self.flux_s3_client.download_raw_dat_files(
             bucket=container.source_bucket,
-            site=site_meta.alt_id,
+            site=container.source_site,
             dataset=container.source_dataset,
             network=container.network,
             start_date=start_date,
@@ -308,10 +304,23 @@ class TimeSeriesProcessor:
         """
         logger.info(f"{MethodType.EDDYPRO}: {container.ts_id}")
 
-        raw_container = self._get_single_dependency(container)
-        site_meta = self.graph.site_metadata.get(container.source_site) or self.graph.site_metadata.get(
-            f"{SITE_URI}/{container.source_site}"
-        )
+        dep_ids = [dep_id for dep_id in container.all_dependencies() if dep_id in self.graph.datasets]
+        raw_candidates = [
+            self.graph.datasets[dep_id]
+            for dep_id in dep_ids
+            if self.graph.datasets[dep_id].method_type() == MethodType.LOAD_LOCAL_COPY
+        ]
+        if len(raw_candidates) != 1:
+            raise ValueError(
+                "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
+                f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
+            )
+        raw_container = raw_candidates[0]
+
+        # The LOAD_LOCAL_COPY dataset supplies the staged raw .dat files; every
+        # other resolved dependency is treated as ancillary EddyPro input.
+        ancillary_containers = [self.graph.datasets[ds_id] for ds_id in dep_ids if ds_id != raw_container.ts_id]
+        site_meta = self.graph.site_metadata.get(f"{SITE_URI}/{container.source_site}")
         start_date = self.start_date.date()
         end_date = self.end_date.date()
 
@@ -321,6 +330,7 @@ class TimeSeriesProcessor:
             site_metadata=site_meta,
             start_date=start_date,
             end_date=end_date,
+            ancillary_containers=ancillary_containers,
             flux_s3_client=self.flux_s3_client,
             network=container.network,
             processed_source_bucket=container.source_bucket,
