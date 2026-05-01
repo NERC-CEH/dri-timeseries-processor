@@ -507,7 +507,7 @@ class AbsoluteHumidityFactor(DerivationMethod):
     REF_Q0 is a site annotation.
     """
 
-    name = "calc_factor_Q"
+    name = "calc_factor_q"
     inputs = ("q",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:

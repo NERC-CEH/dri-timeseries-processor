@@ -265,7 +265,7 @@ class TestAtmosphericPressureFactor:
             {"pa": [1024.0, 1011.365, 1033.649, 1020.695]},
             "factor_pa",
         )
-        config.params["L"] = 137.04156  # [M] holln
+        config.params["l"] = 137.04156  # [M] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27831, 1.16301]}))
         result = AtmosphericPressureFactor().run(config)

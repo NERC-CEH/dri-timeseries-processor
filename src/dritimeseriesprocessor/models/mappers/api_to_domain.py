@@ -142,8 +142,7 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any] 
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            attr = getattr(ann.has_value, "value")
-            extracted[key] = attr[0] if attr else None
+            extracted[key] = ann.has_value.value[0] if ann.has_value.value else ann.has_value.value_reference[0]
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
