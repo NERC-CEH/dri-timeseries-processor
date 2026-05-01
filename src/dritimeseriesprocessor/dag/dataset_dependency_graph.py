@@ -266,21 +266,21 @@ class DatasetDependencyGraph:
         dataset_configs = self._build_processing_configs(response)
         return dataset_configs
 
-    def _fetch_site_metadata(self, sites: list[str] | None = None) -> list[str]:
+    def _fetch_site_metadata(self, site_ids: list[str] | None = None) -> list[str]:
         """Fetches site metadata for all sites with variables being processed. Sets the `self.sites_metadata` dict.
 
         Args:
-            sites: Select sites to get metadata for.  If empty, will fetch all sites for given network.
+            site_ids: Select sites to get metadata for.  If empty, will fetch all sites for given network.
 
         Returns:
             List of Metadata API site IDs
         """
-        if not sites:
+        if not site_ids:
             # If no sites provided, find all sites for the given network
             logger.warning(f"No sites provided. Fetching all sites for: {self.network}")
             sites_response = self.metadata_router.fetch_sites_by_network(self.network)
         else:
-            sites_response = self.metadata_router.fetch_sites(sites)
+            sites_response = self.metadata_router.fetch_sites(site_ids)
 
         fetched_site_ids = []
         for item in sites_response.items:
@@ -290,6 +290,32 @@ class DatasetDependencyGraph:
             if meta.is_active(window_start=self.start_date, window_end=self.end_date):
                 self.site_metadata[meta.site_id] = meta
                 fetched_site_ids.append(meta.site_id)
+        return fetched_site_ids
+
+    def _fetch_missing_site_metadata(self, site_ids: list[str]) -> list[str]:
+        """Fetch and cache site metadata for any site IDs not yet in `self.site_metadata`.
+
+        Unlike `_fetch_site_metadata`, this does not apply the `is_active` date window filter -
+        dependency sites are required regardless of operational status.
+
+        Args:
+            site_ids: Site IDs to ensure metadata is available for.
+
+        Returns:
+            List of Metadata API site IDs
+        """
+        missing_site_ids = [site_id for site_id in site_ids if site_id not in self.site_metadata]
+        if not missing_site_ids:
+            return []
+
+        logger.info(f"Fetching metadata for dependent sites: {missing_site_ids}")
+        sites_response = self.metadata_router.fetch_sites(missing_site_ids)
+
+        fetched_site_ids = []
+        for item in sites_response.items:
+            meta = map_site_metadata(item)
+            self.site_metadata[meta.site_id] = meta
+            fetched_site_ids.append(meta.site_id)
         return fetched_site_ids
 
     def _build_dataset_containers(self, dataset_response: TimeSeriesDatasetResponse) -> list[TimeSeriesContainer]:
@@ -304,6 +330,9 @@ class DatasetDependencyGraph:
         Returns:
             All mapped `TimeSeriesContainer` extracted from the response.
         """
+        site_ids = [item.originating_site[0].id for item in dataset_response.items]
+        self._fetch_missing_site_metadata(site_ids)
+
         all_containers = []
         for item in dataset_response.items:
             container = map_dataset_item(item, self.site_metadata)
