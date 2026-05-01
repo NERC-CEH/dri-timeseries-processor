@@ -550,7 +550,7 @@ class AtmosphericPressureFactor(DerivationMethod):
             Polars expression for atmospheric pressure factor, [units = None]
         """
 
-        barometric_attenuation_length = self.config.params["L"]
+        barometric_attenuation_length = self.config.params["l"]
         pa = columns["pa"]
         p0 = 1000
 

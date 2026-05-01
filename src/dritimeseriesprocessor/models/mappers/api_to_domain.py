@@ -5,7 +5,6 @@ These mappers extract the fields actually required by the pipeline and flatten n
 domain-level objects.
 """
 
-import ast
 from collections import defaultdict
 from datetime import datetime
 from typing import Any
@@ -170,16 +169,17 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         param_name = extract_uri_id(arg.parameter.id).replace("-", "_")
         has_value = arg.has_value
         has_structured_value = arg.has_structured_value
-
         if has_value:
             # Literal value
             if has_value.value is not None:
                 # Resolve any special case where we need to extract parameter from the site metadata
-                value = has_value.value[0]
+                # Annotations may have more than one value, site_attributes and other parameters have at most one.
+                values = has_value.value  # Cannot set to lower here as not all values are strings
                 if param_name == "annotation":
-                    for param in ast.literal_eval(value.lower()):
-                        collected_args[param].append(site_metadata.annotations.get(param))
+                    for param in values:
+                        collected_args[param.lower()].append(site_metadata.annotations.get(param.lower()))
                 else:
+                    value = values[0]
                     if param_name == "site_attribute":
                         param_name = value.lower()
                         value = getattr(site_metadata, param_name)

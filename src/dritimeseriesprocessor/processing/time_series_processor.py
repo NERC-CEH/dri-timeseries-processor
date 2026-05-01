@@ -379,7 +379,12 @@ class TimeSeriesProcessor:
             [
                 c
                 for c in self.graph.datasets.values()
-                if c.processing_level == ProcessingLevel.PROCESSED and not c.failed and c.data is not None
+                if (
+                    c.processing_level == ProcessingLevel.PROCESSED
+                    and not c.failed
+                    and c.data is not None
+                    and c.method_type() != MethodType.LOAD
+                )
             ]
         )
         if not processed:

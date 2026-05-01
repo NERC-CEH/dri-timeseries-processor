@@ -42,6 +42,7 @@ class DataProcessingConfig:
                 else:
                     deps.add(dep_ts_ids)
 
+            # Needed to load containers in tsp
             if "load_dep_ts" in method_config.params:
                 dep_ts_ids = method_config.params["load_dep_ts"]
                 if isinstance(dep_ts_ids, list):
