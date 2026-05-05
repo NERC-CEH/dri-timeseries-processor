@@ -51,7 +51,7 @@ class TestDuckDBDataRouter:
         )
 
         expected_query = """
-            SELECT a_time, a_column_name
+            SELECT a_time, "a_column_name"
             FROM read_parquet(
                 's3://a_bucket/a_network/dataset=a_data/site=A_SITE/**/date=*/data.parquet', hive_partitioning=true
             )

@@ -415,6 +415,9 @@ class TestTimeSeriesProcessor:
 
         for ds_id, container in mock_graph.datasets.items():
             container.processing_level = ProcessingLevel.PROCESSED
+            container.method_config = MagicMock(spec=DataProcessingConfig)
+            container.method_config.config_type = MagicMock(spec=ConfigurationType)
+            container.method_config.config_type.value = MethodType.DERIVATION
             container.network = "my_network"
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
