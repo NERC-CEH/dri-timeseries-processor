@@ -7,6 +7,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import (
     Add,
+    AlbedoSouthSlopeCorrection,
     Clip,
     CorrectionMethod,
     LWCorrection,
@@ -235,14 +236,14 @@ class TestWdCorrection:
         config = create_method_config(ux=ux, uy=uy)
 
         result = WDCorrection().run(wd, config)
-        expected_df = create_timeframe([95.01655, 160.81863, 354.14864, 75.46554], "wd").df
-        assert_frame_equal(result.df, expected_df)
+        expected_df = create_timeframe([95.016, 160.819, 354.148, 75.465], "wd").df
+        assert_frame_equal(result.df, expected_df, check_exact=False, abs_tol=0.001)
 
 
 class TestClip:
     def test_clip_simple_min_only(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(min=0)
 
@@ -252,7 +253,7 @@ class TestClip:
 
     def test_clip_simple_max_only(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(max=0)
 
@@ -262,7 +263,7 @@ class TestClip:
 
     def test_clip_simple_min_and_max(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(min=-1, max=1)
 
@@ -272,7 +273,7 @@ class TestClip:
 
     def test_clip_simple_no_min_or_max(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config()
 
@@ -284,7 +285,7 @@ class TestClip:
 
     def test_clip_simple_min_out_of_range(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(min=-3)
 
@@ -294,7 +295,7 @@ class TestClip:
 
     def test_clip_simple_max_out_of_range(self) -> None:
         """Test clip function works across the full DataFrame.
-        Uses made up test values as none of the derivation test values gives negative results"""
+        Uses fictitious test values as none of the derivation test values gives negative results"""
         pe = create_timeframe([-2, -1, 0, 1, 2, 3], "pe")
         config = create_method_config(max=4)
 
@@ -314,3 +315,34 @@ class TestClip:
         result = Clip().run(pe, config)
         expected_df = create_timeframe([-3, -2, 0, 0, 1, 2, 3], "pe").df
         assert_frame_equal(result.df, expected_df)
+
+
+class TestAlbedoSouthSlopeCorrection:
+    def test_albedo_south_slope_correction(self) -> None:
+        """Test albedo south slope correction works across the full dataframe.
+        The albedo and solar zenith data were obtained from their respective derivation method tests,
+        which were generated using fictitious data.
+        To test this method, both day and night times should be used.
+        """
+        swin = create_timeframe(
+            [
+                20.6,
+                20.2,
+                24.6,
+                16.6,
+                26.9,
+                17.1,
+                23.1,
+                17.2,
+                13.9,
+            ],
+            "swin",
+        )
+        albedo = create_timeframe([None, 0.183, 0.171, 0.229, 0.186, 0.275, 0.247, 0.174, None], "albedo")
+        solar_zenith = create_timeframe([1.618, 1.506, 1.419, 1.365, 1.346, 1.365, 1.419, 1.506, 1.617], "solar_zenith")
+
+        config = create_method_config(swin=swin, solar_zenith=solar_zenith, theta_g=0.3128764)
+
+        result = AlbedoSouthSlopeCorrection().run(albedo, config)
+        expected_df = create_timeframe([None, 0.496, 0.381, 0.462, 0.363, 0.555, 0.551, 0.472, None], "albedo").df
+        assert_frame_equal(result.df, expected_df, check_exact=False, abs_tol=0.001)

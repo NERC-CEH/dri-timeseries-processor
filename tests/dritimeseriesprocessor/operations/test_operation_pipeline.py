@@ -101,7 +101,7 @@ class TestInitialiseFlagColumn:
         pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
 
         pipeline._initialise_flag_column(mock_timeframe, "value")
-        mock_timeframe.init_flag_column.assert_called_once_with("value", "test_flags", "value_TEST_FLAG")
+        mock_timeframe.init_flag_column.assert_called_once_with("test_flags", "value_TEST_FLAG")
 
     def test_no_new_register(self, mock_timeframe: MagicMock) -> None:
         """Test that flag column registration is not called when it does exist."""

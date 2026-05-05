@@ -86,7 +86,12 @@ def create_items_list(ts_ids: str | list) -> list:
     """Create a simple list of items in a format mocking response from metadata API"""
     if isinstance(ts_ids, str):
         ts_ids = [ts_ids]
-    items = [{"@id": ts_id} for ts_id in ts_ids]
+    items = []
+    for ts_id in ts_ids:
+        item = MagicMock()
+        item.__getitem__ = MagicMock(side_effect=lambda key, _id=ts_id: _id)
+        item.originating_site = [MagicMock(id=ts_id)]
+        items.append(item)
     return items
 
 
@@ -282,6 +287,49 @@ class TestBuild:
         }
         assert mock_router.fetch_dataset_by_ids.call_count == 1
         assert mock_router.fetch_processing_configs.call_count == 1
+
+
+class TestEnsureSiteMetadata:
+    def test_fetch_missing_site_metadata_fetches_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that a site not yet in site_metadata is fetched and cached."""
+        site_id = "site1"
+        mock_router = setup_mocks([site_id], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+
+        assert site_id not in builder.site_metadata
+        result = builder._fetch_missing_site_metadata([site_id])
+
+        assert result == [site_id]
+        assert builder.site_metadata[site_id] == make_site_metadata_container(site_id)
+        mock_router.fetch_sites.assert_called_once_with([site_id])
+
+    def test_fetch_missing_site_metadata_skips_known_sites(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that fetch_sites is not called when all requested sites are already cached."""
+        site_id = "site1"
+        mock_router = setup_mocks([site_id], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder.site_metadata[site_id] = make_site_metadata_container(site_id)
+
+        result = builder._fetch_missing_site_metadata([site_id])
+
+        assert result == []
+        mock_router.fetch_sites.assert_not_called()
+
+    def test_build_dataset_containers_calls_fetch_missing_site_metadata(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test _build_dataset_containers calls _fetch_missing_site_metadata with the site IDs from the response."""
+        site_id = "site1"
+        mock_router = setup_mocks(["ds1"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._fetch_missing_site_metadata = MagicMock()
+
+        mock_item = MagicMock()
+        mock_item.originating_site = [MagicMock(id=site_id)]
+        mock_response = MagicMock()
+        mock_response.items = [mock_item]
+
+        builder._build_dataset_containers(mock_response)
+
+        builder._fetch_missing_site_metadata.assert_called_once_with([site_id])
 
 
 class TestBuildDag:

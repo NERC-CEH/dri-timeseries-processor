@@ -162,4 +162,8 @@ class AggregationPipeline(OperationPipeline):
             TimeFrame with selected columns
         """
         col_name = tf.metadata["column_name"]
-        return tf.select([col_name], include_flag_columns=True)
+        core_col = core_flag_column_name(col_name)
+        cols = [col_name]
+        if core_col in tf.flag_columns:
+            cols.append(core_col)
+        return tf.select(cols)
