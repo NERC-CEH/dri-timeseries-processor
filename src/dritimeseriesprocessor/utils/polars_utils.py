@@ -46,6 +46,9 @@ def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.
     if not df1.is_empty() and df2.is_empty():
         return df1
 
+    if join_col not in df1.columns or join_col not in df1.columns:
+        raise ValueError(f"join_col '{join_col}' must exist in both DataFrames.")
+
     common_cols = set(df1.columns) & set(df2.columns)
     update_cols = {c for c in common_cols if c != join_col}
 
