@@ -50,7 +50,7 @@ def add_initial_core_flags(tf: ts.TimeFrame, init_unchecked: bool = True, init_m
 
     for data_col_name in tf.data_columns:
         flag_col_name = core_flag_column_name(data_col_name)
-        tf.init_flag_column(data_col_name, CORE_FLAG_SYS_NAME, flag_col_name)
+        tf.init_flag_column(CORE_FLAG_SYS_NAME, flag_col_name)
 
         if init_unchecked:
             # Set all as unchecked
