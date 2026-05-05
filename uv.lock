@@ -603,7 +603,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=17.0.0" },
     { name = "pydantic", specifier = ">=2.8.2" },
     { name = "tenacity" },
-    { name = "time-stream", git = "https://github.com/NERC-CEH/time-stream.git" },
+    { name = "time-stream", git = "https://github.com/NERC-CEH/time-stream.git?branch=develop" },
 ]
 
 [package.metadata.requires-dev]
