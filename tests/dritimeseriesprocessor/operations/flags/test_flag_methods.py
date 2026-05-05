@@ -34,11 +34,11 @@ def sample_timeframe() -> ts.TimeFrame:
         time_name="timestamp",
     )
     sample_timeframe.register_flag_system("corrs_flags", {"ADD": 1})
-    sample_timeframe.init_flag_column("value", "corrs_flags", "value_CORRS_FLAG", [1, 0, 0, 0, 1])
+    sample_timeframe.init_flag_column("corrs_flags", "value_CORRS_FLAG", [1, 0, 0, 0, 1])
     sample_timeframe.register_flag_system("qc_flags", {"RANGE": 1})
-    sample_timeframe.init_flag_column("value", "qc_flags", "value_QC_FLAG", [0, 1, 0, 1, 0])
+    sample_timeframe.init_flag_column("qc_flags", "value_QC_FLAG", [0, 1, 0, 1, 0])
     sample_timeframe.register_flag_system("infill_flags", {"INTERP": 1})
-    sample_timeframe.init_flag_column("value", "infill_flags", "value_INFILL_FLAG", [0, 0, 1, 0, 0])
+    sample_timeframe.init_flag_column("infill_flags", "value_INFILL_FLAG", [0, 0, 1, 0, 0])
 
     return sample_timeframe
 

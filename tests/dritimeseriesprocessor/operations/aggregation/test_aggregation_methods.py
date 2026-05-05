@@ -6,7 +6,15 @@ import time_stream as ts
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AngularMean, Max, Mean, MeanRad, Min, Sum
+from dritimeseriesprocessor.operations.aggregation.aggregation_methods import (
+    AngularMean,
+    Max,
+    Mean,
+    MeanRad,
+    Min,
+    StandardDeviation,
+    Sum,
+)
 from utils.data_creation import create_timeframe
 
 
@@ -57,6 +65,17 @@ class TestMean:
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [11.5]})
         assert_frame_equal(result.df["time", "value"], expected)
 
+    def test_mean_with_time_window(self) -> None:
+        """Test that the mean aggregation works when a time window is specified."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.params["start_time"] = "10:30:00"
+        config.params["end_time"] = "14:00:00"
+
+        result = Mean().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [12.5]})
+        assert_frame_equal(result.df["time", "value"], expected)
+
 
 class TestSum:
     def test_sum(self) -> None:
@@ -104,3 +123,34 @@ class TestThresholdArgument:
         result = Sum().run(tf, config)
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
         assert_frame_equal(result.df["time", "value"], expected["time", "value"])
+
+
+class TestStandardDeviation:
+    def test_standard_deviation(self) -> None:
+        """Test that the sum aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(24)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.params["start_time"] = "10:30:00"
+        config.params["end_time"] = "14:00:00"
+        config.argument = {"threshold": 7}
+
+        result = StandardDeviation().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [1.290994]})
+        assert_frame_equal(result.df["time", "value"], expected)
+
+    def test_standard_deviation_below_threshold(self) -> None:
+        """Test that the sum aggregation works across the full DataFrame."""
+        tf = create_timeframe(list(range(9, 13)))
+        config = create_method_config(ts.Period.of_days(1))
+        config.params["start_time"] = "10:30:00"
+        config.params["end_time"] = "14:00:00"
+        config.argument = {"threshold": 7}
+
+        result = StandardDeviation().run(tf, config)
+        expected = pl.DataFrame(
+            schema={
+                "time": pl.Datetime("us"),
+                "value": pl.Float64,
+            }
+        )
+        assert_frame_equal(result.df["time", "value"], expected)
