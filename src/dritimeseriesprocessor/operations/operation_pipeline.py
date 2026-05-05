@@ -192,7 +192,7 @@ class OperationPipeline(ABC):
         """
         flag_column = self.get_flag_column(col_name)
         if flag_column not in tf.flag_columns:
-            tf.init_flag_column(col_name, self.flag_system_name, flag_column)
+            tf.init_flag_column(self.flag_system_name, flag_column)
 
     def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> None:
         """Apply a flag to the flag column
