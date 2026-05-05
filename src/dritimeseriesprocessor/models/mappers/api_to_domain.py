@@ -43,11 +43,6 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
     source_site = extract_uri_id(metadata_site_id)
     source_network = extract_uri_id(item.originating_programme[0].id)
 
-    # The current logic is for a COSMOS dataset with a dependency on an NMDB dataset.
-    # Different logic may be required for different networks.
-    # if metadata_site_id not in all_site_metadata:
-    #    source_site_identifier = source_site.split("-")[1].upper()  # Must be upper to load NMDB data from s3 bucket.
-    # else:
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id
 
     return TimeSeriesContainer(

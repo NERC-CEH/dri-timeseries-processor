@@ -113,4 +113,4 @@ select = [
 strict = true
 
 [tool.uv.sources]
-time-stream = { git = "https://github.com/NERC-CEH/time-stream.git"}
+time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
