@@ -176,7 +176,8 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
                 values = has_value.value  # Cannot set to lower here as not all values are strings
                 if param_name == "annotation":
                     for param in values:
-                        collected_args[param.lower()].append(site_metadata.annotations.get(param.lower()))
+                        param_name = param.lower()
+                        collected_args[param_name].append(site_metadata.annotations.get(param_name))
                 else:
                     value = values[0]
                     if param_name == "site_attribute":
