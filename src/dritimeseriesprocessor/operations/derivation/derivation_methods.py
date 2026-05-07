@@ -390,7 +390,7 @@ class SolarZenith(DerivationMethod):
         Args:
             columns: Dict with keys of required columns for the calculation.
             - "swin": Shortwave incoming radiation [W m-2] (Not used, datetimes only)
-        
+
         Returns:
             Polars expression for solar zenith angle, theta_s in radians.
         """

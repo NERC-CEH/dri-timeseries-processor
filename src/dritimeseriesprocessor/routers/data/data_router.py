@@ -61,11 +61,7 @@ class DuckDBDataRouter(DataRouter):
         )
 
         # Ensure columns with hyphens can be parsed by SQL
-<<<<<<< HEAD
         columns = ", ".join([f'"{c.source_column}"' for c in containers])
-=======
-        columns = ", ".join([f'"{c.source_column}"' if "-" in c.source_column else c.source_column for c in containers])
->>>>>>> add984c (Respond to review comments)
 
         # ToDo: partitions will be consolidated into a single partition. See FPM-998.
         partitions_raw = [
