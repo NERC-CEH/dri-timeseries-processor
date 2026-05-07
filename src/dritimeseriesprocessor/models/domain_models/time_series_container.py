@@ -7,6 +7,7 @@ for use in the DAG builder and data processing pipeline.
 
 import logging
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -42,15 +43,43 @@ class TimeSeriesContainer:
 
     data: ts.TimeFrame | None = None
     failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
+    load_only: bool = False
 
-    def all_dependencies(self) -> list[str]:
-        """Return a deduplicated list of all dependencies."""
+    def _ids_across_configs(self, fn: Callable[[DataProcessingConfig], list[str]]) -> list[str]:
+        """Collect and deduplicate dataset IDs from all attached configs using the given accessor.
+
+        Iterates over all correction, QC, infill, and method configs attached to this container,
+        calls ``fn`` on each to retrieve a list of IDs, and returns a sorted, deduplicated result.
+
+        Args:
+            fn: A callable that accepts a ``DataProcessingConfig`` and returns a list of dataset ID strings.
+
+        Returns:
+            Sorted, deduplicated list of dataset IDs collected from all attached configs.
+        """
         method_config = {self.method_config} if self.method_config else set()
         deps = set()
         for c in self.correction_configs | self.qc_configs | self.infill_configs | method_config:
-            deps.update(c.all_dep_ts())
-
+            deps.update(fn(c))
         return sorted(deps)
+
+    def all_dependencies(self) -> list[str]:
+        """Get a list of all dataset IDs that are dependents of this TimeSeriesContainer, including
+        from "dep_ts" and "load_dep_ts" dependency references.
+
+        Returns:
+            Sorted list of all dependency dataset IDs.
+        """
+        return self._ids_across_configs(DataProcessingConfig.all_dep_ts)
+
+    def load_only_dependencies(self) -> list[str]:
+        """Get a list of dataset IDs that are "load only" dependents of this TimeSeriesContainer. Only includes
+        IDs from "load_dep_ts" references across all attached configs.
+
+        Returns:
+            Sorted list of dataset IDs that should be loaded but not processed or saved.
+        """
+        return self._ids_across_configs(DataProcessingConfig.load_only_dep_ts)
 
     def attach_configs(self, configs: list[DataProcessingConfig]) -> None:
         """Attach data processing configuration objects (QC, infilling, correction) to this container.
