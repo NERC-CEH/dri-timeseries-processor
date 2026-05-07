@@ -42,7 +42,6 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
 
     source_site = extract_uri_id(metadata_site_id)
     source_network = extract_uri_id(item.originating_programme[0].id)
-
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id
 
     return TimeSeriesContainer(
@@ -76,8 +75,8 @@ def map_processing_config_item(
         A ProcessingConfig domain object containing annotations and a list of MethodConfig objects which provide
         specific method configurations for use in the processing pipeline
     """
-    ts_id = item.applies_to_time_series[0].id
-    site_id = item.applies_to_time_series[0].originating_site[0].id
+    ts_id = item.applies_to_dataset[0].id
+    site_id = item.applies_to_dataset[0].originating_site[0].id
     config_type = ConfigurationType(extract_uri_id(item.type.id))
     annotations = extract_annotations(item.has_annotation)
 

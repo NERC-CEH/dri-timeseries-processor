@@ -128,10 +128,7 @@ celerybeat.pid
 .venv
 env/
 venv/
-<<<<<<< HEAD
 jupyter-venv
-=======
->>>>>>> 200ef07 (Update model to read annotations)
 jupyter-venv/
 ENV/
 env.bak/
