@@ -131,6 +131,9 @@ class TimeSeriesProcessor:
             layer: Datasets to process
         """
         for dataset_id in layer:
+            if self.graph.datasets[dataset_id].load_only:
+                logger.info(f"Skipping load-only dataset: {dataset_id}")
+                continue
             try:
                 self.process_dataset(dataset_id)
             except Exception:

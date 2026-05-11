@@ -76,6 +76,24 @@ class TestTimeSeriesProcessor:
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
 
+    def test_process_layer_skips_load_only_containers(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Load-only containers should not be passed to process_dataset."""
+        mock_graph = create_mock_dag([["ds1", "ds2"]])
+        mock_graph.datasets["ds2"].load_only = True
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+        processor.process_layer(["ds1", "ds2"])
+
+        processor.process_dataset.assert_called_once_with("ds1")
+
     def test_load_raw(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         ds_id = "ds1"
         mock_graph = create_mock_dag([[ds_id]])
