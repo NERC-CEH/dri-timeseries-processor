@@ -32,16 +32,25 @@ class DataProcessingConfig:
     method_configs: list[DataProcessingMethodConfig]
     annotations: dict[str, Any] = field(default_factory=dict)
 
-    def all_dep_ts(self) -> list[str]:
-        deps = set()
+    def _values_for_params(self, *keys: str) -> list[str]:
+        """Collect and deduplicate values from the given parameter keys across all method configs.
+
+        Args:
+            keys: One or more parameter key names to extract values from (e.g. `dep_ts`, `load_dep_ts`).
+
+        Returns:
+            Sorted, deduplicated list of values found across all method configs for the given keys.
+        """
+        values: set[str] = set()
         for method_config in self.method_configs:
-            if "dep_ts" in method_config.params:
-                dep_ts_ids = method_config.params["dep_ts"]
-                if isinstance(dep_ts_ids, list):
-                    deps.update(dep_ts_ids)
-                else:
-                    deps.add(dep_ts_ids)
-        return sorted(deps)
+            for key in keys:
+                if key in method_config.params:
+                    v = method_config.params[key]
+                    if isinstance(v, list):
+                        values.update(v)
+                    else:
+                        values.add(v)
+        return sorted(values)
 
     def __hash__(self) -> int:
         """Allow this container to be used as a dict or set key."""

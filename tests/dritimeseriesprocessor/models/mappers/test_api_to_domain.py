@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock
 
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
 from tests.utils.validation_helpers import valid_parses
@@ -92,9 +92,13 @@ class TestMapDatasetItem:
     def test_all_dependencies(self) -> None:
         """Test that the all_dependencies method returns valid list, when there are no qc/correction/infill configs"""
 
-        mock_method_config = Mock(spec=DataProcessingConfig)
-        mock_method_config.config_type = ConfigurationType.PROCESS
-        mock_method_config.all_dep_ts.return_value = ["dep1", "dep2", "dep3"]
+        method_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="cfg",
+            config_type=ConfigurationType.PROCESS,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
+            annotations={},
+        )
 
         item = TimeSeriesContainer(
             ts_id="test_id",
@@ -108,29 +112,41 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            method_config=mock_method_config,
+            method_config=method_config,
         )
-        expected = ["dep1", "dep2", "dep3"]
-        assert item.all_dependencies() == expected
+        assert item.all_dependencies() == ["dep1", "dep2", "dep3"]
 
     def test_all_dependencies_with_configs(self) -> None:
         """Test that the all_dependencies method returns valid list, when there are a qc/correction/infill configs"""
 
-        mock_method_config = Mock(spec=DataProcessingConfig)
-        mock_method_config.config_type = ConfigurationType.PROCESS
-        mock_method_config.all_dep_ts.return_value = ["dep1", "dep2", "dep3"]
-
-        mock_config_qc = Mock(spec=DataProcessingConfig)
-        mock_config_qc.config_type = ConfigurationType.QUALITY_CONTROL
-        mock_config_qc.all_dep_ts.return_value = ["dep1", "dep4"]
-
-        mock_config_correction = Mock(spec=DataProcessingConfig)
-        mock_config_correction.config_type = ConfigurationType.QUALITY_CONTROL
-        mock_config_correction.all_dep_ts.return_value = ["dep4", "dep5"]
-
-        mock_config_infill = Mock(spec=DataProcessingConfig)
-        mock_config_infill.config_type = ConfigurationType.QUALITY_CONTROL
-        mock_config_infill.all_dep_ts.return_value = []
+        method_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="method_cfg",
+            config_type=ConfigurationType.PROCESS,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
+            annotations={},
+        )
+        qc_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="qc_cfg",
+            config_type=ConfigurationType.QUALITY_CONTROL,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep4"]})],
+            annotations={},
+        )
+        correction_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="correction_cfg",
+            config_type=ConfigurationType.CORRECTION,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep4", "dep5"]})],
+            annotations={},
+        )
+        infill_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="infill_cfg",
+            config_type=ConfigurationType.INFILLING,
+            method_configs=[DataProcessingMethodConfig(method="m", params={})],
+            annotations={},
+        )
 
         item = TimeSeriesContainer(
             ts_id="test_id",
@@ -144,13 +160,12 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            correction_configs={mock_config_correction},
-            qc_configs={mock_config_qc},
-            infill_configs={mock_config_infill},
-            method_config=mock_method_config,
+            correction_configs={correction_config},
+            qc_configs={qc_config},
+            infill_configs={infill_config},
+            method_config=method_config,
         )
-        expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
-        assert item.all_dependencies() == expected
+        assert item.all_dependencies() == ["dep1", "dep2", "dep3", "dep4", "dep5"]
 
 
 class TestExtractArguments:
