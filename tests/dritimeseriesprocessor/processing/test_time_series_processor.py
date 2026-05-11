@@ -408,6 +408,39 @@ class TestTimeSeriesProcessor:
         assert ds2.failed
         assert ds2.data is None
 
+    def test_build_save_tasks_excludes_load_only_containers(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Load-only containers must not appear in save tasks even when processing_level is PROCESSED."""
+        ds_ids = ["ds1", "ds2"]
+        mock_graph = create_mock_dag([[ds_id] for ds_id in ds_ids])
+
+        for ds_id, container in mock_graph.datasets.items():
+            container.processing_level = ProcessingLevel.PROCESSED
+            container.network = "my_network"
+            container.source_site_identifier = "SITE_A"
+            container.resolution = "PT30M"
+            container.source_bucket = "my_bucket"
+            container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
+
+        mock_graph.datasets["ds2"].load_only = True
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        tasks = list(processor._build_save_tasks())
+
+        assert len(tasks) == 2
+        for _, _, df, _ in tasks:
+            assert "ds1-col" in df.columns
+            assert "ds2-col" not in df.columns
+
     def test_build_save_tasks_excludes_failed_containers(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Failed containers should be excluded from save tasks."""
         ds_ids = ["ds1", "ds2"]
