@@ -4,11 +4,15 @@ import polars as pl
 import pytest
 import time_stream as ts
 
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
     check_common_attributes,
     group_containers,
 )
-from dritimeseriesprocessor.utils.enums import ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
 from utils.data_creation import make_time_series_container
 
 
@@ -107,3 +111,60 @@ class TestInitTimeframe:
         container = make_time_series_container("a")
         container.init_timeframe(make_daily_df())
         assert container.data.time_name == container.time_column_name
+
+
+def _make_config(
+    ts_id: str,
+    config_id: str = "cfg",
+    dep_ts: list[str] | None = None,
+    load_dep_ts: list[str] | None = None,
+    config_type: ConfigurationType = ConfigurationType.QUALITY_CONTROL,
+) -> DataProcessingConfig:
+    params: dict = {}
+    if dep_ts:
+        params["dep_ts"] = dep_ts
+    if load_dep_ts:
+        params["load_dep_ts"] = load_dep_ts
+    return DataProcessingConfig(
+        ts_id=ts_id,
+        config_id=config_id,
+        config_type=config_type,
+        method_configs=[DataProcessingMethodConfig(method="m", params=params)],
+        annotations={},
+    )
+
+
+class TestLoadOnly:
+    def test_load_only_defaults_to_false(self) -> None:
+        """Test that load_only is False by default."""
+        container = make_time_series_container("a")
+        assert container.load_only is False
+
+    def test_load_only_dependencies_returns_empty_when_no_load_dep_ts(self) -> None:
+        """Test that load_only_dependencies returns an empty list when no configs have load_dep_ts."""
+        container = make_time_series_container("a")
+        container.qc_configs = {_make_config("a", dep_ts=["b"])}
+        assert container.load_only_dependencies() == []
+
+    def test_load_only_dependencies_returns_load_dep_ts_ids(self) -> None:
+        """Test that load_only_dependencies returns the load_dep_ts ids from configs."""
+        container = make_time_series_container("a")
+        container.qc_configs = {_make_config("a", load_dep_ts=["L"])}
+        assert container.load_only_dependencies() == ["L"]
+
+    def test_load_only_dependencies_aggregates_across_configs(self) -> None:
+        """Test that load_only_dependencies deduplicates and aggregates ids across all config types."""
+        container = make_time_series_container("a")
+        container.qc_configs = {_make_config("a", config_id="qc", load_dep_ts=["L1"])}
+        container.correction_configs = {_make_config("a", config_id="corr", dep_ts=["b"])}
+        container.infill_configs = {_make_config("a", config_id="inf", load_dep_ts=["L2"])}
+        container.method_config = _make_config(
+            "a", config_id="method", load_dep_ts=["L1", "L3"], config_type=ConfigurationType.DERIVATION
+        )
+        assert container.load_only_dependencies() == ["L1", "L2", "L3"]
+
+    def test_method_type_is_load_when_load_only_true(self) -> None:
+        """Test that method_type returns MethodType.LOAD when load_only is True."""
+        container = make_time_series_container("a")
+        container.load_only = True
+        assert container.method_type() == MethodType.LOAD

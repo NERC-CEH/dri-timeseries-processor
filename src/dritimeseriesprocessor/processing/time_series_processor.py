@@ -131,6 +131,9 @@ class TimeSeriesProcessor:
             layer: Datasets to process
         """
         for dataset_id in layer:
+            if self.graph.datasets[dataset_id].load_only:
+                logger.info(f"Skipping load-only dataset: {dataset_id}")
+                continue
             try:
                 self.process_dataset(dataset_id)
             except Exception:
@@ -209,18 +212,18 @@ class TimeSeriesProcessor:
                     col = container.source_column
                     try:
                         df = combined_df.select([container.time_column_name, col])
+                        container.init_timeframe(df)
 
-                        if df.is_empty():
+                        if container.data is None:
                             raise ValueError(f"No data returned for dataset: {container.ts_id}")
+                        else:
+                            container.data = add_initial_core_flags(container.data)
 
                     except Exception:
                         self.metrics.no_data.inc()
                         container.failed = True
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
-
-                    container.init_timeframe(df)
-                    container.data = add_initial_core_flags(container.data)
 
     def _load_local_copy(self, container: TimeSeriesContainer) -> None:
         """Download raw .dat files from S3 into a temp directory for a downstream EddyPro run.
@@ -234,10 +237,10 @@ class TimeSeriesProcessor:
         tmp = tempfile.TemporaryDirectory(prefix=f"eddypro_raw_{container.source_site_identifier}_")
         self._raw_dirs[container.ts_id] = tmp
 
-        self.flux_s3_client.download_raw_dat_files(
-            bucket=container.source_bucket,
+        self.flux_s3_client.download_raw_dat_files(  # type: ignore[union-attr]
+            bucket=container.source_bucket,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
             site=container.source_site,
-            dataset=container.source_dataset,
+            dataset=container.source_dataset,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
             network=container.network,
             start_date=start_date,
             end_date=end_date,
@@ -326,15 +329,15 @@ class TimeSeriesProcessor:
 
         EddyProPipeline(runner=EddyProRunner()).run(
             raw_data_dir=Path(self._raw_dirs[raw_container.ts_id].name),
-            method_config=container.method_config,
-            site_metadata=site_meta,
+            method_config=container.method_config,  # type: ignore[arg-type] - always set for EDDYPRO containers
+            site_metadata=site_meta,  # type: ignore[arg-type] - always set for EDDYPRO containers
             start_date=start_date,
             end_date=end_date,
             ancillary_containers=ancillary_containers,
-            flux_s3_client=self.flux_s3_client,
+            flux_s3_client=self.flux_s3_client,  # type: ignore[arg-type] - required for EDDYPRO, validated at startup
             network=container.network,
-            processed_source_bucket=container.source_bucket,
-            processed_dataset=container.source_dataset,
+            processed_source_bucket=container.source_bucket,  # type: ignore[arg-type] - always set for EDDYPRO containers
+            processed_dataset=container.source_dataset,  # type: ignore[arg-type] - always set for EDDYPRO containers
         )
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
@@ -389,7 +392,10 @@ class TimeSeriesProcessor:
             [
                 c
                 for c in self.graph.datasets.values()
-                if c.processing_level == ProcessingLevel.PROCESSED and not c.failed and c.data is not None
+                if c.processing_level == ProcessingLevel.PROCESSED
+                and not c.failed
+                and c.data is not None
+                and not c.load_only
             ]
         )
         if not processed:
