@@ -7,11 +7,11 @@
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/dataset.csv?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
-      "http://fdri.ceh.ac.uk/id/dataset.geojson?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
-      "http://fdri.ceh.ac.uk/id/dataset.ttl?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
       "http://fdri.ceh.ac.uk/id/dataset.rdf?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
+      "http://fdri.ceh.ac.uk/id/dataset.csv?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
       "http://fdri.ceh.ac.uk/id/dataset.json?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
+      "http://fdri.ceh.ac.uk/id/dataset.ttl?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
+      "http://fdri.ceh.ac.uk/id/dataset.geojson?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA",
       "http://fdri.ceh.ac.uk/id/dataset.html?_view=timeseries&measure.aggregation.periodicity=PT30M&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA"
     ],
     "limit": 25
