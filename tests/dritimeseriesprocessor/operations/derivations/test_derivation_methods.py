@@ -10,6 +10,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidityFactor,
     Albedo,
     AtmosphericPressureFactor,
+    CorrectCounts,
     DerivationMethod,
     IsSnowDay,
     MeanSeaLevelPressure,
@@ -531,3 +532,24 @@ class TestIsSnowDay:
         )
         result = IsSnowDay().run(config)
         assert_frame_equal(result.df, expected.df)
+
+
+class TestCorrectCounts:
+    def test_calculation(self) -> None:
+        """Test corrected mod counts are the product of raw counts and all three correction factors.
+        cts_mod values from cosmos-holln on 2016-07-27.
+        Factor values taken from the holln expected outputs in TestNeutronIntensityFactor,
+        TestAtmosphericPressureFactor, and TestAbsoluteHumidityFactor.
+        """
+        config = create_method_config(
+            {
+                "cts_mod": [749.0, 746.0, 793.0, 734.0],
+                "cosmosfactor_inten": [1.016, 1.007, 0.989, 0.980],
+                "cosmosfactor_pa": [1.1914, 1.08646, 1.27831, 1.16301],
+                "cosmosfactor_q": [0.97707, 1.00791, 0.97690, 1.01832],
+            },
+            "correct_counts",
+        )
+        expected = dataframe_to_timeframe(pl.DataFrame({"correct_counts": [885.847, 822.629, 979.390, 851.902]}))
+        result = CorrectCounts().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
