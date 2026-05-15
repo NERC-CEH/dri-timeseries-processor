@@ -169,6 +169,9 @@ class OperationPipeline(ABC):
         # Update core flags
         tf = self.core_flag_updater(tf)
 
+        # Ensure time column name of tf is same as container's
+        tf = tf.rename_time_column(container.time_column_name)
+
         return tf
 
     def _initialise_flag_system(self, tf: ts.TimeFrame) -> None:

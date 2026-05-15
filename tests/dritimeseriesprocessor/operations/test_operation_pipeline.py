@@ -50,6 +50,7 @@ def mock_timeframe() -> MagicMock:
 def mock_container(mock_timeframe: MagicMock) -> MagicMock:
     """Create a mock TimeSeriesContainer."""
     container = MagicMock(spec=TimeSeriesContainer)
+    container.time_column_name = "time"
     container.data = mock_timeframe
 
     method_config = MagicMock(spec=DataProcessingMethodConfig)
@@ -120,7 +121,7 @@ class TestRun:
         pipeline.core_flag_updater = MagicMock(return_value=updated_tf)
 
         result = pipeline.run(mock_container, {})
-        assert result is updated_tf
+        assert result is updated_tf.rename_time_column()
 
 
 class TestApplyRounding:

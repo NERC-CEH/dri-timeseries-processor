@@ -122,7 +122,7 @@ def map_processing_method_config(
     )
 
 
-def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
+def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any] | None:
     """Extract annotation key–value pairs from the configuration item.
 
     Args:
@@ -136,7 +136,7 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any]:
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            extracted[key] = ann.has_value.value[0]
+            extracted[key] = ann.has_value.value[0] if ann.has_value.value else ann.has_value.value_reference[0]
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
@@ -162,13 +162,22 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         param_name = extract_uri_id(arg.parameter.id).replace("-", "_")
         has_value = arg.has_value
         has_structured_value = arg.has_structured_value
-
         if has_value:
             # Literal value
             if has_value.value is not None:
                 # Resolve any special case where we need to extract parameter from the site metadata
-                param_name, value = resolve_site_attribute(param_name, has_value.value[0], site_metadata)
-                collected_args[param_name].append(value)
+                # Annotations may have more than one value, site_attributes and other parameters have at most one.
+                values = has_value.value  # Cannot set to lower here as not all values are strings
+                if param_name == "annotation":
+                    for param in values:
+                        param_name = param.lower()
+                        collected_args[param_name].append(site_metadata.annotations.get(param_name))
+                else:
+                    value = values[0]
+                    if param_name == "site_attribute":
+                        param_name = value.lower()
+                        value = getattr(site_metadata, param_name)
+                    collected_args[param_name].append(value)
 
             # Reference value (dependent dataset)
             if has_value.value_reference is not None:
@@ -189,25 +198,6 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
     return params
 
 
-def resolve_site_attribute(param_name: str, value: str, site_metadata: SiteMetadata) -> tuple[str, Any]:
-    """Resolve any special case where we need to extract parameter from the site metadata.
-
-    Args:
-        param_name: The name of the parameter to resolve.
-        value: The value of the parameter.
-        site_metadata: Metadata for the site this processing configuration applies to.
-
-    Returns:
-        Resolved parameter name and value.
-    """
-    if param_name.lower() != "site_attribute":
-        return param_name, value
-
-    actual_param = value.lower()
-    actual_value = getattr(site_metadata, actual_param)
-    return actual_param, actual_value
-
-
 def map_site_metadata(item: SiteItem) -> SiteMetadata:
     """Map a Pydantic SiteItem to a domain-level SiteMetadata object.
 
@@ -223,6 +213,7 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None
     network = item.utilised_by[0].id if item.utilised_by else None
+    annotations = extract_annotations(item.has_annotation) if item.has_annotation else None
 
     return SiteMetadata(
         site_id=item.id,
@@ -236,4 +227,5 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
         altitude=item.altitude,
         start_date=start_date,
         end_date=end_date,
+        annotations=annotations,
     )

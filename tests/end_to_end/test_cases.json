@@ -132,6 +132,18 @@
             "periodicities": ["P1D"],
             "start_date": "2020-08-18",
             "end_date": "2020-08-20"
+          },
+          {
+            "id": "load-only-from-different-networks",
+            "description": "Test of derivation that uses a dependency from another network.",
+            "network": "cosmos",
+            "sites": ["cosmos-alic1", "cosmos-chimn", "cosmos-holln"],
+            "measured_variables": [],
+            "derived_variables": ["COSMOSFACTOR_INTEN"],
+            "aggregated_variables": [],
+            "periodicities": ["PT1H"],
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           }
       ]
 }

@@ -37,7 +37,6 @@ class DerivationPipeline(OperationPipeline):
         Returns:
             Result of applying the derivation method.
         """
-
         dep_ids = []
         for key in ("dep_ts", "load_dep_ts"):
             values = config.params.get(key) or []

@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/site?_view=annotated&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/site.csv?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.ttl?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.html?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.json?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.geojson?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.rdf?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung&_view=annotated"
+    ],
+    "limit": 10
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung",
+      "label": [
+        "Jungfraujoch IGY"
+      ],
+      "lat": 46.55,
+      "long": 7.98,
+      "altitude": 3570.0,
+      "identifier": [
+        "JUNG"
+      ],
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung#operating-period",
+        "startDate": "1958-10-01"
+      }
+    }
+  ]
+}

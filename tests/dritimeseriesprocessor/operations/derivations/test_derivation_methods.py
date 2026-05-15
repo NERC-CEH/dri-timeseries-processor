@@ -15,6 +15,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
+    NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
     SolarZenith,
 )
@@ -228,6 +229,20 @@ class TestAbsoluteHumidity:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
+class TestNeutronIntensityFactor:
+    def test_calculation(self) -> None:
+        """Test incoming neutron intensity factor calculation."""
+        config = create_method_config({"crns-count": [150.1, 151.2, 153.3, 154.4]}, "calc_factor_inten")
+
+        config.params["ref_c0"] = 152.03496  # holln
+        config.params["gamma"] = 1.29291  # holln
+
+        # Expected values should be positive
+        expected = dataframe_to_timeframe(pl.DataFrame({"calc_factor_inten": [1.016, 1.007, 0.989, 0.980]}))
+        result = NeutronIntensityFactor().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
 class TestAbsoluteHumidityFactor:
     def test_calculation(self) -> None:
         """Test absolute humidity correction factor calculation."""
@@ -237,7 +252,7 @@ class TestAbsoluteHumidityFactor:
             },
             "factor_q",
         )
-        config.params["REF_Q0"] = 8.27  # [g m-3] holln
+        config.params["ref_q0"] = 8.27  # [g m-3] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.97707, 1.00791, 0.97690, 1.01832]}))
         result = AbsoluteHumidityFactor().run(config)
@@ -251,7 +266,7 @@ class TestAtmosphericPressureFactor:
             {"pa": [1024.0, 1011.365, 1033.649, 1020.695]},
             "factor_pa",
         )
-        config.params["L"] = 137.04156  # [M] holln
+        config.params["l"] = 137.04156  # [M] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27831, 1.16301]}))
         result = AtmosphericPressureFactor().run(config)
