@@ -557,7 +557,7 @@ class TestCorrectCounts:
 
 
 class TestVolumetricWaterContent:
-    def test_calculation(self) -> None:
+    def test_volumetric_water_content(self) -> None:
         """Test calculate_vwc using cosmos-holln site annotations.
         cts_mod_corr values include 0, the corrected counts from TestCorrectCounts (all below n_min),
         and representative valid-range counts.
