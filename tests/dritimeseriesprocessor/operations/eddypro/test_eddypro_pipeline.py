@@ -1,15 +1,26 @@
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import polars as pl
 import pytest
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
-from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
+from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline, _parse_eddypro_output
 from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import EddyProRunSpec
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProResult
 from dritimeseriesprocessor.utils.enums import ConfigurationType
+
+_FULL_OUTPUT_HEADER = "file,date,time,DoY,H,qc_H,Tau,qc_Tau,co2_flux\n"
+_FULL_OUTPUT_UNITS = "---,yyyy-mm-dd,HH:MM,---,W/m^2,#,N/m^2,#,umol/(m^2 s)\n"
+_FULL_OUTPUT_DATA = "file1.dat,2024-01-20,00:30,20,150.0,0,0.5,0,5.0\n"
+
+
+def _write_full_output(output_dir: Path) -> None:
+    """Write a minimal full_output CSV to output_dir."""
+    f = output_dir / "EP_full_output.csv"
+    f.write_text("EddyPro run info\n" + _FULL_OUTPUT_HEADER + _FULL_OUTPUT_UNITS + _FULL_OUTPUT_DATA)
 
 
 class FakeConfigBuilder:
@@ -63,13 +74,62 @@ class FakeConfigBuilder:
         return output
 
 
+class TestParseEddyProOutput:
+    def test_time_column_shifted_back_30_minutes(self, tmp_path: Path) -> None:
+        """full_output timestamps are end-of-period; parser shifts them to start-of-period."""
+        (tmp_path / "EP_full_output.csv").write_text(
+            "EddyPro run info\nfile,date,time,H\n---,yyyy-mm-dd,HH:MM,W/m^2\nfile1.dat,2024-01-20,14:30,150.0\n"
+        )
+
+        result = _parse_eddypro_output(tmp_path)
+
+        assert "time" in result.columns
+        assert "DateTime" not in result.columns
+        assert result["time"][0] == datetime(2024, 1, 20, 14, 0)
+
+    def test_minus9999_converted_to_null(self, tmp_path: Path) -> None:
+        (tmp_path / "EP_full_output.csv").write_text(
+            "EddyPro run info\nfile,date,time,H\n---,yyyy-mm-dd,HH:MM,W/m^2\nfile1.dat,2024-01-20,00:30,-9999\n"
+        )
+
+        result = _parse_eddypro_output(tmp_path)
+
+        assert result["H"][0] is None
+
+    def test_qc_details_columns_merged(self, tmp_path: Path) -> None:
+        (tmp_path / "EP_full_output.csv").write_text(
+            "EddyPro run info\nfile,date,time,H\n---,yyyy-mm-dd,HH:MM,W/m^2\nfile1.dat,2024-01-20,00:30,150.0\n"
+        )
+        (tmp_path / "EP_qc_details.csv").write_text(
+            "EddyPro run info\nfile,date,time,qc_H\n---,yyyy-mm-dd,HH:MM,#\nfile1.dat,2024-01-20,00:30,0\n"
+        )
+
+        result = _parse_eddypro_output(tmp_path)
+
+        assert "qc_H" in result.columns
+
+    def test_biomet_columns_merged(self, tmp_path: Path) -> None:
+        (tmp_path / "EP_full_output.csv").write_text(
+            "EddyPro run info\nfile,date,time,H\n---,yyyy-mm-dd,HH:MM,W/m^2\nfile1.dat,2024-01-20,00:30,150.0\n"
+        )
+        (tmp_path / "EP_biomet.csv").write_text("date,time,Ta\nyyyy-mm-dd,HH:MM,degC\n2024-01-20,00:30,12.5\n")
+
+        result = _parse_eddypro_output(tmp_path)
+
+        assert "Ta" in result.columns
+
+    def test_raises_when_no_full_output(self, tmp_path: Path) -> None:
+        with pytest.raises(FileNotFoundError):
+            _parse_eddypro_output(tmp_path)
+
+
 class TestEddyProPipeline:
     def setup_method(self) -> None:
         FakeConfigBuilder.latest_run_spec = None
         FakeConfigBuilder.project_call = None
         FakeConfigBuilder.metadata_call = None
 
-    def test_run_builds_configs_runs_eddypro_and_uploads_outputs(
+    def test_run_builds_configs_runs_eddypro_and_returns_dataframe(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         def fake_build_run_spec(
@@ -100,7 +160,7 @@ class TestEddyProPipeline:
 
         def fake_run(project_file: Path, output_dir: Path) -> EddyProResult:
             captured_work_dir["path"] = output_dir.parent
-            (output_dir / "eddypro_full_output.csv").write_text("output")
+            _write_full_output(output_dir)
             return EddyProResult(
                 return_code_rp=0,
                 return_code_fcc=0,
@@ -112,13 +172,12 @@ class TestEddyProPipeline:
             )
 
         runner.run.side_effect = fake_run
-        flux_s3_client = MagicMock()
 
         pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)
-        pipeline.run(
+        result = pipeline.run(
             raw_data_dir=staged_raw_dir,
             method_config=DataProcessingConfig(
-                ts_id="http://fdri.ceh.ac.uk/id/dataset/flux-plynl-eddypro-full-output",
+                ts_id="http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed",
                 config_id="config-1",
                 config_type=ConfigurationType.EDDYPRO,
                 method_configs=[],
@@ -131,10 +190,6 @@ class TestEddyProPipeline:
             start_date=date(2026, 1, 20),
             end_date=date(2026, 1, 21),
             ancillary_containers=None,
-            flux_s3_client=flux_s3_client,
-            network="fdri",
-            processed_source_bucket="processed-bucket",
-            processed_dataset="eddypro-full-output",
         )
 
         assert FakeConfigBuilder.latest_run_spec == EddyProRunSpec(site_code="PLYNL")
@@ -142,14 +197,10 @@ class TestEddyProPipeline:
         assert FakeConfigBuilder.project_call["raw_data_dir"] == staged_raw_dir
         assert FakeConfigBuilder.metadata_call is not None
         runner.run.assert_called_once()
-        flux_s3_client.upload_output_files.assert_called_once_with(
-            bucket="processed-bucket",
-            output_dir=FakeConfigBuilder.project_call["output_dir"],
-            network="fdri",
-            site="flux-plynl",
-            processed_dataset="eddypro-full-output",
-            start_date=date(2026, 1, 20),
-        )
+        # Returns a Polars DataFrame with flux columns
+        assert isinstance(result, pl.DataFrame)
+        assert "H" in result.columns
+        assert "time" in result.columns
         assert "path" in captured_work_dir
         assert not captured_work_dir["path"].exists()
 
@@ -181,16 +232,20 @@ class TestEddyProPipeline:
         )
 
         runner = MagicMock()
-        runner.run.return_value = EddyProResult(
-            return_code_rp=0,
-            return_code_fcc=0,
-            stdout_rp="rp ok",
-            stderr_rp="",
-            stdout_fcc="fcc ok",
-            stderr_fcc="",
-            output_dir=tmp_path / "output",
-        )
-        flux_s3_client = MagicMock()
+
+        def fake_run(project_file: Path, output_dir: Path) -> EddyProResult:
+            _write_full_output(output_dir)
+            return EddyProResult(
+                return_code_rp=0,
+                return_code_fcc=0,
+                stdout_rp="rp ok",
+                stderr_rp="",
+                stdout_fcc="fcc ok",
+                stderr_fcc="",
+                output_dir=output_dir,
+            )
+
+        runner.run.side_effect = fake_run
 
         pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)
         pipeline.run(
@@ -209,17 +264,15 @@ class TestEddyProPipeline:
             start_date=date(2026, 1, 20),
             end_date=date(2026, 1, 21),
             ancillary_containers=ancillary_containers,
-            flux_s3_client=flux_s3_client,
-            network="fdri",
-            processed_source_bucket="processed-bucket",
-            processed_dataset="eddypro-full-output",
         )
 
         assert FakeConfigBuilder.project_call is not None
         assert FakeConfigBuilder.project_call["biomet_file"] == biomet_path
         assert FakeConfigBuilder.project_call["dynamic_metadata_file"] == dynamic_metadata_path
 
-    def test_run_falls_back_to_site_id_when_alt_id_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_run_falls_back_to_site_id_when_alt_id_missing(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         def fake_build_run_spec(
             self: object,
             config: DataProcessingConfig,
@@ -240,10 +293,24 @@ class TestEddyProPipeline:
             MagicMock(return_value=None),
         )
 
-        pipeline = EddyProPipeline(runner=MagicMock(), config_builder_cls=FakeConfigBuilder)
-        flux_s3_client = MagicMock()
+        runner = MagicMock()
 
-        pipeline.run(
+        def fake_run(project_file: Path, output_dir: Path) -> EddyProResult:
+            _write_full_output(output_dir)
+            return EddyProResult(
+                return_code_rp=0,
+                return_code_fcc=0,
+                stdout_rp="rp ok",
+                stderr_rp="",
+                stdout_fcc="fcc ok",
+                stderr_fcc="",
+                output_dir=output_dir,
+            )
+
+        runner.run.side_effect = fake_run
+
+        pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)
+        result = pipeline.run(
             raw_data_dir=Path("/tmp/raw"),
             method_config=DataProcessingConfig(
                 ts_id="dataset",
@@ -259,11 +326,6 @@ class TestEddyProPipeline:
             start_date=date(2026, 1, 20),
             end_date=date(2026, 1, 21),
             ancillary_containers=None,
-            flux_s3_client=flux_s3_client,
-            network="fdri",
-            processed_source_bucket="processed-bucket",
-            processed_dataset="eddypro-full-output",
         )
 
-        flux_s3_client.upload_output_files.assert_called_once()
-        assert flux_s3_client.upload_output_files.call_args.kwargs["site"] == "flux-plynl"
+        assert isinstance(result, pl.DataFrame)

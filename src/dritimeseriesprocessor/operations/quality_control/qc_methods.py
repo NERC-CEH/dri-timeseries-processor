@@ -168,3 +168,19 @@ class TdtTSoil(QcMethod):
             column_name=tf.metadata["column_name"],
             observation_interval=(config.start_date, config.end_date),
         )
+
+
+@QcMethod.register
+class FluxQcFlag(QcMethod):
+    """Apply EddyPro's internal quality flag to a flux variable.
+
+    Receives the qc-flag container's TimeFrame via dep_ts, so tf.df[col]
+    is e.g. qc_H. Flag value 2 (poor quality) is always rejected.
+    """
+
+    name = "flux_qc_flag"
+    flag_value = 1024
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
+        col = tf.metadata["column_name"]
+        return tf.df[col] == 2

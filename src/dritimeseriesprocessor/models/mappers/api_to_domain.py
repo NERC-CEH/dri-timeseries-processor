@@ -13,7 +13,7 @@ from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationIte
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem
+from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.processing_config import (
@@ -26,8 +26,8 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLeve
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, SiteMetadata]) -> TimeSeriesContainer:
-    """Map a Pydantic TimeSeriesDatasetItem to a domain-level TimeSeriesContainer.
+def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, SiteMetadata]) -> TimeSeriesContainer:
+    """Map a Pydantic ObservationDatasetItem (or subclass) to a domain-level TimeSeriesContainer.
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
@@ -44,18 +44,22 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
     source_network = extract_uri_id(item.originating_programme[0].id)
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id
 
+    dataset_type = extract_uri_id(item.field_type[0].id) if item.field_type else None
+
     return TimeSeriesContainer(
         ts_id=item.id,
         network=source_network,
         resolution=item.measure[0].aggregation.resolution,
         periodicity=item.measure[0].aggregation.periodicity,
         processing_level=processing_level,
-        source_bucket=item.source_bucket,
-        source_dataset=item.source_dataset,
-        source_column=item.source_column_name,
+        source_bucket=getattr(item, "source_bucket", None),
+        source_dataset=getattr(item, "source_dataset", None),
+        source_column=getattr(item, "source_column_name", None),
         source_site=source_site,
         source_site_identifier=source_site_identifier,
-        time_column_name=item.time_column_name,
+        time_column_name=getattr(item, "time_column_name", None),
+        dataset_type=dataset_type,
+        distribution_url=item.distribution_url,
     )
 
 

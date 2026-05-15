@@ -161,13 +161,19 @@ class TestTimeSeriesProcessor:
         raw_container.source_column = "value"
         processor._batch_load_raw(raw_container)
         processed_container = mock_graph.datasets[processed_ds_id]
+        processed_container.source_column = "value"
         processed_container.all_dependencies = MagicMock(return_value=[raw_ds_id])
+        processed_container.method_config = DataProcessingConfig(
+            ts_id=processed_ds_id,
+            config_id="process_config",
+            config_type=ConfigurationType.PROCESS,
+            method_configs=[MagicMock(params={"dep_ts": raw_ds_id})],
+        )
         processor._process(processed_container)
 
         mock_corr_pipeline.run.assert_called_once()
         mock_infill_pipeline.run.assert_called_once()
         mock_qc_pipeline.run.assert_called_once()
-        assert raw_container.data == tf_result
         assert processed_container.data == tf_result
 
     def test_load_local_copy_downloads_raw_files_using_container_site_fields(
@@ -282,10 +288,6 @@ class TestTimeSeriesProcessor:
             start_date=datetime(2025, 1, 1).date(),
             end_date=datetime(2025, 1, 2).date(),
             ancillary_containers=[ancillary_container],
-            flux_s3_client=flux_s3_client,
-            network="fdri",
-            processed_source_bucket="processed-bucket",
-            processed_dataset="eddypro-full-output",
         )
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
@@ -505,6 +507,8 @@ class TestTimeSeriesProcessor:
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
             container.source_bucket = "my_bucket"
+            container.source_dataset = "my_dataset"
+            container.source_column = f"{ds_id}-col"
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
         processor = TimeSeriesProcessor(

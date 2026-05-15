@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.json?_view=observation",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": []
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/measure/flux-plynl-raw",
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/variable/flux-plynl-raw"
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
+            "periodicity": "PT30M",
+            "resolution": "PT30M"
+          }
+        }
+      ]
+    }
+  ]
+}
