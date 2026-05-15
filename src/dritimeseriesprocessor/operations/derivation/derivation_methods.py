@@ -649,3 +649,48 @@ class CorrectCounts(DerivationMethod):
         cts_mod = columns["cts_mod"]
         correction_factors = columns["cosmosfactor_inten"] * columns["cosmosfactor_pa"] * columns["cosmosfactor_q"]
         return cts_mod * correction_factors
+
+
+@DerivationMethod.register
+class VolumetricWaterContent(DerivationMethod):
+    """
+    Calculate volumetric water content (VWC) from corrected neutron counts and site annotations.
+    For equation, see: "COSMOS: the COsmic-ray Soil Moisture Observing System", Zreda et al., 2012
+    https://doi.org/10.5194/hess-16-4079-2012
+
+    a0 = 0.0808
+    a1 = 0.372
+    a2 = 0.115
+    See: Desilets et al., 2010
+    """
+
+    name = "calculate_vwc"
+    inputs = ("cts_mod_corr",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate volumetric water content (VWC) from corrected neutron counts and site annotations.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - cts_mod_corr: corrected mod counts, calculated from CorrectCounts.
+
+        Returns:
+            Polars expression for VWC.
+        """
+        ref_soc = self.config.params["ref_soc"]
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        n0_mod = self.config.params["n0_mod"]
+        n_max = self.config.params["n_max"]
+        n_min = self.config.params["n_min"]
+
+        a0 = 0.0808
+        a1 = 0.372
+        a2 = 0.115
+
+        cts_mod_corr = columns["cts_mod_corr"]
+        cts_mod_corr = cts_mod_corr.clip(n_min, n_max)
+
+        vwc = 100 * ref_bd * (a0 / ((cts_mod_corr / n0_mod) - a1) - a2 - ref_lw - ref_soc)
+        return vwc.clip(0.0, 100.0)
