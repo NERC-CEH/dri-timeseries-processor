@@ -7,12 +7,12 @@
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/deployment.html?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
-      "http://fdri.ceh.ac.uk/id/deployment.rdf?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
-      "http://fdri.ceh.ac.uk/id/deployment.json?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
-      "http://fdri.ceh.ac.uk/id/deployment.csv?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
       "http://fdri.ceh.ac.uk/id/deployment.ttl?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
-      "http://fdri.ceh.ac.uk/id/deployment.geojson?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem"
+      "http://fdri.ceh.ac.uk/id/deployment.csv?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.geojson?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.rdf?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.html?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem",
+      "http://fdri.ceh.ac.uk/id/deployment.json?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-alic-aws_anem"
     ]
   },
   "items": []

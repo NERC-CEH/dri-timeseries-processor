@@ -457,6 +457,38 @@ class Albedo(DerivationMethod):
 
 
 @DerivationMethod.register
+class NeutronIntensityFactor(DerivationMethod):
+    """Calculate incoming neutron count intensity correction factor using a background reference station.
+    See COSMOS supporting documentation.
+    See "COSMOS: the Cosmic-ray Soil Moisture Observing System" https://hess.copernicus.org/articles/16/4079/2012/
+    See "Intensity correction factors for a cosmic ray neutron sensor": https://zenodo.org/records/4569062
+    GAMMA: Scaling factor to adjust for geomagnetic effects
+    REF_C0: Site annotation to account for neutron counts due to site calibration
+    crns_count: Neutron counts from reference station
+    """
+
+    name = "calc_factor_inten"
+    inputs = ("crns-count",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate incoming neutron count intensity correction factor.
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            crns-count: cosmic ray neutron sensor counts from reference station
+
+        Returns:
+            Polars expression for incoming neutron count intensity factor, [units = None]
+            Values should be positive.
+        """
+
+        ref_c0 = self.config.params["ref_c0"]
+        gamma = self.config.params["gamma"]
+        crns_count = columns["crns-count"]
+
+        return 1 / (((crns_count / ref_c0) - 1) * gamma + 1)
+
+
+@DerivationMethod.register
 class AbsoluteHumidityFactor(DerivationMethod):
     """Calculate correction factor for absolute humidity Q.
     This factor is used to correct neutron counts.
@@ -476,8 +508,8 @@ class AbsoluteHumidityFactor(DerivationMethod):
     REF_Q0 is a site annotation.
     """
 
-    name = "calc_factor_Q"
-    inputs = "q"
+    name = "calc_factor_q"
+    inputs = ("q",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity correction factor to neutron counts.
@@ -489,7 +521,7 @@ class AbsoluteHumidityFactor(DerivationMethod):
             Polars expression for absolute humidity factor, [units = None]
         """
 
-        ref_q0 = self.config.params["REF_Q0"]
+        ref_q0 = self.config.params["ref_q0"]
         q = columns["q"]
 
         return 1 + 0.0054 * (q - ref_q0)
@@ -519,7 +551,7 @@ class AtmosphericPressureFactor(DerivationMethod):
             Polars expression for atmospheric pressure factor, [units = None]
         """
 
-        barometric_attenuation_length = self.config.params["L"]
+        barometric_attenuation_length = self.config.params["l"]
         pa = columns["pa"]
         p0 = 1000
 
@@ -589,3 +621,31 @@ class IsSnowDay(DerivationMethod):
             )
         )
         return expr
+
+
+@DerivationMethod.register
+class CorrectCounts(DerivationMethod):
+    """
+    Calculate corrected mod counts using correction factors for neutron counts.
+    See Bogena et al. (2022), Eq. 1: https://doi.org/10.5194/essd-14-1125-2022
+    """
+
+    name = "correct_counts"
+    inputs = ("cts_mod", "cosmosfactor_inten", "cosmosfactor_pa", "cosmosfactor_q")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate corrected mod counts using correction factors for neutron counts.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - cosmosfactor_inten: correction factor to neutron intensity counts.
+            - cosmosfactor_pa: atmospheric pressure correction factor to neutron counts.
+            - cosmosfactor_q: absolute humidity correction factor to neutron counts.
+
+        Returns:
+            Polars expression of corrected mod counts.
+        """
+        cts_mod = columns["cts_mod"]
+        correction_factors = columns["cosmosfactor_inten"] * columns["cosmosfactor_pa"] * columns["cosmosfactor_q"]
+        return cts_mod * correction_factors

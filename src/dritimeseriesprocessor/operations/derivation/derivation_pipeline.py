@@ -37,18 +37,16 @@ class DerivationPipeline(OperationPipeline):
         Returns:
             Result of applying the derivation method.
         """
+        dep_ids = []
+        for key in ("dep_ts", "load_dep_ts"):
+            values = config.params.get(key) or []
+            if isinstance(values, str):
+                dep_ids.append(values)
+            else:
+                dep_ids.extend(values)
 
-        dep_ts_values = config.params.get("dep_ts", [])
-
-        if dep_ts_values is None:
-            dep_ts_list = []
-        elif isinstance(dep_ts_values, str):
-            dep_ts_list = [dep_ts_values]
-        else:
-            dep_ts_list = dep_ts_values
-
-        for dep_ts_id in dep_ts_list:
-            dep_container = dataset_repository[dep_ts_id]
+        for dep_id in dep_ids:
+            dep_container = dataset_repository[dep_id]
             config.params[dep_container.source_column.lower()] = dep_container.data
 
         method = DerivationMethod.get(config.method)

@@ -26,7 +26,7 @@ from dritimeseriesprocessor.models.api_models.shared import (
 )
 
 
-class appliesToDataset(IDModel):
+class AppliesToDataset(IDModel):
     """Time series application specification."""
 
     originating_site: list[IDModel] = Field(..., alias="originatingSite")
@@ -36,7 +36,7 @@ class DataProcessingConfigurationItem(IDModel):
     """Data processing configuration item."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
-    applies_to_dataset: list[appliesToDataset] = Field(..., alias="appliesToDataset")
+    applies_to_dataset: list[AppliesToDataset] = Field(..., alias="appliesToDataset")
     has_annotation: list[HasAnnotationItem] = Field(default_factory=list, alias="hasAnnotation")
     has_current_value: list[HasCurrentValue] | None = Field(default_factory=list, alias="hasCurrentValue")
     had_value: list[HadValue] | None = Field(default_factory=list, alias="hadValue")
