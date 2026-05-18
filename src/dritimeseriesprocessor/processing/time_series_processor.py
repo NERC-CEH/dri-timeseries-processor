@@ -76,8 +76,7 @@ class TimeSeriesProcessor:
             start_date: Start of the date range to process (inclusive).
             end_date: End of the date range to process (inclusive).
             metrics: Metrics reporter.
-            flux_s3_client: S3 client for raw .dat file download and EddyPro output upload.
-                            Required only when the graph contains EDDYPRO datasets.
+            flux_s3_client: S3 client for raw .dat file download.
         """
         self.graph = graph
         self.data_router = data_router
@@ -238,9 +237,9 @@ class TimeSeriesProcessor:
         self._raw_dirs[container.ts_id] = tmp
 
         self.flux_s3_client.download_raw_dat_files(  # type: ignore[union-attr]
-            bucket=container.source_bucket,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
+            bucket=container.s3_bucket,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
             site=container.source_site,
-            dataset=container.source_dataset,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
+            dataset=container.s3_dataset_path,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
             network=container.network,
             start_date=start_date,
             end_date=end_date,
@@ -252,6 +251,8 @@ class TimeSeriesProcessor:
 
         This runs the operations of: Corrections, Quality Control and Infilling (in that order) to the given dataset.
         Each operation type has a pipeline class responsible for the specifics of how that method is carried out.
+        For `ObservationDataset` dependencies (e.g. the EddyPro intermediate bundle), the target column is
+        extracted before the pipelines run.
 
         Args:
             container: Time series container of metadata and data for the dataset to process.
@@ -260,20 +261,39 @@ class TimeSeriesProcessor:
 
         dep_container = self._get_single_dependency(container)
 
-        with self.metrics.time_corrections.time():
-            pipeline = OPERATION_PIPELINES[OperationType.CORRECTION]
-            dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+        if dep_container.is_observation_dataset:
+            # Wide bundle dep (e.g. EddyPro intermediate): extract the target column
+            # from the bundle, initialise container, then run pipelines on container.
+            df = dep_container.data.df.select([dep_container.time_column_name, container.source_column])
+            container.init_timeframe(df)
+            container.data = add_initial_core_flags(container.data)
 
-        with self.metrics.time_qc.time():
-            pipeline = OPERATION_PIPELINES[OperationType.QUALITY_CONTROL]
-            dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+            with self.metrics.time_corrections.time():
+                container.data = OPERATION_PIPELINES[OperationType.CORRECTION].run(container, self.graph.datasets)
 
-        with self.metrics.time_infill.time():
-            pipeline = OPERATION_PIPELINES[OperationType.INFILLING]
-            dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+            with self.metrics.time_qc.time():
+                container.data = OPERATION_PIPELINES[OperationType.QUALITY_CONTROL].run(container, self.graph.datasets)
 
-        # shift the data into the primary container
-        container.data = dep_container.data
+            with self.metrics.time_infill.time():
+                container.data = OPERATION_PIPELINES[OperationType.INFILLING].run(container, self.graph.datasets)
+
+        else:
+            # Standard FDRI pattern: QC/correction/infill configs are on the raw dep.
+            # Run pipelines on dep (which has the configs), then copy to container.
+            with self.metrics.time_corrections.time():
+                pipeline = OPERATION_PIPELINES[OperationType.CORRECTION]
+                dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+
+            with self.metrics.time_qc.time():
+                pipeline = OPERATION_PIPELINES[OperationType.QUALITY_CONTROL]
+                dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+
+            with self.metrics.time_infill.time():
+                pipeline = OPERATION_PIPELINES[OperationType.INFILLING]
+                dep_container.data = pipeline.run(dep_container, self.graph.datasets)
+
+            # shift the data into the primary container
+            container.data = dep_container.data
 
     def _aggregate(self, container: TimeSeriesContainer) -> None:
         """Run aggregation to create a single dataset according to the method configurations attached via metadata.
@@ -327,22 +347,24 @@ class TimeSeriesProcessor:
         start_date = self.start_date.date()
         end_date = self.end_date.date()
 
-        EddyProPipeline(runner=EddyProRunner()).run(
+        df = EddyProPipeline(runner=EddyProRunner()).run(
             raw_data_dir=Path(self._raw_dirs[raw_container.ts_id].name),
             method_config=container.method_config,  # type: ignore[arg-type] - always set for EDDYPRO containers
             site_metadata=site_meta,  # type: ignore[arg-type] - always set for EDDYPRO containers
             start_date=start_date,
             end_date=end_date,
             ancillary_containers=ancillary_containers,
-            flux_s3_client=self.flux_s3_client,  # type: ignore[arg-type] - required for EDDYPRO, validated at startup
-            network=container.network,
-            processed_source_bucket=container.source_bucket,  # type: ignore[arg-type] - always set for EDDYPRO containers
-            processed_dataset=container.source_dataset,  # type: ignore[arg-type] - always set for EDDYPRO containers
         )
+
+        container.time_column_name = "time"
+        container.init_timeframe(df)
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only
         a single dependency.
+
+        Uses `method_config._values_for_params("dep_ts")` rather than `container.all_dependencies()` so that QC
+        ancillary datasets (flux flags for EddyPro) are not counted as primary data-source dependencies.
 
         Args:
             container: Time series container for the dataset to fetch single dependency
@@ -350,7 +372,7 @@ class TimeSeriesProcessor:
         Returns:
             Dependent time series container.
         """
-        dependencies = container.all_dependencies()
+        dependencies = container.method_config._values_for_params("dep_ts")
         num_dependents = len(dependencies)
         if num_dependents != 1:
             raise ValueError(f"Expected a single dependent dataset. Found: {num_dependents}")
@@ -389,14 +411,13 @@ class TimeSeriesProcessor:
         """
         common_keys = ["network", "source_site_identifier", "resolution", "source_bucket"]
         processed = tuple(
-            [
-                c
-                for c in self.graph.datasets.values()
-                if c.processing_level == ProcessingLevel.PROCESSED
-                and not c.failed
-                and c.data is not None
-                and not c.load_only
-            ]
+            c
+            for c in self.graph.datasets.values()
+            if c.processing_level == ProcessingLevel.PROCESSED
+            and not c.failed
+            and c.data is not None
+            and not c.load_only
+            and not c.is_observation_dataset
         )
         if not processed:
             logger.warning("No datasets available to be saved.")

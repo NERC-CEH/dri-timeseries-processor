@@ -649,3 +649,90 @@ class CorrectCounts(DerivationMethod):
         cts_mod = columns["cts_mod"]
         correction_factors = columns["cosmosfactor_inten"] * columns["cosmosfactor_pa"] * columns["cosmosfactor_q"]
         return cts_mod * correction_factors
+
+
+@DerivationMethod.register
+class CalcFluxMeanShf(DerivationMethod):
+    """Calculate mean soil heat flux from two SHF plate measurements."""
+
+    name = "calc_flux_mean_shf"
+    inputs = ("g_plate_1_1_1", "g_plate_1_1_2")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate mean soil heat flux [W m-2]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "g_plate_1_1_1": Soil heat flux plate 1 [W m-2]
+            - "g_plate_1_1_2": Soil heat flux plate 2 [W m-2]
+
+        Returns:
+            Polars expression computing mean soil heat flux
+        """
+        return pl.mean_horizontal(columns["g_plate_1_1_1"], columns["g_plate_1_1_2"])
+
+
+@DerivationMethod.register
+class CalcFluxLambda(DerivationMethod):
+    """Calculate latent heat of vaporization (lambda) from air temperature."""
+
+    name = "calc_flux_lambda"
+    inputs = ("airtemp_c",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate latent heat of vaporization (lambda) [MJ kg-1]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "airtemp_c": Air temperature [degC]
+
+        Returns:
+            Polars expression computing lambda
+        """
+        return 2.501 - 0.002361 * columns["airtemp_c"]
+
+
+@DerivationMethod.register
+class CalcFluxLeL1(DerivationMethod):
+    """Calculate latent heat flux LE_L1 = Rn - SHF - H."""
+
+    name = "calc_flux_le_l1"
+    inputs = ("t_nr_avg", "shf", "h")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate latent heat flux (LE_L1) [W m-2]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "t_nr_avg": Net radiation [W m-2]
+            - "shf": Soil heat flux [W m-2]
+            - "h": Sensible heat flux [W m-2]
+
+        Returns:
+            Polars expression computing LE_L1
+        """
+        return columns["t_nr_avg"] - columns["shf"] - columns["h"]
+
+
+@DerivationMethod.register
+class CalcFluxEt(DerivationMethod):
+    """Calculate evapotranspiration ET = LE / lambda / 1000, with lambda derived inline from air temperature."""
+
+    name = "calc_flux_et"
+    inputs = ("le", "airtemp_c")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate evapotranspiration (ET) [mm 30min-1]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - "le": Latent heat flux [W m-2]
+            - "airtemp_c": Air temperature [degC]
+
+        Returns:
+            Polars expression computing ET
+        """
+        le = columns["le"]
+        ta = columns["airtemp_c"]
+        lv = 2.501 - 0.002361 * ta
+        return le / lv / 1000.0

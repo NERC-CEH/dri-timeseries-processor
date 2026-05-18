@@ -6,10 +6,17 @@ from typing import Any
 
 from dritimeseriesprocessor import PACKAGE_ROOT
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
+from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetResponse
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.network import Network
 from dritimeseriesprocessor.models.api_models.site import SiteResponse
 from dritimeseriesprocessor.utils.strings import extract_uri_id
+
+_FLAT_TYPE_TO_URI = {
+    "fdri:ObservationDataset": "http://fdri.ceh.ac.uk/vocab/metadata/ObservationDataset",
+    "fdri:TimeSeriesDataset": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset",
+}
+_DEFAULT_TYPE_URI = "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
 
 
 def _identifier_aliases(*values: str | None) -> set[str]:
@@ -27,7 +34,8 @@ def _identifier_aliases(*values: str | None) -> set[str]:
 class EddyProFixtureSet:
     network: Network
     sites: SiteResponse
-    datasets: TimeSeriesDatasetResponse
+    observation_datasets: ObservationDatasetResponse
+    timeseries_datasets: TimeSeriesDatasetResponse
     processing_configs: DataProcessingConfiguration
 
 
@@ -51,18 +59,23 @@ class LocalEddyProMetadataSource:
 
         sites = self._build_site_response(sites_data, network_data["id"])
         network = self._build_network_response(network_data, sites_data)
-        datasets = self._build_dataset_response(datasets_data)
-        processing_configs = self._build_processing_config_response(processing_configs_data, datasets)
+        obs_datasets = self._build_observation_dataset_response(datasets_data)
+        ts_datasets = self._build_timeseries_dataset_response(datasets_data)
+        processing_configs = self._build_processing_config_response(processing_configs_data, obs_datasets, ts_datasets)
 
         filtered_sites = self._filter_sites(sites)
         filtered_network = self._filter_network(network, filtered_sites)
-        filtered_datasets = self._filter_datasets(datasets, filtered_sites)
-        filtered_processing_configs = self._filter_processing_configs(processing_configs, filtered_datasets)
+        filtered_obs_datasets = self._filter_observation_datasets(obs_datasets, filtered_sites)
+        filtered_ts_datasets = self._filter_timeseries_datasets(ts_datasets, filtered_sites)
+        filtered_processing_configs = self._filter_processing_configs(
+            processing_configs, filtered_obs_datasets, filtered_ts_datasets
+        )
 
         return EddyProFixtureSet(
             network=filtered_network,
             sites=filtered_sites,
-            datasets=filtered_datasets,
+            observation_datasets=filtered_obs_datasets,
+            timeseries_datasets=filtered_ts_datasets,
             processing_configs=filtered_processing_configs,
         )
 
@@ -134,75 +147,95 @@ class LocalEddyProMetadataSource:
 
         return SiteResponse.model_validate({"meta": self._meta_dict(), "items": items})
 
-    def _build_dataset_response(self, datasets_data: dict[str, Any]) -> TimeSeriesDatasetResponse:
-        items = []
-        for dataset in datasets_data.get("datasets", []):
-            variable_id = dataset["dataset_id"].rsplit("/", 1)[-1]
-            variable_label = variable_id
+    def _build_dataset_item(self, dataset: dict[str, Any]) -> dict[str, Any]:
+        variable_id = dataset["dataset_id"].rsplit("/", 1)[-1]
+        variable_uri = (
+            variable_id
+            if variable_id.startswith("http://")
+            else f"http://fdri.ceh.ac.uk/ref/common/variable/{variable_id}"
+        )
+        unit_id = dataset.get("unit_id") or "not-applicable"
+        unit_uri = unit_id if unit_id.startswith("http://") else f"http://fdri.ceh.ac.uk/ref/common/unit/{unit_id}"
 
-            variable_uri = (
-                variable_id
-                if variable_id.startswith("http://")
-                else f"http://fdri.ceh.ac.uk/ref/common/variable/{variable_id}"
-            )
-            unit_id = dataset.get("unit_id") or "not-applicable"
-            unit_uri = unit_id if unit_id.startswith("http://") else f"http://fdri.ceh.ac.uk/ref/common/unit/{unit_id}"
-
-            items.append(
+        return {
+            "@id": dataset["dataset_id"],
+            "@type": [
                 {
-                    "@id": dataset["dataset_id"],
-                    "@type": [
-                        {
-                            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset",
-                        }
-                    ],
-                    "processingLevel": {
-                        "@id": f"http://fdri.ceh.ac.uk/ref/common/processing-level/{dataset['processing_level']}",
-                    },
-                    "measure": [
-                        {
-                            "@id": f"http://fdri.ceh.ac.uk/id/measure/{dataset['dataset_id'].rsplit('/', 1)[-1]}",
-                            "variable": {
-                                "@id": variable_uri,
-                                "prefLabel": [variable_label],
-                            },
-                            "hasUnit": {
-                                "@id": unit_uri,
-                                "prefLabel": [dataset.get("unit_label") or "not applicable"],
-                            },
-                            "aggregation": {
-                                "@id": (
-                                    dataset.get("aggregation_id")
-                                    or "http://fdri.ceh.ac.uk/ref/common/aggregation/"
-                                    f"{dataset['dataset_id'].rsplit('/', 1)[-1]}"
-                                ),
-                                "periodicity": dataset["periodicity"],
-                                "resolution": dataset["resolution"],
-                            },
-                        }
-                    ],
-                    "sourceBucket": dataset.get("source_bucket"),
-                    "sourceDataset": dataset.get("source_dataset"),
-                    "sourceColumnName": dataset.get("source_column"),
-                    "sourceTimeColumnName": dataset.get("time_column_name"),
-                    "originatingFacility": [{"@id": dataset["platform_id"]}] if dataset.get("platform_id") else [],
-                    "originatingSite": [{"@id": dataset["site_id"]}],
-                    "originatingProgramme": [
-                        {
-                            "@id": f"http://fdri.ceh.ac.uk/id/programme/{dataset['network']}",
-                        }
-                    ],
+                    "@id": _FLAT_TYPE_TO_URI.get(dataset.get("@type", ""), _DEFAULT_TYPE_URI),
                 }
-            )
+            ],
+            "processingLevel": {
+                "@id": f"http://fdri.ceh.ac.uk/ref/common/processing-level/{dataset['processing_level']}",
+            },
+            "measure": [
+                {
+                    "@id": f"http://fdri.ceh.ac.uk/id/measure/{dataset['dataset_id'].rsplit('/', 1)[-1]}",
+                    "variable": {
+                        "@id": variable_uri,
+                        "prefLabel": [variable_id],
+                    },
+                    "hasUnit": {
+                        "@id": unit_uri,
+                        "prefLabel": [dataset.get("unit_label") or "not applicable"],
+                    },
+                    "aggregation": {
+                        "@id": (
+                            dataset.get("aggregation_id")
+                            or "http://fdri.ceh.ac.uk/ref/common/aggregation/"
+                            f"{dataset['dataset_id'].rsplit('/', 1)[-1]}"
+                        ),
+                        "periodicity": dataset["periodicity"],
+                        "resolution": dataset["resolution"],
+                    },
+                }
+            ],
+            "sourceBucket": dataset.get("source_bucket"),
+            "sourceDataset": dataset.get("source_dataset"),
+            "sourceColumnName": dataset.get("source_column"),
+            "sourceTimeColumnName": dataset.get("time_column_name"),
+            "distribution": (
+                [
+                    {
+                        "@id": f"http://fdri.ceh.ac.uk/id/distribution/{dataset['dataset_id'].rsplit('/', 1)[-1]}",
+                        "accessUrl": dataset["distribution"],
+                    }
+                ]
+                if dataset.get("distribution")
+                else None
+            ),
+            "originatingFacility": [{"@id": dataset["platform_id"]}] if dataset.get("platform_id") else [],
+            "originatingSite": [{"@id": dataset["site_id"]}],
+            "originatingProgramme": [
+                {
+                    "@id": f"http://fdri.ceh.ac.uk/id/programme/{dataset['network']}",
+                }
+            ],
+        }
 
+    def _build_observation_dataset_response(self, datasets_data: dict[str, Any]) -> ObservationDatasetResponse:
+        items = [
+            self._build_dataset_item(d)
+            for d in datasets_data.get("datasets", [])
+            if d.get("@type") == "fdri:ObservationDataset"
+        ]
+        return ObservationDatasetResponse.model_validate({"meta": self._meta_dict(), "items": items})
+
+    def _build_timeseries_dataset_response(self, datasets_data: dict[str, Any]) -> TimeSeriesDatasetResponse:
+        items = [
+            self._build_dataset_item(d)
+            for d in datasets_data.get("datasets", [])
+            if d.get("@type") != "fdri:ObservationDataset"
+        ]
         return TimeSeriesDatasetResponse.model_validate({"meta": self._meta_dict(), "items": items})
 
     def _build_processing_config_response(
         self,
         configs_data: dict[str, Any],
-        datasets: TimeSeriesDatasetResponse,
+        observation_datasets: ObservationDatasetResponse,
+        timeseries_datasets: TimeSeriesDatasetResponse,
     ) -> DataProcessingConfiguration:
-        dataset_site_map = {item.id: item.originating_site[0].id for item in datasets.items if item.originating_site}
+        all_items = list(observation_datasets.items) + list(timeseries_datasets.items)
+        dataset_site_map = {item.id: item.originating_site[0].id for item in all_items if item.originating_site}
         items = []
 
         for config in configs_data.get("processing_configs", []):
@@ -360,34 +393,43 @@ class LocalEddyProMetadataSource:
         filtered = [item for item in response.items if _identifier_aliases(item.id, *(item.identifier or [])) & wanted]
         return SiteResponse(meta=response.meta, items=filtered)
 
-    def _filter_datasets(self, response: TimeSeriesDatasetResponse, sites: SiteResponse) -> TimeSeriesDatasetResponse:
+    def _filter_dataset_items(self, items: list, sites: SiteResponse) -> list:
         if not sites.items:
-            return TimeSeriesDatasetResponse(meta=response.meta, items=[])
-
+            return []
         allowed_site_ids: set[str] = set()
         for item in sites.items:
             allowed_site_ids.update(_identifier_aliases(item.id, *(item.identifier or [])))
-
-        filtered = [
+        return [
             item
-            for item in response.items
+            for item in items
             if any(
                 _identifier_aliases(originating_site.id) & allowed_site_ids
                 for originating_site in (item.originating_site or [])
             )
         ]
-        return TimeSeriesDatasetResponse(meta=response.meta, items=filtered)
+
+    def _filter_observation_datasets(
+        self, response: ObservationDatasetResponse, sites: SiteResponse
+    ) -> ObservationDatasetResponse:
+        return ObservationDatasetResponse(meta=response.meta, items=self._filter_dataset_items(response.items, sites))
+
+    def _filter_timeseries_datasets(
+        self, response: TimeSeriesDatasetResponse, sites: SiteResponse
+    ) -> TimeSeriesDatasetResponse:
+        return TimeSeriesDatasetResponse(meta=response.meta, items=self._filter_dataset_items(response.items, sites))
 
     def _filter_processing_configs(
         self,
         response: DataProcessingConfiguration,
-        datasets: TimeSeriesDatasetResponse,
+        observation_datasets: ObservationDatasetResponse,
+        timeseries_datasets: TimeSeriesDatasetResponse,
     ) -> DataProcessingConfiguration:
-        if not datasets.items:
+        all_items = list(observation_datasets.items) + list(timeseries_datasets.items)
+        if not all_items:
             return DataProcessingConfiguration(meta=response.meta, items=[])
 
         allowed_dataset_ids: set[str] = set()
-        for item in datasets.items:
+        for item in all_items:
             allowed_dataset_ids.update(_identifier_aliases(item.id))
 
         filtered = [

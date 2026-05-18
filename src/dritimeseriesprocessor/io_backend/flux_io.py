@@ -1,8 +1,6 @@
 """Raw flux file I/O for EddyPro runs.
 
-Handles downloading raw .dat files from S3 for EddyPro input and uploading
-EddyPro output files back to S3. Also provides helpers to parse EddyPro CSV
-output files into Polars DataFrames for Parquet writing.
+Handles downloading raw .dat files from S3 for EddyPro input.
 
 Bucket names are never stored on this class — they are passed per-operation
 from the caller, who derives them from ``container.source_bucket`` (which
@@ -19,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class FluxS3Client:
-    """Handles raw flux file download/upload for EddyPro runs."""
+    """Handles raw flux file download for EddyPro runs."""
 
     def __init__(self, storage_client: StorageClient) -> None:
         self._storage = storage_client
@@ -64,43 +62,6 @@ class FluxS3Client:
         logger.info("Downloaded %d raw .dat files for site %s (bucket=%s)", len(downloaded), site, bucket)
         return downloaded
 
-    def upload_output_files(
-        self,
-        bucket: str,
-        output_dir: Path,
-        network: str,
-        site: str,
-        processed_dataset: str,
-        start_date: date,
-    ) -> None:
-        """Upload all EddyPro output files from output_dir to S3 for archival."""
-        count = 0
-
-        for local_file in output_dir.rglob("*"):
-            if not local_file.is_file():
-                continue
-            relative = local_file.relative_to(output_dir)
-            s3_key = self._build_processed_output_key(
-                network=network,
-                processed_dataset=processed_dataset,
-                site=site,
-                run_date=start_date.isoformat(),
-                relative_path=relative,
-            )
-            self._storage.upload_file(bucket, s3_key, local_file)
-            logger.debug("Uploaded: %s", s3_key)
-            count += 1
-
-        logger.info(
-            "Uploaded %d EddyPro output files to s3://%s/%s/dataset=%s/site=%s/date=%s/.",
-            count,
-            bucket,
-            network,
-            processed_dataset,
-            site,
-            start_date,
-        )
-
     @staticmethod
     def _build_raw_date_prefix(network: str, dataset: str, site: str, data_date: date) -> str:
         """Build the S3 prefix for raw flux files for a single date."""
@@ -111,21 +72,3 @@ class FluxS3Client:
             f"date={data_date.isoformat()}",
         ]
         return "/".join(partitions) + "/"
-
-    @staticmethod
-    def _build_processed_output_key(
-        network: str,
-        processed_dataset: str,
-        site: str,
-        run_date: str,
-        relative_path: Path,
-    ) -> str:
-        """Build a hive-style S3 key for a processed EddyPro output file."""
-        partitions = [
-            network,
-            f"dataset={processed_dataset}",
-            f"site={site}",
-            f"date={run_date}",
-            relative_path.as_posix(),
-        ]
-        return "/".join(partitions)
