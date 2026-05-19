@@ -57,8 +57,8 @@ class Distribution(IDModel):
     The distribution property on a dataset is a list of these objects.
     """
 
-    access_url: str | None = Field(None, alias="accessUrl")
-    format: str | None = None
+    access_url: list[str] | None = Field(None, alias="accessUrl")
+    format: IDModel | None = None
 
 
 class ObservationDatasetItem(IDModel):
@@ -83,7 +83,7 @@ class ObservationDatasetItem(IDModel):
         For EddyPro raw bundles this is the S3 folder path for the .dat files.
         """
         if self.distributions:
-            return self.distributions[0].access_url
+            return self.distributions[0].access_url[0]
         return None
 
 

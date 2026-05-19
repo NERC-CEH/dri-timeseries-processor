@@ -694,6 +694,8 @@ class VolumetricWaterContent(DerivationMethod):
 
         vwc = 100 * ref_bd * (a0 / ((cts_mod_corr / n0_mod) - a1) - a2 - ref_lw - ref_soc)
         return vwc.clip(0.0, 100.0)
+
+
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 

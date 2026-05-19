@@ -584,6 +584,8 @@ class TestVolumetricWaterContent:
         )
         result = VolumetricWaterContent().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
 class TestCalcFluxMeanShf:
     def test_averages_two_shf_plates(self) -> None:
         config = create_method_config(
