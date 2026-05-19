@@ -249,7 +249,7 @@ class DatasetDependencyGraph:
             if isinstance(query, DatasetIdSelection):
                 containers.update(self._fetch_root_datasets_by_ids(query.dataset_ids))
             else:
-                sites = query.sites or self._fetch_site_metadata([], network=query.network)
+                sites = self._fetch_site_metadata(query.sites or [], network=query.network)
                 containers.update(self._fetch_root_datasets(sites, query.variables or [], query.periodicities or []))
 
         return list(containers)
@@ -374,7 +374,8 @@ class DatasetDependencyGraph:
         Returns:
             All mapped `TimeSeriesContainer` extracted from the response.
         """
-        site_ids = [item.originating_site[0].id for item in dataset_response.items if item.originating_site]
+        # Dedupe site_ids in case multiple datasets reference the same missing site
+        site_ids = list({item.originating_site[0].id for item in dataset_response.items if item.originating_site})
         self._fetch_missing_site_metadata(site_ids)
 
         all_containers = []
