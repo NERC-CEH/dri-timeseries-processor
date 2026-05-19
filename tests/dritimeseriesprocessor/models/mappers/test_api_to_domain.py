@@ -146,7 +146,7 @@ class TestMapDatasetItem:
                 "distribution": [
                     {
                         "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-raw",
-                        "accessUrl": "s3://ukceh-fdri-staging-timeseries-level-0/Flux/",
+                        "accessUrl": ["s3://ukceh-fdri-staging-timeseries-level-0/Flux/"],
                     }
                 ],
                 "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],

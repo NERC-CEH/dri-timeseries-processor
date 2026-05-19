@@ -87,7 +87,7 @@ class TestByteParquetWriter:
         assert_frame_equal(out_df, merged)
 
 
-BUCKET_NAME = "ukceh-fdri-staging-timeseries-level-0"
+BUCKET_NAME = "ukceh-dri-staging-ingested"
 
 
 @pytest.fixture
