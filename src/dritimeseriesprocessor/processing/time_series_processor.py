@@ -32,7 +32,7 @@ from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_cor
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
-from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import DatasetType, MethodType, OperationType, ProcessingLevel
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
@@ -261,7 +261,7 @@ class TimeSeriesProcessor:
 
         dep_container = self._get_single_dependency(container)
 
-        if dep_container.is_observation_dataset:
+        if dep_container.dataset_type == DatasetType.OBSERVATION_DATASET:
             # Wide bundle dep (e.g. EddyPro intermediate): extract the target column
             # from the bundle, initialise container, then run pipelines on container.
             df = dep_container.data.df.select([dep_container.time_column_name, container.source_column])
@@ -417,7 +417,7 @@ class TimeSeriesProcessor:
             and not c.failed
             and c.data is not None
             and not c.load_only
-            and not c.is_observation_dataset
+            and c.dataset_type != DatasetType.OBSERVATION_DATASET
         )
         if not processed:
             logger.warning("No datasets available to be saved.")

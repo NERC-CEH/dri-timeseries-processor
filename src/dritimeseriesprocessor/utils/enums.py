@@ -51,6 +51,17 @@ class OperationType(Enum):
     AGGREGATION = "aggregate"
 
 
+class DatasetType(Enum):
+    """The metadata `@type` of a dataset record.
+
+    `TIMESERIES_DATASET` is a single-variable timeseries dataset; `OBSERVATION_DATASET` is a multi-column bundle
+    (e.g. raw EddyPro inputs, EddyPro outputs).
+    """
+
+    TIMESERIES_DATASET = "TimeSeriesDataset"
+    OBSERVATION_DATASET = "ObservationDataset"
+
+
 class ProcessingLevel(Enum):
     RAW = "raw"
     PROCESSED = "processed"

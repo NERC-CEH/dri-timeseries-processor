@@ -57,8 +57,8 @@ class Distribution(IDModel):
     The distribution property on a dataset is a list of these objects.
     """
 
-    format: IDModel
-    access_url: list[str] = Field(..., alias="accessUrl")
+    format: IDModel | None = None
+    access_url: list[str] | None = Field(None, alias="accessUrl")
 
 
 class ObservationDatasetItem(IDModel):
@@ -74,6 +74,13 @@ class ObservationDatasetItem(IDModel):
     originating_programme: list[IDModel] | None = Field(None, alias="originatingProgramme")
     depends_on: list[IDModel] | None = Field(None, alias="dependsOn")
     direct_depends_on: list[IDModel] | None = Field(None, alias="directDependsOn")
+
+    @property
+    def distribution_url(self) -> str | None:
+        """Return the first access URL from the first distribution, or None."""
+        if self.distribution and self.distribution[0].access_url:
+            return self.distribution[0].access_url[0]
+        return None
 
 
 class ObservationDatasetResponse(BaseAPIResponse):

@@ -14,7 +14,7 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, MethodType, ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -22,20 +22,20 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TimeSeriesContainer:
     ts_id: str
-    network: str
+    network: str | None
 
     source_bucket: str | None
     source_dataset: str | None
     source_column: str | None
-    source_site: str
-    source_site_identifier: str
+    source_site: str | None
+    source_site_identifier: str | None
     time_column_name: str | None
 
-    resolution: str
-    periodicity: str
+    resolution: str | None
+    periodicity: str | None
     processing_level: ProcessingLevel
 
-    dataset_type: str | None = None
+    dataset_type: DatasetType | None = None
     distribution_url: str | None = None
 
     method_config: DataProcessingConfig | None = None
@@ -121,19 +121,14 @@ class TimeSeriesContainer:
         return MethodType(self.method_config.config_type.value)
 
     @property
-    def is_observation_dataset(self) -> bool:
-        """True if this is an ObservationDataset bundle (wide table) vs single-column TimeSeriesDataset."""
-        return self.dataset_type == "ObservationDataset"
-
-    @property
     def s3_bucket(self) -> str | None:
-        if self.is_observation_dataset and self.distribution_url:
+        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
             return self.distribution_url.split("://")[1].split("/")[0]
         return self.source_bucket
 
     @property
     def s3_dataset_path(self) -> str | None:
-        if self.is_observation_dataset and self.distribution_url:
+        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
             parts = self.distribution_url.split("://")[1].split("/", 1)
             return parts[1].rstrip("/") if len(parts) > 1 else None
         return self.source_dataset
