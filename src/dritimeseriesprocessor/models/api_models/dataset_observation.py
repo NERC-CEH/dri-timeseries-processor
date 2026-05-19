@@ -57,8 +57,8 @@ class Distribution(IDModel):
     The distribution property on a dataset is a list of these objects.
     """
 
-    access_url: str | None = Field(None, alias="accessUrl")
-    format: str | None = None
+    format: IDModel
+    access_url: list[str] = Field(..., alias="accessUrl")
 
 
 class ObservationDatasetItem(IDModel):
@@ -66,25 +66,14 @@ class ObservationDatasetItem(IDModel):
 
     field_type: list[IDModel] = Field(..., alias="@type")
     processing_level: IDModel = Field(..., alias="processingLevel")
-    measure: list[Measure]
+    measure: list[Measure] | None = None
     methodology: Methodology | None = None
-    distributions: list[Distribution] | None = Field(None, alias="distribution")
+    distribution: list[Distribution] | None = Field(None, alias="distribution")
     originating_facility: list[IDModel] | None = Field(None, alias="originatingFacility")
     originating_site: list[IDModel] | None = Field(None, alias="originatingSite")
     originating_programme: list[IDModel] | None = Field(None, alias="originatingProgramme")
     depends_on: list[IDModel] | None = Field(None, alias="dependsOn")
     direct_depends_on: list[IDModel] | None = Field(None, alias="directDependsOn")
-
-    @property
-    def distribution_url(self) -> str | None:
-        """Return the first distribution's S3 access URL, or None.
-
-        The API returns distributions as a list; we use the first one.
-        For EddyPro raw bundles this is the S3 folder path for the .dat files.
-        """
-        if self.distributions:
-            return self.distributions[0].access_url
-        return None
 
 
 class ObservationDatasetResponse(BaseAPIResponse):
