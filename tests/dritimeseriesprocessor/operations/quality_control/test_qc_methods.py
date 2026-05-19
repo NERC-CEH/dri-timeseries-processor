@@ -7,6 +7,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.operations.quality_control.qc_methods import (
     BatteryVoltage,
     ErrorCode,
+    FluxQcFlag,
     HeatFluxPlateRemoval,
     Nr01Temp,
     PluvioDiagnostic,
@@ -306,3 +307,25 @@ class TestTdtTSoil:
 
         expected = pl.Series([False, False, True, False, False, False, False])
         assert_series_equal(result, expected)
+
+
+class TestFluxQcFlag:
+    def test_flags_poor_quality_rows(self) -> None:
+        """Flag value 2 (poor quality) is rejected; 0 and 1 are not."""
+        tf = create_timeframe([0.0, 1.0, 2.0, 0.0, 2.0])
+        config = create_method_config()
+
+        result = FluxQcFlag().run(tf, config)
+
+        expected = pl.Series([False, False, True, False, True])
+        assert_series_equal(result, expected, check_names=False)
+
+    def test_no_poor_quality_rows(self) -> None:
+        """No flag value 2 → all False."""
+        tf = create_timeframe([0.0, 1.0, 0.0, 1.0])
+        config = create_method_config()
+
+        result = FluxQcFlag().run(tf, config)
+
+        expected = pl.Series([False, False, False, False])
+        assert_series_equal(result, expected, check_names=False)

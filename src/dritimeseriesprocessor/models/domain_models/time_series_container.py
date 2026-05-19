@@ -26,14 +26,17 @@ class TimeSeriesContainer:
 
     source_bucket: str | None
     source_dataset: str | None
-    source_column: str
+    source_column: str | None
     source_site: str
     source_site_identifier: str
-    time_column_name: str
+    time_column_name: str | None
 
     resolution: str
     periodicity: str
     processing_level: ProcessingLevel
+
+    dataset_type: str | None = None
+    distribution_url: str | None = None
 
     method_config: DataProcessingConfig | None = None
     correction_configs: set[DataProcessingConfig] = field(default_factory=set)
@@ -116,6 +119,24 @@ class TimeSeriesContainer:
         if not self.method_config:
             return MethodType.LOAD
         return MethodType(self.method_config.config_type.value)
+
+    @property
+    def is_observation_dataset(self) -> bool:
+        """True if this is an ObservationDataset bundle (wide table) vs single-column TimeSeriesDataset."""
+        return self.dataset_type == "ObservationDataset"
+
+    @property
+    def s3_bucket(self) -> str | None:
+        if self.is_observation_dataset and self.distribution_url:
+            return self.distribution_url.split("://")[1].split("/")[0]
+        return self.source_bucket
+
+    @property
+    def s3_dataset_path(self) -> str | None:
+        if self.is_observation_dataset and self.distribution_url:
+            parts = self.distribution_url.split("://")[1].split("/", 1)
+            return parts[1].rstrip("/") if len(parts) > 1 else None
+        return self.source_dataset
 
     def init_timeframe(self, df: pl.DataFrame) -> None:
         """Wrap a DataFrame in a TimeFrame, apply initial flags, and store it on the container.

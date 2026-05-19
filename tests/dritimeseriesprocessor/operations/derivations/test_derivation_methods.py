@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 import polars as pl
+import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -10,6 +11,10 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidityFactor,
     Albedo,
     AtmosphericPressureFactor,
+    CalcFluxEt,
+    CalcFluxLambda,
+    CalcFluxLeL1,
+    CalcFluxMeanShf,
     CorrectCounts,
     DerivationMethod,
     IsSnowDay,
@@ -579,3 +584,70 @@ class TestVolumetricWaterContent:
         )
         result = VolumetricWaterContent().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+class TestCalcFluxMeanShf:
+    def test_averages_two_shf_plates(self) -> None:
+        config = create_method_config(
+            {"g_plate_1_1_1": [10.0, 20.0], "g_plate_1_1_2": [30.0, 40.0]},
+            "shf",
+        )
+        result = CalcFluxMeanShf().run(config)
+        assert list(result.df["shf"]) == [20.0, 30.0]
+
+    def test_null_in_one_plate_returns_non_null_value(self) -> None:
+        config = create_method_config(
+            {"g_plate_1_1_1": [None, 20.0], "g_plate_1_1_2": [10.0, None]},
+            "shf",
+        )
+        result = CalcFluxMeanShf().run(config)
+        assert result.df["shf"][0] == 10.0
+        assert result.df["shf"][1] == 20.0
+
+
+class TestCalcFluxLambda:
+    def test_lambda_formula(self) -> None:
+        # lambda = 2.501 - 0.002361 * Ta
+        config = create_method_config({"airtemp_c": [0.0, 20.0]}, "lambda")
+        result = CalcFluxLambda().run(config)
+        assert_frame_equal(
+            result.df.select("lambda"),
+            pl.DataFrame({"lambda": [2.501, 2.501 - 0.002361 * 20.0]}),
+            check_exact=False,
+            abs_tol=1e-6,
+        )
+
+
+class TestCalcFluxLeL1:
+    def test_le_equals_rn_minus_shf_minus_h(self) -> None:
+        # LE_L1 = Rn - SHF - H  →  300 - 50 - 100 = 150
+        config = create_method_config(
+            {"t_nr_avg": [300.0], "shf": [50.0], "h": [100.0]},
+            "le",
+        )
+        result = CalcFluxLeL1().run(config)
+        assert result.df["le"][0] == 150.0
+
+    def test_null_propagates(self) -> None:
+        config = create_method_config(
+            {"t_nr_avg": [None], "shf": [50.0], "h": [100.0]},
+            "le",
+        )
+        result = CalcFluxLeL1().run(config)
+        assert result.df["le"][0] is None
+
+
+class TestCalcFluxEt:
+    def test_et_formula(self) -> None:
+        # ET = LE / (2.501 - 0.002361 * Ta) / 1000
+        ta = 20.0
+        le = 150.0
+        lv = 2.501 - 0.002361 * ta
+        expected_et = le / lv / 1000.0
+
+        config = create_method_config({"le": [le], "airtemp_c": [ta]}, "et")
+        result = CalcFluxEt().run(config)
+        assert result.df["et"][0] == pytest.approx(expected_et, abs=1e-9)
+
+    def test_null_le_produces_null_et(self) -> None:
+        config = create_method_config({"le": [None], "airtemp_c": [20.0]}, "et")
+        result = CalcFluxEt().run(config)
+        assert result.df["et"][0] is None
