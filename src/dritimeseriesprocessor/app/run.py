@@ -15,7 +15,7 @@ import json
 import logging
 from datetime import date, datetime
 
-from dritimeseriesprocessor.cli.selection import RunConfig, SelectionOption
+from dritimeseriesprocessor.cli.selection import DimensionSelection, ListSitesSelection, RunConfig, Selection
 from dritimeseriesprocessor.configuration.app_config import AppConfig, app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_factory
@@ -26,7 +26,6 @@ from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.mappers.api_to_domain import map_site_metadata
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.routers.data.data_router import DuckDBDataRouter
-from dritimeseriesprocessor.routers.metadata.flux_metadata_loader import FluxMetadataLoader
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
@@ -44,28 +43,26 @@ def run_from_config(run_config: RunConfig) -> None:
     TimeSeriesProcessor, and trigger execution of the processing workflow.
 
     Args:
-        run_config: Runtime configuration describing the network, dataset selection constraints, and temporal window.
+        run_config: Runtime configuration describing the dataset selection constraints and temporal window.
     """
     if run_config.mode == CliSelectionMode.LIST_SITES:
-        list_sites(run_config.network, run_config.start_date, run_config.end_date)
+        list_sites_sel = run_config.selection[0]
+        assert isinstance(list_sites_sel, ListSitesSelection)
+        list_sites(list_sites_sel.network, run_config.start_date, run_config.end_date)
         return
 
     processor = _build_processor(
-        run_config.network,
         run_config.selection,
         run_config.start_date,
         run_config.end_date,
-        run_config.mode,
     )
     processor.run()
 
 
 def _build_processor(
-    network: str,
-    selection: list[SelectionOption],
+    selection: list[Selection],
     start_date: datetime,
     end_date: datetime,
-    mode: CliSelectionMode,
 ) -> TimeSeriesProcessor:
     """Build a TimeSeriesProcessor object.
 
@@ -73,7 +70,6 @@ def _build_processor(
     dataset dependency graph, into a ready-to-run TimeSeriesProcessor instance.
 
     Args:
-        network: Network identifier.
         selection: Selection specification for which datasets should be processed.
         start_date: Start of the date range to process (inclusive).
         end_date: End of the date range to process (inclusive).
@@ -81,11 +77,14 @@ def _build_processor(
     Returns:
         A TimeSeriesProcessor ready for running.
     """
+    network = next((s.network for s in selection if isinstance(s, DimensionSelection)), None)
+
     logger.info("-" * 30)
     logger.info("Setting up processor for selections:")
     logger.info(f"Start date            : {start_date}")
     logger.info(f"End date              : {end_date}")
-    logger.info(f"Network               : {network}")
+    if network:
+        logger.info(f"Network               : {network}")
     logger.info(f"Dataset selections    : {'\n' + '\n'.join([str(s) for s in selection])}")
     logger.info("-" * 30)
 
@@ -98,26 +97,8 @@ def _build_processor(
     data_router = DuckDBDataRouter(reader)
     metrics = Metrics(cfg.pushgateway_url, "timeseries-processor")
 
-    if mode == CliSelectionMode.EDDYPRO:
-        selected_sites: list[str] = []
-        for item in selection:
-            selected_sites.extend(item.sites or [])
-
-        loader = FluxMetadataLoader(network=network, sites=selected_sites or None)
-        local_graph_data = loader.load()
-        graph = DatasetDependencyGraph(
-            network=network,
-            selection=selection,
-            metadata_router=metadata_router,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        graph.datasets = local_graph_data.datasets
-        graph.site_metadata = local_graph_data.site_metadata
-    else:
-        graph = _build_dependency_graph(network, selection, metadata_router, start_date, end_date)
-
-    flux_s3_client = FluxS3Client(storage_client=storage) if mode == CliSelectionMode.EDDYPRO else None
+    graph = _build_dependency_graph(selection, metadata_router, start_date, end_date)
+    flux_s3_client = FluxS3Client(storage_client=storage)
 
     return TimeSeriesProcessor(
         graph=graph,
@@ -149,8 +130,7 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
 
 @log_duration("Dependency graph build duration: ", footer=True)
 def _build_dependency_graph(
-    network: str,
-    selection: list[SelectionOption],
+    selection: list[Selection],
     metadata_router: MetadataRouter,
     start_date: datetime,
     end_date: datetime,
@@ -158,7 +138,6 @@ def _build_dependency_graph(
     """Build the dataset dependency graph for a processing run.
 
     Args:
-        network: Network identifier.
         selection: Selection specification for which datasets should be processed.
         metadata_router: A router object that handles metadata API calls.
         start_date: Start of the date range to process (inclusive).
@@ -169,7 +148,7 @@ def _build_dependency_graph(
     """
     logger.info("Gathering metadata and building dataset dependency graph.")
     graph = DatasetDependencyGraph(
-        network=network, selection=selection, metadata_router=metadata_router, start_date=start_date, end_date=end_date
+        selection=selection, metadata_router=metadata_router, start_date=start_date, end_date=end_date
     )
     graph.build()
     logger.info(f"Found {len(graph.datasets)} datasets to process.")

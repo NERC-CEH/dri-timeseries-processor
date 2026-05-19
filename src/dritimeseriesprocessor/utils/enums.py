@@ -4,7 +4,7 @@ from enum import Enum
 class CliSelectionMode(Enum):
     EXPLICIT = "from-selection"
     CROSS_PRODUCT = "from-cross-product"
-    EDDYPRO = "eddypro"
+    FROM_DATASETS = "from-datasets"
     LIST_SITES = "list-sites"
 
 
