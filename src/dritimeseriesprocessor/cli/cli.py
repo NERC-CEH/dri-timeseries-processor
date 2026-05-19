@@ -21,7 +21,7 @@ from dritimeseriesprocessor.cli.selection import (
 )
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
 from dritimeseriesprocessor.utils.time_utils import to_datetime
-from dritimeseriesprocessor.utils.urls import SITE_URI
+from dritimeseriesprocessor.utils.urls import DATASET_URI, SITE_URI
 
 
 def parse_args(argv: list[str]) -> RunConfig:
@@ -221,7 +221,7 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
         return _parse_cross_product_selection(args)
 
     if mode == CliSelectionMode.FROM_DATASETS:
-        return [DatasetIdSelection(dataset_ids=args.datasets)]
+        return _parse_dataset_id_selection(args)
 
     if mode == CliSelectionMode.LIST_SITES:
         return [ListSitesSelection(network=args.network)]
@@ -247,6 +247,19 @@ def _parse_explicit_selection(args: argparse.Namespace) -> list[DimensionSelecti
         )
         for site, variable, periodicity in args.selection
     ]
+
+
+def _parse_dataset_id_selection(args: argparse.Namespace) -> list[DatasetIdSelection]:
+    """Parse explicit dataset ID selection arguments.
+
+    Args:
+        args: Parsed CLI arguments containing dataset ID values.
+
+    Returns:
+        A list containing a single DatasetIdSelection with fully-qualified dataset URIs.
+    """
+    dataset_ids = [f"{DATASET_URI}/{ds_id}" for ds_id in args.datasets]
+    return [DatasetIdSelection(dataset_ids=dataset_ids)]
 
 
 def _parse_cross_product_selection(args: argparse.Namespace) -> list[DimensionSelection]:
