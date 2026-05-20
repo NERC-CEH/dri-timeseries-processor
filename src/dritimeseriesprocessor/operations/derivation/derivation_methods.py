@@ -16,7 +16,7 @@ from dritimeseriesprocessor.utils.urls import SITE_URI
 
 
 class DerivationMethod(Operation, ABC):
-    operation_type: OperationType.DERIVATION
+    operation_type = OperationType.DERIVATION
     inputs: ClassVar[tuple]
 
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:

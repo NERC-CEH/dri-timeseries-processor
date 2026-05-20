@@ -11,7 +11,7 @@ from dritimeseriesprocessor.utils.enums import OperationType
 
 
 class AggregationMethod(Operation, ABC):
-    operation_type: OperationType.AGGREGATION
+    operation_type = OperationType.AGGREGATION
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:

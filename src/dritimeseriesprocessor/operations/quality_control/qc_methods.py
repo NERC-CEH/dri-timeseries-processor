@@ -10,7 +10,7 @@ from dritimeseriesprocessor.utils.enums import OperationType
 
 
 class QcMethod(Operation, ABC):
-    operation_type: OperationType.QUALITY_CONTROL
+    operation_type = OperationType.QUALITY_CONTROL
 
     @abstractmethod
     def run(self, *args, **kwargs) -> pl.Series:
