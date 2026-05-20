@@ -100,7 +100,6 @@ class TimeSeriesContainer:
                 ConfigurationType.AGGREGATION,
                 ConfigurationType.DERIVATION,
                 ConfigurationType.PROCESS,
-                ConfigurationType.EDDYPRO,
                 ConfigurationType.LOAD_LOCAL_COPY,
             ):
                 # Should only ever have one of these

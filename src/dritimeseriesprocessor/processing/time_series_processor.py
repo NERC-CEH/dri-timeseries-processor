@@ -26,18 +26,20 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
-from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
-from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
 from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
-from dritimeseriesprocessor.utils.enums import DatasetType, MethodType, OperationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import (
+    DatasetType,
+    MethodType,
+    OperationType,
+    ProcessingLevel,
+)
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 from dritimeseriesprocessor.utils.timer import log_duration
-from dritimeseriesprocessor.utils.urls import SITE_URI
 
 logger = logging.getLogger(__name__)
 
@@ -173,9 +175,6 @@ class TimeSeriesProcessor:
             case MethodType.DERIVATION:
                 self._derive(container)
 
-            case MethodType.EDDYPRO:
-                self._run_eddypro(container)
-
     @log_duration("Loading datasets time taken: ", footer=True)
     def _batch_load_raw(self, *containers: TimeSeriesContainer) -> None:
         """Load raw time-series data for multiple datasets in grouped batches.
@@ -251,8 +250,13 @@ class TimeSeriesProcessor:
 
         This runs the operations of: Corrections, Quality Control and Infilling (in that order) to the given dataset.
         Each operation type has a pipeline class responsible for the specifics of how that method is carried out.
-        For `ObservationDataset` dependencies (e.g. the EddyPro intermediate bundle), the target column is
-        extracted before the pipelines run.
+
+        Two flows are supported depending on where the QC/correction/infill configs live:
+            - If the primary dep is an ObservationDataset bundle, the configs are attached to `container` itself
+              (the bundle has many columns and no per-variable configs). The target column is extracted from the
+              bundle into `container.data`, then pipelines run on `container`.
+            - Otherwise (standard FDRI pattern), configs are attached to the raw dep. Pipelines run on the dep
+              and the result is copied to `container.data`.
 
         Args:
             container: Time series container of metadata and data for the dataset to process.
@@ -262,11 +266,7 @@ class TimeSeriesProcessor:
         dep_container = self._get_single_dependency(container)
 
         if dep_container.dataset_type == DatasetType.OBSERVATION_DATASET:
-            # Wide bundle dep (e.g. EddyPro intermediate): extract the target column
-            # from the bundle, initialise container, then run pipelines on container.
-            df = dep_container.data.df.select([dep_container.time_column_name, container.source_column])
-            container.init_timeframe(df)
-            container.data = add_initial_core_flags(container.data)
+            self._load_from_collection(container, dep_container)
 
             with self.metrics.time_corrections.time():
                 container.data = OPERATION_PIPELINES[OperationType.CORRECTION].run(container, self.graph.datasets)
@@ -308,56 +308,36 @@ class TimeSeriesProcessor:
             container.data = pipeline.run(container, self.graph.datasets)
 
     def _derive(self, container: TimeSeriesContainer) -> None:
-        """Run derivation to create a single dataset according to the method configurations attached via metadata.
+        """Run derivation to create a dataset according to the method configurations attached via metadata.
 
         Args:
             container: Time series container of metadata and data for dataset to create via derivation.
         """
         logger.info(f"{MethodType.DERIVATION}: {container.ts_id}")
 
+        for config in container.method_config.method_configs:
+            config.params["raw_dirs"] = self._raw_dirs
+            config.params["start_date"] = self.start_date.date()
+            config.params["end_date"] = self.end_date.date()
+            config.params["site_metadata"] = self.graph.site_metadata
+
         with self.metrics.time_derive.time():
             pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
             container.data = pipeline.run(container, self.graph.datasets)
 
-    def _run_eddypro(self, container: TimeSeriesContainer) -> None:
-        """Run EddyPro for a flux site using the raw files staged by `_load_local_copy`.
+    def _load_from_collection(self, container: TimeSeriesContainer, bundle: TimeSeriesContainer) -> None:
+        """Populate a container's data by extracting its source column from an upstream ObservationDataset bundle.
+
+        After this call, `container.data` is a single-column TimeFrame with initial flags applied - indistinguishable
+        from a normally loaded raw dataset.
 
         Args:
-            container: Processed flux dataset whose method_type is EDDYPRO.
+            container: The dependent TimeSeriesContainer to populate.
+            bundle: The upstream ObservationDataset bundle to extract the column from.
         """
-        logger.info(f"{MethodType.EDDYPRO}: {container.ts_id}")
-
-        dep_ids = [dep_id for dep_id in container.all_dependencies() if dep_id in self.graph.datasets]
-        raw_candidates = [
-            self.graph.datasets[dep_id]
-            for dep_id in dep_ids
-            if self.graph.datasets[dep_id].method_type() == MethodType.LOAD_LOCAL_COPY
-        ]
-        if len(raw_candidates) != 1:
-            raise ValueError(
-                "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
-                f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
-            )
-        raw_container = raw_candidates[0]
-
-        # The LOAD_LOCAL_COPY dataset supplies the staged raw .dat files; every
-        # other resolved dependency is treated as ancillary EddyPro input.
-        ancillary_containers = [self.graph.datasets[ds_id] for ds_id in dep_ids if ds_id != raw_container.ts_id]
-        site_meta = self.graph.site_metadata.get(f"{SITE_URI}/{container.source_site}")
-        start_date = self.start_date.date()
-        end_date = self.end_date.date()
-
-        df = EddyProPipeline(runner=EddyProRunner()).run(
-            raw_data_dir=Path(self._raw_dirs[raw_container.ts_id].name),
-            method_config=container.method_config,  # type: ignore[arg-type] - always set for EDDYPRO containers
-            site_metadata=site_meta,  # type: ignore[arg-type] - always set for EDDYPRO containers
-            start_date=start_date,
-            end_date=end_date,
-            ancillary_containers=ancillary_containers,
-        )
-
-        container.time_column_name = "time"
+        df = bundle.data.df.select([bundle.time_column_name, container.source_column])
         container.init_timeframe(df)
+        container.data = add_initial_core_flags(container.data)
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
         """Get the dependent time series container of the given container where it is assumed that there is only

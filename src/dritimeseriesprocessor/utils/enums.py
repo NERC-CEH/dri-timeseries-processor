@@ -23,7 +23,6 @@ class ConfigurationType(Enum):
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
     PROCESS = "process"
-    EDDYPRO = "eddypro"
     LOAD_LOCAL_COPY = "load-local-copy"
 
 
@@ -34,7 +33,6 @@ class MethodType(Enum):
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
     LOAD = "load"
-    EDDYPRO = "eddypro"
     LOAD_LOCAL_COPY = "load-local-copy"
 
 
