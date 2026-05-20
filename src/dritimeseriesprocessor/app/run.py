@@ -46,9 +46,10 @@ def run_from_config(run_config: RunConfig) -> None:
         run_config: Runtime configuration describing the dataset selection constraints and temporal window.
     """
     if run_config.mode == CliSelectionMode.LIST_SITES:
-        list_sites_sel = run_config.selection[0]
-        assert isinstance(list_sites_sel, ListSitesSelection)
-        list_sites(list_sites_sel.network, run_config.start_date, run_config.end_date)
+        list_sites_selection = run_config.selection[0]
+        if not isinstance(list_sites_selection, ListSitesSelection):
+            raise TypeError(f"Expected ListSitesSelection, got {type(list_sites_selection).__name__}")
+        list_sites(list_sites_selection.network, run_config.start_date, run_config.end_date)
         return
 
     processor = _build_processor(
