@@ -49,9 +49,11 @@ class EddyProMetadataMapper:
             or []
         )
 
+        stripped_items = [self._strip_prefix(item or {}) for item in column_items]
+        stripped_items.sort(key=lambda item: int(item["column_index"]))
+
         columns: list[EddyProColumnSpec] = []
-        for item in column_items:
-            item_data = self._strip_prefix(item or {})
+        for item_data in stripped_items:
             columns.append(
                 EddyProColumnSpec(
                     variable=str(item_data.get("variable") or "ignore"),

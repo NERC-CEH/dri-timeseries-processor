@@ -5,7 +5,6 @@ These mappers extract the fields actually required by the pipeline and flatten n
 domain-level objects.
 """
 
-import re
 from collections import defaultdict
 from datetime import datetime
 from typing import Any
@@ -197,12 +196,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         if has_structured_value:
             # Extract any nested structured value arguments. This will be, used for example, for cases where we need
             # to extract deployment information for a sensor e.g. wind height for PE 30min
-            # TODO: replace natural sort with explicit ordering once metadata schema adds a column_number parameter.
-            ordered = sorted(
-                has_structured_value,
-                key=lambda sv: [int(p) if p.isdigit() else p for p in re.split(r"(\d+)", sv.id or "")],
-            )
-            for structured_value in ordered:
+            for structured_value in has_structured_value:
                 structured_value_params = extract_arguments(structured_value.argument, site_metadata)
                 collected_args[param_name].append(structured_value_params)
 
