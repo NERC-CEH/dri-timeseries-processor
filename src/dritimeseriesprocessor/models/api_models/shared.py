@@ -46,6 +46,15 @@ class HasValue(IDModel):
     value: list[Any] | int | float | str | list[str] | None = None
     value_reference: IDModel | list[IDModel] | None = Field(None, alias="valueReference")
 
+    @model_validator(mode="after")
+    def normalise_empty(self) -> Self:
+        """Some optional parameters come back from the API with no value or reference set.
+        Treat these as empty strings rather than None so they are written out correctly.
+        """
+        if self.value is None and self.value_reference is None:
+            self.value = [""]
+        return self
+
 
 class HasStructuredValue(IDModel):
     """Represents a structured value, that can be used to link to other metadata."""
