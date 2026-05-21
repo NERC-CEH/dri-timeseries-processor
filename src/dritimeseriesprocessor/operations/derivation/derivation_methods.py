@@ -789,6 +789,8 @@ class EddyProRun(DerivationMethod):
         )
 
         container.time_column_name = "time"
+        container.resolution = f"PT{config.params['file_duration']}M"
+        container.periodicity = container.resolution
         container.init_timeframe(df)
         return container.data
 
