@@ -253,6 +253,9 @@ class TimeSeriesProcessor:
         else:
             # Standard FDRI pattern: QC/correction/infill configs are on the raw dep.
             # Run pipelines on dep (which has the configs), then copy to container.
+
+            # TODO: Note that this is likely to change with update to the metadata so that processing configurations
+            #   are more flexible in their ordering https://github.com/NERC-CEH/fdri_discussions/discussions/14
             with self.metrics.time_corrections.time():
                 pipeline = OPERATION_PIPELINES[OperationType.CORRECTION]
                 dep_container.data = pipeline.run(dep_container, self.graph.datasets)
