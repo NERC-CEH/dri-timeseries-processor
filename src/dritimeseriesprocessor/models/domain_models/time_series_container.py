@@ -8,6 +8,7 @@ for use in the DAG builder and data processing pipeline.
 import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import polars as pl
@@ -44,6 +45,7 @@ class TimeSeriesContainer:
     infill_configs: set[DataProcessingConfig] = field(default_factory=set)
 
     data: ts.TimeFrame | None = None
+    staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)
     failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
     load_only: bool = False
 

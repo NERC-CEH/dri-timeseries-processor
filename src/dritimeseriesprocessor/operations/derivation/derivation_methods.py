@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import ClassVar
 
 import polars as pl
@@ -747,8 +746,9 @@ class EddyProRun(DerivationMethod):
     """Run the EddyPro flux processing pipeline to produce an ObservationDataset bundle.
 
     Reads all required context from `config.params`, which is populated by the processor
-    (`_raw_dirs`, `_start_date`, `_end_date`, `_site_metadata`) and the derivation pipeline
-    (`_container`, `_dataset_repository`).
+    (`start_date`, `end_date`, `site_metadata`) and the derivation pipeline
+    (`container`, `dataset_repository`). The raw .dat input is staged locally during the
+    LOAD step, with its directory recorded on the raw dependency's `staged_dir`.
     """
 
     name = "eddypro-run"
@@ -757,7 +757,6 @@ class EddyProRun(DerivationMethod):
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         container = config.params["container"]
         dataset_repository = config.params["dataset_repository"]
-        raw_dirs = config.params["raw_dirs"]
         start_date = config.params["start_date"]
         end_date = config.params["end_date"]
         site_metadata = config.params["site_metadata"]
@@ -774,12 +773,14 @@ class EddyProRun(DerivationMethod):
                 f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
             )
         raw_container = raw_candidates[0]
+        if raw_container.staged_dir is None:
+            raise ValueError(f"Raw dependency {raw_container.ts_id} was not staged locally before the EddyPro run.")
 
         ancillary_containers = [dataset_repository[ds_id] for ds_id in dep_ids if ds_id != raw_container.ts_id]
         site_meta = site_metadata.get(f"{SITE_URI}/{container.source_site}")
 
         df = EddyProPipeline(runner=EddyProRunner()).run(
-            raw_data_dir=Path(raw_dirs[raw_container.ts_id].name),
+            raw_data_dir=raw_container.staged_dir,
             method_config=container.method_config,  # type: ignore[arg-type]
             site_metadata=site_meta,  # type: ignore[arg-type]
             start_date=start_date,

@@ -46,14 +46,6 @@ class HasValue(IDModel):
     value: list[Any] | int | float | str | list[str] | None = None
     value_reference: IDModel | list[IDModel] | None = Field(None, alias="valueReference")
 
-    @model_validator(mode="after")
-    def ensure_value_or_reference(self) -> Self:
-        if self.value is None and self.value_reference is None:
-            raise PydanticCustomError(
-                "missing_value_or_reference", "Either 'value' or 'valueReference' must be provided."
-            )
-        return self
-
 
 class HasStructuredValue(IDModel):
     """Represents a structured value, that can be used to link to other metadata."""
@@ -66,16 +58,23 @@ class ArgumentItem(IDModel):
 
     field_type: list[IDModel] | None = Field(None, alias="@type")
     has_value: HasValue | None = Field(None, alias="hasValue")
-    has_structured_value: HasStructuredValue | None = Field(None, alias="hasStructuredValue")
+    has_structured_value: list[HasStructuredValue] | HasStructuredValue | None = Field(None, alias="hasStructuredValue")
     parameter: IDModel
 
     @model_validator(mode="after")
     def ensure_has_value_or_has_structured_value(self) -> Self:
-        if self.has_value is None and self.has_structured_value is None:
+        if self.has_value is None and not self.has_structured_value:
             raise PydanticCustomError(
                 "missing_has_value_or_has_structured_value",
                 "Either 'hasValue' or 'hasStructuredValue' must be provided.",
             )
+        return self
+
+    @model_validator(mode="after")
+    def ensure_has_structure_value_list(self) -> Self:
+        if self.has_structured_value:
+            if isinstance(self.has_structured_value, HasStructuredValue):
+                self.has_structured_value = [self.has_structured_value]
         return self
 
 

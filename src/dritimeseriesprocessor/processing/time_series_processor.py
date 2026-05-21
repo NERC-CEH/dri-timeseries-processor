@@ -7,15 +7,12 @@ dataset's method type.
 """
 
 import logging
-import tempfile
 from collections.abc import Iterator
 from datetime import datetime
-from pathlib import Path
 
 import polars as pl
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from dritimeseriesprocessor.io_backend.flux_io import FluxS3Client
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
@@ -67,18 +64,16 @@ class TimeSeriesProcessor:
         start_date: datetime,
         end_date: datetime,
         metrics: Metrics,
-        flux_s3_client: FluxS3Client | None = None,
     ):
         """Initialise the processor.
 
         Args:
             graph: Dependency graph containing dataset relationships and repository of dataset containers.
-            data_router: Router for retrieving raw data from storage.
+            data_router: Router for retrieving data from storage.
             data_writer: Handles writing data to parquet files.
             start_date: Start of the date range to process (inclusive).
             end_date: End of the date range to process (inclusive).
             metrics: Metrics reporter.
-            flux_s3_client: S3 client for raw .dat file download.
         """
         self.graph = graph
         self.data_router = data_router
@@ -86,10 +81,6 @@ class TimeSeriesProcessor:
         self.start_date = start_date
         self.end_date = end_date
         self.metrics = metrics
-        self.flux_s3_client = flux_s3_client
-
-        # Staged raw input for EddyPro dependencies.
-        self._raw_dirs: dict[str, tempfile.TemporaryDirectory] = {}
 
     def run(self) -> None:
         """Execute the processing pipeline by iterating through the dependency graph.
@@ -118,12 +109,7 @@ class TimeSeriesProcessor:
             logger.info("Processing pipeline finished. Pushing prometheus metrics.")
             self.metrics.export_metrics_to_pushgateway()
         finally:
-            for tmp in self._raw_dirs.values():
-                try:
-                    tmp.cleanup()
-                except Exception:
-                    logger.exception("Failed to clean up temporary directory.")
-            self._raw_dirs.clear()
+            self.data_router.cleanup()
 
     def process_layer(self, layer: list[str]) -> None:
         """Process an individual layer of the dependency graph.
@@ -224,26 +210,13 @@ class TimeSeriesProcessor:
                         continue
 
     def _load_local_copy(self, container: TimeSeriesContainer) -> None:
-        """Download raw .dat files from S3 into a temp directory for a downstream EddyPro run.
+        """Stage a raw dataset's files locally for a downstream operation (e.g. an EddyPro run).
 
         Args:
-            container: Raw flux dataset whose files should be staged locally.
+            container: Raw dataset whose files should be staged locally.
         """
         logger.info(f"{MethodType.LOAD_LOCAL_COPY}: {container.ts_id}")
-        start_date = self.start_date.date()
-        end_date = self.end_date.date()
-        tmp = tempfile.TemporaryDirectory(prefix=f"eddypro_raw_{container.source_site_identifier}_")
-        self._raw_dirs[container.ts_id] = tmp
-
-        self.flux_s3_client.download_raw_dat_files(  # type: ignore[union-attr]
-            bucket=container.s3_bucket,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            site=container.source_site,
-            dataset=container.s3_dataset_path,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            network=container.network,
-            start_date=start_date,
-            end_date=end_date,
-            local_dir=Path(tmp.name),
-        )
+        container.staged_dir = self.data_router.stage_locally(container, self.start_date, self.end_date)
 
     def _process(self, container: TimeSeriesContainer) -> None:
         """Process a single dataset according to the data processing configurations attached via metadata.
@@ -316,7 +289,6 @@ class TimeSeriesProcessor:
         logger.info(f"{MethodType.DERIVATION}: {container.ts_id}")
 
         for config in container.method_config.method_configs:
-            config.params["raw_dirs"] = self._raw_dirs
             config.params["start_date"] = self.start_date.date()
             config.params["end_date"] = self.end_date.date()
             config.params["site_metadata"] = self.graph.site_metadata

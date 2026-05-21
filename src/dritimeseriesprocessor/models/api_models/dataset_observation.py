@@ -31,8 +31,8 @@ class Aggregation(IDModel):
 class Measure(IDModel):
     """Measure specification with variable and unit."""
 
-    variable: Variable
-    has_unit: HasUnit = Field(..., alias="hasUnit")
+    variable: Variable | None = None
+    has_unit: HasUnit | None = Field(None, alias="hasUnit")
     aggregation: Aggregation
 
 

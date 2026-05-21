@@ -19,13 +19,12 @@ from dritimeseriesprocessor.cli.selection import DimensionSelection, ListSitesSe
 from dritimeseriesprocessor.configuration.app_config import AppConfig, app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_factory
-from dritimeseriesprocessor.io_backend.flux_io import FluxS3Client
-from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader
+from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader, RawFileReader
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
 from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.mappers.api_to_domain import map_site_metadata
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
-from dritimeseriesprocessor.routers.data.data_router import DuckDBDataRouter
+from dritimeseriesprocessor.routers.data.data_router import S3DataRouter
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
@@ -94,12 +93,12 @@ def _build_processor(
     metadata_router = MetadataRouter(cfg.metadata_api_url)
     storage = _build_storage(cfg)
     reader = DuckDBParquetReader(create_duckdb_factory())
+    raw_reader = RawFileReader(storage)
     writer = ByteParquetWriter(storage)
-    data_router = DuckDBDataRouter(reader)
+    data_router = S3DataRouter(reader, raw_reader)
     metrics = Metrics(cfg.pushgateway_url, "timeseries-processor")
 
     graph = _build_dependency_graph(selection, metadata_router, start_date, end_date)
-    flux_s3_client = FluxS3Client(storage_client=storage)
 
     return TimeSeriesProcessor(
         graph=graph,
@@ -108,7 +107,6 @@ def _build_processor(
         start_date=start_date,
         end_date=end_date,
         metrics=metrics,
-        flux_s3_client=flux_s3_client,
     )
 
 
