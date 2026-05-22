@@ -1,6 +1,5 @@
 import pytest
 from pydantic import ValidationError
-from tests.utils.validation_helpers import assert_pydantic_validation_error_cause
 
 from dritimeseriesprocessor.models.api_models.shared import (
     BaseAPIResponse,
@@ -62,13 +61,12 @@ class TestHasValue:
         assert model.value_reference.id == "ref-1"
         assert model.value is None
 
-    def test_missing_both_raises(self) -> None:
-        """Test that missing both value and valueReference raises an error."""
+    def test_missing_both_normalises_to_empty(self) -> None:
+        """Test that missing both value and valueReference normalises to an empty string value."""
         data = {"@id": "1"}
-        with pytest.raises(ValidationError) as err:
-            HasValue.model_validate(data)
-
-        assert_pydantic_validation_error_cause(err, 1, "missing_value_or_reference")
+        model = HasValue.model_validate(data)
+        assert model.value == [""]
+        assert model.value_reference is None
 
 
 class TestHasCurrentConfigurationItem:

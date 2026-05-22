@@ -40,7 +40,7 @@
       "distribution": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-raw",
-          "accessUrl": "s3://ukceh-fdri-staging-obs/Flux/"
+          "accessUrl": ["s3://ukceh-fdri-staging-obs/Flux/"]
         }
       ],
       "originatingSite": [

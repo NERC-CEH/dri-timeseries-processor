@@ -12,7 +12,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
     check_common_attributes,
     group_containers,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, MethodType, ProcessingLevel
 from utils.data_creation import make_time_series_container
 
 
@@ -21,39 +21,22 @@ def make_daily_df(n_rows: int = 3, col_name: str = "value") -> pl.DataFrame:
     return pl.DataFrame({"time": dates, col_name: list(range(n_rows))})
 
 
-class TestIsObservationDataset:
-    def test_true_when_observation_dataset(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
-        assert c.is_observation_dataset is True
-
-    def test_false_when_timeseries_dataset(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = "TimeSeriesDataset"
-        assert c.is_observation_dataset is False
-
-    def test_false_when_none(self) -> None:
-        c = make_time_series_container("a")
-        assert c.dataset_type is None
-        assert c.is_observation_dataset is False
-
-
 class TestS3Bucket:
     def test_parses_bucket_from_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = "s3://my-bucket/some/path/"
         assert c.s3_bucket == "my-bucket"
 
     def test_falls_back_to_source_bucket_for_timeseries(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "TimeSeriesDataset"
+        c.dataset_type = DatasetType.TIMESERIES_DATASET
         c.distribution_url = "s3://ignored-bucket/path/"
         assert c.s3_bucket == c.source_bucket
 
     def test_falls_back_to_source_bucket_when_no_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = None
         assert c.s3_bucket == c.source_bucket
 
@@ -61,25 +44,25 @@ class TestS3Bucket:
 class TestS3DatasetPath:
     def test_parses_path_from_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = "s3://my-bucket/Flux/"
         assert c.s3_dataset_path == "Flux"
 
     def test_strips_trailing_slash(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = "s3://my-bucket/deep/nested/path/"
         assert c.s3_dataset_path == "deep/nested/path"
 
     def test_falls_back_to_source_dataset_for_timeseries(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "TimeSeriesDataset"
+        c.dataset_type = DatasetType.TIMESERIES_DATASET
         c.distribution_url = "s3://ignored/path/"
         assert c.s3_dataset_path == c.source_dataset
 
     def test_falls_back_to_source_dataset_when_no_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = None
         assert c.s3_dataset_path == c.source_dataset
 
