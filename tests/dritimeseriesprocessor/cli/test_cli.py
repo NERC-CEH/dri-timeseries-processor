@@ -6,7 +6,7 @@ import pytest
 from freezegun import freeze_time
 
 from dritimeseriesprocessor.cli.cli import _parse_date_range, _parse_lookback, parse_args
-from dritimeseriesprocessor.cli.selection import SelectionOption
+from dritimeseriesprocessor.cli.selection import DimensionSelection
 from dritimeseriesprocessor.utils.urls import SITE_URI
 
 
@@ -14,12 +14,23 @@ class TestParseArgs:
     @pytest.mark.parametrize(
         "selections, expected_queries",
         [
-            ([["SITE1", "TA", "P1D"]], [SelectionOption([f"{SITE_URI}/SITE1"], ["TA"], ["P1D"])]),
+            (
+                [["SITE1", "TA", "P1D"]],
+                [
+                    DimensionSelection(
+                        network="a_network", sites=[f"{SITE_URI}/SITE1"], variables=["TA"], periodicities=["P1D"]
+                    )
+                ],
+            ),
             (
                 [["SITE1", "TA", "P1D"], ["SITE2", "RH", "PT30M"]],
                 [
-                    SelectionOption([f"{SITE_URI}/SITE1"], ["TA"], ["P1D"]),
-                    SelectionOption([f"{SITE_URI}/SITE2"], ["RH"], ["PT30M"]),
+                    DimensionSelection(
+                        network="a_network", sites=[f"{SITE_URI}/SITE1"], variables=["TA"], periodicities=["P1D"]
+                    ),
+                    DimensionSelection(
+                        network="a_network", sites=[f"{SITE_URI}/SITE2"], variables=["RH"], periodicities=["PT30M"]
+                    ),
                 ],
             ),
         ],
@@ -85,15 +96,35 @@ class TestParseArgs:
             ]
         )
 
-        expected_queries = [SelectionOption([f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"], ["TA", "RH"], ["P1D"])]
+        expected_queries = [
+            DimensionSelection(
+                network="a_network",
+                sites=[f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"],
+                variables=["TA", "RH"],
+                periodicities=["P1D"],
+            )
+        ]
         assert cfg.selection == expected_queries
 
     @pytest.mark.parametrize(
         "args, expected_queries",
         [
-            (["--variables", "TA"], [SelectionOption(None, ["TA"], None)]),
-            (["--sites", "SITE1"], [SelectionOption([f"{SITE_URI}/SITE1"], None, None)]),
-            (["--periodicities", "P1D"], [SelectionOption(None, None, ["P1D"])]),
+            (
+                ["--variables", "TA"],
+                [DimensionSelection(network="a_network", sites=None, variables=["TA"], periodicities=None)],
+            ),
+            (
+                ["--sites", "SITE1"],
+                [
+                    DimensionSelection(
+                        network="a_network", sites=[f"{SITE_URI}/SITE1"], variables=None, periodicities=None
+                    )
+                ],
+            ),
+            (
+                ["--periodicities", "P1D"],
+                [DimensionSelection(network="a_network", sites=None, variables=None, periodicities=["P1D"])],
+            ),
         ],
     )
     def test_cross_product_with_missing_dimensions(self, args: list, expected_queries: list) -> None:
