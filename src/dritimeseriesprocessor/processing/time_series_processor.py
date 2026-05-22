@@ -295,6 +295,7 @@ class TimeSeriesProcessor:
             config.params["start_date"] = self.start_date.date()
             config.params["end_date"] = self.end_date.date()
             config.params["site_metadata"] = self.graph.site_metadata
+            config.params["data_router"] = self.data_router
 
         with self.metrics.time_derive.time():
             pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]

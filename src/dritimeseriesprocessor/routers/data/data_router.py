@@ -5,7 +5,7 @@ Data routing interfaces for retrieving time series data.
 import logging
 import tempfile
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import polars as pl
@@ -53,6 +53,35 @@ class DataRouter(ABC):
 
         Returns:
             Path to the local directory containing the downloaded files.
+        """
+        pass
+
+    @abstractmethod
+    def query_history_columns(
+        self,
+        bucket: str,
+        network: str,
+        resolution: str,
+        site: str,
+        time_col: str,
+        columns: list[str],
+        start_date: date,
+        end_date: date,
+    ) -> pl.DataFrame:
+        """Load named columns from the processed hive partition for a date range.
+
+        Args:
+            bucket: S3 bucket containing the processed parquet files.
+            network: Network identifier (top-level hive partition key).
+            resolution: ISO-8601 resolution string (e.g. "PT30M").
+            site: Site identifier used in the hive partition.
+            time_col: Name of the timestamp column in the parquet files.
+            columns: Column names to select (in addition to time_col).
+            start_date: Start of the date range (inclusive).
+            end_date: End of the date range (inclusive).
+
+        Returns:
+            DataFrame with time_col and the requested columns.
         """
         pass
 
@@ -143,6 +172,45 @@ class S3DataRouter(DataRouter):
 
         logger.info("Staged %d raw file(s) for %s into %s", total_downloaded, container.ts_id, local_dir)
         return local_dir
+
+    def query_history_columns(
+        self,
+        bucket: str,
+        network: str,
+        resolution: str,
+        site: str,
+        time_col: str,
+        columns: list[str],
+        start_date: date,
+        end_date: date,
+    ) -> pl.DataFrame:
+        """Load named columns from the processed hive partition for a date range.
+
+        Args:
+            bucket: S3 bucket containing the processed parquet files.
+            network: Network identifier (top-level hive partition key).
+            resolution: ISO-8601 resolution string (e.g. "PT30M").
+            site: Site identifier used in the hive partition.
+            time_col: Name of the timestamp column in the parquet files.
+            columns: Column names to select (in addition to time_col).
+            start_date: Start of the date range (inclusive).
+            end_date: End of the date range (inclusive).
+
+        Returns:
+            DataFrame with time_col and the requested columns.
+        """
+        col_sql = ", ".join([f'"{c}"' for c in columns])
+        base = self._site_partition_prefix(network, "resolution", resolution, site)
+        bucket_path = f"s3://{bucket}/{base}/**/date=*/data.parquet"
+        query = f"""
+            SELECT "{time_col}", {col_sql}
+            FROM read_parquet(
+                '{bucket_path}', hive_partitioning=true
+            )
+            WHERE
+                (date BETWEEN ? AND ?);
+        """
+        return self.reader.read(query, [start_date, end_date])
 
     def cleanup(self) -> None:
         """Clean up all temporary directories created for staging."""

@@ -1,4 +1,6 @@
+import logging
 from abc import ABC, abstractmethod
+from datetime import date, timedelta
 from typing import ClassVar
 
 import polars as pl
@@ -6,12 +8,16 @@ import time_stream as ts
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
-from dritimeseriesprocessor.utils.enums import MethodType, OperationType
+from dritimeseriesprocessor.operations.eddypro.flux_despike import despike_df
+from dritimeseriesprocessor.utils.enums import DatasetType, MethodType, OperationType, ProcessingLevel
 from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 from dritimeseriesprocessor.utils.urls import SITE_URI
+
+logger = logging.getLogger(__name__)
 
 
 class DerivationMethod(Operation, ABC):
@@ -677,69 +683,49 @@ class CalcFluxMeanShf(DerivationMethod):
 
 
 @DerivationMethod.register
-class CalcFluxLambda(DerivationMethod):
-    """Calculate latent heat of vaporization (lambda) from air temperature."""
-
-    name = "calc_flux_lambda"
-    inputs = ("airtemp_c",)
-
-    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """Calculate latent heat of vaporization (lambda) [MJ kg-1]
-
-        Args:
-            columns: Dict with keys of required columns for the calculation.
-            - "airtemp_c": Air temperature [degC]
-
-        Returns:
-            Polars expression computing lambda
-        """
-        return 2.501 - 0.002361 * columns["airtemp_c"]
-
-
-@DerivationMethod.register
 class CalcFluxLeL1(DerivationMethod):
-    """Calculate latent heat flux LE_L1 = Rn - SHF - H."""
+    """Calculate latent heat flux LE_L1 = Rn - SHF - H [W m-2]."""
 
     name = "calc_flux_le_l1"
     inputs = ("t_nr_avg", "shf", "h")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """Calculate latent heat flux (LE_L1) [W m-2]
-
-        Args:
-            columns: Dict with keys of required columns for the calculation.
-            - "t_nr_avg": Net radiation [W m-2]
-            - "shf": Soil heat flux [W m-2]
-            - "h": Sensible heat flux [W m-2]
-
-        Returns:
-            Polars expression computing LE_L1
-        """
         return columns["t_nr_avg"] - columns["shf"] - columns["h"]
 
 
 @DerivationMethod.register
-class CalcFluxEt(DerivationMethod):
-    """Calculate evapotranspiration ET = LE / lambda / 1000, with lambda derived inline from air temperature."""
+class CalcFluxEtL1(DerivationMethod):
+    """Calculate evapotranspiration ET_L1 = LE_L1 / lambda / 1000 [mm 30min-1]."""
 
-    name = "calc_flux_et"
-    inputs = ("le", "airtemp_c")
+    name = "calc_flux_et_l1"
+    inputs = ("le_l1", "airtemp_c")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """Calculate evapotranspiration (ET) [mm 30min-1]
+        lv = 2.501 - 0.002361 * columns["airtemp_c"]
+        return columns["le_l1"] / lv / 1000.0
 
-        Args:
-            columns: Dict with keys of required columns for the calculation.
-            - "le": Latent heat flux [W m-2]
-            - "airtemp_c": Air temperature [degC]
 
-        Returns:
-            Polars expression computing ET
-        """
-        le = columns["le"]
-        ta = columns["airtemp_c"]
-        lv = 2.501 - 0.002361 * ta
-        return le / lv / 1000.0
+@DerivationMethod.register
+class CalcFluxLeL2(DerivationMethod):
+    """Calculate latent heat flux LE_L2 = Rn - SHF - H_L2 [W m-2], using despiked H."""
+
+    name = "calc_flux_le_l2"
+    inputs = ("t_nr_avg", "shf", "h_l2")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return columns["t_nr_avg"] - columns["shf"] - columns["h_l2"]
+
+
+@DerivationMethod.register
+class CalcFluxEtL2(DerivationMethod):
+    """Calculate evapotranspiration ET_L2 = LE_L2 / lambda / 1000 [mm 30min-1], using despiked LE."""
+
+    name = "calc_flux_et_l2"
+    inputs = ("le_l2", "airtemp_c")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        lv = 2.501 - 0.002361 * columns["airtemp_c"]
+        return columns["le_l2"] / lv / 1000.0
 
 
 @DerivationMethod.register
@@ -754,6 +740,13 @@ class EddyProRun(DerivationMethod):
 
     name = "eddypro-run"
     inputs: ClassVar[tuple] = ()
+
+    # TODO: wire these from config params once API supports DESPIKE_COLUMNS etc.
+    _DESPIKE_COLUMNS = ["H", "Tau"]
+    _DESPIKE_REFERENCE_COLUMN = "R_SW_in_Avg"
+    _DESPIKE_LOOKBACK_DAYS = 5
+    _DESPIKE_SENSITIVITY = 5.5
+    _DESPIKE_ITERATIONS = 1
 
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         container = config.params["container"]
@@ -789,11 +782,92 @@ class EddyProRun(DerivationMethod):
             ancillary_containers=ancillary_containers,
         )
 
+        resolution = f"PT{config.params['file_duration']}M"
+        data_router = config.params.get("data_router")
+        if data_router is not None:
+            df = self._run_despiking(df, container, dataset_repository, start_date, resolution, data_router)
+        else:
+            logger.warning("data_router not available in EddyProRun params; despiking skipped.")
+
         container.time_column_name = "time"
-        container.resolution = f"PT{config.params['file_duration']}M"
+        container.resolution = resolution
         container.periodicity = container.resolution
         container.init_timeframe(df)
         return container.data
+
+    @staticmethod
+    def _run_despiking(
+        df: pl.DataFrame,
+        container: TimeSeriesContainer,
+        dataset_repository: dict,
+        start_date: date,
+        resolution: str,
+        data_router,
+    ) -> pl.DataFrame:
+        """Load history and apply MAD despiking to H and Tau in the EddyPro bundle.
+
+        Args:
+            df: EddyPro output DataFrame for the current processing window.
+            container: The EddyPro bundle container (provides site/network/resolution metadata).
+            dataset_repository: All containers in the DAG, used to locate the processed bucket.
+            start_date: Start of the current processing window (used to calculate history range).
+            resolution: ISO-8601 resolution string (e.g. "PT30M") for the hive partition path.
+            data_router: Router used to load historical processed data from S3.
+
+        Returns:
+            df with H_despiked, Tau_L2, and H_L2 columns added, or df unchanged if history is unavailable.
+        """
+        # Use a processed variable container to get network and bucket — the bundle itself has network=None
+        processed_container = next(
+            (
+                c
+                for c in dataset_repository.values()
+                if c.source_bucket is not None
+                and c.source_site_identifier == container.source_site_identifier
+                and c.processing_level == ProcessingLevel.PROCESSED
+                and c.dataset_type != DatasetType.OBSERVATION_DATASET
+            ),
+            None,
+        )
+
+        if processed_container is None:
+            logger.warning(
+                "Despiking skipped: no processed container found for site %s.", container.source_site_identifier
+            )
+            return df
+
+        history_start = start_date - timedelta(days=EddyProRun._DESPIKE_LOOKBACK_DAYS)
+        history_end = start_date - timedelta(days=1)
+
+        history_df = data_router.query_history_columns(
+            bucket=processed_container.source_bucket,
+            network=processed_container.network,
+            resolution=resolution,
+            site=container.source_site_identifier,
+            time_col="time",
+            columns=EddyProRun._DESPIKE_COLUMNS + [EddyProRun._DESPIKE_REFERENCE_COLUMN],
+            start_date=history_start,
+            end_date=history_end,
+        )
+
+        if history_df is None or history_df.is_empty():
+            logger.warning(
+                "Despiking skipped: no history data available for site %s (window: %s to %s).",
+                container.source_site_identifier,
+                history_start,
+                history_end,
+            )
+            return df
+
+        return despike_df(
+            current_df=df,
+            history_df=history_df,
+            columns=EddyProRun._DESPIKE_COLUMNS,
+            reference_column=EddyProRun._DESPIKE_REFERENCE_COLUMN,
+            lookback_days=EddyProRun._DESPIKE_LOOKBACK_DAYS,
+            sensitivity=EddyProRun._DESPIKE_SENSITIVITY,
+            iterations=EddyProRun._DESPIKE_ITERATIONS,
+        )
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         raise NotImplementedError("EddyProRun overrides run() directly")
