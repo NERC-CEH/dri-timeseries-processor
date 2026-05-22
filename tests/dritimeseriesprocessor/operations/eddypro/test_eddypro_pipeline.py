@@ -179,7 +179,7 @@ class TestEddyProPipeline:
             method_config=DataProcessingConfig(
                 ts_id="http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed",
                 config_id="config-1",
-                config_type=ConfigurationType.EDDYPRO,
+                config_type=ConfigurationType.DERIVATION,
                 method_configs=[],
             ),
             site_metadata=SiteMetadata(
@@ -253,7 +253,7 @@ class TestEddyProPipeline:
             method_config=DataProcessingConfig(
                 ts_id="dataset",
                 config_id="config-1",
-                config_type=ConfigurationType.EDDYPRO,
+                config_type=ConfigurationType.DERIVATION,
                 method_configs=[],
             ),
             site_metadata=SiteMetadata(
@@ -315,7 +315,7 @@ class TestEddyProPipeline:
             method_config=DataProcessingConfig(
                 ts_id="dataset",
                 config_id="config-1",
-                config_type=ConfigurationType.EDDYPRO,
+                config_type=ConfigurationType.DERIVATION,
                 method_configs=[],
             ),
             site_metadata=SiteMetadata(
