@@ -24,6 +24,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
     SolarZenith,
+    VolumetricWaterContent,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -540,7 +541,7 @@ class TestIsSnowDay:
 
 
 class TestCorrectCounts:
-    def test_calculation(self) -> None:
+    def test_correct_counts(self) -> None:
         """Test corrected mod counts are the product of raw counts and all three correction factors.
         cts_mod values from cosmos-holln on 2016-07-27.
         Factor values taken from the holln expected outputs in TestNeutronIntensityFactor,
@@ -558,6 +559,31 @@ class TestCorrectCounts:
         expected = dataframe_to_timeframe(pl.DataFrame({"correct_counts": [885.847, 822.629, 979.390, 851.902]}))
         result = CorrectCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
+
+
+class TestVolumetricWaterContent:
+    def test_volumetric_water_content(self) -> None:
+        """Test calculate_vwc using cosmos-holln site annotations.
+        cts_mod_corr values include 0, the corrected counts from TestCorrectCounts (all below n_min),
+        and representative valid-range counts.
+        """
+        config = create_method_config(
+            {"cts_mod_corr": [0.0, 885.847, 822.629, 979.390, 851.902, 1300.0, 1500.0, 1800.0, 2000.0]},
+            "vwc",
+        )
+        # Annotations from cosmos-holln
+        config.params["n0_mod"] = 2710.16689
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+        config.params["n_min"] = 1204.50827
+        config.params["n_max"] = 2281.33025
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"vwc": [100.0, 100.0, 100.0, 100.0, 100.0, 61.311, 28.964, 11.083, 5.172]})
+        )
+        result = VolumetricWaterContent().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 
 class TestCalcFluxMeanShf:

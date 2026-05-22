@@ -101,7 +101,7 @@ class TestDuckDBParquetReader:
         assert stats["idle_for"] == 0
 
 
-BUCKET_NAME = "ukceh-fdri-staging-timeseries-level-0"
+BUCKET_NAME = "ukceh-dri-staging-ingested"
 
 
 @pytest.fixture
