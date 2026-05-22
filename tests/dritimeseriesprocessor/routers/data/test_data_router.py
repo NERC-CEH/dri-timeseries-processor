@@ -9,8 +9,8 @@ from tests.utils.metadata_helpers import E2E_INPUT_BUCKET
 from tests.utils.s3_test_helpers import get_s3_storage_client
 
 from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_factory
-from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader
-from dritimeseriesprocessor.routers.data.data_router import DuckDBDataRouter
+from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader, RawFileReader
+from dritimeseriesprocessor.routers.data.data_router import S3DataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient
 
 TEST_DF = pl.DataFrame({"time": [datetime(2023, 1, 1), datetime(2023, 1, 2)], "value": [10, 20]})
@@ -25,8 +25,13 @@ def mock_reader() -> MagicMock:
 
 
 @pytest.fixture
-def router(mock_reader: MagicMock) -> DuckDBDataRouter:
-    return DuckDBDataRouter(mock_reader)
+def mock_raw_reader() -> MagicMock:
+    return MagicMock(spec=RawFileReader)
+
+
+@pytest.fixture
+def router(mock_reader: MagicMock, mock_raw_reader: MagicMock) -> S3DataRouter:
+    return S3DataRouter(mock_reader, mock_raw_reader)
 
 
 @pytest.fixture(scope="module")
@@ -35,8 +40,8 @@ def s3_storage_client() -> Iterator[S3StorageClient]:
         yield storage_client
 
 
-class TestDuckDBDataRouter:
-    def test_query_by_date_range(self, router: DuckDBDataRouter, mock_reader: MagicMock) -> None:
+class TestS3DataRouter:
+    def test_query_by_date_range(self, router: S3DataRouter, mock_reader: MagicMock) -> None:
         start = datetime(2023, 1, 1)
         end = datetime(2023, 1, 2)
 
@@ -47,6 +52,7 @@ class TestDuckDBDataRouter:
             source_site="a_network-a_site",
             source_column="a_column_name",
             source_site_identifier="A_SITE",
+            resolution="PT30M",
             time_column_name="a_time",
         )
 
@@ -74,7 +80,8 @@ class TestDuckDBDataRouter:
         end = datetime(2023, 1, 1)
 
         reader = DuckDBParquetReader(create_duckdb_factory())
-        router = DuckDBDataRouter(reader)
+        raw_reader = MagicMock(spec=RawFileReader)
+        router = S3DataRouter(reader, raw_reader)
 
         container = MagicMock(
             source_bucket=E2E_INPUT_BUCKET,
@@ -82,6 +89,7 @@ class TestDuckDBDataRouter:
             network=f"{prefix}_network",
             source_column="value",
             source_site_identifier=f"{prefix.upper()}_SITE",
+            resolution="PT30M",
             time_column_name="time",
         )
 
