@@ -1,6 +1,6 @@
 # Time Series Data Processing Pipeline
 
-A pipeline for processing environmental time series data from monitoring networks. The system performs corrections, 
+A pipeline for processing environmental time series data from monitoring networks. The system performs corrections,
 quality control, infilling, aggregation, and derivation operations on meteorological and hydrological measurements.
 
 ## Overview
@@ -17,7 +17,7 @@ This pipeline processes time series data through a metadata-driven approach:
 The processor CLI is invoked using:
 
 ```bash
-python -m dritimeseriesprocessor ... 
+python -m dritimeseriesprocessor ...
 ```
 
 Use one of two (mutually exclusive) processing modes, or the utility command:
@@ -124,37 +124,63 @@ This initialises:
 - LocalStack S3 buckets with sample data
 - Prometheus Pushgateway for metrics (accessible at `localhost:9091`)
 
-### Linting
-Linting uses ruff using the config in pyproject.toml
-```
-ruff check --fix
-```
+### Common commands
 
-### Formatting
-Formatting uses ruff using the config in pyproject.toml which follows the default black settings.
-```
-ruff format .
-```
+Run `make help` to list all available targets. The most commonly used ones:
 
-### Testing
-Testing is done using pytest and tests are in the /tests directory.
-```
-pytest
-```
+| Command              | Description                          |
+|----------------------|--------------------------------------|
+| `make qa`            | Format, lint, type check, and test   |
+| `make test`          | Run tests                            |
+| `make ruff`          | Run ruff format and lint checks      |
+| `make type-check`    | Type check with pyright              |
+| `make docker-build`  | Build the Docker image locally       |
+| `make docker-run`    | Run the Docker image locally         |
+| `make install-hooks` | Configure git to use `.githooks/`    |
 
 Test data is automatically loaded into LocalStack S3 on container initialization.
 
 #### Detecting tests using VSCode
-VSCode has a useful test runner, allowing running and debugging of all tests within the repository. To allow VSCode to detect the tests, use the `Configure Tests` option accessed either via the help menu (select "Show All Commands" and type "Configure Tests" in the search bar), or via the test runner panel and select the "Configure Tests" button if it is available. To configure the tests, select `pytest` as the test runner framework and `testing` as the directory containing the tests.
 
-### Pre commit hooks
-Run below to set up the pre-commit hooks.
+VSCode has a useful test runner, allowing running and debugging of all tests within the repository. To allow VSCode
+to detect the tests, use the `Configure Tests` option accessed either via the help menu (select "Show All Commands"
+and type "Configure Tests" in the search bar), or via the test runner panel and select the "Configure Tests" button
+if it is available. To configure the tests, select `pytest` as the test runner framework and `testing` as the
+directory containing the tests.
+
+### Pre-commit hooks
+
+Run the following to set up the pre-commit hooks:
+
+```bash
+make install-hooks
 ```
-git config --local core.hooksPath .githooks/
-```
-This will set this repo up to use the git hooks in the `.githooks/` directory.
+
 The hook runs `ruff format --check` and `ruff check` to prevent commits that are not formatted correctly or have errors.
-The hook intentionally does not alter the files, but informs the user which command to run.
+The hook intentionally does not alter files, but tells you which command to run.
+
+## Releasing
+
+### Bumping the version
+
+```bash
+make bump-patch   # 0.1.0 -> 0.1.1
+make bump-minor   # 0.1.0 -> 0.2.0
+make bump-major   # 0.1.0 -> 1.0.0
+```
+
+Each command bumps the version in `pyproject.toml`, creates a `CHANGELOG/<new_version>.md` stub, and commits both with
+a standard message. Fill in the changelog stub before opening your PR.
+
+### Deploying to production
+
+1. Merge your feature PR into `staging` - deploys to staging
+2. The pipeline automatically opens a PR from `staging` into `production`
+3. Review and merge that PR - deploys to production and creates a GitHub Release
+
+When a PR targets `production`, the `release-ready` CI job checks that `CHANGELOG/<version>.md` exists and is
+filled in (if the version has been bumped). The PR will be blocked if the changelog is missing or still contains
+the stub placeholder.
 
 ## Configuration
 
