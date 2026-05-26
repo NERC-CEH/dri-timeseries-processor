@@ -1,6 +1,5 @@
 import math
 from abc import ABC, abstractmethod
-from typing import ClassVar
 
 import polars as pl
 import time_stream as ts
@@ -13,7 +12,7 @@ from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timefr
 
 
 class CorrectionMethod(Operation, ABC):
-    operation_type: ClassVar[OperationType] = OperationType.CORRECTION
+    operation_type: OperationType.CORRECTION
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:

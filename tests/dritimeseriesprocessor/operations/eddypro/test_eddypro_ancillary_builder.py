@@ -83,7 +83,6 @@ class TestEddyProBiometBuilder:
             output_path=tmp_path / "inputs" / "biomet.csv",
         )
 
-        assert output_path is not None
         assert output_path.name == "biomet.csv"
         assert output_path.read_text().splitlines() == [
             "TIMESTAMP_1,AirTemp_C,RH",
@@ -170,7 +169,6 @@ class TestEddyProDynamicMetadataBuilder:
             output_path=tmp_path / "inputs" / "dynamic_metadata.txt",
         )
 
-        assert output_path is not None
         assert output_path.name == "dynamic_metadata.txt"
         assert output_path.read_text().splitlines() == [
             "date\ttime\tsonic_azimuth\theight_canopy",
@@ -217,7 +215,6 @@ class TestEddyProDynamicMetadataBuilder:
             output_path=tmp_path / "dynamic_metadata.txt",
         )
 
-        assert output_path is not None
         lines = output_path.read_text().splitlines()
         assert lines[0] == "date\ttime\tsonic_azimuth\theight_canopy"
         assert len(lines) == 4  # header + units + 2 data rows

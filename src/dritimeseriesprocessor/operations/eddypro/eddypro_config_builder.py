@@ -181,7 +181,7 @@ class EddyProConfigBuilder:
 
     def _read_ini(self, path: Path) -> configparser.ConfigParser:
         config = configparser.ConfigParser()
-        config.optionxform = str  # type: ignore[assignment]
+        config.optionxform = str
         text = path.read_text()
 
         lines = text.splitlines(keepends=True)

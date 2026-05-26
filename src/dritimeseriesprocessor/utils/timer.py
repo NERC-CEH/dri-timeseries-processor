@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass
 from functools import wraps
 from types import TracebackType
-from typing import Any, Callable, Self, Type, TypeVar, cast
+from typing import Any, Callable, Self, Type, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +113,6 @@ def log_duration(
             ):
                 return func(*args, **kwargs)
 
-        return cast(F, wrapper)
+        return wrapper
 
     return decorator

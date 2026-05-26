@@ -184,13 +184,11 @@ class TestInitTimeframe:
     def test_timeframe_metadata_contains_source_column(self) -> None:
         container = make_time_series_container("a")
         container.init_timeframe(make_daily_df())
-        assert container.data is not None
         assert container.data.metadata == {"column_name": container.source_column}
 
     def test_timeframe_uses_container_time_column_name(self) -> None:
         container = make_time_series_container("a")
         container.init_timeframe(make_daily_df())
-        assert container.data is not None
         assert container.data.time_name == container.time_column_name
 
 

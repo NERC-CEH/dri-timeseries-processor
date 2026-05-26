@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import cast
 from unittest.mock import MagicMock
 
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
@@ -30,14 +29,14 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLeve
 
 class TestMapDatasetItem:
     def test_dataset_with_method(self) -> None:
-        filename = str(TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_rn_1day_processed.json")
-        api_model = cast(TimeSeriesDatasetResponse, valid_parses(load_json_file, filename, TimeSeriesDatasetResponse))
+        filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_rn_1day_processed.json"
+        api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
         site_metadata = MagicMock()
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], cast(dict[str, SiteMetadata], site_metadata))
+        result = map_dataset_item(api_model.items[0], site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
@@ -62,14 +61,14 @@ class TestMapDatasetItem:
         assert result == expected
 
     def test_dataset_no_method(self) -> None:
-        filename = str(TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_ta_30min_raw.json")
-        api_model = cast(TimeSeriesDatasetResponse, valid_parses(load_json_file, filename, TimeSeriesDatasetResponse))
+        filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_ta_30min_raw.json"
+        api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
         site_metadata = MagicMock()
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], cast(dict[str, SiteMetadata], site_metadata))
+        result = map_dataset_item(api_model.items[0], site_metadata)
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
@@ -119,7 +118,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, cast(dict[str, SiteMetadata], all_site_metadata))
+        result = map_dataset_item(item, all_site_metadata)
 
         assert result.source_bucket is None
         assert result.source_dataset is None
@@ -158,7 +157,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, cast(dict[str, SiteMetadata], all_site_metadata))
+        result = map_dataset_item(item, all_site_metadata)
 
         assert result.dataset_type == "ObservationDataset"
         assert result.distribution_url == "s3://ukceh-fdri-staging-timeseries-level-0/Flux/"
@@ -535,10 +534,8 @@ class TestExtractAnnotations:
 
 class TestMapProcessingConfigItem:
     def test_qc_processing_config(self) -> None:
-        filename = str(TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json")
-        api_model = cast(
-            DataProcessingConfiguration, valid_parses(load_json_file, filename, DataProcessingConfiguration)
-        )
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json"
+        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
@@ -558,12 +555,8 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_infill_processing_config(self) -> None:
-        filename = str(
-            TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_infill.json"
-        )
-        api_model = cast(
-            DataProcessingConfiguration, valid_parses(load_json_file, filename, DataProcessingConfiguration)
-        )
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_infill.json"
+        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
@@ -584,12 +577,8 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_correction_processing_config(self) -> None:
-        filename = str(
-            TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_correction.json"
-        )
-        api_model = cast(
-            DataProcessingConfiguration, valid_parses(load_json_file, filename, DataProcessingConfiguration)
-        )
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_correction.json"
+        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 

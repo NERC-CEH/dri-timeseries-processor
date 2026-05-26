@@ -1,7 +1,6 @@
-from typing import Any, Iterable, cast
+from typing import Iterable
 from unittest.mock import MagicMock
 
-import polars as pl
 import pytest
 import time_stream as ts
 from polars.testing import assert_frame_equal
@@ -29,8 +28,8 @@ class MockOperationPipeline(OperationPipeline):
     def get_flag_column(self, column: str) -> str:
         return f"{column}_TEST_FLAG"
 
-    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series | None:
-        return cast(Any, MagicMock())
+    def compute_flag_mask(self, *args) -> MagicMock:
+        return MagicMock()
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         return tf
@@ -151,8 +150,8 @@ class TestApplyRounding:
         pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_rounding")
         result = pipeline.run(mock_container, {})
 
-        expected_tf = create_timeframe(expected)
-        assert_frame_equal(result.df["time", "value"], expected_tf.df["time", "value"])
+        expected = create_timeframe(expected)
+        assert_frame_equal(result.df["time", "value"], expected.df["time", "value"])
 
     @pytest.mark.parametrize("decimals", [-1, 0.5, -1.5])
     def test_apply_rounding_invalid(self, mock_container: MagicMock, decimals: int) -> None:

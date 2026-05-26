@@ -28,7 +28,7 @@ def discover_file_test_cases(directory: str | Path, glob_pattern: str = "*") -> 
         A list of pytest.param objects, each representing a file.
     """
     test_cases = []
-    for path in Path(directory).glob(glob_pattern):
+    for path in directory.glob(glob_pattern):
         # Create a readable relative ID for test display
         relative_path_id = str(path.relative_to(TEST_DATA_INPUT_DIR))
         test_cases.append(pytest.param(str(path), id=relative_path_id))

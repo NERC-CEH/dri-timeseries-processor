@@ -138,7 +138,7 @@ def create_mock_router(items: list) -> MagicMock:
 
     items_dict = {item["@id"]: item for item in items}
 
-    def capture(ids: list) -> MagicMock:
+    def capture(ids: list) -> None:
         _mock_response = MagicMock()
         _mock_response.items = [items_dict[i] for i in ids]
         return _mock_response

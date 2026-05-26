@@ -374,7 +374,7 @@ class DatasetDependencyGraph:
         Returns:
             All mapped `TimeSeriesContainer` extracted from the response.
         """
-        site_ids = [item.originating_site[0].id for item in dataset_response.items if item.originating_site]
+        site_ids = [item.originating_site[0].id for item in dataset_response.items]
         self._fetch_missing_site_metadata(site_ids)
 
         all_containers = []

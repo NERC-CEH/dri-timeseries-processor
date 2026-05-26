@@ -83,7 +83,7 @@ class TestAppConfig:
             AppConfigLocal(Environment.LOCAL)
 
     def test_app_config_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        filename = str(TEST_DATA_ASSETS_VALID / "env_local.cfg")
+        filename = TEST_DATA_ASSETS_VALID / "env_local.cfg"
         patch_local(filename, monkeypatch)
         cfg = app_config()
         assert isinstance(cfg, AppConfigLocal)

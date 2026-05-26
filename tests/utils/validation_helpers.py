@@ -1,4 +1,4 @@
-from typing import Any, Callable, Type, cast
+from typing import Callable, Type
 
 import polars as pl
 import pytest
@@ -20,8 +20,8 @@ def valid_parses(load_json_file: Callable, filename: str, model: Type[BaseModel]
     data = load_json_file(filename)
     result = model.model_validate(data)
 
-    assert cast(Any, result).meta is not None
-    assert cast(Any, result).items is not None
+    assert result.meta is not None
+    assert result.items is not None
 
     return result
 

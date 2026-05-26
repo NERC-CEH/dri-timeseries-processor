@@ -7,7 +7,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.utils.enums import ProcessingLevel
 
 
-def create_timeframe(values: list[float | None] | None = None, column_name: str = "value") -> ts.TimeFrame:
+def create_timeframe(values: list[float] | None = None, column_name: str = "value") -> ts.TimeFrame:
     """Create a test TimeFrame with sequential hourly timestamps.
 
     Args:

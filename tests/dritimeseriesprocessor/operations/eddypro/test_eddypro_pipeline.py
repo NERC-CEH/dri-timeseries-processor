@@ -1,6 +1,5 @@
 from datetime import date, datetime
 from pathlib import Path
-from typing import cast
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -8,8 +7,6 @@ import pytest
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.operations.eddypro.eddypro_config_builder import EddyProConfigBuilder
 from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline, _parse_eddypro_output
 from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import EddyProRunSpec
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProResult
@@ -26,7 +23,7 @@ def _write_full_output(output_dir: Path) -> None:
     f.write_text("EddyPro run info\n" + _FULL_OUTPUT_HEADER + _FULL_OUTPUT_UNITS + _FULL_OUTPUT_DATA)
 
 
-class FakeConfigBuilder(EddyProConfigBuilder):
+class FakeConfigBuilder:
     latest_run_spec: EddyProRunSpec | None = None
     project_call: dict | None = None
     metadata_call: dict | None = None
@@ -266,7 +263,7 @@ class TestEddyProPipeline:
             ),
             start_date=date(2026, 1, 20),
             end_date=date(2026, 1, 21),
-            ancillary_containers=cast(list[TimeSeriesContainer], ancillary_containers),
+            ancillary_containers=ancillary_containers,
         )
 
         assert FakeConfigBuilder.project_call is not None

@@ -1,4 +1,3 @@
-from typing import cast
 from unittest.mock import MagicMock, patch
 
 import polars as pl
@@ -84,7 +83,7 @@ class TestSortConfigs:
         configs = {config1, config2, config3}
 
         pipeline = InfillPipeline()
-        result = pipeline.sort_configs(cast(set[DataProcessingConfig], configs))
+        result = pipeline.sort_configs(configs)
 
         assert result == [config2, config3, config1]
 

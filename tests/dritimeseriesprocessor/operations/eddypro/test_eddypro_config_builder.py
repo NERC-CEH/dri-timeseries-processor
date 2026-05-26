@@ -13,7 +13,7 @@ from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import (
 
 def read_ini(path: Path) -> ConfigParser:
     config = ConfigParser()
-    config.optionxform = str  # type: ignore[assignment]
+    config.optionxform = str
     text = path.read_text()
     lines = text.splitlines(keepends=True)
     if lines and lines[0].startswith(";"):

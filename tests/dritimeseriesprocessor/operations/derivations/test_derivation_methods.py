@@ -38,7 +38,7 @@ class SimpleAddition(DerivationMethod):
 
 
 def create_method_config(
-    data: dict[str, list[float | None]],
+    data: dict[str, list[float]],
     output_col: str,
 ) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
