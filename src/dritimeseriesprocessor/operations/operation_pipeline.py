@@ -141,8 +141,7 @@ class OperationPipeline(ABC):
         Returns:
             The updated TimeFrame after all operations and flag updates.
         """
-        assert container.data is not None
-        tf = container.data
+        tf: ts.TimeFrame = container.data  # type: ignore[assignment]
 
         # Initialise the flags if required
         if self.flag_system_name:

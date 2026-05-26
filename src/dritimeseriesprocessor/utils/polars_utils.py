@@ -4,9 +4,11 @@ Helper functions related to Polars DataFrames
 
 from collections.abc import Sequence
 from datetime import datetime
+from typing import Literal
 
 import polars as pl
-from polars.type_aliases import JoinStrategy
+
+JoinStrategy = Literal["inner", "left", "right", "full", "semi", "anti", "cross"]
 
 
 def split_by_date(df: pl.DataFrame, time_col: str) -> list[tuple[datetime, pl.DataFrame]]:

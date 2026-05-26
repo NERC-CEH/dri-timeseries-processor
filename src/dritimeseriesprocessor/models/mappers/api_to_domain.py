@@ -230,7 +230,6 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None
     network = item.utilised_by[0].id if item.utilised_by else None
-    assert network is not None, "network must be set on site item"
     annotations = extract_annotations(item.has_annotation) if item.has_annotation else None
 
     return SiteMetadata(
