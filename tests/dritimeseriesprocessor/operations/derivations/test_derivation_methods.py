@@ -738,6 +738,10 @@ class TestEddyProRun:
         mock_pipeline = MagicMock()
         mock_pipeline.run.return_value = pl.DataFrame({"time": []})
         monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
             "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
             lambda *args, **kwargs: mock_pipeline,
         )
@@ -764,6 +768,10 @@ class TestEddyProRun:
         mock_pipeline = MagicMock()
         mock_pipeline.run.return_value = pl.DataFrame({"time": []})
         monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
             "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
             lambda *args, **kwargs: mock_pipeline,
         )
@@ -786,6 +794,10 @@ class TestEddyProRun:
 
         mock_pipeline = MagicMock()
         mock_pipeline.run.return_value = pl.DataFrame({"time": []})
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
         monkeypatch.setattr(
             "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
             lambda *args, **kwargs: mock_pipeline,
