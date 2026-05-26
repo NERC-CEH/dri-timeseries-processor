@@ -20,6 +20,7 @@ class TestAnnotation:
         result = HasAnnotationItem.model_validate(data)
         assert result.id == "http://fdri.ceh.ac.uk/id/annotation/example-1"
         assert result.property.id.endswith("comment")
+        assert result.has_value is not None
         assert result.has_value.value == 123
         assert result.has_value_series is None
 
@@ -57,6 +58,8 @@ class TestAnnotation:
         result = HasAnnotationItem.model_validate(data)
         assert result.has_value_series is not None
         current = result.has_value_series.has_current_value[0]
+        assert current.interval is not None
+        assert current.interval.start_date is not None
         assert current.interval.start_date.year == 2025
         assert current.qualifier[0].has_value.value == "Good"
 
@@ -86,6 +89,7 @@ class TestAnnotation:
         """Test that annotation parameters are correctly extracted for various valid inputs."""
         data = load_json_string(test_data)
         result = HasAnnotationItem.model_validate(data)
+        assert result.has_value is not None
         assert result.has_value.value == expected_value
 
     def test_value_equal_none_raises_error(self) -> None:

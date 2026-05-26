@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import ClassVar, cast
 
 import polars as pl
 import time_stream as ts
@@ -10,7 +11,7 @@ from dritimeseriesprocessor.utils.enums import OperationType
 
 
 class QcMethod(Operation, ABC):
-    operation_type: OperationType.QUALITY_CONTROL
+    operation_type: ClassVar[OperationType] = OperationType.QUALITY_CONTROL
 
     @abstractmethod
     def run(self, *args, **kwargs) -> pl.Series:
@@ -29,7 +30,7 @@ class Range(QcMethod):
             min_value=config.params["lt"],
             within=False,
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -44,7 +45,7 @@ class BatteryVoltage(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -59,7 +60,7 @@ class Samples(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -74,7 +75,7 @@ class ErrorCode(QcMethod):
             operator="is_in",
             compare_to=config.params["value"],
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -88,7 +89,7 @@ class Spike(QcMethod):
             "spike",
             threshold=config.params["gt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -104,7 +105,7 @@ class Nr01Temp(QcMethod):
             min_value=config.params["lt"],
             within=False,
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -121,7 +122,7 @@ class HeatFluxPlateRemoval(QcMethod):
             within=True,
             closed="both",
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -136,7 +137,7 @@ class PluvioDiagnostic(QcMethod):
             operator=">",
             compare_to=config.params["gt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -151,7 +152,7 @@ class SnowDaySignal(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 
@@ -166,7 +167,7 @@ class TdtTSoil(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=cast(tuple[datetime, datetime | None] | None, (config.start_date, config.end_date)),
         )
 
 

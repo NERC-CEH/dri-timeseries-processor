@@ -77,11 +77,11 @@ class AggregationPipeline(OperationPipeline):
 
     def get_flag_column(self, column: str) -> str:
         """Not required for aggregation method."""
-        pass
+        raise NotImplementedError
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Not required for aggregation method."""
-        pass
+        raise NotImplementedError
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags after aggregation method has been applied.

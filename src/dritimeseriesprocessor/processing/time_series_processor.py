@@ -191,23 +191,23 @@ class TimeSeriesProcessor:
         groupings = group_containers(containers, common_keys)
 
         with self.metrics.time_load.time():
-            for dataset_group, containers in groupings.items():
+            for dataset_group, group_containers_list in groupings.items():
                 try:
                     combined_df = self.data_router.query_by_date_range(
-                        *containers, start_date=self.start_date, end_date=self.end_date
+                        *group_containers_list, start_date=self.start_date, end_date=self.end_date
                     )
 
                     if combined_df.is_empty():
                         raise ValueError(f"No data returned for group: {dataset_group}")
 
                 except Exception:
-                    for container in containers:
+                    for container in group_containers_list:
                         self.metrics.no_data.inc()
                         container.failed = True
                     logger.exception(f"Failed to load data for group: {dataset_group}")
                     continue
 
-                for container in containers:
+                for container in group_containers_list:
                     col = container.source_column
                     try:
                         df = combined_df.select([container.time_column_name, col])
@@ -264,8 +264,10 @@ class TimeSeriesProcessor:
         if dep_container.is_observation_dataset:
             # Wide bundle dep (e.g. EddyPro intermediate): extract the target column
             # from the bundle, initialise container, then run pipelines on container.
+            assert dep_container.data is not None, "dep_container.data must be set before processing"
             df = dep_container.data.df.select([dep_container.time_column_name, container.source_column])
             container.init_timeframe(df)
+            assert container.data is not None, "container.data must be set after init_timeframe"
             container.data = add_initial_core_flags(container.data)
 
             with self.metrics.time_corrections.time():
@@ -372,6 +374,7 @@ class TimeSeriesProcessor:
         Returns:
             Dependent time series container.
         """
+        assert container.method_config is not None, "method_config must be set on container"
         dependencies = container.method_config._values_for_params("dep_ts")
         num_dependents = len(dependencies)
         if num_dependents != 1:
@@ -427,7 +430,7 @@ class TimeSeriesProcessor:
 
         for dataset_group, containers in groupings.items():
             # Double check all containers have the same properties
-            network, site_id, resolution, bucket = check_common_attributes(containers, common_keys)
+            network, site_id, resolution, bucket = check_common_attributes(containers, common_keys)  # type: ignore[misc]
 
             # Merge the data for all containers
             group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])

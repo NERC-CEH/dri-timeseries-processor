@@ -118,7 +118,7 @@ class TestThresholdArgument:
         """Check aggregation for different threshold values"""
         tf = create_timeframe(list(range(24)))
         config = create_method_config(ts.Period.of_days(1))
-        config.argument = {"threshold": threshold}
+        object.__setattr__(config, "argument", {"threshold": threshold})
 
         result = Sum().run(tf, config)
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [276]})
@@ -132,7 +132,7 @@ class TestStandardDeviation:
         config = create_method_config(ts.Period.of_days(1))
         config.params["start_time"] = "10:30:00"
         config.params["end_time"] = "14:00:00"
-        config.argument = {"threshold": 7}
+        object.__setattr__(config, "argument", {"threshold": 7})
 
         result = StandardDeviation().run(tf, config)
         expected = pl.DataFrame({"time": [datetime(2025, 1, 1)], "value": [1.290994]})
@@ -144,7 +144,7 @@ class TestStandardDeviation:
         config = create_method_config(ts.Period.of_days(1))
         config.params["start_time"] = "10:30:00"
         config.params["end_time"] = "14:00:00"
-        config.argument = {"threshold": 7}
+        object.__setattr__(config, "argument", {"threshold": 7})
 
         result = StandardDeviation().run(tf, config)
         expected = pl.DataFrame(

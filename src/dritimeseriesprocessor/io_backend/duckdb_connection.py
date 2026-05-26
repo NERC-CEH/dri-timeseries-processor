@@ -106,7 +106,9 @@ class AwsDuckDBConnectionFactory(DuckDBConnectionFactory):
         """
         conn = self._configure_duckdb_base()
 
-        creds = self.session.get_credentials().get_frozen_credentials()
+        raw_credentials = self.session.get_credentials()
+        assert raw_credentials is not None, "boto3 session has no credentials"
+        creds = raw_credentials.get_frozen_credentials()
         conn.execute(f"""
             CREATE SECRET aws_secret (
                 TYPE S3,
@@ -131,6 +133,9 @@ def create_duckdb_factory() -> DuckDBConnectionFactory:
     cfg = app_config()
 
     if cfg.environment is Environment.LOCAL:
+        assert cfg.endpoint_url is not None, "endpoint_url must be set for local environment"
+        assert cfg.AWS_ACCESS_KEY_ID is not None, "AWS_ACCESS_KEY_ID must be set for local environment"
+        assert cfg.AWS_SECRET_ACCESS_KEY is not None, "AWS_SECRET_ACCESS_KEY must be set for local environment"
         return LocalStackDuckDBConnectionFactory(
             endpoint_url=cfg.endpoint_url,
             aws_access_key=cfg.AWS_ACCESS_KEY_ID,

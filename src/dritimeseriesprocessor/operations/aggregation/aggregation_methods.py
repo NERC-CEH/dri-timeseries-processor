@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import ClassVar
 
 import polars as pl
 import time_stream as ts
@@ -11,7 +12,7 @@ from dritimeseriesprocessor.utils.enums import OperationType
 
 
 class AggregationMethod(Operation, ABC):
-    operation_type: OperationType.AGGREGATION
+    operation_type: ClassVar[OperationType] = OperationType.AGGREGATION
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:
@@ -32,9 +33,9 @@ class AggregationMethod(Operation, ABC):
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
 
-        missing_criteria = None
+        missing_criteria: tuple[str, float | int] | None = None
         if config.params.get("threshold", None) is not None:
-            missing_criteria = (MissingCriteria.AVAILABLE, config.params["threshold"])
+            missing_criteria = (MissingCriteria.AVAILABLE.value, config.params["threshold"])
 
         time_window = None
         start_time_str = config.params.get("start_time")

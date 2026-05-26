@@ -8,7 +8,9 @@ This module is responsible for parsing CLI arguments to capture user intent rega
 """
 
 import argparse
+from collections.abc import Sequence
 from datetime import date, datetime, timedelta
+from typing import Any
 
 import isodate
 
@@ -41,7 +43,7 @@ def parse_args(argv: list[str]) -> RunConfig:
     return RunConfig(
         mode=CliSelectionMode(args.mode),
         network=args.network,
-        selection=selection,
+        selection=selection or [],
         start_date=start_date,
         end_date=end_date,
     )
@@ -180,10 +182,17 @@ def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_d
     if start_date is not None:
         if start_date >= end_date:
             raise argparse.ArgumentTypeError("--start-date must be earlier than --end-date")
-        return to_datetime(start_date), to_datetime(end_date)
+        start_datetime = to_datetime(start_date)
+        end_datetime = to_datetime(end_date)
+        assert start_datetime is not None and end_datetime is not None
+        return start_datetime, end_datetime
 
+    assert lookback is not None, "--lookback must be provided when --start-date is not given"
     start_date = end_date - lookback
-    return to_datetime(start_date), to_datetime(end_date)
+    start_datetime = to_datetime(start_date)
+    end_datetime = to_datetime(end_date)
+    assert start_datetime is not None and end_datetime is not None
+    return start_datetime, end_datetime
 
 
 def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[SelectionOption] | None:
@@ -273,7 +282,7 @@ class SelectionAction(argparse.Action):
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: list[str],
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
     ) -> None:
         """Custom argparse Action for validating explicit dataset selection arguments.
@@ -285,7 +294,7 @@ class SelectionAction(argparse.Action):
         next option flag (e.g. ``--end-date``) as a positional value if the user omits one of the required
         arguments.
         """
-        if any(not v or v.startswith("-") for v in values):
+        if values is None or any(not v or v.startswith("-") for v in values):
             parser.error("--selection requires exactly 3 non-empty values: SITE VARIABLE PERIODICITY")
 
         selections = getattr(namespace, self.dest, None)

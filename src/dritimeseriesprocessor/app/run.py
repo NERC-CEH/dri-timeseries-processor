@@ -139,6 +139,8 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
     Returns:
         A configured StorageClient instance.
     """
+    assert cfg.AWS_ACCESS_KEY_ID is not None, "AWS_ACCESS_KEY_ID must be set"
+    assert cfg.AWS_SECRET_ACCESS_KEY is not None, "AWS_SECRET_ACCESS_KEY must be set"
     return S3StorageClient(
         cfg.AWS_ACCESS_KEY_ID,
         cfg.AWS_SECRET_ACCESS_KEY,
@@ -201,7 +203,17 @@ def list_sites(network: str, start_date: date | datetime, end_date: date | datet
     site_ids = []
     for item in sites_response.items:
         meta = map_site_metadata(item)
-        if meta.is_active(window_start=start_date, window_end=end_date):
+        active_start = (
+            datetime.combine(start_date, datetime.min.time())
+            if isinstance(start_date, date) and not isinstance(start_date, datetime)
+            else start_date
+        )
+        active_end = (
+            datetime.combine(end_date, datetime.min.time())
+            if isinstance(end_date, date) and not isinstance(end_date, datetime)
+            else end_date
+        )
+        if meta.is_active(window_start=active_start, window_end=active_end):
             site_ids.append(meta.site_id.removeprefix(f"{SITE_URI}/"))
 
     logger.info(f"Found [{len(site_ids)}] sites: {site_ids}")

@@ -133,7 +133,7 @@ class S3StorageClient(StorageClient):
         keys = []
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
             for obj in page.get("Contents", []):
-                keys.append(obj["Key"])
+                keys.append(obj.get("Key", ""))
         return keys
 
     def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
@@ -146,7 +146,7 @@ class S3StorageClient(StorageClient):
             bucket: S3 bucket name.
         """
         resp = self.client.list_objects_v2(Bucket=bucket)
-        return [obj["Key"] for obj in resp.get("Contents", [])]
+        return [obj.get("Key", "") for obj in resp.get("Contents", [])]
 
     def clear_bucket(self, bucket: str) -> None:
         """Clear all from the S3 bucket.

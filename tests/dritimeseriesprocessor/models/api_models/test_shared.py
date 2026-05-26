@@ -59,6 +59,8 @@ class TestHasValue:
         """Test that valueReference is accepted instead of value."""
         data = {"@id": "1", "@type": [], "valueReference": {"@id": "ref-1"}}
         model = HasValue.model_validate(data)
+        assert model.value_reference is not None
+        assert isinstance(model.value_reference, IDModel)
         assert model.value_reference.id == "ref-1"
         assert model.value is None
 

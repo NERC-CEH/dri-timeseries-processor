@@ -149,6 +149,7 @@ class TimeSeriesContainer:
         if df.is_empty():
             return
 
+        assert self.time_column_name is not None, "time_column_name must be set to initialise a TimeFrame"
         tf = (
             ts.TimeFrame(
                 df=df,

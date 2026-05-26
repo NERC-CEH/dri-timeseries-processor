@@ -55,7 +55,7 @@ class DuckDBDataRouter(DataRouter):
         Returns:
             A Polars DataFrame containing the data.
         """
-        network, site_id, resolution, bucket, source_dataset, time_column_name = check_common_attributes(
+        network, site_id, resolution, bucket, source_dataset, time_column_name = check_common_attributes(  # type: ignore[misc]
             list(containers),
             ["network", "source_site_identifier", "resolution", "source_bucket", "source_dataset", "time_column_name"],
         )

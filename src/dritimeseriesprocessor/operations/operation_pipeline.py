@@ -4,7 +4,7 @@ An orchestration class used to run for processing operations for corrections, qu
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable, TypeVar
+from typing import Iterable
 
 import polars as pl
 import time_stream as ts
@@ -23,10 +23,6 @@ from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMetho
 from dritimeseriesprocessor.utils.enums import OperationType
 
 logger = logging.getLogger(__name__)
-
-
-T = TypeVar("T")
-U = TypeVar("U")
 
 
 OPERATION_METHOD_REGISTRY = {
@@ -59,7 +55,7 @@ class OperationPipeline(ABC):
     @abstractmethod
     def apply(
         self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
-    ) -> T:
+    ) -> ts.TimeFrame:
         """Apply a specific method to the time series data.
 
         Args:
@@ -110,7 +106,7 @@ class OperationPipeline(ABC):
         pass
 
     @abstractmethod
-    def compute_flag_mask(self, tf: ts.TimeFrame, result: T, column_name: str) -> U:
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series | None:
         """Compute a boolean mask indicating which values should be flagged.
 
         Args:
@@ -145,6 +141,7 @@ class OperationPipeline(ABC):
         Returns:
             The updated TimeFrame after all operations and flag updates.
         """
+        assert container.data is not None
         tf = container.data
 
         # Initialise the flags if required
@@ -170,7 +167,8 @@ class OperationPipeline(ABC):
         tf = self.core_flag_updater(tf)
 
         # Ensure time column name of tf is same as container's
-        tf = tf.rename_time_column(container.time_column_name)
+        if container.time_column_name:
+            tf = tf.rename_time_column(container.time_column_name)
 
         return tf
 
@@ -180,6 +178,7 @@ class OperationPipeline(ABC):
         Args:
             tf: TimeFrame to initialise flags on.
         """
+        assert self.flag_system_name is not None
         try:
             tf.get_flag_system(self.flag_system_name)
         except FlagSystemNotFoundError:
@@ -193,6 +192,7 @@ class OperationPipeline(ABC):
             tf: TimeFrame to initialise flag column on.
             col_name: Name of the parent column
         """
+        assert self.flag_system_name is not None
         flag_column = self.get_flag_column(col_name)
         if flag_column not in tf.flag_columns:
             tf.init_flag_column(self.flag_system_name, flag_column)

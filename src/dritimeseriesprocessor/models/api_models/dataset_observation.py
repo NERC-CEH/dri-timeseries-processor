@@ -83,7 +83,9 @@ class ObservationDatasetItem(IDModel):
         For EddyPro raw bundles this is the S3 folder path for the .dat files.
         """
         if self.distributions:
-            return self.distributions[0].access_url[0]
+            access_url = self.distributions[0].access_url
+            if access_url:
+                return access_url[0]
         return None
 
 

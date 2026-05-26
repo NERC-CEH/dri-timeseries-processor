@@ -55,7 +55,7 @@ class MetadataCacheSession(requests.Session):
     def __init__(self) -> None:
         super().__init__()
 
-    def request(self, method: str, url: str, **kwargs) -> requests.Response:
+    def request(self, method: str, url: str, **kwargs) -> requests.Response:  # type: ignore[override]
         """Intercept the API call, then send the request and cache its JSON response to file.
 
         Args:

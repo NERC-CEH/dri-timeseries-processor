@@ -1,5 +1,5 @@
 import io
-from typing import Iterator
+from typing import Iterator, cast
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -93,7 +93,12 @@ BUCKET_NAME = "ukceh-dri-staging-ingested"
 @pytest.fixture
 def s3_storage_client() -> S3StorageClient:
     cfg = app_config()
-    client = S3StorageClient(cfg.AWS_ACCESS_KEY_ID, cfg.AWS_SECRET_ACCESS_KEY, cfg.AWS_DEFAULT_REGION, cfg.endpoint_url)
+    client = S3StorageClient(
+        cast(str, cfg.AWS_ACCESS_KEY_ID),
+        cast(str, cfg.AWS_SECRET_ACCESS_KEY),
+        cast(str, cfg.AWS_DEFAULT_REGION),
+        cfg.endpoint_url,
+    )
     return client
 
 
