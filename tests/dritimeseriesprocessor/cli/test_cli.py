@@ -6,8 +6,8 @@ import pytest
 from freezegun import freeze_time
 
 from dritimeseriesprocessor.cli.cli import _parse_date_range, _parse_lookback, parse_args
-from dritimeseriesprocessor.cli.selection import DimensionSelection
-from dritimeseriesprocessor.utils.urls import SITE_URI
+from dritimeseriesprocessor.cli.selection import DatasetIdSelection, DimensionSelection, ListSitesSelection
+from dritimeseriesprocessor.utils.urls import DATASET_URI, SITE_URI
 
 
 class TestParseArgs:
@@ -167,6 +167,53 @@ class TestParseArgs:
     def test_end_date_incorrect_format(self, end_date_wrong: str) -> None:
         with pytest.raises(SystemExit):
             parse_args(["--network", "a_network", "--end-date", end_date_wrong])
+
+
+class TestFromDatasetsMode:
+    def test_single_dataset_id_produces_dataset_id_selection(self) -> None:
+        """Tests that a single dataset ID is parsed into a DatasetIdSelection."""
+        cfg = parse_args(["from-datasets", "--datasets", "flux-plynl-processed"])
+        assert cfg.selection == [DatasetIdSelection(dataset_ids=[f"{DATASET_URI}/flux-plynl-processed"])]
+
+    def test_multiple_dataset_ids_included_in_one_selection(self) -> None:
+        """Tests that multiple dataset IDs are all included in a single DatasetIdSelection."""
+        cfg = parse_args(["from-datasets", "--datasets", "ds-1", "ds-2", "ds-3"])
+        assert cfg.selection == [
+            DatasetIdSelection(
+                dataset_ids=[
+                    f"{DATASET_URI}/ds-1",
+                    f"{DATASET_URI}/ds-2",
+                    f"{DATASET_URI}/ds-3",
+                ]
+            )
+        ]
+
+    def test_qualifies_ids_with_dataset_uri(self) -> None:
+        """Tests that short dataset IDs are prefixed with the full dataset base URI."""
+        cfg = parse_args(["from-datasets", "--datasets", "my-dataset"])
+        assert cfg.selection[0].dataset_ids[0] == f"{DATASET_URI}/my-dataset"
+
+    def test_missing_datasets_arg_raises_error(self) -> None:
+        """Tests that omitting --datasets raises a SystemExit."""
+        with pytest.raises(SystemExit):
+            parse_args(["from-datasets"])
+
+    def test_does_not_require_network(self) -> None:
+        """Tests that from-datasets mode succeeds without a --network argument."""
+        cfg = parse_args(["from-datasets", "--datasets", "ds-1"])
+        assert isinstance(cfg.selection[0], DatasetIdSelection)
+
+
+class TestListSitesMode:
+    def test_produces_list_sites_selection(self) -> None:
+        """Tests that list-sites mode produces a ListSitesSelection with the given network."""
+        cfg = parse_args(["list-sites", "--network", "cosmos"])
+        assert cfg.selection == [ListSitesSelection(network="cosmos")]
+
+    def test_requires_network(self) -> None:
+        """Tests that list-sites raises a SystemExit when --network is missing."""
+        with pytest.raises(SystemExit):
+            parse_args(["list-sites"])
 
 
 class TestParseLookback:

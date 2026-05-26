@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Iterator
 from unittest.mock import MagicMock
 
@@ -103,3 +104,103 @@ class TestS3DataRouter:
         result = router.query_by_date_range(container, start_date=start, end_date=end)
 
         assert_frame_equal(result, expected)
+
+
+class TestSitePartitionPrefix:
+    def test_builds_raw_partition_path(self) -> None:
+        """Tests that the raw dataset hive-partition path is built correctly."""
+        result = S3DataRouter._site_partition_prefix("fdri", "dataset", "raw_flux", "SITE1")
+        assert result == "fdri/dataset=raw_flux/site=SITE1"
+
+    def test_builds_processed_partition_path(self) -> None:
+        """Tests that the processed dataset hive-partition path uses the resolution key."""
+        result = S3DataRouter._site_partition_prefix("fdri", "resolution", "P1D", "SITE1")
+        assert result == "fdri/resolution=P1D/site=SITE1"
+
+
+class TestStageLocally:
+    def test_calls_download_once_per_day_in_range(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
+        """Tests that download is called once for each day in the date range, inclusive."""
+        mock_raw_reader.download.return_value = []
+        container = MagicMock(
+            s3_bucket="my-bucket",
+            s3_dataset_path="fdri/dataset=raw_flux/site=SITE1",
+            source_site_identifier="SITE1",
+            ts_id="ds-1",
+        )
+
+        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 3))
+
+        assert mock_raw_reader.download.call_count == 3
+
+    def test_single_day_range_calls_download_once(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
+        """Tests that a single-day range (start == end) results in exactly one download call."""
+        mock_raw_reader.download.return_value = []
+        container = MagicMock(
+            s3_bucket="my-bucket",
+            s3_dataset_path="fdri/dataset=raw_flux/site=SITE1",
+            source_site_identifier="SITE1",
+            ts_id="ds-1",
+        )
+
+        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1))
+
+        assert mock_raw_reader.download.call_count == 1
+
+    def test_builds_correct_date_prefix_per_day(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
+        """Tests that each download call uses the correct date-partitioned prefix."""
+        mock_raw_reader.download.return_value = []
+        container = MagicMock(
+            s3_bucket="my-bucket",
+            s3_dataset_path="fdri/dataset=raw_flux/site=SITE1",
+            source_site_identifier="SITE1",
+            ts_id="ds-1",
+        )
+
+        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 2))
+
+        call_prefixes = [call.args[1] for call in mock_raw_reader.download.call_args_list]
+        assert call_prefixes == [
+            "fdri/dataset=raw_flux/site=SITE1/date=2024-01-01/",
+            "fdri/dataset=raw_flux/site=SITE1/date=2024-01-02/",
+        ]
+
+    def test_returns_path_to_existing_local_directory(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
+        """Tests that the returned path is a real directory that exists on disk."""
+        mock_raw_reader.download.return_value = []
+        container = MagicMock(source_site_identifier="SITE1", ts_id="ds-1")
+
+        result = router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1))
+
+        assert isinstance(result, Path)
+        assert result.is_dir()
+
+    def test_staged_directory_is_tracked_for_cleanup(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
+        """Tests that the temp directory is added to the staged list so cleanup can remove it."""
+        mock_raw_reader.download.return_value = []
+        container = MagicMock(source_site_identifier="SITE1", ts_id="ds-1")
+
+        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1))
+
+        assert len(router._staged) == 1
+
+
+class TestCleanup:
+    def test_cleanup_calls_cleanup_on_each_staged_dir(self, router: S3DataRouter) -> None:
+        """Tests that cleanup is called on each tracked temp directory."""
+        tmp1 = MagicMock()
+        tmp2 = MagicMock()
+        router._staged = [tmp1, tmp2]
+
+        router.cleanup()
+
+        tmp1.cleanup.assert_called_once()
+        tmp2.cleanup.assert_called_once()
+
+    def test_cleanup_empties_staged_list(self, router: S3DataRouter) -> None:
+        """Tests that the staged list is empty after cleanup."""
+        router._staged = [MagicMock(), MagicMock()]
+
+        router.cleanup()
+
+        assert router._staged == []

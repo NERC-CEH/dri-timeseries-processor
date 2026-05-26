@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from dritimeseriesprocessor.cli.selection import DatasetIdSelection, DimensionSelection
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
@@ -252,6 +253,63 @@ class TestFetchDatasets:
             assert container == make_site_metadata_container(site_id)
 
         assert mock_router.fetch_sites_by_network.call_count == 1
+
+    def test_fetch_root_datasets_by_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that fetch_dataset_by_ids is called with the given IDs and the mapped containers are returned."""
+        ts_id = "ds1"
+        mock_router = setup_mocks(ts_id, monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+
+        result = builder._fetch_root_datasets_by_ids([ts_id])
+
+        assert result == [make_time_series_container(ts_id)]
+        mock_router.fetch_dataset_by_ids.assert_called_once_with([ts_id])
+
+
+class TestResolveRootDatasets:
+    def test_dataset_id_selection_uses_fetch_by_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that fetch_dataset_by_ids is called when the selection is a DatasetIdSelection."""
+        mock_router = setup_mocks(["ds1"], monkeypatch)
+        selection = [DatasetIdSelection(dataset_ids=["ds1"])]
+        builder = DatasetDependencyGraph(mock_router, selection, MagicMock(), MagicMock())
+        builder._fetch_root_datasets_by_ids = MagicMock(return_value=[make_time_series_container("ds1")])
+        builder._fetch_root_datasets = MagicMock()
+
+        builder._resolve_root_datasets()
+
+        builder._fetch_root_datasets_by_ids.assert_called_once_with(["ds1"])
+        builder._fetch_root_datasets.assert_not_called()
+
+    def test_dimension_selection_uses_fetch_by_dimensions(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that _fetch_root_datasets is called when the selection is a DimensionSelection."""
+        mock_router = setup_mocks(["ds1"], monkeypatch)
+        selection = [DimensionSelection(network="cosmos", sites=["site1"], variables=["TA"], periodicities=["P1D"])]
+        builder = DatasetDependencyGraph(mock_router, selection, MagicMock(), MagicMock())
+        builder._fetch_site_metadata = MagicMock(return_value=["site1"])
+        builder._fetch_root_datasets = MagicMock(return_value=[make_time_series_container("ds1")])
+        builder._fetch_root_datasets_by_ids = MagicMock()
+
+        builder._resolve_root_datasets()
+
+        builder._fetch_root_datasets.assert_called_once_with(["site1"], ["TA"], ["P1D"])
+        builder._fetch_root_datasets_by_ids.assert_not_called()
+
+    def test_mixed_selection_uses_both_fetch_methods(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that both fetch methods are called when the selection contains both types."""
+        mock_router = setup_mocks(["ds1", "ds2"], monkeypatch)
+        selection = [
+            DatasetIdSelection(dataset_ids=["ds1"]),
+            DimensionSelection(network="cosmos", sites=["site1"], variables=["TA"], periodicities=["P1D"]),
+        ]
+        builder = DatasetDependencyGraph(mock_router, selection, MagicMock(), MagicMock())
+        builder._fetch_root_datasets_by_ids = MagicMock(return_value=[make_time_series_container("ds1")])
+        builder._fetch_site_metadata = MagicMock(return_value=["site1"])
+        builder._fetch_root_datasets = MagicMock(return_value=[make_time_series_container("ds2")])
+
+        builder._resolve_root_datasets()
+
+        builder._fetch_root_datasets_by_ids.assert_called_once_with(["ds1"])
+        builder._fetch_root_datasets.assert_called_once_with(["site1"], ["TA"], ["P1D"])
 
 
 class TestBuild:

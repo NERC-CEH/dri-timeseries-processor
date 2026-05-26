@@ -2,6 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from dritimeseriesprocessor.models.api_models.shared import (
+    ArgumentItem,
     BaseAPIResponse,
     HasCurrentValue,
     HasValue,
@@ -67,6 +68,31 @@ class TestHasValue:
         model = HasValue.model_validate(data)
         assert model.value == [""]
         assert model.value_reference is None
+
+
+class TestArgumentItem:
+    def test_single_has_structured_value_is_normalised_to_list(self) -> None:
+        """Tests that a single hasStructuredValue object is put into a one-item list."""
+        data = {
+            "@id": "arg-1",
+            "parameter": {"@id": "param-1"},
+            "hasStructuredValue": {"@id": "sv-1"},
+        }
+        result = ArgumentItem.model_validate(data)
+        assert isinstance(result.has_structured_value, list)
+        assert len(result.has_structured_value) == 1
+        assert result.has_structured_value[0].id == "sv-1"
+
+    def test_list_has_structured_value_is_unchanged(self) -> None:
+        """Tests that a hasStructuredValue already given as a list is left as-is."""
+        data = {
+            "@id": "arg-1",
+            "parameter": {"@id": "param-1"},
+            "hasStructuredValue": [{"@id": "sv-1"}, {"@id": "sv-2"}],
+        }
+        result = ArgumentItem.model_validate(data)
+        assert isinstance(result.has_structured_value, list)
+        assert len(result.has_structured_value) == 2
 
 
 class TestHasCurrentConfigurationItem:
