@@ -188,13 +188,13 @@ class EddyProPipeline:
             output_dir.mkdir(parents=True, exist_ok=True)
             inputs_dir.mkdir(parents=True, exist_ok=True)
 
-            # biomet is required — propagate any failure so the run is aborted.
+            # biomet is required - propagate any failure so the run is aborted.
             biomet_path = EddyProBiometBuilder().build(
                 containers=ancillary_containers or [],
                 output_path=inputs_dir / "biomet.csv",
             )
 
-            # dynamic metadata is optional — some sites may not have time-varying instrument metadata
+            # dynamic metadata is optional - some sites may not have time-varying instrument metadata
             dynamic_metadata_path = None
             if ancillary_containers:
                 try:

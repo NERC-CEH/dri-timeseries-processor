@@ -20,7 +20,7 @@ The processor CLI is invoked using:
 python -m dritimeseriesprocessor ... 
 ```
 
-Use one of two (mutually exclusive) processing modes, or the utility command:
+Use one of three (mutually exclusive) processing modes, or the utility command:
 
 1. Explicit: `from-selection`
     - Individual sets of processing arguments
@@ -69,7 +69,28 @@ Use one of two (mutually exclusive) processing modes, or the utility command:
      --periodicities PT30M
     ```
 
-3. List sites: `list-sites`
+3. From datasets: `from-datasets`
+    - Request one or more datasets directly by their metadata API ID
+    - Works for both `TimeSeriesDataset` and `ObservationDataset` records
+    - Does not require `--network`
+
+    ```bash
+    python -m dritimeseriesprocessor from-datasets
+     [--lookback DURATION | --start-date YYYY-MM-DD]
+     [--end-date YYYY-MM-DD]
+     --datasets DATASET_ID [DATASET_ID2 ...]
+    ```
+
+    **Example**:
+
+    ```bash
+    python -m dritimeseriesprocessor from-datasets
+     --datasets flux-plynl-processed
+     --start-date 2024-08-14
+     --end-date 2024-08-15
+    ```
+
+4. List sites: `list-sites`
     - Writes a JSON array of active site IDs for a network to `/tmp/sites.json`
     - Sites not open during the requested date window are excluded
 

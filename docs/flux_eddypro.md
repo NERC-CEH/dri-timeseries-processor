@@ -1,68 +1,73 @@
 # Flux / EddyPro
 
-This repo has a separate `eddypro` CLI mode for running EddyPro against raw flux files.
+EddyPro flux processing runs through the standard pipeline as a derivation step, triggered by requesting a flux
+`ObservationDataset` via the `from-datasets` CLI mode.
 
-It still uses the normal dependency graph, but runs a file-based EddyPro workflow instead of the in-memory time-series pipeline.
+## How it works
 
-## What it does
+1. The `from-datasets` CLI mode accepts one or more dataset IDs directly. For flux, this is the ID of the processed
+   observation dataset (e.g. `flux-plynl-processed`).
 
-The `eddypro` mode:
+2. The dependency graph resolves the raw `.dat` input dataset as a `LOAD_LOCAL_COPY` dependency of the processed
+   dataset.
 
-- selects a network and site from the CLI
-- resolves local metadata fixtures for local development
-- stages raw flux `.dat` files from S3
-- builds EddyPro config files from templates
-- runs `eddypro_rp` and `eddypro_fcc`
-- uploads the outputs back to the processed bucket
+3. During the `LOAD_LOCAL_COPY` step, `S3DataRouter.stage_locally` downloads the raw `.dat` files for the requested
+   date range from S3 into a local temporary directory. The path is recorded on the raw dataset's `staged_dir`.
+
+4. When the processed dataset's `DERIVATION` step runs, `EddyProRun` reads `staged_dir` from the raw dependency,
+   builds EddyPro config files from templates, runs `eddypro_rp` and `eddypro_fcc`, and parses the output back into
+   a `TimeFrame`.
+
+5. The result is written to the processed S3 bucket in the normal way.
 
 ## Relevant code
 
-- CLI parsing: `src/dritimeseriesprocessor/cli/cli.py`
+- CLI parsing: `src/dritimeseriesprocessor/cli/cli.py` (`from-datasets` mode)
 - App entrypoint: `src/dritimeseriesprocessor/app/run.py`
-- Main processor: `src/dritimeseriesprocessor/processing/time_series_processor.py`
-- Flux S3 helper: `src/dritimeseriesprocessor/io_backend/flux_io.py`
-- Local metadata adapter: `src/dritimeseriesprocessor/routers/metadata/local_eddypro_metadata_source.py`
-- Temporary local graph loader: `src/dritimeseriesprocessor/routers/metadata/flux_metadata_loader.py`
-- EddyPro config and runner code: `src/dritimeseriesprocessor/operations/eddypro/`
-- EddyPro templates: `src/dritimeseriesprocessor/__assets__/eddypro_templates/`
-- Local EddyPro metadata fixtures: `src/dritimeseriesprocessor/__metadata__/eddypro/`
+- Raw file staging: `src/dritimeseriesprocessor/routers/data/data_router.py` (`S3DataRouter.stage_locally`)
+- EddyPro derivation method: `src/dritimeseriesprocessor/operations/derivation/derivation_methods.py` (`EddyProRun`)
+- EddyPro config builder and runner: `src/dritimeseriesprocessor/operations/eddypro/`
+- EddyPro config templates: `src/dritimeseriesprocessor/__assets__/eddypro_templates/`
 
-## Local requirements
+## Requirements
 
-- LocalStack running for S3
-- local config pointing at LocalStack in `src/dritimeseriesprocessor/__assets__/env.cfg`
+- LocalStack running for S3 (local development)
+- Local config pointing at LocalStack in `src/dritimeseriesprocessor/__assets__/env.cfg`
 - `eddypro_rp` and `eddypro_fcc` available on `PATH`
 
-If you run inside the project container, the binaries may already be present there. If you run on your host machine, your host still needs access to them.
+If you run inside the project container, the binaries may already be present. If you run on your host machine, your
+host still needs access to them.
 
 ## Expected S3 layout
 
-For a site like `PLYNL` and a raw source dataset like `Flux`, the local EddyPro path expects raw files under:
+Raw `.dat` files are read from the ingested bucket, partitioned by date:
 
-- `fdri/dataset=Flux/site=PLYNL/date=YYYY-MM-DD/`
+```
+<network>/dataset=<RAW_DATASET>/site=<SITE>/date=YYYY-MM-DD/
+```
 
-Outputs are uploaded to the processed bucket under:
+Outputs are written to the processed bucket under the same partition scheme:
 
-- `fdri/dataset=<PROCESSED_DATASET>/site=PLYNL/date=YYYY-MM-DD/`
-
-## Local metadata fixtures
-
-For local development, EddyPro metadata is loaded from simplified JSON files under:
-
-- `src/dritimeseriesprocessor/__metadata__/eddypro/network.json`
-- `src/dritimeseriesprocessor/__metadata__/eddypro/sites.json`
-- `src/dritimeseriesprocessor/__metadata__/eddypro/datasets.json`
-- `src/dritimeseriesprocessor/__metadata__/eddypro/processing_configs.json`
-
-These are local fixtures for development and demos until the real metadata path is wired in.
+```
+<network>/dataset=<PROCESSED_DATASET>/site=<SITE>/date=YYYY-MM-DD/
+```
 
 ## Running it
 
-Example:
+Pass the processed dataset ID to `from-datasets`:
 
 ```bash
-python -m dritimeseriesprocessor eddypro \
-  --network fdri \
-  --sites PLYNL \
+python -m dritimeseriesprocessor from-datasets \
+  --datasets flux-plynl-processed \
   --start-date 2024-08-14 \
   --end-date 2024-08-15
+```
+
+Multiple sites can be processed in one run by listing additional dataset IDs:
+
+```bash
+python -m dritimeseriesprocessor from-datasets \
+  --datasets flux-site1-processed flux-site2-processed \
+  --start-date 2024-08-14 \
+  --end-date 2024-08-15
+```

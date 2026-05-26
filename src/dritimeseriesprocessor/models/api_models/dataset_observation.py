@@ -1,7 +1,7 @@
 """
 Pydantic models for the Observation Dataset metadata endpoint.
 
-Represents fdri:ObservationDataset items — bundles (e.g. raw .dat files)
+Represents fdri:ObservationDataset items - bundles (e.g. raw .dat files)
 """
 
 from pydantic import Field
@@ -50,7 +50,7 @@ class Methodology(IDModel):
 
 
 class Distribution(IDModel):
-    """DCAT Distribution — represents an available form of a dataset.
+    """DCAT Distribution - represents an available form of a dataset.
 
     E.g., an S3 parquet folder with data in a specific format.
     The API serialises dct:accessURL as `accessUrl` (camelCase, lowercase l).
@@ -62,7 +62,7 @@ class Distribution(IDModel):
 
 
 class ObservationDatasetItem(IDModel):
-    """Observation dataset item — base class for TimeSeriesDatasetItem."""
+    """Observation dataset item - base class for TimeSeriesDatasetItem."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
     processing_level: IDModel = Field(..., alias="processingLevel")
