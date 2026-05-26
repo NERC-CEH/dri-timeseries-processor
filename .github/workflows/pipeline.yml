@@ -1,9 +1,12 @@
+name: Pipeline
+
 on:
   pull_request:
   push:
     branches:
       - staging
       - production
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,12 +21,13 @@ jobs:
     uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
     with:
       use_uv: true
+      use_pyright: true
       coverage_threshold: 90
       localstack_profile_name: localstack
 
   build-test-deploy-docker-staging:
-    if: ${{ github.ref_name == 'staging' || github.base_ref == 'staging' }}
     needs: [test-python]
+    if: ${{ github.ref_name == 'staging' || github.base_ref == 'staging' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
@@ -32,10 +36,10 @@ jobs:
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}
-  
+
   build-test-deploy-docker-production:
-    if: ${{ github.ref_name == 'production' || github.base_ref == 'production' }}
     needs: [test-python]
+    if: ${{ github.ref_name == 'production' || github.base_ref == 'production' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
