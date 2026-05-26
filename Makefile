@@ -1,4 +1,4 @@
-.PHONY: help install-hooks type-check type-check-watch ruff qa testall test pdb coverage docker-build docker-run bump-patch bump-minor bump-major clean clean-pyc clean-test
+.PHONY: help install-hooks type-check type-check-watch ruff qa testall test pdb coverage docker-build docker-run bump-patch bump-minor bump-major release clean clean-pyc clean-test
 
 
 help:  ## Show available commands
@@ -52,6 +52,9 @@ bump-minor:  ## Bump minor version (0.x.0), commit, and create CHANGELOG stub
 
 bump-major:  ## Bump major version (x.0.0), commit, and create CHANGELOG stub
 	uv run scripts/bump.py major
+
+release:  ## Tag, push, and create a GitHub release
+	uv run scripts/release.py
 
 
 clean: clean-pyc clean-test  ## Remove Python and test artifacts
