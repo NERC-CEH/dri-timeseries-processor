@@ -5,12 +5,13 @@ example `0.2.7`. We use these three components as follows:
 
 - **`major`** and **`minor`** mark meaningful changes to the software (breaking changes, new features). These are
   bumped by hand when you are ready to release a new minor or major version.
-- **`patch`** is used as an auto-incrementing build number. CI bumps it by one on every push to a feature branch, so
-  that each build produces a unique image tag and never collides with previous builds.
+- **`patch`** is used as an auto-incrementing build number. CI bumps it by one whenever a pull request targeting
+  `staging` is opened or pushed to, so each build produces a unique image tag and never collides with previous builds.
 
 Work flows through three branches: `feature/*` -> `staging` -> `production`.
 
-- Every push to a feature branch auto-bumps the patch component (e.g. `0.2.7` -> `0.2.8`).
+- Once a pull request targeting `staging` exists, each push to the PR auto-bumps the patch component
+  (e.g. `0.2.7` -> `0.2.8`). Feature-branch pushes without a PR open do not bump.
 - `make bump-minor` and `make bump-major` are run by hand when you want a new minor or major version. Both need a
   populated `CHANGELOG/<version>.md` before the release PR can be merged.
 - Every merge from `staging` to `production` builds the production Docker image, tags the commit as `v<version>`, and
@@ -20,19 +21,30 @@ Work flows through three branches: `feature/*` -> `staging` -> `production`.
 
 Docker images are tagged with the `pyproject.toml` version and pushed to an ECR registry that has tag immutability
 turned on. If two merges to `staging` shared the same version, the second push to ECR would be rejected. Auto-bumping
-the patch on every feature push guarantees each merge to `staging` produces a unique, monotonically-increasing tag -
-which is also what the FluxCD SemVer policy needs to pick the latest image.
+the patch on every push to an open PR guarantees each merge to `staging` produces a unique, monotonically-increasing
+tag - which is also what the FluxCD SemVer policy needs to pick the latest image.
 
 ## Automatic patch bumps (the common case)
 
-Whenever you push commits to a feature branch (anything other than `staging`, `production`), the
-`auto-bump-patch` workflow runs and:
+The `auto-bump-patch` workflow runs **only when there is an open pull request targeting `staging`**. It fires when the
+PR is opened, reopened, or a new push is made. Pushes to a feature branch that does not yet have a PR open do not
+trigger it.
 
-1. Looks at the diff for the commits you just pushed.
-2. If `pyproject.toml` version number was changed in that push, it skips - you have bumped the version yourself.
-3. Otherwise it runs the bump patch utility, which increments the patch component in
-   `pyproject.toml`, commits it as `Bump version: <old> -> <new>`, and pushes the commit
-   back to your branch.
+When it fires it:
+
+1. Checks out the PR's head branch.
+2. Looks at the diff to decide whether to act:
+   - On **new push to the PR** it inspects the commits added by that push.
+   - On **opened** / **reopened**, it inspects the full diff of the branch against `staging`.
+3. If `pyproject.toml` was changed in that diff, it skips - you (or a previous CI run) have already bumped the version.
+4. Otherwise it runs the bump-patch utility, which increments the patch component in `pyproject.toml`, commits it as
+   `Bump version: <old> -> <new>`, and pushes the commit back to the PR's head branch.
+
+The push is made with a GitHub App installation token (not the default `GITHUB_TOKEN`). This matters because pushes
+made with `GITHUB_TOKEN` deliberately do not trigger any further workflows - which would mean the bump commit would
+have no CI checks against it in the PR. Pushing with the App token instead triggers a `pull_request: synchronize` event
+for the bump commit, so `pipeline.yml` (tests, Docker build) re-runs against the bumped version and the PR's checks
+panel reflects the latest commit.
 
 You will need to `git pull` locally before your next push to pick up the bump commit.
 
@@ -41,14 +53,19 @@ You will need to `git pull` locally before your next push to pick up the bump co
 ```text
 staging at 0.1.5
 +-- feature/my-thing branched from staging at 0.1.5
-    +-- push commit A
-    |   +-- CI auto-bumps to 0.1.6 and pushes "Bump version: 0.1.5 -> 0.1.6"
+    +-- push commit A   (no PR yet -> no auto-bump)
+    +-- push commit B   (no PR yet -> no auto-bump)
+    +-- PR opened against staging
+    |   +-- auto-bump-patch runs (opened event)
+    |   |   +-- diff vs staging shows no pyproject.toml change -> bumps to 0.1.6 and pushes
+    |   +-- pipeline.yml runs against 0.1.6 (triggered by the App-token push)
     |
     +-- git pull   (picks up CI's bump commit)
-    +-- push commit B
-    |   +-- CI auto-bumps to 0.1.7
+    +-- push commit C
+    |   +-- auto-bump-patch runs (synchronize event)
+    |   |   +-- diff of commit C shows no pyproject.toml change -> bumps to 0.1.7 and pushes
+    |   +-- pipeline.yml runs against 0.1.7
     |
-    +-- PR opened against staging   (PR events run tests + Docker build, do not auto-bump)
     +-- PR merged
     +-- staging is now at 0.1.7
     +-- Docker image dri-timeseries-processor:0.1.7 pushed to staging ECR
@@ -74,9 +91,9 @@ This:
 real release notes, then commit and push. The `release-ready` check on the production PR rejects merges whose changelog
 is missing, still contains the placeholder, or has no content beyond the heading.
 
-Because the manual bump commit modifies `pyproject.toml`, the next push to your feature branch will **not** trigger an
-auto-bump - the workflow sees the change and skips. Subsequent pushes that do not touch `pyproject.toml` will resume
-auto-bumping the patch (`0.2.0` -> `0.2.1` -> ...).
+Because the manual bump commit modifies `pyproject.toml`, the auto-bump workflow will skip on the first PR event that
+sees it (the diff includes a `pyproject.toml` change). On subsequent pushes to the PR that do not touch
+`pyproject.toml`, the auto-bump will resume incrementing the patch (`0.2.0` -> `0.2.1` -> ...).
 
 **Example - releasing a new `0.2.0` minor version:**
 
