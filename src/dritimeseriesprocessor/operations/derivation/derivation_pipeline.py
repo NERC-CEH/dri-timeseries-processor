@@ -75,12 +75,12 @@ class DerivationPipeline(OperationPipeline):
         return {container.method_config}
 
     def get_flag_column(self, column: str) -> str:
-        """Not required for aggregation method."""
-        pass
+        """Not used by derivation - flags are not applied."""
+        raise NotImplementedError
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
-        """Not required for aggregation method."""
-        pass
+        """Not used by derivation - flags are not applied."""
+        raise NotImplementedError
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Not yet implemented for derivation method."""

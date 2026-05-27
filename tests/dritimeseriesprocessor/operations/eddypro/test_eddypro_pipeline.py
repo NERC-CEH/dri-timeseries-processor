@@ -173,7 +173,7 @@ class TestEddyProPipeline:
 
         runner.run.side_effect = fake_run
 
-        pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)
+        pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)  # type: ignore[arg-type]
         result = pipeline.run(
             raw_data_dir=staged_raw_dir,
             method_config=DataProcessingConfig(
@@ -247,7 +247,7 @@ class TestEddyProPipeline:
 
         runner.run.side_effect = fake_run
 
-        pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)
+        pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)  # type: ignore[arg-type]
         pipeline.run(
             raw_data_dir=tmp_path / "raw",
             method_config=DataProcessingConfig(
@@ -263,7 +263,7 @@ class TestEddyProPipeline:
             ),
             start_date=date(2026, 1, 20),
             end_date=date(2026, 1, 21),
-            ancillary_containers=ancillary_containers,
+            ancillary_containers=ancillary_containers,  # type: ignore[arg-type]
         )
 
         assert FakeConfigBuilder.project_call is not None
@@ -309,7 +309,7 @@ class TestEddyProPipeline:
 
         runner.run.side_effect = fake_run
 
-        pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)
+        pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)  # type: ignore[arg-type]
         result = pipeline.run(
             raw_data_dir=Path("/tmp/raw"),
             method_config=DataProcessingConfig(

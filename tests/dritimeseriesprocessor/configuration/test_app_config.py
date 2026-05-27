@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 from config import ConfigFormatError
@@ -28,7 +29,7 @@ REQUIRED_LIVE_CONFIG_KEYS = [
 ]
 
 
-def patch_local(filename: str, monkeypatch: pytest.MonkeyPatch) -> None:
+def patch_local(filename: str | Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("environment", "local")
     monkeypatch.setattr("dritimeseriesprocessor.configuration.app_config.LOCAL_CONFIG_PATH", filename)
 

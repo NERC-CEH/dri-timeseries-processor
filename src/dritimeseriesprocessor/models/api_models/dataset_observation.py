@@ -82,7 +82,7 @@ class ObservationDatasetItem(IDModel):
         The API returns distributions as a list; we use the first one.
         For EddyPro raw bundles this is the S3 folder path for the .dat files.
         """
-        if self.distributions:
+        if self.distributions and self.distributions[0].access_url:
             return self.distributions[0].access_url[0]
         return None
 

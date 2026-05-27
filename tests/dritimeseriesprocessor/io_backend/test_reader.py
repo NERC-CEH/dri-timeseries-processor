@@ -68,7 +68,7 @@ class TestDuckDBParquetReader:
         assert mock_conn.execute.call_count == 2
         assert_frame_equal(result, DUMMY_DF)
 
-        stats = reader.read.statistics
+        stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 2
         assert stats["idle_for"] == 2
 
@@ -82,7 +82,7 @@ class TestDuckDBParquetReader:
 
         assert mock_conn.execute.call_count == 3
 
-        stats = reader.read.statistics
+        stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 3
         assert stats["idle_for"] == 4
 
@@ -96,7 +96,7 @@ class TestDuckDBParquetReader:
 
         assert mock_conn.execute.call_count == 1
 
-        stats = reader.read.statistics
+        stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 1
         assert stats["idle_for"] == 0
 
@@ -210,6 +210,6 @@ class TestDuckDBParquetReaderIntegration:
         with pytest.raises(duckdb.InvalidInputException):
             reader.read(query)
 
-        stats = reader.read.statistics
+        stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 3  # Should have tried 3 times
         assert stats["idle_for"] == 4  # Should have waited 2 seconds between each try

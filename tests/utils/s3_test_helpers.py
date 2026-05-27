@@ -62,7 +62,7 @@ def create_test_s3_bucket(bucket: str, storage_client: S3StorageClient, default_
     """
     storage_client.client.create_bucket(
         Bucket=bucket,
-        CreateBucketConfiguration={"LocationConstraint": default_region},
+        CreateBucketConfiguration={"LocationConstraint": default_region},  # type: ignore[arg-type]
     )
 
 

@@ -106,7 +106,10 @@ class AwsDuckDBConnectionFactory(DuckDBConnectionFactory):
         """
         conn = self._configure_duckdb_base()
 
-        creds = self.session.get_credentials().get_frozen_credentials()
+        raw_creds = self.session.get_credentials()
+        if raw_creds is None:
+            raise RuntimeError("No AWS credentials found in boto3 session")
+        creds = raw_creds.get_frozen_credentials()
         conn.execute(f"""
             CREATE SECRET aws_secret (
                 TYPE S3,
@@ -132,9 +135,9 @@ def create_duckdb_factory() -> DuckDBConnectionFactory:
 
     if cfg.environment is Environment.LOCAL:
         return LocalStackDuckDBConnectionFactory(
-            endpoint_url=cfg.endpoint_url,
-            aws_access_key=cfg.AWS_ACCESS_KEY_ID,
-            aws_secret_key=cfg.AWS_SECRET_ACCESS_KEY,
+            endpoint_url=cfg.endpoint_url,  # type: ignore[arg-type]
+            aws_access_key=cfg.AWS_ACCESS_KEY_ID,  # type: ignore[arg-type]
+            aws_secret_key=cfg.AWS_SECRET_ACCESS_KEY,  # type: ignore[arg-type]
         )
 
     if cfg.environment in (Environment.STAGING, Environment.PRODUCTION):

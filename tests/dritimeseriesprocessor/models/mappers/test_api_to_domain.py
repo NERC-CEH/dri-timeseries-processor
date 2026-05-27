@@ -36,7 +36,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
@@ -68,7 +68,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
@@ -118,7 +118,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, all_site_metadata)
+        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
 
         assert result.source_bucket is None
         assert result.source_dataset is None
@@ -157,7 +157,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, all_site_metadata)
+        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
 
         assert result.dataset_type == "ObservationDataset"
         assert result.distribution_url == "s3://ukceh-fdri-staging-timeseries-level-0/Flux/"

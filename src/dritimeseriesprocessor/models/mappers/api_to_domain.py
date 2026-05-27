@@ -38,11 +38,11 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
         processing.
     """
     processing_level = ProcessingLevel(extract_uri_id(item.processing_level.id))
-    metadata_site_id = item.originating_site[0].id
+    metadata_site_id = item.originating_site[0].id if item.originating_site else None
 
-    source_site = extract_uri_id(metadata_site_id)
-    source_network = extract_uri_id(item.originating_programme[0].id)
-    source_site_identifier = all_site_metadata[metadata_site_id].alt_id
+    source_site = extract_uri_id(metadata_site_id) if metadata_site_id else None
+    source_network = extract_uri_id(item.originating_programme[0].id) if item.originating_programme else None
+    source_site_identifier = all_site_metadata[metadata_site_id].alt_id if metadata_site_id else None
 
     dataset_type = extract_uri_id(item.field_type[0].id) if item.field_type else None
 
@@ -93,7 +93,7 @@ def map_processing_config_item(
         config_id=item.id,
         config_type=config_type,
         method_configs=method_configs,
-        annotations=annotations,
+        annotations=annotations or {},
     )
 
 
@@ -110,6 +110,8 @@ def map_processing_method_config(
     Returns:
         A domain model object describing a configuration of a processing method.
     """
+    if current_config.method is None:
+        raise ValueError(f"Processing config {current_config.id} has no method")
     method = extract_uri_id(current_config.method.id)
     params = extract_arguments(current_config.argument, site_metadata)
 
@@ -140,7 +142,12 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any] 
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            extracted[key] = ann.has_value.value[0] if ann.has_value.value else ann.has_value.value_reference[0]
+            val = ann.has_value.value
+            ref = ann.has_value.value_reference
+            if val is not None:
+                extracted[key] = val[0] if isinstance(val, list) else val
+            elif ref is not None:
+                extracted[key] = ref[0] if isinstance(ref, list) else ref
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
@@ -171,14 +178,21 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
             if has_value.value is not None:
                 # Resolve any special case where we need to extract parameter from the site metadata
                 # Annotations may have more than one value, site_attributes and other parameters have at most one.
-                values = has_value.value  # Cannot set to lower here as not all values are strings
+                values = has_value.value
+                if not isinstance(values, list):
+                    values = [values]
                 if param_name == "annotation":
                     for param in values:
+                        if not isinstance(param, str):
+                            raise ValueError(f"Expected string annotation key, got {type(param).__name__}: {param}")
                         param_name = param.lower()
-                        collected_args[param_name].append(site_metadata.annotations.get(param_name))
+                        if site_metadata is not None:
+                            collected_args[param_name].append((site_metadata.annotations or {}).get(param_name))
                 else:
                     value = values[0]
                     if param_name == "site_attribute":
+                        if not isinstance(value, str):
+                            raise ValueError(f"Expected string site_attribute key, got {type(value).__name__}: {value}")
                         param_name = value.lower()
                         value = getattr(site_metadata, param_name)
                     collected_args[param_name].append(value)
@@ -187,7 +201,7 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
             if has_value.value_reference is not None:
                 refs = has_value.value_reference
                 if isinstance(refs, IDModel):
-                    refs = [has_value.value_reference]
+                    refs = [refs]
                 for ref in refs:
                     collected_args[param_name].append(ref.id)
 
@@ -211,8 +225,12 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     Returns:
         A simplified SiteMetadata domain model
     """
-    start_date = datetime.fromisoformat(item.operating_period.start_date)
-    end_date = datetime.fromisoformat(item.operating_period.end_date) if item.operating_period.end_date else None
+    start_date = datetime.fromisoformat(item.operating_period.start_date) if item.operating_period else None
+    end_date = (
+        datetime.fromisoformat(item.operating_period.end_date)
+        if item.operating_period and item.operating_period.end_date
+        else None
+    )
 
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None
