@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from dritimeseriesprocessor.cli.selection import DatasetIdSelection, DimensionSelection
+from dritimeseriesprocessor.cli.selection import DatasetIdSelection, DimensionSelection, Selection
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
@@ -270,7 +270,7 @@ class TestResolveRootDatasets:
     def test_dataset_id_selection_uses_fetch_by_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Tests that fetch_dataset_by_ids is called when the selection is a DatasetIdSelection."""
         mock_router = setup_mocks(["ds1"], monkeypatch)
-        selection = [DatasetIdSelection(dataset_ids=["ds1"])]
+        selection: list[Selection] = [DatasetIdSelection(dataset_ids=["ds1"])]
         builder = DatasetDependencyGraph(mock_router, selection, MagicMock(), MagicMock())
         builder._fetch_root_datasets_by_ids = MagicMock(return_value=[make_time_series_container("ds1")])
         builder._fetch_root_datasets = MagicMock()
@@ -283,7 +283,9 @@ class TestResolveRootDatasets:
     def test_dimension_selection_uses_fetch_by_dimensions(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Tests that _fetch_root_datasets is called when the selection is a DimensionSelection."""
         mock_router = setup_mocks(["ds1"], monkeypatch)
-        selection = [DimensionSelection(network="cosmos", sites=["site1"], variables=["TA"], periodicities=["P1D"])]
+        selection: list[Selection] = [
+            DimensionSelection(network="cosmos", sites=["site1"], variables=["TA"], periodicities=["P1D"])
+        ]
         builder = DatasetDependencyGraph(mock_router, selection, MagicMock(), MagicMock())
         builder._fetch_site_metadata = MagicMock(return_value=["site1"])
         builder._fetch_root_datasets = MagicMock(return_value=[make_time_series_container("ds1")])

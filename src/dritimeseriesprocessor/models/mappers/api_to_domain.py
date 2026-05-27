@@ -210,7 +210,10 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         if has_structured_value:
             # Extract any nested structured value arguments. This will be, used for example, for cases where we need
             # to extract deployment information for a sensor e.g. wind height for PE 30min
-            for structured_value in has_structured_value:
+            structured_value_list = (
+                has_structured_value if isinstance(has_structured_value, list) else [has_structured_value]
+            )
+            for structured_value in structured_value_list:
                 structured_value_params = extract_arguments(structured_value.argument, site_metadata)
                 collected_args[param_name].append(structured_value_params)
 

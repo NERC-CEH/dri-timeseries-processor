@@ -291,6 +291,9 @@ class TimeSeriesProcessor:
         """
         logger.info(f"{MethodType.DERIVATION}: {container.ts_id}")
 
+        if container.method_config is None:
+            raise ValueError(f"No method config found for derivation: {container.ts_id}")
+
         for config in container.method_config.method_configs:
             config.params["start_date"] = self.start_date.date()
             config.params["end_date"] = self.end_date.date()
@@ -310,8 +313,12 @@ class TimeSeriesProcessor:
             container: The dependent TimeSeriesContainer to populate.
             bundle: The upstream ObservationDataset bundle to extract the column from.
         """
+        if bundle.data is None:
+            raise ValueError(f"Bundle has no data: {bundle.ts_id}")
         df = bundle.data.df.select([bundle.time_column_name, container.source_column])
         container.init_timeframe(df)
+        if container.data is None:
+            raise ValueError(f"Container has no data after init_timeframe: {container.ts_id}")
         container.data = add_initial_core_flags(container.data)
 
     def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:

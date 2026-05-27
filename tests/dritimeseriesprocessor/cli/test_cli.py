@@ -191,6 +191,7 @@ class TestFromDatasetsMode:
     def test_qualifies_ids_with_dataset_uri(self) -> None:
         """Tests that short dataset IDs are prefixed with the full dataset base URI."""
         cfg = parse_args(["from-datasets", "--datasets", "my-dataset"])
+        assert isinstance(cfg.selection[0], DatasetIdSelection)
         assert cfg.selection[0].dataset_ids[0] == f"{DATASET_URI}/my-dataset"
 
     def test_missing_datasets_arg_raises_error(self) -> None:

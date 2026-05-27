@@ -36,7 +36,7 @@ from driutils.metadata_api.api_manager import MetadataAPIManager
 from tests.utils.fixture_helpers import END_TO_END, TEST_DATA_MOCK_METADATA, load_json_file
 from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET, stable_file_key
 
-from dritimeseriesprocessor.cli.selection import DimensionSelection
+from dritimeseriesprocessor.cli.selection import DimensionSelection, Selection
 from dritimeseriesprocessor.configuration.app_config import app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
@@ -153,7 +153,7 @@ def main() -> None:
         variables = test_case["measured_variables"] + test_case["derived_variables"] + test_case["aggregated_variables"]
 
         # build the graph!
-        selection = [
+        selection: list[Selection] = [
             DimensionSelection(
                 network=test_case["network"],
                 sites=site_uris,

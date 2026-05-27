@@ -234,7 +234,7 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
     parser.error(f"Invalid selection mode: {mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
 
 
-def _parse_explicit_selection(args: argparse.Namespace) -> list[DimensionSelection]:
+def _parse_explicit_selection(args: argparse.Namespace) -> list[Selection]:
     """Parse explicit dataset selection arguments.
 
     Args:
@@ -254,7 +254,7 @@ def _parse_explicit_selection(args: argparse.Namespace) -> list[DimensionSelecti
     ]
 
 
-def _parse_dataset_id_selection(args: argparse.Namespace) -> list[DatasetIdSelection]:
+def _parse_dataset_id_selection(args: argparse.Namespace) -> list[Selection]:
     """Parse explicit dataset ID selection arguments.
 
     Args:
@@ -267,7 +267,7 @@ def _parse_dataset_id_selection(args: argparse.Namespace) -> list[DatasetIdSelec
     return [DatasetIdSelection(dataset_ids=dataset_ids)]
 
 
-def _parse_cross_product_selection(args: argparse.Namespace) -> list[DimensionSelection]:
+def _parse_cross_product_selection(args: argparse.Namespace) -> list[Selection]:
     """Parse cross-product dataset selection arguments.
 
     Args:

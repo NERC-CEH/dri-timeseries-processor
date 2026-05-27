@@ -68,6 +68,8 @@ class AggregationPipeline(OperationPipeline):
         """
         if container.method_config is None:
             raise ValueError(f"No aggregation config found for: {container.ts_id}")
+        if container.periodicity is None:
+            raise ValueError(f"No periodicity found for: {container.ts_id}")
 
         method_config = container.method_config
         for config in container.method_config.method_configs:

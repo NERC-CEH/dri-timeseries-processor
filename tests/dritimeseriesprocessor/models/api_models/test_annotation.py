@@ -94,7 +94,7 @@ class TestAnnotation:
         data = load_json_string(test_data)
 
         result = HasAnnotationItem.model_validate(data)
-        assert result.has_value.value == [""]
+        assert result.has_value.value == [""]  # type: ignore[union-attr]
 
     def test_missing_property_id(self) -> None:
         """Test that validation fails when property @id is missing."""
@@ -130,7 +130,7 @@ class TestAnnotation:
             "hasValue": {"@id": "id"},
         }
         result = HasAnnotationItem.model_validate(test_data)
-        assert result.has_value.value == [""]
+        assert result.has_value.value == [""]  # type: ignore[union-attr]
 
     def test_missing_has_value(self) -> None:
         """Test that validation fails when hasValue or hasValueSeries field is completely missing."""

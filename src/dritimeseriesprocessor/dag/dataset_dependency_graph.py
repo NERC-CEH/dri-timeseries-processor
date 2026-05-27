@@ -14,7 +14,7 @@ from collections import defaultdict
 from datetime import datetime
 from graphlib import TopologicalSorter
 
-from dritimeseriesprocessor.cli.selection import DatasetIdSelection, Selection
+from dritimeseriesprocessor.cli.selection import DatasetIdSelection, DimensionSelection, Selection
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
@@ -248,9 +248,11 @@ class DatasetDependencyGraph:
         for query in self.selection:
             if isinstance(query, DatasetIdSelection):
                 containers.update(self._fetch_root_datasets_by_ids(query.dataset_ids))
-            else:
+            elif isinstance(query, DimensionSelection):
                 sites = self._fetch_site_metadata(query.sites or [], network=query.network)
                 containers.update(self._fetch_root_datasets(sites, query.variables or [], query.periodicities or []))
+            else:
+                raise ValueError(f"Unsupported selection type in dependency graph: {type(query).__name__}")
 
         return list(containers)
 
@@ -320,7 +322,8 @@ class DatasetDependencyGraph:
             List of Metadata API site IDs
         """
         if not site_ids:
-            # If no sites provided, find all sites for the given network
+            if network is None:
+                raise ValueError("network must be provided when no site_ids are specified")
             logger.warning(f"No sites provided. Fetching all sites for: {network}")
             sites_response = self.metadata_router.fetch_sites_by_network(network)
         else:
