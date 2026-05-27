@@ -44,7 +44,7 @@ class DuckDBParquetReader(ParquetReaderInterface):
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    def read(self, query: str, params: list = None) -> pl.DataFrame:
+    def read(self, query: str, params: list | None = None) -> pl.DataFrame:
         """Uses DuckDb to read parquet files using a prepared SQL query.
 
         Args:
@@ -75,6 +75,9 @@ class DuckDBParquetReader(ParquetReaderInterface):
         except duckdb.IOException:
             # No parquet file found, so return an empty dataframe
             return pl.DataFrame()
+
+        finally:
+            conn.close()
 
 
 class RawFileReader:

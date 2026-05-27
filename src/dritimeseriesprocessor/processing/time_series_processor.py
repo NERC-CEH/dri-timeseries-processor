@@ -176,23 +176,23 @@ class TimeSeriesProcessor:
         groupings = group_containers(containers, common_keys)
 
         with self.metrics.time_load.time():
-            for dataset_group, containers in groupings.items():
+            for dataset_group, containers_in_group in groupings.items():
                 try:
                     combined_df = self.data_router.query_by_date_range(
-                        *containers, start_date=self.start_date, end_date=self.end_date
+                        *containers_in_group, start_date=self.start_date, end_date=self.end_date
                     )
 
                     if combined_df.is_empty():
                         raise ValueError(f"No data returned for group: {dataset_group}")
 
                 except Exception:
-                    for container in containers:
+                    for container in containers_in_group:
                         self.metrics.no_data.inc()
                         container.failed = True
                     logger.exception(f"Failed to load data for group: {dataset_group}")
                     continue
 
-                for container in containers:
+                for container in containers_in_group:
                     col = container.source_column
                     try:
                         df = combined_df.select([container.time_column_name, col])
@@ -327,7 +327,7 @@ class TimeSeriesProcessor:
         Returns:
             Dependent time series container.
         """
-        dependencies = container.method_config._values_for_params("dep_ts")
+        dependencies = container.method_config._values_for_params("dep_ts")  # type: ignore[union-attr]
         num_dependents = len(dependencies)
         if num_dependents != 1:
             raise ValueError(f"Expected a single dependent dataset. Found: {num_dependents}")

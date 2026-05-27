@@ -239,7 +239,7 @@ class TestTimeSeriesProcessor:
         # ds2 raised an exception, so it should be marked as failed
         assert ds2.failed
         # Only ds2 should have triggered the metrics failure counter
-        assert processor.metrics.failed.inc.call_count == 1
+        assert processor.metrics.failed.inc.call_count == 1  # type: ignore[union-attr]
 
         # ds3 depends on ds2, so it should be marked as failed too
         assert ds3.failed

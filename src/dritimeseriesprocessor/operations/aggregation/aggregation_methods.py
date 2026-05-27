@@ -34,12 +34,12 @@ class AggregationMethod(Operation, ABC):
 
         missing_criteria = None
         if config.params.get("threshold", None) is not None:
-            missing_criteria = (MissingCriteria.AVAILABLE, config.params["threshold"])
+            missing_criteria = (MissingCriteria.AVAILABLE, config.params["threshold"])  # type: ignore[assignment]
 
         time_window = None
         start_time_str = config.params.get("start_time")
         end_time_str = config.params.get("end_time")
-        if start_time_str and end_time_str:
+        if isinstance(start_time_str, str) and isinstance(end_time_str, str):
             start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
             end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
             time_window = (start_time, end_time)
@@ -48,7 +48,7 @@ class AggregationMethod(Operation, ABC):
             aggregation_period=config.params["aggregation_period"],
             aggregation_function=agg_func,
             columns=col_name,
-            missing_criteria=missing_criteria,
+            missing_criteria=missing_criteria,  # type: ignore[assignment]
             time_window=time_window,
         )
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))

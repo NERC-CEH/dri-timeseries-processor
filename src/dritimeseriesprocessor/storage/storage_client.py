@@ -79,14 +79,18 @@ class S3StorageClient(StorageClient):
     """S3 implementation of StorageClient, suitable for AWS and LocalStack."""
 
     def __init__(
-        self, aws_access_key_id: str, aws_secret_access_key: str, aws_region_name: str, endpoint_url: str | None = None
+        self,
+        aws_access_key_id: str | None,
+        aws_secret_access_key: str | None,
+        aws_region_name: str | None,
+        endpoint_url: str | None = None,
     ):
         """Initialize an S3 client.
 
         Args:
-            aws_access_key_id: AWS Access Key.
-            aws_secret_access_key: AWS Secret Key.
-            aws_region_name: AWS Region Name.
+            aws_access_key_id: AWS Access Key. If omitted, AWS defaults apply.
+            aws_secret_access_key: AWS Secret Key. If omitted, AWS defaults apply.
+            aws_region_name: AWS Region Name. If omitted, AWS defaults apply.
             endpoint_url: Optional - used for LocalStack/testing environments. If omitted, AWS defaults apply.
         """
         kwargs = {}
@@ -133,7 +137,7 @@ class S3StorageClient(StorageClient):
         keys = []
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
             for obj in page.get("Contents", []):
-                keys.append(obj["Key"])
+                keys.append(obj["Key"])  # type: ignore[typeddict-item]
         return keys
 
     def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
@@ -146,7 +150,7 @@ class S3StorageClient(StorageClient):
             bucket: S3 bucket name.
         """
         resp = self.client.list_objects_v2(Bucket=bucket)
-        return [obj["Key"] for obj in resp.get("Contents", [])]
+        return [obj["Key"] for obj in resp.get("Contents", [])]  # type: ignore[typeddict-item]
 
     def clear_bucket(self, bucket: str) -> None:
         """Clear all from the S3 bucket.

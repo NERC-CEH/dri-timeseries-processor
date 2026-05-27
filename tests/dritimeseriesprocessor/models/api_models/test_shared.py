@@ -59,7 +59,7 @@ class TestHasValue:
         """Test that valueReference is accepted instead of value."""
         data = {"@id": "1", "@type": [], "valueReference": {"@id": "ref-1"}}
         model = HasValue.model_validate(data)
-        assert model.value_reference.id == "ref-1"
+        assert model.value_reference.id == "ref-1"  # type: ignore[union-attr]
         assert model.value is None
 
     def test_missing_both_normalises_to_empty(self) -> None:

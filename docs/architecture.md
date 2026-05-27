@@ -84,7 +84,7 @@ See [CLI Usage](cli_usage.md).
 
 ### 2. Environment configuration
 
-The processor is designed to run in multiple execution environments (e.g. local, staging, production), each with 
+The processor is designed to run in multiple execution environments (e.g. local, staging, production), each with
 different requirements for specifying credentials, storage paths, and access control. Environment configuration
 provides a single abstraction layer that supplies these values to the rest of the system.
 
@@ -296,18 +296,18 @@ datasets are saved using the configured output locations.
 
 #### Saving strategy - pooling and concurrent saves
 
-To improve performance while processing multiple datasets, instead of saving each dataset individually after it's 
+To improve performance while processing multiple datasets, instead of saving each dataset individually after it's
 processing stage is completed, we instead wait until all datasets have been processed. Then, we can pool together
 datasets that we know are going to be saved to the same output parquet file in S3 - i.e. a group of datasets
-that have the same network, site ID and resolution. If we imagine we have 20 datasets in a group, this reduces the 
-number of save actions from 20 down to 1. 
+that have the same network, site ID and resolution. If we imagine we have 20 datasets in a group, this reduces the
+number of save actions from 20 down to 1.
 
-Additionally, we have a threading strategy that allows us to run multiple save actions concurrently. This is used 
-because we save datasets in "per day" parquet files. Imagine a processing run that is processing data for 1 week - 
-i.e. 7 days, so 7 individual save actions. We know these are being saved to separate locations in S3, so it is 
-safe to run the save actions concurrently. The mechanism for concurrency is using multiple "threads" rather 
-than multiple processes. This should work as the save actions are I/O bound rather than CPU bound, so we can kick off 
-multiple threads within the same shared process. 
+Additionally, we have a threading strategy that allows us to run multiple save actions concurrently. This is used
+because we save datasets in "per day" parquet files. Imagine a processing run that is processing data for 1 week -
+i.e. 7 days, so 7 individual save actions. We know these are being saved to separate locations in S3, so it is
+safe to run the save actions concurrently. The mechanism for concurrency is using multiple "threads" rather
+than multiple processes. This should work as the save actions are I/O bound rather than CPU bound, so we can kick off
+multiple threads within the same shared process.
 
 ### 6. I/O Backend
 
@@ -340,7 +340,7 @@ The writer component saves completed `TimeFrame` objects back to storage:
 The processor exports metrics to a Pushgateway:
 
 - **Pipeline timing**: Total runtime, per-operation timings
-- **Success/failure counts**: Datasets processed successfully or failed  
+- **Success/failure counts**: Datasets processed successfully or failed
 - **Data availability**: Datasets with no data available
 
 Locally accessible at `http://localhost:9091`

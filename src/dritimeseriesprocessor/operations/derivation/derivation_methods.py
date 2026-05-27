@@ -741,6 +741,7 @@ class VolumetricWaterContent(DerivationMethod):
         return vwc.clip(0.0, 100.0)
 
 
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
