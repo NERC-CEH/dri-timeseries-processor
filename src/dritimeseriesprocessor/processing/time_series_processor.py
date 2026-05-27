@@ -191,23 +191,23 @@ class TimeSeriesProcessor:
         groupings = group_containers(containers, common_keys)
 
         with self.metrics.time_load.time():
-            for dataset_group, containers in groupings.items():
+            for dataset_group, containers_in_group in groupings.items():
                 try:
                     combined_df = self.data_router.query_by_date_range(
-                        *containers, start_date=self.start_date, end_date=self.end_date
+                        *containers_in_group, start_date=self.start_date, end_date=self.end_date
                     )
 
                     if combined_df.is_empty():
                         raise ValueError(f"No data returned for group: {dataset_group}")
 
                 except Exception:
-                    for container in containers:
+                    for container in containers_in_group:
                         self.metrics.no_data.inc()
                         container.failed = True
                     logger.exception(f"Failed to load data for group: {dataset_group}")
                     continue
 
-                for container in containers:
+                for container in containers_in_group:
                     col = container.source_column
                     try:
                         df = combined_df.select([container.time_column_name, col])
@@ -238,9 +238,9 @@ class TimeSeriesProcessor:
 
         self.flux_s3_client.download_raw_dat_files(  # type: ignore[union-attr]
             bucket=container.s3_bucket,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            site=container.source_site,
+            site=container.source_site,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
             dataset=container.s3_dataset_path,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            network=container.network,
+            network=container.network,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
             start_date=start_date,
             end_date=end_date,
             local_dir=Path(tmp.name),
@@ -264,9 +264,9 @@ class TimeSeriesProcessor:
         if dep_container.is_observation_dataset:
             # Wide bundle dep (e.g. EddyPro intermediate): extract the target column
             # from the bundle, initialise container, then run pipelines on container.
-            df = dep_container.data.df.select([dep_container.time_column_name, container.source_column])
+            df = dep_container.data.df.select([dep_container.time_column_name, container.source_column])  # type: ignore[union-attr]
             container.init_timeframe(df)
-            container.data = add_initial_core_flags(container.data)
+            container.data = add_initial_core_flags(container.data)  # type: ignore[arg-type]
 
             with self.metrics.time_corrections.time():
                 container.data = OPERATION_PIPELINES[OperationType.CORRECTION].run(container, self.graph.datasets)
@@ -372,7 +372,7 @@ class TimeSeriesProcessor:
         Returns:
             Dependent time series container.
         """
-        dependencies = container.method_config._values_for_params("dep_ts")
+        dependencies = container.method_config._values_for_params("dep_ts")  # type: ignore[union-attr]
         num_dependents = len(dependencies)
         if num_dependents != 1:
             raise ValueError(f"Expected a single dependent dataset. Found: {num_dependents}")

@@ -113,6 +113,6 @@ def log_duration(
             ):
                 return func(*args, **kwargs)
 
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     return decorator

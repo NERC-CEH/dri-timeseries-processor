@@ -20,7 +20,7 @@ class TestAnnotation:
         result = HasAnnotationItem.model_validate(data)
         assert result.id == "http://fdri.ceh.ac.uk/id/annotation/example-1"
         assert result.property.id.endswith("comment")
-        assert result.has_value.value == 123
+        assert result.has_value.value == 123  # type: ignore[union-attr]  # type: ignore[union-attr]
         assert result.has_value_series is None
 
     def test_annotation_with_value_series(self) -> None:
@@ -57,7 +57,7 @@ class TestAnnotation:
         result = HasAnnotationItem.model_validate(data)
         assert result.has_value_series is not None
         current = result.has_value_series.has_current_value[0]
-        assert current.interval.start_date.year == 2025
+        assert current.interval.start_date.year == 2025  # type: ignore[union-attr]
         assert current.qualifier[0].has_value.value == "Good"
 
     @pytest.mark.parametrize(
@@ -86,7 +86,7 @@ class TestAnnotation:
         """Test that annotation parameters are correctly extracted for various valid inputs."""
         data = load_json_string(test_data)
         result = HasAnnotationItem.model_validate(data)
-        assert result.has_value.value == expected_value
+        assert result.has_value.value == expected_value  # type: ignore[union-attr]
 
     def test_value_equal_none_raises_error(self) -> None:
         """Test that a value with explicit value of "null" (loads as None in python) raises validation error"""

@@ -1,4 +1,5 @@
 import logging
+from typing import Iterable
 
 import polars as pl
 import time_stream as ts
@@ -57,7 +58,7 @@ class InfillPipeline(OperationPipeline):
         """
         return container.infill_configs
 
-    def sort_configs(self, configs: set[DataProcessingConfig]) -> list[DataProcessingConfig]:
+    def sort_configs(self, configs: Iterable[DataProcessingConfig]) -> list[DataProcessingConfig]:
         """Sort the infilling configs into the correct order based on their "priority"
 
         Args:

@@ -9,8 +9,8 @@ def patch_perf_counter(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture, times: tuple[float, float] = (1.0, 10.0)
 ) -> None:
     caplog.set_level(logging.INFO, logger=timer.logger.name)
-    times = iter(times)
-    monkeypatch.setattr(timer.time, "perf_counter", lambda: next(times))
+    times_iter = iter(times)
+    monkeypatch.setattr(timer.time, "perf_counter", lambda: next(times_iter))
 
 
 def get_caplog_messages(caplog_records: list) -> list:

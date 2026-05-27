@@ -13,7 +13,7 @@ required infrastructure components, including:
 
 import json
 import logging
-from datetime import date, datetime
+from datetime import datetime
 
 from dritimeseriesprocessor.cli.selection import RunConfig, SelectionOption
 from dritimeseriesprocessor.configuration.app_config import AppConfig, app_config
@@ -176,7 +176,7 @@ def _build_dependency_graph(
     return graph
 
 
-def list_sites(network: str, start_date: date | datetime, end_date: date | datetime) -> None:
+def list_sites(network: str, start_date: datetime, end_date: datetime) -> None:
     """Save a JSON array of site IDs for the given network to a temporary file. Option to specify start and end dates
     to limit the listed sites to ones that were open during that date range.
 

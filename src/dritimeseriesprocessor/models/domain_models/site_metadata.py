@@ -9,7 +9,7 @@ from datetime import datetime
 @dataclass
 class SiteMetadata:
     site_id: str
-    network: str
+    network: str | None
     alt_id: str | None = None
     full_name: str | None = None
     easting: float | None = None

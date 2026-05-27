@@ -7,6 +7,7 @@ for use in the DAG builder and data processing pipeline.
 
 import logging
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -22,13 +23,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TimeSeriesContainer:
     ts_id: str
-    network: str
+    network: str | None
 
     source_bucket: str | None
     source_dataset: str | None
     source_column: str | None
-    source_site: str
-    source_site_identifier: str
+    source_site: str | None
+    source_site_identifier: str | None
     time_column_name: str | None
 
     resolution: str
@@ -141,7 +142,7 @@ class TimeSeriesContainer:
     def init_timeframe(self, df: pl.DataFrame) -> None:
         """Wrap a DataFrame in a TimeFrame, apply initial flags, and store it on the container.
 
-        If the DataFrame is empty, a warning is logged and the container's data is left unset.
+        If the DataFrame is empty the container's data is left unset.
 
         Args:
             df: The raw DataFrame to wrap.
@@ -152,7 +153,7 @@ class TimeSeriesContainer:
         tf = (
             ts.TimeFrame(
                 df=df,
-                time_name=self.time_column_name,
+                time_name=self.time_column_name,  # type: ignore[arg-type] - always set before init_timeframe is called
                 resolution=self.resolution,
                 periodicity=self.periodicity,
             )
@@ -167,7 +168,7 @@ class TimeSeriesContainer:
 
 
 def group_containers(
-    containers: tuple[TimeSeriesContainer, ...], attributes: list[str]
+    containers: Sequence[TimeSeriesContainer], attributes: list[str]
 ) -> dict[tuple, list[TimeSeriesContainer]]:
     """Group containers by a composite key derived from the given attributes.
 
@@ -185,7 +186,7 @@ def group_containers(
     return groupings
 
 
-def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any] | None:
+def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any]:
     """Check if all the containers have the same value for each of the given attributes.
 
     Args:
@@ -196,7 +197,7 @@ def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | l
         The common value(s) of each of the attribute(s).
     """
     if not containers:
-        return None
+        raise ValueError("Cannot check attributes for empty container list")
 
     if isinstance(attr, str):
         attr = [attr]

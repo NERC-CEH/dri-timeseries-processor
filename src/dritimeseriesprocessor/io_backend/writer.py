@@ -43,7 +43,7 @@ class ByteParquetWriter(ParquetWriterInterface):
             df: The data to store
             time_col: Name of the time column in df
         """
-        exceptions_to_catch = [FileNotFoundError]
+        exceptions_to_catch: list[type[Exception]] = [FileNotFoundError]
         if isinstance(self.storage, S3StorageClient):
             exceptions_to_catch.extend([self.storage.client.exceptions.NoSuchKey, ClientError])
 

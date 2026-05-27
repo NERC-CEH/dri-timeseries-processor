@@ -85,9 +85,12 @@ class TestS3DatasetPath:
 
 
 class TestCheckCommonAttributes:
-    def test_empty_containers_returns_none(self) -> None:
-        assert check_common_attributes([], "a") is None
-        assert check_common_attributes([], ["a", "b"]) is None
+    def test_empty_containers_raises(self) -> None:
+        """Tests that passing an empty container list raises a ValueError."""
+        with pytest.raises(ValueError):
+            check_common_attributes([], "a")
+        with pytest.raises(ValueError):
+            check_common_attributes([], ["a", "b"])
 
     containers = [
         make_time_series_container("a"),
@@ -184,12 +187,12 @@ class TestInitTimeframe:
     def test_timeframe_metadata_contains_source_column(self) -> None:
         container = make_time_series_container("a")
         container.init_timeframe(make_daily_df())
-        assert container.data.metadata == {"column_name": container.source_column}
+        assert container.data.metadata == {"column_name": container.source_column}  # type: ignore[union-attr]
 
     def test_timeframe_uses_container_time_column_name(self) -> None:
         container = make_time_series_container("a")
         container.init_timeframe(make_daily_df())
-        assert container.data.time_name == container.time_column_name
+        assert container.data.time_name == container.time_column_name  # type: ignore[union-attr]
 
 
 def _make_config(

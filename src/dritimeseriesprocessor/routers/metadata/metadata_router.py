@@ -15,7 +15,6 @@ from pydantic import BaseModel
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.deployment import Deployment
-from dritimeseriesprocessor.models.api_models.network import Network
 from dritimeseriesprocessor.models.api_models.site import SiteResponse
 from dritimeseriesprocessor.utils.urls import PROGRAMME_URI
 
@@ -109,19 +108,6 @@ class MetadataRouter:
         params = (("utilisedBy", f"{PROGRAMME_URI}/{network}"),)
         response = self.api_manager.make_paginated_api_call(url, params)
         return SiteResponse.model_validate(response)
-
-    def fetch_network(self, network: str) -> Network:
-        """Fetch network metadata for given network name
-
-        Args:
-            network: Network to fetch metadata for.
-
-        Returns:
-            The parsed JSON response containing network metadata.
-        """
-        url = f"{self.host}/id/network/{network}"
-        response = self.api_manager.make_paginated_api_call(url)
-        return Network.model_validate(response)
 
     def fetch_deployment_by_platform(self, platform: str) -> Deployment:
         """Fetch deployment metadata for the given platform ID

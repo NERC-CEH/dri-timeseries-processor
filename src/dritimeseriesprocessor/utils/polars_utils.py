@@ -2,9 +2,17 @@
 Helper functions related to Polars DataFrames
 """
 
+from collections.abc import Sequence
 from datetime import datetime
 
 import polars as pl
+
+# Deprecation warning from Polars:
+#   DeprecationWarning: the `polars.type_aliases` module was deprecated in version 1.0.0. The type aliases have moved
+#   to the `polars._typing` module to explicitly mark them as private. Please define your own type aliases, or
+#   temporarily import from the `polars._typing` module. A public `polars.typing` module will be added in the future.
+# noinspection PyProtectedMember
+from polars._typing import JoinStrategy
 
 
 def split_by_date(df: pl.DataFrame, time_col: str) -> list[tuple[datetime, pl.DataFrame]]:
@@ -76,6 +84,7 @@ def missing_expr(column_name: str, dtype: pl.DataType) -> pl.Expr:
 
     Args:
         column_name: Data column name
+        dtype: Data type
 
     Returns:
         Expression for missing values
@@ -93,6 +102,7 @@ def not_missing_expr(column_name: str, dtype: pl.DataType) -> pl.Expr:
 
     Args:
         column_name: Data column name
+        dtype: Data type
 
     Returns:
         Expression for not missing values
@@ -104,7 +114,7 @@ def not_missing_expr(column_name: str, dtype: pl.DataType) -> pl.Expr:
         return col.is_not_null()
 
 
-def merge_multiple(inputs: list[pl.DataFrame], join_col: str, join_type: str = "full") -> pl.DataFrame:
+def merge_multiple(inputs: list[pl.DataFrame], join_col: str, join_type: JoinStrategy = "full") -> pl.DataFrame:
     """Merge multiple Polars DataFrames on a common column.
 
     Args:
@@ -123,7 +133,7 @@ def merge_multiple(inputs: list[pl.DataFrame], join_col: str, join_type: str = "
 
 
 def join_time_intervals(
-    intervals: list[tuple[datetime, datetime | None, float]],
+    intervals: Sequence[tuple[datetime, datetime | None, float]],
     df: pl.DataFrame,
     time_name: str,
     value_name: str,
