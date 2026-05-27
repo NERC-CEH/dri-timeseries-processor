@@ -1,0 +1,139 @@
+# Versioning and Releases
+
+This project follows [Semantic Versioning](https://semver.org/). Every version is a `major.minor.patch` number, for
+example `0.2.7`. We use these three components as follows:
+
+- **`major`** and **`minor`** mark meaningful changes to the software (breaking changes, new features). These are
+  bumped by hand when you are ready to release a new minor or major version.
+- **`patch`** is used as an auto-incrementing build number. CI bumps it by one on every push to a feature branch, so
+  that each build produces a unique image tag and never collides with previous builds.
+
+Work flows through three branches: `feature/*` -> `staging` -> `production`.
+
+- Every push to a feature branch auto-bumps the patch component (e.g. `0.2.7` -> `0.2.8`).
+- `make bump-minor` and `make bump-major` are run by hand when you want a new minor or major version. Both need a
+  populated `CHANGELOG/<version>.md` before the release PR can be merged.
+- Every merge from `staging` to `production` builds the production Docker image, tags the commit as `v<version>`, and
+  creates a GitHub release - all automatically.
+
+## Why patch bumps are automatic
+
+Docker images are tagged with the `pyproject.toml` version and pushed to an ECR registry that has tag immutability
+turned on. If two merges to `staging` shared the same version, the second push to ECR would be rejected. Auto-bumping
+the patch on every feature push guarantees each merge to `staging` produces a unique, monotonically-increasing tag -
+which is also what the FluxCD SemVer policy needs to pick the latest image.
+
+## Automatic patch bumps (the common case)
+
+Whenever you push commits to a feature branch (anything other than `staging`, `production`), the
+`auto-bump-patch` workflow runs and:
+
+1. Looks at the diff for the commits you just pushed.
+2. If `pyproject.toml` version number was changed in that push, it skips - you have bumped the version yourself.
+3. Otherwise it runs the bump patch utility, which increments the patch component in
+   `pyproject.toml`, commits it as `Bump version: <old> -> <new>`, and pushes the commit
+   back to your branch.
+
+You will need to `git pull` locally before your next push to pick up the bump commit.
+
+**Example - `feature/my-thing` branched from `staging` at `0.1.5`:**
+
+```text
+staging at 0.1.5
++-- feature/my-thing branched from staging at 0.1.5
+    +-- push commit A
+    |   +-- CI auto-bumps to 0.1.6 and pushes "Bump version: 0.1.5 -> 0.1.6"
+    |
+    +-- git pull   (picks up CI's bump commit)
+    +-- push commit B
+    |   +-- CI auto-bumps to 0.1.7
+    |
+    +-- PR opened against staging   (PR events run tests + Docker build, do not auto-bump)
+    +-- PR merged
+    +-- staging is now at 0.1.7
+    +-- Docker image dri-timeseries-processor:0.1.7 pushed to staging ECR
+```
+
+## Manual minor and major bumps
+
+When you want to release a new minor (`0.x.0`) or major (`x.0.0`) version, bump the version manually on your feature
+branch:
+
+```sh
+make bump-minor   # e.g. 0.1.7 -> 0.2.0
+make bump-major   # e.g. 0.2.0 -> 1.0.0
+```
+
+This:
+
+1. Updates `pyproject.toml` (and `CITATION.cff` if present) to the new version.
+2. Creates `CHANGELOG/<new_version>.md` with a placeholder.
+3. Creates two commits: one for the bump, one for the changelog stub.
+
+**You must edit `CHANGELOG/<new_version>.md`** to replace the `<!-- Add release notes here -->` placeholder with your
+real release notes, then commit and push. The `release-ready` check on the production PR rejects merges whose changelog
+is missing, still contains the placeholder, or has no content beyond the heading.
+
+Because the manual bump commit modifies `pyproject.toml`, the next push to your feature branch will **not** trigger an
+auto-bump - the workflow sees the change and skips. Subsequent pushes that do not touch `pyproject.toml` will resume
+auto-bumping the patch (`0.2.0` -> `0.2.1` -> ...).
+
+**Example - releasing a new `0.2.0` minor version:**
+
+```text
+staging at 0.1.7
++-- feature/release-2.0 branched from staging at 0.1.7
+    +-- make bump-minor
+    |   +-- Local commits: "Bump version: 0.1.7 -> 0.2.0", "Add CHANGELOG/0.2.0.md stub"
+    |
+    +-- Edit CHANGELOG/0.2.0.md with real release notes, commit
+    +-- push
+    |   +-- CI sees pyproject.toml was changed in this push -> SKIPS auto-bump
+    |
+    +-- PR opened against staging
+    +-- PR merged
+    +-- staging is now at 0.2.0
+```
+
+Note: you should probably not run `make bump-patch` manually. The Makefile target still
+exists for use in unusual situations, but the everyday use is "let the CI do patches".
+
+## Production releases
+
+Every push to `production` (i.e. every merge of the staging-to-production PR) does two things:
+
+- Builds the production Docker image, tags it with the current `pyproject.toml` version, and pushes it to the production
+  ECR.
+- Runs the `release` job, which creates a `v<version>` git tag and a GitHub release populated from
+  `CHANGELOG/<version>.md`.
+
+Two checks are run:
+
+- The `release-ready` check (runs on the PR before merge):
+    - Compares `pyproject.toml` on `production` vs the incoming version. If they are equal, it fails - production merges
+      always require a bump.
+    - Requires `CHANGELOG/<new_version>.md` to exist, to not contain the placeholder, and to have content beyond the
+      heading.
+- ECR tag immutability: if a merge to `production` somehow happened without a bump, the Docker push would also be
+  rejected by ECR.
+
+**Example - releasing `0.2.3` to production:**
+
+```text
+production at 0.1.5
+staging at 0.2.3 (after several auto-patch bumps and a manual minor bump)
++-- Auto-PR opened: staging -> production
+    +-- release-ready check
+    |   +-- production version (0.1.5) != staging version (0.2.3) -> OK
+    |   +-- CHANGELOG/0.2.3.md exists, no placeholder, has content -> OK
+    |   +-- check passes
+    |
+    +-- PR merged
+    +-- On push to production:
+        +-- Docker image dri-timeseries-processor:0.2.3 pushed to production ECR
+        +-- Git tag v0.2.3 created and pushed
+        +-- GitHub release "0.2.3" created from CHANGELOG/0.2.3.md
+```
+
+If `CHANGELOG/0.2.3.md` did not exist or still had the placeholder, the PR would be blocked at the `release-ready`
+check.

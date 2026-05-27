@@ -25,24 +25,14 @@ jobs:
       coverage_threshold: 90
       localstack_profile_name: localstack
 
-  short-sha:
-    if: ${{ github.ref_name == 'staging' || github.base_ref == 'staging' }}
-    runs-on: ubuntu-latest
-    outputs:
-      sha: ${{ steps.compute.outputs.sha }}
-    steps:
-      - id: compute
-        run: echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-
   build-test-deploy-docker-staging:
-    needs: [test-python, short-sha]
+    needs: [test-python]
     if: ${{ github.ref_name == 'staging' || github.base_ref == 'staging' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
       package_name: dritimeseriesprocessor
       event_type: ${{ github.event_name }}
-      tag_suffix: -${{ needs.short-sha.outputs.sha }}
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}

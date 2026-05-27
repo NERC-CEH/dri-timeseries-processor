@@ -1,0 +1,49 @@
+name: Auto-bump patch
+
+on:
+  push:
+    branches-ignore:
+      - staging
+      - production
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Decide whether to bump
+        id: decide
+        run: |
+          before="${{ github.event.before }}"
+          if [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            echo "New branch - will bump"
+            echo "bump=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$before" HEAD | grep -q '^pyproject\.toml$'; then
+            echo "pyproject.toml changed in this push - skipping auto-bump"
+            echo "bump=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "bump=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v6
+        if: steps.decide.outputs.bump == 'true'
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v7
+        if: steps.decide.outputs.bump == 'true'
+
+      - name: Bump patch and push
+        if: steps.decide.outputs.bump == 'true'
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          python scripts/bump.py patch --no-changelog
+          git push origin HEAD:${{ github.ref }}
