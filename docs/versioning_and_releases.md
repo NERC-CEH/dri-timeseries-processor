@@ -40,11 +40,10 @@ When it fires it:
 4. Otherwise it runs the bump-patch utility, which increments the patch component in `pyproject.toml`, commits it as
    `Bump version: <old> -> <new>`, and pushes the commit back to the PR's head branch.
 
-The push is made with a GitHub App installation token (not the default `GITHUB_TOKEN`). This matters because pushes
-made with `GITHUB_TOKEN` deliberately do not trigger any further workflows - which would mean the bump commit would
-have no CI checks against it in the PR. Pushing with the App token instead triggers a `pull_request: synchronize` event
-for the bump commit, so `pipeline.yml` (tests, Docker build) re-runs against the bumped version and the PR's checks
-panel reflects the latest commit.
+The push is made with the workflow's default `GITHUB_TOKEN`. As a consequence, the bump commit itself does **not**
+trigger any further workflow runs - GitHub deliberately blocks `GITHUB_TOKEN` pushes from re-triggering workflows to
+avoid loops. The PR's checks panel will therefore not refresh against the bump commit, even though the bumped version
+is what ends up being deployed when the PR merges to `staging`.
 
 You will need to `git pull` locally before your next push to pick up the bump commit.
 
@@ -56,15 +55,17 @@ staging at 0.1.5
     +-- push commit A   (no PR yet -> no auto-bump)
     +-- push commit B   (no PR yet -> no auto-bump)
     +-- PR opened against staging
+    |   +-- pipeline.yml runs against 0.1.5 (tests, Docker build with the pre-bump version)
     |   +-- auto-bump-patch runs (opened event)
     |   |   +-- diff vs staging shows no pyproject.toml change -> bumps to 0.1.6 and pushes
-    |   +-- pipeline.yml runs against 0.1.6 (triggered by the App-token push)
+    |   |   +-- bump commit does NOT re-trigger pipeline.yml (GITHUB_TOKEN limitation)
     |
     +-- git pull   (picks up CI's bump commit)
     +-- push commit C
+    |   +-- pipeline.yml runs against 0.1.6 (tests, Docker build)
     |   +-- auto-bump-patch runs (synchronize event)
     |   |   +-- diff of commit C shows no pyproject.toml change -> bumps to 0.1.7 and pushes
-    |   +-- pipeline.yml runs against 0.1.7
+    |   |   +-- pipeline.yml does NOT re-run against 0.1.7
     |
     +-- PR merged
     +-- staging is now at 0.1.7
