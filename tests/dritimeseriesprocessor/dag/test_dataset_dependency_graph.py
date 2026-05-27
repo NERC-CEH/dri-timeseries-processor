@@ -243,9 +243,6 @@ class TestFetchDatasets:
         all_site_ids = ["site1", "site2", "site3"]
 
         mock_router = setup_mocks(all_site_ids, monkeypatch)
-        mock_network_response = MagicMock()
-        mock_network_response.items[0].contains = create_network_sites(all_site_ids)
-        mock_router.fetch_network.return_value = mock_network_response
 
         builder = DatasetDependencyGraph(
             mock_router, "a_network", MagicMock(), datetime(2026, 1, 1), datetime(2026, 1, 2)
