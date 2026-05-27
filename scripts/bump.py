@@ -57,7 +57,9 @@ def main() -> None:
     subprocess.run(["uv", "version", "--bump", part], check=True)
     new_version = _read_version()
 
-    to_commit = [str(PYPROJECT)]
+    subprocess.run(["uv", "lock"], check=True)
+
+    to_commit = [str(PYPROJECT), "uv.lock"]
     if _update_citation_version(new_version):
         to_commit.append(str(CITATION))
 
