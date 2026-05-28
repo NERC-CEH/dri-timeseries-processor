@@ -12,7 +12,6 @@ PLATFORM_URI = f"{ID_URI}/platform"
 PROGRAMME_URI = f"{ID_URI}/programme"
 
 PROCESSING_LEVEL_URI = f"{REF_URI}/common/processing-level"
-CONFIGURATION_TYPE_URI = f"{REF_URI}/common/configuration-type"
 
 
 def remove_protocol_from_url(url: str) -> str:

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 import polars as pl
+import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -10,13 +11,20 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidityFactor,
     Albedo,
     AtmosphericPressureFactor,
+    CalcFluxEt,
+    CalcFluxLambda,
+    CalcFluxLeL1,
+    CalcFluxMeanShf,
+    CorrectCounts,
     DerivationMethod,
     IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
     NetRadiation,
+    NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
     SolarZenith,
+    VolumetricWaterContent,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -30,7 +38,7 @@ class SimpleAddition(DerivationMethod):
 
 
 def create_method_config(
-    data: dict[str, list[float]],
+    data: dict[str, list[float | None]],
     output_col: str,
 ) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
@@ -228,6 +236,20 @@ class TestAbsoluteHumidity:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
+class TestNeutronIntensityFactor:
+    def test_calculation(self) -> None:
+        """Test incoming neutron intensity factor calculation."""
+        config = create_method_config({"crns-count": [150.1, 151.2, 153.3, 154.4]}, "calc_factor_inten")
+
+        config.params["ref_c0"] = 152.03496  # holln
+        config.params["gamma"] = 1.29291  # holln
+
+        # Expected values should be positive
+        expected = dataframe_to_timeframe(pl.DataFrame({"calc_factor_inten": [1.016, 1.007, 0.989, 0.980]}))
+        result = NeutronIntensityFactor().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
 class TestAbsoluteHumidityFactor:
     def test_calculation(self) -> None:
         """Test absolute humidity correction factor calculation."""
@@ -237,7 +259,7 @@ class TestAbsoluteHumidityFactor:
             },
             "factor_q",
         )
-        config.params["REF_Q0"] = 8.27  # [g m-3] holln
+        config.params["ref_q0"] = 8.27  # [g m-3] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.97707, 1.00791, 0.97690, 1.01832]}))
         result = AbsoluteHumidityFactor().run(config)
@@ -251,7 +273,7 @@ class TestAtmosphericPressureFactor:
             {"pa": [1024.0, 1011.365, 1033.649, 1020.695]},
             "factor_pa",
         )
-        config.params["L"] = 137.04156  # [M] holln
+        config.params["l"] = 137.04156  # [M] holln
 
         expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27831, 1.16301]}))
         result = AtmosphericPressureFactor().run(config)
@@ -516,3 +538,118 @@ class TestIsSnowDay:
         )
         result = IsSnowDay().run(config)
         assert_frame_equal(result.df, expected.df)
+
+
+class TestCorrectCounts:
+    def test_correct_counts(self) -> None:
+        """Test corrected mod counts are the product of raw counts and all three correction factors.
+        cts_mod values from cosmos-holln on 2016-07-27.
+        Factor values taken from the holln expected outputs in TestNeutronIntensityFactor,
+        TestAtmosphericPressureFactor, and TestAbsoluteHumidityFactor.
+        """
+        config = create_method_config(
+            {
+                "cts_mod": [749.0, 746.0, 793.0, 734.0],
+                "cosmosfactor_inten": [1.016, 1.007, 0.989, 0.980],
+                "cosmosfactor_pa": [1.1914, 1.08646, 1.27831, 1.16301],
+                "cosmosfactor_q": [0.97707, 1.00791, 0.97690, 1.01832],
+            },
+            "correct_counts",
+        )
+        expected = dataframe_to_timeframe(pl.DataFrame({"correct_counts": [885.847, 822.629, 979.390, 851.902]}))
+        result = CorrectCounts().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
+
+
+class TestVolumetricWaterContent:
+    def test_volumetric_water_content(self) -> None:
+        """Test calculate_vwc using cosmos-holln site annotations.
+        cts_mod_corr values include 0, the corrected counts from TestCorrectCounts (all below n_min),
+        and representative valid-range counts.
+        """
+        config = create_method_config(
+            {"cts_mod_corr": [0.0, 885.847, 822.629, 979.390, 851.902, 1300.0, 1500.0, 1800.0, 2000.0]},
+            "vwc",
+        )
+        # Annotations from cosmos-holln
+        config.params["n0_mod"] = 2710.16689
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+        config.params["n_min"] = 1204.50827
+        config.params["n_max"] = 2281.33025
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"vwc": [100.0, 100.0, 100.0, 100.0, 100.0, 61.311, 28.964, 11.083, 5.172]})
+        )
+        result = VolumetricWaterContent().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestCalcFluxMeanShf:
+    def test_averages_two_shf_plates(self) -> None:
+        config = create_method_config(
+            {"g_plate_1_1_1": [10.0, 20.0], "g_plate_1_1_2": [30.0, 40.0]},
+            "shf",
+        )
+        result = CalcFluxMeanShf().run(config)
+        assert list(result.df["shf"]) == [20.0, 30.0]
+
+    def test_null_in_one_plate_returns_non_null_value(self) -> None:
+        config = create_method_config(
+            {"g_plate_1_1_1": [None, 20.0], "g_plate_1_1_2": [10.0, None]},
+            "shf",
+        )
+        result = CalcFluxMeanShf().run(config)
+        assert result.df["shf"][0] == 10.0
+        assert result.df["shf"][1] == 20.0
+
+
+class TestCalcFluxLambda:
+    def test_lambda_formula(self) -> None:
+        # lambda = 2.501 - 0.002361 * Ta
+        config = create_method_config({"airtemp_c": [0.0, 20.0]}, "lambda")
+        result = CalcFluxLambda().run(config)
+        assert_frame_equal(
+            result.df.select("lambda"),
+            pl.DataFrame({"lambda": [2.501, 2.501 - 0.002361 * 20.0]}),
+            check_exact=False,
+            abs_tol=1e-6,
+        )
+
+
+class TestCalcFluxLeL1:
+    def test_le_equals_rn_minus_shf_minus_h(self) -> None:
+        # LE_L1 = Rn - SHF - H  →  300 - 50 - 100 = 150
+        config = create_method_config(
+            {"t_nr_avg": [300.0], "shf": [50.0], "h": [100.0]},
+            "le",
+        )
+        result = CalcFluxLeL1().run(config)
+        assert result.df["le"][0] == 150.0
+
+    def test_null_propagates(self) -> None:
+        config = create_method_config(
+            {"t_nr_avg": [None], "shf": [50.0], "h": [100.0]},
+            "le",
+        )
+        result = CalcFluxLeL1().run(config)
+        assert result.df["le"][0] is None
+
+
+class TestCalcFluxEt:
+    def test_et_formula(self) -> None:
+        # ET = LE / (2.501 - 0.002361 * Ta) / 1000
+        ta = 20.0
+        le = 150.0
+        lv = 2.501 - 0.002361 * ta
+        expected_et = le / lv / 1000.0
+
+        config = create_method_config({"le": [le], "airtemp_c": [ta]}, "et")
+        result = CalcFluxEt().run(config)
+        assert result.df["et"][0] == pytest.approx(expected_et, abs=1e-9)
+
+    def test_null_le_produces_null_et(self) -> None:
+        config = create_method_config({"le": [None], "airtemp_c": [20.0]}, "et")
+        result = CalcFluxEt().run(config)
+        assert result.df["et"][0] is None

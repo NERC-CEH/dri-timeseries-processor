@@ -7,6 +7,7 @@ for use in the DAG builder and data processing pipeline.
 
 import logging
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -22,18 +23,21 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TimeSeriesContainer:
     ts_id: str
-    network: str
+    network: str | None
 
     source_bucket: str | None
     source_dataset: str | None
-    source_column: str
-    source_site: str
-    source_site_identifier: str
-    time_column_name: str
+    source_column: str | None
+    source_site: str | None
+    source_site_identifier: str | None
+    time_column_name: str | None
 
     resolution: str
     periodicity: str
     processing_level: ProcessingLevel
+
+    dataset_type: str | None = None
+    distribution_url: str | None = None
 
     method_config: DataProcessingConfig | None = None
     correction_configs: set[DataProcessingConfig] = field(default_factory=set)
@@ -42,15 +46,40 @@ class TimeSeriesContainer:
 
     data: ts.TimeFrame | None = None
     failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
+    load_only: bool = False
 
-    def all_dependencies(self) -> list[str]:
-        """Return a deduplicated list of all dependencies."""
+    def _ids_across_configs(self, *keys: str) -> list[str]:
+        """Collect and deduplicate values from the given parameter keys across all attached configs.
+
+        Args:
+            keys: One or more parameter key names to extract values from (e.g. `dep_ts`, `load_dep_ts`).
+
+        Returns:
+            Sorted, deduplicated list of values collected from all attached configs for the given keys.
+        """
         method_config = {self.method_config} if self.method_config else set()
         deps = set()
         for c in self.correction_configs | self.qc_configs | self.infill_configs | method_config:
-            deps.update(c.all_dep_ts())
-
+            deps.update(c._values_for_params(*keys))
         return sorted(deps)
+
+    def all_dependencies(self) -> list[str]:
+        """Get a list of all dataset IDs that are dependents of this TimeSeriesContainer, including
+        from "dep_ts" and "load_dep_ts" dependency references.
+
+        Returns:
+            Sorted list of all dependency dataset IDs.
+        """
+        return self._ids_across_configs("dep_ts", "load_dep_ts")
+
+    def load_only_dependencies(self) -> list[str]:
+        """Get a list of dataset IDs that are "load only" dependents of this TimeSeriesContainer. Only includes
+        IDs from "load_dep_ts" references across all attached configs.
+
+        Returns:
+            Sorted list of dataset IDs that should be loaded but not processed or saved.
+        """
+        return self._ids_across_configs("load_dep_ts")
 
     def attach_configs(self, configs: list[DataProcessingConfig]) -> None:
         """Attach data processing configuration objects (QC, infilling, correction) to this container.
@@ -92,10 +121,28 @@ class TimeSeriesContainer:
             return MethodType.LOAD
         return MethodType(self.method_config.config_type.value)
 
+    @property
+    def is_observation_dataset(self) -> bool:
+        """True if this is an ObservationDataset bundle (wide table) vs single-column TimeSeriesDataset."""
+        return self.dataset_type == "ObservationDataset"
+
+    @property
+    def s3_bucket(self) -> str | None:
+        if self.is_observation_dataset and self.distribution_url:
+            return self.distribution_url.split("://")[1].split("/")[0]
+        return self.source_bucket
+
+    @property
+    def s3_dataset_path(self) -> str | None:
+        if self.is_observation_dataset and self.distribution_url:
+            parts = self.distribution_url.split("://")[1].split("/", 1)
+            return parts[1].rstrip("/") if len(parts) > 1 else None
+        return self.source_dataset
+
     def init_timeframe(self, df: pl.DataFrame) -> None:
         """Wrap a DataFrame in a TimeFrame, apply initial flags, and store it on the container.
 
-        If the DataFrame is empty, a warning is logged and the container's data is left unset.
+        If the DataFrame is empty the container's data is left unset.
 
         Args:
             df: The raw DataFrame to wrap.
@@ -106,7 +153,7 @@ class TimeSeriesContainer:
         tf = (
             ts.TimeFrame(
                 df=df,
-                time_name=self.time_column_name,
+                time_name=self.time_column_name,  # type: ignore[arg-type] - always set before init_timeframe is called
                 resolution=self.resolution,
                 periodicity=self.periodicity,
             )
@@ -121,7 +168,7 @@ class TimeSeriesContainer:
 
 
 def group_containers(
-    containers: tuple[TimeSeriesContainer, ...], attributes: list[str]
+    containers: Sequence[TimeSeriesContainer], attributes: list[str]
 ) -> dict[tuple, list[TimeSeriesContainer]]:
     """Group containers by a composite key derived from the given attributes.
 
@@ -139,7 +186,7 @@ def group_containers(
     return groupings
 
 
-def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any] | None:
+def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any]:
     """Check if all the containers have the same value for each of the given attributes.
 
     Args:
@@ -150,7 +197,7 @@ def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | l
         The common value(s) of each of the attribute(s).
     """
     if not containers:
-        return None
+        raise ValueError("Cannot check attributes for empty container list")
 
     if isinstance(attr, str):
         attr = [attr]

@@ -9,7 +9,7 @@ from datetime import datetime
 @dataclass
 class SiteMetadata:
     site_id: str
-    network: str
+    network: str | None
     alt_id: str | None = None
     full_name: str | None = None
     easting: float | None = None
@@ -19,6 +19,7 @@ class SiteMetadata:
     altitude: float | None = None
     start_date: datetime | None = None
     end_date: datetime | None = None
+    annotations: dict | None = None
 
     def is_active(self, window_start: datetime | None = None, window_end: datetime | None = None) -> bool:
         """Return whether site is active during given datetime window.

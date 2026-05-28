@@ -32,9 +32,9 @@ class FluxMetadataLoader:
 
         site_metadata = {site.site_id: site for site in (map_site_metadata(item) for item in fixture_set.sites.items)}
 
+        all_dataset_items = list(fixture_set.observation_datasets.items) + list(fixture_set.timeseries_datasets.items)
         datasets = {
-            dataset.ts_id: dataset
-            for dataset in (map_dataset_item(item, site_metadata) for item in fixture_set.datasets.items)
+            dataset.ts_id: dataset for dataset in (map_dataset_item(item, site_metadata) for item in all_dataset_items)
         }
 
         processing_configs = [

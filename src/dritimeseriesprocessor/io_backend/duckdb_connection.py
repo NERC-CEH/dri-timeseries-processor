@@ -6,8 +6,6 @@ from object storage via the S3 API.
 """
 
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
-from typing import Iterator
 
 import boto3
 import duckdb
@@ -106,7 +104,10 @@ class AwsDuckDBConnectionFactory(DuckDBConnectionFactory):
         """
         conn = self._configure_duckdb_base()
 
-        creds = self.session.get_credentials().get_frozen_credentials()
+        raw_creds = self.session.get_credentials()
+        if raw_creds is None:
+            raise RuntimeError("No AWS credentials found in boto3 session")
+        creds = raw_creds.get_frozen_credentials()
         conn.execute(f"""
             CREATE SECRET aws_secret (
                 TYPE S3,
@@ -132,9 +133,9 @@ def create_duckdb_factory() -> DuckDBConnectionFactory:
 
     if cfg.environment is Environment.LOCAL:
         return LocalStackDuckDBConnectionFactory(
-            endpoint_url=cfg.endpoint_url,
-            aws_access_key=cfg.AWS_ACCESS_KEY_ID,
-            aws_secret_key=cfg.AWS_SECRET_ACCESS_KEY,
+            endpoint_url=cfg.endpoint_url,  # type: ignore[arg-type]
+            aws_access_key=cfg.AWS_ACCESS_KEY_ID,  # type: ignore[arg-type]
+            aws_secret_key=cfg.AWS_SECRET_ACCESS_KEY,  # type: ignore[arg-type]
         )
 
     if cfg.environment in (Environment.STAGING, Environment.PRODUCTION):
@@ -144,13 +145,3 @@ def create_duckdb_factory() -> DuckDBConnectionFactory:
         return MinimalDuckDBConnectionFactory()
 
     raise ValueError(f"Unsupported environment: {cfg.environment}")
-
-
-@contextmanager
-def duckdb_connection() -> Iterator[duckdb.DuckDBPyConnection]:
-    factory = create_duckdb_factory()
-    conn = factory.create()
-    try:
-        yield conn
-    finally:
-        conn.close()

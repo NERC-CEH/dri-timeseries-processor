@@ -14,20 +14,38 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 
 
-def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) -> TimeSeriesContainer:
+def make_time_series_container(
+    ts_id: str,
+    depends_on: list[str] | None = None,
+    load_only_deps: list[str] | None = None,
+) -> TimeSeriesContainer:
     """Create a lightweight fake TimeSeriesContainer for use in tests.
 
     Args:
         ts_id: The time series ID.
-        depends_on: Optional list of dataset IDs that this container depends on.
+        depends_on: Optional list of dataset IDs this container depends on via dep_ts.
+        load_only_deps: Optional list of dataset IDs this container depends on via load_dep_ts.
 
     Returns:
         A TimeSeriesContainer instance
     """
-    mock_config = None
-    if depends_on:
-        mock_config = MagicMock()
-        mock_config.all_dep_ts.return_value = depends_on
+    depends_on = depends_on or []
+    load_only_deps = load_only_deps or []
+
+    method_config = None
+    if depends_on or load_only_deps:
+        params: dict = {}
+        if depends_on:
+            params["dep_ts"] = depends_on
+        if load_only_deps:
+            params["load_dep_ts"] = load_only_deps
+        method_config = DataProcessingConfig(
+            ts_id=ts_id,
+            config_id=ts_id + "_cfg",
+            config_type=ConfigurationType.DERIVATION,
+            method_configs=[DataProcessingMethodConfig(method="m", params=params)],
+            annotations={},
+        )
 
     return TimeSeriesContainer(
         ts_id=ts_id,
@@ -44,7 +62,7 @@ def make_time_series_container(ts_id: str, depends_on: list[str] | None = None) 
         qc_configs=set(),
         infill_configs=set(),
         correction_configs=set(),
-        method_config=mock_config,
+        method_config=method_config,
     )
 
 
@@ -120,7 +138,7 @@ def create_mock_router(items: list) -> MagicMock:
 
     items_dict = {item["@id"]: item for item in items}
 
-    def capture(ids: list) -> None:
+    def capture(ids: list) -> MagicMock:
         _mock_response = MagicMock()
         _mock_response.items = [items_dict[i] for i in ids]
         return _mock_response
@@ -205,7 +223,7 @@ class TestFetchDatasets:
             (["site1", "site2"]),
         ],
     )
-    def test_get_site_metadata(self, sites: str | list, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_get_site_metadata(self, sites: list, monkeypatch: pytest.MonkeyPatch) -> None:
         mock_router = setup_mocks(sites, monkeypatch)
         builder = DatasetDependencyGraph(
             mock_router, "a_network", MagicMock(), datetime(2026, 1, 1), datetime(2026, 1, 2)
@@ -225,9 +243,6 @@ class TestFetchDatasets:
         all_site_ids = ["site1", "site2", "site3"]
 
         mock_router = setup_mocks(all_site_ids, monkeypatch)
-        mock_network_response = MagicMock()
-        mock_network_response.items[0].contains = create_network_sites(all_site_ids)
-        mock_router.fetch_network.return_value = mock_network_response
 
         builder = DatasetDependencyGraph(
             mock_router, "a_network", MagicMock(), datetime(2026, 1, 1), datetime(2026, 1, 2)
@@ -571,3 +586,115 @@ class TestTopoSort:
         self.builder.build_dag = MagicMock(return_value={})
         assert self.builder.flat_topo_sort() == []
         assert self.builder.layered_topo_sort() == []
+
+
+class TestLoadOnlyDependencies:
+    def test_load_only_dep_is_flagged_as_load_only(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A dep referenced only via load_dep_ts is added to datasets with load_only=True."""
+        container_a = make_time_series_container("A", load_only_deps=["L"])
+        mock_router = setup_mocks(["A", "L"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
+
+        assert "L" in builder.datasets
+        assert builder.datasets["L"].load_only is True
+
+    def test_load_only_dep_has_no_configs_attached(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A load-only dep goes into datasets with no configs (method_config=None, empty config sets)."""
+        container_a = make_time_series_container("A", load_only_deps=["L"])
+        mock_router = setup_mocks(["A", "L"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
+
+        dep = builder.datasets["L"]
+        assert dep.method_config is None
+        assert dep.correction_configs == set()
+        assert dep.qc_configs == set()
+        assert dep.infill_configs == set()
+
+    def test_fetch_processing_configs_not_called_for_load_only(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """fetch_processing_configs must never be called with a load-only ID."""
+        container_a = make_time_series_container("A", load_only_deps=["L"])
+        mock_router = setup_mocks(["A", "L"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
+
+        for call in mock_router.fetch_processing_configs.call_args_list:
+            assert "L" not in call[0][0]
+
+    def test_load_only_dep_no_deps_resolved(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that a load-only dependency does not have it's own dependencies resolved"""
+        container_a = make_time_series_container("A", load_only_deps=["L"])
+        mock_router = setup_mocks(["A", "L"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+
+        config_deps = {
+            "L": [
+                DataProcessingConfig(
+                    ts_id="L",
+                    config_id="L_cfg",
+                    config_type=ConfigurationType.QUALITY_CONTROL,
+                    method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": "M"})],
+                    annotations={},
+                )
+            ]
+        }
+        builder._fetch_configs_for_dataset = MagicMock(side_effect=lambda ids: {i: config_deps.get(i, []) for i in ids})
+        builder.build()
+
+        assert "M" not in builder.datasets
+
+    def test_reset_clears_load_dep_and_dep_ts_ids(self) -> None:
+        """Test that reset() clears the classification sets for load-only and normal deps."""
+        builder = DatasetDependencyGraph(MagicMock(), "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._dep_ts_ids.add("A")
+        builder._load_dep_ts_ids.add("L")
+        builder.reset()
+        assert builder._dep_ts_ids == set()
+        assert builder._load_dep_ts_ids == set()
+
+    def test_dep_ts_vs_load_dep_ts_conflict(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """When A references L via load_dep_ts and B references L via dep_ts in the same batch, L is not load-only.
+        i.e. the dep_ts reference wins
+        """
+        container_a = make_time_series_container("A", load_only_deps=["L"])
+        container_b = make_time_series_container("B", depends_on=["L"])
+        mock_router = setup_mocks(["A", "B", "L"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a, container_b])
+        builder.build()
+
+        assert "L" in builder.datasets
+        assert builder.datasets["L"].load_only is False
+
+    def test_load_dep_ts_vs_dep_ts_update(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """If L is initially resolved as load-only but then encountered via dep_ts in a later batch, it is
+        re-queued for full processing and ends up with load_only=False."""
+        # A loads L as load-only. B depends on C which depends on L via dep_ts.
+        container_a = make_time_series_container("A", load_only_deps=["L"])
+        container_b = make_time_series_container("B", depends_on=["C"])
+        mock_router = setup_mocks(["A", "B", "C", "L"], monkeypatch)
+
+        builder = DatasetDependencyGraph(mock_router, "a_network", MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a, container_b])
+
+        config_deps = {
+            "C": [
+                DataProcessingConfig(
+                    ts_id="C",
+                    config_id="C_cfg",
+                    config_type=ConfigurationType.QUALITY_CONTROL,
+                    method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": "L"})],
+                    annotations={},
+                )
+            ]
+        }
+        builder._fetch_configs_for_dataset = MagicMock(side_effect=lambda ids: {i: config_deps.get(i, []) for i in ids})
+        builder.build()
+
+        assert "L" in builder.datasets
+        assert builder.datasets["L"].load_only is False

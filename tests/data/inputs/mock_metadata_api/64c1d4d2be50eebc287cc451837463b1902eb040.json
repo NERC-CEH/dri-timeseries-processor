@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/dataset?id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fnmdb-jung-neutron_cts_1hour_processed&_view=timeseries",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/dataset.json?_view=timeseries&id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fnmdb-jung-neutron_cts_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/dataset.rdf?_view=timeseries&id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fnmdb-jung-neutron_cts_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/dataset.csv?_view=timeseries&id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fnmdb-jung-neutron_cts_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/dataset.ttl?_view=timeseries&id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fnmdb-jung-neutron_cts_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/dataset.geojson?_view=timeseries&id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fnmdb-jung-neutron_cts_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/dataset.html?_view=timeseries&id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fnmdb-jung-neutron_cts_1hour_processed"
+    ],
+    "limit": 25
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
+        "prefLabel": [
+          "Processed"
+        ]
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-cts_min-1-mean_proc-pt1h-pt1h",
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
+            "prefLabel": [
+              "Neutron count"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts_min-1",
+            "prefLabel": [
+              "Counts min-1"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_proc-pt1h-pt1h",
+            "valueStatistic": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_proc"
+            },
+            "periodicity": "PT1H",
+            "resolution": "PT1H"
+          }
+        }
+      ],
+      "type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/nmdb/time-series/neutron_cts_1hour_processed",
+          "processingLevel": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+          },
+          "measure": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-cts_min-1-mean_proc-pt1h-pt1h",
+              "variable": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
+                "prefLabel": [
+                  "Neutron count"
+                ]
+              },
+              "hasUnit": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts_min-1",
+                "prefLabel": [
+                  "Counts min-1"
+                ]
+              },
+              "aggregation": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_proc-pt1h-pt1h",
+                "valueStatistic": {
+                  "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_proc"
+                },
+                "periodicity": "PT1H",
+                "resolution": "PT1H"
+              }
+            }
+          ]
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "PROCESSED_NMDB_1HOUR",
+      "sourceColumnName": "CRNS-COUNT",
+      "sourceTimeColumnName": "timestamp",
+      "originatingFacility": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/nmdb-jung-crns"
+        }
+      ],
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/nmdb"
+        }
+      ]
+    }
+  ]
+}

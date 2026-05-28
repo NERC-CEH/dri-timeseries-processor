@@ -7,12 +7,12 @@
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
       "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
       "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw"
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_30min_raw"
     ]
   },
   "items": [
@@ -32,23 +32,6 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/hc8bbgabvdq71nb5sic9dt75lnragd4g",
           "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj#value",
-                "value": [
-                  "ALTITUDE"
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
             {
               "@id": "http://fdri.ceh.ac.uk/id/argument/cfqcoj7fgnehvf5f53pt2icdpt4acvlj",
               "hasValue": {
@@ -89,11 +72,31 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj#value",
+                "value": [
+                  "ALTITUDE"
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
@@ -102,9 +105,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -190,23 +190,6 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj#value",
-                "value": [
-                  "ALTITUDE"
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/argument/eotg2qed4g2hgmh6h3pfv9gah4h2ih5a",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/eotg2qed4g2hgmh6h3pfv9gah4h2ih5a#value",
@@ -222,11 +205,31 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj#value",
+                "value": [
+                  "ALTITUDE"
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
@@ -235,9 +238,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -299,23 +299,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/f3ro3vtajrtpu3feu1kq83ets30ln0b8",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj#value",
-                "value": [
-                  "ALTITUDE"
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob#value",
@@ -355,11 +338,31 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj#value",
+                "value": [
+                  "ALTITUDE"
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
@@ -368,9 +371,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -432,23 +432,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/mr5ff60hk7hbk9epo67lmdj4uoh4vgp2",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/dd5786522ik5v26jmp2capicug6gt70d",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/dd5786522ik5v26jmp2capicug6gt70d#value",
-                "value": [
-                  -2.5
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/sliccqhahus0t1j9053ejd3eqg9id0lj#value",
@@ -458,6 +441,23 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/dd5786522ik5v26jmp2capicug6gt70d",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/dd5786522ik5v26jmp2capicug6gt70d#value",
+                "value": [
+                  -2.5
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
               },
               "@type": [
                 {
@@ -494,6 +494,9 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
               {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
+              {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               {
@@ -501,9 +504,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -565,6 +565,23 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/gcapctuvugojh0bo6b2pha1fjm1fiu99",
           "argument": [
             {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/etihdq1jof1dh7nfb1em4nqp7noc7auo",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/etihdq1jof1dh7nfb1em4nqp7noc7auo#value",
+                "value": [
+                  -4.7
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob#value",
@@ -604,28 +621,14 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/etihdq1jof1dh7nfb1em4nqp7noc7auo",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/etihdq1jof1dh7nfb1em4nqp7noc7auo#value",
-                "value": [
-                  -4.7
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
@@ -634,9 +637,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -760,6 +760,9 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
               {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
+              {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               {
@@ -767,9 +770,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -848,6 +848,23 @@
               ]
             },
             {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/s2chvi71fl1hepaafm72nshmf3i8srpe",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/s2chvi71fl1hepaafm72nshmf3i8srpe#value",
+                "value": [
+                  -0.6
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob#value",
@@ -870,28 +887,14 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/s2chvi71fl1hepaafm72nshmf3i8srpe",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/s2chvi71fl1hepaafm72nshmf3i8srpe#value",
-                "value": [
-                  -0.6
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
@@ -900,9 +903,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -964,22 +964,15 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/b0t0d9tin69g71o5lb3scbb5bf7ompms",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob",
+              "@id": "http://fdri.ceh.ac.uk/id/argument/kr796q9ni7oo3qulhfm538ipjh8eaug3",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob#value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
+                "@id": "http://fdri.ceh.ac.uk/id/argument/kr796q9ni7oo3qulhfm538ipjh8eaug3#value",
+                "value": [
+                  -3.2
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
               },
               "@type": [
                 {
@@ -1005,15 +998,22 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/kr796q9ni7oo3qulhfm538ipjh8eaug3",
+              "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/kr796q9ni7oo3qulhfm538ipjh8eaug3#value",
-                "value": [
-                  -3.2
+                "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob#value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {
@@ -1026,6 +1026,9 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
               {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
+              {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               {
@@ -1033,9 +1036,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -1114,6 +1114,23 @@
               ]
             },
             {
+              "@id": "http://fdri.ceh.ac.uk/id/argument/73jubqpctesb75hvcb56240ans1t27nm",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/argument/73jubqpctesb75hvcb56240ans1t27nm#value",
+                "value": [
+                  -2.8
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/argument/jds0g1ulhq8grgjt2994uukpphe4vuob#value",
@@ -1136,28 +1153,14 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/argument/73jubqpctesb75hvcb56240ans1t27nm",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/argument/73jubqpctesb75hvcb56240ans1t27nm#value",
-                "value": [
-                  -2.8
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/pa_corr",
             "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+              },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
@@ -1166,9 +1169,6 @@
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               }
             ],
             "@type": [
@@ -1230,11 +1230,11 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_30min_raw-error_code-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11290",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11285",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11290#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11285#value",
                 "value": [
-                  7999.0
+                  8999.0
                 ],
                 "@type": [
                   {
@@ -1252,11 +1252,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11291",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11284",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11291#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-error_code-current-11284#value",
                 "value": [
-                  8999.0
+                  7999.0
                 ],
                 "@type": [
                   {
@@ -1333,9 +1333,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_30min_raw-battery_v-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11288",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11282",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11288#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11282#value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw"
@@ -1357,9 +1357,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11289",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11283",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11289#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-battery_v-current-11283#value",
                 "value": [
                   10.5
                 ],
@@ -1383,10 +1383,10 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
             "parameter": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
@@ -1441,9 +1441,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_30min_raw-spike-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-spike-current-11294",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-spike-current-11288",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-spike-current-11294#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-spike-current-11288#value",
                 "value": [
                   20.0
                 ],
@@ -1467,10 +1467,10 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/spike",
             "parameter": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
               }
             ],
             "@type": [
@@ -1522,9 +1522,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_30min_raw-samples-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11293",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11287",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11293#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11287#value",
                 "value": [
                   60.0
                 ],
@@ -1544,9 +1544,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11292",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11286",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11292#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-samples-current-11286#value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw"
@@ -1572,10 +1572,10 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/samples",
             "parameter": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
@@ -1630,9 +1630,9 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_30min_raw-range-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11286",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11280",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11286#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11280#value",
                 "value": [
                   800.0
                 ],
@@ -1652,9 +1652,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11287",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11281",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11287#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-pa_30min_raw-range-current-11281#value",
                 "value": [
                   1200.0
                 ],
@@ -1678,10 +1678,10 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/range",
             "parameter": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
@@ -1760,28 +1760,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-holln-pa_30min_raw-1-2013-01-01t00:30:00",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-holln-pa_30min_raw-1-2013-01-01t00:30:00#window",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-holln-pa_30min_raw-1-2013-01-01t00:30:00#window.value",
-                "value": [
-                  1
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-holln-pa_30min_raw-1-2013-01-01t00:30:00#gap",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-holln-pa_30min_raw-1-2013-01-01t00:30:00#gap.value",
@@ -1796,6 +1774,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max-gap-size"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Argument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-holln-pa_30min_raw-1-2013-01-01t00:30:00#window",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-infill-cosmos-holln-pa_30min_raw-1-2013-01-01t00:30:00#window.value",
+                "value": [
+                  1
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
               },
               "@type": [
                 {

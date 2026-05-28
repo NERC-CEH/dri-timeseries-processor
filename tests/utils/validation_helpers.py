@@ -1,11 +1,14 @@
+from pathlib import Path
 from typing import Callable, Type
 
 import polars as pl
 import pytest
 from pydantic import BaseModel, ValidationError
 
+from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse
 
-def valid_parses(load_json_file: Callable, filename: str, model: Type[BaseModel]) -> BaseModel:
+
+def valid_parses(load_json_file: Callable, filename: str | Path, model: Type[BaseAPIResponse]) -> BaseAPIResponse:
     """Generic helper to test that a JSON file parses successfully with a given Pydantic model.
 
     Args:
@@ -26,7 +29,7 @@ def valid_parses(load_json_file: Callable, filename: str, model: Type[BaseModel]
     return result
 
 
-def invalid_raises(load_json_file: Callable, filename: str, model: Type[BaseModel]) -> None:
+def invalid_raises(load_json_file: Callable, filename: str | Path, model: Type[BaseModel]) -> None:
     """Generic helper to test that an invalid JSON file raises error with a given Pydantic model.
 
     Args:

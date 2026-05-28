@@ -37,18 +37,16 @@ class DerivationPipeline(OperationPipeline):
         Returns:
             Result of applying the derivation method.
         """
+        dep_ids = []
+        for key in ("dep_ts", "load_dep_ts"):
+            values = config.params.get(key) or []
+            if isinstance(values, str):
+                dep_ids.append(values)
+            else:
+                dep_ids.extend(values)
 
-        dep_ts_values = config.params.get("dep_ts", [])
-
-        if dep_ts_values is None:
-            dep_ts_list = []
-        elif isinstance(dep_ts_values, str):
-            dep_ts_list = [dep_ts_values]
-        else:
-            dep_ts_list = dep_ts_values
-
-        for dep_ts_id in dep_ts_list:
-            dep_container = dataset_repository[dep_ts_id]
+        for dep_id in dep_ids:
+            dep_container = dataset_repository[dep_id]
             config.params[dep_container.source_column.lower()] = dep_container.data
 
         method = DerivationMethod.get(config.method)
@@ -77,12 +75,12 @@ class DerivationPipeline(OperationPipeline):
         return {container.method_config}
 
     def get_flag_column(self, column: str) -> str:
-        """Not required for aggregation method."""
-        pass
+        """Not used by derivation - flags are not applied."""
+        raise NotImplementedError
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
-        """Not required for aggregation method."""
-        pass
+        """Not used by derivation - flags are not applied."""
+        raise NotImplementedError
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Not yet implemented for derivation method."""

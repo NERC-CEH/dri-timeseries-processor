@@ -1,12 +1,13 @@
 from datetime import datetime
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock
 
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
 from tests.utils.validation_helpers import valid_parses
 
 from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
-from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
+from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem, TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.processing_config import (
@@ -35,7 +36,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
@@ -49,6 +50,7 @@ class TestMapDatasetItem:
             resolution="P1D",
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
+            dataset_type="TimeSeriesDataset",
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
@@ -66,7 +68,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
@@ -80,6 +82,7 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
+            dataset_type="TimeSeriesDataset",
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
@@ -89,12 +92,89 @@ class TestMapDatasetItem:
 
         assert result == expected
 
+    def test_observation_dataset_item_source_fields_are_none(self) -> None:
+        item = ObservationDatasetItem.model_validate(
+            {
+                "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ObservationDataset"}],
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"},
+                "measure": [
+                    {
+                        "@id": "http://fdri.ceh.ac.uk/id/measure/flux-plynl-raw",
+                        "variable": {"@id": "http://fdri.ceh.ac.uk/ref/common/variable/flux-plynl-raw"},
+                        "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
+                        "aggregation": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
+                            "periodicity": "PT30M",
+                            "resolution": "PT30M",
+                        },
+                    }
+                ],
+                "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
+                "originatingProgramme": [{"@id": "http://fdri.ceh.ac.uk/id/programme/fdri"}],
+            }
+        )
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "flux-plynl"
+        all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
+
+        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
+
+        assert result.source_bucket is None
+        assert result.source_dataset is None
+        assert result.source_column is None
+        assert result.time_column_name is None
+
+    def test_observation_dataset_populates_dataset_type_and_distribution_url(self) -> None:
+        item = TimeSeriesDatasetItem.model_validate(
+            {
+                "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ObservationDataset"}],
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"},
+                "measure": [
+                    {
+                        "@id": "http://fdri.ceh.ac.uk/id/measure/flux-plynl-raw",
+                        "variable": {"@id": "http://fdri.ceh.ac.uk/ref/common/variable/flux-plynl-raw"},
+                        "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
+                        "aggregation": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
+                            "periodicity": "PT30M",
+                            "resolution": "PT30M",
+                        },
+                    }
+                ],
+                "distribution": [
+                    {
+                        "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-raw",
+                        "accessUrl": ["s3://ukceh-fdri-staging-timeseries-level-0/Flux/"],
+                    }
+                ],
+                "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
+                "originatingProgramme": [{"@id": "http://fdri.ceh.ac.uk/id/programme/fdri"}],
+            }
+        )
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "flux-plynl"
+        all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
+
+        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
+
+        assert result.dataset_type == "ObservationDataset"
+        assert result.distribution_url == "s3://ukceh-fdri-staging-timeseries-level-0/Flux/"
+        assert result.is_observation_dataset is True
+        assert result.s3_bucket == "ukceh-fdri-staging-timeseries-level-0"
+        assert result.s3_dataset_path == "Flux"
+
     def test_all_dependencies(self) -> None:
         """Test that the all_dependencies method returns valid list, when there are no qc/correction/infill configs"""
 
-        mock_method_config = Mock(spec=DataProcessingConfig)
-        mock_method_config.config_type = ConfigurationType.PROCESS
-        mock_method_config.all_dep_ts.return_value = ["dep1", "dep2", "dep3"]
+        method_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="cfg",
+            config_type=ConfigurationType.PROCESS,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
+            annotations={},
+        )
 
         item = TimeSeriesContainer(
             ts_id="test_id",
@@ -108,29 +188,41 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            method_config=mock_method_config,
+            method_config=method_config,
         )
-        expected = ["dep1", "dep2", "dep3"]
-        assert item.all_dependencies() == expected
+        assert item.all_dependencies() == ["dep1", "dep2", "dep3"]
 
     def test_all_dependencies_with_configs(self) -> None:
         """Test that the all_dependencies method returns valid list, when there are a qc/correction/infill configs"""
 
-        mock_method_config = Mock(spec=DataProcessingConfig)
-        mock_method_config.config_type = ConfigurationType.PROCESS
-        mock_method_config.all_dep_ts.return_value = ["dep1", "dep2", "dep3"]
-
-        mock_config_qc = Mock(spec=DataProcessingConfig)
-        mock_config_qc.config_type = ConfigurationType.QUALITY_CONTROL
-        mock_config_qc.all_dep_ts.return_value = ["dep1", "dep4"]
-
-        mock_config_correction = Mock(spec=DataProcessingConfig)
-        mock_config_correction.config_type = ConfigurationType.QUALITY_CONTROL
-        mock_config_correction.all_dep_ts.return_value = ["dep4", "dep5"]
-
-        mock_config_infill = Mock(spec=DataProcessingConfig)
-        mock_config_infill.config_type = ConfigurationType.QUALITY_CONTROL
-        mock_config_infill.all_dep_ts.return_value = []
+        method_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="method_cfg",
+            config_type=ConfigurationType.PROCESS,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
+            annotations={},
+        )
+        qc_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="qc_cfg",
+            config_type=ConfigurationType.QUALITY_CONTROL,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep4"]})],
+            annotations={},
+        )
+        correction_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="correction_cfg",
+            config_type=ConfigurationType.CORRECTION,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep4", "dep5"]})],
+            annotations={},
+        )
+        infill_config = DataProcessingConfig(
+            ts_id="test_id",
+            config_id="infill_cfg",
+            config_type=ConfigurationType.INFILLING,
+            method_configs=[DataProcessingMethodConfig(method="m", params={})],
+            annotations={},
+        )
 
         item = TimeSeriesContainer(
             ts_id="test_id",
@@ -144,13 +236,12 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            correction_configs={mock_config_correction},
-            qc_configs={mock_config_qc},
-            infill_configs={mock_config_infill},
-            method_config=mock_method_config,
+            correction_configs={correction_config},
+            qc_configs={qc_config},
+            infill_configs={infill_config},
+            method_config=method_config,
         )
-        expected = ["dep1", "dep2", "dep3", "dep4", "dep5"]
-        assert item.all_dependencies() == expected
+        assert item.all_dependencies() == ["dep1", "dep2", "dep3", "dep4", "dep5"]
 
 
 class TestExtractArguments:

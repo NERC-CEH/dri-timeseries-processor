@@ -8,7 +8,9 @@ This module is responsible for parsing CLI arguments to capture user intent rega
 """
 
 import argparse
+from collections.abc import Sequence
 from datetime import date, datetime, timedelta
+from typing import Any
 
 import isodate
 
@@ -182,11 +184,14 @@ def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_d
             raise argparse.ArgumentTypeError("--start-date must be earlier than --end-date")
         return to_datetime(start_date), to_datetime(end_date)
 
+    if lookback is None:
+        raise argparse.ArgumentTypeError("Either --start-date or --lookback must be provided")
+
     start_date = end_date - lookback
     return to_datetime(start_date), to_datetime(end_date)
 
 
-def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[SelectionOption] | None:
+def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[SelectionOption]:
     """Determine the dataset selection mode and construct the appropriate selection options.
 
     The CLI supports three mutually exclusive selection modes:
@@ -211,7 +216,7 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
         return _parse_eddypro_selection(args)
 
     if mode == CliSelectionMode.LIST_SITES:
-        return None
+        return []
 
     parser.error(f"Invalid selection mode: {mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
 
@@ -273,7 +278,7 @@ class SelectionAction(argparse.Action):
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: list[str],
+        values: str | Sequence[Any] | None,
         option_string: str | None = None,
     ) -> None:
         """Custom argparse Action for validating explicit dataset selection arguments.
@@ -285,6 +290,9 @@ class SelectionAction(argparse.Action):
         next option flag (e.g. ``--end-date``) as a positional value if the user omits one of the required
         arguments.
         """
+        if not isinstance(values, list):
+            parser.error("--selection requires exactly 3 non-empty values: SITE VARIABLE PERIODICITY")
+
         if any(not v or v.startswith("-") for v in values):
             parser.error("--selection requires exactly 3 non-empty values: SITE VARIABLE PERIODICITY")
 

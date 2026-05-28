@@ -85,6 +85,7 @@ class TestAggregationThreshold:
         method_config.method_configs = [config]
 
         container = MagicMock()
+        container.time_column_name = "time"
         container.source_column = "value"
         container.method_config = method_config
         container.periodicity = "P1D"

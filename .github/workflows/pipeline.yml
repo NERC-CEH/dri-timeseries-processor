@@ -1,9 +1,12 @@
+name: Pipeline
+
 on:
   pull_request:
   push:
     branches:
       - staging
       - production
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,16 +17,40 @@ permissions:
 
 jobs:
 
+  verify-version-bump:
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'staging' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check the PR includes a version bump
+        run: |
+          git fetch origin staging
+          old_version=$(git show origin/staging:pyproject.toml | grep '^version = ' | head -1)
+          new_version=$(grep '^version = ' pyproject.toml | head -1)
+          if [ "$old_version" = "$new_version" ]; then
+            echo "ERROR: this PR does not bump the version field in pyproject.toml."
+            echo ""
+            echo "Patch bumps are normally handled by the pre-push hook. Run 'make install-hooks'"
+            echo "to install it, then push again. For a minor or major release, run 'make bump-minor'"
+            echo "or 'make bump-major' before pushing."
+            exit 1
+          fi
+          echo "Version bump detected: $old_version -> $new_version"
+
   test-python:
     uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
     with:
       use_uv: true
+      use_pyright: true
       coverage_threshold: 90
       localstack_profile_name: localstack
 
   build-test-deploy-docker-staging:
-    if: ${{ github.ref_name == 'staging' || github.base_ref == 'staging' }}
     needs: [test-python]
+    if: ${{ github.ref_name == 'staging' || github.base_ref == 'staging' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
@@ -32,10 +59,10 @@ jobs:
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}
-  
+
   build-test-deploy-docker-production:
-    if: ${{ github.ref_name == 'production' || github.base_ref == 'production' }}
     needs: [test-python]
+    if: ${{ github.ref_name == 'production' || github.base_ref == 'production' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
@@ -66,3 +93,62 @@ jobs:
     with:
       base: production
       head: staging
+
+  release-ready:
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'production' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check version bump and changelog
+        run: |
+          BASE_VER=$(git show origin/production:pyproject.toml | grep '^version' | sed 's/.*"\(.*\)"/\1/')
+          NEW_VER=$(grep '^version' pyproject.toml | sed 's/.*"\(.*\)"/\1/')
+
+          if [ "$BASE_VER" = "$NEW_VER" ]; then
+            echo "ERROR: production merges require a version bump (current: $NEW_VER)"
+            exit 1
+          fi
+
+          echo "Version bumped: $BASE_VER -> $NEW_VER"
+
+          CHANGELOG="CHANGELOG/${NEW_VER}.md"
+
+          if [ ! -f "$CHANGELOG" ]; then
+            echo "ERROR: $CHANGELOG not found"
+            exit 1
+          fi
+
+          if grep -q "<!-- Add release notes here -->" "$CHANGELOG"; then
+            echo "ERROR: $CHANGELOG still contains the stub placeholder"
+            exit 1
+          fi
+
+          LINES=$(tail -n +2 "$CHANGELOG" | grep -vc '^$')
+          if [ "$LINES" -eq 0 ]; then
+            echo "ERROR: $CHANGELOG has no content beyond the heading"
+            exit 1
+          fi
+
+          echo "Changelog looks good"
+
+  release:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/production' }}
+    needs: [test-python]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Configure git identity
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: make release

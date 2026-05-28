@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterator
 
 import polars as pl
-from tests.utils.fixture_helpers import PARQUET_DATA_INPUT_DIR, TEST_DATA_INPUT_DIR
+from tests.utils.fixture_helpers import PARQUET_DATA_INPUT_DIR, PARQUET_DATA_PROCESSED_DIR, TEST_DATA_INPUT_DIR
 from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET
 
 from dritimeseriesprocessor.configuration.app_config import app_config
@@ -29,6 +29,10 @@ def get_s3_storage_client() -> Iterator[S3StorageClient]:
 
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, PARQUET_DATA_INPUT_DIR)
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "partitioned")
+    # Pre-processed data from external systems (e.g. NMDB) lives in the same real S3
+    # bucket as our processor's outputs. Upload it to the output bucket so it can be
+    # resolved as a load-only dependency during tests.
+    upload_folder_to_s3(storage_client, E2E_OUTPUT_BUCKET, PARQUET_DATA_PROCESSED_DIR)
 
     try:
         yield storage_client
@@ -58,22 +62,29 @@ def create_test_s3_bucket(bucket: str, storage_client: S3StorageClient, default_
     """
     storage_client.client.create_bucket(
         Bucket=bucket,
-        CreateBucketConfiguration={"LocationConstraint": default_region},
+        CreateBucketConfiguration={"LocationConstraint": default_region},  # type: ignore[arg-type]
     )
 
 
-def upload_folder_to_s3(storage_client: S3StorageClient, bucket: str, folder: Path) -> None:
+def upload_folder_to_s3(
+    storage_client: S3StorageClient, bucket: str, folder: Path, key_base: Path | None = None
+) -> None:
     """Upload all Parquet files beneath a folder to a bucket.
 
-    The object key is computed as the file path relative to ``folder``.
+    The object key is computed as the file path relative to ``key_base`` (defaults to ``folder``).
+    Supplying a ``key_base`` that is a parent of ``folder`` preserves the intermediate path
+    segments in the S3 key, which is useful when uploading a subfolder while keeping the
+    network-level prefix (e.g. ``nmdb/``) in the key.
 
     Args:
         storage_client: S3 client wrapper used for uploads.
         bucket: Destination bucket.
         folder: Root folder containing Parquet files to upload.
+        key_base: Base path used to compute the S3 key. Defaults to ``folder``.
     """
+    key_base = key_base or folder
     for file in folder.rglob("*.parquet"):
-        key = str(file.relative_to(folder))
+        key = str(file.relative_to(key_base))
         storage_client.put_bytes(bucket, key, file.read_bytes())
 
 
