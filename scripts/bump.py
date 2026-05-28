@@ -39,33 +39,44 @@ def _update_citation_version(new_version: str) -> bool:
 
 
 def main() -> None:
-    """Bump the version, update CITATION.cff, commit, and create a CHANGELOG stub."""
-    if len(sys.argv) != 2 or sys.argv[1] not in ("major", "minor", "patch"):
-        print("Usage: bump.py [major|minor|patch]")
+    """Bump the version, update CITATION.cff, commit, and optionally create a CHANGELOG stub."""
+    raw_args = sys.argv[1:]
+    no_changelog = "--no-changelog" in raw_args
+    positional = [arg for arg in raw_args if arg != "--no-changelog"]
+
+    if len(positional) != 1 or positional[0] not in ("major", "minor", "patch"):
+        print("Usage: bump.py [major|minor|patch] [--no-changelog]")
         sys.exit(1)
 
-    part = sys.argv[1]
+    part = positional[0]
+    if no_changelog and part != "patch":
+        print("Error: --no-changelog is only valid with 'patch'; major/minor bumps require a changelog.")
+        sys.exit(1)
     old_version = _read_version()
 
     subprocess.run(["uv", "version", "--bump", part], check=True)
     new_version = _read_version()
 
-    to_commit = [str(PYPROJECT)]
+    subprocess.run(["uv", "lock"], check=True)
+
+    to_commit = [str(PYPROJECT), "uv.lock"]
     if _update_citation_version(new_version):
         to_commit.append(str(CITATION))
 
     subprocess.run(["git", "add", *to_commit], check=True)
     subprocess.run(["git", "commit", "-m", f"Bump version: {old_version} -> {new_version}"], check=True)
 
-    changelog_path = Path(f"CHANGELOG/{new_version}.md")
-    if not changelog_path.exists():
-        changelog_path.write_text(f"# {new_version}\n\n<!-- Add release notes here -->\n")
-        subprocess.run(["git", "add", str(changelog_path)], check=True)
-        subprocess.run(["git", "commit", "-m", f"Add CHANGELOG/{new_version}.md stub"], check=True)
+    if not no_changelog:
+        changelog_path = Path(f"CHANGELOG/{new_version}.md")
+        if not changelog_path.exists():
+            changelog_path.write_text(f"# {new_version}\n\n<!-- Add release notes here -->\n")
+            subprocess.run(["git", "add", str(changelog_path)], check=True)
+            subprocess.run(["git", "commit", "-m", f"Add CHANGELOG/{new_version}.md stub"], check=True)
 
     print()
     print(f"  Bumped to {new_version}.")
-    print(f"  Fill in CHANGELOG/{new_version}.md with your release notes, then commit and push.")
+    if not no_changelog:
+        print(f"  Fill in CHANGELOG/{new_version}.md with your release notes, then commit and push.")
     print()
 
 
