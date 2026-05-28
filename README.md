@@ -163,10 +163,10 @@ The hook intentionally does not alter files, but tells you which command to run.
 ## Versioning and Releases
 
 This project follows [Semantic Versioning](https://semver.org/) (`major.minor.patch`). The `patch` component is used
-as an auto-incrementing build number: CI bumps it by one whenever a pull request targeting `staging` is opened or
-pushed to. `major` and `minor` are
-bumped by hand with `make bump-minor` or `make bump-major` when you want a new release line. Every merge to
-`production` automatically builds the production Docker image, tags the commit, and creates a GitHub release.
+as an auto-incrementing build number: a local `pre-push` git hook bumps it on every push that doesn't already include
+a version change. Install the hook once per clone with `make install-hooks`. `major` and `minor` are bumped by hand
+with `make bump-minor` or `make bump-major` when you want a new release line. Every merge to `production` automatically
+builds the production Docker image, tags the commit, and creates a GitHub release.
 
 See [Versioning and Releases](docs/versioning_and_releases.md) for the full flow, examples, and the workflows involved.
 

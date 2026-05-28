@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Pre-push hook: bumps the patch version if the push does not already include
+# a version change. Ensures every push to a PR carries a unique version, so
+# the staging Docker image tag is unique and never collides with ECR's
+# immutable tag policy.
+#
+# Installed automatically by setting core.hooksPath via:
+#   make install-hooks
+#
+# When this hook decides a bump is needed, it creates the bump commit locally,
+# then re-runs `git push` with the bumped state, then aborts the original
+# push (which is now obsolete). The recursive push will re-fire this hook,
+# but the second invocation sees that the version was just bumped and so
+# falls through to a normal push - no recursion. You will see a "failed to
+# push some refs" message at the very end - that is git aborting the
+# original push; the updated push has already succeeded.
+
+remote=$1
+
+# Read refs being pushed from stdin: <local_ref> <local_sha> <remote_ref> <remote_sha>
+while read local_ref local_sha remote_ref remote_sha; do
+    # The all-zeros sha is git's protocol value for "no commit". local_sha is
+    # all zeros when the ref is being deleted (e.g. `git push origin :branch`);
+    # remote_sha is all zeros when the branch is being created on the remote
+    # for the first time.
+
+    # Skip deletions - nothing to bump.
+    if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+        continue
+    fi
+
+    # For a new branch, there is no previous remote tip to diff against, so
+    # fall back to comparing against origin/staging.
+    if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+        git fetch origin staging --quiet 2>/dev/null || true
+        base_sha=$(git rev-parse origin/staging 2>/dev/null)
+        if [ -z "$base_sha" ]; then
+            # No origin/staging - cannot determine if a bump is needed; let the push proceed.
+            continue
+        fi
+    else
+        base_sha=$remote_sha
+    fi
+
+    old_version=$(git show "$base_sha:pyproject.toml" 2>/dev/null | grep '^version = ' | head -1)
+    new_version=$(git show "$local_sha:pyproject.toml" 2>/dev/null | grep '^version = ' | head -1)
+
+    if [ -n "$old_version" ] && [ "$old_version" = "$new_version" ]; then
+        echo ""
+        echo "Pre-push: no version bump detected in this push. Bumping patch..."
+        echo ""
+        uv run scripts/bump.py patch --no-changelog || exit 1
+        echo ""
+        echo "Pre-push: bump committed - pushing the updated branch..."
+        echo ""
+        # The recursive push re-fires this hook, but the second invocation sees
+        # the bumped version line and skips the bump (no recursion). Use $local_ref
+        # (the branch name) so the push uses the new HEAD that includes the bump.
+        if git push "$remote" "$local_ref:$remote_ref"; then
+            echo ""
+            echo "Pre-push: bumped branch pushed successfully. Aborting the original push -"
+            echo "the 'failed to push' message below is expected and can be ignored."
+            exit 1
+        else
+            echo ""
+            echo "Pre-push: recursive push failed. Run 'git push' again to retry."
+            exit 1
+        fi
+    fi
+done
+
+exit 0
