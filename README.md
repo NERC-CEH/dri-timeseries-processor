@@ -34,7 +34,7 @@ Use one of three (mutually exclusive) processing modes, or the utility command:
      [--selection SITE2 VARIABLE2 PERIODICITY2 ...]
     ```
 
-    **Example**:
+   **Example**:
 
     ```bash
     python -m dritimeseriesprocessor from-selection
@@ -58,7 +58,7 @@ Use one of three (mutually exclusive) processing modes, or the utility command:
      [--periodicities PER1 PER2 ...]
     ```
 
-    **Example**:
+   **Example**:
 
     ```bash
     python -m dritimeseriesprocessor from-cross-product
@@ -101,7 +101,7 @@ Use one of three (mutually exclusive) processing modes, or the utility command:
      [--end-date YYYY-MM-DD]
     ```
 
-    **Example**:
+   **Example**:
 
     ```bash
     python -m dritimeseriesprocessor list-sites --network cosmos --lookback P2D
@@ -142,6 +142,7 @@ docker compose up -d
 ```
 
 This initialises:
+
 - LocalStack S3 buckets with sample data
 - Prometheus Pushgateway for metrics (accessible at `localhost:9091`)
 
@@ -149,15 +150,15 @@ This initialises:
 
 Run `make help` to list all available targets. The most commonly used ones:
 
-| Command              | Description                          |
-|----------------------|--------------------------------------|
-| `make qa`            | Format, lint, type check, and test   |
-| `make test`          | Run tests                            |
-| `make ruff`          | Run ruff format and lint checks      |
-| `make type-check`    | Type check with pyright              |
-| `make docker-build`  | Build the Docker image locally       |
-| `make docker-run`    | Run the Docker image locally         |
-| `make install-hooks` | Configure git to use `.githooks/`    |
+| Command              | Description                        |
+|----------------------|------------------------------------|
+| `make qa`            | Format, lint, type check, and test |
+| `make test`          | Run tests                          |
+| `make ruff`          | Run ruff format and lint checks    |
+| `make type-check`    | Type check with pyright            |
+| `make docker-build`  | Build the Docker image locally     |
+| `make docker-run`    | Run the Docker image locally       |
+| `make install-hooks` | Configure git to use `.githooks/`  |
 
 Test data is automatically loaded into LocalStack S3 on container initialization.
 
@@ -180,28 +181,15 @@ make install-hooks
 The hook runs `ruff format --check` and `ruff check` to prevent commits that are not formatted correctly or have errors.
 The hook intentionally does not alter files, but tells you which command to run.
 
-## Releasing
+## Versioning and Releases
 
-### Bumping the version
+This project follows [Semantic Versioning](https://semver.org/) (`major.minor.patch`). The `patch` component is used
+as an auto-incrementing build number: a local `pre-push` git hook bumps it on every push that doesn't already include
+a version change. Install the hook once per clone with `make install-hooks`. `major` and `minor` are bumped by hand
+with `make bump-minor` or `make bump-major` when you want a new release line. Every merge to `production` automatically
+builds the production Docker image, tags the commit, and creates a GitHub release.
 
-```bash
-make bump-patch   # 0.1.0 -> 0.1.1
-make bump-minor   # 0.1.0 -> 0.2.0
-make bump-major   # 0.1.0 -> 1.0.0
-```
-
-Each command bumps the version in `pyproject.toml`, creates a `CHANGELOG/<new_version>.md` stub, and commits both with
-a standard message. Fill in the changelog stub before opening your PR.
-
-### Deploying to production
-
-1. Merge your feature PR into `staging` - deploys to staging
-2. The pipeline automatically opens a PR from `staging` into `production`
-3. Review and merge that PR - deploys to production and creates a GitHub Release
-
-When a PR targets `production`, the `release-ready` CI job checks that `CHANGELOG/<version>.md` exists and is
-filled in (if the version has been bumped). The PR will be blocked if the changelog is missing or still contains
-the stub placeholder.
+See [Versioning and Releases](docs/versioning_and_releases.md) for the full flow, examples, and the workflows involved.
 
 ## Configuration
 
@@ -211,6 +199,7 @@ Configuration is environment-aware, loading from different sources based on the 
 - **Staging/Production**: Environment variables directly
 
 Required configuration keys:
+
 - `AWS_DEFAULT_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
 - `level_0_bucket`, `processed_bucket`
 - `metadata_api_url`

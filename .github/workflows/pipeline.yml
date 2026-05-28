@@ -17,6 +17,29 @@ permissions:
 
 jobs:
 
+  verify-version-bump:
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'staging' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check the PR includes a version bump
+        run: |
+          git fetch origin staging
+          old_version=$(git show origin/staging:pyproject.toml | grep '^version = ' | head -1)
+          new_version=$(grep '^version = ' pyproject.toml | head -1)
+          if [ "$old_version" = "$new_version" ]; then
+            echo "ERROR: this PR does not bump the version field in pyproject.toml."
+            echo ""
+            echo "Patch bumps are normally handled by the pre-push hook. Run 'make install-hooks'"
+            echo "to install it, then push again. For a minor or major release, run 'make bump-minor'"
+            echo "or 'make bump-major' before pushing."
+            exit 1
+          fi
+          echo "Version bump detected: $old_version -> $new_version"
+
   test-python:
     uses: NERC-CEH/dri-cicd/.github/workflows/test-python.yml@main
     with:
@@ -75,7 +98,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && github.base_ref == 'production' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -85,8 +108,8 @@ jobs:
           NEW_VER=$(grep '^version' pyproject.toml | sed 's/.*"\(.*\)"/\1/')
 
           if [ "$BASE_VER" = "$NEW_VER" ]; then
-            echo "No version bump - skipping changelog check"
-            exit 0
+            echo "ERROR: production merges require a version bump (current: $NEW_VER)"
+            exit 1
           fi
 
           echo "Version bumped: $BASE_VER -> $NEW_VER"
@@ -116,9 +139,9 @@ jobs:
     needs: [test-python]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7
 
       - name: Configure git identity
         run: |
