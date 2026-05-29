@@ -59,8 +59,8 @@ Pass the processed dataset ID to `from-datasets`:
 ```bash
 python -m dritimeseriesprocessor from-datasets \
   --datasets flux-plynl-processed \
-  --start-date 2024-08-14 \
-  --end-date 2024-08-15
+  --start-date 2026-01-20 \
+  --end-date 2026-01-21
 ```
 
 Multiple sites can be processed in one run by listing additional dataset IDs:
@@ -68,6 +68,6 @@ Multiple sites can be processed in one run by listing additional dataset IDs:
 ```bash
 python -m dritimeseriesprocessor from-datasets \
   --datasets flux-site1-processed flux-site2-processed \
-  --start-date 2024-08-14 \
-  --end-date 2024-08-15
+  --start-date 2026-01-20 \
+  --end-date 2026-01-21
 ```
