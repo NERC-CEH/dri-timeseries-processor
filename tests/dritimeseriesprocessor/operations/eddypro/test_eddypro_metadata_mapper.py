@@ -16,7 +16,7 @@ class TestEddyProMetadataMapper:
         config = DataProcessingConfig(
             ts_id="dataset",
             config_id="config-1",
-            config_type=ConfigurationType.EDDYPRO,
+            config_type=ConfigurationType.DERIVATION,
             method_configs=[
                 DataProcessingMethodConfig(
                     method="eddypro-run",
@@ -30,8 +30,8 @@ class TestEddyProMetadataMapper:
                         "displacement_height": 0.13,
                         "roughness_length": 0.01,
                         "column_mapping": [
-                            {"variable": "u", "instrument": "csat3_1", "unit_in": "m_sec"},
-                            {"variable": "co2", "instrument_role": "irga", "unit_in": "ppm"},
+                            {"column_index": "1", "variable": "u", "instrument": "csat3_1", "unit_in": "m_sec"},
+                            {"column_index": "2", "variable": "co2", "instrument_role": "irga", "unit_in": "ppm"},
                         ],
                         "instrument_specs": [
                             {"manufacturer": "csi", "model": "csat3_1"},
@@ -79,14 +79,14 @@ class TestEddyProMetadataMapper:
         config = DataProcessingConfig(
             ts_id="dataset",
             config_id="config-1",
-            config_type=ConfigurationType.EDDYPRO,
+            config_type=ConfigurationType.DERIVATION,
             method_configs=[
                 DataProcessingMethodConfig(
                     method="eddypro-run",
                     params={
                         "sw_version": "legacy",
                         "master_sonic_role": "sonic",
-                        "file_description": {"columns": [{"variable": "ts"}]},
+                        "file_description": {"columns": [{"column_index": "1", "variable": "ts"}]},
                         "instruments": [{"model": "legacy_irga"}],
                     },
                 )
@@ -111,7 +111,7 @@ class TestEddyProMetadataMapper:
         config = DataProcessingConfig(
             ts_id="dataset",
             config_id="config-1",
-            config_type=ConfigurationType.EDDYPRO,
+            config_type=ConfigurationType.DERIVATION,
             method_configs=[],
         )
         site_metadata = SiteMetadata(

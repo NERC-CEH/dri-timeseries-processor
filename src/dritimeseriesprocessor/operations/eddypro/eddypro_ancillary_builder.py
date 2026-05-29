@@ -192,7 +192,7 @@ class EddyProDynamicMetadataBuilder:
             )
             return None
 
-        # Drop only rows where ALL value columns are null — preserve partial rows.
+        # Drop only rows where ALL value columns are null - preserve partial rows.
         if ordered_value_cols:
             all_null = pl.all_horizontal(pl.col(c).is_null() for c in ordered_value_cols)
             df = df.filter(~all_null)

@@ -88,16 +88,13 @@ class TestAnnotation:
         result = HasAnnotationItem.model_validate(data)
         assert result.has_value.value == expected_value  # type: ignore[union-attr]
 
-    def test_value_equal_none_raises_error(self) -> None:
-        """Test that a value with explicit value of "null" (loads as None in python) raises validation error"""
+    def test_value_equal_none_normalises_to_empty(self) -> None:
+        """Test that a value with explicit null normalises to an empty string via HasValue.normalise_empty."""
         test_data = '{"@id": "none", "property": {"@id": "none_value"}, "hasValue": {"@id": "id", "value": null}}'
         data = load_json_string(test_data)
 
-        with pytest.raises(ValidationError) as err:
-            HasAnnotationItem.model_validate(data)
-
-        # Verify what caused the error
-        assert_pydantic_validation_error_cause(err, 1, "missing_value_or_reference", ("hasValue",))
+        result = HasAnnotationItem.model_validate(data)
+        assert result.has_value.value == [""]  # type: ignore[union-attr]
 
     def test_missing_property_id(self) -> None:
         """Test that validation fails when property @id is missing."""
@@ -125,18 +122,15 @@ class TestAnnotation:
         # Verify what caused the error
         assert_pydantic_validation_error_cause(err, 1, "missing", ("property",))
 
-    def test_missing_value(self) -> None:
-        """Test that validation fails when value or valueReference is missing in hasValue"""
+    def test_missing_value_normalises_to_empty(self) -> None:
+        """Test that a hasValue with no value or valueReference normalises to an empty string."""
         test_data = {
             "@id": "missing_value",
             "property": {"@id": "priority"},
-            "hasValue": {"@id": "id"},  # Missing value or valueReference within the hasValue dict
+            "hasValue": {"@id": "id"},
         }
-        with pytest.raises(ValidationError) as err:
-            HasAnnotationItem.model_validate(test_data)
-
-        # Verify what caused the error
-        assert_pydantic_validation_error_cause(err, 1, "missing_value_or_reference", ("hasValue",))
+        result = HasAnnotationItem.model_validate(test_data)
+        assert result.has_value.value == [""]  # type: ignore[union-attr]
 
     def test_missing_has_value(self) -> None:
         """Test that validation fails when hasValue or hasValueSeries field is completely missing."""

@@ -6,9 +6,12 @@ import time_stream as ts
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
+from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
+from dritimeseriesprocessor.utils.enums import MethodType, OperationType
 from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
+from dritimeseriesprocessor.utils.urls import SITE_URI
 
 
 class DerivationMethod(Operation, ABC):
@@ -823,3 +826,60 @@ class CalcFluxEt(DerivationMethod):
         ta = columns["airtemp_c"]
         lv = 2.501 - 0.002361 * ta
         return le / lv / 1000.0
+
+
+@DerivationMethod.register
+class EddyProRun(DerivationMethod):
+    """Run the EddyPro flux processing pipeline to produce an ObservationDataset bundle.
+
+    Reads all required context from `config.params`, which is populated by the processor
+    (`start_date`, `end_date`, `site_metadata`) and the derivation pipeline
+    (`container`, `dataset_repository`). The raw .dat input is staged locally during the
+    LOAD step, with its directory recorded on the raw dependency's `staged_dir`.
+    """
+
+    name = "eddypro-run"
+    inputs: ClassVar[tuple] = ()
+
+    def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        container = config.params["container"]
+        dataset_repository = config.params["dataset_repository"]
+        start_date = config.params["start_date"]
+        end_date = config.params["end_date"]
+        site_metadata = config.params["site_metadata"]
+
+        dep_ids = [dep_id for dep_id in container.all_dependencies() if dep_id in dataset_repository]
+        raw_candidates = [
+            dataset_repository[dep_id]
+            for dep_id in dep_ids
+            if dataset_repository[dep_id].method_type() == MethodType.LOAD_LOCAL_COPY
+        ]
+        if len(raw_candidates) != 1:
+            raise ValueError(
+                "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
+                f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
+            )
+        raw_container = raw_candidates[0]
+        if raw_container.staged_dir is None:
+            raise ValueError(f"Raw dependency {raw_container.ts_id} was not staged locally before the EddyPro run.")
+
+        ancillary_containers = [dataset_repository[ds_id] for ds_id in dep_ids if ds_id != raw_container.ts_id]
+        site_meta = site_metadata.get(f"{SITE_URI}/{container.source_site}")
+
+        df = EddyProPipeline(runner=EddyProRunner()).run(
+            raw_data_dir=raw_container.staged_dir,
+            method_config=container.method_config,  # type: ignore[arg-type]
+            site_metadata=site_meta,  # type: ignore[arg-type]
+            start_date=start_date,
+            end_date=end_date,
+            ancillary_containers=ancillary_containers,
+        )
+
+        container.time_column_name = "time"
+        container.resolution = f"PT{config.params['file_duration']}M"
+        container.periodicity = container.resolution
+        container.init_timeframe(df)
+        return container.data
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        raise NotImplementedError("EddyProRun overrides run() directly")

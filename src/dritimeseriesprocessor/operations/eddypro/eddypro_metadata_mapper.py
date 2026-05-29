@@ -37,6 +37,10 @@ class EddyProMetadataMapper:
             instruments=instruments,
         )
 
+    @staticmethod
+    def _strip_prefix(data: dict) -> dict:
+        return {(k.split(".", 1)[-1] if "." in k else k): v for k, v in data.items()}
+
     def _map_columns(self, params: dict) -> list[EddyProColumnSpec]:
         column_items = (
             params.get("column_mapping")
@@ -45,9 +49,11 @@ class EddyProMetadataMapper:
             or []
         )
 
+        stripped_items = [self._strip_prefix(item or {}) for item in column_items]
+        stripped_items.sort(key=lambda item: int(item["column_index"]))
+
         columns: list[EddyProColumnSpec] = []
-        for item in column_items:
-            item_data = item or {}
+        for item_data in stripped_items:
             columns.append(
                 EddyProColumnSpec(
                     variable=str(item_data.get("variable") or "ignore"),
@@ -72,7 +78,7 @@ class EddyProMetadataMapper:
         instruments: list[EddyProInstrumentSpec] = []
 
         for item in instrument_items:
-            item_data = item or {}
+            item_data = self._strip_prefix(item or {})
             instruments.append(
                 EddyProInstrumentSpec(fields={str(k): "" if v is None else str(v) for k, v in item_data.items()})
             )

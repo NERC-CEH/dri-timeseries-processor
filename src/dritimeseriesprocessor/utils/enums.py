@@ -4,7 +4,7 @@ from enum import Enum
 class CliSelectionMode(Enum):
     EXPLICIT = "from-selection"
     CROSS_PRODUCT = "from-cross-product"
-    EDDYPRO = "eddypro"
+    FROM_DATASETS = "from-datasets"
     LIST_SITES = "list-sites"
 
 
@@ -23,7 +23,6 @@ class ConfigurationType(Enum):
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
     PROCESS = "process"
-    EDDYPRO = "eddypro"
     LOAD_LOCAL_COPY = "load-local-copy"
 
 
@@ -34,7 +33,6 @@ class MethodType(Enum):
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
     LOAD = "load"
-    EDDYPRO = "eddypro"
     LOAD_LOCAL_COPY = "load-local-copy"
 
 
@@ -49,6 +47,17 @@ class OperationType(Enum):
     QUALITY_CONTROL = "quality_control"
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
+
+
+class DatasetType(Enum):
+    """The metadata `@type` of a dataset record.
+
+    `TIMESERIES_DATASET` is a single-variable timeseries dataset; `OBSERVATION_DATASET` is a multi-column bundle
+    (e.g. raw EddyPro inputs, EddyPro outputs).
+    """
+
+    TIMESERIES_DATASET = "TimeSeriesDataset"
+    OBSERVATION_DATASET = "ObservationDataset"
 
 
 class ProcessingLevel(Enum):

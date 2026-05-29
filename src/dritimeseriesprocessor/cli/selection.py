@@ -10,15 +10,17 @@ from dritimeseriesprocessor.utils.enums import CliSelectionMode
 
 
 @dataclass(frozen=True)
-class SelectionOption:
-    """Represents a selection of dataset dimension combinations."""
+class DimensionSelection:
+    """Represents a selection of dataset dimension combinations (site, variable, periodicity)."""
 
+    network: str
     sites: list[str] | None = None
     variables: list[str] | None = None
     periodicities: list[str] | None = None
 
     def __repr__(self) -> str:
         return (
+            f"network={self.network} | "
             f"sites={self._fmt_dim(self.sites)} | "
             f"variables={self._fmt_dim(self.variables)} | "
             f"periodicities={self._fmt_dim(self.periodicities)}"
@@ -37,7 +39,36 @@ class SelectionOption:
         sites_str = "/".join(self.sites or [""])
         variables_str = "/".join(self.variables or [""])
         periodicities_str = "/".join(self.periodicities or [""])
-        return hash(f"{sites_str}{variables_str}{periodicities_str}")
+        return hash(f"{self.network}{sites_str}{variables_str}{periodicities_str}")
+
+
+@dataclass(frozen=True)
+class DatasetIdSelection:
+    """Represents an explicit list of dataset IDs to process."""
+
+    dataset_ids: list[str]
+
+    def __repr__(self) -> str:
+        return f"datasets={', '.join(self.dataset_ids)}"
+
+    def __hash__(self) -> int:
+        return hash("/".join(self.dataset_ids))
+
+
+@dataclass(frozen=True)
+class ListSitesSelection:
+    """Represents a request to list all sites for a network."""
+
+    network: str
+
+    def __repr__(self) -> str:
+        return f"network={self.network}"
+
+    def __hash__(self) -> int:
+        return hash(self.network)
+
+
+Selection = DimensionSelection | DatasetIdSelection | ListSitesSelection
 
 
 @dataclass(frozen=True)
@@ -46,8 +77,7 @@ class RunConfig:
     constraints and the temporal processing window. It serves as the boundary between CLI parsing and runtime execution.
     """
 
-    network: str
-    selection: list[SelectionOption]
+    selection: list[Selection]
     start_date: datetime
     end_date: datetime
     mode: CliSelectionMode

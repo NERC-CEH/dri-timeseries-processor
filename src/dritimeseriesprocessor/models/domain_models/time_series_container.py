@@ -9,13 +9,14 @@ import logging
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, MethodType, ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +33,11 @@ class TimeSeriesContainer:
     source_site_identifier: str | None
     time_column_name: str | None
 
-    resolution: str
-    periodicity: str
+    resolution: str | None
+    periodicity: str | None
     processing_level: ProcessingLevel
 
-    dataset_type: str | None = None
+    dataset_type: DatasetType | None = None
     distribution_url: str | None = None
 
     method_config: DataProcessingConfig | None = None
@@ -45,6 +46,7 @@ class TimeSeriesContainer:
     infill_configs: set[DataProcessingConfig] = field(default_factory=set)
 
     data: ts.TimeFrame | None = None
+    staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)
     failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
     load_only: bool = False
 
@@ -101,7 +103,6 @@ class TimeSeriesContainer:
                 ConfigurationType.AGGREGATION,
                 ConfigurationType.DERIVATION,
                 ConfigurationType.PROCESS,
-                ConfigurationType.EDDYPRO,
                 ConfigurationType.LOAD_LOCAL_COPY,
             ):
                 # Should only ever have one of these
@@ -122,19 +123,14 @@ class TimeSeriesContainer:
         return MethodType(self.method_config.config_type.value)
 
     @property
-    def is_observation_dataset(self) -> bool:
-        """True if this is an ObservationDataset bundle (wide table) vs single-column TimeSeriesDataset."""
-        return self.dataset_type == "ObservationDataset"
-
-    @property
     def s3_bucket(self) -> str | None:
-        if self.is_observation_dataset and self.distribution_url:
+        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
             return self.distribution_url.split("://")[1].split("/")[0]
         return self.source_bucket
 
     @property
     def s3_dataset_path(self) -> str | None:
-        if self.is_observation_dataset and self.distribution_url:
+        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
             parts = self.distribution_url.split("://")[1].split("/", 1)
             return parts[1].rstrip("/") if len(parts) > 1 else None
         return self.source_dataset

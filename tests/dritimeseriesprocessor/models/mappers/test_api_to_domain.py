@@ -24,7 +24,7 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
     map_processing_method_config,
     map_site_metadata,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
 
 
 class TestMapDatasetItem:
@@ -41,7 +41,7 @@ class TestMapDatasetItem:
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
             network="cosmos",
-            source_bucket="ukceh-fdri-staging-timeseries-processed",
+            source_bucket="ukceh-dri-staging-processed",
             source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
             source_site="cosmos-bunny",
@@ -50,7 +50,7 @@ class TestMapDatasetItem:
             resolution="P1D",
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
-            dataset_type="TimeSeriesDataset",
+            dataset_type=DatasetType.TIMESERIES_DATASET,
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
@@ -73,7 +73,7 @@ class TestMapDatasetItem:
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
             network="cosmos",
-            source_bucket="ukceh-fdri-staging-timeseries-level-0",
+            source_bucket="ukceh-dri-staging-ingested",
             source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
             source_site="cosmos-bunny",
@@ -82,7 +82,7 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            dataset_type="TimeSeriesDataset",
+            dataset_type=DatasetType.TIMESERIES_DATASET,
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
@@ -146,7 +146,7 @@ class TestMapDatasetItem:
                 "distribution": [
                     {
                         "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-raw",
-                        "accessUrl": ["s3://ukceh-fdri-staging-timeseries-level-0/Flux/"],
+                        "accessUrl": ["s3://ukceh-dri-staging-ingested/Flux/"],
                     }
                 ],
                 "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
@@ -159,10 +159,9 @@ class TestMapDatasetItem:
 
         result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
 
-        assert result.dataset_type == "ObservationDataset"
-        assert result.distribution_url == "s3://ukceh-fdri-staging-timeseries-level-0/Flux/"
-        assert result.is_observation_dataset is True
-        assert result.s3_bucket == "ukceh-fdri-staging-timeseries-level-0"
+        assert result.dataset_type == DatasetType.OBSERVATION_DATASET
+        assert result.distribution_url == "s3://ukceh-dri-staging-ingested/Flux/"
+        assert result.s3_bucket == "ukceh-dri-staging-ingested"
         assert result.s3_dataset_path == "Flux"
 
     def test_all_dependencies(self) -> None:

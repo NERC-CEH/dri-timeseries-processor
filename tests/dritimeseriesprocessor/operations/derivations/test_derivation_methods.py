@@ -1,5 +1,7 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Any
+from unittest.mock import MagicMock
 
 import polars as pl
 import pytest
@@ -17,6 +19,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CalcFluxMeanShf,
     CorrectCounts,
     DerivationMethod,
+    EddyProRun,
     IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
@@ -26,6 +29,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     SolarZenith,
     VolumetricWaterContent,
 )
+from dritimeseriesprocessor.utils.enums import MethodType
 from utils.data_creation import dataframe_to_timeframe
 
 
@@ -653,3 +657,153 @@ class TestCalcFluxEt:
         config = create_method_config({"le": [None], "airtemp_c": [20.0]}, "et")
         result = CalcFluxEt().run(config)
         assert result.df["et"][0] is None
+
+
+def _make_eddypro_config(
+    container: MagicMock,
+    dataset_repository: dict,
+    start_date: datetime = datetime(2024, 1, 1),
+    end_date: datetime = datetime(2024, 1, 31),
+    site_metadata: dict | None = None,
+    file_duration: int = 30,
+) -> DataProcessingMethodConfig:
+    return DataProcessingMethodConfig(
+        method="eddypro-run",
+        params={
+            "container": container,
+            "dataset_repository": dataset_repository,
+            "start_date": start_date,
+            "end_date": end_date,
+            "site_metadata": site_metadata or {},
+            "file_duration": file_duration,
+        },
+    )
+
+
+class TestEddyProRun:
+    def test_raises_when_no_load_local_copy_dependency(self) -> None:
+        """Tests that a ValueError is raised when no LOAD_LOCAL_COPY dependency is present."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["dep-1"]
+        dep = MagicMock()
+        dep.method_type.return_value = MethodType.LOAD
+
+        config = _make_eddypro_config(container, {"dep-1": dep})
+
+        with pytest.raises(ValueError):
+            EddyProRun().run(config)
+
+    def test_raises_when_multiple_load_local_copy_dependencies(self) -> None:
+        """Tests that a ValueError is raised when more than one LOAD_LOCAL_COPY dependency is found."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["dep-1", "dep-2"]
+        dep1, dep2 = MagicMock(), MagicMock()
+        dep1.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        dep2.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+
+        config = _make_eddypro_config(container, {"dep-1": dep1, "dep-2": dep2})
+
+        with pytest.raises(ValueError):
+            EddyProRun().run(config)
+
+    def test_raises_when_staged_dir_is_none(self) -> None:
+        """Tests that a ValueError is raised when the raw dependency has not been staged locally."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = None
+        raw_dep.ts_id = "raw-dep"
+
+        config = _make_eddypro_config(container, {"raw-dep": raw_dep})
+
+        with pytest.raises(ValueError):
+            EddyProRun().run(config)
+
+    def test_calls_pipeline_with_staged_dir_and_date_range(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Tests that EddyProPipeline.run is called with the raw staged directory and the date range."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        container.source_site = "flux-plynl"
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = tmp_path
+        raw_dep.ts_id = "raw-dep"
+
+        start = datetime(2024, 1, 1)
+        end = datetime(2024, 1, 31)
+
+        mock_pipeline = MagicMock()
+        mock_pipeline.run.return_value = pl.DataFrame({"time": []})
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            lambda *args, **kwargs: mock_pipeline,
+        )
+
+        EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}, start_date=start, end_date=end))
+
+        call_kwargs = mock_pipeline.run.call_args.kwargs
+        assert call_kwargs["raw_data_dir"] == tmp_path
+        assert call_kwargs["start_date"] == start
+        assert call_kwargs["end_date"] == end
+
+    def test_sets_container_resolution_from_file_duration(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Tests that the container's resolution and periodicity are set from the file_duration param."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        container.source_site = "flux-plynl"
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = tmp_path
+        raw_dep.ts_id = "raw-dep"
+
+        mock_pipeline = MagicMock()
+        mock_pipeline.run.return_value = pl.DataFrame({"time": []})
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            lambda *args, **kwargs: mock_pipeline,
+        )
+
+        EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}, file_duration=30))
+
+        assert container.time_column_name == "time"
+        assert container.resolution == "PT30M"
+        assert container.periodicity == container.resolution
+
+    def test_returns_container_data(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        """Tests that the method returns the container's data after init_timeframe is called."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        container.source_site = "flux-plynl"
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = tmp_path
+        raw_dep.ts_id = "raw-dep"
+
+        mock_pipeline = MagicMock()
+        mock_pipeline.run.return_value = pl.DataFrame({"time": []})
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            lambda *args, **kwargs: mock_pipeline,
+        )
+
+        result = EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}))
+
+        container.init_timeframe.assert_called_once()
+        assert result == container.data

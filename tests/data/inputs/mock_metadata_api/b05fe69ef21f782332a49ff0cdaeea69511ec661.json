@@ -53,9 +53,26 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-p1d-p1d#aggregation",
+            "valueStatistic": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+            },
             "periodicity": "P1D",
             "resolution": "P1D"
           }
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/cosmos-alic1-ta_1day_processed",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=ALIC1/"
+          ]
         }
       ],
       "sourceBucket": "e2e-output",

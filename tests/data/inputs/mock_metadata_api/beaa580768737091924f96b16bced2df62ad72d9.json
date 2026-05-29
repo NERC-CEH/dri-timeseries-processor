@@ -120,6 +120,109 @@
       ]
     },
     {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min_raw-error_code",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ux_30min_raw-error_code-current",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11462",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11462#value",
+                "value": [
+                  8999.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11461",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11461#value",
+                "value": [
+                  7999.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/error_code",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "label": [
+              "Error code"
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Error code"
+            ],
+            "scopeNote": [
+              "Find and remove known error codes"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min_raw-battery_v",
       "appliesToDataset": [
         {
@@ -135,28 +238,6 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ux_30min_raw-battery_v-current",
           "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-battery_v-current-11460",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-battery_v-current-11460#value",
-                "value": [
-                  10.5
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
             {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-battery_v-current-11459",
               "hasValue": {
@@ -174,6 +255,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-battery_v-current-11460",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-battery_v-current-11460#value",
+                "value": [
+                  10.5
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -228,10 +331,10 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min_raw-battery_v",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min_raw-range",
       "appliesToDataset": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
           "originatingSite": [
             {
               "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -241,14 +344,36 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_raw-battery_v-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ux_30min_raw-range-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11472",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11458",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11472#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11458#value",
                 "value": [
-                  10.5
+                  30.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11457",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11457#value",
+                "value": [
+                  -30.0
                 ],
                 "@type": [
                   {
@@ -264,40 +389,16 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11471",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11471#value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/range",
             "parameter": [
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
@@ -309,7 +410,7 @@
               }
             ],
             "label": [
-              "Battery"
+              "Range"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -318,10 +419,10 @@
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
             "prefLabel": [
-              "Battery"
+              "Range"
             ],
             "scopeNote": [
-              "Battery voltage too low"
+              "Value out of range"
             ]
           }
         }
@@ -442,10 +543,10 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min_raw-error_code",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min_raw-battery_v",
       "appliesToDataset": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
           "originatingSite": [
             {
               "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -455,14 +556,16 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ux_30min_raw-error_code-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-uy_30min_raw-battery_v-current",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11461",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11471",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11461#value",
-                "value": [
-                  7999.0
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11471#value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw"
+                  }
                 ],
                 "@type": [
                   {
@@ -471,7 +574,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {
@@ -480,114 +583,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11462",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11472",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-error_code-current-11462#value",
+                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-uy_30min_raw-battery_v-current-11472#value",
                 "value": [
-                  8999.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/error_code",
-            "parameter": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
-              }
-            ],
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "label": [
-              "Error code"
-            ],
-            "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
-            },
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            },
-            "prefLabel": [
-              "Error code"
-            ],
-            "scopeNote": [
-              "Find and remove known error codes"
-            ]
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min_raw-range",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ux_30min_raw-range-current",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11458",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11458#value",
-                "value": [
-                  30.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11457",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/configuration-argument/cosmos-holln-ux_30min_raw-range-current-11457#value",
-                "value": [
-                  -30.0
+                  10.5
                 ],
                 "@type": [
                   {
@@ -606,13 +606,13 @@
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/range",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
             "parameter": [
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
@@ -624,7 +624,7 @@
               }
             ],
             "label": [
-              "Range"
+              "Battery"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -633,10 +633,10 @@
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
             "prefLabel": [
-              "Range"
+              "Battery"
             ],
             "scopeNote": [
-              "Value out of range"
+              "Battery voltage too low"
             ]
           }
         }

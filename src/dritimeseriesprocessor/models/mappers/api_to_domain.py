@@ -22,7 +22,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
@@ -38,19 +38,21 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
         processing.
     """
     processing_level = ProcessingLevel(extract_uri_id(item.processing_level.id))
+
     metadata_site_id = item.originating_site[0].id if item.originating_site else None
-
     source_site = extract_uri_id(metadata_site_id) if metadata_site_id else None
-    source_network = extract_uri_id(item.originating_programme[0].id) if item.originating_programme else None
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id if metadata_site_id else None
+    source_network = extract_uri_id(item.originating_programme[0].id) if item.originating_programme else None
+    resolution = item.measure[0].aggregation.resolution if item.measure else None
+    periodicity = item.measure[0].aggregation.periodicity if item.measure else None
 
-    dataset_type = extract_uri_id(item.field_type[0].id) if item.field_type else None
+    dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
 
     return TimeSeriesContainer(
         ts_id=item.id,
         network=source_network,
-        resolution=item.measure[0].aggregation.resolution,
-        periodicity=item.measure[0].aggregation.periodicity,
+        resolution=resolution,
+        periodicity=periodicity,
         processing_level=processing_level,
         source_bucket=getattr(item, "source_bucket", None),
         source_dataset=getattr(item, "source_dataset", None),
@@ -208,8 +210,12 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
         if has_structured_value:
             # Extract any nested structured value arguments. This will be, used for example, for cases where we need
             # to extract deployment information for a sensor e.g. wind height for PE 30min
-            structured_value_params = extract_arguments(has_structured_value.argument, site_metadata)
-            collected_args[param_name].append(structured_value_params)
+            structured_value_list = (
+                has_structured_value if isinstance(has_structured_value, list) else [has_structured_value]
+            )
+            for structured_value in structured_value_list:
+                structured_value_params = extract_arguments(structured_value.argument, site_metadata)
+                collected_args[param_name].append(structured_value_params)
 
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}

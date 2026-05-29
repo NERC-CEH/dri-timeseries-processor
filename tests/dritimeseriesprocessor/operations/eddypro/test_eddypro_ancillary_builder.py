@@ -207,7 +207,7 @@ class TestEddyProDynamicMetadataBuilder:
                 }
             ),
         )
-        # height_canopy has no data — rows should still appear (partial row, not dropped)
+        # height_canopy has no data - rows should still appear (partial row, not dropped)
         height_no_data = make_container(ts_id="height-canopy", source_column="height_canopy")
 
         output_path = EddyProDynamicMetadataBuilder().build(

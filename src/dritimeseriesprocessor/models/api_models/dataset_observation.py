@@ -1,7 +1,7 @@
 """
 Pydantic models for the Observation Dataset metadata endpoint.
 
-Represents fdri:ObservationDataset items — bundles (e.g. raw .dat files)
+Represents fdri:ObservationDataset items - bundles (e.g. raw .dat files)
 """
 
 from pydantic import Field
@@ -31,8 +31,8 @@ class Aggregation(IDModel):
 class Measure(IDModel):
     """Measure specification with variable and unit."""
 
-    variable: Variable
-    has_unit: HasUnit = Field(..., alias="hasUnit")
+    variable: Variable | None = None
+    has_unit: HasUnit | None = Field(None, alias="hasUnit")
     aggregation: Aggregation
 
 
@@ -50,25 +50,25 @@ class Methodology(IDModel):
 
 
 class Distribution(IDModel):
-    """DCAT Distribution — represents an available form of a dataset.
+    """DCAT Distribution - represents an available form of a dataset.
 
     E.g., an S3 parquet folder with data in a specific format.
     The API serialises dct:accessURL as `accessUrl` (camelCase, lowercase l).
     The distribution property on a dataset is a list of these objects.
     """
 
-    access_url: list[str] | None = Field(None, alias="accessUrl")
     format: IDModel | None = None
+    access_url: list[str] | None = Field(None, alias="accessUrl")
 
 
 class ObservationDatasetItem(IDModel):
-    """Observation dataset item — base class for TimeSeriesDatasetItem."""
+    """Observation dataset item - base class for TimeSeriesDatasetItem."""
 
     field_type: list[IDModel] = Field(..., alias="@type")
     processing_level: IDModel = Field(..., alias="processingLevel")
-    measure: list[Measure]
+    measure: list[Measure] | None = None
     methodology: Methodology | None = None
-    distributions: list[Distribution] | None = Field(None, alias="distribution")
+    distribution: list[Distribution] | None = Field(None, alias="distribution")
     originating_facility: list[IDModel] | None = Field(None, alias="originatingFacility")
     originating_site: list[IDModel] | None = Field(None, alias="originatingSite")
     originating_programme: list[IDModel] | None = Field(None, alias="originatingProgramme")
@@ -77,13 +77,9 @@ class ObservationDatasetItem(IDModel):
 
     @property
     def distribution_url(self) -> str | None:
-        """Return the first distribution's S3 access URL, or None.
-
-        The API returns distributions as a list; we use the first one.
-        For EddyPro raw bundles this is the S3 folder path for the .dat files.
-        """
-        if self.distributions and self.distributions[0].access_url:
-            return self.distributions[0].access_url[0]
+        """Return the first access URL from the first distribution, or None."""
+        if self.distribution and self.distribution[0].access_url:
+            return self.distribution[0].access_url[0]
         return None
 
 

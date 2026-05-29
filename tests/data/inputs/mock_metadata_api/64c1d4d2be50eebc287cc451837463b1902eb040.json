@@ -88,6 +88,20 @@
           ]
         }
       ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/nmdb-jung-neutron_cts_1hour_processed",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://ukceh-dri-staging-processed/nmdb/dataset=PROCESSED_NMDB_1HOUR/site=JUNG/"
+          ]
+        }
+      ],
       "sourceBucket": "e2e-output",
       "sourceDataset": "PROCESSED_NMDB_1HOUR",
       "sourceColumnName": "CRNS-COUNT",

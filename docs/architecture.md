@@ -8,8 +8,8 @@ explained below.
 
 ```mermaid
 flowchart TD
-Start([Command Line Interface - CLI]) --> Parse[Parse Arguments]
-Parse --> LoadConfig[Load Environment Configuration]
+Start([Command Line Interface]) --> Parse[Parse Arguments]
+Parse --> LoadConfig[Load Environment<br />Configuration]
 
 LoadConfig --> BuildDAG[Build Dependency Graph]
 BuildDAG --> MetaAPI[(Metadata Store API)]
@@ -30,7 +30,11 @@ S3Reader --> LoadRaw
 LoadRaw --> CreateTF[Create TimeFrame<br/>Add initial flags]
 CreateTF --> NextDataset
 
-CheckMethod -->|PROCESS| Process[Run standard processing steps]
+CheckMethod -->|LOAD_LOCAL_COPY| StageFiles[Download raw files to local temp dir]
+StageFiles --> S3Reader
+StageFiles --> NextDataset
+
+CheckMethod -->|PROCESS| Process[Run standard<br />processing steps]
 Process --> RunCorr[Run Corrections]
 RunCorr --> RunQC[Run Quality Control Checks]
 RunQC --> RunInfill[Run Infilling]
@@ -45,9 +49,9 @@ Compute --> NextDataset
 NextDataset([Next dataset])
 NextDataset -->|All datasets done| NextLayer
 NextLayer([Next layer])
-NextLayer -->|All layers done| SaveDatasets[Collect datasets and write to S3]
+NextLayer -->|All layers done| SaveDatasets[Collect datasets and<br />write to S3]
 SaveDatasets --> S3Writer[(S3 Storage Writer)]
-SaveDatasets --> ExportMetrics[Export Metrics to Prometheus]
+SaveDatasets --> ExportMetrics[Export Metrics to<br />Prometheus]
 ExportMetrics --> PrometheusGW[(Prometheus<br/>Pushgateway)]
 ExportMetrics --> Done([Processing Complete])
 
@@ -68,10 +72,12 @@ class ExportMetrics,Done completion
 
 ### 1. Command line interface (CLI)
 
-Command line interface supporting two processing modes and one utility command:
+Command line interface supporting three processing modes and one utility command:
 
-- **Explicit mode**: Fine-grained control over specific site/variable/periodicity combinations
-- **Cross-product mode**: Bulk processing across dimensions
+- **Explicit mode** (`from-selection`): Fine-grained control over specific site/variable/periodicity combinations
+- **Cross-product mode** (`from-cross-product`): Bulk processing across dimensions
+- **From-datasets mode** (`from-datasets`): Request datasets directly by metadata API ID - works for both
+  `TimeSeriesDataset` and `ObservationDataset` records, and does not require a network argument
 - **List-sites**: Output active site IDs for a network as a JSON array
 
 See [CLI Usage](cli_usage.md).
@@ -182,17 +188,17 @@ and derived outputs.
 
 Constructs a complete directed acyclic graph (DAG) of dataset dependencies by:
 
-1. Fetching the target (processed) datasets (based on user input of site(s), variable(s), periodicity(s)).
+1. Fetching the root (target) datasets. How they are fetched depends on the selection mode:
+   - **Dimension-based modes** (`from-selection`, `from-cross-product`): query the metadata API by site,
+     variable, and periodicity. If no sites are specified, all sites for the network are fetched first.
+     Sites whose operating period does not overlap the requested date window are excluded.
+   - **`from-datasets` mode**: fetch datasets directly by ID, with no site pre-filtering.
 2. Fetching all relevant data processing configurations (QC, Infill, Correction, Aggregation, Derivation).
-3. Resolving dependencies of these data processing configurations
+3. Resolving dependencies of these data processing configurations.
 4. Repeating for any new datasets introduced by these dependencies.
 
 This process produces a complete graph of the state of dependencies, where each node represents a dataset, and
 each edge represents a dependency.
-
-When no explicit sites are provided, all sites for the network are fetched from the metadata API. In both cases,
-sites whose operating period does not overlap the requested date window are excluded before the graph is built - i.e.
-a site that closed before the window start, or had not yet opened by the window end, will not be processed.
 
 The resolver guarantees that the graph is acyclic. If a cycle is detected (e.g., dataset A depends on dataset B which
 depends on dataset A), the resolver will fail.
@@ -311,13 +317,14 @@ passes through this layer.
 
 #### Reader
 
-The reader component loads dataset data and metadata from storage into memory:
+The reader component loads dataset data from storage into memory. There are two reader types:
 
-- locating the dataset based on network, site, periodicity and date
-- resolving storage paths or prefixes
-- reading parquet data for the requested time period
+- **`DuckDBParquetReader`**: reads parquet data for a time series dataset by querying a hive-partitioned S3 path
+  with DuckDB. Used for all standard `LOAD` steps.
+- **`RawFileReader`**: downloads raw files (e.g. `.dat` files) from an S3 prefix into a local temporary directory.
+  Used for `LOAD_LOCAL_COPY` steps, where a subsequent derivation step (such as `EddyProRun`) needs the files on disk.
 
-The reader is environment-aware. It gets bucket selection and credential access from the configuration layer.
+Both readers are environment-aware. Bucket selection and credentials come from the configuration layer.
 
 #### Writer
 

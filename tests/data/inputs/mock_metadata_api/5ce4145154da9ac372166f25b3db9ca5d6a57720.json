@@ -53,9 +53,26 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_prec-hpa-pt30m-pt30m#aggregation",
+            "valueStatistic": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
+            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/cosmos-holln-pa_30min_processed",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
+          ]
         }
       ],
       "sourceBucket": "e2e-output",

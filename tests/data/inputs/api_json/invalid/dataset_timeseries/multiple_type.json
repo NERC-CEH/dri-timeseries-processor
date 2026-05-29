@@ -83,7 +83,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-processed",
+      "sourceBucket": "ukceh-dri-staging-processed",
       "sourceDataset": "EMPTY",
       "sourceColumnName": "E",
       "originatingSite": [
