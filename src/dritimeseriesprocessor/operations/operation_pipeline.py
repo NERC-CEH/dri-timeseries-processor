@@ -143,9 +143,6 @@ class OperationPipeline(ABC):
         """
         tf = container.data
 
-        if container.time_column_name is None:
-            raise RuntimeError(f"Container {container.ts_id} has no time column name set")
-
         # Initialise the flags if required
         if self.flag_system_name and tf is not None:
             col_name = tf.metadata["column_name"]
@@ -168,8 +165,9 @@ class OperationPipeline(ABC):
         # Update core flags
         tf = self.core_flag_updater(tf)  # type: ignore[arg-type] - we know tf will exist at this point
 
-        # Ensure time column name of tf is same as container's
-        tf = tf.rename_time_column(container.time_column_name)
+        # Ensure time column name of tf is same as container's (not set for ObservationDatasets)
+        if container.time_column_name is not None:
+            tf = tf.rename_time_column(container.time_column_name)
 
         return tf
 
