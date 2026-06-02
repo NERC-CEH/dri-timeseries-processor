@@ -26,7 +26,6 @@ LOCAL_CONFIG_PATH = Path(__file__).parent.parent / "__assets__" / "env.cfg"
 class AppConfig(ABC):
     """Base interface for all configuration sources."""
 
-    # Required keys
     AWS_DEFAULT_REGION: str
     AWS_ACCESS_KEY_ID: str | None = None
     AWS_SECRET_ACCESS_KEY: str | None = None
@@ -67,23 +66,23 @@ class AppConfigLocal(AppConfig):
             raise
 
         try:
-            self.AWS_DEFAULT_REGION = cfg["AWS_DEFAULT_REGION"]
-            self.AWS_ACCESS_KEY_ID = cfg["AWS_ACCESS_KEY_ID"]
-            self.AWS_SECRET_ACCESS_KEY = cfg["AWS_SECRET_ACCESS_KEY"]
+            self.AWS_DEFAULT_REGION = str(cfg["AWS_DEFAULT_REGION"])
+            self.AWS_ACCESS_KEY_ID = str(cfg["AWS_ACCESS_KEY_ID"])
+            self.AWS_SECRET_ACCESS_KEY = str(cfg["AWS_SECRET_ACCESS_KEY"])
 
-            self.metadata_api_url = cfg["metadata_api_url"]
-            self.endpoint_url = cfg["endpoint_url"]
+            self.metadata_api_url = str(cfg["metadata_api_url"])
+            self.endpoint_url = str(cfg["endpoint_url"])
 
             self.environment = Environment.LOCAL
-            self.pushgateway_url = cfg["pushgateway_url"]
+            self.pushgateway_url = str(cfg["pushgateway_url"])
 
         except KeyNotFoundError as err:
             raise KeyError(f"Missing required local config key:\n{err}")
 
         # Set AWS config params as env variables for sqs consumer to run locally
-        os.environ["AWS_ACCESS_KEY_ID"] = cfg["AWS_ACCESS_KEY_ID"]
-        os.environ["AWS_SECRET_ACCESS_KEY"] = cfg["AWS_SECRET_ACCESS_KEY"]
-        os.environ["AWS_DEFAULT_REGION"] = cfg["AWS_DEFAULT_REGION"]
+        os.environ["AWS_ACCESS_KEY_ID"] = str(cfg["AWS_ACCESS_KEY_ID"])
+        os.environ["AWS_SECRET_ACCESS_KEY"] = str(cfg["AWS_SECRET_ACCESS_KEY"])
+        os.environ["AWS_DEFAULT_REGION"] = str(cfg["AWS_DEFAULT_REGION"])
 
         if "metadata_api_url" in os.environ:
             self.metadata_api_url = os.environ["metadata_api_url"]

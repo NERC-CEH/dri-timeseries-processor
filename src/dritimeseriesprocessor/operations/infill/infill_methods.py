@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 import time_stream as ts
 from time_stream.operation import Operation
@@ -7,8 +8,14 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.utils.enums import OperationType
 
 
+def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime, datetime | None] | None:
+    if config.start_date is None:
+        return None
+    return config.start_date, config.end_date
+
+
 class InfillMethod(Operation, ABC):
-    operation_type: OperationType.INFILLING
+    operation_type = OperationType.INFILLING
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:
@@ -24,7 +31,7 @@ class Linear(InfillMethod):
         return tf.infill(
             "linear",
             tf.metadata["column_name"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=_observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
         )
 
@@ -40,7 +47,7 @@ class AltDataStatic(InfillMethod):
             tf.metadata["column_name"],
             alt_df=config.params["alt_df"],
             alt_data_column=config.params["alt_data_column"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=_observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
             correction_factor=config.params.get("correction_factor", 1),
         )

@@ -57,7 +57,7 @@
           }
         }
       ],
-      "sourceBucket": "ukceh-fdri-staging-timeseries-level-0",
+      "sourceBucket": "ukceh-dri-staging-ingested",
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",

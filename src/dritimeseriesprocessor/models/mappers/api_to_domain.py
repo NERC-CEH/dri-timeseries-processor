@@ -13,7 +13,7 @@ from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationIte
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import (
     DataProcessingConfigurationItem,
 )
-from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem
+from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.processing_config import (
@@ -22,12 +22,12 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, SiteMetadata]) -> TimeSeriesContainer:
-    """Map a Pydantic TimeSeriesDatasetItem to a domain-level TimeSeriesContainer.
+def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, SiteMetadata]) -> TimeSeriesContainer:
+    """Map a Pydantic ObservationDatasetItem (or subclass) to a domain-level TimeSeriesContainer.
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
@@ -38,24 +38,30 @@ def map_dataset_item(item: TimeSeriesDatasetItem, all_site_metadata: dict[str, S
         processing.
     """
     processing_level = ProcessingLevel(extract_uri_id(item.processing_level.id))
-    metadata_site_id = item.originating_site[0].id
 
-    source_site = extract_uri_id(metadata_site_id)
-    source_network = extract_uri_id(item.originating_programme[0].id)
-    source_site_identifier = all_site_metadata[metadata_site_id].alt_id
+    metadata_site_id = item.originating_site[0].id if item.originating_site else None
+    source_site = extract_uri_id(metadata_site_id) if metadata_site_id else None
+    source_site_identifier = all_site_metadata[metadata_site_id].alt_id if metadata_site_id else None
+    source_network = extract_uri_id(item.originating_programme[0].id) if item.originating_programme else None
+    resolution = item.measure[0].aggregation.resolution if item.measure else None
+    periodicity = item.measure[0].aggregation.periodicity if item.measure else None
+
+    dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
 
     return TimeSeriesContainer(
         ts_id=item.id,
         network=source_network,
-        resolution=item.measure[0].aggregation.resolution,
-        periodicity=item.measure[0].aggregation.periodicity,
+        resolution=resolution,
+        periodicity=periodicity,
         processing_level=processing_level,
-        source_bucket=item.source_bucket,
-        source_dataset=item.source_dataset,
-        source_column=item.source_column_name,
+        source_bucket=getattr(item, "source_bucket", None),
+        source_dataset=getattr(item, "source_dataset", None),
+        source_column=getattr(item, "source_column_name", None),
         source_site=source_site,
         source_site_identifier=source_site_identifier,
-        time_column_name=item.time_column_name,
+        time_column_name=getattr(item, "time_column_name", None),
+        dataset_type=dataset_type,
+        distribution_url=item.distribution_url,
     )
 
 
@@ -89,7 +95,7 @@ def map_processing_config_item(
         config_id=item.id,
         config_type=config_type,
         method_configs=method_configs,
-        annotations=annotations,
+        annotations=annotations or {},
     )
 
 
@@ -106,6 +112,8 @@ def map_processing_method_config(
     Returns:
         A domain model object describing a configuration of a processing method.
     """
+    if current_config.method is None:
+        raise ValueError(f"Processing config {current_config.id} has no method")
     method = extract_uri_id(current_config.method.id)
     params = extract_arguments(current_config.argument, site_metadata)
 
@@ -136,7 +144,12 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any] 
     for ann in annotations:
         key = extract_uri_id(ann.property.id).replace("-", "_")
         if ann.has_value:
-            extracted[key] = ann.has_value.value[0] if ann.has_value.value else ann.has_value.value_reference[0]
+            val = ann.has_value.value
+            ref = ann.has_value.value_reference
+            if val is not None:
+                extracted[key] = val[0] if isinstance(val, list) else val
+            elif ref is not None:
+                extracted[key] = ref[0] if isinstance(ref, list) else ref
         elif ann.has_value_series:
             extracted[key] = ann.has_value_series.has_current_value
 
@@ -167,14 +180,21 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
             if has_value.value is not None:
                 # Resolve any special case where we need to extract parameter from the site metadata
                 # Annotations may have more than one value, site_attributes and other parameters have at most one.
-                values = has_value.value  # Cannot set to lower here as not all values are strings
+                values = has_value.value
+                if not isinstance(values, list):
+                    values = [values]
                 if param_name == "annotation":
                     for param in values:
+                        if not isinstance(param, str):
+                            raise ValueError(f"Expected string annotation key, got {type(param).__name__}: {param}")
                         param_name = param.lower()
-                        collected_args[param_name].append(site_metadata.annotations.get(param_name))
+                        if site_metadata is not None:
+                            collected_args[param_name].append((site_metadata.annotations or {}).get(param_name))
                 else:
                     value = values[0]
                     if param_name == "site_attribute":
+                        if not isinstance(value, str):
+                            raise ValueError(f"Expected string site_attribute key, got {type(value).__name__}: {value}")
                         param_name = value.lower()
                         value = getattr(site_metadata, param_name)
                     collected_args[param_name].append(value)
@@ -183,15 +203,19 @@ def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMet
             if has_value.value_reference is not None:
                 refs = has_value.value_reference
                 if isinstance(refs, IDModel):
-                    refs = [has_value.value_reference]
+                    refs = [refs]
                 for ref in refs:
                     collected_args[param_name].append(ref.id)
 
         if has_structured_value:
             # Extract any nested structured value arguments. This will be, used for example, for cases where we need
             # to extract deployment information for a sensor e.g. wind height for PE 30min
-            structured_value_params = extract_arguments(has_structured_value.argument, site_metadata)
-            collected_args[param_name].append(structured_value_params)
+            structured_value_list = (
+                has_structured_value if isinstance(has_structured_value, list) else [has_structured_value]
+            )
+            for structured_value in structured_value_list:
+                structured_value_params = extract_arguments(structured_value.argument, site_metadata)
+                collected_args[param_name].append(structured_value_params)
 
     # Flatten singleton lists
     params = {k: vals[0] if len(vals) == 1 else vals for k, vals in collected_args.items()}
@@ -207,8 +231,12 @@ def map_site_metadata(item: SiteItem) -> SiteMetadata:
     Returns:
         A simplified SiteMetadata domain model
     """
-    start_date = datetime.fromisoformat(item.operating_period.start_date)
-    end_date = datetime.fromisoformat(item.operating_period.end_date) if item.operating_period.end_date else None
+    start_date = datetime.fromisoformat(item.operating_period.start_date) if item.operating_period else None
+    end_date = (
+        datetime.fromisoformat(item.operating_period.end_date)
+        if item.operating_period and item.operating_period.end_date
+        else None
+    )
 
     alt_id = item.identifier[0] if item.identifier else None
     full_name = item.label[0] if item.label else None

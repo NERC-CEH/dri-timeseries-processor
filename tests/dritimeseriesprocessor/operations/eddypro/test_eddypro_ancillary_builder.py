@@ -169,8 +169,8 @@ class TestEddyProDynamicMetadataBuilder:
             output_path=tmp_path / "inputs" / "dynamic_metadata.txt",
         )
 
-        assert output_path.name == "dynamic_metadata.txt"
-        assert output_path.read_text().splitlines() == [
+        assert output_path.name == "dynamic_metadata.txt"  # type: ignore[union-attr]
+        assert output_path.read_text().splitlines() == [  # type: ignore[union-attr]
             "date\ttime\tsonic_azimuth\theight_canopy",
             "yyyy-mm-dd\tHH:MM\tdeg\tm",
             "2026-01-20\t00:00\t12.0\t0.52",
@@ -207,7 +207,7 @@ class TestEddyProDynamicMetadataBuilder:
                 }
             ),
         )
-        # height_canopy has no data — rows should still appear (partial row, not dropped)
+        # height_canopy has no data - rows should still appear (partial row, not dropped)
         height_no_data = make_container(ts_id="height-canopy", source_column="height_canopy")
 
         output_path = EddyProDynamicMetadataBuilder().build(
@@ -215,6 +215,6 @@ class TestEddyProDynamicMetadataBuilder:
             output_path=tmp_path / "dynamic_metadata.txt",
         )
 
-        lines = output_path.read_text().splitlines()
+        lines = output_path.read_text().splitlines()  # type: ignore[union-attr]
         assert lines[0] == "date\ttime\tsonic_azimuth\theight_canopy"
         assert len(lines) == 4  # header + units + 2 data rows

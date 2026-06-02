@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Any, Iterable
 from unittest.mock import MagicMock
 
 import pytest
@@ -28,7 +28,7 @@ class MockOperationPipeline(OperationPipeline):
     def get_flag_column(self, column: str) -> str:
         return f"{column}_TEST_FLAG"
 
-    def compute_flag_mask(self, *args) -> MagicMock:
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: Any, column_name: str) -> MagicMock:
         return MagicMock()
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
@@ -150,8 +150,8 @@ class TestApplyRounding:
         pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_rounding")
         result = pipeline.run(mock_container, {})
 
-        expected = create_timeframe(expected)
-        assert_frame_equal(result.df["time", "value"], expected.df["time", "value"])
+        expected_tf = create_timeframe(expected)
+        assert_frame_equal(result.df["time", "value"], expected_tf.df["time", "value"])
 
     @pytest.mark.parametrize("decimals", [-1, 0.5, -1.5])
     def test_apply_rounding_invalid(self, mock_container: MagicMock, decimals: int) -> None:

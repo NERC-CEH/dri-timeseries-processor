@@ -7,14 +7,16 @@ for use in the DAG builder and data processing pipeline.
 
 import logging
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, MethodType, ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +24,21 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TimeSeriesContainer:
     ts_id: str
-    network: str
+    network: str | None
 
     source_bucket: str | None
     source_dataset: str | None
-    source_column: str
-    source_site: str
-    source_site_identifier: str
-    time_column_name: str
+    source_column: str | None
+    source_site: str | None
+    source_site_identifier: str | None
+    time_column_name: str | None
 
-    resolution: str
-    periodicity: str
+    resolution: str | None
+    periodicity: str | None
     processing_level: ProcessingLevel
+
+    dataset_type: DatasetType | None = None
+    distribution_url: str | None = None
 
     method_config: DataProcessingConfig | None = None
     correction_configs: set[DataProcessingConfig] = field(default_factory=set)
@@ -41,6 +46,7 @@ class TimeSeriesContainer:
     infill_configs: set[DataProcessingConfig] = field(default_factory=set)
 
     data: ts.TimeFrame | None = None
+    staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)
     failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
     load_only: bool = False
 
@@ -97,7 +103,6 @@ class TimeSeriesContainer:
                 ConfigurationType.AGGREGATION,
                 ConfigurationType.DERIVATION,
                 ConfigurationType.PROCESS,
-                ConfigurationType.EDDYPRO,
                 ConfigurationType.LOAD_LOCAL_COPY,
             ):
                 # Should only ever have one of these
@@ -117,10 +122,23 @@ class TimeSeriesContainer:
             return MethodType.LOAD
         return MethodType(self.method_config.config_type.value)
 
+    @property
+    def s3_bucket(self) -> str | None:
+        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
+            return self.distribution_url.split("://")[1].split("/")[0]
+        return self.source_bucket
+
+    @property
+    def s3_dataset_path(self) -> str | None:
+        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
+            parts = self.distribution_url.split("://")[1].split("/", 1)
+            return parts[1].rstrip("/") if len(parts) > 1 else None
+        return self.source_dataset
+
     def init_timeframe(self, df: pl.DataFrame) -> None:
         """Wrap a DataFrame in a TimeFrame, apply initial flags, and store it on the container.
 
-        If the DataFrame is empty, a warning is logged and the container's data is left unset.
+        If the DataFrame is empty the container's data is left unset.
 
         Args:
             df: The raw DataFrame to wrap.
@@ -131,7 +149,7 @@ class TimeSeriesContainer:
         tf = (
             ts.TimeFrame(
                 df=df,
-                time_name=self.time_column_name,
+                time_name=self.time_column_name,  # type: ignore[arg-type] - always set before init_timeframe is called
                 resolution=self.resolution,
                 periodicity=self.periodicity,
             )
@@ -146,7 +164,7 @@ class TimeSeriesContainer:
 
 
 def group_containers(
-    containers: tuple[TimeSeriesContainer, ...], attributes: list[str]
+    containers: Sequence[TimeSeriesContainer], attributes: list[str]
 ) -> dict[tuple, list[TimeSeriesContainer]]:
     """Group containers by a composite key derived from the given attributes.
 
@@ -164,7 +182,7 @@ def group_containers(
     return groupings
 
 
-def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any] | None:
+def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | list[str]) -> Any | list[Any]:
     """Check if all the containers have the same value for each of the given attributes.
 
     Args:
@@ -175,7 +193,7 @@ def check_common_attributes(containers: list[TimeSeriesContainer], attr: str | l
         The common value(s) of each of the attribute(s).
     """
     if not containers:
-        return None
+        raise ValueError("Cannot check attributes for empty container list")
 
     if isinstance(attr, str):
         attr = [attr]

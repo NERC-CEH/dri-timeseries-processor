@@ -1,7 +1,10 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Any
+from unittest.mock import MagicMock
 
 import polars as pl
+import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -10,8 +13,13 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidityFactor,
     Albedo,
     AtmosphericPressureFactor,
+    CalcFluxEt,
+    CalcFluxLambda,
+    CalcFluxLeL1,
+    CalcFluxMeanShf,
     CorrectCounts,
     DerivationMethod,
+    EddyProRun,
     IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
@@ -19,7 +27,9 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
     SolarZenith,
+    VolumetricWaterContent,
 )
+from dritimeseriesprocessor.utils.enums import MethodType
 from utils.data_creation import dataframe_to_timeframe
 
 
@@ -32,7 +42,7 @@ class SimpleAddition(DerivationMethod):
 
 
 def create_method_config(
-    data: dict[str, list[float]],
+    data: dict[str, list[float | None]],
     output_col: str,
 ) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
@@ -535,7 +545,7 @@ class TestIsSnowDay:
 
 
 class TestCorrectCounts:
-    def test_calculation(self) -> None:
+    def test_correct_counts(self) -> None:
         """Test corrected mod counts are the product of raw counts and all three correction factors.
         cts_mod values from cosmos-holln on 2016-07-27.
         Factor values taken from the holln expected outputs in TestNeutronIntensityFactor,
@@ -553,3 +563,247 @@ class TestCorrectCounts:
         expected = dataframe_to_timeframe(pl.DataFrame({"correct_counts": [885.847, 822.629, 979.390, 851.902]}))
         result = CorrectCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
+
+
+class TestVolumetricWaterContent:
+    def test_volumetric_water_content(self) -> None:
+        """Test calculate_vwc using cosmos-holln site annotations.
+        cts_mod_corr values include 0, the corrected counts from TestCorrectCounts (all below n_min),
+        and representative valid-range counts.
+        """
+        config = create_method_config(
+            {"cts_mod_corr": [0.0, 885.847, 822.629, 979.390, 851.902, 1300.0, 1500.0, 1800.0, 2000.0]},
+            "vwc",
+        )
+        # Annotations from cosmos-holln
+        config.params["n0_mod"] = 2710.16689
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+        config.params["n_min"] = 1204.50827
+        config.params["n_max"] = 2281.33025
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"vwc": [100.0, 100.0, 100.0, 100.0, 100.0, 61.311, 28.964, 11.083, 5.172]})
+        )
+        result = VolumetricWaterContent().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestCalcFluxMeanShf:
+    def test_averages_two_shf_plates(self) -> None:
+        config = create_method_config(
+            {"g_plate_1_1_1": [10.0, 20.0], "g_plate_1_1_2": [30.0, 40.0]},
+            "shf",
+        )
+        result = CalcFluxMeanShf().run(config)
+        assert list(result.df["shf"]) == [20.0, 30.0]
+
+    def test_null_in_one_plate_returns_non_null_value(self) -> None:
+        config = create_method_config(
+            {"g_plate_1_1_1": [None, 20.0], "g_plate_1_1_2": [10.0, None]},
+            "shf",
+        )
+        result = CalcFluxMeanShf().run(config)
+        assert result.df["shf"][0] == 10.0
+        assert result.df["shf"][1] == 20.0
+
+
+class TestCalcFluxLambda:
+    def test_lambda_formula(self) -> None:
+        # lambda = 2.501 - 0.002361 * Ta
+        config = create_method_config({"airtemp_c": [0.0, 20.0]}, "lambda")
+        result = CalcFluxLambda().run(config)
+        assert_frame_equal(
+            result.df.select("lambda"),
+            pl.DataFrame({"lambda": [2.501, 2.501 - 0.002361 * 20.0]}),
+            check_exact=False,
+            abs_tol=1e-6,
+        )
+
+
+class TestCalcFluxLeL1:
+    def test_le_equals_rn_minus_shf_minus_h(self) -> None:
+        # LE_L1 = Rn - SHF - H  →  300 - 50 - 100 = 150
+        config = create_method_config(
+            {"t_nr_avg": [300.0], "shf": [50.0], "h": [100.0]},
+            "le",
+        )
+        result = CalcFluxLeL1().run(config)
+        assert result.df["le"][0] == 150.0
+
+    def test_null_propagates(self) -> None:
+        config = create_method_config(
+            {"t_nr_avg": [None], "shf": [50.0], "h": [100.0]},
+            "le",
+        )
+        result = CalcFluxLeL1().run(config)
+        assert result.df["le"][0] is None
+
+
+class TestCalcFluxEt:
+    def test_et_formula(self) -> None:
+        # ET = LE / (2.501 - 0.002361 * Ta) / 1000
+        ta = 20.0
+        le = 150.0
+        lv = 2.501 - 0.002361 * ta
+        expected_et = le / lv / 1000.0
+
+        config = create_method_config({"le": [le], "airtemp_c": [ta]}, "et")
+        result = CalcFluxEt().run(config)
+        assert result.df["et"][0] == pytest.approx(expected_et, abs=1e-9)
+
+    def test_null_le_produces_null_et(self) -> None:
+        config = create_method_config({"le": [None], "airtemp_c": [20.0]}, "et")
+        result = CalcFluxEt().run(config)
+        assert result.df["et"][0] is None
+
+
+def _make_eddypro_config(
+    container: MagicMock,
+    dataset_repository: dict,
+    start_date: datetime = datetime(2024, 1, 1),
+    end_date: datetime = datetime(2024, 1, 31),
+    site_metadata: dict | None = None,
+    file_duration: int = 30,
+) -> DataProcessingMethodConfig:
+    return DataProcessingMethodConfig(
+        method="eddypro-run",
+        params={
+            "container": container,
+            "dataset_repository": dataset_repository,
+            "start_date": start_date,
+            "end_date": end_date,
+            "site_metadata": site_metadata or {},
+            "file_duration": file_duration,
+        },
+    )
+
+
+class TestEddyProRun:
+    def test_raises_when_no_load_local_copy_dependency(self) -> None:
+        """Tests that a ValueError is raised when no LOAD_LOCAL_COPY dependency is present."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["dep-1"]
+        dep = MagicMock()
+        dep.method_type.return_value = MethodType.LOAD
+
+        config = _make_eddypro_config(container, {"dep-1": dep})
+
+        with pytest.raises(ValueError):
+            EddyProRun().run(config)
+
+    def test_raises_when_multiple_load_local_copy_dependencies(self) -> None:
+        """Tests that a ValueError is raised when more than one LOAD_LOCAL_COPY dependency is found."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["dep-1", "dep-2"]
+        dep1, dep2 = MagicMock(), MagicMock()
+        dep1.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        dep2.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+
+        config = _make_eddypro_config(container, {"dep-1": dep1, "dep-2": dep2})
+
+        with pytest.raises(ValueError):
+            EddyProRun().run(config)
+
+    def test_raises_when_staged_dir_is_none(self) -> None:
+        """Tests that a ValueError is raised when the raw dependency has not been staged locally."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = None
+        raw_dep.ts_id = "raw-dep"
+
+        config = _make_eddypro_config(container, {"raw-dep": raw_dep})
+
+        with pytest.raises(ValueError):
+            EddyProRun().run(config)
+
+    def test_calls_pipeline_with_staged_dir_and_date_range(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Tests that EddyProPipeline.run is called with the raw staged directory and the date range."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        container.source_site = "flux-plynl"
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = tmp_path
+        raw_dep.ts_id = "raw-dep"
+
+        start = datetime(2024, 1, 1)
+        end = datetime(2024, 1, 31)
+
+        mock_pipeline = MagicMock()
+        mock_pipeline.run.return_value = pl.DataFrame({"time": []})
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            lambda *args, **kwargs: mock_pipeline,
+        )
+
+        EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}, start_date=start, end_date=end))
+
+        call_kwargs = mock_pipeline.run.call_args.kwargs
+        assert call_kwargs["raw_data_dir"] == tmp_path
+        assert call_kwargs["start_date"] == start
+        assert call_kwargs["end_date"] == end
+
+    def test_sets_container_resolution_from_file_duration(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        """Tests that the container's resolution and periodicity are set from the file_duration param."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        container.source_site = "flux-plynl"
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = tmp_path
+        raw_dep.ts_id = "raw-dep"
+
+        mock_pipeline = MagicMock()
+        mock_pipeline.run.return_value = pl.DataFrame({"time": []})
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            lambda *args, **kwargs: mock_pipeline,
+        )
+
+        EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}, file_duration=30))
+
+        assert container.time_column_name == "time"
+        assert container.resolution == "PT30M"
+        assert container.periodicity == container.resolution
+
+    def test_returns_container_data(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        """Tests that the method returns the container's data after init_timeframe is called."""
+        container = MagicMock()
+        container.all_dependencies.return_value = ["raw-dep"]
+        container.source_site = "flux-plynl"
+        raw_dep = MagicMock()
+        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        raw_dep.staged_dir = tmp_path
+        raw_dep.ts_id = "raw-dep"
+
+        mock_pipeline = MagicMock()
+        mock_pipeline.run.return_value = pl.DataFrame({"time": []})
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            MagicMock,
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            lambda *args, **kwargs: mock_pipeline,
+        )
+
+        result = EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}))
+
+        container.init_timeframe.assert_called_once()
+        assert result == container.data

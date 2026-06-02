@@ -17,7 +17,7 @@ TEST_DATA_MOCK_METADATA = TEST_DATA_INPUT_DIR / "mock_metadata_api"
 END_TO_END = Path(__file__).parent.parent / "end_to_end"
 
 
-def discover_file_test_cases(directory: str | Path, glob_pattern: str = "*") -> list[ParameterSet]:
+def discover_file_test_cases(directory: Path, glob_pattern: str = "*") -> list[ParameterSet]:
     """Discover all files in a directory for use with @pytest.mark.parametrize.
 
     Args:

@@ -83,7 +83,7 @@ class TestSortConfigs:
         configs = {config1, config2, config3}
 
         pipeline = InfillPipeline()
-        result = pipeline.sort_configs(configs)
+        result = pipeline.sort_configs(configs)  # type: ignore[arg-type]
 
         assert result == [config2, config3, config1]
 

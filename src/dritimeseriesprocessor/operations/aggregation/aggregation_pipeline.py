@@ -68,6 +68,8 @@ class AggregationPipeline(OperationPipeline):
         """
         if container.method_config is None:
             raise ValueError(f"No aggregation config found for: {container.ts_id}")
+        if container.periodicity is None:
+            raise ValueError(f"No periodicity found for: {container.ts_id}")
 
         method_config = container.method_config
         for config in container.method_config.method_configs:
@@ -76,12 +78,12 @@ class AggregationPipeline(OperationPipeline):
         return {method_config}
 
     def get_flag_column(self, column: str) -> str:
-        """Not required for aggregation method."""
-        pass
+        """Not used by aggregation - flags are not applied."""
+        raise NotImplementedError
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
-        """Not required for aggregation method."""
-        pass
+        """Not used by aggregation - flags are not applied."""
+        raise NotImplementedError
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags after aggregation method has been applied.

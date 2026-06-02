@@ -12,7 +12,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
     check_common_attributes,
     group_containers,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, MethodType, ProcessingLevel
 from utils.data_creation import make_time_series_container
 
 
@@ -21,10 +21,59 @@ def make_daily_df(n_rows: int = 3, col_name: str = "value") -> pl.DataFrame:
     return pl.DataFrame({"time": dates, col_name: list(range(n_rows))})
 
 
+class TestS3Bucket:
+    def test_parses_bucket_from_distribution_url(self) -> None:
+        c = make_time_series_container("a")
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
+        c.distribution_url = "s3://my-bucket/some/path/"
+        assert c.s3_bucket == "my-bucket"
+
+    def test_falls_back_to_source_bucket_for_timeseries(self) -> None:
+        c = make_time_series_container("a")
+        c.dataset_type = DatasetType.TIMESERIES_DATASET
+        c.distribution_url = "s3://ignored-bucket/path/"
+        assert c.s3_bucket == c.source_bucket
+
+    def test_falls_back_to_source_bucket_when_no_distribution_url(self) -> None:
+        c = make_time_series_container("a")
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
+        c.distribution_url = None
+        assert c.s3_bucket == c.source_bucket
+
+
+class TestS3DatasetPath:
+    def test_parses_path_from_distribution_url(self) -> None:
+        c = make_time_series_container("a")
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
+        c.distribution_url = "s3://my-bucket/Flux/"
+        assert c.s3_dataset_path == "Flux"
+
+    def test_strips_trailing_slash(self) -> None:
+        c = make_time_series_container("a")
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
+        c.distribution_url = "s3://my-bucket/deep/nested/path/"
+        assert c.s3_dataset_path == "deep/nested/path"
+
+    def test_falls_back_to_source_dataset_for_timeseries(self) -> None:
+        c = make_time_series_container("a")
+        c.dataset_type = DatasetType.TIMESERIES_DATASET
+        c.distribution_url = "s3://ignored/path/"
+        assert c.s3_dataset_path == c.source_dataset
+
+    def test_falls_back_to_source_dataset_when_no_distribution_url(self) -> None:
+        c = make_time_series_container("a")
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
+        c.distribution_url = None
+        assert c.s3_dataset_path == c.source_dataset
+
+
 class TestCheckCommonAttributes:
-    def test_empty_containers_returns_none(self) -> None:
-        assert check_common_attributes([], "a") is None
-        assert check_common_attributes([], ["a", "b"]) is None
+    def test_empty_containers_raises(self) -> None:
+        """Tests that passing an empty container list raises a ValueError."""
+        with pytest.raises(ValueError):
+            check_common_attributes([], "a")
+        with pytest.raises(ValueError):
+            check_common_attributes([], ["a", "b"])
 
     containers = [
         make_time_series_container("a"),
@@ -91,6 +140,22 @@ class TestGroupContainers:
         assert result == {("a",): [a1, a2], ("b",): [b]}
 
 
+class TestTimeColumnName:
+    def test_time_column_name_can_be_none(self) -> None:
+        container = make_time_series_container("a")
+        container.time_column_name = None
+
+        assert container.time_column_name is None
+
+    def test_init_timeframe_skips_when_df_empty_and_time_column_name_is_none(self) -> None:
+        container = make_time_series_container("a")
+        container.time_column_name = None
+
+        container.init_timeframe(pl.DataFrame({"time": [], "value": []}).cast({"time": pl.Datetime}))
+
+        assert container.data is None
+
+
 class TestInitTimeframe:
     def test_empty_df_leaves_data_none(self) -> None:
         container = make_time_series_container("a")
@@ -105,12 +170,12 @@ class TestInitTimeframe:
     def test_timeframe_metadata_contains_source_column(self) -> None:
         container = make_time_series_container("a")
         container.init_timeframe(make_daily_df())
-        assert container.data.metadata == {"column_name": container.source_column}
+        assert container.data.metadata == {"column_name": container.source_column}  # type: ignore[union-attr]
 
     def test_timeframe_uses_container_time_column_name(self) -> None:
         container = make_time_series_container("a")
         container.init_timeframe(make_daily_df())
-        assert container.data.time_name == container.time_column_name
+        assert container.data.time_name == container.time_column_name  # type: ignore[union-attr]
 
 
 def _make_config(

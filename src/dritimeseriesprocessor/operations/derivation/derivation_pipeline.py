@@ -30,13 +30,15 @@ class DerivationPipeline(OperationPipeline):
         """Apply the given derivation method to the TimeFrame data.
 
         Args:
-            tf: Time series frame to derive.
+            tf: Time series frame to derive, or `None` for generate-from-scratch derivations.
             config: Configuration of the derivation method.
             dataset_repository: Repository for accessing additional datasets.
 
         Returns:
             Result of applying the derivation method.
         """
+        config.params["dataset_repository"] = dataset_repository
+
         dep_ids = []
         for key in ("dep_ts", "load_dep_ts"):
             values = config.params.get(key) or []
@@ -47,7 +49,8 @@ class DerivationPipeline(OperationPipeline):
 
         for dep_id in dep_ids:
             dep_container = dataset_repository[dep_id]
-            config.params[dep_container.source_column.lower()] = dep_container.data
+            if dep_container.source_column:
+                config.params[dep_container.source_column.lower()] = dep_container.data
 
         method = DerivationMethod.get(config.method)
         tf = method.run(config)
@@ -71,16 +74,17 @@ class DerivationPipeline(OperationPipeline):
             cfg.params["output_col"] = container.source_column
             cfg.params["resolution"] = container.resolution
             cfg.params["periodicity"] = container.periodicity
+            cfg.params["container"] = container
 
         return {container.method_config}
 
     def get_flag_column(self, column: str) -> str:
-        """Not required for aggregation method."""
-        pass
+        """Not used by derivation - flags are not applied."""
+        raise NotImplementedError
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
-        """Not required for aggregation method."""
-        pass
+        """Not used by derivation - flags are not applied."""
+        raise NotImplementedError
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Not yet implemented for derivation method."""

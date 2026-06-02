@@ -4,7 +4,7 @@ An orchestration class used to run for processing operations for corrections, qu
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable, TypeVar
+from typing import Iterable
 
 import polars as pl
 import time_stream as ts
@@ -23,10 +23,6 @@ from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMetho
 from dritimeseriesprocessor.utils.enums import OperationType
 
 logger = logging.getLogger(__name__)
-
-
-T = TypeVar("T")
-U = TypeVar("U")
 
 
 OPERATION_METHOD_REGISTRY = {
@@ -59,7 +55,7 @@ class OperationPipeline(ABC):
     @abstractmethod
     def apply(
         self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
-    ) -> T:
+    ) -> ts.TimeFrame:
         """Apply a specific method to the time series data.
 
         Args:
@@ -110,7 +106,7 @@ class OperationPipeline(ABC):
         pass
 
     @abstractmethod
-    def compute_flag_mask(self, tf: ts.TimeFrame, result: T, column_name: str) -> U:
+    def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series | pl.Expr:
         """Compute a boolean mask indicating which values should be flagged.
 
         Args:
@@ -148,7 +144,7 @@ class OperationPipeline(ABC):
         tf = container.data
 
         # Initialise the flags if required
-        if self.flag_system_name:
+        if self.flag_system_name and tf is not None:
             col_name = tf.metadata["column_name"]
             self._initialise_flag_system(tf)
             self._initialise_flag_column(tf, col_name)
@@ -163,14 +159,15 @@ class OperationPipeline(ABC):
                 logger.info(f"Operation: {self.operation_type} | {cfg.method}")
 
                 # Run the method
-                tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)
+                tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)  # type: ignore[arg-type]
                 tf = self.apply_rounding(tf, cfg)
 
         # Update core flags
-        tf = self.core_flag_updater(tf)
+        tf = self.core_flag_updater(tf)  # type: ignore[arg-type] - we know tf will exist at this point
 
-        # Ensure time column name of tf is same as container's
-        tf = tf.rename_time_column(container.time_column_name)
+        # Ensure time column name of tf is same as container's (not set for ObservationDatasets)
+        if container.time_column_name is not None:
+            tf = tf.rename_time_column(container.time_column_name)
 
         return tf
 
@@ -181,10 +178,10 @@ class OperationPipeline(ABC):
             tf: TimeFrame to initialise flags on.
         """
         try:
-            tf.get_flag_system(self.flag_system_name)
+            tf.get_flag_system(self.flag_system_name)  # type: ignore[arg-type]
         except FlagSystemNotFoundError:
-            flag_system = {name: m.flag_value for name, m in self.registry.items()}
-            tf.register_flag_system(self.flag_system_name, flag_system)
+            flag_system = {name: m.flag_value for name, m in self.registry.items()}  # type: ignore[arg-type]
+            tf.register_flag_system(self.flag_system_name, flag_system)  # type: ignore[arg-type]
 
     def _initialise_flag_column(self, tf: ts.TimeFrame, col_name: str) -> None:
         """Initialise the flag column for this operation (if not already initialised).
@@ -195,7 +192,7 @@ class OperationPipeline(ABC):
         """
         flag_column = self.get_flag_column(col_name)
         if flag_column not in tf.flag_columns:
-            tf.init_flag_column(self.flag_system_name, flag_column)
+            tf.init_flag_column(self.flag_system_name, flag_column)  # type: ignore[arg-type]
 
     def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> None:
         """Apply a flag to the flag column
@@ -222,7 +219,7 @@ class OperationPipeline(ABC):
         Returns:
             TimeFrame with rounded data.
         """
-        round_decimals = config.params.get("round")
+        round_decimals: int | None = config.params.get("round")
         if round_decimals is None:
             return tf
 

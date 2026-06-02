@@ -1,6 +1,6 @@
 # Time Series Data Processing Pipeline
 
-A pipeline for processing environmental time series data from monitoring networks. The system performs corrections, 
+A pipeline for processing environmental time series data from monitoring networks. The system performs corrections,
 quality control, infilling, aggregation, and derivation operations on meteorological and hydrological measurements.
 
 ## Overview
@@ -17,10 +17,10 @@ This pipeline processes time series data through a metadata-driven approach:
 The processor CLI is invoked using:
 
 ```bash
-python -m dritimeseriesprocessor ... 
+python -m dritimeseriesprocessor ...
 ```
 
-Use one of two (mutually exclusive) processing modes, or the utility command:
+Use one of three (mutually exclusive) processing modes, or the utility command:
 
 1. Explicit: `from-selection`
     - Individual sets of processing arguments
@@ -34,7 +34,7 @@ Use one of two (mutually exclusive) processing modes, or the utility command:
      [--selection SITE2 VARIABLE2 PERIODICITY2 ...]
     ```
 
-    **Example**:
+   **Example**:
 
     ```bash
     python -m dritimeseriesprocessor from-selection
@@ -58,7 +58,7 @@ Use one of two (mutually exclusive) processing modes, or the utility command:
      [--periodicities PER1 PER2 ...]
     ```
 
-    **Example**:
+   **Example**:
 
     ```bash
     python -m dritimeseriesprocessor from-cross-product
@@ -69,7 +69,28 @@ Use one of two (mutually exclusive) processing modes, or the utility command:
      --periodicities PT30M
     ```
 
-3. List sites: `list-sites`
+3. From datasets: `from-datasets`
+    - Request one or more datasets directly by their metadata API ID
+    - Works for both `TimeSeriesDataset` and `ObservationDataset` records
+    - Does not require `--network`
+
+    ```bash
+    python -m dritimeseriesprocessor from-datasets
+     [--lookback DURATION | --start-date YYYY-MM-DD]
+     [--end-date YYYY-MM-DD]
+     --datasets DATASET_ID [DATASET_ID2 ...]
+    ```
+
+    **Example**:
+
+    ```bash
+    python -m dritimeseriesprocessor from-datasets
+     --datasets flux-plynl-processed
+     --start-date 2024-08-14
+     --end-date 2024-08-15
+    ```
+
+4. List sites: `list-sites`
     - Writes a JSON array of active site IDs for a network to `/tmp/sites.json`
     - Sites not open during the requested date window are excluded
 
@@ -80,7 +101,7 @@ Use one of two (mutually exclusive) processing modes, or the utility command:
      [--end-date YYYY-MM-DD]
     ```
 
-    **Example**:
+   **Example**:
 
     ```bash
     python -m dritimeseriesprocessor list-sites --network cosmos --lookback P2D
@@ -121,40 +142,54 @@ docker compose up -d
 ```
 
 This initialises:
+
 - LocalStack S3 buckets with sample data
 - Prometheus Pushgateway for metrics (accessible at `localhost:9091`)
 
-### Linting
-Linting uses ruff using the config in pyproject.toml
-```
-ruff check --fix
-```
+### Common commands
 
-### Formatting
-Formatting uses ruff using the config in pyproject.toml which follows the default black settings.
-```
-ruff format .
-```
+Run `make help` to list all available targets. The most commonly used ones:
 
-### Testing
-Testing is done using pytest and tests are in the /tests directory.
-```
-pytest
-```
+| Command              | Description                        |
+|----------------------|------------------------------------|
+| `make qa`            | Format, lint, type check, and test |
+| `make test`          | Run tests                          |
+| `make ruff`          | Run ruff format and lint checks    |
+| `make type-check`    | Type check with pyright            |
+| `make docker-build`  | Build the Docker image locally     |
+| `make docker-run`    | Run the Docker image locally       |
+| `make install-hooks` | Configure git to use `.githooks/`  |
 
 Test data is automatically loaded into LocalStack S3 on container initialization.
 
 #### Detecting tests using VSCode
-VSCode has a useful test runner, allowing running and debugging of all tests within the repository. To allow VSCode to detect the tests, use the `Configure Tests` option accessed either via the help menu (select "Show All Commands" and type "Configure Tests" in the search bar), or via the test runner panel and select the "Configure Tests" button if it is available. To configure the tests, select `pytest` as the test runner framework and `testing` as the directory containing the tests.
 
-### Pre commit hooks
-Run below to set up the pre-commit hooks.
+VSCode has a useful test runner, allowing running and debugging of all tests within the repository. To allow VSCode
+to detect the tests, use the `Configure Tests` option accessed either via the help menu (select "Show All Commands"
+and type "Configure Tests" in the search bar), or via the test runner panel and select the "Configure Tests" button
+if it is available. To configure the tests, select `pytest` as the test runner framework and `testing` as the
+directory containing the tests.
+
+### Pre-commit hooks
+
+Run the following to set up the pre-commit hooks:
+
+```bash
+make install-hooks
 ```
-git config --local core.hooksPath .githooks/
-```
-This will set this repo up to use the git hooks in the `.githooks/` directory.
+
 The hook runs `ruff format --check` and `ruff check` to prevent commits that are not formatted correctly or have errors.
-The hook intentionally does not alter the files, but informs the user which command to run.
+The hook intentionally does not alter files, but tells you which command to run.
+
+## Versioning and Releases
+
+This project follows [Semantic Versioning](https://semver.org/) (`major.minor.patch`). The `patch` component is used
+as an auto-incrementing build number: a local `pre-push` git hook bumps it on every push that doesn't already include
+a version change. Install the hook once per clone with `make install-hooks`. `major` and `minor` are bumped by hand
+with `make bump-minor` or `make bump-major` when you want a new release line. Every merge to `production` automatically
+builds the production Docker image, tags the commit, and creates a GitHub release.
+
+See [Versioning and Releases](docs/versioning_and_releases.md) for the full flow, examples, and the workflows involved.
 
 ## Configuration
 
@@ -164,6 +199,7 @@ Configuration is environment-aware, loading from different sources based on the 
 - **Staging/Production**: Environment variables directly
 
 Required configuration keys:
+
 - `AWS_DEFAULT_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
 - `level_0_bucket`, `processed_bucket`
 - `metadata_api_url`

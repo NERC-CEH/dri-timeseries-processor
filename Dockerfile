@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=src/dritimeseriesprocessor/__init__.py,target=src/dritimeseriesprocessor/__init__.py \
     uv sync --locked --no-install-project --no-dev
-COPY pyproject.toml uv.lock /app
+COPY pyproject.toml uv.lock LICENSE README.md /app
 COPY .git /app/.git
 COPY src /app/src
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -36,10 +36,6 @@ COPY --from=builder --chown=app:app /app /app
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH" VIRTUAL_ENV="/app/.venv"
 
-# Unsetting entrypoint from parent image
-ENTRYPOINT []
-
-CMD ["python", "-m", "dritimeseriesprocessor", "from-cross-product", "--network", "cosmos", "--sites", "cosmos-alic1",  "cosmos-bunny", "--periodicities", "PT30M", "--variables", "TA",  "PA",  "WS",  "WD", "--lookback", "P2D"]
 
 # Build production container (with EddyPro)
 FROM prod-base AS prod-eddypro

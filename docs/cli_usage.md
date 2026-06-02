@@ -17,17 +17,18 @@ The CLI accepts arguments defining:
 
  - **what** datasets to process
  - **over what time period**
- - **for which network**
+ - **for which network** (not required for `from-datasets`)
 
 ## Processing Modes
 
-The CLI supports two dataset selection modes and one utility command:
+The CLI supports three dataset selection modes and one utility command:
 
-1. **explicit**: Allowing users to request datasets explicitly or;
-2. **cross-product**: Allowing user to build dataset combinations.
-3. **list-sites**: Listing all active sites for a network.
+1. **explicit** (`from-selection`): Request datasets by site, variable, and periodicity.
+2. **cross-product** (`from-cross-product`): Build dataset combinations across dimensions.
+3. **from-datasets** (`from-datasets`): Request datasets directly by their metadata API ID.
+4. **list-sites**: List all active sites for a network.
 
-The two processing modes are **mutually exclusive**.
+The processing modes are **mutually exclusive**.
 
 ### Explicit Mode
 
@@ -120,6 +121,45 @@ python -m dritimeseriesprocessor cross-product
   --variables TA PA
 ```
 
+### From-Datasets Mode
+
+Request one or more datasets directly by their metadata API ID. Works for both `TimeSeriesDataset` and
+`ObservationDataset` records - the dataset type does not need to be known in advance.
+
+This mode does not require `--network` because the dataset ID is self-contained.
+
+**Use when you need**:
+
+* To process a specific named dataset (e.g. a flux observation bundle)
+* To trigger processing without knowing a dataset's site or variable dimensions
+* To process datasets of different types in a single run
+
+**Syntax**:
+
+```bash
+python -m dritimeseriesprocessor from-datasets
+  [--lookback DURATION | --start-date YYYY-MM-DD]
+  [--end-date YYYY-MM-DD]
+  --datasets DATASET_ID [DATASET_ID2 ...]
+```
+
+**Example**:
+
+```bash
+python -m dritimeseriesprocessor from-datasets \
+  --datasets flux-plynl-processed \
+  --start-date 2024-08-14 \
+  --end-date 2024-08-15
+```
+
+Multiple datasets can be listed together:
+
+```bash
+python -m dritimeseriesprocessor from-datasets \
+  --datasets flux-site1-processed flux-site2-processed \
+  --lookback P7D
+```
+
 ### List-Sites Mode
 
 Outputs a JSON array of active site IDs for a given network to `/tmp/sites.json`. Sites whose operating period does
@@ -190,11 +230,11 @@ Common periodicities (ISO8601 duration format):
 
 ## Core Arguments
 
-Both modes share these parameters:
+All modes share the date range arguments. Network is shared by all modes except `from-datasets`.
 
 ### Network Selection
 
-**Required**. Specify which network to process:
+Required for `from-selection`, `from-cross-product`, and `list-sites`. Not used by `from-datasets`.
 
 ```bash
 --network {cosmos|fdri}

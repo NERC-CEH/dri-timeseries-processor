@@ -36,7 +36,7 @@ from driutils.metadata_api.api_manager import MetadataAPIManager
 from tests.utils.fixture_helpers import END_TO_END, TEST_DATA_MOCK_METADATA, load_json_file
 from tests.utils.metadata_helpers import E2E_INPUT_BUCKET, E2E_OUTPUT_BUCKET, stable_file_key
 
-from dritimeseriesprocessor.cli.selection import SelectionOption
+from dritimeseriesprocessor.cli.selection import DimensionSelection, Selection
 from dritimeseriesprocessor.configuration.app_config import app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
@@ -55,7 +55,7 @@ class MetadataCacheSession(requests.Session):
     def __init__(self) -> None:
         super().__init__()
 
-    def request(self, method: str, url: str, **kwargs) -> requests.Response:
+    def request(self, method: str, url: str, **kwargs) -> requests.Response:  # type: ignore[override]
         """Intercept the API call, then send the request and cache its JSON response to file.
 
         Args:
@@ -153,10 +153,15 @@ def main() -> None:
         variables = test_case["measured_variables"] + test_case["derived_variables"] + test_case["aggregated_variables"]
 
         # build the graph!
-        selection = [SelectionOption(site_uris, variables, test_case["periodicities"])]
-        graph = DatasetDependencyGraph(
-            network=test_case["network"], selection=selection, metadata_router=metadata_router
-        )
+        selection: list[Selection] = [
+            DimensionSelection(
+                network=test_case["network"],
+                sites=site_uris,
+                variables=variables,
+                periodicities=test_case["periodicities"],
+            )
+        ]
+        graph = DatasetDependencyGraph(metadata_router, selection)
         graph.build()
 
 

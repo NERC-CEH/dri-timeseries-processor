@@ -6,14 +6,18 @@ import time_stream as ts
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
+from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
+from dritimeseriesprocessor.utils.enums import MethodType, OperationType
 from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
+from dritimeseriesprocessor.utils.urls import SITE_URI
 
 
 class DerivationMethod(Operation, ABC):
-    operation_type: OperationType.DERIVATION
+    operation_type = OperationType.DERIVATION
     inputs: ClassVar[tuple]
+    config: DataProcessingMethodConfig
 
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         """Execute the common workflow to carry out a derivation calculation.
@@ -74,19 +78,7 @@ class DerivationMethod(Operation, ABC):
 
 @DerivationMethod.register
 class NetRadiation(DerivationMethod):
-    """Calculate net radiation
-
-    Expects MethodConfig.params to contain:
-    {
-        "swin": <TimeFrame> Incoming shortwave radiation [W m-2]
-        "swout": <TimeFrame> Outgoing shortwave radiation [W m-2]
-        "lwin": <TimeFrame> Incoming longwave radiation [W m-2]
-        "lwout": <TimeFrame> Outgoing longwave radiation [W m-2]
-        "output_col": <str> Required name of output
-        "resolution": <str> Expected output resolution
-        "periodicity": <str> Expected output periodicity
-    }
-    """
+    """Calculate net radiation - the difference between the downward and upward total radiation."""
 
     name = "calculate_rn"
     inputs = ("swin", "swout", "lwin", "lwout")
@@ -95,7 +87,11 @@ class NetRadiation(DerivationMethod):
         """Calculate net radiation (rn) [W m-2]
 
         Args:
-            columns: Dict with keys of required columns for the calculation.
+            columns: Dict with keys of required columns for the calculation
+                - swin: Incoming shortwave radiation [W m-2]
+                - swout: Outgoing shortwave radiation [W m-2]
+                - lwin: Incoming longwave radiation [W m-2]
+                - lwout: Outgoing longwave radiation [W m-2]
 
         Returns:
             Polars expression computing rn
@@ -105,7 +101,11 @@ class NetRadiation(DerivationMethod):
 
 @DerivationMethod.register
 class MeanSoilHeatFlux(DerivationMethod):
-    """Calculate the mean soil heat flux (g) from inputs from multiple soil heat flux measurements."""
+    """Calculate the mean soil heat flux from inputs from multiple soil heat flux measurements.
+
+    Soil heat flux defines the amount of thermal energy transferred through the soil, in a vertical
+    direction, per unit of time.
+    """
 
     name = "calc_mean_g"
     inputs = ("g1", "g2")
@@ -114,7 +114,9 @@ class MeanSoilHeatFlux(DerivationMethod):
         """Calculate mean soil heat flux (g) [MJ m-2 30min-1]
 
         Args:
-            columns: Dict with keys of required columns for the calculation.
+            columns: Dict with keys of required columns for the calculation
+                - g1: Soil heat flux measurement 1 [W m-2]
+                - g2: Soil heat flux measurement 2 [W m-2]
 
         Returns:
             Polars expression computing g
@@ -127,20 +129,26 @@ class MeanSoilHeatFlux(DerivationMethod):
 
 @DerivationMethod.register
 class MeanSeaLevelPressure(DerivationMethod):
-    """Calculate the mean sea level pressure (mslp) from inputs PA and TA."""
+    """Adjust measured atmospheric pressure to its sea-level equivalent.
+
+    Measured pressure depends on the altitude of the sensor. This converts it to the pressure that
+    would be observed at sea level, using the site altitude and air temperature to account for the
+    decrease in pressure with height according to the standard atmosphere model.
+    """
 
     name = "calculate_mslp"
     inputs = ("pa", "ta")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean sea level pressure (mslp) [hPa]
-        See US Standard Atmosphere, eq. 33a:
-        https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf
+
+        See US Standard Atmosphere, eq. 33a: https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf
         See also: https://www.fao.org/4/x0490e/x0490e07.htm
+
         Args:
-            columns: Dict with keys of required columns for the calculation: pa and ta.
-            -pa: Atmospheric Pressure [hPa]
-            -ta: Air Temperature [Celsius]
+            columns: Dict with keys of required columns for the calculation.
+                - pa: Atmospheric Pressure [hPa]
+                - ta: Air Temperature [Celsius]
 
         Returns:
             Polars expression computing mslp
@@ -156,29 +164,8 @@ class MeanSeaLevelPressure(DerivationMethod):
 class PotentialEvapotranspiration30Min(DerivationMethod):
     """Calculate Potential Evapotranspiration (PET) (30 min).
 
-    Steps taken from Penman-Monteith Evapotranspiration (FAO-56 Method)
-        https://www.fao.org/4/x0490e/x0490e06.htm#equation
-
-        For hourly examples see eq53:
-        https://www.fao.org/4/x0490e/x0490e08.htm
-
-        "With the advent of electronic, automated weather stations, weather data are increasingly reported for
-            hourly or shorter periods ... When applying the FAO Penman-Monteith equation on an hourly or shorter
-            timescale, the equation and some of the procedures for calculating meteorological data should be
-            adjusted for the smaller time step"
-
-    Expects MethodConfig.params to contain:
-    {
-        "rn": <TimeFrame> Net radiation [MJ m-2 30min-1]
-        "g": <TimeFrame> Soil heat flux density [MJ m-2 30min-1]
-        "ta": <TimeFrame> Air temperature [degC]
-        "rh": <TimeFrame> Relative humidity [%]
-        "ws": <TimeFrame> Wind speed at 2m height [ms-1]
-        "pa": <TimeFrame> Atmospheric pressure [hPa]
-        "output_col": <str> Required name of output
-        "resolution": <str> Expected output resolution
-        "periodicity": <str> Expected output periodicity
-    }
+    PET is the maximum amount of water that could be evapotranspirated in a given climate, given a theoretical
+    continuous expanse of vegetation covering the whole ground and a continuous supply of water.
     """
 
     name = "calculate_pe"
@@ -187,11 +174,26 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate potential evapotranspiration (pet) [mm day-1]
 
+        Steps taken from Penman-Monteith Evapotranspiration (FAO-56 Method): https://www.fao.org/4/x0490e/x0490e06.htm
+
+        For hourly examples see eq53: https://www.fao.org/4/x0490e/x0490e08.htm
+        "With the advent of electronic, automated weather stations, weather data are increasingly reported for
+            hourly or shorter periods ... When applying the FAO Penman-Monteith equation on an hourly or shorter
+            timescale, the equation and some of the procedures for calculating meteorological data should be
+            adjusted for the smaller time step"
+
         Args:
             columns: Dict with keys of required columns for the calculation.
+                - rn:  Net radiation [MJ m-2 30min-1]
+                - g: Soil heat flux density [MJ m-2 30min-1]
+                - ta:  Air temperature [degC]
+                - rh:  Relative humidity [%]
+                - ws:  Wind speed at 2m height [ms-1]
+                - pa:  Atmospheric pressure [hPa]
+                - wind_height: Height of wind sensor [m]
 
         Returns:
-            Polars expression computing pet
+            Polars expression computing PET
         """
         g = columns["g"]
         pa = columns["pa"]
@@ -209,17 +211,16 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
         gamma = self.psychrometric_constant(pa, lv)
         ws_2m = self.wind_speed_height_correction(ws, wind_height)
 
-        # Convert RN and G from W/m2 - MJ per 30 min (if upstream provides W/m2)
+        # Convert RN and G from W/m2 - MJ per 30 min (input provided as W/m2)
         rn_mj = rn * 0.0018
         g_mj = g * 0.0018
 
         # FAO constants
-        # Note: The Numerator and denominator constants for reference type and calculation time step are defined in the
-        # following references:
+        # The Numerator and denominator constants for reference type and calculation time step are defined in the
+        #   following references:
         #     Allen, R. G., Walter, I. A., Elliot, R. L., Howell, T.A., Itenfisu, D., Jensen, M. E.
         #         and Snyder, R. 2005. The ASCE standardized reference evapotranspiration equation. ASCE and American
         #         Society of Civil Engineers.
-        #
         #     FAO-56 Chapter 4 - Determination of ETo - "Hourly time step"
         #         https://www.fao.org/4/x0490e/x0490e08.htm
 
@@ -332,31 +333,49 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
 
 @DerivationMethod.register
 class AbsoluteHumidity(DerivationMethod):
-    """Calculate absolute humidity ('Q') from relative humidity and air temperature.
-    Required for water vapour correction to CRS counts.
-    Saturation vapour pressure, Psat (when relative humidity is 100%), is given by eq. 10 in Bolton's paper:
-    https://doi.org/10.1175/1520-0493(1980)108%3C1046:TCOEPT%3E2.0.CO;2
-    Relative humidity 100%:
-    Psat = 6.11 exp((17.67 T)/(T + 243.5))
-    Relative humidity of any value:
-    Psat = 6.11 exp((17.67 T)/(T + 243.5))*rh/100
-    Ideal gas formula: PV = nRT, => n = PV/(RT)
-    molecular weight of water = 18.02 grams/mol
-    Q = 18.02 * n
-    => Q = 6.11 exp((17.67 T)/(T + 243.5))*rh*18.02/(100*R*(ta + 273.15))
-         = 6.11 exp((17.67 T)/(T + 243.5))*rh*2.1674/(ta + 273.15)
-    Q units: gram m^-3
-    """
+    """Calculate absolute humidity (Q) - a measure of the actual amount of water vapor in the air."""
 
     name = "calculate_q"
     inputs = ("ta", "rh")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity Q [g m-3] (grams per cubic meter)
+
+        Steps to derive Q:
+
+        (1) Saturation vapour pressure [Bolton 1980, eq10: https://doi.org/10.1175/1520-0493(1980)108%3C1046:TCOEPT%3E2.0.CO;2]
+            (The vapour pressure when air is fully saturated (RH = 100%))
+            Psat = 6.11 exp((17.67 T) / (T + 243.5))
+
+        (2) Actual vapour pressure at any relative humidity (RH):
+            Psat = 6.11 exp((17.67 T) / (T + 243.5)) * RH/100
+
+        (3) Apply the ideal gas law:
+            PV = nRT, => n = PV/RT
+            [where P = Pressure of the gas, V = Volume occupied by the gas, R = universal gas constant, T = Temperature]
+
+            Set V=1 to get density per cubic metre
+            n = P / RT
+
+
+            Multiply by molecular weight of water = 18.02 grams/mol
+            Q = 18.02 * P / RT
+
+            Substitute Psat from step 2:
+
+            Q = (18.02 * 6.11 * exp((17.67 T) / (T + 243.5)) * RH/100) / RT
+
+        (4) Plug in the constants
+            R = 8.314 J mol-1 K-1
+            18.02 / 8.314 = 2.1674
+
+            Q = 6.11 * exp((17.67 T) / (T + 243.5)) * RH * 2.1674 / T
+
         Args:
             columns: Dict with keys of required columns for the calculation.
             - "ta": air temperature measured in Celsius.
             - "rh": relative humidity, measured as a percentage.
+
         Returns:
             Polars expression computing absolute humidity, Q
         """
@@ -371,25 +390,29 @@ class AbsoluteHumidity(DerivationMethod):
 
 @DerivationMethod.register
 class SolarZenith(DerivationMethod):
-    """
-    Calculate angle of the sun from the vertical [radians]
-    Taken from https://en.wikipedia.org/wiki/Solar_zenith_angle, with some approximations.
-
-    theta_s is solar zenith in radians; 0 = overhead, pi/2 = horizon, pi = nadir
-    cos(theta_s) > 0 means sun above horizon, proxy for daylight hours.
-    """
+    """Calculate Solar Zenith - the angle of the sun from the vertical."""
 
     name = "solar_zenith"
     inputs = ("swin",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """
-        Calculate angle of the sun from the vertical [radians]
-        Uses: site attribute LAT [degrees]
+        """Calculate angle of the sun from the vertical [radians]
+
+        Taken from https://en.wikipedia.org/wiki/Solar_zenith_angle, with some approximations.
+
+        theta_s is solar zenith in radians:
+            0 = overhead
+            pi/2 = horizon
+            pi = nadir
+
+        cos(theta_s) > 0 means sun above horizon, proxy for daylight hours.
+
+        Uses:
+            Site attribute: latitude [degrees]
+            NOTE: Also accesses "swin" from config params - only uses this as a placeholder to get datetime values.
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - "swin": Shortwave incoming radiation [W m-2] (Not used, datetimes only)
 
         Returns:
             Polars expression for solar zenith angle, theta_s in radians.
@@ -421,24 +444,27 @@ class SolarZenith(DerivationMethod):
 
 @DerivationMethod.register
 class Albedo(DerivationMethod):
-    """
-    Calculate albedo from incoming and outgoing short wave radiation.
-    See reference: https://www.fao.org/4/x0490e/x0490e07.htm
-    See: https://onlinelibrary.wiley.com/doi/epdf/10.1002/hyp.14048
-    This calculation does not account for correction due to site being on a slope.
-    This is accounted for in a correction method.
-    """
+    """Calculate albedo - the ratio of reflected solar radiation to the total incoming solar radiation."""
 
     name = "calc_albedo"
     inputs = ("swin", "swout", "solar_zenith")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate albedo [unitless fraction]
+
+        References:
+            - https://www.fao.org/4/x0490e/x0490e07.htm
+            - https://onlinelibrary.wiley.com/doi/epdf/10.1002/hyp.14048
+
+        This calculation does not account for correction due to site being on a slope.
+        This is accounted for in a correction method.
+
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - "swin": Shortwave incoming radiation [W m-2]
-            - "swout": Shortwave outgoing radiation [W m-2]
-            - "solar_zenith": Solar zenith angle [radians]
+                - swin: Shortwave incoming radiation [W m-2]
+                - swout: Shortwave outgoing radiation [W m-2]
+                - solar_zenith: Solar zenith angle [radians]
+
         Returns:
             Polars expression for albedo. Value is null at night or where invalid, otherwise between 0 and 1.
         """
@@ -458,23 +484,27 @@ class Albedo(DerivationMethod):
 
 @DerivationMethod.register
 class NeutronIntensityFactor(DerivationMethod):
-    """Calculate incoming neutron count intensity correction factor using a background reference station.
-    See COSMOS supporting documentation.
-    See "COSMOS: the Cosmic-ray Soil Moisture Observing System" https://hess.copernicus.org/articles/16/4079/2012/
-    See "Intensity correction factors for a cosmic ray neutron sensor": https://zenodo.org/records/4569062
-    GAMMA: Scaling factor to adjust for geomagnetic effects
-    REF_C0: Site annotation to account for neutron counts due to site calibration
-    crns_count: Neutron counts from reference station
-    """
+    """Calculate incoming neutron count intensity correction factor using a background reference station."""
 
     name = "calc_factor_inten"
     inputs = ("crns-count",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate incoming neutron count intensity correction factor.
+
+        References:
+        - "COSMOS: the Cosmic-ray Soil Moisture Observing System" https://hess.copernicus.org/articles/16/4079/2012/
+        - "Intensity correction factors for a cosmic ray neutron sensor": https://zenodo.org/records/4569062
+        - COSMOS-UK supporting information: https://doi.org/10.5285/2dce161d-2fab-47bb-9fe6-38e7ed1ae18a
+
+        Uses:
+            Site attributes:
+                - gamma: Scaling factor to adjust for geomagnetic effects
+                - ref_c0: Site annotation to account for neutron counts due to site calibration
+
         Args:
             columns: Dict with keys of required columns for the calculation.
-            crns-count: cosmic ray neutron sensor counts from reference station
+                - crns-count: cosmic ray neutron sensor counts from reference station
 
         Returns:
             Polars expression for incoming neutron count intensity factor, [units = None]
@@ -490,32 +520,33 @@ class NeutronIntensityFactor(DerivationMethod):
 
 @DerivationMethod.register
 class AbsoluteHumidityFactor(DerivationMethod):
-    """Calculate correction factor for absolute humidity Q.
-    This factor is used to correct neutron counts.
-    Emperical structure contant: 0.0054.
-    See references:
-
-    1.  Rosolem, R., W. J. Shuttleworth, M. Zreda, T. E. Franz, X. Zeng, and S. A. Kurc, 2013:
-        The Effect of Atmospheric Water Vapor on Neutron Count in the Cosmic-Ray Soil Moisture Observing System.
-        J. Hydrometeor., 14, 1659–1671, https://doi.org/10.1175/JHM-D-12-0120.1
-
-    2.  M. Andreasen, K.H. Jensen, D. Desilets, T.E. Franz, M. Zreda, H.R. Bogena, and M.C. Looms. 2017.
-        Status and perspectives on the cosmic-ray neutron method for soil moisture estimation
-        and other environmental science applications.
-        Vadose Zone J. 16(8). doi:10.2136/vzj2017.04.0086
-
-    Uses processed data from absolute humidity Q and REF_Q0.
-    REF_Q0 is a site annotation.
-    """
+    """Calculate absolute humidity correction factor to neutron counts."""
 
     name = "calc_factor_q"
     inputs = ("q",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity correction factor to neutron counts.
+
+        References:
+        - Rosolem, R., W. J. Shuttleworth, M. Zreda, T. E. Franz, X. Zeng, and S. A. Kurc, 2013:
+            The Effect of Atmospheric Water Vapor on Neutron Count in the Cosmic-Ray Soil Moisture Observing System.
+            J. Hydrometeor., 14, 1659–1671, https://doi.org/10.1175/JHM-D-12-0120.1
+        - M. Andreasen, K.H. Jensen, D. Desilets, T.E. Franz, M. Zreda, H.R. Bogena, and M.C. Looms. 2017:
+            Status and perspectives on the cosmic-ray neutron method for soil moisture estimation
+            and other environmental science applications.
+            Vadose Zone J. 16(8). https://doi.org/10.2136/vzj2017.04.0086
+        - Bogena et al. (2022): https://doi.org/10.5194/essd-14-1125-2022
+
+        Empirical structure constant = 0.0054
+
+        Uses:
+            Site attributes:
+                - ref_q0: Site annotation for reference condition of absolute humidity
+
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - "q":  Q [g m-3] (grams per cubic meter)
+                - q: Absolute humidity [g m-3] (grams per cubic meter)
 
         Returns:
             Polars expression for absolute humidity factor, [units = None]
@@ -529,23 +560,26 @@ class AbsoluteHumidityFactor(DerivationMethod):
 
 @DerivationMethod.register
 class AtmosphericPressureFactor(DerivationMethod):
-    """Calculate correction factor for atmospheric pressure, PA.
-    This factor is used to correct neutron counts.
-    See CRNPy correction factor, Desilets & Zreda, 2003: https://doi.org/10.1016/S0012-821X(02)01088-9
-    Uses processed data from atmospheric pressure.
-    Barometric attenuation length, L is a site annotation.
-    P0: "Arbitrary reference pressure [hPa]: Zreda et al. (2012) HESS" - set to a constant of 1000.0
-    See: https://doi.org/10.5194/hess-16-4079-2012
-    """
+    """Calculate atmospheric pressure correction factor to neutron counts"""
 
     name = "calc_factor_PA"
     inputs = ("pa",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate atmospheric pressure correction factor to neutron counts.
+
+        References:
+        - CRNPy correction factor, Desilets & Zreda, 2003: https://doi.org/10.1016/S0012-821X(02)01088-9
+        - Zreda et al. (2012) HESS https://doi.org/10.5194/hess-16-4079-2012
+        - Bogena et al. (2022): https://doi.org/10.5194/essd-14-1125-2022
+
+        Uses:
+            Site attributes:
+                - L: Barometric attenuation length
+
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - "pa":  PA [hPa]
+                - pa: Atmospheric pressure [hPa]
 
         Returns:
             Polars expression for atmospheric pressure factor, [units = None]
@@ -553,41 +587,41 @@ class AtmosphericPressureFactor(DerivationMethod):
 
         barometric_attenuation_length = self.config.params["l"]
         pa = columns["pa"]
-        p0 = 1000
+        p0 = 1000  # "Arbitrary reference pressure [hPa]: Zreda et al. (2012) HESS" - set to a constant of 1000.0
 
         return ((pa - p0) / barometric_attenuation_length).exp()
 
 
 @DerivationMethod.register
 class IsSnowDay(DerivationMethod):
-    """Calculate if snow day. True is snow, False if not.
-    If today's albedo is None, then is_snow_day is None.
-
-    albedo >= albedo_max_threshold is a proxy for is_snow_day = True
-    albedo < albedo_min_threshold is a proxy for is_snow_day = False
-
-    Normally: albedo_min_threshold = 0.5, albedo_max_threshold = 0.35
-    See: https://doi.org/10.1002/hyp.14048
-
-    It is more likely that today is (not) a snow day if yesterday was (not).
-
-    If there was snow the previous day, i.e. the previous day's albedo >= 0.5, then
-    the current day is a snow day if the albedo > 0.35.
-
-    If there was no snow the previous day, i.e. the previous day's albedo < 0.5, then
-    the current day is a snow day if the albedo >= 0.5.
-    """
+    """Calculate if a given day is a snow day."""
 
     name = "is_snow_day"
     inputs = ("albedo",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate if snow day. True is snow, False if not.
+
+        Simple rules:
+            - If today's albedo is None, then is_snow_day is None
+            - albedo >= albedo_max_threshold is a proxy for is_snow_day = True
+            - albedo < albedo_min_threshold is a proxy for is_snow_day = False
+
+        Normally: albedo_min_threshold = 0.5, albedo_max_threshold = 0.35, see: https://doi.org/10.1002/hyp.14048
+
+        Complex rules:
+            - It is more likely that today is (not) a snow day if yesterday was (not).
+            - If there was snow the previous day, i.e. the previous day's albedo >= 0.5, then
+                the current day is a snow day if the albedo > 0.35.
+            - If there was no snow the previous day, i.e. the previous day's albedo < 0.5, then
+                the current day is a snow day if the albedo >= 0.5.
+
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - albedo: ALBEDO, measure of reflection with values between 0 and 1 [unitless fraction]
+                - albedo: Albedo - measure of reflection with values between 0 and 1 [unitless fraction]
 
-        Returns: Polars expression with boolean values.
+        Returns:
+            Polars expression with boolean values.
         """
         # Use timeframe rather than columns as need to access datetimes as well as values
         albedo = columns["albedo"]
@@ -625,23 +659,25 @@ class IsSnowDay(DerivationMethod):
 
 @DerivationMethod.register
 class CorrectCounts(DerivationMethod):
-    """
-    Calculate corrected mod counts using correction factors for neutron counts.
-    See Bogena et al. (2022), Eq. 1: https://doi.org/10.5194/essd-14-1125-2022
+    """Calculate corrected neutron counts using correction factors.
+
+    Bogena et al. (2022): https://doi.org/10.5194/essd-14-1125-2022:
+    "Variations of the incoming cosmic-ray intensity can have many causes, from galactic and solar disturbances to
+    atmospheric and meteorological influences. Most of these anomalies are expected to change proportionally in
+    every domain of the neutron energy spectrum and thus can be addressed by applying a set of correction factors."
     """
 
     name = "correct_counts"
     inputs = ("cts_mod", "cosmosfactor_inten", "cosmosfactor_pa", "cosmosfactor_q")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """
-        Calculate corrected mod counts using correction factors for neutron counts.
+        """Calculate corrected neutron counts using correction factors.
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - cosmosfactor_inten: correction factor to neutron intensity counts.
-            - cosmosfactor_pa: atmospheric pressure correction factor to neutron counts.
-            - cosmosfactor_q: absolute humidity correction factor to neutron counts.
+                - cosmosfactor_inten: correction factor to neutron intensity counts.
+                - cosmosfactor_pa: atmospheric pressure correction factor to neutron counts.
+                - cosmosfactor_q: absolute humidity correction factor to neutron counts.
 
         Returns:
             Polars expression of corrected mod counts.
@@ -649,3 +685,201 @@ class CorrectCounts(DerivationMethod):
         cts_mod = columns["cts_mod"]
         correction_factors = columns["cosmosfactor_inten"] * columns["cosmosfactor_pa"] * columns["cosmosfactor_q"]
         return cts_mod * correction_factors
+
+
+@DerivationMethod.register
+class VolumetricWaterContent(DerivationMethod):
+    """Calculate volumetric water content (VWC) - the total volume of water present in a given volume of soil.
+
+    Represented as a fraction of the soil volume occupied by water (the remainder of the fraction being solid
+    particles and air pockets).
+    """
+
+    name = "calculate_vwc"
+    inputs = ("cts_mod_corr",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate volumetric water content (VWC) from corrected neutron counts and site annotations.
+
+        References:
+            - "COSMOS: the COsmic-ray Soil Moisture Observing System", Zreda et al., 2012
+                https://doi.org/10.5194/hess-16-4079-2012
+            - Desilets et al., 2010 https://doi.org/10.1029/2009WR008726
+
+        Uses:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon
+                - ref_bulkdensity: Site attribute of reference soil bulk density
+                - ref_latticewater: Site attribute of reference lattice water content
+                - n0_mod: Site attribute of a calibration coefficient obtained from field calibration
+                - n_max: Site attribute of maximum range for nuetron counts
+                - n_min: Site attribute of minimum range for nuetron counts
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
+
+        Returns:
+            Polars expression for VWC.
+        """
+        ref_soc = self.config.params["ref_soc"]
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        n0_mod = self.config.params["n0_mod"]
+        n_max = self.config.params["n_max"]
+        n_min = self.config.params["n_min"]
+
+        # From Desilets et al., 2010 https://doi.org/10.1029/2009WR008726
+        a0 = 0.0808
+        a1 = 0.372
+        a2 = 0.115
+
+        cts_mod_corr = columns["cts_mod_corr"]
+        cts_mod_corr = cts_mod_corr.clip(n_min, n_max)
+
+        vwc = 100 * ref_bd * (a0 / ((cts_mod_corr / n0_mod) - a1) - a2 - ref_lw - ref_soc)
+        return vwc.clip(0.0, 100.0)
+
+
+@DerivationMethod.register
+class CalcFluxMeanShf(DerivationMethod):
+    """Calculate mean soil heat flux from two SHF plate measurements."""
+
+    name = "calc_flux_mean_shf"
+    inputs = ("g_plate_1_1_1", "g_plate_1_1_2")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate mean soil heat flux [W m-2]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - g_plate_1_1_1: Soil heat flux plate 1 [W m-2]
+                - g_plate_1_1_2: Soil heat flux plate 2 [W m-2]
+
+        Returns:
+            Polars expression computing mean soil heat flux
+        """
+        return pl.mean_horizontal(columns["g_plate_1_1_1"], columns["g_plate_1_1_2"])
+
+
+@DerivationMethod.register
+class CalcFluxLambda(DerivationMethod):
+    """Calculate latent heat of vaporization (lambda) from air temperature."""
+
+    name = "calc_flux_lambda"
+    inputs = ("airtemp_c",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate latent heat of vaporization (lambda) [MJ kg-1]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - airtemp_c: Air temperature [degC]
+
+        Returns:
+            Polars expression computing lambda
+        """
+        return 2.501 - 0.002361 * columns["airtemp_c"]
+
+
+@DerivationMethod.register
+class CalcFluxLeL1(DerivationMethod):
+    """Calculate latent heat flux LE_L1 = Rn - SHF - H."""
+
+    name = "calc_flux_le_l1"
+    inputs = ("t_nr_avg", "shf", "h")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate latent heat flux (LE_L1) [W m-2]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - t_nr_avg: Net radiation [W m-2]
+                - shf: Soil heat flux [W m-2]
+                - h: Sensible heat flux [W m-2]
+
+        Returns:
+            Polars expression computing LE_L1
+        """
+        return columns["t_nr_avg"] - columns["shf"] - columns["h"]
+
+
+@DerivationMethod.register
+class CalcFluxEt(DerivationMethod):
+    """Calculate evapotranspiration ET = LE / lambda / 1000, with lambda derived inline from air temperature."""
+
+    name = "calc_flux_et"
+    inputs = ("le", "airtemp_c")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate evapotranspiration (ET) [mm 30min-1]
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - le: Latent heat flux [W m-2]
+                - airtemp_c: Air temperature [degC]
+
+        Returns:
+            Polars expression computing ET
+        """
+        le = columns["le"]
+        ta = columns["airtemp_c"]
+        lv = 2.501 - 0.002361 * ta
+        return le / lv / 1000.0
+
+
+@DerivationMethod.register
+class EddyProRun(DerivationMethod):
+    """Run the EddyPro flux processing pipeline to produce an ObservationDataset bundle.
+
+    Reads all required context from `config.params`, which is populated by the processor
+    (`start_date`, `end_date`, `site_metadata`) and the derivation pipeline
+    (`container`, `dataset_repository`). The raw .dat input is staged locally during the
+    LOAD step, with its directory recorded on the raw dependency's `staged_dir`.
+    """
+
+    name = "eddypro-run"
+    inputs: ClassVar[tuple] = ()
+
+    def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        container = config.params["container"]
+        dataset_repository = config.params["dataset_repository"]
+        start_date = config.params["start_date"]
+        end_date = config.params["end_date"]
+        site_metadata = config.params["site_metadata"]
+
+        dep_ids = [dep_id for dep_id in container.all_dependencies() if dep_id in dataset_repository]
+        raw_candidates = [
+            dataset_repository[dep_id]
+            for dep_id in dep_ids
+            if dataset_repository[dep_id].method_type() == MethodType.LOAD_LOCAL_COPY
+        ]
+        if len(raw_candidates) != 1:
+            raise ValueError(
+                "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
+                f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
+            )
+        raw_container = raw_candidates[0]
+        if raw_container.staged_dir is None:
+            raise ValueError(f"Raw dependency {raw_container.ts_id} was not staged locally before the EddyPro run.")
+
+        ancillary_containers = [dataset_repository[ds_id] for ds_id in dep_ids if ds_id != raw_container.ts_id]
+        site_meta = site_metadata.get(f"{SITE_URI}/{container.source_site}")
+
+        df = EddyProPipeline(runner=EddyProRunner()).run(
+            raw_data_dir=raw_container.staged_dir,
+            method_config=container.method_config,  # type: ignore[arg-type]
+            site_metadata=site_meta,  # type: ignore[arg-type]
+            start_date=start_date,
+            end_date=end_date,
+            ancillary_containers=ancillary_containers,
+        )
+
+        container.time_column_name = "time"
+        container.resolution = f"PT{config.params['file_duration']}M"
+        container.periodicity = container.resolution
+        container.init_timeframe(df)
+        return container.data
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        raise NotImplementedError("EddyProRun overrides run() directly")

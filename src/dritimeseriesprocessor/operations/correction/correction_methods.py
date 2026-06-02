@@ -12,7 +12,7 @@ from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timefr
 
 
 class CorrectionMethod(Operation, ABC):
-    operation_type: OperationType.CORRECTION
+    operation_type = OperationType.CORRECTION
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:

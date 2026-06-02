@@ -6,7 +6,8 @@ from tests.utils.validation_helpers import valid_parses
 
 from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
-from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
+from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
+from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem, TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.processing_config import (
@@ -23,7 +24,7 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
     map_processing_method_config,
     map_site_metadata,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
 
 
 class TestMapDatasetItem:
@@ -35,12 +36,12 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
             network="cosmos",
-            source_bucket="ukceh-fdri-staging-timeseries-processed",
+            source_bucket="ukceh-dri-staging-processed",
             source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
             source_site="cosmos-bunny",
@@ -49,6 +50,7 @@ class TestMapDatasetItem:
             resolution="P1D",
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
+            dataset_type=DatasetType.TIMESERIES_DATASET,
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
@@ -66,12 +68,12 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)
+        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
             network="cosmos",
-            source_bucket="ukceh-fdri-staging-timeseries-level-0",
+            source_bucket="ukceh-dri-staging-ingested",
             source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
             source_site="cosmos-bunny",
@@ -80,6 +82,7 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
+            dataset_type=DatasetType.TIMESERIES_DATASET,
             correction_configs=set(),
             qc_configs=set(),
             infill_configs=set(),
@@ -88,6 +91,78 @@ class TestMapDatasetItem:
         )
 
         assert result == expected
+
+    def test_observation_dataset_item_source_fields_are_none(self) -> None:
+        item = ObservationDatasetItem.model_validate(
+            {
+                "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ObservationDataset"}],
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"},
+                "measure": [
+                    {
+                        "@id": "http://fdri.ceh.ac.uk/id/measure/flux-plynl-raw",
+                        "variable": {"@id": "http://fdri.ceh.ac.uk/ref/common/variable/flux-plynl-raw"},
+                        "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
+                        "aggregation": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
+                            "periodicity": "PT30M",
+                            "resolution": "PT30M",
+                        },
+                    }
+                ],
+                "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
+                "originatingProgramme": [{"@id": "http://fdri.ceh.ac.uk/id/programme/fdri"}],
+            }
+        )
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "flux-plynl"
+        all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
+
+        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
+
+        assert result.source_bucket is None
+        assert result.source_dataset is None
+        assert result.source_column is None
+        assert result.time_column_name is None
+
+    def test_observation_dataset_populates_dataset_type_and_distribution_url(self) -> None:
+        item = TimeSeriesDatasetItem.model_validate(
+            {
+                "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ObservationDataset"}],
+                "processingLevel": {"@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"},
+                "measure": [
+                    {
+                        "@id": "http://fdri.ceh.ac.uk/id/measure/flux-plynl-raw",
+                        "variable": {"@id": "http://fdri.ceh.ac.uk/ref/common/variable/flux-plynl-raw"},
+                        "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
+                        "aggregation": {
+                            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
+                            "periodicity": "PT30M",
+                            "resolution": "PT30M",
+                        },
+                    }
+                ],
+                "distribution": [
+                    {
+                        "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-raw",
+                        "accessUrl": ["s3://ukceh-dri-staging-ingested/Flux/"],
+                    }
+                ],
+                "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
+                "originatingProgramme": [{"@id": "http://fdri.ceh.ac.uk/id/programme/fdri"}],
+            }
+        )
+        site_metadata = MagicMock()
+        site_metadata.alt_id = "flux-plynl"
+        all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
+
+        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
+
+        assert result.dataset_type == DatasetType.OBSERVATION_DATASET
+        assert result.distribution_url == "s3://ukceh-dri-staging-ingested/Flux/"
+        assert result.s3_bucket == "ukceh-dri-staging-ingested"
+        assert result.s3_dataset_path == "Flux"
 
     def test_all_dependencies(self) -> None:
         """Test that the all_dependencies method returns valid list, when there are no qc/correction/infill configs"""
