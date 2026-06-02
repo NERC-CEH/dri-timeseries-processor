@@ -37,13 +37,13 @@ class Linear(InfillMethod):
 
 
 @InfillMethod.register
-class AltDataStatic(InfillMethod):
-    name = "alt_data_static"
+class AltData(InfillMethod):
+    name = "alt_data"
     flag_value = 2
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return tf.infill(
-            "alt_data_static",
+            "alt_data",
             tf.metadata["column_name"],
             alt_df=config.params["alt_df"],
             alt_data_column=config.params["alt_data_column"],
@@ -64,7 +64,9 @@ class AltDataDynamic(InfillMethod):
             tf.metadata["column_name"],
             alt_df=config.params["alt_df"],
             alt_data_column=config.params["alt_data_column"],
-            observation_interval=(config.start_date, config.end_date),
+            observation_interval=_observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
+            min_threshold=config.params.get("min_threshold", 0),
+            max_threshold=config.params.get("max_threshold"),
             window_size=config.params.get("window_size", 7),
         )
