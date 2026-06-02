@@ -8,6 +8,7 @@ from time_stream.operation import Operation
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
+from dritimeseriesprocessor.utils.derivation_utils import rolling_mean
 from dritimeseriesprocessor.utils.enums import MethodType, OperationType
 from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
@@ -883,3 +884,35 @@ class EddyProRun(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         raise NotImplementedError("EddyProRun overrides run() directly")
+
+
+@DerivationMethod.register
+class RollingMeanForSnow(DerivationMethod):
+    """
+    Calculate rolling means for counts, but to save proccessing, only when
+    there is a snow event, as currently this is the only time they are needed.
+    """
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate rolling means for counts.
+
+        Args:
+            Dict with keys of required columns for the calculation.
+            - snow: 1 if snow day, otherwise 0.
+            - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
+
+        Returns:
+            pl.Expr: _description_
+        """
+        snow = columns["snow"]
+        cts_mod_corr = columns["cts_mod_corr"]
+
+        cts_smo = (
+            pl.when(snow == pl.lit("1"))
+            .then(rolling_mean(cts_mod_corr, self.config.params["n_smooth"], self.config.params["na_lim"]))
+            .otherwise(pl.lit(None, dtype=pl.Float64))
+            .alias("cts_smo")
+        )
+
+        return cts_smo
