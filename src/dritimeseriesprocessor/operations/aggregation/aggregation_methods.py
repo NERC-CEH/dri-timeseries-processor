@@ -7,11 +7,11 @@ from time_stream.enums import MissingCriteria
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 class AggregationMethod(Operation, ABC):
-    operation_type = OperationType.AGGREGATION
+    operation_type = ConfigurationType.AGGREGATION
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:

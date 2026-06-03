@@ -48,6 +48,17 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
 
     dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
 
+    plan_order = []
+    base_dependency = None
+    if item.methodology:
+        base_dependency = item.methodology.uses[0].id if item.methodology.uses else None
+        steps = item.methodology.steps or []
+        indices = [step.index for step in steps]
+        if len(indices) != len(set(indices)):
+            raise ValueError(f"Duplicate plan indices in TimeSeriesPlan for {item.id}: {sorted(indices)}")
+        ordered_steps = sorted(steps, key=lambda s: s.index)
+        plan_order = [step.configuration.id for step in ordered_steps]
+
     return TimeSeriesContainer(
         ts_id=item.id,
         network=source_network,
@@ -62,6 +73,8 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
         time_column_name=getattr(item, "time_column_name", None),
         dataset_type=dataset_type,
         distribution_url=item.distribution_url,
+        plan_order=plan_order,
+        base_dependency=base_dependency,
     )
 
 

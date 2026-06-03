@@ -4,7 +4,6 @@ An orchestration class used to run for processing operations for corrections, qu
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable
 
 import polars as pl
 import time_stream as ts
@@ -20,17 +19,17 @@ from dritimeseriesprocessor.operations.correction.correction_methods import Corr
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
 
 OPERATION_METHOD_REGISTRY = {
-    OperationType.CORRECTION: CorrectionMethod._REGISTRY,
-    OperationType.QUALITY_CONTROL: QcMethod._REGISTRY,
-    OperationType.INFILLING: InfillMethod._REGISTRY,
-    OperationType.AGGREGATION: AggregationMethod._REGISTRY,
-    OperationType.DERIVATION: DerivationMethod._REGISTRY,
+    ConfigurationType.CORRECTION: CorrectionMethod._REGISTRY,
+    ConfigurationType.QUALITY_CONTROL: QcMethod._REGISTRY,
+    ConfigurationType.INFILLING: InfillMethod._REGISTRY,
+    ConfigurationType.AGGREGATION: AggregationMethod._REGISTRY,
+    ConfigurationType.DERIVATION: DerivationMethod._REGISTRY,
 }
 
 
@@ -41,7 +40,7 @@ class OperationPipeline(ABC):
     sorting configuration blocks, and constructing flag column names.
     """
 
-    def __init__(self, operation_type: OperationType, flag_system_name: str | None = None):
+    def __init__(self, operation_type: ConfigurationType, flag_system_name: str | None = None):
         """Initialise the operation processor.
 
         Args:
@@ -67,31 +66,6 @@ class OperationPipeline(ABC):
             Result of applying the method, format depends on implementation.
         """
         pass
-
-    @abstractmethod
-    def get_configs(self, container: TimeSeriesContainer) -> Iterable[DataProcessingConfig]:
-        """Extract the method configuration blocks for this operation.
-
-        Args:
-            container: Time series container of metadata and data.
-
-        Returns:
-            List of configuration blocks to be applied.
-        """
-        pass
-
-    def sort_configs(self, configs: Iterable[DataProcessingConfig]) -> Iterable[DataProcessingConfig]:
-        """Sort configuration blocks into execution order.
-
-        Override this method in subclasses to define custom ordering logic.
-
-        Args:
-            configs: List of configuration blocks.
-
-        Returns:
-            Sorted list of configuration blocks
-        """
-        return configs
 
     @abstractmethod
     def get_flag_column(self, column: str) -> str:
@@ -131,12 +105,18 @@ class OperationPipeline(ABC):
         """
         pass
 
-    def run(self, container: TimeSeriesContainer, dataset_repository: dict[str, TimeSeriesContainer]) -> ts.TimeFrame:
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+    ) -> ts.TimeFrame:
         """Execute the full operation workflow on the time series container.
 
         Args:
             container: Time series container of metadata and data for the primary dataset to process.
             dataset_repository: Repository for accessing additional datasets.
+            config: The data processing configuration to run.
 
         Returns:
             The updated TimeFrame after all operations and flag updates.
@@ -149,18 +129,13 @@ class OperationPipeline(ABC):
             self._initialise_flag_system(tf)
             self._initialise_flag_column(tf, col_name)
 
-        # Extract the configs to run
-        configs = self.get_configs(container)
-        configs = self.sort_configs(configs)
-
         # Apply configs
-        for cfg_block in configs:
-            for cfg in cfg_block.method_configs:
-                logger.info(f"Operation: {self.operation_type} | {cfg.method}")
+        for cfg in config.method_configs:
+            logger.info(f"Operation: {self.operation_type} | {cfg.method}")
 
-                # Run the method
-                tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)  # type: ignore[arg-type]
-                tf = self.apply_rounding(tf, cfg)
+            # Run the method
+            tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)  # type: ignore[arg-type]
+            tf = self.apply_rounding(tf, cfg)
 
         # Update core flags
         tf = self.core_flag_updater(tf)  # type: ignore[arg-type] - we know tf will exist at this point

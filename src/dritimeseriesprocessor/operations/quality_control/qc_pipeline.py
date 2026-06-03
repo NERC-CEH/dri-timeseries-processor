@@ -4,15 +4,13 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
     DataProcessingMethodConfig,
 )
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import QC_FLAG_SYS_NAME, qc_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +19,7 @@ class QCPipeline(OperationPipeline):
     """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer."""
 
     def __init__(self):
-        super().__init__(OperationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
+        super().__init__(ConfigurationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
 
     def run(self, *args, **kwargs) -> ts.TimeFrame:
         """Override the parent run method, as we need to remove QC'ed data at the end of the pipeline after all
@@ -41,9 +39,10 @@ class QCPipeline(OperationPipeline):
         Returns:
             Result of applying the QC method.
         """
-        tf_qc = tf
         if "dep_ts" in config.params:
             tf_qc = dataset_repository[config.params["dep_ts"]].data
+        else:
+            tf_qc = tf.copy(share_df=False)
 
         method = QcMethod.get(config.method)
         result = method.run(tf_qc, config)
@@ -55,17 +54,6 @@ class QCPipeline(OperationPipeline):
         result = result.with_df(result.df.drop(self.get_qc_result_column(tf.metadata["column_name"])))
 
         return result
-
-    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
-        """Extract the QC method configurations.
-
-        Args:
-            container: Time series container to get the QC method configurations from.
-
-        Returns:
-            List of QC configurations to be applied.
-        """
-        return container.qc_configs
 
     def get_flag_column(self, column: str) -> str:
         """Determine the QC flag column name for a given data column.

@@ -8,14 +8,12 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
     DataProcessingMethodConfig,
 )
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,7 @@ class DerivationPipeline(OperationPipeline):
     """Pipeline for running Derivation methods on a TimeSeriesContainer."""
 
     def __init__(self):
-        super().__init__(OperationType.DERIVATION)
+        super().__init__(ConfigurationType.DERIVATION)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given derivation method to the TimeFrame data.
@@ -57,26 +55,6 @@ class DerivationPipeline(OperationPipeline):
         tf = add_initial_core_flags(tf, init_unchecked=False)
 
         return tf
-
-    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
-        """Extract the derivation method configuration.
-
-        Args:
-            container: Time series container to get the derivation method configurations from.
-
-        Returns:
-            Derivation configurations to be applied.
-        """
-        if container.method_config is None:
-            raise ValueError(f"No derivation config found for: {container.ts_id}")
-
-        for cfg in container.method_config.method_configs:
-            cfg.params["output_col"] = container.source_column
-            cfg.params["resolution"] = container.resolution
-            cfg.params["periodicity"] = container.periodicity
-            cfg.params["container"] = container
-
-        return {container.method_config}
 
     def get_flag_column(self, column: str) -> str:
         """Not used by derivation - flags are not applied."""
