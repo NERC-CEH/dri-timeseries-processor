@@ -2024,8 +2024,8 @@ wheels = [
 
 [[package]]
 name = "time-stream"
-version = "1.1.0"
-source = { git = "https://github.com/NERC-CEH/time-stream.git#82efe129adf133d325ae41329773686cd6e71dbc" }
+version = "1.1.1"
+source = { git = "https://github.com/NERC-CEH/time-stream.git#878859e85954d000e941a79a5897d470a9258c1a" }
 dependencies = [
     { name = "altair" },
     { name = "config" },
