@@ -847,26 +847,29 @@ class EddyProRun(DerivationMethod):
         end_date = config.params["processing_end_date"]
         site_metadata = config.params["site_metadata"]
 
-        dep_ids = [dep_id for dep_id in container.all_dependencies() if dep_id in dataset_repository]
-        raw_candidates = [
-            dataset_repository[dep_id]
-            for dep_id in dep_ids
-            if dataset_repository[dep_id].method_type() == ConfigurationType.LOAD_LOCAL_COPY
-        ]
-        if len(raw_candidates) != 1:
-            raise ValueError(
-                "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
-                f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
-            )
-        raw_container = raw_candidates[0]
+        raw_container = dataset_repository[container.base_dependency]
+
+        # raw_candidates = [
+        #     dataset_repository[dep_id]
+        #     for dep_id in dep_ids
+        #     if dataset_repository[dep_id].method_type() == ConfigurationType.LOAD_LOCAL_COPY
+        # ]
+        # if len(raw_candidates) != 1:
+        #     raise ValueError(
+        #         "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
+        #         f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
+        #     )
+        # raw_container = raw_candidates[0]
         if raw_container.staged_dir is None:
             raise ValueError(f"Raw dependency {raw_container.ts_id} was not staged locally before the EddyPro run.")
 
-        ancillary_containers = [dataset_repository[ds_id] for ds_id in dep_ids if ds_id != raw_container.ts_id]
+        ancillary_containers = [
+            dataset_repository[ds_id] for ds_id in container.all_dependencies() if ds_id != raw_container.ts_id
+        ]
 
         df = EddyProPipeline(runner=EddyProRunner()).run(
             raw_data_dir=raw_container.staged_dir,
-            method_config=container.method_config,
+            method_config=config,
             site_metadata=site_metadata,
             start_date=start_date,
             end_date=end_date,

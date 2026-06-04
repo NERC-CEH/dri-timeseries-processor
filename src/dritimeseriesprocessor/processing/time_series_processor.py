@@ -150,9 +150,10 @@ class TimeSeriesProcessor:
 
         if container.base_dependency is not None:
             base_dep = self.graph.datasets[container.base_dependency]
-            if base_dep.data is None:
+            if base_dep.data is None and base_dep.staged_dir is None:
                 raise RuntimeError(f"No data found for base dependency: {container.base_dependency}")
-            container.data = base_dep.data.copy(share_df=False)
+            if base_dep.data:
+                container.data = base_dep.data.copy(share_df=False)
 
         for plan_id in container.plan_order:
             config = container.data_processing_configs[plan_id]
@@ -160,7 +161,6 @@ class TimeSeriesProcessor:
             match config.config_type:
                 case ConfigurationType.LOAD_LOCAL_COPY:
                     container.staged_dir = self.data_router.stage_locally(container, self.start_date, self.end_date)
-                    pass
 
                 case ConfigurationType.CORRECTION:
                     container.data = CorrectionPipeline().run(container, self.graph.datasets, config)
