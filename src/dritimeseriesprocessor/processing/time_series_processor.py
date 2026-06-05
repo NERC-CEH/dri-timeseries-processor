@@ -26,6 +26,7 @@ from dritimeseriesprocessor.operations.correction.correction_pipeline import Cor
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
 from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
+from dritimeseriesprocessor.operations.load.load_pipeline import LoadPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
 from dritimeseriesprocessor.utils.enums import (
@@ -93,7 +94,7 @@ class TimeSeriesProcessor:
                     logger.error("No datasets found in dependency graph.")
                 else:
                     # Load data for all 'load' containers
-                    self._batch_load_raw()
+                    self._batch_load()
 
                     layers = self.graph.layered_topo_sort()
                     logger.info("Processing pipeline started.")
@@ -148,19 +149,15 @@ class TimeSeriesProcessor:
                 logger.error(f"Skipping {dataset_id} - dependency {dep_id} failed")
                 return
 
-        if container.base_dependency is not None:
-            base_dep = self.graph.datasets[container.base_dependency]
-            if base_dep.data is None and base_dep.staged_dir is None:
-                raise RuntimeError(f"No data found for base dependency: {container.base_dependency}")
-            if base_dep.data:
-                container.data = base_dep.data.copy(share_df=False)
-
         for idx, plan_id in enumerate(container.plan_order):
             config = container.data_processing_configs[plan_id]
 
             match config.config_type:
-                case ConfigurationType.LOAD_LOCAL_COPY:
-                    container.staged_dir = self.data_router.stage_locally(container, self.start_date, self.end_date)
+                case ConfigurationType.LOAD:
+                    for cfg in config.method_configs:
+                        cfg.params["processing_start_date"] = self.start_date
+                        cfg.params["processing_end_date"] = self.end_date
+                    container = LoadPipeline(self.data_router).run(container, self.graph.datasets, config)
 
                 case ConfigurationType.CORRECTION:
                     container.data = CorrectionPipeline().run(container, self.graph.datasets, config)
@@ -168,6 +165,7 @@ class TimeSeriesProcessor:
                 case ConfigurationType.QUALITY_CONTROL:
                     container.data = QCPipeline().run(container, self.graph.datasets, config)
                     if self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL:
+                        logger.info("Removing data that has failed QC checks")
                         container.data = QCPipeline.remove_flagged_data(container.data)  # type: ignore[arg-type]
 
                 case ConfigurationType.INFILLING:
@@ -212,8 +210,8 @@ class TimeSeriesProcessor:
         return container.data_processing_configs[container.plan_order[next_idx]].config_type
 
     @log_duration("Loading datasets time taken: ", footer=True)
-    def _batch_load_raw(self) -> None:
-        """Load raw time-series data for multiple datasets in grouped batches.
+    def _batch_load(self) -> None:
+        """Load time-series data for multiple datasets in grouped batches.
 
         Containers are grouped by network, site, resolution, and source dataset so that a single query
         can retrieve all columns for each group in one read. Each container's data is then extracted from
@@ -221,8 +219,7 @@ class TimeSeriesProcessor:
         """
         containers = [c for c in self.graph.datasets.values() if c.is_load()]
         logger.info(f"Collecting and loading [{len(containers)}] datasets.")
-
-        common_keys = ["network", "source_site_identifier", "resolution", "source_dataset"]
+        common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
         groupings = group_containers(containers, common_keys)
 
         with self.metrics.time_load.time():

@@ -42,7 +42,6 @@ class TimeSeriesContainer:
 
     plan_order: list[str] = field(default_factory=list)
     data_processing_configs: dict[str, DataProcessingConfig] = field(default_factory=dict)
-    base_dependency: str | None = None
 
     data: ts.TimeFrame | None = None
     staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)
@@ -70,11 +69,7 @@ class TimeSeriesContainer:
         Returns:
             Sorted list of all dependency dataset IDs.
         """
-        deps = self._ids_across_configs("dep_ts", "load_dep_ts")
-        if self.base_dependency:
-            deps.append(self.base_dependency)
-
-        return list(set(deps))
+        return self._ids_across_configs("dep_ts", "load_dep_ts")
 
     def load_only_dependencies(self) -> list[str]:
         """Get a list of dataset IDs that are "load only" dependents of this TimeSeriesContainer. Only includes

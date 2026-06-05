@@ -70,7 +70,7 @@ class TestTimeSeriesProcessor:
         )
         # override the process dataset function for this test
         processor.process_dataset = MagicMock()
-        processor._batch_load_raw = MagicMock()
+        processor._batch_load = MagicMock()
         processor._save_datasets = MagicMock()
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
@@ -107,7 +107,7 @@ class TestTimeSeriesProcessor:
 
         container = mock_graph.datasets[ds_id]
         container.source_column = "value"  # Need to set this as the generic name of the mock dataframe
-        processor._batch_load_raw(container)
+        processor._batch_load(container)
 
         mock_router.query_by_date_range.assert_called_once()
         assert isinstance(container.data, ts.TimeFrame)
@@ -158,7 +158,7 @@ class TestTimeSeriesProcessor:
 
         raw_container = mock_graph.datasets[raw_ds_id]
         raw_container.source_column = "value"
-        processor._batch_load_raw(raw_container)
+        processor._batch_load(raw_container)
         processed_container = mock_graph.datasets[processed_ds_id]
         processed_container.source_column = "value"
         processed_container.all_dependencies = MagicMock(return_value=[raw_ds_id])
@@ -228,7 +228,7 @@ class TestTimeSeriesProcessor:
                 raise Exception("boom during process_dataset")
             return real_process_dataset(dataset_id)
 
-        processor._batch_load_raw = MagicMock()
+        processor._batch_load = MagicMock()
         processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
         processor._save_datasets = MagicMock()
         processor.run()
@@ -268,7 +268,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "value"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load(ds1, ds2)
 
         assert ds1.failed
         assert ds2.failed
@@ -296,7 +296,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "value"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load(ds1, ds2)
 
         assert ds1.failed
         assert ds2.failed
@@ -328,7 +328,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "missing_col"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load(ds1, ds2)
 
         assert not ds1.failed
         assert ds1.data is not None

@@ -21,7 +21,7 @@ class ConfigurationType(Enum):
     QUALITY_CONTROL = "qc"
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
-    LOAD_LOCAL_COPY = "load-local-copy"
+    LOAD = "load"
 
 
 class DatasetType(Enum):
