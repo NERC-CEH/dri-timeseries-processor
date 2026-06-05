@@ -155,7 +155,7 @@ class TimeSeriesProcessor:
             if base_dep.data:
                 container.data = base_dep.data.copy(share_df=False)
 
-        for plan_id in container.plan_order:
+        for idx, plan_id in enumerate(container.plan_order):
             config = container.data_processing_configs[plan_id]
 
             match config.config_type:
@@ -167,6 +167,8 @@ class TimeSeriesProcessor:
 
                 case ConfigurationType.QUALITY_CONTROL:
                     container.data = QCPipeline().run(container, self.graph.datasets, config)
+                    if self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL:
+                        container.data = QCPipeline.remove_flagged_data(container.data)  # type: ignore[arg-type]
 
                 case ConfigurationType.INFILLING:
                     container.data = InfillPipeline().run(container, self.graph.datasets, config)
@@ -192,6 +194,22 @@ class TimeSeriesProcessor:
                         cfg.params["processing_end_date"] = self.end_date.date()
 
                     container.data = DerivationPipeline().run(container, self.graph.datasets, config)
+
+    @staticmethod
+    def _get_next_step_type(container: TimeSeriesContainer, current_idx: int) -> ConfigurationType | None:
+        """Return the config type of the next step in the plan, or None if there is no next step.
+
+        Args:
+            container: The container whose plan is being iterated.
+            current_idx: Index of the current step in `container.plan_order`.
+
+        Returns:
+            The `ConfigurationType` of the next step, or None if the current step is the last.
+        """
+        next_idx = current_idx + 1
+        if next_idx >= len(container.plan_order):
+            return None
+        return container.data_processing_configs[container.plan_order[next_idx]].config_type
 
     @log_duration("Loading datasets time taken: ", footer=True)
     def _batch_load_raw(self) -> None:
