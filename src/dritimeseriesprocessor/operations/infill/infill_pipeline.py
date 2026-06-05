@@ -11,6 +11,10 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_infill_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import INFILL_FLAG_SYS_NAME, infill_flag_column_name
+from dritimeseriesprocessor.operations.infill.infill_metadata_names import (
+    INFILL_META_INTERNAL_COL,
+    infill_meta_column_name,
+)
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import OperationType
@@ -45,6 +49,7 @@ class InfillPipeline(OperationPipeline):
         method = InfillMethod.get(config.method)
         result = method.run(tf, config)
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
+        result = self._attach_infill_meta(result, tf.metadata["column_name"])
         return result
 
     def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
@@ -100,6 +105,36 @@ class InfillPipeline(OperationPipeline):
         after_is_null = after.is_null() | after.is_nan()
 
         return before_is_null.ne(after_is_null)
+
+    def _attach_infill_meta(self, result: ts.TimeFrame, col_name: str) -> ts.TimeFrame:
+        """Consume the internal infill metadata column from time_stream and accumulate it
+        into the persistent per-column metadata column.
+
+        time_stream writes per-row infill metadata as JSON strings into a temporary
+        column named ``__INFILL_META__``. This method renames it to the stable output
+        column name and coalesces it with any values already written by earlier infill
+        passes so that each row retains the metadata from whichever method filled it.
+
+        Args:
+            result: TimeFrame returned by the infill method.
+            col_name: Name of the data column being infilled.
+
+        Returns:
+            TimeFrame with ``__INFILL_META__`` consumed and accumulated into
+            ``{col_name}_INFILL_META``.
+        """
+        if INFILL_META_INTERNAL_COL not in result.df.columns:
+            return result
+
+        meta_col = infill_meta_column_name(col_name)
+        new_meta = pl.col(INFILL_META_INTERNAL_COL)
+
+        if meta_col in result.df.columns:
+            merged = pl.coalesce(pl.col(meta_col), new_meta).alias(meta_col)
+        else:
+            merged = new_meta.alias(meta_col)
+
+        return result.with_df(result.df.with_columns(merged).drop(INFILL_META_INTERNAL_COL))
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Update core flags with the infill flag after all methods are applied.

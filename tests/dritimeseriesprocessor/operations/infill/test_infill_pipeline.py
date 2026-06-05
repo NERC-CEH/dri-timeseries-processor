@@ -10,6 +10,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.operations.infill.infill_metadata_names import INFILL_META_INTERNAL_COL
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -128,6 +129,87 @@ class TestApply:
             pipeline = InfillPipeline()
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
+
+
+def _make_mock_tf(df: pl.DataFrame) -> MagicMock:
+    """Create a mock TimeFrame with a real DataFrame, where with_df propagates the new df."""
+    mock = MagicMock(spec=ts.TimeFrame)
+    mock.df = df
+    mock.with_df.side_effect = _make_mock_tf
+    return mock
+
+
+class TestAttachInfillMeta:
+    def test_no_internal_col_returns_result_unchanged(self) -> None:
+        """When __INFILL_META__ is absent, result is returned as-is."""
+        df = pl.DataFrame({"time": [1, 2, 3], "value": [1.0, None, 3.0]})
+        result = _make_mock_tf(df)
+
+        pipeline = InfillPipeline()
+        returned = pipeline._attach_infill_meta(result, "value")
+
+        assert returned is result
+
+    def test_creates_meta_column_and_drops_internal(self) -> None:
+        """__INFILL_META__ is renamed to {col}_INFILL_META and the internal column is dropped."""
+        df = pl.DataFrame(
+            {
+                "time": [1, 2, 3],
+                "value": [1.0, 2.0, 3.0],
+                INFILL_META_INTERNAL_COL: [
+                    '{"method": "linear_linear"}',
+                    None,
+                    '{"method": "linear_linear"}',
+                ],
+            }
+        )
+        result = _make_mock_tf(df)
+
+        pipeline = InfillPipeline()
+        returned = pipeline._attach_infill_meta(result, "value")
+
+        assert INFILL_META_INTERNAL_COL not in returned.df.columns
+        assert "value_INFILL_META" in returned.df.columns
+        assert_series_equal(
+            returned.df["value_INFILL_META"],
+            pl.Series("value_INFILL_META", ['{"method": "linear_linear"}', None, '{"method": "linear_linear"}']),
+        )
+
+    def test_coalesces_with_existing_meta_column(self) -> None:
+        """When {col}_INFILL_META already exists, prior non-null values are preserved."""
+        df = pl.DataFrame(
+            {
+                "time": [1, 2, 3],
+                "value": [1.0, 2.0, 3.0],
+                INFILL_META_INTERNAL_COL: [
+                    None,
+                    '{"method": "alt_data_dynamic"}',
+                    None,
+                ],
+                "value_INFILL_META": [
+                    '{"method": "linear_linear"}',
+                    None,
+                    '{"method": "linear_linear"}',
+                ],
+            }
+        )
+        result = _make_mock_tf(df)
+
+        pipeline = InfillPipeline()
+        returned = pipeline._attach_infill_meta(result, "value")
+
+        assert INFILL_META_INTERNAL_COL not in returned.df.columns
+        assert_series_equal(
+            returned.df["value_INFILL_META"],
+            pl.Series(
+                "value_INFILL_META",
+                [
+                    '{"method": "linear_linear"}',
+                    '{"method": "alt_data_dynamic"}',
+                    '{"method": "linear_linear"}',
+                ],
+            ),
+        )
 
 
 class TestCoreFlagUpdater:
