@@ -45,6 +45,7 @@ class AltData(InfillMethod):
         return tf.infill(
             "alt_data",
             tf.metadata["column_name"],
+            alt_dataset_name=config.params.get("dep_ts"),
             alt_df=config.params["alt_df"],
             alt_data_column=config.params["alt_data_column"],
             observation_interval=_observation_interval(config),
@@ -62,6 +63,7 @@ class AltDataDynamic(InfillMethod):
         return tf.infill(
             "alt_data_dynamic",
             tf.metadata["column_name"],
+            alt_dataset_name=config.params.get("dep_ts"),
             alt_df=config.params["alt_df"],
             alt_data_column=config.params["alt_data_column"],
             observation_interval=_observation_interval(config),

@@ -4,6 +4,7 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.operations.infill.infill_metadata_names import INFILL_META_INTERNAL_COL
 from dritimeseriesprocessor.operations.infill.infill_methods import AltData, AltDataDynamic, Linear
 from utils.data_creation import create_timeframe
 
@@ -44,8 +45,10 @@ class TestLinear:
 
         expected = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+        assert_frame_equal(result.df.select(["time", "value"]), expected_df)
 
-        assert_frame_equal(result.df, expected_df)
+        assert INFILL_META_INTERNAL_COL in result.df.columns
+        assert result.df[INFILL_META_INTERNAL_COL].is_null().to_list() == [True, False, True, False, True, False, True]
 
     def test_linear_with_date_filter(self) -> None:
         """Test that the infill function works with a date filter."""
@@ -59,8 +62,10 @@ class TestLinear:
 
         expected = [1.0, None, 3.0, 4.0, 5.0, None, 7.0]
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+        assert_frame_equal(result.df.select(["time", "value"]), expected_df)
 
-        assert_frame_equal(result.df, expected_df)
+        assert INFILL_META_INTERNAL_COL in result.df.columns
+        assert result.df[INFILL_META_INTERNAL_COL].is_null().to_list() == [True, True, True, False, True, True, True]
 
 
 class TestAltData:
@@ -79,8 +84,10 @@ class TestAltData:
 
         expected = [1.0, 20.0, 3.0, 40.0, 5.0, 60.0, 7.0]
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+        assert_frame_equal(result.df.select(["time", "value"]), expected_df)
 
-        assert_frame_equal(result.df, expected_df)
+        assert INFILL_META_INTERNAL_COL in result.df.columns
+        assert result.df[INFILL_META_INTERNAL_COL].is_null().to_list() == [True, False, True, False, True, False, True]
 
     def test_alt_data_with_date_filter(self) -> None:
         """Test that the alt_data function works with a date filter."""
@@ -99,8 +106,10 @@ class TestAltData:
 
         expected = [1.0, None, 3.0, 40.0, 5.0, None, 7.0]
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+        assert_frame_equal(result.df.select(["time", "value"]), expected_df)
 
-        assert_frame_equal(result.df, expected_df)
+        assert INFILL_META_INTERNAL_COL in result.df.columns
+        assert result.df[INFILL_META_INTERNAL_COL].is_null().to_list() == [True, True, True, False, True, True, True]
 
 
 class TestAltDataDynamic:
@@ -113,8 +122,6 @@ class TestAltDataDynamic:
         config = create_method_config(
             alt_df=alt_df,
             alt_data_column="alt",
-            # min_threshold=2,
-            max_threshold=2,
             window_size="PT1H",
         )
 
@@ -122,8 +129,10 @@ class TestAltDataDynamic:
 
         expected = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+        assert_frame_equal(result.df.select(["time", "value"]), expected_df)
 
-        assert_frame_equal(result.df, expected_df)
+        assert INFILL_META_INTERNAL_COL in result.df.columns
+        assert result.df[INFILL_META_INTERNAL_COL].is_null().to_list() == [True, False, True, False, True, False, True]
 
     def test_alt_data_with_date_filter(self) -> None:
         """Test that the alt_data function works with a date filter."""
@@ -136,8 +145,6 @@ class TestAltDataDynamic:
             alt_data_column="alt",
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
-            min_threshold=2,
-            max_threshold=2,
             window_size="PT1H",
         )
 
@@ -145,5 +152,7 @@ class TestAltDataDynamic:
 
         expected = [1.0, None, 3.0, 4.0, 5.0, None, 7.0]
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+        assert_frame_equal(result.df.select(["time", "value"]), expected_df)
 
-        assert_frame_equal(result.df, expected_df)
+        assert INFILL_META_INTERNAL_COL in result.df.columns
+        assert result.df[INFILL_META_INTERNAL_COL].is_null().to_list() == [True, True, True, False, True, True, True]
