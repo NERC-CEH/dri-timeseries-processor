@@ -72,6 +72,18 @@ class TestLoadApply:
         mock_router.stage_locally.assert_called_once_with(container, start, end)
         assert result.staged_dir == staged
 
+    def test_apply_raises_for_unknown_method(self) -> None:
+        """Tests that apply raises ValueError when the method is not recognised."""
+        container = make_time_series_container("target")
+
+        pipeline = LoadPipeline(data_router=MagicMock())
+        with pytest.raises(ValueError, match="Unknown load method: not-a-method"):
+            pipeline.apply(
+                container=container,
+                config=DataProcessingMethodConfig(method="not-a-method", params={}),
+                dataset_repository={},
+            )
+
 
 class TestLoadRun:
     def test_run_iterates_all_method_configs(self) -> None:

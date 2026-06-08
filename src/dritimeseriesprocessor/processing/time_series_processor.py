@@ -138,7 +138,11 @@ class TimeSeriesProcessor:
         """
         container = self.graph.datasets[dataset_id]
         if container.is_load():
-            # We've already loaded all the load datasets
+            # A "load" container has no processing configs - it is a raw dataset whose data was already
+            # fetched up-front by _batch_load(), so there is nothing to process here.
+            # This is different from the ConfigurationType.LOAD step below, which runs an explicit method as part of
+            # a container that *does* have a processing plan and processing configs. This runs methods in the
+            # LoadPipeline that do things like stage local copies, or moves data from one container to another.
             return
 
         logger.info(f"Processing dataset: {dataset_id}")

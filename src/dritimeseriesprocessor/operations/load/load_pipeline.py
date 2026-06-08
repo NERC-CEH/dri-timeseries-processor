@@ -57,4 +57,7 @@ class LoadPipeline:
                     container, config.params["processing_start_date"], config.params["processing_end_date"]
                 )
 
+            case _:
+                raise ValueError(f"Unknown load method: {config.method}")
+
         return container
