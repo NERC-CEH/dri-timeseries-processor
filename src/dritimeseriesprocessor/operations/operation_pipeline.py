@@ -146,6 +146,18 @@ class OperationPipeline(ABC):
 
         return tf
 
+    def initialise_flags(self, tf: ts.TimeFrame, col_name: str) -> None:
+        """Register this operation's flag system and flag column on the TimeFrame, if not already present.
+
+        Args:
+            tf: TimeFrame to initialise flags on.
+            col_name: Name of the parent data column.
+        """
+        if not self.flag_system_name:
+            return
+        self._initialise_flag_system(tf)
+        self._initialise_flag_column(tf, col_name)
+
     def _initialise_flag_system(self, tf: ts.TimeFrame) -> None:
         """Initialise the flag system for this operation (if not already initialised).
 

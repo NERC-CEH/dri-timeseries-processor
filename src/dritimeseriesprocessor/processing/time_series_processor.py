@@ -193,6 +193,9 @@ class TimeSeriesProcessor:
 
                     container.data = DerivationPipeline().run(container, self.graph.datasets, config)
 
+        # Backfill any flag columns the plan did not create, so every dataset has a consistent set.
+        self._backfill_flag_columns(container)
+
     @staticmethod
     def _get_next_step_type(container: TimeSeriesContainer, current_idx: int) -> ConfigurationType | None:
         """Return the config type of the next step in the plan, or None if there is no next step.
@@ -255,6 +258,26 @@ class TimeSeriesProcessor:
                         container.failed = True
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
+
+    @staticmethod
+    def _backfill_flag_columns(container: TimeSeriesContainer) -> None:
+        """Add any flag columns that the plan did not already create.
+
+        Each operation only creates its flag column when one of its configs runs, so a dataset with no
+        correction config (for example) would be saved without a corrections flag column. Running this after
+        all plan steps backfills the missing columns, keeping the flag columns consistent across datasets.
+        Pipelines without a flag system (aggregation, derivation) are a no-op.
+
+        Core flags are already present from loading.
+
+        Args:
+            container: The container whose data should have its flag columns backfilled.
+        """
+        if container.data is None:
+            return
+        column_name = container.data.metadata["column_name"]
+        for pipeline in OPERATION_PIPELINES.values():
+            pipeline.initialise_flags(container.data, column_name)
 
     @log_duration("Saving datasets time taken: ", footer=True)
     def _save_datasets(self) -> None:
