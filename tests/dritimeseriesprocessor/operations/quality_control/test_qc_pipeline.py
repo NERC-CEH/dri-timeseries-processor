@@ -4,6 +4,7 @@ import polars as pl
 import pytest
 import time_stream as ts
 from polars.testing import assert_series_equal
+from tests.utils.data_creation import create_timeframe
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
@@ -72,3 +73,43 @@ class TestCoreFlagUpdater:
         pipeline = QCPipeline()
         pipeline.core_flag_updater(mock_timeframe)
         mock_method.assert_called_once_with(mock_timeframe)
+
+
+class TestRemoveFlaggedData:
+    def _make_qc_timeframe(self, values: list, flags: list, col: str = "value") -> ts.TimeFrame:
+        tf = create_timeframe(values, column_name=col)
+        tf = tf.with_metadata({"column_name": col})
+        tf.register_flag_system("qc_flags", {"range": 1})
+        tf.init_flag_column("qc_flags", f"{col}_QC_FLAG")
+        flag_col = f"{col}_QC_FLAG"
+        for i, val in enumerate(flags):
+            if val > 0:
+                tf.add_flag(flag_col, "range", pl.Series([j == i for j in range(len(flags))]))
+        return tf
+
+    def test_nulls_values_where_flag_is_nonzero(self) -> None:
+        """Tests that values are set to null where the QC flag is greater than zero."""
+        tf = self._make_qc_timeframe(values=[1.0, 2.0, 3.0], flags=[0, 1, 0])
+
+        result = QCPipeline.remove_flagged_data(tf)
+
+        col = result.df["value"].to_list()
+        assert col[0] == 1.0
+        assert col[1] is None
+        assert col[2] == 3.0
+
+    def test_leaves_values_untouched_when_all_flags_zero(self) -> None:
+        """Tests that no values are removed when all QC flags are zero."""
+        tf = self._make_qc_timeframe(values=[1.0, 2.0, 3.0], flags=[0, 0, 0])
+
+        result = QCPipeline.remove_flagged_data(tf)
+
+        assert result.df["value"].to_list() == [1.0, 2.0, 3.0]
+
+    def test_nulls_all_values_when_all_flags_nonzero(self) -> None:
+        """Tests that all values are set to null when every row has a QC flag."""
+        tf = self._make_qc_timeframe(values=[1.0, 2.0, 3.0], flags=[1, 1, 1])
+
+        result = QCPipeline.remove_flagged_data(tf)
+
+        assert all(v is None for v in result.df["value"].to_list())

@@ -384,6 +384,100 @@ class TestTimeSeriesProcessor:
             assert result_time_name == expected_time_name
 
 
+class TestProcessDatasetQCRemoval:
+    def test_remove_flagged_data_called_after_last_qc_block(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Tests that remove_flagged_data is called once after the final QC step in the plan."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+
+        qc_cfg = MagicMock(spec=DataProcessingConfig)
+        qc_cfg.config_type = ConfigurationType.QUALITY_CONTROL
+        qc_cfg.method_configs = []
+        container.data_processing_configs = {"qc": qc_cfg}
+        container.plan_order = ["qc"]
+        container.data = create_timeframe([1.0, 2.0])
+        container.data = container.data.with_metadata({"column_name": "value"})
+        container.data.register_flag_system("qc_flags", {"range": 1})
+        container.data.init_flag_column("qc_flags", "value_QC_FLAG")
+
+        remove_calls: list[int] = []
+        plan_step: list[int] = [0]
+        real_remove = __import__(
+            "dritimeseriesprocessor.operations.quality_control.qc_pipeline", fromlist=["QCPipeline"]
+        ).QCPipeline.remove_flagged_data
+
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.remove_flagged_data",
+            lambda tf: (remove_calls.append(plan_step[0]), real_remove(tf))[1],
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
+            lambda self, container, repo, config: (plan_step.__setitem__(0, plan_step[0] + 1), container.data)[1],
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset("ds1")
+
+        assert remove_calls == [1]  # fired once, after the first (and only) QC step ran
+
+    def test_remove_flagged_data_only_after_final_qc_step_not_between(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Tests that remove_flagged_data fires only after the second QC step, not after the first."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+
+        def _qc_cfg() -> MagicMock:
+            cfg = MagicMock(spec=DataProcessingConfig)
+            cfg.config_type = ConfigurationType.QUALITY_CONTROL
+            cfg.method_configs = []
+            return cfg
+
+        container.data_processing_configs = {"qc1": _qc_cfg(), "qc2": _qc_cfg()}
+        container.plan_order = ["qc1", "qc2"]
+        container.data = create_timeframe([1.0, 2.0])
+        container.data = container.data.with_metadata({"column_name": "value"})
+        container.data.register_flag_system("qc_flags", {"range": 1})
+        container.data.init_flag_column("qc_flags", "value_QC_FLAG")
+
+        remove_calls: list[int] = []
+        plan_step: list[int] = [0]
+        real_remove = __import__(
+            "dritimeseriesprocessor.operations.quality_control.qc_pipeline", fromlist=["QCPipeline"]
+        ).QCPipeline.remove_flagged_data
+
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.remove_flagged_data",
+            lambda tf: (remove_calls.append(plan_step[0]), real_remove(tf))[1],
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
+            lambda self, container, repo, config: (plan_step.__setitem__(0, plan_step[0] + 1), container.data)[1],
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset("ds1")
+
+        # remove_flagged_data fires once, and only after qc2 (step counter = 2), not after qc1 (step counter = 1)
+        assert remove_calls == [2]
+
+
 class TestGetNextStepType:
     def _make_processor(self, mock_router: MagicMock, mock_writer: MagicMock) -> TimeSeriesProcessor:
         mock_graph = create_mock_dag([["ds1"]])

@@ -242,3 +242,28 @@ class TestLoadOnly:
         container = make_time_series_container("a")
         container.attach_configs([_make_config("a")])
         assert container.is_load() is False
+
+
+class TestAttachConfigs:
+    def test_stores_configs_by_config_id(self) -> None:
+        """Tests that attach_configs indexes each config under its config_id."""
+        container = make_time_series_container("a")
+        cfg = _make_config("a", config_id="qc-1")
+        container.attach_configs([cfg])
+        assert container.data_processing_configs["qc-1"] is cfg
+
+    def test_appends_to_existing_configs(self) -> None:
+        """Tests that attaching a second config adds to the dict rather than replacing it."""
+        container = make_time_series_container("a")
+        cfg1 = _make_config("a", config_id="qc-1")
+        cfg2 = _make_config("a", config_id="corr-1", config_type=ConfigurationType.CORRECTION)
+        container.attach_configs([cfg1])
+        container.attach_configs([cfg2])
+        assert "qc-1" in container.data_processing_configs
+        assert "corr-1" in container.data_processing_configs
+
+    def test_plan_order_is_independent_of_attach_configs(self) -> None:
+        """Tests that plan_order is not set by attach_configs - it must be set separately."""
+        container = make_time_series_container("a")
+        container.attach_configs([_make_config("a", config_id="qc-1")])
+        assert container.plan_order == []
