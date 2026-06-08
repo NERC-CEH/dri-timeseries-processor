@@ -22,8 +22,6 @@ BatchLoad --> S3Reader[(S3 Storage Reader)]
 BatchLoad --> Pipeline[Processing Pipeline]
 Pipeline --> StartLayer{{For each layer in DAG}}
 StartLayer --> StartProc{{For each dataset in layer}}
-StartProc --> StartLayer
-
 StartProc --> StartStep{{For each step in the plan}}
 StartStep --> CheckType{Dispatch on<br/>configuration type}
 
