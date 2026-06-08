@@ -16,7 +16,7 @@ BuildDAG --> MetaAPI[(Metadata Store API)]
 MetaAPI --> BuildDAG
 BuildDAG --> TopoSort[Topological Sort<br/>Determine execution order]
 
-TopoSort --> BatchLoad[Batch-load all load datasets<br/>Read raw parquet, add core flags]
+TopoSort --> BatchLoad[Batch load raw datasets]
 BatchLoad --> S3Reader[(S3 Storage Reader)]
 S3Reader --> BatchLoad
 
@@ -25,31 +25,27 @@ Pipeline --> StartLayer{{For each layer in DAG}}
 StartLayer --> StartProc{{For each dataset in layer}}
 StartProc --> StartLayer
 
-StartProc --> StartStep{{For each step in the dataset's plan}}
+StartProc --> StartStep{{For each step in the plan}}
 StartStep --> CheckType{Dispatch on<br/>configuration type}
-CheckType --> StartStep
 
 CheckType -->|LOAD| RunLoad[Copy dependency data or<br/>stage raw files to local temp dir]
 RunLoad --> S3Reader
-RunLoad --> StartStep
+RunLoad --> NextDataset
 
 CheckType -->|CORRECTION| RunCorr[Run Corrections]
-RunCorr --> StartStep
+RunCorr --> NextDataset
 
 CheckType -->|QUALITY_CONTROL| RunQC[Run Quality Control Checks<br/>Remove failed data after last QC step]
-RunQC --> StartStep
+RunQC --> NextDataset
 
 CheckType -->|INFILLING| RunInfill[Run Infilling]
-RunInfill --> StartStep
+RunInfill --> NextDataset
 
 CheckType -->|AGGREGATION| Resample[Temporal Resampling]
-Resample --> StartStep
+Resample --> NextDataset
 
-CheckType -->|DERIVATION| Compute[Compute derived variable<br/>e.g., Net Radiation]
-Compute --> StartStep
-
-StartStep -->|Plan complete| Backfill[Backfill any missing flag columns]
-Backfill --> NextDataset
+CheckType -->|DERIVATION| Compute[Compute derived variable]
+Compute --> NextDataset
 
 NextDataset([Next dataset])
 NextDataset -->|All datasets done| NextLayer
@@ -68,7 +64,7 @@ classDef completion fill:#C8E6C9,stroke:#9AB89C,stroke-width:2px
 
 class Start,Parse,LoadConfig setup
 class BuildDAG,TopoSort orchestration
-class Pipeline,CheckType,StartLayer,StartProc,StartStep,BatchLoad,RunLoad,RunCorr,RunQC,RunInfill,Resample,Compute,Backfill,NextDataset,NextLayer processing
+class Pipeline,CheckType,StartLayer,StartProc,StartStep,BatchLoad,RunLoad,RunCorr,RunQC,RunInfill,Resample,Compute,NextDataset,NextLayer processing
 class MetaAPI,S3Reader,S3Writer,PrometheusGW storage
 class ExportMetrics,Done completion
 ```
