@@ -27,27 +27,32 @@ StartStep --> CheckType{Dispatch on<br/>configuration type}
 
 CheckType -->|LOAD| RunLoad[Copy dependency data or<br/>stage raw files to local temp dir]
 RunLoad --> S3Reader
-RunLoad --> NextDataset
+RunLoad --> NextStep
 
 CheckType -->|CORRECTION| RunCorr[Run Corrections]
-RunCorr --> NextDataset
+RunCorr --> NextStep
 
 CheckType -->|QUALITY_CONTROL| RunQC[Run Quality Control Checks<br/>Remove failed data after last QC step]
-RunQC --> NextDataset
+RunQC --> NextStep
 
 CheckType -->|INFILLING| RunInfill[Run Infilling]
-RunInfill --> NextDataset
+RunInfill --> NextStep
 
 CheckType -->|AGGREGATION| Resample[Temporal Resampling]
-Resample --> NextDataset
+Resample --> NextStep
 
 CheckType -->|DERIVATION| Compute[Compute derived variable]
-Compute --> NextDataset
+Compute --> NextStep
+
+NextStep([Next step])
+NextStep -->|All steps done| NextDataset
 
 NextDataset([Next dataset])
 NextDataset -->|All datasets done| NextLayer
+
 NextLayer([Next layer])
 NextLayer -->|All layers done| SaveDatasets[Collect datasets and<br />write to S3]
+
 SaveDatasets --> S3Writer[(S3 Storage Writer)]
 SaveDatasets --> ExportMetrics[Export Metrics to<br />Prometheus]
 ExportMetrics --> PrometheusGW[(Prometheus<br/>Pushgateway)]
