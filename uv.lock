@@ -531,7 +531,7 @@ wheels = [
 
 [[package]]
 name = "dri-timeseries-processor"
-version = "0.3.11"
+version = "0.3.12"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
