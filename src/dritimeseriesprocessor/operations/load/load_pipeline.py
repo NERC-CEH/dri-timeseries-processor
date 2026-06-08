@@ -52,9 +52,9 @@ class LoadPipeline:
                     raise RuntimeError(f"No data found for base dependency: {dep.ts_id}")
                 container.data = dep.data.copy(share_df=False)
 
-            case "load_local_copy":
+            case "load-local-copy":
                 container.staged_dir = self.data_router.stage_locally(
-                    container, config.params["processing_start_date"].start_date, config.params["processing_end_date"]
+                    container, config.params["processing_start_date"], config.params["processing_end_date"]
                 )
 
         return container

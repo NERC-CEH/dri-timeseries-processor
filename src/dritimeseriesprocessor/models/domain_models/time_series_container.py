@@ -42,6 +42,7 @@ class TimeSeriesContainer:
 
     plan_order: list[str] = field(default_factory=list)
     data_processing_configs: dict[str, DataProcessingConfig] = field(default_factory=dict)
+    base_dependency: list[str] = field(default_factory=list)
 
     data: ts.TimeFrame | None = None
     staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)

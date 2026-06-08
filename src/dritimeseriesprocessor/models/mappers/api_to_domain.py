@@ -49,7 +49,9 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
     dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
 
     plan_order = []
+    base_dependency = []
     if item.methodology:
+        base_dependency = [u.id for u in item.methodology.uses] if item.methodology.uses else []
         steps = item.methodology.steps or []
         indices = [step.index for step in steps]
         if len(indices) != len(set(indices)):
@@ -72,6 +74,7 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
         dataset_type=dataset_type,
         distribution_url=item.distribution_url,
         plan_order=plan_order,
+        base_dependency=base_dependency,
     )
 
 

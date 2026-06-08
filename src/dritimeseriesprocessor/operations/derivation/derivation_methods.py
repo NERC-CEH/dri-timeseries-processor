@@ -847,19 +847,10 @@ class EddyProRun(DerivationMethod):
         end_date = config.params["processing_end_date"]
         site_metadata = config.params["site_metadata"]
 
-        raw_container = dataset_repository[container.base_dependency]
+        if len(container.base_dependency) != 1:
+            raise ValueError(f"Expected exactly one base dependency. Got: {container.base_dependency}")
+        raw_container = dataset_repository[container.base_dependency[0]]
 
-        # raw_candidates = [
-        #     dataset_repository[dep_id]
-        #     for dep_id in dep_ids
-        #     if dataset_repository[dep_id].method_type() == ConfigurationType.LOAD_LOCAL_COPY
-        # ]
-        # if len(raw_candidates) != 1:
-        #     raise ValueError(
-        #         "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
-        #         f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
-        #     )
-        # raw_container = raw_candidates[0]
         if raw_container.staged_dir is None:
             raise ValueError(f"Raw dependency {raw_container.ts_id} was not staged locally before the EddyPro run.")
 
