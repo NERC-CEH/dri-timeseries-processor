@@ -256,24 +256,6 @@ class TimeSeriesProcessor:
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
 
-    def _load_from_collection(self, container: TimeSeriesContainer, bundle: TimeSeriesContainer) -> None:
-        """Populate a container's data by extracting its source column from an upstream ObservationDataset bundle.
-
-        After this call, `container.data` is a single-column TimeFrame with initial flags applied - indistinguishable
-        from a normally loaded raw dataset.
-
-        Args:
-            container: The dependent TimeSeriesContainer to populate.
-            bundle: The upstream ObservationDataset bundle to extract the column from.
-        """
-        if bundle.data is None:
-            raise ValueError(f"Bundle has no data: {bundle.ts_id}")
-        df = bundle.data.df.select([bundle.time_column_name, container.source_column])
-        container.init_timeframe(df)
-        if container.data is None:
-            raise ValueError(f"Container has no data after init_timeframe: {container.ts_id}")
-        container.data = add_initial_core_flags(container.data)
-
     @log_duration("Saving datasets time taken: ", footer=True)
     def _save_datasets(self) -> None:
         """Determine which datasets to save, pool them together in groups that are being saved to the same
