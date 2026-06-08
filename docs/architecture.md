@@ -18,7 +18,6 @@ BuildDAG --> TopoSort[Topological Sort<br/>Determine execution order]
 
 TopoSort --> BatchLoad[Batch load raw datasets]
 BatchLoad --> S3Reader[(S3 Storage Reader)]
-S3Reader --> BatchLoad
 
 BatchLoad --> Pipeline[Processing Pipeline]
 Pipeline --> StartLayer{{For each layer in DAG}}
