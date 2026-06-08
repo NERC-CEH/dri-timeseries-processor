@@ -1,13 +1,18 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.json?_view=observation",
+    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.json?_view=timeseries",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.json?_view=observation"
+      "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.geojson?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.rdf?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.html?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.ttl?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.csv?_view=timeseries",
+      "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw.json?_view=timeseries"
     ]
   },
   "items": [
@@ -19,38 +24,70 @@
         }
       ],
       "processingLevel": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw"
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw",
+        "prefLabel": [
+          "Raw"
+        ]
       },
-      "measure": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/measure/flux-plynl-raw",
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/variable/flux-plynl-raw"
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-raw-plan",
+        "@type": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
           }
-        }
-      ],
+        ],
+        "rawConfiguration": "[\"flux-plynl-raw-load-local-copy\"]",
+        "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-raw-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-raw-load-local-copy",
+              "appliesToDataset": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
+                }
+              ],
+              "hasCurrentValue": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-raw-load-local-copy",
+                  "method": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/load-local-copy"
+                  },
+                  "rawConfiguration": "{\"id\":\"flux-plynl-raw-load-local-copy\",\"type\":\"load\",\"method\":\"load-local-copy\",\"site\":\"flux-plynl\"}",
+                  "@type": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
+                    }
+                  ]
+                }
+              ],
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+                }
+              ]
+            }
+          }
+        ]
+      },
       "distribution": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-raw",
-          "accessUrl": ["s3://ukceh-fdri-staging-obs/Flux/"]
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw#distribution",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/ghg"
+          },
+          "accessUrl": [
+            "s3://ukceh-dri-staging-ingested/network=fdri/collection=flux/site=flux-plynl/"
+          ]
         }
       ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
-        }
-      ],
-      "originatingProgramme": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
         }
       ]
     }

@@ -5,14 +5,9 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_series_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
-    DataProcessingMethodConfig,
-)
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 @pytest.fixture
@@ -22,41 +17,6 @@ def mock_timeframe() -> MagicMock:
     tf.metadata = {"column_name": "value"}
     tf.with_df.return_value = tf
     return tf
-
-
-@pytest.fixture
-def mock_container() -> MagicMock:
-    """Create a mock TimeSeriesContainer with correction configs."""
-    container = MagicMock(spec=TimeSeriesContainer)
-
-    method_config = MagicMock(spec=DataProcessingMethodConfig)
-    method_config.method = "range"
-    method_config.params = {"lt": 0, "gt": 100}
-
-    proc_config = MagicMock(spec=DataProcessingConfig)
-    proc_config.method_configs = [method_config]
-    proc_config.config_type = ConfigurationType.QUALITY_CONTROL
-
-    container.qc_configs = {proc_config}
-    return container
-
-
-class TestGetConfigs:
-    def test_get_qc_configs(self, mock_container: MagicMock) -> None:
-        """Test that infill configs are extracted from container."""
-        pipeline = QCPipeline()
-        result = pipeline.get_configs(mock_container)
-        assert result == mock_container.qc_configs
-
-    def test_empty_infill_configs(self) -> None:
-        """Test that empty set is returned when no infill configs."""
-        pipeline = QCPipeline()
-        container = MagicMock(spec=TimeSeriesContainer)
-        container.qc_configs = set()
-
-        result = pipeline.get_configs(container)
-
-        assert result == set()
 
 
 class TestGetFlagColumn:

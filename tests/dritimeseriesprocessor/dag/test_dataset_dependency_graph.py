@@ -33,22 +33,24 @@ def make_time_series_container(
     depends_on = depends_on or []
     load_only_deps = load_only_deps or []
 
-    method_config = None
+    configs = []
     if depends_on or load_only_deps:
         params: dict = {}
         if depends_on:
             params["dep_ts"] = depends_on
         if load_only_deps:
             params["load_dep_ts"] = load_only_deps
-        method_config = DataProcessingConfig(
-            ts_id=ts_id,
-            config_id=ts_id + "_cfg",
-            config_type=ConfigurationType.DERIVATION,
-            method_configs=[DataProcessingMethodConfig(method="m", params=params)],
-            annotations={},
+        configs.append(
+            DataProcessingConfig(
+                ts_id=ts_id,
+                config_id=ts_id + "_cfg",
+                config_type=ConfigurationType.DERIVATION,
+                method_configs=[DataProcessingMethodConfig(method="m", params=params)],
+                annotations={},
+            )
         )
 
-    return TimeSeriesContainer(
+    container = TimeSeriesContainer(
         ts_id=ts_id,
         network="network",
         source_bucket=ts_id + "_bucket",
@@ -60,11 +62,9 @@ def make_time_series_container(
         resolution=ts_id + "_resolution",
         periodicity=ts_id + "_periodicity",
         processing_level=ProcessingLevel.PROCESSED,
-        qc_configs=set(),
-        infill_configs=set(),
-        correction_configs=set(),
-        method_config=method_config,
     )
+    container.attach_configs(configs)
+    return container
 
 
 def make_processing_config_container(ts_id: str) -> DataProcessingConfig:
@@ -326,9 +326,9 @@ class TestBuild:
         builder._resolve_root_datasets = MagicMock(return_value=[container_a])
         builder.build()
 
-        # add the expected cfg into the domain models
-        container_a.correction_configs = {make_processing_config_container("A")}
-        container_b.correction_configs = {make_processing_config_container("B")}
+        # attach the expected cfg into the domain models
+        container_a.attach_configs([make_processing_config_container("A")])
+        container_b.attach_configs([make_processing_config_container("B")])
 
         assert builder.datasets == {"A": container_a, "B": container_b}
         assert mock_router.fetch_dataset_by_ids.call_count == 1
@@ -346,10 +346,10 @@ class TestBuild:
         builder._resolve_root_datasets = MagicMock(return_value=[container_a, container_b, container_c])
         builder.build()
 
-        # add the expected cfg into the domain models
-        container_a.correction_configs = {make_processing_config_container("A")}
-        container_b.correction_configs = {make_processing_config_container("B")}
-        container_c.correction_configs = {make_processing_config_container("C")}
+        # attach the expected cfg into the domain models
+        container_a.attach_configs([make_processing_config_container("A")])
+        container_b.attach_configs([make_processing_config_container("B")])
+        container_c.attach_configs([make_processing_config_container("C")])
 
         assert builder.datasets == {
             "A": container_a,
@@ -657,7 +657,7 @@ class TestLoadOnlyDependencies:
         assert builder.datasets["L"].load_only is True
 
     def test_load_only_dep_has_no_configs_attached(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """A load-only dep goes into datasets with no configs (method_config=None, empty config sets)."""
+        """A load-only dep goes into datasets with no processing configs attached."""
         container_a = make_time_series_container("A", load_only_deps=["L"])
         mock_router = setup_mocks(["A", "L"], monkeypatch)
         builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
@@ -665,10 +665,8 @@ class TestLoadOnlyDependencies:
         builder.build()
 
         dep = builder.datasets["L"]
-        assert dep.method_config is None
-        assert dep.correction_configs == set()
-        assert dep.qc_configs == set()
-        assert dep.infill_configs == set()
+        assert dep.data_processing_configs == {}
+        assert dep.is_load() is True
 
     def test_fetch_processing_configs_not_called_for_load_only(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """fetch_processing_configs must never be called with a load-only ID."""

@@ -7,12 +7,12 @@
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.csv",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.json",
       "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.html",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.ttl",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.csv",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.geojson",
       "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.rdf",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.geojson"
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.ttl",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.json"
     ]
   },
   "items": [
@@ -29,6 +29,9 @@
       "startedAtTime": "2016-08-11T15:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-elmst-tdt8",
+        "label": [
+          "TDT 8 at Elmsett"
+        ],
         "isPartOf": {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-elmst",
           "label": [

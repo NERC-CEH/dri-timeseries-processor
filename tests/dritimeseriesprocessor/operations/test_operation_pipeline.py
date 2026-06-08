@@ -1,4 +1,4 @@
-from typing import Any, Iterable
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -13,7 +13,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 class MockOperationPipeline(OperationPipeline):
@@ -21,9 +21,6 @@ class MockOperationPipeline(OperationPipeline):
 
     def apply(self, tf: ts.TimeFrame, *_, **__) -> ts.TimeFrame:
         return tf
-
-    def get_configs(self, container: TimeSeriesContainer) -> Iterable[DataProcessingConfig]:
-        return container.qc_configs
 
     def get_flag_column(self, column: str) -> str:
         return f"{column}_TEST_FLAG"
@@ -52,32 +49,25 @@ def mock_container(mock_timeframe: MagicMock) -> MagicMock:
     container = MagicMock(spec=TimeSeriesContainer)
     container.time_column_name = "time"
     container.data = mock_timeframe
+    return container
 
+
+@pytest.fixture
+def proc_config() -> MagicMock:
+    """Create a mock DataProcessingConfig with a single method config."""
     method_config = MagicMock(spec=DataProcessingMethodConfig)
     method_config.method = "test_method"
     method_config.params = {}
 
-    proc_config = MagicMock(spec=DataProcessingConfig)
-    proc_config.method_configs = [method_config]
-
-    container.qc_configs = [proc_config]
-    return container
-
-
-class TestSortConfigs:
-    def test_returns_configs_unchanged_by_default(self) -> None:
-        """Test that default implementation returns configs unchanged."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
-        configs = [MagicMock(id=1), MagicMock(id=2), MagicMock(id=3)]
-
-        result = pipeline.sort_configs(configs)
-        assert result == configs
+    config = MagicMock(spec=DataProcessingConfig)
+    config.method_configs = [method_config]
+    return config
 
 
 class TestInitialiseFlagSystem:
     def test_registers_new_flag_system(self, mock_timeframe: MagicMock) -> None:
         """Test that flag system registration is called when it doesn't exist."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
         pipeline.registry = {"flag1": MagicMock(flag_value=1), "flag2": MagicMock(flag_value=2)}
 
         mock_timeframe.get_flag_system.side_effect = FlagSystemNotFoundError("Not found")
@@ -87,7 +77,7 @@ class TestInitialiseFlagSystem:
 
     def test_no_new_register(self, mock_timeframe: MagicMock) -> None:
         """Test that flag system registration is not called when it does exist."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
         pipeline.registry = {"flag1": MagicMock(flag_value=1), "flag2": MagicMock(flag_value=2)}
 
         mock_timeframe.get_flag_system.return_value = {"test_flags": "exist"}
@@ -99,14 +89,14 @@ class TestInitialiseFlagSystem:
 class TestInitialiseFlagColumn:
     def test_initialises_new_flag_column(self, mock_timeframe: MagicMock) -> None:
         """Test that flag column registration is called when it doesn't exist."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
 
         pipeline._initialise_flag_column(mock_timeframe, "value")
         mock_timeframe.init_flag_column.assert_called_once_with("test_flags", "value_TEST_FLAG")
 
     def test_no_new_register(self, mock_timeframe: MagicMock) -> None:
         """Test that flag column registration is not called when it does exist."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
         mock_timeframe.flag_columns = ["value_TEST_FLAG"]
 
         pipeline._initialise_flag_column(mock_timeframe, "value")
@@ -114,13 +104,15 @@ class TestInitialiseFlagColumn:
 
 
 class TestRun:
-    def test_returns_updated_timeframe(self, mock_container: MagicMock, mock_timeframe: MagicMock) -> None:
+    def test_returns_updated_timeframe(
+        self, mock_container: MagicMock, mock_timeframe: MagicMock, proc_config: MagicMock
+    ) -> None:
         """Test that updated TimeFrame is returned."""
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_flags")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
         updated_tf = MagicMock()
         pipeline.core_flag_updater = MagicMock(return_value=updated_tf)
 
-        result = pipeline.run(mock_container, {})
+        result = pipeline.run(mock_container, {}, proc_config)
         assert result is updated_tf.rename_time_column()
 
 
@@ -145,10 +137,9 @@ class TestApplyRounding:
         method_config.method_configs = [config]
 
         mock_container.data = tf
-        mock_container.qc_configs = [method_config]
 
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_rounding")
-        result = pipeline.run(mock_container, {})
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_rounding")
+        result = pipeline.run(mock_container, {}, method_config)
 
         expected_tf = create_timeframe(expected)
         assert_frame_equal(result.df["time", "value"], expected_tf.df["time", "value"])
@@ -166,9 +157,8 @@ class TestApplyRounding:
         method_config.method_configs = [config]
 
         mock_container.data = tf
-        mock_container.qc_configs = [method_config]
 
-        pipeline = MockOperationPipeline(OperationType.QUALITY_CONTROL, "test_rounding")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_rounding")
         with pytest.raises(
             (OverflowError, TypeError),
             match=(
@@ -176,4 +166,4 @@ class TestApplyRounding:
                 "argument 'decimals': 'float' object cannot be interpreted as an integer"
             ),
         ):
-            pipeline.run(mock_container, {})
+            pipeline.run(mock_container, {}, method_config)

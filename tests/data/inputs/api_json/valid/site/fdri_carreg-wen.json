@@ -7,12 +7,12 @@
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.rdf",
-      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.geojson",
-      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.json",
-      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.html",
       "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.ttl",
-      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.csv"
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.json",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.csv",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.geojson",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.rdf",
+      "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01.html"
     ]
   },
   "items": [
@@ -35,19 +35,19 @@
       ],
       "hasPart": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-raine"
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-ws",
           "label": [
             "WS"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-na"
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-logger"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-raine"
+          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-na"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-hmp"
@@ -80,28 +80,25 @@
       ],
       "observes": [
         {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/dew_point"
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/wd"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation_inten"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/albedo"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/revolutions"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precip_inten"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/soc_batt"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/voltage_batt"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swout"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precip"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rh"
@@ -110,25 +107,31 @@
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwin"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/albedo"
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precipitation"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swout"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/dew_point"
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/voltage_batt"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin"
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precip_tot"
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwout"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/revolutions"
         }
       ]
     }
