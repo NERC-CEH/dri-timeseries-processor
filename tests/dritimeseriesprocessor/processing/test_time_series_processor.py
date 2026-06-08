@@ -8,8 +8,9 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
-from dritimeseriesprocessor.utils.enums import ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from utils.data_creation import create_timeframe, make_time_series_container
 
 
@@ -381,3 +382,67 @@ class TestTimeSeriesProcessor:
             assert result_key == expected_key
             assert_frame_equal(result_df, expected_df)
             assert result_time_name == expected_time_name
+
+
+class TestGetNextStepType:
+    def _make_processor(self, mock_router: MagicMock, mock_writer: MagicMock) -> TimeSeriesProcessor:
+        mock_graph = create_mock_dag([["ds1"]])
+        return TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+    def test_returns_config_type_of_next_step(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that the config type of the step after current_idx is returned."""
+        container = make_time_series_container("ds1")
+        container.plan_order = ["step_a", "step_b"]
+
+        cfg_a = MagicMock(spec=DataProcessingConfig)
+        cfg_a.config_type = ConfigurationType.QUALITY_CONTROL
+        cfg_b = MagicMock(spec=DataProcessingConfig)
+        cfg_b.config_type = ConfigurationType.INFILLING
+
+        container.data_processing_configs = {"step_a": cfg_a, "step_b": cfg_b}
+
+        result = TimeSeriesProcessor._get_next_step_type(container, 0)
+
+        assert result == ConfigurationType.INFILLING
+
+    def test_returns_none_when_current_step_is_last(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that None is returned when there is no step after current_idx."""
+        container = make_time_series_container("ds1")
+        container.plan_order = ["step_a"]
+
+        cfg_a = MagicMock(spec=DataProcessingConfig)
+        cfg_a.config_type = ConfigurationType.QUALITY_CONTROL
+        container.data_processing_configs = {"step_a": cfg_a}
+
+        result = TimeSeriesProcessor._get_next_step_type(container, 0)
+
+        assert result is None
+
+
+class TestBackfillFlagColumns:
+    def test_adds_missing_flag_columns(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that flag columns for all operation pipelines are added when not already present."""
+        container = make_time_series_container("ds1")
+        container.data = create_timeframe([1.0, 2.0])
+        container.data = container.data.with_metadata({"column_name": "value"})
+
+        TimeSeriesProcessor._backfill_flag_columns(container)
+
+        # CorrectionPipeline, QCPipeline and InfillPipeline all have flag systems
+        assert any("CORRS_FLAG" in col for col in container.data.flag_columns)
+        assert any("QC_FLAG" in col for col in container.data.flag_columns)
+        assert any("INFILL_FLAG" in col for col in container.data.flag_columns)
+
+    def test_does_nothing_when_data_is_none(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that _backfill_flag_columns returns without error when container.data is None."""
+        container = make_time_series_container("ds1")
+        container.data = None
+
+        TimeSeriesProcessor._backfill_flag_columns(container)  # should not raise

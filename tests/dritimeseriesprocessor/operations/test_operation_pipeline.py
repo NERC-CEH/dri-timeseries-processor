@@ -103,6 +103,39 @@ class TestInitialiseFlagColumn:
         mock_timeframe.init_flag_column.assert_not_called()
 
 
+class TestInitialiseFlags:
+    def test_creates_flag_system_and_column(self, mock_timeframe: MagicMock) -> None:
+        """Tests that initialise_flags registers the flag system and column when neither exists."""
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
+        pipeline.registry = {"flag1": MagicMock(flag_value=1)}
+        mock_timeframe.get_flag_system.side_effect = FlagSystemNotFoundError("missing")
+
+        pipeline.initialise_flags(mock_timeframe, "value")
+
+        mock_timeframe.register_flag_system.assert_called_once()
+        mock_timeframe.init_flag_column.assert_called_once_with("test_flags", "value_TEST_FLAG")
+
+    def test_no_op_when_flag_system_name_is_none(self, mock_timeframe: MagicMock) -> None:
+        """Tests that initialise_flags does nothing when the pipeline has no flag system."""
+        pipeline = MockOperationPipeline(ConfigurationType.AGGREGATION, flag_system_name=None)
+
+        pipeline.initialise_flags(mock_timeframe, "value")
+
+        mock_timeframe.register_flag_system.assert_not_called()
+        mock_timeframe.init_flag_column.assert_not_called()
+
+    def test_does_not_re_register_column_that_already_exists(self, mock_timeframe: MagicMock) -> None:
+        """Tests that initialise_flags does not re-register a flag column that is already present."""
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
+        pipeline.registry = {"flag1": MagicMock(flag_value=1)}
+        mock_timeframe.get_flag_system.return_value = {"test_flags": "exists"}
+        mock_timeframe.flag_columns = ["value_TEST_FLAG"]
+
+        pipeline.initialise_flags(mock_timeframe, "value")
+
+        mock_timeframe.init_flag_column.assert_not_called()
+
+
 class TestRun:
     def test_returns_updated_timeframe(
         self, mock_container: MagicMock, mock_timeframe: MagicMock, proc_config: MagicMock
