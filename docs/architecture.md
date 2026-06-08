@@ -66,7 +66,7 @@ classDef completion fill:#C8E6C9,stroke:#9AB89C,stroke-width:2px
 
 class Start,Parse,LoadConfig setup
 class BuildDAG,TopoSort orchestration
-class Pipeline,CheckType,StartLayer,StartProc,StartStep,BatchLoad,RunLoad,RunCorr,RunQC,RunInfill,Resample,Compute,NextDataset,NextLayer processing
+class Pipeline,CheckType,StartLayer,StartProc,StartStep,BatchLoad,RunLoad,RunCorr,RunQC,RunInfill,Resample,Compute,NextStep,NextDataset,NextLayer processing
 class MetaAPI,S3Reader,S3Writer,PrometheusGW storage
 class ExportMetrics,Done completion
 ```
