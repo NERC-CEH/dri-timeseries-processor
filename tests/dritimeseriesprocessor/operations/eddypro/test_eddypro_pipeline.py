@@ -5,12 +5,11 @@ from unittest.mock import MagicMock
 import polars as pl
 import pytest
 
-from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline, _parse_eddypro_output
 from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import EddyProRunSpec
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProResult
-from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 _FULL_OUTPUT_HEADER = "file,date,time,DoY,H,qc_H,Tau,qc_Tau,co2_flux\n"
 _FULL_OUTPUT_UNITS = "---,yyyy-mm-dd,HH:MM,---,W/m^2,#,N/m^2,#,umol/(m^2 s)\n"
@@ -134,7 +133,7 @@ class TestEddyProPipeline:
     ) -> None:
         def fake_build_run_spec(
             self: object,
-            config: DataProcessingConfig,
+            config: DataProcessingMethodConfig,
             site_metadata: SiteMetadata,
         ) -> EddyProRunSpec:
             return EddyProRunSpec(site_code="PLYNL")
@@ -176,12 +175,7 @@ class TestEddyProPipeline:
         pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)  # type: ignore[arg-type]
         result = pipeline.run(
             raw_data_dir=staged_raw_dir,
-            method_config=DataProcessingConfig(
-                ts_id="http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed",
-                config_id="config-1",
-                config_type=ConfigurationType.DERIVATION,
-                method_configs=[],
-            ),
+            method_config=DataProcessingMethodConfig(method="eddypro-run", params={}),
             site_metadata=SiteMetadata(
                 site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
                 network="fdri",
@@ -213,7 +207,7 @@ class TestEddyProPipeline:
 
         def fake_build_run_spec(
             self: object,
-            config: DataProcessingConfig,
+            config: DataProcessingMethodConfig,
             site_metadata: SiteMetadata,
         ) -> EddyProRunSpec:
             return EddyProRunSpec(site_code="PLYNL")
@@ -250,12 +244,7 @@ class TestEddyProPipeline:
         pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)  # type: ignore[arg-type]
         pipeline.run(
             raw_data_dir=tmp_path / "raw",
-            method_config=DataProcessingConfig(
-                ts_id="dataset",
-                config_id="config-1",
-                config_type=ConfigurationType.DERIVATION,
-                method_configs=[],
-            ),
+            method_config=DataProcessingMethodConfig(method="eddypro-run", params={}),
             site_metadata=SiteMetadata(
                 site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
                 network="fdri",
@@ -275,7 +264,7 @@ class TestEddyProPipeline:
     ) -> None:
         def fake_build_run_spec(
             self: object,
-            config: DataProcessingConfig,
+            config: DataProcessingMethodConfig,
             site_metadata: SiteMetadata,
         ) -> EddyProRunSpec:
             return EddyProRunSpec(site_code="")
@@ -312,12 +301,7 @@ class TestEddyProPipeline:
         pipeline = EddyProPipeline(runner=runner, config_builder_cls=FakeConfigBuilder)  # type: ignore[arg-type]
         result = pipeline.run(
             raw_data_dir=Path("/tmp/raw"),
-            method_config=DataProcessingConfig(
-                ts_id="dataset",
-                config_id="config-1",
-                config_type=ConfigurationType.DERIVATION,
-                method_configs=[],
-            ),
+            method_config=DataProcessingMethodConfig(method="eddypro-run", params={}),
             site_metadata=SiteMetadata(
                 site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
                 network="fdri",

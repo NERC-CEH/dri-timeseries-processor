@@ -1,5 +1,4 @@
 from datetime import datetime
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -11,7 +10,7 @@ from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependenc
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
-from dritimeseriesprocessor.utils.enums import ConfigurationType, OperationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from utils.data_creation import create_timeframe, make_time_series_container
 
 
@@ -70,7 +69,7 @@ class TestTimeSeriesProcessor:
         )
         # override the process dataset function for this test
         processor.process_dataset = MagicMock()
-        processor._batch_load_raw = MagicMock()
+        processor._batch_load = MagicMock()
         processor._save_datasets = MagicMock()
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
@@ -94,6 +93,7 @@ class TestTimeSeriesProcessor:
         processor.process_dataset.assert_called_once_with("ds1")
 
     def test_load_raw(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Test that _batch_load reads a load container's data into a TimeFrame and adds core flags."""
         ds_id = "ds1"
         mock_graph = create_mock_dag([[ds_id]])
         processor = TimeSeriesProcessor(
@@ -107,7 +107,7 @@ class TestTimeSeriesProcessor:
 
         container = mock_graph.datasets[ds_id]
         container.source_column = "value"  # Need to set this as the generic name of the mock dataframe
-        processor._batch_load_raw(container)
+        processor._batch_load()
 
         mock_router.query_by_date_range.assert_called_once()
         assert isinstance(container.data, ts.TimeFrame)
@@ -119,83 +119,6 @@ class TestTimeSeriesProcessor:
         # Core flags should have been added
         assert "core_flags" in container.data.flag_systems
         assert "value_CORE_FLAG" in container.data.flag_columns
-
-    def test_process(self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that _process runs all three pipelines in order and updates container.data"""
-        raw_ds_id = "raw_ds1"
-        processed_ds_id = "processed_ds1"
-
-        mock_graph = create_mock_dag([[raw_ds_id], [processed_ds_id]])
-
-        tf_result = MagicMock(spec=ts.TimeFrame)
-
-        mock_corr_pipeline = MagicMock()
-        mock_corr_pipeline.run.return_value = tf_result
-
-        mock_infill_pipeline = MagicMock()
-        mock_infill_pipeline.run.return_value = tf_result
-
-        mock_qc_pipeline = MagicMock()
-        mock_qc_pipeline.run.return_value = tf_result
-
-        monkeypatch.setattr(
-            "dritimeseriesprocessor.processing.time_series_processor.OPERATION_PIPELINES",
-            {
-                OperationType.CORRECTION: mock_corr_pipeline,
-                OperationType.QUALITY_CONTROL: mock_qc_pipeline,
-                OperationType.INFILLING: mock_infill_pipeline,
-            },
-        )
-
-        processor = TimeSeriesProcessor(
-            graph=mock_graph,
-            data_router=mock_router,
-            data_writer=mock_writer,
-            start_date=datetime(2023, 1, 1),
-            end_date=datetime(2023, 1, 2),
-            metrics=MagicMock(),
-        )
-
-        raw_container = mock_graph.datasets[raw_ds_id]
-        raw_container.source_column = "value"
-        processor._batch_load_raw(raw_container)
-        processed_container = mock_graph.datasets[processed_ds_id]
-        processed_container.source_column = "value"
-        processed_container.all_dependencies = MagicMock(return_value=[raw_ds_id])
-        processed_container.method_config = DataProcessingConfig(
-            ts_id=processed_ds_id,
-            config_id="process_config",
-            config_type=ConfigurationType.PROCESS,
-            method_configs=[MagicMock(params={"dep_ts": raw_ds_id})],
-        )
-        processor._process(processed_container)
-
-        mock_corr_pipeline.run.assert_called_once()
-        mock_infill_pipeline.run.assert_called_once()
-        mock_qc_pipeline.run.assert_called_once()
-        assert processed_container.data == tf_result
-
-    def test_load_local_copy_stages_files_via_data_router(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
-        container = make_time_series_container("raw_flux")
-        staged_path = Path("/tmp/staged_raw_PLYNL_abc")
-        mock_router.stage_locally.return_value = staged_path
-
-        mock_graph = create_mock_dag([["raw_flux"]])
-        mock_graph.datasets["raw_flux"] = container
-
-        processor = TimeSeriesProcessor(
-            graph=mock_graph,
-            data_router=mock_router,
-            data_writer=mock_writer,
-            start_date=datetime(2025, 1, 1),
-            end_date=datetime(2025, 1, 2),
-            metrics=MagicMock(),
-        )
-
-        processor._load_local_copy(container)
-
-        mock_router.stage_locally.assert_called_once_with(container, datetime(2025, 1, 1), datetime(2025, 1, 2))
-        assert container.staged_dir == staged_path
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Test that failed tag is set to True when dataset fails processing.
@@ -211,6 +134,11 @@ class TestTimeSeriesProcessor:
 
         ds3.all_dependencies = MagicMock(return_value=["ds1", "ds2"])
         ds4.all_dependencies = MagicMock(return_value=["ds1"])
+
+        # Attach configs so ds3/ds4 are not treated as load-only and reach the dependency-failure check.
+        # plan_order is left empty so no pipeline actually runs.
+        ds3.data_processing_configs = {"cfg": MagicMock()}
+        ds4.data_processing_configs = {"cfg": MagicMock()}
 
         processor = TimeSeriesProcessor(
             graph=mock_graph,
@@ -228,7 +156,7 @@ class TestTimeSeriesProcessor:
                 raise Exception("boom during process_dataset")
             return real_process_dataset(dataset_id)
 
-        processor._batch_load_raw = MagicMock()
+        processor._batch_load = MagicMock()
         processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
         processor._save_datasets = MagicMock()
         processor.run()
@@ -268,7 +196,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "value"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load()
 
         assert ds1.failed
         assert ds2.failed
@@ -296,7 +224,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "value"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load()
 
         assert ds1.failed
         assert ds2.failed
@@ -328,7 +256,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "missing_col"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load()
 
         assert not ds1.failed
         assert ds1.data is not None
@@ -454,3 +382,161 @@ class TestTimeSeriesProcessor:
             assert result_key == expected_key
             assert_frame_equal(result_df, expected_df)
             assert result_time_name == expected_time_name
+
+
+class TestProcessDatasetQCRemoval:
+    def test_remove_flagged_data_called_after_last_qc_block(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Tests that remove_flagged_data is called once after the final QC step in the plan."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+
+        qc_cfg = MagicMock(spec=DataProcessingConfig)
+        qc_cfg.config_type = ConfigurationType.QUALITY_CONTROL
+        qc_cfg.method_configs = []
+        container.data_processing_configs = {"qc": qc_cfg}
+        container.plan_order = ["qc"]
+        container.data = create_timeframe([1.0, 2.0])
+        container.data = container.data.with_metadata({"column_name": "value"})
+        container.data.register_flag_system("qc_flags", {"range": 1})
+        container.data.init_flag_column("qc_flags", "value_QC_FLAG")
+
+        remove_calls: list[int] = []
+        plan_step: list[int] = [0]
+        real_remove = __import__(
+            "dritimeseriesprocessor.operations.quality_control.qc_pipeline", fromlist=["QCPipeline"]
+        ).QCPipeline.remove_flagged_data
+
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.remove_flagged_data",
+            lambda tf: (remove_calls.append(plan_step[0]), real_remove(tf))[1],
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
+            lambda self, container, repo, config: (plan_step.__setitem__(0, plan_step[0] + 1), container.data)[1],
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset("ds1")
+
+        assert remove_calls == [1]  # fired once, after the first (and only) QC step ran
+
+    def test_remove_flagged_data_only_after_final_qc_step_not_between(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Tests that remove_flagged_data fires only after the second QC step, not after the first."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+
+        def _qc_cfg() -> MagicMock:
+            cfg = MagicMock(spec=DataProcessingConfig)
+            cfg.config_type = ConfigurationType.QUALITY_CONTROL
+            cfg.method_configs = []
+            return cfg
+
+        container.data_processing_configs = {"qc1": _qc_cfg(), "qc2": _qc_cfg()}
+        container.plan_order = ["qc1", "qc2"]
+        container.data = create_timeframe([1.0, 2.0])
+        container.data = container.data.with_metadata({"column_name": "value"})
+        container.data.register_flag_system("qc_flags", {"range": 1})
+        container.data.init_flag_column("qc_flags", "value_QC_FLAG")
+
+        remove_calls: list[int] = []
+        plan_step: list[int] = [0]
+        real_remove = __import__(
+            "dritimeseriesprocessor.operations.quality_control.qc_pipeline", fromlist=["QCPipeline"]
+        ).QCPipeline.remove_flagged_data
+
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.remove_flagged_data",
+            lambda tf: (remove_calls.append(plan_step[0]), real_remove(tf))[1],
+        )
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
+            lambda self, container, repo, config: (plan_step.__setitem__(0, plan_step[0] + 1), container.data)[1],
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset("ds1")
+
+        # remove_flagged_data fires once, and only after qc2 (step counter = 2), not after qc1 (step counter = 1)
+        assert remove_calls == [2]
+
+
+class TestGetNextStepType:
+    def _make_processor(self, mock_router: MagicMock, mock_writer: MagicMock) -> TimeSeriesProcessor:
+        mock_graph = create_mock_dag([["ds1"]])
+        return TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+    def test_returns_config_type_of_next_step(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that the config type of the step after current_idx is returned."""
+        container = make_time_series_container("ds1")
+        container.plan_order = ["step_a", "step_b"]
+
+        cfg_a = MagicMock(spec=DataProcessingConfig)
+        cfg_a.config_type = ConfigurationType.QUALITY_CONTROL
+        cfg_b = MagicMock(spec=DataProcessingConfig)
+        cfg_b.config_type = ConfigurationType.INFILLING
+
+        container.data_processing_configs = {"step_a": cfg_a, "step_b": cfg_b}
+
+        result = TimeSeriesProcessor._get_next_step_type(container, 0)
+
+        assert result == ConfigurationType.INFILLING
+
+    def test_returns_none_when_current_step_is_last(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that None is returned when there is no step after current_idx."""
+        container = make_time_series_container("ds1")
+        container.plan_order = ["step_a"]
+
+        cfg_a = MagicMock(spec=DataProcessingConfig)
+        cfg_a.config_type = ConfigurationType.QUALITY_CONTROL
+        container.data_processing_configs = {"step_a": cfg_a}
+
+        result = TimeSeriesProcessor._get_next_step_type(container, 0)
+
+        assert result is None
+
+
+class TestBackfillFlagColumns:
+    def test_adds_missing_flag_columns(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that flag columns for all operation pipelines are added when not already present."""
+        container = make_time_series_container("ds1")
+        container.data = create_timeframe([1.0, 2.0])
+        container.data = container.data.with_metadata({"column_name": "value"})
+
+        TimeSeriesProcessor._backfill_flag_columns(container)
+
+        # CorrectionPipeline, QCPipeline and InfillPipeline all have flag systems
+        assert any("CORRS_FLAG" in col for col in container.data.flag_columns)
+        assert any("QC_FLAG" in col for col in container.data.flag_columns)
+        assert any("INFILL_FLAG" in col for col in container.data.flag_columns)
+
+    def test_does_nothing_when_data_is_none(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that _backfill_flag_columns returns without error when container.data is None."""
+        container = make_time_series_container("ds1")
+        container.data = None
+
+        TimeSeriesProcessor._backfill_flag_columns(container)  # should not raise

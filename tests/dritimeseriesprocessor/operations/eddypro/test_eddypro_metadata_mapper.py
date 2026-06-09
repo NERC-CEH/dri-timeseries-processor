@@ -1,45 +1,34 @@
 from datetime import datetime
 
-from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
-    DataProcessingMethodConfig,
-)
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.operations.eddypro.eddypro_metadata_mapper import EddyProMetadataMapper
 from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import EddyProColumnSpec, EddyProInstrumentSpec
-from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 class TestEddyProMetadataMapper:
     def test_build_run_spec_maps_primary_fields(self) -> None:
         mapper = EddyProMetadataMapper()
-        config = DataProcessingConfig(
-            ts_id="dataset",
-            config_id="config-1",
-            config_type=ConfigurationType.DERIVATION,
-            method_configs=[
-                DataProcessingMethodConfig(
-                    method="eddypro-run",
-                    params={
-                        "software_version": "7.0.9",
-                        "file_prototype": "TOA5_*.dat",
-                        "master_sonic": "csat3_1",
-                        "acquisition_frequency": 20.0,
-                        "file_duration": 30,
-                        "canopy_height": 0.2,
-                        "displacement_height": 0.13,
-                        "roughness_length": 0.01,
-                        "column_mapping": [
-                            {"column_index": "1", "variable": "u", "instrument": "csat3_1", "unit_in": "m_sec"},
-                            {"column_index": "2", "variable": "co2", "instrument_role": "irga", "unit_in": "ppm"},
-                        ],
-                        "instrument_specs": [
-                            {"manufacturer": "csi", "model": "csat3_1"},
-                            {"manufacturer": "licor", "model": None},
-                        ],
-                    },
-                )
-            ],
+        config = DataProcessingMethodConfig(
+            method="eddypro-run",
+            params={
+                "software_version": "7.0.9",
+                "file_prototype": "TOA5_*.dat",
+                "master_sonic": "csat3_1",
+                "acquisition_frequency": 20.0,
+                "file_duration": 30,
+                "canopy_height": 0.2,
+                "displacement_height": 0.13,
+                "roughness_length": 0.01,
+                "column_mapping": [
+                    {"column_index": "1", "variable": "u", "instrument": "csat3_1", "unit_in": "m_sec"},
+                    {"column_index": "2", "variable": "co2", "instrument_role": "irga", "unit_in": "ppm"},
+                ],
+                "instrument_specs": [
+                    {"manufacturer": "csi", "model": "csat3_1"},
+                    {"manufacturer": "licor", "model": None},
+                ],
+            },
         )
         site_metadata = SiteMetadata(
             site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
@@ -76,21 +65,14 @@ class TestEddyProMetadataMapper:
 
     def test_build_run_spec_falls_back_to_uri_tail_and_legacy_keys(self) -> None:
         mapper = EddyProMetadataMapper()
-        config = DataProcessingConfig(
-            ts_id="dataset",
-            config_id="config-1",
-            config_type=ConfigurationType.DERIVATION,
-            method_configs=[
-                DataProcessingMethodConfig(
-                    method="eddypro-run",
-                    params={
-                        "sw_version": "legacy",
-                        "master_sonic_role": "sonic",
-                        "file_description": {"columns": [{"column_index": "1", "variable": "ts"}]},
-                        "instruments": [{"model": "legacy_irga"}],
-                    },
-                )
-            ],
+        config = DataProcessingMethodConfig(
+            method="eddypro-run",
+            params={
+                "sw_version": "legacy",
+                "master_sonic_role": "sonic",
+                "file_description": {"columns": [{"column_index": "1", "variable": "ts"}]},
+                "instruments": [{"model": "legacy_irga"}],
+            },
         )
         site_metadata = SiteMetadata(
             site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
@@ -106,14 +88,9 @@ class TestEddyProMetadataMapper:
         assert result.columns == [EddyProColumnSpec(variable="ts")]
         assert result.instruments == [EddyProInstrumentSpec(fields={"model": "legacy_irga"})]
 
-    def test_build_run_spec_returns_defaults_without_method_configs(self) -> None:
+    def test_build_run_spec_returns_defaults_with_empty_params(self) -> None:
         mapper = EddyProMetadataMapper()
-        config = DataProcessingConfig(
-            ts_id="dataset",
-            config_id="config-1",
-            config_type=ConfigurationType.DERIVATION,
-            method_configs=[],
-        )
+        config = DataProcessingMethodConfig(method="eddypro-run", params={})
         site_metadata = SiteMetadata(
             site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
             network="fdri",

@@ -8,15 +8,13 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
     DataProcessingMethodConfig,
 )
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ class AggregationPipeline(OperationPipeline):
     """Pipeline for running Aggregation methods on a TimeSeriesContainer."""
 
     def __init__(self):
-        super().__init__(OperationType.AGGREGATION)
+        super().__init__(ConfigurationType.AGGREGATION)
 
     def run(self, *args, **kwargs) -> ts.TimeFrame:
         """Override the parent run method, as we need to remove any invalid aggregation data and do some column
@@ -40,7 +38,6 @@ class AggregationPipeline(OperationPipeline):
         """Apply the given aggregation method to the TimeFrame data.
 
         Args:
-            _: Unused TimeFrame argument passed from parent class
             config: Configuration of the aggregation method.
             dataset_repository: Repository for accessing additional datasets.
 
@@ -52,30 +49,12 @@ class AggregationPipeline(OperationPipeline):
         dep_container = dataset_repository[config.params["dep_ts"]]
 
         method = AggregationMethod.get(config.method)
-        agg_tf = method.run(dep_container.data, config)
-        agg_tf = self._rename_aggregation_columns(agg_tf, agg_tf.metadata["column_name"], dep_container.source_column)
+        agg_tf = self._rename_aggregation_columns(
+            dep_container.data, config.params["source_column"], dep_container.source_column
+        )
+        agg_tf = method.run(agg_tf, config)
         agg_tf = add_initial_core_flags(agg_tf, init_unchecked=False, init_missing=False)
         return agg_tf
-
-    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
-        """Extract the aggregation method configuration.
-
-        Args:
-            container: Time series container to get the aggregate method configurations from.
-
-        Returns:
-            Aggregation configurations to be applied.
-        """
-        if container.method_config is None:
-            raise ValueError(f"No aggregation config found for: {container.ts_id}")
-        if container.periodicity is None:
-            raise ValueError(f"No periodicity found for: {container.ts_id}")
-
-        method_config = container.method_config
-        for config in container.method_config.method_configs:
-            config.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
-
-        return {method_config}
 
     def get_flag_column(self, column: str) -> str:
         """Not used by aggregation - flags are not applied."""
@@ -115,19 +94,19 @@ class AggregationPipeline(OperationPipeline):
         return tf
 
     @staticmethod
-    def _rename_aggregation_columns(tf: ts.TimeFrame, parent_col: str, dep_col: str) -> ts.TimeFrame:
+    def _rename_aggregation_columns(tf: ts.TimeFrame, target_col: str, dep_col: str) -> ts.TimeFrame:
         """Renames the columns of the output aggregation TimeFrame
 
         Args:
             tf: The TimeFrame of aggregation results
-            parent_col: The name of the parent column (what we want to rename to)
+            target_col: The name of the parent column (what we want to rename to)
             dep_col: The name of the column that was aggregated
 
         Returns:
             TimeFrame with renamed columns
         """
-        tf = tf.with_df(tf.df.rename({dep_col: parent_col}))
-        tf.metadata["column_name"] = parent_col
+        tf = tf.with_df(tf.df.rename({dep_col: target_col}))
+        tf.metadata["column_name"] = target_col
         return tf
 
     @staticmethod

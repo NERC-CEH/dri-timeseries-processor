@@ -57,7 +57,14 @@ while read local_ref local_sha remote_ref remote_sha; do
         # The recursive push re-fires this hook, but the second invocation sees
         # the bumped version line and skips the bump (no recursion). Use $local_ref
         # (the branch name) so the push uses the new HEAD that includes the bump.
-        if git push "$remote" "$local_ref:$remote_ref"; then
+        #
+        # We set upstream here because we abort the original push below, so its
+        # --set-upstream would otherwise be lost. Skip it for raw URL remotes.
+        upstream_flag=""
+        if git config "remote.$remote.url" >/dev/null 2>&1; then
+            upstream_flag="--set-upstream"
+        fi
+        if git push $upstream_flag "$remote" "$local_ref:$remote_ref"; then
             echo ""
             echo "Pre-push: bumped branch pushed successfully. Aborting the original push -"
             echo "the 'failed to push' message below is expected and can be ignored."

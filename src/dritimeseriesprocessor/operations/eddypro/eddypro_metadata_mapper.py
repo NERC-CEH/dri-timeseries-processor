@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import (
     EddyProColumnSpec,
@@ -13,8 +13,8 @@ from dritimeseriesprocessor.utils.strings import extract_uri_id
 class EddyProMetadataMapper:
     """Map metadata into an EddyPro run spec."""
 
-    def build_run_spec(self, config: DataProcessingConfig, site_metadata: SiteMetadata) -> EddyProRunSpec:
-        params = config.method_configs[0].params if config.method_configs else {}
+    def build_run_spec(self, config: DataProcessingMethodConfig, site_metadata: SiteMetadata) -> EddyProRunSpec:
+        params = config.params or {}
 
         site_code = site_metadata.alt_id or extract_uri_id(site_metadata.site_id)
         columns = self._map_columns(params)
