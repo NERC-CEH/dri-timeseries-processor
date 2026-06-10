@@ -881,9 +881,15 @@ class EddyProRun(DerivationMethod):
 @DerivationMethod.register
 class RollingMeanForSnow(DerivationMethod):
     """
-    Calculate rolling means for counts, but to save proccessing, only when
+    Calculate rolling mean for counts, but to save proccessing, only when
     there is a snow event, as currently this is the only time they are needed.
+
+    n_smooth = 12 by default, or overwritten if specified by dataset processing configuration
+    na_lim = 4 by default, or overwritten if specified by dataset processing configuration
     """
+
+    name = "rolling_mean_for_snow"
+    inputs = ("snow", "cts_mod_corr")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
@@ -895,16 +901,17 @@ class RollingMeanForSnow(DerivationMethod):
             - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
 
         Returns:
-            pl.Expr: _description_
+            pl.Expr: cts_smo, a rolling mean of cts_mod_corr where snow == 1, otherwise null.
+                     Values at beginning and end of data with fewer than n_smooth values on one side of
+                     the data point will also be null.
         """
         snow = columns["snow"]
         cts_mod_corr = columns["cts_mod_corr"]
+        n_smooth = self.config.params.get("n_smooth", 12)
+        na_lim = self.config.params.get("na_lim", 4)
 
-        cts_smo = (
-            pl.when(snow == pl.lit("1"))
-            .then(rolling_mean(cts_mod_corr, self.config.params["n_smooth"], self.config.params["na_lim"]))
+        return (
+            pl.when(snow == 1)
+            .then(rolling_mean(cts_mod_corr, n_smooth, na_lim))
             .otherwise(pl.lit(None, dtype=pl.Float64))
-            .alias("cts_smo")
         )
-
-        return cts_smo
