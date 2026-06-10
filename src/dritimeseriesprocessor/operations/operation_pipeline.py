@@ -7,7 +7,6 @@ from abc import ABC, abstractmethod
 
 import polars as pl
 import time_stream as ts
-from time_stream.exceptions import FlagSystemNotFoundError
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
@@ -40,15 +39,13 @@ class OperationPipeline(ABC):
     sorting configuration blocks, and constructing flag column names.
     """
 
-    def __init__(self, operation_type: ConfigurationType, flag_system_name: str | None = None):
+    def __init__(self, operation_type: ConfigurationType):
         """Initialise the operation processor.
 
         Args:
             operation_type: Type of operation.
-            flag_system_name: Name of the flag system to use for this operation.
         """
         self.operation_type = operation_type
-        self.flag_system_name = flag_system_name
         self.registry = OPERATION_METHOD_REGISTRY[self.operation_type]
 
     @abstractmethod
@@ -123,12 +120,6 @@ class OperationPipeline(ABC):
         """
         tf = container.data
 
-        # Initialise the flags if required
-        if self.flag_system_name and tf is not None:
-            col_name = tf.metadata["column_name"]
-            self._initialise_flag_system(tf)
-            self._initialise_flag_column(tf, col_name)
-
         # Apply configs
         for cfg in config.method_configs:
             logger.info(f"Operation: {self.operation_type} | {cfg.method}")
@@ -145,41 +136,6 @@ class OperationPipeline(ABC):
             tf = tf.rename_time_column(container.time_column_name)
 
         return tf
-
-    def initialise_flags(self, tf: ts.TimeFrame, col_name: str) -> None:
-        """Register this operation's flag system and flag column on the TimeFrame, if not already present.
-
-        Args:
-            tf: TimeFrame to initialise flags on.
-            col_name: Name of the parent data column.
-        """
-        if not self.flag_system_name:
-            return
-        self._initialise_flag_system(tf)
-        self._initialise_flag_column(tf, col_name)
-
-    def _initialise_flag_system(self, tf: ts.TimeFrame) -> None:
-        """Initialise the flag system for this operation (if not already initialised).
-
-        Args:
-            tf: TimeFrame to initialise flags on.
-        """
-        try:
-            tf.get_flag_system(self.flag_system_name)  # type: ignore[arg-type]
-        except FlagSystemNotFoundError:
-            flag_system = {name: m.flag_value for name, m in self.registry.items()}  # type: ignore[arg-type]
-            tf.register_flag_system(self.flag_system_name, flag_system)  # type: ignore[arg-type]
-
-    def _initialise_flag_column(self, tf: ts.TimeFrame, col_name: str) -> None:
-        """Initialise the flag column for this operation (if not already initialised).
-
-        Args:
-            tf: TimeFrame to initialise flag column on.
-            col_name: Name of the parent column
-        """
-        flag_column = self.get_flag_column(col_name)
-        if flag_column not in tf.flag_columns:
-            tf.init_flag_column(self.flag_system_name, flag_column)  # type: ignore[arg-type]
 
     def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> None:
         """Apply a flag to the flag column

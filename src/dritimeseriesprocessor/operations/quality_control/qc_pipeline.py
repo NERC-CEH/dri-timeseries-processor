@@ -7,7 +7,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import QC_FLAG_SYS_NAME, qc_flag_column_name
+from dritimeseriesprocessor.operations.flags.flag_names import qc_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -19,7 +19,7 @@ class QCPipeline(OperationPipeline):
     """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer."""
 
     def __init__(self):
-        super().__init__(ConfigurationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
+        super().__init__(ConfigurationType.QUALITY_CONTROL)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.

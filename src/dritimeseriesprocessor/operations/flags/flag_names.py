@@ -1,9 +1,3 @@
-CORE_FLAG_SYS_NAME = "core_flags"
-CORRS_FLAG_SYS_NAME = "corrs_flags"
-QC_FLAG_SYS_NAME = "qc_flags"
-INFILL_FLAG_SYS_NAME = "infill_flags"
-
-
 def core_flag_column_name(column: str) -> str:
     """Return flag column name for given data column name.
 

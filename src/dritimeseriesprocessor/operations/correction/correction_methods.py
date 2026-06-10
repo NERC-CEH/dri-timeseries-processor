@@ -24,7 +24,6 @@ class Add(CorrectionMethod):
     """Add operation class."""
 
     name = "add"
-    flag_value = 1
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
@@ -42,7 +41,6 @@ class LWCorrection(CorrectionMethod):
     """Long wave correction operation class."""
 
     name = "lw_corr"
-    flag_value = 2
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         lw_unc_tf = self._get_lw_unc(config)
@@ -99,7 +97,6 @@ class Scalar(CorrectionMethod):
     """Scalar operation class."""
 
     name = "scalar"
-    flag_value = 4
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
@@ -117,7 +114,6 @@ class PACorrection(CorrectionMethod):
     """Correct air pressure with bias calculated from mean sea level pressure."""
 
     name = "pa_corr"
-    flag_value = 8
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         ta_tf = config.params["ta"]
@@ -150,7 +146,6 @@ class Power(CorrectionMethod):
     """Power operation class."""
 
     name = "power"
-    flag_value = 16
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
@@ -168,7 +163,6 @@ class WDCorrection(CorrectionMethod):
     """Wind direction correction operation class."""
 
     name = "wd"
-    flag_value = 32
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         ux_tf = config.params["ux"]
@@ -205,7 +199,6 @@ class Clip(CorrectionMethod):
     """
 
     name = "clip"
-    flag_value = 64
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         col_name = tf.metadata["column_name"]
@@ -241,7 +234,6 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
     """
 
     name = "albedo_south_slope_correction"
-    flag_value = 128
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         s_max = 1200

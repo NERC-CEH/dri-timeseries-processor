@@ -9,7 +9,6 @@ import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
-from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
@@ -50,8 +49,6 @@ class DerivationPipeline(OperationPipeline):
 
         method = DerivationMethod.get(config.method)
         tf = method.run(config)
-        tf = add_initial_core_flags(tf, init_unchecked=False)
-
         return tf
 
     def get_flag_column(self, column: str) -> str:

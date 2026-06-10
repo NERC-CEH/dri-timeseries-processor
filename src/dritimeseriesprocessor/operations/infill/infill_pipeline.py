@@ -5,7 +5,7 @@ import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.flags.flag_methods import update_infill_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import INFILL_FLAG_SYS_NAME, infill_flag_column_name
+from dritimeseriesprocessor.operations.flags.flag_names import infill_flag_column_name
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -17,7 +17,7 @@ class InfillPipeline(OperationPipeline):
     """Processor for running infilling on a TimeSeriesContainer."""
 
     def __init__(self):
-        super().__init__(ConfigurationType.INFILLING, INFILL_FLAG_SYS_NAME)
+        super().__init__(ConfigurationType.INFILLING)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given infill method to the TimeFrame data.

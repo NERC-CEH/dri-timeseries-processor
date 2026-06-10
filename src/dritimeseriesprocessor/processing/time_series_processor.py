@@ -24,7 +24,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
-from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
+from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags, initialise_flag_systems
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.load.load_pipeline import LoadPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
@@ -41,15 +41,6 @@ from dritimeseriesprocessor.utils.timer import log_duration
 from dritimeseriesprocessor.utils.urls import SITE_URI
 
 logger = logging.getLogger(__name__)
-
-
-OPERATION_PIPELINES = {
-    ConfigurationType.CORRECTION: CorrectionPipeline(),
-    ConfigurationType.QUALITY_CONTROL: QCPipeline(),
-    ConfigurationType.INFILLING: InfillPipeline(),
-    ConfigurationType.AGGREGATION: AggregationPipeline(),
-    ConfigurationType.DERIVATION: DerivationPipeline(),
-}
 
 
 class TimeSeriesProcessor:
@@ -163,6 +154,9 @@ class TimeSeriesProcessor:
                         cfg.params["processing_end_date"] = self.end_date
                     container = LoadPipeline(self.data_router).run(container, self.graph.datasets, config)
 
+                    initialise_flag_systems(container, self.graph.flagging_systems)
+                    add_initial_core_flags(container)
+
                 case ConfigurationType.CORRECTION:
                     container.data = CorrectionPipeline().run(container, self.graph.datasets, config)
 
@@ -197,8 +191,8 @@ class TimeSeriesProcessor:
 
                     container.data = DerivationPipeline().run(container, self.graph.datasets, config)
 
-        # Backfill any flag columns the plan did not create, so every dataset has a consistent set.
-        self._backfill_flag_columns(container)
+                    initialise_flag_systems(container, self.graph.flagging_systems)
+                    add_initial_core_flags(container, init_unchecked=False)
 
     @staticmethod
     def _get_next_step_type(container: TimeSeriesContainer, current_idx: int) -> ConfigurationType | None:
@@ -254,34 +248,12 @@ class TimeSeriesProcessor:
 
                         if container.data is None:
                             raise ValueError(f"No data returned for dataset: {container.ts_id}")
-                        else:
-                            container.data = add_initial_core_flags(container.data)
 
                     except Exception:
                         self.metrics.no_data.inc()
                         container.failed = True
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
-
-    @staticmethod
-    def _backfill_flag_columns(container: TimeSeriesContainer) -> None:
-        """Add any flag columns that the plan did not already create.
-
-        Each operation only creates its flag column when one of its configs runs, so a dataset with no
-        correction config (for example) would be saved without a corrections flag column. Running this after
-        all plan steps backfills the missing columns, keeping the flag columns consistent across datasets.
-        Pipelines without a flag system (aggregation, derivation) are a no-op.
-
-        Core flags are already present from loading.
-
-        Args:
-            container: The container whose data should have its flag columns backfilled.
-        """
-        if container.data is None:
-            return
-        column_name = container.data.metadata["column_name"]
-        for pipeline in OPERATION_PIPELINES.values():
-            pipeline.initialise_flags(container.data, column_name)
 
     @log_duration("Saving datasets time taken: ", footer=True)
     def _save_datasets(self) -> None:

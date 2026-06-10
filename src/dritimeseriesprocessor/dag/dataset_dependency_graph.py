@@ -27,6 +27,7 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
 )
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.utils.enums import ProcessingLevel
+from dritimeseriesprocessor.utils.strings import extract_uri_id
 from dritimeseriesprocessor.utils.urls import PLATFORM_URI, PROCESSING_LEVEL_URI
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ class DatasetDependencyGraph:
         self.metadata_router = metadata_router
         self.datasets: dict[str, TimeSeriesContainer] = {}
         self.site_metadata: dict[str, SiteMetadata] = {}
+        self.flagging_systems: dict[str, dict[str, int]] = {}
 
         self._dep_ts_ids: set[str] = set()
         self._load_dep_ts_ids: set[str] = set()
@@ -381,11 +383,29 @@ class DatasetDependencyGraph:
         site_ids = list({item.originating_site[0].id for item in dataset_response.items if item.originating_site})
         self._fetch_missing_site_metadata(site_ids)
 
+        # Map all items to our dataset container domain model
         all_containers = []
         for item in dataset_response.items:
-            container = map_dataset_item(item, self.site_metadata)
+            # Get (optional) flag scheme information
+            flag_column_schemes = {}
+            if item.has_flag_column:
+                for flag_column in item.has_flag_column:
+                    flag_system_name = extract_uri_id(flag_column.value_scheme.id)
+                    # Only register if we haven't seen this flag system before
+                    if flag_system_name not in self.flagging_systems:
+                        flag_scheme = self.metadata_router.fetch_flag_scheme(flag_system_name).items[0]
+                        flag_scheme_members = {
+                            member.pref_label[0]: member.value for member in flag_scheme.has_top_concept
+                        }
+                        self.flagging_systems[flag_system_name] = flag_scheme_members
+                    # Indicate which flag columns relate to which flag systems
+                    flag_column_schemes[flag_column.column_name] = flag_system_name
+
+            # Map dataset information to domain model
+            container = map_dataset_item(item, self.site_metadata, flag_column_schemes)
             self._dataset_cache[container.ts_id] = container
             all_containers.append(container)
+
         return all_containers
 
     def _build_processing_configs(

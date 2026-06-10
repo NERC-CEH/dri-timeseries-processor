@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetResponse
 from dritimeseriesprocessor.models.api_models.deployment import Deployment
+from dritimeseriesprocessor.models.api_models.flags import FlagSchemeResponse
 from dritimeseriesprocessor.models.api_models.site import SiteResponse
 from dritimeseriesprocessor.utils.urls import PROGRAMME_URI
 
@@ -122,6 +123,19 @@ class MetadataRouter:
         params = (("deployedOnPlatform", platform),)
         response = self.api_manager.make_paginated_api_call(url, params)
         return Deployment.model_validate(response)
+
+    def fetch_flag_scheme(self, scheme_name: str) -> FlagSchemeResponse:
+        """Fetch flag scheme information.
+
+        Args:
+            scheme_name: Flag scheme name.
+
+        Returns:
+            The parsed JSON response containing flag scheme.
+        """
+        url = f"{self.host}/ref/common/{scheme_name}"
+        response = self.api_manager.make_paginated_api_call(url)
+        return FlagSchemeResponse.model_validate(response)
 
     def _fetch_by_batch(
         self,

@@ -11,7 +11,6 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
-from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -44,7 +43,6 @@ class AggregationPipeline(OperationPipeline):
         Returns:
             Result of applying the aggregation method.
         """
-
         # Collect the dependency TimeFrame to run aggregation on
         dep_container = dataset_repository[config.params["dep_ts"]]
 
@@ -53,7 +51,6 @@ class AggregationPipeline(OperationPipeline):
             dep_container.data, config.params["source_column"], dep_container.source_column
         )
         agg_tf = method.run(agg_tf, config)
-        agg_tf = add_initial_core_flags(agg_tf, init_unchecked=False, init_missing=False)
         return agg_tf
 
     def get_flag_column(self, column: str) -> str:

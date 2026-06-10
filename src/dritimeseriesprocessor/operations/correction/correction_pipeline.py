@@ -6,7 +6,7 @@ import time_stream as ts
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import update_corrections_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import CORRS_FLAG_SYS_NAME, corrs_flag_column_name
+from dritimeseriesprocessor.operations.flags.flag_names import corrs_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
@@ -17,7 +17,7 @@ class CorrectionPipeline(OperationPipeline):
     """Processor for running corrections on a TimeSeriesContainer."""
 
     def __init__(self):
-        super().__init__(ConfigurationType.CORRECTION, CORRS_FLAG_SYS_NAME)
+        super().__init__(ConfigurationType.CORRECTION)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given correction method to the TimeFrame data.

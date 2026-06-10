@@ -5,62 +5,74 @@ import logging
 import polars as pl
 import time_stream as ts
 
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_names import (
-    CORE_FLAG_SYS_NAME,
     core_flag_column_name,
     corrs_flag_column_name,
     infill_flag_column_name,
     qc_flag_column_name,
 )
-from dritimeseriesprocessor.routers.metadata.local_loader import fetch_core_flags
 from dritimeseriesprocessor.utils.polars_utils import missing_expr, not_missing_expr
 
 logger = logging.getLogger(__name__)
 
 
-def initialise_core_flag_system(tf: ts.TimeFrame) -> ts.TimeFrame:
-    """Setup core flag system in ts.TimeFrame object.
+def initialise_flag_systems(
+    container: TimeSeriesContainer, flag_systems: dict[str, dict[str, int]]
+) -> TimeSeriesContainer:
+    """Initialise all flag systems that are defined in the metadata for this time series container
 
     Args:
-        tf: The input ts.TimeFrame object.
+        container: The time series container to initialise flags system on.
+        flag_systems: Flag systems to initialise
 
     Returns:
-        The ts.TimeFrame with the core flag system added.
+        The container with the flag systems initialised
     """
-    # Initialise core flag system within ts.TimeFrame object
-    response = fetch_core_flags()
-    core_flags_dict = {name: flag.id for name, flag in response.core_flags.items()}
-    tf.register_flag_system(CORE_FLAG_SYS_NAME, core_flags_dict)
+    if container.data is None:
+        return container
 
-    return tf
+    for flag_system_name, flags_dict in flag_systems.items():
+        container.data.register_flag_system(flag_system_name, flags_dict)
+
+    for flag_column_name, flag_system_name in container.flag_column_schemes.items():
+        container.data.init_flag_column(flag_system_name, flag_column_name)
+
+    return container
 
 
-def add_initial_core_flags(tf: ts.TimeFrame, init_unchecked: bool = True, init_missing: bool = True) -> ts.TimeFrame:
+def add_initial_core_flags(
+    container: TimeSeriesContainer, init_unchecked: bool = True, init_missing: bool = True
+) -> TimeSeriesContainer:
     """Setup core flags and initialise with "unchecked" and "missing" flags.
 
     Args:
-        tf: The input ts.TimeFrame object.
+        container: The time series container to initialise core flags on.
         init_unchecked: Whether to initialise the core flag with the unchecked flag
         init_missing: Whether to check for missing values to add the missing flag to
 
     Returns:
-        The ts.TimeFrame with the flag columns added
+        The container with the flag columns added to its data TimeFrame
     """
-    tf = initialise_core_flag_system(tf)
+    if container.data is None:
+        return container
 
-    for data_col_name in tf.data_columns:
+    for data_col_name in container.data.data_columns:
         flag_col_name = core_flag_column_name(data_col_name)
-        tf.init_flag_column(CORE_FLAG_SYS_NAME, flag_col_name)
+        flag_system = container.flag_column_schemes.get(flag_col_name)
 
-        if init_unchecked:
-            # Set all as unchecked
-            tf.add_flag(flag_col_name, "unchecked", pl.lit(True))
+        if flag_system:
+            if init_unchecked:
+                # Set all as unchecked
+                container.data.add_flag(flag_col_name, "unchecked", pl.lit(True))
 
-        if init_missing:
-            # Flag missing values
-            tf.add_flag(flag_col_name, "missing", missing_expr(data_col_name, tf.df[data_col_name].dtype))
+            if init_missing:
+                # Flag missing values
+                container.data.add_flag(
+                    flag_col_name, "missing", missing_expr(data_col_name, container.data.df[data_col_name].dtype)
+                )
 
-    return tf
+    return container
 
 
 def update_corrections_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
