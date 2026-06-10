@@ -12,41 +12,16 @@ class ConfigurationType(Enum):
     """Represents specific data-processing-configuration types held in the metadata store.
 
     See:
-    - https://dri-metadata-api.staging.eds.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration
-    - https://dri-metadata-api.staging.eds.ceh.ac.uk/ref/common/configuration-type
-    """
-
-    CALIBRATION_CORRECTION = "sensor-calibration-correction"
-    CORRECTION = "correction-configuration"
-    INFILLING = "infill-configuration"
-    QUALITY_CONTROL = "qc"
-    DERIVATION = "calculate"
-    AGGREGATION = "aggregate"
-    PROCESS = "process"
-    LOAD_LOCAL_COPY = "load-local-copy"
-
-
-class MethodType(Enum):
-    """Represents specific steps within the data processing pipeline."""
-
-    PROCESS = "process"
-    DERIVATION = "calculate"
-    AGGREGATION = "aggregate"
-    LOAD = "load"
-    LOAD_LOCAL_COPY = "load-local-copy"
-
-
-class OperationType(Enum):
-    """Represents specific operations within the data processing pipeline.
-
-    For example, for the `MethodType.PROCESS`, there are 3 operations to carry out: correction, qc, infilling.
+    - https://dri-metadata-api.dri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration
+    - https://dri-metadata-api.dri.ceh.ac.uk/ref/common/configuration-type
     """
 
     CORRECTION = "correction"
-    INFILLING = "infilling"
-    QUALITY_CONTROL = "quality_control"
+    INFILLING = "infill"
+    QUALITY_CONTROL = "qc"
     DERIVATION = "calculate"
     AGGREGATION = "aggregate"
+    LOAD = "load"
 
 
 class DatasetType(Enum):

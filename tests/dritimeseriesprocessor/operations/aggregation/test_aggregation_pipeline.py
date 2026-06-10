@@ -78,21 +78,25 @@ class TestAggregationThreshold:
         dep_container.source_column = "value"
 
         config = MagicMock()
-        config.params = {"dep_ts": "ts_1", "aggregation_period": "P1D", "threshold": 3}
+        config.params = {
+            "dep_ts": "ts_1",
+            "aggregation_period": "P1D",
+            "threshold": 3,
+            "source_column": "value",
+        }
         config.method = "sum"
 
-        method_config = MagicMock()
-        method_config.method_configs = [config]
+        proc_config = MagicMock()
+        proc_config.method_configs = [config]
 
         container = MagicMock()
         container.time_column_name = "time"
         container.source_column = "value"
-        container.method_config = method_config
         container.periodicity = "P1D"
 
         pipeline = AggregationPipeline()
 
-        result = pipeline.run(container, {"ts_1": dep_container})
+        result = pipeline.run(container, {"ts_1": dep_container}, proc_config)
         assert_frame_equal(result.df, expected_df)
 
 

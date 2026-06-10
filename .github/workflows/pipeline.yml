@@ -21,7 +21,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && github.base_ref == 'staging' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
@@ -98,7 +98,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && github.base_ref == 'production' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
@@ -139,9 +139,9 @@ jobs:
     needs: [test-python]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
 
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v8.1.0
 
       - name: Configure git identity
         run: |

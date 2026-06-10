@@ -32,7 +32,7 @@ class DataProcessingConfig:
     method_configs: list[DataProcessingMethodConfig]
     annotations: dict[str, Any] = field(default_factory=dict)
 
-    def _values_for_params(self, *keys: str) -> list[str]:
+    def values_for_params(self, *keys: str) -> list[str]:
         """Collect and deduplicate values from the given parameter keys across all method configs.
 
         Args:

@@ -51,10 +51,8 @@ class TestMapDatasetItem:
             periodicity="P1D",
             processing_level=ProcessingLevel.PROCESSED,
             dataset_type=DatasetType.TIMESERIES_DATASET,
-            correction_configs=set(),
-            qc_configs=set(),
-            infill_configs=set(),
-            method_config=None,
+            distribution_url="s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=BUNNY/",
+            plan_order=["http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-rn_1day-mean_rad"],
             data=None,
         )
 
@@ -83,10 +81,7 @@ class TestMapDatasetItem:
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
             dataset_type=DatasetType.TIMESERIES_DATASET,
-            correction_configs=set(),
-            qc_configs=set(),
-            infill_configs=set(),
-            method_config=None,
+            distribution_url="s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=BUNNY/",
             data=None,
         )
 
@@ -165,12 +160,12 @@ class TestMapDatasetItem:
         assert result.s3_dataset_path == "Flux"
 
     def test_all_dependencies(self) -> None:
-        """Test that the all_dependencies method returns valid list, when there are no qc/correction/infill configs"""
+        """Test that the all_dependencies method returns a valid list from a single attached config."""
 
-        method_config = DataProcessingConfig(
+        config = DataProcessingConfig(
             ts_id="test_id",
             config_id="cfg",
-            config_type=ConfigurationType.PROCESS,
+            config_type=ConfigurationType.DERIVATION,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
             annotations={},
         )
@@ -187,17 +182,17 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            method_config=method_config,
         )
+        item.attach_configs([config])
         assert item.all_dependencies() == ["dep1", "dep2", "dep3"]
 
     def test_all_dependencies_with_configs(self) -> None:
-        """Test that the all_dependencies method returns valid list, when there are a qc/correction/infill configs"""
+        """Test that all_dependencies aggregates and deduplicates dep_ts across multiple attached configs."""
 
         method_config = DataProcessingConfig(
             ts_id="test_id",
             config_id="method_cfg",
-            config_type=ConfigurationType.PROCESS,
+            config_type=ConfigurationType.DERIVATION,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
             annotations={},
         )
@@ -235,11 +230,8 @@ class TestMapDatasetItem:
             resolution="PT30M",
             periodicity="PT30M",
             processing_level=ProcessingLevel.RAW,
-            correction_configs={correction_config},
-            qc_configs={qc_config},
-            infill_configs={infill_config},
-            method_config=method_config,
         )
+        item.attach_configs([method_config, qc_config, correction_config, infill_config])
         assert item.all_dependencies() == ["dep1", "dep2", "dep3", "dep4", "dep5"]
 
 
@@ -533,14 +525,14 @@ class TestExtractAnnotations:
 
 class TestMapProcessingConfigItem:
     def test_qc_processing_config(self) -> None:
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json"
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_qc.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = DataProcessingConfig(
-            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_raw-range",
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
                 DataProcessingMethodConfig(
@@ -554,36 +546,35 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_infill_processing_config(self) -> None:
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_infill.json"
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_infill.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = DataProcessingConfig(
-            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-infill",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
                 DataProcessingMethodConfig(
                     method="linear_linear",
                     params={"max_gap_size": 6, "window": 1},
-                    start_date=datetime(2013, 1, 1, 0, 30, 0),
                 )
             ],
-            annotations={"priority": 1},
+            annotations={},
         )
 
         assert result == expected
 
     def test_correction_processing_config(self) -> None:
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_correction.json"
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_correction.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = DataProcessingConfig(
-            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/sgb0ag444qc40u99nsdo8n5m0kuscic7",
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-correction-scalar",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
                 DataProcessingMethodConfig(

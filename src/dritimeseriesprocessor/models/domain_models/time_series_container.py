@@ -16,7 +16,7 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
-from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import DatasetType, ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +40,9 @@ class TimeSeriesContainer:
     dataset_type: DatasetType | None = None
     distribution_url: str | None = None
 
-    method_config: DataProcessingConfig | None = None
-    correction_configs: set[DataProcessingConfig] = field(default_factory=set)
-    qc_configs: set[DataProcessingConfig] = field(default_factory=set)
-    infill_configs: set[DataProcessingConfig] = field(default_factory=set)
+    plan_order: list[str] = field(default_factory=list)
+    data_processing_configs: dict[str, DataProcessingConfig] = field(default_factory=dict)
+    base_dependency: list[str] = field(default_factory=list)
 
     data: ts.TimeFrame | None = None
     staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)
@@ -59,10 +58,9 @@ class TimeSeriesContainer:
         Returns:
             Sorted, deduplicated list of values collected from all attached configs for the given keys.
         """
-        method_config = {self.method_config} if self.method_config else set()
         deps = set()
-        for c in self.correction_configs | self.qc_configs | self.infill_configs | method_config:
-            deps.update(c._values_for_params(*keys))
+        for _, config in self.data_processing_configs.items():
+            deps.update(config.values_for_params(*keys))
         return sorted(deps)
 
     def all_dependencies(self) -> list[str]:
@@ -84,43 +82,19 @@ class TimeSeriesContainer:
         return self._ids_across_configs("load_dep_ts")
 
     def attach_configs(self, configs: list[DataProcessingConfig]) -> None:
-        """Attach data processing configuration objects (QC, infilling, correction) to this container.
+        """Attach data processing configuration objects to this container.
 
         Args:
-            configs: A list of the `ProcessingConfig` objects to attach.
+            configs: A list of the `DataProcessingConfig` objects to attach.
         """
         for config in configs:
-            if config.config_type == ConfigurationType.QUALITY_CONTROL:
-                self.qc_configs.add(config)
+            self.data_processing_configs[config.config_id] = config
 
-            elif config.config_type == ConfigurationType.INFILLING:
-                self.infill_configs.add(config)
-
-            elif config.config_type == ConfigurationType.CORRECTION:
-                self.correction_configs.add(config)
-
-            elif config.config_type in (
-                ConfigurationType.AGGREGATION,
-                ConfigurationType.DERIVATION,
-                ConfigurationType.PROCESS,
-                ConfigurationType.LOAD_LOCAL_COPY,
-            ):
-                # Should only ever have one of these
-                if self.method_config:
-                    raise ValueError(f"A method config already exists: {self.method_config}")
-                self.method_config = config
-
-            elif config.config_type == ConfigurationType.CALIBRATION_CORRECTION:
-                # TODO: Implement calibration correction processing type
-                logger.warning("Calibration correction configuration type not yet implemented.")
-
-            else:
-                raise TypeError(f"Unknown configuration type: {config.config_type}")
-
-    def method_type(self) -> MethodType:
-        if not self.method_config:
-            return MethodType.LOAD
-        return MethodType(self.method_config.config_type.value)
+    def is_load(self) -> bool:
+        """Determine whether this container is a raw data loading config - basically if there are no data processing
+        configs then we assume it's a 'load' operation.
+        """
+        return not bool(self.data_processing_configs)
 
     @property
     def s3_bucket(self) -> str | None:
