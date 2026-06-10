@@ -1,23 +1,23 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed",
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed"
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ws_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-ta_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-holln-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-chimn-ws_1day_processed"
     ]
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-pa_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-pa_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_1day_processed",
@@ -30,34 +30,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current#round",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day-mean#argument.depts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current#round.value",
-                "value": [
-                  1
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current#dep_ts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_30min_processed"
@@ -79,79 +57,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current#threshold",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day-mean#argument.threshold",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current#threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_1day_processed",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#threshold",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#threshold.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day-mean#argument.threshold.value",
                 "value": [
                   39
                 ],
@@ -171,9 +79,109 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#dep_ts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day-mean#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-pa_1day-mean#argument.round.value",
+                "value": [
+                  1
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_1day-mean",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day-mean",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day-mean#argument.threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day-mean#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed"
@@ -195,9 +203,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#round",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day-mean#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current#round.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day-mean#argument.round.value",
                 "value": [
                   1
                 ],
@@ -219,23 +227,31 @@
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],
@@ -249,7 +265,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ws_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ws_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_1day_processed",
@@ -262,12 +278,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current#round",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day-mean#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current#round.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day-mean#argument.round.value",
                 "value": [
                   1
                 ],
@@ -287,9 +303,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current#threshold",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day-mean#argument.threshold",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current#threshold.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day-mean#argument.threshold.value",
                 "value": [
                   39
                 ],
@@ -309,9 +325,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current#dep_ts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day-mean#argument.depts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_30min_processed"
@@ -335,23 +351,31 @@
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ws_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],
@@ -365,7 +389,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_1day_processed",
@@ -378,12 +402,34 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current#dep_ts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day-mean#argument.threshold",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day-mean#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed"
@@ -405,31 +451,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current#threshold",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day-mean#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current#threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current#round",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current#round.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day-mean#argument.round.value",
                 "value": [
                   1
                 ],
@@ -451,23 +475,31 @@
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-ta_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],
@@ -481,7 +513,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-pa_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-pa_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_1day_processed",
@@ -494,12 +526,56 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current#dep_ts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day-mean#argument.threshold",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day-mean#argument.round",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day-mean#argument.round.value",
+                "value": [
+                  1
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day-mean#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_processed"
@@ -519,71 +595,35 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current#round",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current#round.value",
-                "value": [
-                  1
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current#threshold",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current#threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pa_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],
@@ -597,7 +637,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-pa_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-pa_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_1day_processed",
@@ -610,34 +650,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current#threshold",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day-mean#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current#threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current#round",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current#round.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day-mean#argument.round.value",
                 "value": [
                   1
                 ],
@@ -657,9 +675,31 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current#dep_ts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day-mean#argument.threshold",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day-mean#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed"
@@ -683,23 +723,31 @@
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-pa_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],
@@ -713,7 +761,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ws_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ws_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_1day_processed",
@@ -726,56 +774,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current#round",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day-mean#argument.depts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current#round.value",
-                "value": [
-                  1
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current#threshold",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current#threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current#dep_ts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_processed"
@@ -795,27 +799,79 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day-mean#argument.round",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day-mean#argument.round.value",
+                "value": [
+                  1
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day-mean#argument.threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ws_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],
@@ -829,7 +885,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_1day_processed",
@@ -842,12 +898,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current#dep_ts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day-mean#argument.depts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed"
@@ -869,31 +925,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current#threshold",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day-mean#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current#threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current#round",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current#round.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day-mean#argument.round.value",
                 "value": [
                   1
                 ],
@@ -911,27 +945,57 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day-mean#argument.threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],
@@ -945,7 +1009,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ws_1day_processed",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ws_1day-mean",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_1day_processed",
@@ -958,56 +1022,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current#threshold",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day-mean#argument.depts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current#threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current#round",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current#round.value",
-                "value": [
-                  1
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current#dep_ts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current#dep_ts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day-mean#argument.depts.value",
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_processed"
@@ -1027,27 +1047,79 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day-mean#argument.threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day-mean#argument.round",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day-mean#argument.round.value",
+                "value": [
+                  1
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
             }
           ],
           "method": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             }
-          },
-          "interval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ws_1day_processed-current.interval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
-            ],
-            "startDate": "2025-03-28T12:00:00+00:00"
           }
         }
       ],

@@ -3,6 +3,19 @@
 Operations are the core execution units that perform data transformations during processing. Each operation implements
 one specific functional behaviour applied to a `TimeFrame` and returning a modified `TimeFrame`.
 
+## How operations are run
+
+Operations are not run in a fixed order. Each dataset has a **plan** - an ordered list of data processing
+configurations - and the pipeline runs the operations in the order the plan defines. See
+[Architecture: The processing plan](architecture.md#the-processing-plan) for how the plan is built and iterated.
+
+Each configuration has a type (`ConfigurationType`) that selects the operation to run: `CORRECTION`,
+`QUALITY_CONTROL`, `INFILLING`, `AGGREGATION`, `DERIVATION` or `LOAD`. A type can appear more than once in a plan.
+
+Most operations share a common workflow defined in `OperationPipeline`: initialise the flag system and flag column if
+needed, apply each method in the configuration, then update the core flags. The exception is `LoadPipeline`, which
+loads data into the container rather than transforming an existing `TimeFrame`.
+
 ## Corrections
 
 Corrections adjust raw measurements for known systematic errors such as incorrect calibration, sensor drift, or

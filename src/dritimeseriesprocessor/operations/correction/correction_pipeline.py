@@ -3,16 +3,12 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
-    DataProcessingMethodConfig,
-)
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import update_corrections_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import CORRS_FLAG_SYS_NAME, corrs_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +17,7 @@ class CorrectionPipeline(OperationPipeline):
     """Processor for running corrections on a TimeSeriesContainer."""
 
     def __init__(self):
-        super().__init__(OperationType.CORRECTION, CORRS_FLAG_SYS_NAME)
+        super().__init__(ConfigurationType.CORRECTION, CORRS_FLAG_SYS_NAME)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given correction method to the TimeFrame data.
@@ -50,17 +46,6 @@ class CorrectionPipeline(OperationPipeline):
         result = method.run(tf, config)
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         return result
-
-    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
-        """Extract the correction method configurations.
-
-        Args:
-            container: Time series container to get the correction method configurations from.
-
-        Returns:
-            List of correction configurations to be applied.
-        """
-        return container.correction_configs
 
     def get_flag_column(self, column: str) -> str:
         """Determine the correction flag column name for a given data column.

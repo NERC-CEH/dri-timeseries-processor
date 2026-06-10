@@ -8,13 +8,13 @@ EddyPro flux processing runs through the standard pipeline as a derivation step,
 1. The `from-datasets` CLI mode accepts one or more dataset IDs directly. For flux, this is the ID of the processed
    observation dataset (e.g. `flux-plynl-processed`).
 
-2. The dependency graph resolves the raw `.dat` input dataset as a `LOAD_LOCAL_COPY` dependency of the processed
-   dataset.
+2. The dependency graph resolves the raw `.dat` input dataset as the processed dataset's `base_dependency`, with a
+   `load-local-copy` step in its plan.
 
-3. During the `LOAD_LOCAL_COPY` step, `S3DataRouter.stage_locally` downloads the raw `.dat` files for the requested
+3. During the `load-local-copy` step, `S3DataRouter.stage_locally` downloads the raw `.dat` files for the requested
    date range from S3 into a local temporary directory. The path is recorded on the raw dataset's `staged_dir`.
 
-4. When the processed dataset's `DERIVATION` step runs, `EddyProRun` reads `staged_dir` from the raw dependency,
+4. When the processed dataset's `DERIVATION` step runs, `EddyProRun` reads `staged_dir` from the base dependency,
    builds EddyPro config files from templates, runs `eddypro_rp` and `eddypro_fcc`, and parses the output back into
    a `TimeFrame`.
 

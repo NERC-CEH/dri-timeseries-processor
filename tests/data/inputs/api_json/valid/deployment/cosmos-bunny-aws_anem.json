@@ -1,23 +1,23 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.json",
+    "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.json",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.rdf",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.geojson",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.ttl",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.html",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.json",
-      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.csv"
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.json",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.ttl",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.html",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.geojson",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.csv",
+      "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.rdf"
     ]
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3",
       "deployedHeight": 2.6,
       "@type": [
         {
@@ -25,12 +25,14 @@
         }
       ],
       "label": [
-        "Deployment of AWS_ANEM 140810 to AWS_ANEM at BUNNY"
+        "Deployment of WIND_ANEM 140404 to AWS_ANEM at BUNNY"
       ],
-      "endedAtTime": "2019-09-11T00:00:00",
-      "startedAtTime": "2017-11-29T10:00:00",
+      "startedAtTime": "2019-09-11T00:00:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-bunny-aws_anem",
+        "label": [
+          "AWS anemometer at Bunny Park"
+        ],
         "isPartOf": {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
           "label": [
@@ -40,13 +42,13 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/sensor/cosmos-aws_anem-140810",
-          "serialNumber": "140810",
+          "@id": "http://fdri.ceh.ac.uk/id/sensor/cosmos-wind_anem-140404",
+          "serialNumber": "140404",
           "label": [
-            "AWS_ANEM 140810"
+            "WIND_ANEM 140404"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/cosmos/monitoring-system-type/aws_anem"
+            "@id": "http://fdri.ceh.ac.uk/ref/cosmos/monitoring-system-type/wind_anem"
           }
         }
       ]

@@ -21,27 +21,27 @@ class TestValuesForParams:
     def test_single_key_returns_values(self) -> None:
         """Test that values for a single param key are returned as a list."""
         config = make_config({"dep_ts": ["A", "B"]})
-        assert config._values_for_params("dep_ts") == ["A", "B"]
+        assert config.values_for_params("dep_ts") == ["A", "B"]
 
     def test_multiple_keys_returns_union(self) -> None:
         """Test that values across multiple param keys are combined into one list."""
         config = make_config({"dep_ts": "A", "load_dep_ts": "B"})
-        assert config._values_for_params("dep_ts", "load_dep_ts") == ["A", "B"]
+        assert config.values_for_params("dep_ts", "load_dep_ts") == ["A", "B"]
 
     def test_deduplicates_values_across_keys(self) -> None:
         """Test that duplicate values across different param keys are deduplicated."""
         config = make_config({"dep_ts": "A", "load_dep_ts": "A"})
-        assert config._values_for_params("dep_ts", "load_dep_ts") == ["A"]
+        assert config.values_for_params("dep_ts", "load_dep_ts") == ["A"]
 
     def test_returns_empty_when_no_matching_keys(self) -> None:
         """Test that an empty list is returned when no params match the given keys."""
         config = make_config({})
-        assert config._values_for_params("dep_ts", "load_dep_ts") == []
+        assert config.values_for_params("dep_ts", "load_dep_ts") == []
 
     def test_missing_key_returns_empty(self) -> None:
         """Test that a missing param key returns empty list."""
         config = make_config({"dep_ts": ["A", "B"]})
-        assert config._values_for_params("load_dep_ts") == []
+        assert config.values_for_params("load_dep_ts") == []
 
     def test_aggregates_and_dedupes_across_multiple_method_configs(self) -> None:
         """Test that values are aggregated and deduplicated across multiple method configs."""
@@ -55,4 +55,4 @@ class TestValuesForParams:
             ],
             annotations={},
         )
-        assert config._values_for_params("load_dep_ts") == ["X", "Y"]
+        assert config.values_for_params("load_dep_ts") == ["X", "Y"]

@@ -8,11 +8,11 @@
     "version": "1.0.0",
     "hasFormat": [
       "http://fdri.ceh.ac.uk/id/site/nrfa-40018.ttl",
-      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.json",
-      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.csv",
-      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.geojson",
       "http://fdri.ceh.ac.uk/id/site/nrfa-40018.rdf",
-      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.html"
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.json",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.html",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.csv",
+      "http://fdri.ceh.ac.uk/id/site/nrfa-40018.geojson"
     ]
   },
   "items": [

@@ -33,6 +33,92 @@
           "Processed"
         ]
       },
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cosmosfactor_inten_1hour-plan",
+        "@type": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
+          }
+        ],
+        "rawConfiguration": "[\"cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten\"]",
+        "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cosmosfactor_inten_1hour-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten",
+              "appliesToDataset": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed"
+                }
+              ],
+              "hasCurrentValue": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten",
+                  "argument": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.round.value",
+                        "value": [
+                          5
+                        ]
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation.value",
+                        "value": [
+                          "REF_C0",
+                          "GAMMA"
+                        ]
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
+                        "valueReference": [
+                          {
+                            "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "method": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calc_factor_inten"
+                  },
+                  "rawConfiguration": "{\"id\":\"cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten\",\"type\":\"calculate\",\"method\":\"calc_factor_inten\",\"load_ts\":[\"NMDB-JUNG-NEUTRON_CTS_1HOUR_PROCESSED\"],\"parameters\":[{\"param\":\"round\",\"value\":5},{\"param\":\"annotation\",\"value\":[\"REF_C0\",\"GAMMA\"]}],\"site\":\"COSMOS-CHIMN\"}",
+                  "@type": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
+                    }
+                  ]
+                }
+              ],
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+                }
+              ]
+            }
+          }
+        ]
+      },
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/factor_inten-inst-unitless-pt1h-pt1h",
@@ -88,6 +174,46 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+        }
+      ],
+      "hasFlagColumn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_core_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_infill_flag",
+          "columnName": "COSMOSFACTOR_INTEN_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_qc_flag",
+          "columnName": "COSMOSFACTOR_INTEN_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_corrs_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORRS_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        }
       ]
     },
     {
@@ -104,6 +230,92 @@
         "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
         "prefLabel": [
           "Processed"
+        ]
+      },
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-cosmosfactor_inten_1hour-plan",
+        "@type": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
+          }
+        ],
+        "rawConfiguration": "[\"cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten\"]",
+        "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-cosmosfactor_inten_1hour-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten",
+              "appliesToDataset": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-cosmosfactor_inten_1hour_processed"
+                }
+              ],
+              "hasCurrentValue": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten",
+                  "argument": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.round.value",
+                        "value": [
+                          5
+                        ]
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation.value",
+                        "value": [
+                          "REF_C0",
+                          "GAMMA"
+                        ]
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
+                        "valueReference": [
+                          {
+                            "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "method": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calc_factor_inten"
+                  },
+                  "rawConfiguration": "{\"id\":\"cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten\",\"type\":\"calculate\",\"method\":\"calc_factor_inten\",\"load_ts\":[\"NMDB-JUNG-NEUTRON_CTS_1HOUR_PROCESSED\"],\"parameters\":[{\"param\":\"round\",\"value\":5},{\"param\":\"annotation\",\"value\":[\"REF_C0\",\"GAMMA\"]}],\"site\":\"COSMOS-HOLLN\"}",
+                  "@type": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
+                    }
+                  ]
+                }
+              ],
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+                }
+              ]
+            }
+          }
         ]
       },
       "measure": [
@@ -161,6 +373,46 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
         }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+        }
+      ],
+      "hasFlagColumn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_infill_flag",
+          "columnName": "COSMOSFACTOR_INTEN_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_qc_flag",
+          "columnName": "COSMOSFACTOR_INTEN_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_core_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_corrs_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORRS_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        }
       ]
     },
     {
@@ -177,6 +429,92 @@
         "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
         "prefLabel": [
           "Processed"
+        ]
+      },
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-cosmosfactor_inten_1hour-plan",
+        "@type": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
+          }
+        ],
+        "rawConfiguration": "[\"cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten\"]",
+        "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-cosmosfactor_inten_1hour-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten",
+              "appliesToDataset": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed"
+                }
+              ],
+              "hasCurrentValue": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten",
+                  "argument": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
+                        "valueReference": [
+                          {
+                            "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation.value",
+                        "value": [
+                          "REF_C0",
+                          "GAMMA"
+                        ]
+                      }
+                    },
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.round",
+                      "parameter": {
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                      },
+                      "hasValue": {
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.round.value",
+                        "value": [
+                          5
+                        ]
+                      }
+                    }
+                  ],
+                  "method": {
+                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/calc_factor_inten"
+                  },
+                  "rawConfiguration": "{\"id\":\"cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten\",\"type\":\"calculate\",\"method\":\"calc_factor_inten\",\"load_ts\":[\"NMDB-JUNG-NEUTRON_CTS_1HOUR_PROCESSED\"],\"parameters\":[{\"param\":\"round\",\"value\":5},{\"param\":\"annotation\",\"value\":[\"REF_C0\",\"GAMMA\"]}],\"site\":\"COSMOS-ALIC1\"}",
+                  "@type": [
+                    {
+                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
+                    }
+                  ]
+                }
+              ],
+              "type": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+                }
+              ]
+            }
+          }
         ]
       },
       "measure": [
@@ -233,6 +571,46 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/cosmos"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed"
+        }
+      ],
+      "hasFlagColumn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_core_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_corrs_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORRS_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_infill_flag",
+          "columnName": "COSMOSFACTOR_INTEN_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_qc_flag",
+          "columnName": "COSMOSFACTOR_INTEN_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
         }
       ]
     }

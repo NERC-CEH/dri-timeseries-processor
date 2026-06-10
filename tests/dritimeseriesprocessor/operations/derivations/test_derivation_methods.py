@@ -29,7 +29,6 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     SolarZenith,
     VolumetricWaterContent,
 )
-from dritimeseriesprocessor.utils.enums import MethodType
 from utils.data_creation import dataframe_to_timeframe
 
 
@@ -672,8 +671,8 @@ def _make_eddypro_config(
         params={
             "container": container,
             "dataset_repository": dataset_repository,
-            "start_date": start_date,
-            "end_date": end_date,
+            "processing_start_date": start_date,
+            "processing_end_date": end_date,
             "site_metadata": site_metadata or {},
             "file_duration": file_duration,
         },
@@ -681,27 +680,22 @@ def _make_eddypro_config(
 
 
 class TestEddyProRun:
-    def test_raises_when_no_load_local_copy_dependency(self) -> None:
-        """Tests that a ValueError is raised when no LOAD_LOCAL_COPY dependency is present."""
+    def test_raises_when_no_base_dependency(self) -> None:
+        """Tests that a ValueError is raised when the container has no base dependency."""
         container = MagicMock()
-        container.all_dependencies.return_value = ["dep-1"]
-        dep = MagicMock()
-        dep.method_type.return_value = MethodType.LOAD
+        container.base_dependency = []
 
-        config = _make_eddypro_config(container, {"dep-1": dep})
+        config = _make_eddypro_config(container, {})
 
         with pytest.raises(ValueError):
             EddyProRun().run(config)
 
-    def test_raises_when_multiple_load_local_copy_dependencies(self) -> None:
-        """Tests that a ValueError is raised when more than one LOAD_LOCAL_COPY dependency is found."""
+    def test_raises_when_multiple_base_dependencies(self) -> None:
+        """Tests that a ValueError is raised when the container has more than one base dependency."""
         container = MagicMock()
-        container.all_dependencies.return_value = ["dep-1", "dep-2"]
-        dep1, dep2 = MagicMock(), MagicMock()
-        dep1.method_type.return_value = MethodType.LOAD_LOCAL_COPY
-        dep2.method_type.return_value = MethodType.LOAD_LOCAL_COPY
+        container.base_dependency = ["dep-1", "dep-2"]
 
-        config = _make_eddypro_config(container, {"dep-1": dep1, "dep-2": dep2})
+        config = _make_eddypro_config(container, {"dep-1": MagicMock(), "dep-2": MagicMock()})
 
         with pytest.raises(ValueError):
             EddyProRun().run(config)
@@ -709,9 +703,8 @@ class TestEddyProRun:
     def test_raises_when_staged_dir_is_none(self) -> None:
         """Tests that a ValueError is raised when the raw dependency has not been staged locally."""
         container = MagicMock()
-        container.all_dependencies.return_value = ["raw-dep"]
+        container.base_dependency = ["raw-dep"]
         raw_dep = MagicMock()
-        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
         raw_dep.staged_dir = None
         raw_dep.ts_id = "raw-dep"
 
@@ -725,10 +718,10 @@ class TestEddyProRun:
     ) -> None:
         """Tests that EddyProPipeline.run is called with the raw staged directory and the date range."""
         container = MagicMock()
+        container.base_dependency = ["raw-dep"]
         container.all_dependencies.return_value = ["raw-dep"]
         container.source_site = "flux-plynl"
         raw_dep = MagicMock()
-        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
         raw_dep.staged_dir = tmp_path
         raw_dep.ts_id = "raw-dep"
 
@@ -758,10 +751,10 @@ class TestEddyProRun:
     ) -> None:
         """Tests that the container's resolution and periodicity are set from the file_duration param."""
         container = MagicMock()
+        container.base_dependency = ["raw-dep"]
         container.all_dependencies.return_value = ["raw-dep"]
         container.source_site = "flux-plynl"
         raw_dep = MagicMock()
-        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
         raw_dep.staged_dir = tmp_path
         raw_dep.ts_id = "raw-dep"
 
@@ -785,10 +778,10 @@ class TestEddyProRun:
     def test_returns_container_data(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         """Tests that the method returns the container's data after init_timeframe is called."""
         container = MagicMock()
+        container.base_dependency = ["raw-dep"]
         container.all_dependencies.return_value = ["raw-dep"]
         container.source_site = "flux-plynl"
         raw_dep = MagicMock()
-        raw_dep.method_type.return_value = MethodType.LOAD_LOCAL_COPY
         raw_dep.staged_dir = tmp_path
         raw_dep.ts_id = "raw-dep"
 

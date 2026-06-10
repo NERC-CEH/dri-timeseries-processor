@@ -5,7 +5,7 @@ These mappers extract the fields actually required by the pipeline and flatten n
 domain-level objects.
 """
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime
 from typing import Any
 
@@ -48,6 +48,18 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
 
     dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
 
+    plan_order = []
+    base_dependency = []
+    if item.methodology:
+        base_dependency = [u.id for u in item.methodology.uses] if item.methodology.uses else []
+        steps = item.methodology.steps or []
+        indices = [step.index for step in steps]
+        duplicate_indices = sorted(index for index, count in Counter(indices).items() if count > 1)
+        if duplicate_indices:
+            raise ValueError(f"Duplicate plan indices in TimeSeriesPlan for {item.id}: {duplicate_indices}")
+        ordered_steps = sorted(steps, key=lambda s: s.index)
+        plan_order = [step.configuration.id for step in ordered_steps]
+
     return TimeSeriesContainer(
         ts_id=item.id,
         network=source_network,
@@ -62,6 +74,8 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
         time_column_name=getattr(item, "time_column_name", None),
         dataset_type=dataset_type,
         distribution_url=item.distribution_url,
+        plan_order=plan_order,
+        base_dependency=base_dependency,
     )
 
 

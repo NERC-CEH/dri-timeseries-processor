@@ -7,12 +7,12 @@ from time_stream.operation import Operation
 from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 
 class CorrectionMethod(Operation, ABC):
-    operation_type = OperationType.CORRECTION
+    operation_type = ConfigurationType.CORRECTION
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:

@@ -6,7 +6,7 @@ Represents fdri:ObservationDataset items - bundles (e.g. raw .dat files)
 
 from pydantic import Field
 
-from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse, HasCurrentValue, IDModel
+from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse, IDModel
 
 
 class Variable(IDModel):
@@ -36,17 +36,18 @@ class Measure(IDModel):
     aggregation: Aggregation
 
 
-class Configuration(IDModel):
-    """Configuration with type and current configuration."""
+class MethodologyStep(IDModel):
+    """A single ordered step in a dataset's TimeSeriesPlan."""
 
-    type: IDModel
-    has_current_configuration: list[HasCurrentValue] | None = Field(None, alias="hasCurrentConfiguration")
+    index: int
+    configuration: IDModel
 
 
 class Methodology(IDModel):
-    """Methodology specification."""
+    """TimeSeriesPlan - the ordered processing steps that produce this dataset."""
 
-    configuration: Configuration
+    uses: list[IDModel] | None = None
+    steps: list[MethodologyStep] | None = Field(None, alias="hasPart")
 
 
 class Distribution(IDModel):
@@ -72,7 +73,6 @@ class ObservationDatasetItem(IDModel):
     originating_facility: list[IDModel] | None = Field(None, alias="originatingFacility")
     originating_site: list[IDModel] | None = Field(None, alias="originatingSite")
     originating_programme: list[IDModel] | None = Field(None, alias="originatingProgramme")
-    depends_on: list[IDModel] | None = Field(None, alias="dependsOn")
     direct_depends_on: list[IDModel] | None = Field(None, alias="directDependsOn")
 
     @property

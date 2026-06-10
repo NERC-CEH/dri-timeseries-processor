@@ -16,7 +16,7 @@ from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse, IDM
 class Contain(IDModel):
     """Container specification with label."""
 
-    label: list[str] = Field(..., alias="label")
+    label: list[str] = Field(default_factory=list, alias="label")
 
 
 class NetworkItem(IDModel):
@@ -24,7 +24,7 @@ class NetworkItem(IDModel):
 
     field_type: list[IDModel] = Field(..., alias="@type")
     contains: list[Contain]
-    label: list[str]
+    label: list[str] = Field(default_factory=list, alias="label")
 
 
 class Network(BaseAPIResponse):
