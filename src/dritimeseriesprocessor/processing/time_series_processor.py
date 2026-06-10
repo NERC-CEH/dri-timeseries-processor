@@ -11,7 +11,6 @@ from collections.abc import Iterator
 from datetime import datetime
 
 import polars as pl
-import time_stream as ts
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
@@ -147,52 +146,48 @@ class TimeSeriesProcessor:
         for idx, plan_id in enumerate(container.plan_order):
             config = container.data_processing_configs[plan_id]
 
+            # A marker that determines what to do about initialising flagging systems after a step has completed.
+            # True  = register flag systems and columns, then add an "unchecked" flag to every row (LOAD).
+            # False = register flag systems and columns only - no "unchecked" flag (DERIVATION creates its
+            #         own data so rows start as checked rather than pending QC).
+            # None  = (default) this step does not create data, so no flag initialisation is needed.
+            flag_init_unchecked: bool | None = None
+
             match config.config_type:
                 case ConfigurationType.LOAD:
-                    for cfg in config.method_configs:
-                        cfg.params["processing_start_date"] = self.start_date
-                        cfg.params["processing_end_date"] = self.end_date
-                    container = LoadPipeline(self.data_router).run(container, self.graph.datasets, config)
-
-                    initialise_flag_systems(container, self.graph.flagging_systems)
-                    add_initial_core_flags(container)
+                    container = LoadPipeline(self.data_router, self.start_date, self.end_date).run(
+                        container, self.graph.datasets, config
+                    )
+                    flag_init_unchecked = True
 
                 case ConfigurationType.CORRECTION:
                     container.data = CorrectionPipeline().run(container, self.graph.datasets, config)
 
                 case ConfigurationType.QUALITY_CONTROL:
-                    container.data = QCPipeline().run(container, self.graph.datasets, config)
-                    if self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL:
-                        logger.info("Removing data that has failed QC checks")
-                        container.data = QCPipeline.remove_flagged_data(container.data)  # type: ignore[arg-type]
+                    # Only remove flagged data after the last QC block - sequential QC blocks must
+                    # accumulate flags across all their checks before any data is nulled out.
+                    is_final_qc = self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL
+                    container.data = QCPipeline().run(
+                        container, self.graph.datasets, config, remove_flagged=is_final_qc
+                    )
 
                 case ConfigurationType.INFILLING:
                     container.data = InfillPipeline().run(container, self.graph.datasets, config)
 
                 case ConfigurationType.AGGREGATION:
-                    if container.periodicity is None:
-                        raise ValueError(f"No periodicity found for: {container.ts_id}")
-
-                    for cfg in config.method_configs:
-                        cfg.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
-                        cfg.params["source_column"] = container.source_column
-
                     container.data = AggregationPipeline().run(container, self.graph.datasets, config)
 
                 case ConfigurationType.DERIVATION:
+                    site_metadata = self.graph.site_metadata[f"{SITE_URI}/{container.source_site}"]
                     for cfg in config.method_configs:
-                        cfg.params["site_metadata"] = self.graph.site_metadata[f"{SITE_URI}/{container.source_site}"]
-                        cfg.params["container"] = container
-                        cfg.params["output_col"] = container.source_column
-                        cfg.params["resolution"] = container.resolution
-                        cfg.params["periodicity"] = container.periodicity
                         cfg.params["processing_start_date"] = self.start_date.date()
                         cfg.params["processing_end_date"] = self.end_date.date()
+                    container.data = DerivationPipeline(site_metadata).run(container, self.graph.datasets, config)
+                    flag_init_unchecked = False
 
-                    container.data = DerivationPipeline().run(container, self.graph.datasets, config)
-
-                    initialise_flag_systems(container, self.graph.flagging_systems)
-                    add_initial_core_flags(container, init_unchecked=False)
+            if flag_init_unchecked is not None:
+                initialise_flag_systems(container, self.graph.flagging_systems)
+                add_initial_core_flags(container, init_unchecked=flag_init_unchecked)
 
     @staticmethod
     def _get_next_step_type(container: TimeSeriesContainer, current_idx: int) -> ConfigurationType | None:

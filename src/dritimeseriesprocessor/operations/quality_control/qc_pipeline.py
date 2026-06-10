@@ -4,8 +4,10 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
     DataProcessingMethodConfig,
 )
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import qc_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
@@ -20,6 +22,21 @@ class QCPipeline(OperationPipeline):
 
     def __init__(self):
         super().__init__(ConfigurationType.QUALITY_CONTROL)
+
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+        *,
+        remove_flagged: bool = True,
+    ) -> ts.TimeFrame:
+        """Run QC checks and, if this is the last QC block in the plan, remove data that failed."""
+        tf = super().run(container, dataset_repository, config)
+        if remove_flagged:
+            logger.info("Removing data that has failed QC checks")
+            tf = self.remove_flagged_data(tf)  # type: ignore[arg-type]
+        return tf
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.

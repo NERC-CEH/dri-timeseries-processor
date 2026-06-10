@@ -8,8 +8,10 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
     DataProcessingMethodConfig,
 )
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
 from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
@@ -24,11 +26,21 @@ class AggregationPipeline(OperationPipeline):
     def __init__(self):
         super().__init__(ConfigurationType.AGGREGATION)
 
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
-        """Override the parent run method, as we need to remove any invalid aggregation data and do some column
-        manipulation after the pipeline has finished
-        """
-        tf = super().run(*args, **kwargs)
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+    ) -> ts.TimeFrame:
+        """Run aggregation, injecting container context into each method config before processing."""
+        if container.periodicity is None:
+            raise ValueError(f"No periodicity found for: {container.ts_id}")
+
+        for cfg in config.method_configs:
+            cfg.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
+            cfg.params["source_column"] = container.source_column
+
+        tf = super().run(container, dataset_repository, config)
         tf = self._remove_data(tf)
         tf = self._select_columns(tf)
         return tf

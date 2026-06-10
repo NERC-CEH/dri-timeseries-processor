@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
@@ -14,8 +15,10 @@ logger = logging.getLogger(__name__)
 class LoadPipeline:
     operation_type: ConfigurationType = ConfigurationType.LOAD
 
-    def __init__(self, data_router: DataRouter):
+    def __init__(self, data_router: DataRouter, start_date: datetime, end_date: datetime):
         self.data_router = data_router
+        self.start_date = start_date
+        self.end_date = end_date
 
     def run(
         self,
@@ -53,9 +56,7 @@ class LoadPipeline:
                 container.data = dep.data.copy(share_df=False)
 
             case "load-local-copy":
-                container.staged_dir = self.data_router.stage_locally(
-                    container, config.params["processing_start_date"], config.params["processing_end_date"]
-                )
+                container.staged_dir = self.data_router.stage_locally(container, self.start_date, self.end_date)
 
             case _:
                 raise ValueError(f"Unknown load method: {config.method}")

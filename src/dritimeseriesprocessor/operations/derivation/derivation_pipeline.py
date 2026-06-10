@@ -7,7 +7,12 @@ import logging
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
+from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -18,8 +23,25 @@ logger = logging.getLogger(__name__)
 class DerivationPipeline(OperationPipeline):
     """Pipeline for running Derivation methods on a TimeSeriesContainer."""
 
-    def __init__(self):
+    def __init__(self, site_metadata: SiteMetadata):
         super().__init__(ConfigurationType.DERIVATION)
+        self._site_metadata = site_metadata
+
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+    ) -> ts.TimeFrame:
+        """Run derivation, injecting container context into each method config before processing."""
+        for cfg in config.method_configs:
+            cfg.params["site_metadata"] = self._site_metadata
+            cfg.params["container"] = container
+            cfg.params["output_col"] = container.source_column
+            cfg.params["resolution"] = container.resolution
+            cfg.params["periodicity"] = container.periodicity
+
+        return super().run(container, dataset_repository, config)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given derivation method to the TimeFrame data.
