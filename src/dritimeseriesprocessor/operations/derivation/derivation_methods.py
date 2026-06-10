@@ -894,6 +894,9 @@ class RollingMeanForSnow(DerivationMethod):
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
         Calculate rolling means for counts.
+        References: 2021. Wallbank, J.R., Cole, S.J., Moore, R.J. , Anderson, S.R. , and Mellor, E.J.,
+                    Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network.
+                    Hydrological Processes, 35, e14048, DOI: 10.1002/hyp.14048
 
         Args:
             Dict with keys of required columns for the calculation.
