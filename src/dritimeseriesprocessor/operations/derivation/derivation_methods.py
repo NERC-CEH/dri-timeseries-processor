@@ -13,6 +13,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
 from dritimeseriesprocessor.operations.eddypro.flux_despike import despike_df
+from dritimeseriesprocessor.routers.data.data_router import DataRouter
 from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
@@ -871,7 +872,7 @@ class EddyProRun(DerivationMethod):
 
     # Should these be wired through the processing config / metadata API?
     # In practice these parameters are unlikely to change
-    # H and Tau are the only flux variables that require MAD despiking, 
+    # H and Tau are the only flux variables that require MAD despiking,
     # R_SW_in_Avg is the standard day/night discriminator,
     # and the sensitivity/window values are established defaults from the legacy processing script.
     _DESPIKE_COLUMNS = ["H", "Tau"]
@@ -913,8 +914,11 @@ class EddyProRun(DerivationMethod):
             # ObservationDataset bundles have source_bucket=None; find it from a sibling
             # processed dataset that does carry the bucket in the repository.
             processed_container = next(
-                (c for c in dataset_repository.values()
-                 if c.source_bucket is not None and c.processing_level is ProcessingLevel.PROCESSED),
+                (
+                    c
+                    for c in dataset_repository.values()
+                    if c.source_bucket is not None and c.processing_level is ProcessingLevel.PROCESSED
+                ),
                 None,
             )
             df = self._run_despiking(df, container, start_date, resolution, data_router, processed_container)
@@ -933,7 +937,7 @@ class EddyProRun(DerivationMethod):
         container: TimeSeriesContainer,
         start_date: date,
         resolution: str,
-        data_router,
+        data_router: DataRouter,
         processed_container: TimeSeriesContainer | None = None,
     ) -> pl.DataFrame:
         """Load prior history and apply MAD despiking to H and Tau in the EddyPro output.

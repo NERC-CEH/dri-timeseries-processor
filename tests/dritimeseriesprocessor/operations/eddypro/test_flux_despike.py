@@ -13,7 +13,6 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import Eddy
 from dritimeseriesprocessor.operations.eddypro.flux_despike import despike_df, spike_code
 from dritimeseriesprocessor.utils.enums import ProcessingLevel
 
-
 # ---------------------------------------------------------------------------
 # spike_code
 # ---------------------------------------------------------------------------
@@ -88,7 +87,8 @@ class TestDespikeDf:
         current = _make_eddypro_df()
         history = _make_history_df()
         result = despike_df(
-            current, history,
+            current,
+            history,
             columns=["H", "Tau"],
             reference_column="R_SW_in_Avg",
             output_names={"H": "H_despiked", "Tau": "Tau_L2"},
@@ -155,7 +155,7 @@ def _make_site_metadata(network: str = "fdri") -> MagicMock:
 
 
 class TestRunDespiking:
-    def test_skips_when_history_is_empty(self, caplog) -> None:
+    def test_skips_when_history_is_empty(self, caplog: pytest.LogCaptureFixture) -> None:
         """_run_despiking returns the original df unchanged when no history is available."""
         mock_router = MagicMock()
         mock_router.query_by_date_range.return_value = pl.DataFrame()
