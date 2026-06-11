@@ -26,7 +26,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NetRadiation,
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
-    RollingMeanForSnow,
+    RollingMeanForCounts,
     SolarZenith,
     VolumetricWaterContent,
 )
@@ -659,36 +659,8 @@ class TestCalcFluxEt:
         assert result.df["et"][0] is None
 
 
-class TestRollingMeanForSnow:
-    def test_rolling_mean_for_snow(self) -> None:
-        """
-        Test:
-        - When n_smooth and na_lim are not provided, defaults (n_smooth=12, na_lim=4) should be used.
-        - Datasets longer than n_smooth*2 give null output at edges.
-        - Datapoints that do not have n_smooth datapoints on either side are assigned a null value.
-        - Rolling mean is applied when there is snow, but not when there is no snow.
-        """
-        config = create_method_config(
-            {
-                "snow": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                "cts_mod_corr": [100.0] * 31,
-            },
-            "cts_smo_crns",
-        )
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame(
-                {
-                    "cts_smo_crns": pl.Series(
-                        [None] * 12 + [100.0] * 3 + [None] + [100.0] * 3 + [None] * 12, dtype=pl.Float64
-                    )
-                }
-            )
-        )
-        result = RollingMeanForSnow().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_rolling_mean_for_snow_with_nulls(self) -> None:
+class TestRollingMeanForCounts:
+    def test_rolling_mean(self) -> None:
         """
         Windows where null count exceeds na_lim should produce null output.
         Datapoints that have n_smooth datapoints on either side,
@@ -696,7 +668,6 @@ class TestRollingMeanForSnow:
         """
         config = create_method_config(
             {
-                "snow": [1] * 14,
                 "cts_mod_corr": [
                     100.0,
                     100.0,
@@ -729,7 +700,7 @@ class TestRollingMeanForSnow:
                 }
             )
         )
-        result = RollingMeanForSnow().run(config)
+        result = RollingMeanForCounts().run(config)
         assert_frame_equal(result.df, expected.df)
 
 

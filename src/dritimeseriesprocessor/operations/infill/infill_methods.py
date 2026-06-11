@@ -24,7 +24,7 @@ class InfillMethod(Operation, ABC):
 
 @InfillMethod.register
 class Linear(InfillMethod):
-    name = "linear_linear"
+    name = "linear_interp"
     flag_value = 1
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:

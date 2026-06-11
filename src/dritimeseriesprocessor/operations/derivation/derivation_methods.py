@@ -8,7 +8,6 @@ from time_stream.operation import Operation
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
-from dritimeseriesprocessor.utils.derivation_utils import rolling_mean
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
@@ -879,17 +878,23 @@ class EddyProRun(DerivationMethod):
 
 
 @DerivationMethod.register
-class RollingMeanForSnow(DerivationMethod):
+class RollingMeanForCounts(DerivationMethod):
     """
-    Calculate rolling mean for counts, but only when
-    there is a snow event, as currently this is the only time they are needed.
+    Calculate rolling mean for counts.
+    A window will traverse the array. The datapoint at the center of the window is assigned
+    a value for the rolling mean by averaging the values within that window.
+    The window uses n_smooth values either side of the central datapoint.
+    Note, this means values at beginning and end of data without enough values on one side of
+    the data point will be null.
+    Null values do not have a rolling mean applied.
+    If more than na_lim number of null values are present in a window, rolling mean returns null.
 
     n_smooth = 12 by default, or overwritten if specified by dataset processing configuration in metadata.
     na_lim = 4 by default, or overwritten if specified by dataset processing configuration in metadata.
     """
 
-    name = "rolling_mean_for_snow"
-    inputs = ("snow", "cts_mod_corr")
+    name = "rolling_mean_for_counts"
+    inputs = ("cts_mod_corr",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
@@ -900,22 +905,24 @@ class RollingMeanForSnow(DerivationMethod):
 
         Args:
             Dict with keys of required columns for the calculation.
-            - snow: 1 if snow day, otherwise 0 or null.
             - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
 
         Returns:
-            pl.Expr: cts_smo, a rolling mean of cts_mod_corr where snow == 1, otherwise null.
-                     Values at beginning and end of data with fewer than n_smooth values on one side of
-                     the data point will also be null.
+            pl.Expr: cts_smo_crns, a rolling mean of cts_mod_corr.
         """
-        snow = columns["snow"]
         cts_mod_corr = columns["cts_mod_corr"]
         n_smooth = self.config.params.get("n_smooth", 12)
         na_lim = self.config.params.get("na_lim", 4)
 
+        # odd window_size ensures window is symmetric, with n_smooth datapoints on each side.
+        window_size = 2 * n_smooth + 1
+
+        # Count nulls in the window.
+        null_count = cts_mod_corr.is_null().rolling_sum(window_size, center=True, min_samples=window_size)
+
         cts_smo_crns = (
-            pl.when(snow == 1)
-            .then(rolling_mean(cts_mod_corr, n_smooth, na_lim))
+            pl.when((null_count <= na_lim) & cts_mod_corr.is_not_null())
+            .then(cts_mod_corr.rolling_mean(window_size, center=True, min_samples=window_size - na_lim))
             .otherwise(pl.lit(None, dtype=pl.Float64))
         )
         return cts_smo_crns
