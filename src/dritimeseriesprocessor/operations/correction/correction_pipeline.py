@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 class CorrectionPipeline(OperationPipeline):
     """Processor for running corrections on a TimeSeriesContainer."""
 
-    def __init__(self):
-        super().__init__(ConfigurationType.CORRECTION)
+    def __init__(self, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.CORRECTION, flag_systems)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given correction method to the TimeFrame data.

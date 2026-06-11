@@ -14,8 +14,10 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
+from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.polars_utils import missing_expr
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +25,8 @@ logger = logging.getLogger(__name__)
 class DerivationPipeline(OperationPipeline):
     """Pipeline for running Derivation methods on a TimeSeriesContainer."""
 
-    def __init__(self, site_metadata: SiteMetadata):
-        super().__init__(ConfigurationType.DERIVATION)
+    def __init__(self, site_metadata: SiteMetadata, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.DERIVATION, flag_systems)
         self._site_metadata = site_metadata
 
     def run(
@@ -73,14 +75,25 @@ class DerivationPipeline(OperationPipeline):
         tf = method.run(config)
         return tf
 
-    def get_flag_column(self, column: str) -> str:
-        """Not used by derivation - flags are not applied."""
-        raise NotImplementedError
+    def get_flag_column(self, column: str) -> str | None:
+        """Derivation does not produce its own flag column."""
+        return None
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Not used by derivation - flags are not applied."""
         raise NotImplementedError
 
     def core_flag_updater(self, tf: ts.TimeFrame) -> ts.TimeFrame:
-        """Not yet implemented for derivation method."""
+        """Stamp the 'missing' core flag on rows that have no derived value.
+
+        Args:
+            tf: TimeFrame with flags to update.
+
+        Returns:
+            TimeFrame with the 'missing' core flag applied.
+        """
+        for data_column in tf.data_columns:
+            core_flag_col_name = core_flag_column_name(data_column)
+            if core_flag_col_name in tf.flag_columns:
+                tf.add_flag(core_flag_col_name, "missing", missing_expr(data_column, tf.df[data_column].dtype))
         return tf

@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 class QCPipeline(OperationPipeline):
     """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer."""
 
-    def __init__(self):
-        super().__init__(ConfigurationType.QUALITY_CONTROL)
+    def __init__(self, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.QUALITY_CONTROL, flag_systems)
 
     def run(
         self,
@@ -33,7 +33,7 @@ class QCPipeline(OperationPipeline):
     ) -> ts.TimeFrame:
         """Run QC checks and, if this is the last QC block in the plan, remove data that failed."""
         tf = super().run(container, dataset_repository, config)
-        if remove_flagged:
+        if remove_flagged and container.has_flags():
             logger.info("Removing data that has failed QC checks")
             tf = self.remove_flagged_data(tf)  # type: ignore[arg-type]
         return tf

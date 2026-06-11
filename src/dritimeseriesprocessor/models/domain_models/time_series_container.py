@@ -98,6 +98,12 @@ class TimeSeriesContainer:
         """
         return not bool(self.data_processing_configs)
 
+    def has_flags(self) -> bool:
+        """Determine whether this container has any flagging schemes attached - to determine whether to bother with
+        flagging operations
+        """
+        return bool(self.flag_column_schemes)
+
     @property
     def s3_bucket(self) -> str | None:
         if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:

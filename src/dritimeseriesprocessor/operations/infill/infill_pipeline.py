@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 class InfillPipeline(OperationPipeline):
     """Processor for running infilling on a TimeSeriesContainer."""
 
-    def __init__(self):
-        super().__init__(ConfigurationType.INFILLING)
+    def __init__(self, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.INFILLING, flag_systems)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given infill method to the TimeFrame data.

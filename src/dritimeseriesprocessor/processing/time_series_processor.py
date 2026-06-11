@@ -146,48 +146,47 @@ class TimeSeriesProcessor:
         for idx, plan_id in enumerate(container.plan_order):
             config = container.data_processing_configs[plan_id]
 
-            # A marker that determines what to do about initialising flagging systems after a step has completed.
-            # True  = register flag systems and columns, then add an "unchecked" flag to every row (LOAD).
-            # False = register flag systems and columns only - no "unchecked" flag (DERIVATION creates its
-            #         own data so rows start as checked rather than pending QC).
-            # None  = (default) this step does not create data, so no flag initialisation is needed.
-            flag_init_unchecked: bool | None = None
-
             match config.config_type:
                 case ConfigurationType.LOAD:
                     container = LoadPipeline(self.data_router, self.start_date, self.end_date).run(
                         container, self.graph.datasets, config
                     )
-                    flag_init_unchecked = True
+                    # LOAD brings in raw data: we need to register any flag systems, create the flag columns the
+                    # dataset declares, and set every row's core flag as "unchecked"
+                    initialise_flag_systems(container, self.graph.flagging_systems)
+                    add_initial_core_flags(container)
 
                 case ConfigurationType.CORRECTION:
-                    container.data = CorrectionPipeline().run(container, self.graph.datasets, config)
+                    container.data = CorrectionPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
                 case ConfigurationType.QUALITY_CONTROL:
                     # Only remove flagged data after the last QC block - sequential QC blocks must
                     # accumulate flags across all their checks before any data is nulled out.
                     is_final_qc = self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL
-                    container.data = QCPipeline().run(
+                    container.data = QCPipeline(self.graph.flagging_systems).run(
                         container, self.graph.datasets, config, remove_flagged=is_final_qc
                     )
 
                 case ConfigurationType.INFILLING:
-                    container.data = InfillPipeline().run(container, self.graph.datasets, config)
+                    container.data = InfillPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
                 case ConfigurationType.AGGREGATION:
-                    container.data = AggregationPipeline().run(container, self.graph.datasets, config)
+                    container.data = AggregationPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
                 case ConfigurationType.DERIVATION:
                     site_metadata = self.graph.site_metadata[f"{SITE_URI}/{container.source_site}"]
                     for cfg in config.method_configs:
                         cfg.params["processing_start_date"] = self.start_date.date()
                         cfg.params["processing_end_date"] = self.end_date.date()
-                    container.data = DerivationPipeline(site_metadata).run(container, self.graph.datasets, config)
-                    flag_init_unchecked = False
-
-            if flag_init_unchecked is not None:
-                initialise_flag_systems(container, self.graph.flagging_systems)
-                add_initial_core_flags(container, init_unchecked=flag_init_unchecked)
+                    container.data = DerivationPipeline(site_metadata, self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
     @staticmethod
     def _get_next_step_type(container: TimeSeriesContainer, current_idx: int) -> ConfigurationType | None:

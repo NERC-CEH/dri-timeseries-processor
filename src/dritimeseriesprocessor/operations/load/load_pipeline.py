@@ -53,7 +53,9 @@ class LoadPipeline:
                 dep = dataset_repository[config.params["dep_ts"]]
                 if dep.data is None:
                     raise RuntimeError(f"No data found for base dependency: {dep.ts_id}")
-                container.data = dep.data.copy(share_df=False)
+                tf = dep.data.select(container.source_column)
+                tf.metadata["column_name"] = container.source_column
+                container.data = tf
 
             case "load-local-copy":
                 container.staged_dir = self.data_router.stage_locally(container, self.start_date, self.end_date)
