@@ -22,7 +22,7 @@ def mock_timeframe() -> MagicMock:
 class TestGetFlagColumn:
     def test_get_correction_flag_column(self) -> None:
         """Test that correct flag column name is returned."""
-        pipeline = CorrectionPipeline()
+        pipeline = CorrectionPipeline({})
         result = pipeline.get_flag_column("temperature")
         assert result == "temperature_CORRS_FLAG"
 
@@ -40,7 +40,7 @@ class TestComputeFlagMask:
     )
     def test_mask(self, before: list, after: list, expected: list) -> None:
         """Test that mask identifies when values are changed."""
-        pipeline = CorrectionPipeline()
+        pipeline = CorrectionPipeline({})
 
         original = MagicMock(spec=ts.TimeFrame)
         original.df = pl.DataFrame({"value": before})
@@ -64,7 +64,7 @@ class TestApply:
             mock_method.run.return_value = expected_result
             mock_get.return_value = mock_method
 
-            pipeline = CorrectionPipeline()
+            pipeline = CorrectionPipeline({})
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
 
@@ -80,6 +80,6 @@ class TestCoreFlagUpdater:
             mock_method,
         )
 
-        pipeline = CorrectionPipeline()
+        pipeline = CorrectionPipeline({})
         pipeline.core_flag_updater(mock_timeframe)
         mock_method.assert_called_once_with(mock_timeframe)

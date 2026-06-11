@@ -5,7 +5,6 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_frame_equal
 from tests.utils.data_creation import create_timeframe
-from time_stream.exceptions import FlagSystemNotFoundError
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
@@ -49,6 +48,7 @@ def mock_container(mock_timeframe: MagicMock) -> MagicMock:
     container = MagicMock(spec=TimeSeriesContainer)
     container.time_column_name = "time"
     container.data = mock_timeframe
+    container.flag_column_schemes = {}
     return container
 
 
@@ -64,74 +64,27 @@ def proc_config() -> MagicMock:
     return config
 
 
-class TestInitialiseFlagSystem:
-    def test_registers_new_flag_system(self, mock_timeframe: MagicMock) -> None:
-        """Test that flag system registration is called when it doesn't exist."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
-        pipeline.registry = {"flag1": MagicMock(flag_value=1), "flag2": MagicMock(flag_value=2)}
+class TestInitFlagColumns:
+    def test_creates_core_and_operation_flag_columns(self, mock_timeframe: MagicMock) -> None:
+        """Tests that the core and operation-specific flag columns are set up for each data column."""
+        pipeline = MockOperationPipeline(
+            ConfigurationType.QUALITY_CONTROL,
+            {"core_flags": {"unchecked": 32}, "test_flags": {"flag1": 1}},
+        )
+        mock_timeframe.flag_systems = {}
+        flag_column_schemes = {"value_CORE_FLAG": "core_flags", "value_TEST_FLAG": "test_flags"}
 
-        mock_timeframe.get_flag_system.side_effect = FlagSystemNotFoundError("Not found")
+        pipeline._init_flag_columns(mock_timeframe, flag_column_schemes)
 
-        pipeline._initialise_flag_system(mock_timeframe)
-        mock_timeframe.register_flag_system.assert_called_once_with("test_flags", {"flag1": 1, "flag2": 2})
+        mock_timeframe.init_flag_column.assert_any_call("core_flags", "value_CORE_FLAG")
+        mock_timeframe.init_flag_column.assert_any_call("test_flags", "value_TEST_FLAG")
 
-    def test_no_new_register(self, mock_timeframe: MagicMock) -> None:
-        """Test that flag system registration is not called when it does exist."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
-        pipeline.registry = {"flag1": MagicMock(flag_value=1), "flag2": MagicMock(flag_value=2)}
+    def test_skips_columns_not_in_schemes(self, mock_timeframe: MagicMock) -> None:
+        """Tests that flag columns the dataset does not define are not created."""
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
+        mock_timeframe.flag_systems = {}
 
-        mock_timeframe.get_flag_system.return_value = {"test_flags": "exist"}
-
-        pipeline._initialise_flag_system(mock_timeframe)
-        mock_timeframe.register_flag_system.assert_not_called()
-
-
-class TestInitialiseFlagColumn:
-    def test_initialises_new_flag_column(self, mock_timeframe: MagicMock) -> None:
-        """Test that flag column registration is called when it doesn't exist."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
-
-        pipeline._initialise_flag_column(mock_timeframe, "value")
-        mock_timeframe.init_flag_column.assert_called_once_with("test_flags", "value_TEST_FLAG")
-
-    def test_no_new_register(self, mock_timeframe: MagicMock) -> None:
-        """Test that flag column registration is not called when it does exist."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
-        mock_timeframe.flag_columns = ["value_TEST_FLAG"]
-
-        pipeline._initialise_flag_column(mock_timeframe, "value")
-        mock_timeframe.init_flag_column.assert_not_called()
-
-
-class TestInitialiseFlags:
-    def test_creates_flag_system_and_column(self, mock_timeframe: MagicMock) -> None:
-        """Tests that initialise_flags registers the flag system and column when neither exists."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
-        pipeline.registry = {"flag1": MagicMock(flag_value=1)}
-        mock_timeframe.get_flag_system.side_effect = FlagSystemNotFoundError("missing")
-
-        pipeline.initialise_flags(mock_timeframe, "value")
-
-        mock_timeframe.register_flag_system.assert_called_once()
-        mock_timeframe.init_flag_column.assert_called_once_with("test_flags", "value_TEST_FLAG")
-
-    def test_no_op_when_flag_system_name_is_none(self, mock_timeframe: MagicMock) -> None:
-        """Tests that initialise_flags does nothing when the pipeline has no flag system."""
-        pipeline = MockOperationPipeline(ConfigurationType.AGGREGATION, flag_system_name=None)
-
-        pipeline.initialise_flags(mock_timeframe, "value")
-
-        mock_timeframe.register_flag_system.assert_not_called()
-        mock_timeframe.init_flag_column.assert_not_called()
-
-    def test_does_not_re_register_column_that_already_exists(self, mock_timeframe: MagicMock) -> None:
-        """Tests that initialise_flags does not re-register a flag column that is already present."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
-        pipeline.registry = {"flag1": MagicMock(flag_value=1)}
-        mock_timeframe.get_flag_system.return_value = {"test_flags": "exists"}
-        mock_timeframe.flag_columns = ["value_TEST_FLAG"]
-
-        pipeline.initialise_flags(mock_timeframe, "value")
+        pipeline._init_flag_columns(mock_timeframe, {})
 
         mock_timeframe.init_flag_column.assert_not_called()
 
@@ -141,7 +94,7 @@ class TestRun:
         self, mock_container: MagicMock, mock_timeframe: MagicMock, proc_config: MagicMock
     ) -> None:
         """Test that updated TimeFrame is returned."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_flags")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
         updated_tf = MagicMock()
         pipeline.core_flag_updater = MagicMock(return_value=updated_tf)
 
@@ -171,7 +124,7 @@ class TestApplyRounding:
 
         mock_container.data = tf
 
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_rounding")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
         result = pipeline.run(mock_container, {}, method_config)
 
         expected_tf = create_timeframe(expected)
@@ -191,7 +144,7 @@ class TestApplyRounding:
 
         mock_container.data = tf
 
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, "test_rounding")
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
         with pytest.raises(
             (OverflowError, TypeError),
             match=(

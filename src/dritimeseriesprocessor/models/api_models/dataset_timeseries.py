@@ -12,6 +12,7 @@ domain models and building dependency graphs.
 from pydantic import Field
 
 from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
+from dritimeseriesprocessor.models.api_models.flags import FlagColumn
 from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse
 
 
@@ -22,6 +23,7 @@ class TimeSeriesDatasetItem(ObservationDatasetItem):
     source_dataset: str | None = Field(None, alias="sourceDataset")
     source_column_name: str | None = Field(None, alias="sourceColumnName")
     time_column_name: str | None = Field(None, alias="sourceTimeColumnName")
+    has_flag_column: list[FlagColumn] | None = Field(default_factory=list, alias="hasFlagColumn")
 
 
 class TimeSeriesDatasetResponse(BaseAPIResponse):

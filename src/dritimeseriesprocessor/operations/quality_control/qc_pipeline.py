@@ -4,10 +4,12 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
     DataProcessingMethodConfig,
 )
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import QC_FLAG_SYS_NAME, qc_flag_column_name
+from dritimeseriesprocessor.operations.flags.flag_names import qc_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -18,8 +20,23 @@ logger = logging.getLogger(__name__)
 class QCPipeline(OperationPipeline):
     """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer."""
 
-    def __init__(self):
-        super().__init__(ConfigurationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
+    def __init__(self, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.QUALITY_CONTROL, flag_systems)
+
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+        *,
+        remove_flagged: bool = True,
+    ) -> ts.TimeFrame:
+        """Run QC checks and, if this is the last QC block in the plan, remove data that failed."""
+        tf = super().run(container, dataset_repository, config)
+        if remove_flagged and container.has_flags():
+            logger.info("Removing data that has failed QC checks")
+            tf = self.remove_flagged_data(tf)  # type: ignore[arg-type]
+        return tf
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.

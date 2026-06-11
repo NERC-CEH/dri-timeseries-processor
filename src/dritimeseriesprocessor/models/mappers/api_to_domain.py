@@ -26,12 +26,15 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, P
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 
 
-def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, SiteMetadata]) -> TimeSeriesContainer:
+def map_dataset_item(
+    item: ObservationDatasetItem, all_site_metadata: dict[str, SiteMetadata], flag_column_schemes: dict[str, str]
+) -> TimeSeriesContainer:
     """Map a Pydantic ObservationDatasetItem (or subclass) to a domain-level TimeSeriesContainer.
 
     Args:
         item: The validated Pydantic model representing a single dataset record.
         all_site_metadata: Metadata for sites.
+        flag_column_schemes: Information about the flag schemes associated with this dataset record.
 
     Returns:
         A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
@@ -76,6 +79,7 @@ def map_dataset_item(item: ObservationDatasetItem, all_site_metadata: dict[str, 
         distribution_url=item.distribution_url,
         plan_order=plan_order,
         base_dependency=base_dependency,
+        flag_column_schemes=flag_column_schemes,
     )
 
 
