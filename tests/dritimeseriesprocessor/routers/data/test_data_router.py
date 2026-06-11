@@ -13,6 +13,7 @@ from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_fa
 from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader, RawFileReader
 from dritimeseriesprocessor.routers.data.data_router import S3DataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient
+from dritimeseriesprocessor.utils.enums import ProcessingLevel
 
 TEST_DF = pl.DataFrame({"time": [datetime(2023, 1, 1), datetime(2023, 1, 2)], "value": [10, 20]})
 
@@ -55,6 +56,7 @@ class TestS3DataRouter:
             source_site_identifier="A_SITE",
             resolution="PT30M",
             time_column_name="a_time",
+            processing_level=ProcessingLevel.RAW,
         )
 
         expected_query = """

@@ -13,8 +13,6 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     AbsoluteHumidityFactor,
     Albedo,
     AtmosphericPressureFactor,
-    CalcFluxEt,
-    CalcFluxLambda,
     CalcFluxLeL1,
     CalcFluxMeanShf,
     CorrectCounts,
@@ -608,19 +606,6 @@ class TestCalcFluxMeanShf:
         assert result.df["shf"][1] == 20.0
 
 
-class TestCalcFluxLambda:
-    def test_lambda_formula(self) -> None:
-        # lambda = 2.501 - 0.002361 * Ta
-        config = create_method_config({"airtemp_c": [0.0, 20.0]}, "lambda")
-        result = CalcFluxLambda().run(config)
-        assert_frame_equal(
-            result.df.select("lambda"),
-            pl.DataFrame({"lambda": [2.501, 2.501 - 0.002361 * 20.0]}),
-            check_exact=False,
-            abs_tol=1e-6,
-        )
-
-
 class TestCalcFluxLeL1:
     def test_le_equals_rn_minus_shf_minus_h(self) -> None:
         # LE_L1 = Rn - SHF - H  →  300 - 50 - 100 = 150
@@ -638,24 +623,6 @@ class TestCalcFluxLeL1:
         )
         result = CalcFluxLeL1().run(config)
         assert result.df["le"][0] is None
-
-
-class TestCalcFluxEt:
-    def test_et_formula(self) -> None:
-        # ET = LE / (2.501 - 0.002361 * Ta) / 1000
-        ta = 20.0
-        le = 150.0
-        lv = 2.501 - 0.002361 * ta
-        expected_et = le / lv / 1000.0
-
-        config = create_method_config({"le": [le], "airtemp_c": [ta]}, "et")
-        result = CalcFluxEt().run(config)
-        assert result.df["et"][0] == pytest.approx(expected_et, abs=1e-9)
-
-    def test_null_le_produces_null_et(self) -> None:
-        config = create_method_config({"le": [None], "airtemp_c": [20.0]}, "et")
-        result = CalcFluxEt().run(config)
-        assert result.df["et"][0] is None
 
 
 def _make_eddypro_config(
