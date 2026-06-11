@@ -40,6 +40,7 @@ def create_mock_dag(topo_layers: list) -> MagicMock:
     datasets_dict = {ds_id: make_time_series_container(ds_id) for layer in topo_layers for ds_id in layer}
     graph.layered_topo_sort.return_value = topo_layers
     graph.datasets = datasets_dict
+    graph.flagging_systems = {}
     return graph
 
 
@@ -93,7 +94,7 @@ class TestTimeSeriesProcessor:
         processor.process_dataset.assert_called_once_with("ds1")
 
     def test_load_raw(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
-        """Test that _batch_load reads a load container's data into a TimeFrame and adds core flags."""
+        """Test that _batch_load reads a load container's data into a TimeFrame."""
         ds_id = "ds1"
         mock_graph = create_mock_dag([[ds_id]])
         processor = TimeSeriesProcessor(
@@ -115,10 +116,6 @@ class TestTimeSeriesProcessor:
         # Metadata should be set
         expected_metadata = {"column_name": "value"}
         assert container.data.metadata == expected_metadata
-
-        # Core flags should have been added
-        assert "core_flags" in container.data.flag_systems
-        assert "value_CORE_FLAG" in container.data.flag_columns
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Test that failed tag is set to True when dataset fails processing.
@@ -385,10 +382,10 @@ class TestTimeSeriesProcessor:
 
 
 class TestProcessDatasetQCRemoval:
-    def test_remove_flagged_data_called_after_last_qc_block(
+    def test_remove_flagged_requested_for_single_qc_block(
         self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Tests that remove_flagged_data is called once after the final QC step in the plan."""
+        """Tests that the single QC step is run with remove_flagged=True so flagged data is removed."""
         mock_graph = create_mock_dag([["ds1"]])
         container = mock_graph.datasets["ds1"]
 
@@ -398,23 +395,14 @@ class TestProcessDatasetQCRemoval:
         container.data_processing_configs = {"qc": qc_cfg}
         container.plan_order = ["qc"]
         container.data = create_timeframe([1.0, 2.0])
-        container.data = container.data.with_metadata({"column_name": "value"})
-        container.data.register_flag_system("qc_flags", {"range": 1})
-        container.data.init_flag_column("qc_flags", "value_QC_FLAG")
 
-        remove_calls: list[int] = []
-        plan_step: list[int] = [0]
-        real_remove = __import__(
-            "dritimeseriesprocessor.operations.quality_control.qc_pipeline", fromlist=["QCPipeline"]
-        ).QCPipeline.remove_flagged_data
-
-        monkeypatch.setattr(
-            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.remove_flagged_data",
-            lambda tf: (remove_calls.append(plan_step[0]), real_remove(tf))[1],
-        )
+        remove_flagged_calls: list[bool] = []
         monkeypatch.setattr(
             "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
-            lambda self, container, repo, config: (plan_step.__setitem__(0, plan_step[0] + 1), container.data)[1],
+            lambda self, container, repo, config, *, remove_flagged=True: (
+                remove_flagged_calls.append(remove_flagged),
+                container.data,
+            )[1],
         )
 
         processor = TimeSeriesProcessor(
@@ -427,12 +415,12 @@ class TestProcessDatasetQCRemoval:
         )
         processor.process_dataset("ds1")
 
-        assert remove_calls == [1]  # fired once, after the first (and only) QC step ran
+        assert remove_flagged_calls == [True]
 
-    def test_remove_flagged_data_only_after_final_qc_step_not_between(
+    def test_remove_flagged_requested_only_after_final_qc_step(
         self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Tests that remove_flagged_data fires only after the second QC step, not after the first."""
+        """Tests that only the final QC step in a sequential pair is run with remove_flagged=True."""
         mock_graph = create_mock_dag([["ds1"]])
         container = mock_graph.datasets["ds1"]
 
@@ -445,23 +433,14 @@ class TestProcessDatasetQCRemoval:
         container.data_processing_configs = {"qc1": _qc_cfg(), "qc2": _qc_cfg()}
         container.plan_order = ["qc1", "qc2"]
         container.data = create_timeframe([1.0, 2.0])
-        container.data = container.data.with_metadata({"column_name": "value"})
-        container.data.register_flag_system("qc_flags", {"range": 1})
-        container.data.init_flag_column("qc_flags", "value_QC_FLAG")
 
-        remove_calls: list[int] = []
-        plan_step: list[int] = [0]
-        real_remove = __import__(
-            "dritimeseriesprocessor.operations.quality_control.qc_pipeline", fromlist=["QCPipeline"]
-        ).QCPipeline.remove_flagged_data
-
-        monkeypatch.setattr(
-            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.remove_flagged_data",
-            lambda tf: (remove_calls.append(plan_step[0]), real_remove(tf))[1],
-        )
+        remove_flagged_calls: list[bool] = []
         monkeypatch.setattr(
             "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
-            lambda self, container, repo, config: (plan_step.__setitem__(0, plan_step[0] + 1), container.data)[1],
+            lambda self, container, repo, config, *, remove_flagged=True: (
+                remove_flagged_calls.append(remove_flagged),
+                container.data,
+            )[1],
         )
 
         processor = TimeSeriesProcessor(
@@ -474,8 +453,8 @@ class TestProcessDatasetQCRemoval:
         )
         processor.process_dataset("ds1")
 
-        # remove_flagged_data fires once, and only after qc2 (step counter = 2), not after qc1 (step counter = 1)
-        assert remove_calls == [2]
+        # qc1 runs without removal (a later QC step follows); qc2 runs with removal (it is the final QC step).
+        assert remove_flagged_calls == [False, True]
 
 
 class TestGetNextStepType:
@@ -518,25 +497,3 @@ class TestGetNextStepType:
         result = TimeSeriesProcessor._get_next_step_type(container, 0)
 
         assert result is None
-
-
-class TestBackfillFlagColumns:
-    def test_adds_missing_flag_columns(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
-        """Tests that flag columns for all operation pipelines are added when not already present."""
-        container = make_time_series_container("ds1")
-        container.data = create_timeframe([1.0, 2.0])
-        container.data = container.data.with_metadata({"column_name": "value"})
-
-        TimeSeriesProcessor._backfill_flag_columns(container)
-
-        # CorrectionPipeline, QCPipeline and InfillPipeline all have flag systems
-        assert any("CORRS_FLAG" in col for col in container.data.flag_columns)
-        assert any("QC_FLAG" in col for col in container.data.flag_columns)
-        assert any("INFILL_FLAG" in col for col in container.data.flag_columns)
-
-    def test_does_nothing_when_data_is_none(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
-        """Tests that _backfill_flag_columns returns without error when container.data is None."""
-        container = make_time_series_container("ds1")
-        container.data = None
-
-        TimeSeriesProcessor._backfill_flag_columns(container)  # should not raise

@@ -23,7 +23,7 @@ def mock_timeframe() -> MagicMock:
 class TestGetFlagColumn:
     def test_get_qc_flag_column(self) -> None:
         """Test that correct flag column name is returned."""
-        pipeline = QCPipeline()
+        pipeline = QCPipeline({})
         result = pipeline.get_flag_column("temperature")
         assert result == "temperature_QC_FLAG"
 
@@ -31,7 +31,7 @@ class TestGetFlagColumn:
 class TestComputeFlagMask:
     def test_mask(self) -> None:
         """Test that compute_flag_mask returns the result TimeFrame directly."""
-        pipeline = QCPipeline()
+        pipeline = QCPipeline({})
 
         df = pl.DataFrame({"__qc_result_test": [1, 2, 3]})
 
@@ -56,7 +56,7 @@ class TestApply:
             mock_method.run.return_value = expected_result
             mock_get.return_value = mock_method
 
-            pipeline = QCPipeline()
+            pipeline = QCPipeline({})
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
 
@@ -70,7 +70,7 @@ class TestCoreFlagUpdater:
             mock_method,
         )
 
-        pipeline = QCPipeline()
+        pipeline = QCPipeline({})
         pipeline.core_flag_updater(mock_timeframe)
         mock_method.assert_called_once_with(mock_timeframe)
 
