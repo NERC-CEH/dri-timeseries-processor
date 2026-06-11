@@ -11,7 +11,6 @@ from collections.abc import Iterator
 from datetime import datetime
 
 import polars as pl
-import time_stream as ts
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
@@ -24,7 +23,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
-from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
+from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags, initialise_flag_systems
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.load.load_pipeline import LoadPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
@@ -41,15 +40,6 @@ from dritimeseriesprocessor.utils.timer import log_duration
 from dritimeseriesprocessor.utils.urls import SITE_URI
 
 logger = logging.getLogger(__name__)
-
-
-OPERATION_PIPELINES = {
-    ConfigurationType.CORRECTION: CorrectionPipeline(),
-    ConfigurationType.QUALITY_CONTROL: QCPipeline(),
-    ConfigurationType.INFILLING: InfillPipeline(),
-    ConfigurationType.AGGREGATION: AggregationPipeline(),
-    ConfigurationType.DERIVATION: DerivationPipeline(),
-}
 
 
 class TimeSeriesProcessor:
@@ -158,55 +148,45 @@ class TimeSeriesProcessor:
 
             match config.config_type:
                 case ConfigurationType.LOAD:
-                    for cfg in config.method_configs:
-                        cfg.params["processing_start_date"] = self.start_date
-                        cfg.params["processing_end_date"] = self.end_date
-                    container = LoadPipeline(self.data_router).run(container, self.graph.datasets, config)
-                    # Datasets loaded via an explicit plan step (rather than _batch_load) do not
-                    # have core flags initialised automatically. Add them here so that downstream
-                    # QC steps can access flag columns (e.g. H_CORE_FLAG) without crashing.
-                    if container.data is not None and not any(
-                        c.endswith("_CORE_FLAG") for c in container.data.flag_columns
-                    ):
-                        container.data = add_initial_core_flags(container.data)
+                    container = LoadPipeline(self.data_router, self.start_date, self.end_date).run(
+                        container, self.graph.datasets, config
+                    )
+                    # LOAD brings in raw data: we need to register any flag systems, create the flag columns the
+                    # dataset declares, and set every row's core flag as "unchecked"
+                    initialise_flag_systems(container, self.graph.flagging_systems)
+                    add_initial_core_flags(container)
 
                 case ConfigurationType.CORRECTION:
-                    container.data = CorrectionPipeline().run(container, self.graph.datasets, config)
+                    container.data = CorrectionPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
                 case ConfigurationType.QUALITY_CONTROL:
-                    container.data = QCPipeline().run(container, self.graph.datasets, config)
-                    if self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL:
-                        logger.info("Removing data that has failed QC checks")
-                        container.data = QCPipeline.remove_flagged_data(container.data)  # type: ignore[arg-type]
+                    # Only remove flagged data after the last QC block - sequential QC blocks must
+                    # accumulate flags across all their checks before any data is nulled out.
+                    is_final_qc = self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL
+                    container.data = QCPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config, remove_flagged=is_final_qc
+                    )
 
                 case ConfigurationType.INFILLING:
-                    container.data = InfillPipeline().run(container, self.graph.datasets, config)
+                    container.data = InfillPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
                 case ConfigurationType.AGGREGATION:
-                    if container.periodicity is None:
-                        raise ValueError(f"No periodicity found for: {container.ts_id}")
-
-                    for cfg in config.method_configs:
-                        cfg.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
-                        cfg.params["source_column"] = container.source_column
-
-                    container.data = AggregationPipeline().run(container, self.graph.datasets, config)
+                    container.data = AggregationPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
                 case ConfigurationType.DERIVATION:
+                    site_metadata = self.graph.site_metadata[f"{SITE_URI}/{container.source_site}"]
                     for cfg in config.method_configs:
-                        cfg.params["site_metadata"] = self.graph.site_metadata[f"{SITE_URI}/{container.source_site}"]
-                        cfg.params["container"] = container
-                        cfg.params["output_col"] = container.source_column
-                        cfg.params["resolution"] = container.resolution
-                        cfg.params["periodicity"] = container.periodicity
                         cfg.params["processing_start_date"] = self.start_date.date()
                         cfg.params["processing_end_date"] = self.end_date.date()
-                        cfg.params["data_router"] = self.data_router
-
-                    container.data = DerivationPipeline().run(container, self.graph.datasets, config)
-
-        # Backfill any flag columns the plan did not create, so every dataset has a consistent set.
-        self._backfill_flag_columns(container)
+                    container.data = DerivationPipeline(site_metadata, self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
     @staticmethod
     def _get_next_step_type(container: TimeSeriesContainer, current_idx: int) -> ConfigurationType | None:
@@ -262,34 +242,12 @@ class TimeSeriesProcessor:
 
                         if container.data is None:
                             raise ValueError(f"No data returned for dataset: {container.ts_id}")
-                        else:
-                            container.data = add_initial_core_flags(container.data)
 
                     except Exception:
                         self.metrics.no_data.inc()
                         container.failed = True
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
-
-    @staticmethod
-    def _backfill_flag_columns(container: TimeSeriesContainer) -> None:
-        """Add any flag columns that the plan did not already create.
-
-        Each operation only creates its flag column when one of its configs runs, so a dataset with no
-        correction config (for example) would be saved without a corrections flag column. Running this after
-        all plan steps backfills the missing columns, keeping the flag columns consistent across datasets.
-        Pipelines without a flag system (aggregation, derivation) are a no-op.
-
-        Core flags are already present from loading.
-
-        Args:
-            container: The container whose data should have its flag columns backfilled.
-        """
-        if container.data is None:
-            return
-        column_name = container.data.metadata["column_name"]
-        for pipeline in OPERATION_PIPELINES.values():
-            pipeline.initialise_flags(container.data, column_name)
 
     @log_duration("Saving datasets time taken: ", footer=True)
     def _save_datasets(self) -> None:

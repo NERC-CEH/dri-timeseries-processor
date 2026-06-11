@@ -44,6 +44,8 @@ class TimeSeriesContainer:
     data_processing_configs: dict[str, DataProcessingConfig] = field(default_factory=dict)
     base_dependency: list[str] = field(default_factory=list)
 
+    flag_column_schemes: dict[str, str] = field(default_factory=dict)
+
     data: ts.TimeFrame | None = None
     staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)
     failed: bool = False  # Set to True if anything goes wrong during the processing pipeline for this dataset
@@ -95,6 +97,12 @@ class TimeSeriesContainer:
         configs then we assume it's a 'load' operation.
         """
         return not bool(self.data_processing_configs)
+
+    def has_flags(self) -> bool:
+        """Determine whether this container has any flagging schemes attached - to determine whether to bother with
+        flagging operations
+        """
+        return bool(self.flag_column_schemes)
 
     @property
     def s3_bucket(self) -> str | None:

@@ -8,10 +8,11 @@ import polars as pl
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
     DataProcessingMethodConfig,
 )
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
-from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
 from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -22,14 +23,24 @@ logger = logging.getLogger(__name__)
 class AggregationPipeline(OperationPipeline):
     """Pipeline for running Aggregation methods on a TimeSeriesContainer."""
 
-    def __init__(self):
-        super().__init__(ConfigurationType.AGGREGATION)
+    def __init__(self, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.AGGREGATION, flag_systems)
 
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
-        """Override the parent run method, as we need to remove any invalid aggregation data and do some column
-        manipulation after the pipeline has finished
-        """
-        tf = super().run(*args, **kwargs)
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+    ) -> ts.TimeFrame:
+        """Run aggregation, injecting container context into each method config before processing."""
+        if container.periodicity is None:
+            raise ValueError(f"No periodicity found for: {container.ts_id}")
+
+        for cfg in config.method_configs:
+            cfg.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
+            cfg.params["source_column"] = container.source_column
+
+        tf = super().run(container, dataset_repository, config)
         tf = self._remove_data(tf)
         tf = self._select_columns(tf)
         return tf
@@ -44,7 +55,6 @@ class AggregationPipeline(OperationPipeline):
         Returns:
             Result of applying the aggregation method.
         """
-
         # Collect the dependency TimeFrame to run aggregation on
         dep_container = dataset_repository[config.params["dep_ts"]]
 
@@ -53,12 +63,11 @@ class AggregationPipeline(OperationPipeline):
             dep_container.data, config.params["source_column"], dep_container.source_column
         )
         agg_tf = method.run(agg_tf, config)
-        agg_tf = add_initial_core_flags(agg_tf, init_unchecked=False, init_missing=False)
         return agg_tf
 
-    def get_flag_column(self, column: str) -> str:
-        """Not used by aggregation - flags are not applied."""
-        raise NotImplementedError
+    def get_flag_column(self, column: str) -> str | None:
+        """Aggregation does not produce its own flag column."""
+        return None
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Not used by aggregation - flags are not applied."""
