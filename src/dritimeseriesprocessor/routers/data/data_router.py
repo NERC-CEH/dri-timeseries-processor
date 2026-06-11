@@ -15,6 +15,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
     TimeSeriesContainer,
     check_common_attributes,
 )
+from dritimeseriesprocessor.utils.enums import ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -87,18 +88,21 @@ class S3DataRouter(DataRouter):
         Returns:
             A Polars DataFrame containing the data.
         """
-        network, site_id, resolution, bucket, source_dataset, time_column_name = check_common_attributes(
+
+        # source_dataset only needed for raw datasets — don't fetch it upfront
+        # since despiking history containers don't have a meaningful source_dataset.
+        network, site_id, resolution, bucket, time_column_name = check_common_attributes(
             list(containers),
-            ["network", "source_site_identifier", "resolution", "source_bucket", "source_dataset", "time_column_name"],
+            ["network", "source_site_identifier", "resolution", "source_bucket", "time_column_name"],
         )
 
         # Ensure columns with hyphens can be parsed by SQL
         columns = ", ".join([f'"{c.source_column}"' for c in containers])
 
-        # ToDo: partitions will be consolidated into a single partition. See FPM-998.
-        if "PROCESSED" in source_dataset:
+        if any(c.processing_level is ProcessingLevel.PROCESSED for c in containers):
             base = self._site_partition_prefix(network, "resolution", resolution, site_id)
         else:
+            source_dataset = str(check_common_attributes(list(containers), "source_dataset"))
             base = self._site_partition_prefix(network, "dataset", source_dataset, site_id)
 
         bucket_path = f"s3://{bucket}/{base}/**/date=*/data.parquet"

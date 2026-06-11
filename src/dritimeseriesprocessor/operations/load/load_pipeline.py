@@ -6,7 +6,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,16 @@ class LoadPipeline:
                 dep = dataset_repository[config.params["dep_ts"]]
                 if dep.data is None:
                     raise RuntimeError(f"No data found for base dependency: {dep.ts_id}")
-                container.data = dep.data.copy(share_df=False)
+                # When loading from an ObservationDataset bundle (e.g. the EddyPro output),
+                # slice to just the target column and create a fresh TimeFrame via
+                # init_timeframe rather than copy(). copy() shares the bundle's flag manager
+                # across all containers extracting from it, causing DuplicateFlagSystemError
+                # when add_initial_core_flags is called on each one independently.
+                if dep.dataset_type == DatasetType.OBSERVATION_DATASET and container.source_column is not None:
+                    col_df = dep.data.df.select([container.time_column_name, container.source_column])
+                    container.init_timeframe(col_df)
+                else:
+                    container.data = dep.data.copy(share_df=False)
 
             case "load-local-copy":
                 container.staged_dir = self.data_router.stage_locally(

@@ -162,6 +162,13 @@ class TimeSeriesProcessor:
                         cfg.params["processing_start_date"] = self.start_date
                         cfg.params["processing_end_date"] = self.end_date
                     container = LoadPipeline(self.data_router).run(container, self.graph.datasets, config)
+                    # Datasets loaded via an explicit plan step (rather than _batch_load) do not
+                    # have core flags initialised automatically. Add them here so that downstream
+                    # QC steps can access flag columns (e.g. H_CORE_FLAG) without crashing.
+                    if container.data is not None and not any(
+                        c.endswith("_CORE_FLAG") for c in container.data.flag_columns
+                    ):
+                        container.data = add_initial_core_flags(container.data)
 
                 case ConfigurationType.CORRECTION:
                     container.data = CorrectionPipeline().run(container, self.graph.datasets, config)
@@ -194,6 +201,7 @@ class TimeSeriesProcessor:
                         cfg.params["periodicity"] = container.periodicity
                         cfg.params["processing_start_date"] = self.start_date.date()
                         cfg.params["processing_end_date"] = self.end_date.date()
+                        cfg.params["data_router"] = self.data_router
 
                     container.data = DerivationPipeline().run(container, self.graph.datasets, config)
 
