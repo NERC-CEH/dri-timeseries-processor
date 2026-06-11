@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme.ttl",
+      "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme.geojson",
+      "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme.html",
+      "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme.rdf",
+      "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme.json",
+      "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme.csv"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme",
+      "title": [
+        "Core Flag Scheme"
+      ],
+      "hasTopConcept": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
+          "prefLabel": [
+            "missing"
+          ],
+          "value": 4
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
+          "prefLabel": [
+            "removed"
+          ],
+          "value": 8
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/corrected",
+          "prefLabel": [
+            "corrected"
+          ],
+          "value": 1
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
+          "prefLabel": [
+            "unsuccessful_correction"
+          ],
+          "value": 64
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/suspicious",
+          "prefLabel": [
+            "suspicious"
+          ],
+          "value": 16
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unchecked",
+          "prefLabel": [
+            "unchecked"
+          ],
+          "value": 32
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
+          "prefLabel": [
+            "estimated"
+          ],
+          "value": 2
+        }
+      ]
+    }
+  ]
+}
