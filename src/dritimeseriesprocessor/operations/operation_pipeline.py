@@ -13,25 +13,11 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
-from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
-from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import ensure_flag_column
 from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
-from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
-from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
-
-
-OPERATION_METHOD_REGISTRY = {
-    ConfigurationType.CORRECTION: CorrectionMethod._REGISTRY,
-    ConfigurationType.QUALITY_CONTROL: QcMethod._REGISTRY,
-    ConfigurationType.INFILLING: InfillMethod._REGISTRY,
-    ConfigurationType.AGGREGATION: AggregationMethod._REGISTRY,
-    ConfigurationType.DERIVATION: DerivationMethod._REGISTRY,
-}
 
 
 class OperationPipeline(ABC):
@@ -50,7 +36,6 @@ class OperationPipeline(ABC):
         """
         self.operation_type = operation_type
         self.flag_systems = flag_systems
-        self.registry = OPERATION_METHOD_REGISTRY[self.operation_type]
 
     @abstractmethod
     def apply(
