@@ -7,6 +7,8 @@ from polars.testing import assert_series_equal
 from tests.utils.data_creation import create_timeframe
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 
@@ -59,6 +61,41 @@ class TestApply:
             pipeline = QCPipeline({})
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
+
+
+class TestRun:
+    def _make_container(self) -> MagicMock:
+        """Create a container that reports it has flagging configured."""
+        container = MagicMock(spec=TimeSeriesContainer)
+        container.has_flags.return_value = True
+        return container
+
+    def test_removes_flagged_data_when_remove_flagged_true(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that remove_flagged_data is called when remove_flagged is True and the dataset has flags."""
+        qc_result = MagicMock(spec=ts.TimeFrame)
+        monkeypatch.setattr(OperationPipeline, "run", lambda self, container, repo, config: qc_result)
+
+        pipeline = QCPipeline({})
+        removed = MagicMock(spec=ts.TimeFrame)
+        pipeline.remove_flagged_data = MagicMock(return_value=removed)  # type: ignore[method-assign]
+
+        result = pipeline.run(self._make_container(), {}, MagicMock(), remove_flagged=True)
+
+        pipeline.remove_flagged_data.assert_called_once_with(qc_result)
+        assert result is removed
+
+    def test_keeps_flagged_data_when_remove_flagged_false(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that remove_flagged_data is not called when remove_flagged is False."""
+        qc_result = MagicMock(spec=ts.TimeFrame)
+        monkeypatch.setattr(OperationPipeline, "run", lambda self, container, repo, config: qc_result)
+
+        pipeline = QCPipeline({})
+        pipeline.remove_flagged_data = MagicMock()  # type: ignore[method-assign]
+
+        result = pipeline.run(self._make_container(), {}, MagicMock(), remove_flagged=False)
+
+        pipeline.remove_flagged_data.assert_not_called()
+        assert result is qc_result
 
 
 class TestCoreFlagUpdater:

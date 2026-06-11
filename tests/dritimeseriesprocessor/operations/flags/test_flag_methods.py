@@ -9,6 +9,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.operations.flags.flag_methods import (
     add_initial_core_flags,
     core_flag_column_name,
+    ensure_flag_column,
     initialise_flag_systems,
     update_corrections_core_flags,
     update_infill_core_flags,
@@ -153,3 +154,33 @@ class TestUpdateInfillCoreFlags:
         """Test that an error is raised if the core flag column is not found."""
         with pytest.raises(ValueError):
             update_infill_core_flags(timeframe_without_core_flag)
+
+
+class TestEnsureFlagColumn:
+    def test_skips_column_not_in_schemes(self) -> None:
+        """Test that nothing is set up when the dataset does not declare the flag column."""
+        tf = ts.TimeFrame(sample_dataframe(), time_name="timestamp")
+
+        ensure_flag_column(tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {})
+
+        assert "value_CORE_FLAG" not in tf.flag_columns
+        assert "core_flags" not in tf.flag_systems
+
+    def test_registers_system_and_inits_column(self) -> None:
+        """Test that the flag system is registered and the flag column created when neither exists."""
+        tf = ts.TimeFrame(sample_dataframe(), time_name="timestamp")
+
+        ensure_flag_column(tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {"value_CORE_FLAG": "core_flags"})
+
+        assert "core_flags" in tf.flag_systems
+        assert "value_CORE_FLAG" in tf.flag_columns
+
+    def test_leaves_existing_flag_column_untouched(self) -> None:
+        """Test that an existing flag column keeps its values and is not re-initialised."""
+        tf = ts.TimeFrame(sample_dataframe(), time_name="timestamp")
+        tf.register_flag_system("core_flags", {"unchecked": 32})
+        tf.init_flag_column("core_flags", "value_CORE_FLAG", [32, 0, 0, 0, 0])
+
+        ensure_flag_column(tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {"value_CORE_FLAG": "core_flags"})
+
+        assert list(tf.df["value_CORE_FLAG"]) == [32, 0, 0, 0, 0]
