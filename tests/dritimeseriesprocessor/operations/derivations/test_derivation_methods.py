@@ -664,13 +664,14 @@ class TestRollingMeanForSnow:
         """
         Test:
         - When n_smooth and na_lim are not provided, defaults (n_smooth=12, na_lim=4) should be used.
-        - Data longer than n_smooth*2 gives null output.
+        - Datasets longer than n_smooth*2 give null output at edges.
+        - Datapoints that do not have n_smooth datapoints on either side are assigned a null value.
         - Rolling mean is applied when there is snow, but not when there is no snow.
         """
         config = create_method_config(
             {
-                "snow": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                "cts_mod_corr": [100.0] * 30,
+                "snow": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                "cts_mod_corr": [100.0] * 31,
             },
             "cts_smo_crns",
         )
@@ -679,7 +680,7 @@ class TestRollingMeanForSnow:
             pl.DataFrame(
                 {
                     "cts_smo_crns": pl.Series(
-                        [None] * 12 + [100.0] * 3 + [None] + [100.0] * 3 + [None] * 11, dtype=pl.Float64
+                        [None] * 12 + [100.0] * 3 + [None] + [100.0] * 3 + [None] * 12, dtype=pl.Float64
                     )
                 }
             )
@@ -687,19 +688,47 @@ class TestRollingMeanForSnow:
         result = RollingMeanForSnow().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
-    def test_na_lim_masks_windows_with_too_many_nulls(self) -> None:
-        """Windows where null count exceeds na_lim should produce null output."""
+    def test_rolling_mean_for_snow_with_nulls(self) -> None:
+        """
+        Windows where null count exceeds na_lim should produce null output.
+        Datapoints that have n_smooth datapoints on either side,
+        and fewer than na_lim null values in their window have a rolling mean applied.
+        """
         config = create_method_config(
             {
-                "snow": [1] * 10,
-                "cts_mod_corr": [None] * 10,
+                "snow": [1] * 14,
+                "cts_mod_corr": [
+                    100.0,
+                    100.0,
+                    100.0,
+                    100.0,
+                    None,
+                    None,
+                    100.0,
+                    100.0,
+                    None,
+                    None,
+                    100.0,
+                    100.0,
+                    100.0,
+                    100.0,
+                ],
             },
             "cts_smo_crns",
         )
         config.params["n_smooth"] = 2
-        config.params["na_lim"] = 0
+        config.params["na_lim"] = 2
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"cts_smo_crns": pl.Series([None] * 10, dtype=pl.Float64)}))
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "cts_smo_crns": pl.Series(
+                        [None, None, 100.0, 100.0, None, None, None, None, None, None, 100.0, 100.0, None, None],
+                        dtype=pl.Float64,
+                    )
+                }
+            )
+        )
         result = RollingMeanForSnow().run(config)
         assert_frame_equal(result.df, expected.df)
 

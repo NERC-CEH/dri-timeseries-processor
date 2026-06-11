@@ -881,11 +881,11 @@ class EddyProRun(DerivationMethod):
 @DerivationMethod.register
 class RollingMeanForSnow(DerivationMethod):
     """
-    Calculate rolling mean for counts, but to save proccessing, only when
+    Calculate rolling mean for counts, but only when
     there is a snow event, as currently this is the only time they are needed.
 
-    n_smooth = 12 by default, or overwritten if specified by dataset processing configuration
-    na_lim = 4 by default, or overwritten if specified by dataset processing configuration
+    n_smooth = 12 by default, or overwritten if specified by dataset processing configuration in metadata.
+    na_lim = 4 by default, or overwritten if specified by dataset processing configuration in metadata.
     """
 
     name = "rolling_mean_for_snow"
@@ -900,7 +900,7 @@ class RollingMeanForSnow(DerivationMethod):
 
         Args:
             Dict with keys of required columns for the calculation.
-            - snow: 1 if snow day, otherwise 0.
+            - snow: 1 if snow day, otherwise 0 or null.
             - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
 
         Returns:
@@ -913,8 +913,9 @@ class RollingMeanForSnow(DerivationMethod):
         n_smooth = self.config.params.get("n_smooth", 12)
         na_lim = self.config.params.get("na_lim", 4)
 
-        return (
+        cts_smo_crns = (
             pl.when(snow == 1)
             .then(rolling_mean(cts_mod_corr, n_smooth, na_lim))
             .otherwise(pl.lit(None, dtype=pl.Float64))
         )
+        return cts_smo_crns
