@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import replace
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import ClassVar
 
 import polars as pl
@@ -958,8 +958,10 @@ class EddyProRun(DerivationMethod):
         network = processed_container.network if processed_container is not None else None
         source_bucket = processed_container.source_bucket if processed_container is not None else None
 
-        history_start = start_date - timedelta(days=EddyProRun._DESPIKE_LOOKBACK_DAYS)
-        history_end = start_date - timedelta(days=1)
+        history_start = datetime.combine(
+            start_date - timedelta(days=EddyProRun._DESPIKE_LOOKBACK_DAYS), datetime.min.time()
+        )
+        history_end = datetime.combine(start_date - timedelta(days=1), datetime.min.time())
 
         # Derive a per-column container from the bundle so query_by_date_range can build the
         # hive path. processing_level=PROCESSED signals the resolution-keyed path.

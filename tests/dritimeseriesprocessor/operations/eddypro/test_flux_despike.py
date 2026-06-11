@@ -221,8 +221,8 @@ class TestRunDespiking:
         )
 
         call_kwargs = mock_router.query_by_date_range.call_args.kwargs
-        expected_start = date(2026, 1, 20) - timedelta(days=EddyProRun._DESPIKE_LOOKBACK_DAYS)
-        expected_end = date(2026, 1, 19)
+        expected_start = datetime(2026, 1, 20) - timedelta(days=EddyProRun._DESPIKE_LOOKBACK_DAYS)
+        expected_end = datetime(2026, 1, 19)
         assert call_kwargs["start_date"] == expected_start
         assert call_kwargs["end_date"] == expected_end
 
