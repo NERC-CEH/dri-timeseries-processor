@@ -184,6 +184,7 @@ class TimeSeriesProcessor:
                     for cfg in config.method_configs:
                         cfg.params["processing_start_date"] = self.start_date.date()
                         cfg.params["processing_end_date"] = self.end_date.date()
+                        cfg.params["data_router"] = self.data_router
                     container.data = DerivationPipeline(site_metadata, self.graph.flagging_systems).run(
                         container, self.graph.datasets, config
                     )
