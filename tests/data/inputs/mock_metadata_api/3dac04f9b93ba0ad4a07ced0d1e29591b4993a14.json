@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme.json",
+      "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme.html",
+      "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme.rdf",
+      "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme.geojson",
+      "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme.ttl",
+      "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme.csv"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme",
+      "title": [
+        "COSMOS Infill Flag Scheme"
+      ],
+      "hasTopConcept": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme/linear_interp",
+          "prefLabel": [
+            "linear_interp"
+          ],
+          "value": 1
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme/alt_data",
+          "prefLabel": [
+            "alt_data"
+          ],
+          "value": 2
+        }
+      ]
+    }
+  ]
+}

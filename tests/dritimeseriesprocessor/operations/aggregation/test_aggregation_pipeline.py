@@ -27,7 +27,7 @@ class TestRenameAggregationColumns:
         input_tf = create_mock_timeframe("value")
         expected = create_mock_timeframe("new_value")
 
-        pipeline = AggregationPipeline()
+        pipeline = AggregationPipeline({})
         result = pipeline._rename_aggregation_columns(input_tf, "new_value", "value")
         assert_frame_equal(result.df, expected.df)
 
@@ -36,7 +36,7 @@ class TestRenameAggregationColumns:
         input_tf = create_mock_timeframe("value")
         expected = create_mock_timeframe("value")
 
-        pipeline = AggregationPipeline()
+        pipeline = AggregationPipeline({})
         result = pipeline._rename_aggregation_columns(input_tf, "value", "value")
         assert_frame_equal(result.df, expected.df)
 
@@ -93,8 +93,14 @@ class TestAggregationThreshold:
         container.time_column_name = "time"
         container.source_column = "value"
         container.periodicity = "P1D"
+        # Aggregation builds a fresh TimeFrame in apply, so the container starts without data.
+        container.data = None
+        container.has_flags.return_value = True
+        container.flag_column_schemes = {"value_CORE_FLAG": "core_flags"}
 
-        pipeline = AggregationPipeline()
+        # Core flag values, as supplied by the metadata service.
+        flag_systems = {"core_flags": {"estimated": 2, "removed": 8, "missing": 4}}
+        pipeline = AggregationPipeline(flag_systems)
 
         result = pipeline.run(container, {"ts_1": dep_container}, proc_config)
         assert_frame_equal(result.df, expected_df)
@@ -120,7 +126,7 @@ class TestRemoveData:
         )
         input_tf = ts.TimeFrame(df, "time", resolution="P1D").with_metadata({"column_name": "value"})
 
-        pipeline = AggregationPipeline()
+        pipeline = AggregationPipeline({})
         result = pipeline._remove_data(input_tf)
         expected = input_tf.with_df(df.with_columns(pl.Series("value", expected_value)))
 
@@ -141,7 +147,7 @@ class TestSelectColumns:
         config = DataProcessingMethodConfig(method="test", params={"aggregation_period": "PT1H"})
         agg_tf = Sum().run(input_tf, config)
 
-        pipeline = AggregationPipeline()
+        pipeline = AggregationPipeline({})
         result = pipeline._select_columns(agg_tf)
 
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1), datetime(2025, 1, 1, 1)], "value": [1, 5]})
