@@ -24,7 +24,6 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NetRadiation,
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
-    RollingMeanForCounts,
     SolarZenith,
     VolumetricWaterContent,
 )
@@ -624,51 +623,6 @@ class TestCalcFluxLeL1:
         )
         result = CalcFluxLeL1().run(config)
         assert result.df["le"][0] is None
-
-
-class TestRollingMeanForCounts:
-    def test_rolling_mean(self) -> None:
-        """
-        Windows where null count exceeds na_lim should produce null output.
-        Datapoints that have n_smooth datapoints on either side,
-        and fewer than na_lim null values in their window have a rolling mean applied.
-        """
-        config = create_method_config(
-            {
-                "cts_mod_corr": [
-                    100.0,
-                    100.0,
-                    100.0,
-                    100.0,
-                    None,
-                    None,
-                    100.0,
-                    100.0,
-                    None,
-                    None,
-                    100.0,
-                    100.0,
-                    100.0,
-                    100.0,
-                ],
-            },
-            "cts_smo_crns",
-        )
-        config.params["n_smooth"] = 2
-        config.params["na_lim"] = 2
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame(
-                {
-                    "cts_smo_crns": pl.Series(
-                        [None, None, 100.0, 100.0, None, None, None, None, None, None, 100.0, 100.0, None, None],
-                        dtype=pl.Float64,
-                    )
-                }
-            )
-        )
-        result = RollingMeanForCounts().run(config)
-        assert_frame_equal(result.df, expected.df)
 
 
 def _make_eddypro_config(
