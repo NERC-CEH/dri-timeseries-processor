@@ -113,7 +113,6 @@ class TestAltDataDynamic:
         config = create_method_config(
             alt_df=alt_df,
             alt_data_column="alt",
-            # min_threshold=2,
             max_threshold=2,
             window_size="PT1H",
         )
