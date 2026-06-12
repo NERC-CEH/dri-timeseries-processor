@@ -24,8 +24,7 @@ class InfillMethod(Operation, ABC):
 
 @InfillMethod.register
 class Linear(InfillMethod):
-    name = "linear_linear"
-    flag_value = 1
+    name = "linear_interp"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return tf.infill(
@@ -39,7 +38,6 @@ class Linear(InfillMethod):
 @InfillMethod.register
 class AltData(InfillMethod):
     name = "alt_data"
-    flag_value = 2
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return tf.infill(
