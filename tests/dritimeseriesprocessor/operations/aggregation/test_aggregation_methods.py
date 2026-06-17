@@ -206,8 +206,8 @@ class TestRollingMeanForCounts:
             {
                 "value": pl.Series(
                     [
-                        100.0,
-                        100.0,
+                        None,
+                        None,
                         100.0,
                         None,
                         None,
@@ -219,8 +219,8 @@ class TestRollingMeanForCounts:
                         100.0,
                         100.0,
                         100.0,
-                        100.0,
-                        100.0,
+                        None,
+                        None,
                     ],
                     dtype=pl.Float64,
                 )

@@ -4,6 +4,7 @@ from datetime import datetime
 import polars as pl
 import time_stream as ts
 from time_stream.operation import Operation
+from time_stream.utils import configure_period_object
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -68,6 +69,7 @@ class AggregationMethod(Operation, ABC):
         """
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
+        window_size = config.params["window_size"]
 
         missing_criteria = None
         if config.params.get("threshold", None) is not None:
@@ -81,8 +83,28 @@ class AggregationMethod(Operation, ABC):
             end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
             time_window = (start_time, end_time)
 
+        # Define number of datapoints in window from window_size and periodicity
+        window_count = tf.periodicity.count(configure_period_object(window_size))
+
+        # Count total rows per window (nulls included) via an auxiliary column
+        auxiliary_tf = ts.TimeFrame(
+            df=tf.df.with_columns(pl.lit(1).cast(pl.UInt32).alias("__aux__")),
+            time_name=tf.time_name,
+            resolution=tf.resolution,
+            periodicity=tf.periodicity,
+        )
+
+        # Determine number of datapoints per window across dataset
+        total_in_window = auxiliary_tf.rolling_aggregate(
+            window_size,
+            "sum",
+            columns=["__aux__"],
+            alignment=config.params["alignment"],
+        ).df.select([tf.time_name, pl.col("sum___aux__").alias("__total__")])
+
+        # Calculate rolling mean across dataset
         tf_agg = tf.rolling_aggregate(
-            window_size=config.params["window_size"],
+            window_size=window_size,
             aggregation_function=agg_func,
             columns=col_name,
             missing_criteria=missing_criteria,  # type: ignore[assignment]
@@ -90,6 +112,24 @@ class AggregationMethod(Operation, ABC):
             time_window=time_window,
         )
 
+        # Remove rolling aggregation values near edges where there is not enough data available.
+        # This is because a timestamp may initially appear at the end of a dataset, but as data gets added,
+        # it will no longer be at the end of the dataset, and the rolling aggregation value will change.
+        # Applying a rolling aggregation only when there is enough data ensures consistency.
+        tf_agg = tf_agg.with_df(
+            tf_agg.df.join(total_in_window, on=tf.time_name)
+            .with_columns(
+                pl.when(
+                    (pl.col("__total__") == window_count) & (pl.col(f"count_{col_name}") >= config.params["threshold"])
+                )
+                .then(pl.col(f"{agg_func}_{col_name}"))
+                .otherwise(None)
+                .alias(f"{agg_func}_{col_name}")
+            )
+            .drop("__total__")
+        )
+
+        # Filter for valid columns only
         tf_agg = tf_agg.with_df(
             tf_agg.df.with_columns(
                 pl.when(pl.col(f"valid_{col_name}")).then(pl.col(agg_col_name)).otherwise(None).alias(col_name)
