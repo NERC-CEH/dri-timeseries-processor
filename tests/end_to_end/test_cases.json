@@ -144,6 +144,18 @@
             "periodicities": ["PT1H"],
             "start_date": "2020-08-18",
             "end_date": "2020-08-20"
+          },
+          {
+            "id": "NMDB-infilling",
+            "description": "Test of NMDB network, AltDataDynamic infilling and infilling priorities.",
+            "network": "nmdb",
+            "sites": ["nmdb-jung"],
+            "measured_variables": [],
+            "derived_variables": ["CRNS-COUNT"],
+            "aggregated_variables": [],
+            "periodicities": ["PT1H"],
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           }
       ]
 }

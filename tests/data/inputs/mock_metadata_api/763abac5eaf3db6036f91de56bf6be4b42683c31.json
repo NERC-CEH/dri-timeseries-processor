@@ -53,9 +53,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwin-mean_prec-wm-2-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -71,7 +68,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -131,9 +128,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwout-mean_prec-wm-2-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -149,7 +143,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -209,9 +203,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/voltage_batt-mean_prec-v-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -227,7 +218,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -287,9 +278,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -305,7 +293,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -360,13 +348,6 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-2",
-            "index": 2,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-battery_v"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-0",
             "index": 0,
             "configuration": {
@@ -381,10 +362,17 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-5",
-            "index": 5,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-2",
+            "index": 2,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-spike"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-battery_v"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-range"
             }
           },
           {
@@ -395,10 +383,10 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-1",
-            "index": 1,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-5",
+            "index": 5,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-range"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-spike"
             }
           },
           {
@@ -430,9 +418,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -473,9 +458,9 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
           "identifier": [
-            "COSMOS-ALIC1-SCANS_30MIN_RAW"
+            "COSMOS-ALIC1-TA_30MIN_RAW"
           ]
         },
         {
@@ -485,9 +470,9 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
           "identifier": [
-            "COSMOS-ALIC1-TA_30MIN_RAW"
+            "COSMOS-ALIC1-SCANS_30MIN_RAW"
           ]
         }
       ],
@@ -520,6 +505,13 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_infill_flag",
+          "columnName": "TA_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_qc_flag",
           "columnName": "TA_QC_FLAG",
           "valueScheme": {
@@ -531,13 +523,6 @@
           "columnName": "TA_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_infill_flag",
-          "columnName": "TA_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         }
       ]
@@ -573,24 +558,17 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-tnr01c_30min-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min-load_raw"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-tnr01c_30min-plan#step-5",
-            "index": 5,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min-infill"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-tnr01c_30min-plan#step-4",
             "index": 4,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min-spike"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-tnr01c_30min-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min-range"
             }
           },
           {
@@ -601,10 +579,17 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-tnr01c_30min-plan#step-1",
-            "index": 1,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-tnr01c_30min-plan#step-5",
+            "index": 5,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min-range"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min-infill"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-tnr01c_30min-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-tnr01c_30min-load_raw"
             }
           },
           {
@@ -636,9 +621,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_sensor-mean_prec-degc-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -707,6 +689,20 @@
       ],
       "hasFlagColumn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed#flag_column.tnr01c_qc_flag",
+          "columnName": "TNR01C_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed#flag_column.tnr01c_core_flag",
+          "columnName": "TNR01C_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed#flag_column.tnr01c_corrs_flag",
           "columnName": "TNR01C_CORRS_FLAG",
           "valueScheme": {
@@ -718,20 +714,6 @@
           "columnName": "TNR01C_INFILL_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed#flag_column.tnr01c_core_flag",
-          "columnName": "TNR01C_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed#flag_column.tnr01c_qc_flag",
-          "columnName": "TNR01C_QC_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
           }
         }
       ]
@@ -772,9 +754,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwin_unc-mean_prec-wm-2-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -790,7 +769,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -850,9 +829,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/lwout_unc-mean_prec-wm-2-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -868,7 +844,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],

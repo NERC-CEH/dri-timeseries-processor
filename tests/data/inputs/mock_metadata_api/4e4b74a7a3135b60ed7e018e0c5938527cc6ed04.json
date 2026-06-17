@@ -53,9 +53,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -71,7 +68,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=CHIMN/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
@@ -131,9 +128,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/voltage_batt-mean_prec-v-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -149,7 +143,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=CHIMN/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
@@ -209,9 +203,6 @@
           },
           "aggregation": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-            },
             "periodicity": "PT30M",
             "resolution": "PT30M"
           }
@@ -227,7 +218,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=CHIMN/"
+            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],

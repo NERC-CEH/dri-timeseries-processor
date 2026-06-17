@@ -23,20 +23,6 @@
       ],
       "hasTopConcept": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
-          "prefLabel": [
-            "missing"
-          ],
-          "value": 4
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
-          "prefLabel": [
-            "removed"
-          ],
-          "value": 8
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/corrected",
           "prefLabel": [
             "corrected"
@@ -44,18 +30,11 @@
           "value": 1
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
           "prefLabel": [
-            "unsuccessful_correction"
+            "estimated"
           ],
-          "value": 64
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/suspicious",
-          "prefLabel": [
-            "suspicious"
-          ],
-          "value": 16
+          "value": 2
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unchecked",
@@ -65,11 +44,32 @@
           "value": 32
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/suspicious",
           "prefLabel": [
-            "estimated"
+            "suspicious"
           ],
-          "value": 2
+          "value": 16
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
+          "prefLabel": [
+            "removed"
+          ],
+          "value": 8
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
+          "prefLabel": [
+            "unsuccessful_correction"
+          ],
+          "value": 64
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
+          "prefLabel": [
+            "missing"
+          ],
+          "value": 4
         }
       ]
     }
