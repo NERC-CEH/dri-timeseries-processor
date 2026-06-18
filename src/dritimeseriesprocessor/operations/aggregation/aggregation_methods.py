@@ -54,50 +54,6 @@ class AggregationMethod(Operation, ABC):
 
         return tf_agg
 
-    @staticmethod
-    def _ts_rolling_aggregate(tf: ts.TimeFrame, config: DataProcessingMethodConfig, agg_func: str) -> ts.TimeFrame:
-        """Run a rolling aggregation using in-built methods in the Time-Stream package.
-
-        Args:
-            tf: TimeFrame to aggregate.
-            config: Configuration options for the aggregation method.
-            agg_func: The Time-Stream aggregation function to run.
-
-        Returns:
-            Aggregated TimeFrame.
-        """
-        col_name = tf.metadata["column_name"]
-        agg_col_name = f"{agg_func}_{col_name}"
-
-        missing_criteria = None
-        if config.params.get("threshold", None) is not None:
-            missing_criteria = ("available", config.params["threshold"], "missing", config.params.get("missing"))  # type: ignore[assignment]
-
-        time_window = None
-        start_time_str = config.params.get("start_time")
-        end_time_str = config.params.get("end_time")
-        if isinstance(start_time_str, str) and isinstance(end_time_str, str):
-            start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
-            time_window = (start_time, end_time)
-
-        tf_agg = tf.rolling_aggregate(
-            window_size=config.params["window_size"],
-            aggregation_function=agg_func,
-            columns=col_name,
-            missing_criteria=missing_criteria,  # type: ignore[assignment]
-            alignment=config.params["alignment"],
-            time_window=time_window,
-        )
-
-        tf_agg = tf_agg.with_df(
-            tf_agg.df.with_columns(
-                pl.when(pl.col(f"valid_{col_name}")).then(pl.col(agg_col_name)).otherwise(None).alias(col_name)
-            )
-        )
-
-        return tf_agg
-
 
 @AggregationMethod.register
 class MeanRad(AggregationMethod):
@@ -179,15 +135,3 @@ class StandardDeviation(AggregationMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "stdev")
-
-
-@AggregationMethod.register
-class RollingMeanForCounts(AggregationMethod):
-    name = "rolling_mean_for_counts"
-
-    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        config.params.setdefault("window_size", "PT25H")
-        config.params.setdefault("alignment", "center")
-        config.params.setdefault("threshold", 25)
-        config.params.setdefault("missing", 4)
-        return self._ts_rolling_aggregate(tf, config, "mean")
