@@ -48,88 +48,26 @@
       },
       "hasAnnotation": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#gamma",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-lattice-water",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/gamma"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_latticewater"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#gamma.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-lattice-water.value",
             "value": [
-              1.09867
+              0.025
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-bulk-density",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n-max",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_bulkdensity"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n_max"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-bulk-density.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n-max.value",
             "value": [
-              0.85
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-type",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-soil-type"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-type.value",
-            "valueReference": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/soil-type/mineral-soil"
-              }
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soc",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soc"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soc.value",
-            "value": [
-              0.042
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#web-images",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-web-image-count"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#web-images.value",
-            "value": [
-              3
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-comment",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/soil_comment"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-comment.value",
-            "value": [
-              "Typical mineral soil; lower bulk density 05 be due to higher clay and/or organic content or macropores from tree roots"
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#sampling-end-datetime",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/sampling_end_datetime"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#sampling-end-datetime.value",
-            "value": [
-              "2015-08-05T00:00:00+00:00"
+              1865.94112
             ]
           }
         },
@@ -146,38 +84,62 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#snow",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#site-class",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-snow"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-class"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#snow.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#site-class.value",
             "value": [
-              false
+              2.0
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-lattice-water",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#barometric-attenuation-length",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_latticewater"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/l"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-lattice-water.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#barometric-attenuation-length.value",
             "value": [
-              0.025
+              136.98854
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-c0",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n0-mod",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_c0"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n0_mod"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-c0.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n0-mod.value",
             "value": [
-              156.89971
+              2286.81573
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#web-images",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-web-image-count"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#web-images.value",
+            "value": [
+              3
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-200m",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/probe_effdepth_200m"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-200m.value",
+            "value": [
+              23.1
             ]
           }
         },
@@ -194,14 +156,26 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#site-class",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#location-source",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-class"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-location-source"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#site-class.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#location-source.value",
             "value": [
-              2.0
+              "GPS reading on site"
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#calibrated",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-calibrated"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#calibrated.value",
+            "value": [
+              true
             ]
           }
         },
@@ -258,14 +232,52 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n-max",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-q0",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n_max"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_q0"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n-max.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-q0.value",
             "value": [
-              1865.94112
+              9.484
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-1m",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/probe_effdepth_1m"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-1m.value",
+            "value": [
+              33.3
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#flux",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-flux"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#flux.value",
+            "value": [
+              false
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-type",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-soil-type"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-type.value",
+            "valueReference": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/soil-type/mineral-soil"
+              }
             ]
           }
         },
@@ -285,28 +297,6 @@
                 },
                 "qualifier": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-alic1-observed-land-cover#value-2015-03-06.source",
-                    "hasValue": {
-                      "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-alic1-observed-land-cover#value-2015-03-06.source.value",
-                      "value": [
-                        "Site visit"
-                      ],
-                      "@type": [
-                        {
-                          "@id": "http://schema.org/PropertyValue"
-                        }
-                      ]
-                    },
-                    "property": {
-                      "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/observation-source"
-                    },
-                    "@type": [
-                      {
-                        "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"
-                      }
-                    ]
-                  },
-                  {
                     "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-alic1-observed-land-cover#value-2015-03-06.comment",
                     "hasValue": {
                       "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-alic1-observed-land-cover#value-2015-03-06.comment.value",
@@ -321,6 +311,28 @@
                     },
                     "property": {
                       "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/observation-comment"
+                    },
+                    "@type": [
+                      {
+                        "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"
+                      }
+                    ]
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-alic1-observed-land-cover#value-2015-03-06.source",
+                    "hasValue": {
+                      "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-alic1-observed-land-cover#value-2015-03-06.source.value",
+                      "value": [
+                        "Site visit"
+                      ],
+                      "@type": [
+                        {
+                          "@id": "http://schema.org/PropertyValue"
+                        }
+                      ]
+                    },
+                    "property": {
+                      "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/observation-source"
                     },
                     "@type": [
                       {
@@ -344,12 +356,60 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#flux",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#gamma",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-flux"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/gamma"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#flux.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#gamma.value",
+            "value": [
+              1.09867
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soil-moisture",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soil_moisture"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soil-moisture.value",
+            "value": [
+              0.266
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-c0",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_c0"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-c0.value",
+            "value": [
+              156.89971
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#sampling-end-datetime",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/sampling_end_datetime"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#sampling-end-datetime.value",
+            "value": [
+              "2015-08-05T00:00:00+00:00"
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#crs2-mod",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-crs2-mod"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#crs2-mod.value",
             "value": [
               false
             ]
@@ -370,66 +430,6 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-q0",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_q0"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-q0.value",
-            "value": [
-              9.484
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#location-source",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-location-source"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#location-source.value",
-            "value": [
-              "GPS reading on site"
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n0-mod",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n0_mod"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n0-mod.value",
-            "value": [
-              2286.81573
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#full-tdt-array",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-full-tdt-array"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#full-tdt-array.value",
-            "value": [
-              false
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-cts-mod-corr",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_cts_mod_corr"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-cts-mod-corr.value",
-            "value": [
-              1224.021
-            ]
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#n-min",
           "property": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n_min"
@@ -442,36 +442,12 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#calibrated",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#full-tdt-array",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-calibrated"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-full-tdt-array"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#calibrated.value",
-            "value": [
-              true
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-200m",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/probe_effdepth_200m"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-200m.value",
-            "value": [
-              23.1
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#crs2-mod",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-crs2-mod"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#crs2-mod.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#full-tdt-array.value",
             "value": [
               false
             ]
@@ -490,6 +466,30 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-comment",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/soil_comment"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#soil-comment.value",
+            "value": [
+              "Typical mineral soil; lower bulk density 05 be due to higher clay and/or organic content or macropores from tree roots"
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soc",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soc"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soc.value",
+            "value": [
+              0.042
+            ]
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#sampling-start-datetime",
           "property": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/sampling_start_datetime"
@@ -502,38 +502,38 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-1m",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#snow",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/probe_effdepth_1m"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-snow"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#probe-effdepth-1m.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#snow.value",
             "value": [
-              33.3
+              false
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#barometric-attenuation-length",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-cts-mod-corr",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/l"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_cts_mod_corr"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#barometric-attenuation-length.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-cts-mod-corr.value",
             "value": [
-              136.98854
+              1224.021
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soil-moisture",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-bulk-density",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soil_moisture"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_bulkdensity"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-soil-moisture.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1#ref-bulk-density.value",
             "value": [
-              0.266
+              0.85
             ]
           }
         }
@@ -570,26 +570,112 @@
       },
       "hasAnnotation": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density-std",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-end-datetime",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_bulkdensity_std"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/sampling_end_datetime"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density-std.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-end-datetime.value",
             "value": [
-              0.095
+              "2013-11-15T00:00:00+00:00"
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-start-datetime",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-max",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/sampling_start_datetime"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n_max"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-start-datetime.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-max.value",
             "value": [
-              "2013-11-13T00:00:00+00:00"
+              1439.31928
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#snow",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-snow"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#snow.value",
+            "value": [
+              false
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-class",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-bedrock-class"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-class.value",
+            "valueReference": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/bedrock-class/mudstone,-siltstone-and-sandstone"
+              }
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soc"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc.value",
+            "value": [
+              0.027
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#public",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-public"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#public.value",
+            "value": [
+              true
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#crs2-mod",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-crs2-mod"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#crs2-mod.value",
+            "value": [
+              false
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-cts-mod-corr",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_cts_mod_corr"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-cts-mod-corr.value",
+            "value": [
+              888.586
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#calibrated",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-calibrated"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#calibrated.value",
+            "value": [
+              true
             ]
           }
         },
@@ -618,104 +704,6 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#barometric-attenuation-length",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/l"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#barometric-attenuation-length.value",
-            "value": [
-              137.11855
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_latticewater"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water.value",
-            "value": [
-              0.011
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#public",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-public"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#public.value",
-            "value": [
-              true
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-cts-mod-corr",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_cts_mod_corr"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-cts-mod-corr.value",
-            "value": [
-              888.586
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#web-images",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-web-image-count"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#web-images.value",
-            "value": [
-              3
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-class",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-bedrock-class"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-class.value",
-            "valueReference": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/bedrock-class/mudstone,-siltstone-and-sandstone"
-              }
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#crs2-mod",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-crs2-mod"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#crs2-mod.value",
-            "value": [
-              false
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_bulkdensity"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density.value",
-            "value": [
-              1.37
-            ]
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#soil-comment",
           "property": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/soil_comment"
@@ -724,66 +712,6 @@
             "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#soil-comment.value",
             "value": [
               "Calcareous mineral soil (around 20% calcium carbote)"
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#snow",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-snow"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#snow.value",
-            "value": [
-              false
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#saar",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-saar-1961-1990"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#saar.value",
-            "value": [
-              626.0
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-min",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n_min"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-min.value",
-            "value": [
-              741.18537
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#location-source",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-location-source"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#location-source.value",
-            "value": [
-              "P:\\NEC04961_COSMOSUK\\Instrumentation\\PrototypeSystems\\FieldNotes\\Instrumentation_v1-02.xlsx"
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water-std",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_latticewater_std"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water-std.value",
-            "value": [
-              0.0018
             ]
           }
         },
@@ -800,26 +728,38 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soil-moisture",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density-std",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soil_moisture"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_bulkdensity_std"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soil-moisture.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density-std.value",
             "value": [
-              0.393
+              0.095
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#calibrated",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#saar",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-calibrated"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-saar-1961-1990"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#calibrated.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#saar.value",
             "value": [
-              true
+              626.0
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-c0",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_c0"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-c0.value",
+            "value": [
+              155.71638
             ]
           }
         },
@@ -838,88 +778,16 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-end-datetime",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superclass",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/sampling_end_datetime"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-bedrock-superclass"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-end-datetime.value",
-            "value": [
-              "2013-11-15T00:00:00+00:00"
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#flux",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-flux"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#flux.value",
-            "value": [
-              false
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-q0",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_q0"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-q0.value",
-            "value": [
-              6.004
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-max",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n_max"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-max.value",
-            "value": [
-              1439.31928
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc-std",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soc_std"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc-std.value",
-            "value": [
-              0.0016
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superseries",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-bedrock-superseries"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superseries.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superclass.value",
             "valueReference": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/bedrock-class/alluvium"
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/bedrock-class/clay,-silt-and-sand"
               }
-            ]
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soc"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc.value",
-            "value": [
-              0.027
             ]
           }
         },
@@ -939,28 +807,6 @@
                 },
                 "qualifier": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-chimn-observed-land-cover#value-2016-06-29.comment",
-                    "hasValue": {
-                      "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-chimn-observed-land-cover#value-2016-06-29.comment.value",
-                      "value": [
-                        "Grazed"
-                      ],
-                      "@type": [
-                        {
-                          "@id": "http://schema.org/PropertyValue"
-                        }
-                      ]
-                    },
-                    "property": {
-                      "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/observation-comment"
-                    },
-                    "@type": [
-                      {
-                        "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"
-                      }
-                    ]
-                  },
-                  {
                     "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-chimn-observed-land-cover#value-2016-06-29.source",
                     "hasValue": {
                       "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-chimn-observed-land-cover#value-2016-06-29.source.value",
@@ -975,6 +821,28 @@
                     },
                     "property": {
                       "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/observation-source"
+                    },
+                    "@type": [
+                      {
+                        "@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"
+                      }
+                    ]
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-chimn-observed-land-cover#value-2016-06-29.comment",
+                    "hasValue": {
+                      "@id": "http://fdri.ceh.ac.uk/id/annotation/cosmos-chimn-observed-land-cover#value-2016-06-29.comment.value",
+                      "value": [
+                        "Grazed"
+                      ],
+                      "@type": [
+                        {
+                          "@id": "http://schema.org/PropertyValue"
+                        }
+                      ]
+                    },
+                    "property": {
+                      "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/observation-comment"
                     },
                     "@type": [
                       {
@@ -998,28 +866,26 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superclass",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-min",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-bedrock-superclass"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/n_min"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superclass.value",
-            "valueReference": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/bedrock-class/clay,-silt-and-sand"
-              }
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#n-min.value",
+            "value": [
+              741.18537
             ]
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-c0",
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-q0",
           "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_c0"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_q0"
           },
           "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-c0.value",
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-q0.value",
             "value": [
-              155.71638
+              6.004
             ]
           }
         },
@@ -1036,6 +902,54 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#barometric-attenuation-length",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/l"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#barometric-attenuation-length.value",
+            "value": [
+              137.11855
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc-std",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soc_std"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soc-std.value",
+            "value": [
+              0.0016
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_latticewater"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water.value",
+            "value": [
+              0.011
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soil-moisture",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_soil_moisture"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-soil-moisture.value",
+            "value": [
+              0.393
+            ]
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#full-tdt-array",
           "property": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-full-tdt-array"
@@ -1044,6 +958,42 @@
             "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#full-tdt-array.value",
             "value": [
               true
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_bulkdensity"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-bulk-density.value",
+            "value": [
+              1.37
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-start-datetime",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/sampling_start_datetime"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#sampling-start-datetime.value",
+            "value": [
+              "2013-11-13T00:00:00+00:00"
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#flux",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/station-flux"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#flux.value",
+            "value": [
+              false
             ]
           }
         },
@@ -1095,6 +1045,56 @@
                     "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeBoundPropertyValue"
                   }
                 ]
+              }
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#web-images",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-web-image-count"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#web-images.value",
+            "value": [
+              3
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water-std",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/ref_latticewater_std"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#ref-lattice-water-std.value",
+            "value": [
+              0.0018
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#location-source",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-location-source"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#location-source.value",
+            "value": [
+              "P:\\NEC04961_COSMOSUK\\Instrumentation\\PrototypeSystems\\FieldNotes\\Instrumentation_v1-02.xlsx"
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superseries",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/site-bedrock-superseries"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn#bedrock-superseries.value",
+            "valueReference": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/cosmos/bedrock-class/alluvium"
               }
             ]
           }

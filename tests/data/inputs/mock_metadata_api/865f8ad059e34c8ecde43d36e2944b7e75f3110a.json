@@ -35,29 +35,6 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-total_prec-cts-pt1h-pt1h",
-          "prefLabel": [
-            "Total neutron count over the preceding hour"
-          ],
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
-            "prefLabel": [
-              "Neutron count"
-            ]
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts",
-            "prefLabel": [
-              "Counts"
-            ]
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-total_prec-cts-pt1h-pt1h#aggregation",
-            "periodicity": "PT1H",
-            "resolution": "PT1H"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-cts_min-1-mean_proc-pt1h-pt1h",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
@@ -76,6 +53,29 @@
             "valueStatistic": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_proc"
             },
+            "periodicity": "PT1H",
+            "resolution": "PT1H"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-total_prec-cts-pt1h-pt1h",
+          "prefLabel": [
+            "Total neutron count over the preceding hour"
+          ],
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
+            "prefLabel": [
+              "Neutron count"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts",
+            "prefLabel": [
+              "Counts"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-total_prec-cts-pt1h-pt1h#aggregation",
             "periodicity": "PT1H",
             "resolution": "PT1H"
           }
