@@ -100,9 +100,9 @@ class TestMapDatasetItem:
                         "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
                         "aggregation": {
                             "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
-                            "periodicity": "PT30M",
-                            "resolution": "PT30M",
                         },
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
                     }
                 ],
                 "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
@@ -133,9 +133,9 @@ class TestMapDatasetItem:
                         "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
                         "aggregation": {
                             "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
-                            "periodicity": "PT30M",
-                            "resolution": "PT30M",
                         },
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
                     }
                 ],
                 "distribution": [

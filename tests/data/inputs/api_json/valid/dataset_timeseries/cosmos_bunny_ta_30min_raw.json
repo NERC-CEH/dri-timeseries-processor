@@ -54,10 +54,10 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-pt30m-pt30m#aggregation",
             "valueStatistic": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
-          }
+            }
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M"
         }
       ],
       "distribution": [
