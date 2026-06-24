@@ -23,18 +23,18 @@
       ],
       "hasTopConcept": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme/linear_interp",
-          "prefLabel": [
-            "linear_interp"
-          ],
-          "value": 1
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme/alt_data",
           "prefLabel": [
             "alt_data"
           ],
           "value": 2
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme/linear_interp",
+          "prefLabel": [
+            "linear_interp"
+          ],
+          "value": 1
         }
       ]
     }
