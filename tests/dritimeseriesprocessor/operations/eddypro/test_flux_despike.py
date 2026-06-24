@@ -144,6 +144,7 @@ def _make_container(site: str = "flux-plynl", source_bucket: str = "source-bucke
         time_column_name="time",
         resolution="PT30M",
         periodicity="PT30M",
+        time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
     )
 

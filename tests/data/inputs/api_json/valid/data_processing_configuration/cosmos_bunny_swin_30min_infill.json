@@ -78,7 +78,7 @@
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_linear",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_interp",
             "parameter": [
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"

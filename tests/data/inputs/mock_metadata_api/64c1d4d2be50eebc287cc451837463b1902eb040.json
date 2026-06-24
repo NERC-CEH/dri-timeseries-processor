@@ -24,6 +24,9 @@
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
         }
       ],
+      "identifier": [
+        "NMDB-JUNG-NEUTRON_CTS_1HOUR_PROCESSED"
+      ],
       "processingLevel": {
         "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
         "prefLabel": [
@@ -37,34 +40,46 @@
             "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
           }
         ],
-        "rawConfiguration": "[\"nmdb-jung-neutron_cts_1hour-infill-1\",\"nmdb-jung-neutron_cts_1hour-infill-2\",\"nmdb-jung-neutron_cts_1hour-infill-3\"]",
+        "rawConfiguration": "[\"nmdb-jung-neutron_cts_1hour-load_raw\",\"nmdb-jung-neutron_cts_1hour-infill-1\",\"nmdb-jung-neutron_cts_1hour-infill-2\",\"nmdb-jung-neutron_cts_1hour-infill-3\"]",
+        "uses": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw"
+          }
+        ],
         "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/nmdb-jung-neutron_cts_1hour-plan#step-2",
+            "index": 2,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/nmdb-jung-neutron_cts_1hour-infill-2"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/nmdb-jung-neutron_cts_1hour-plan#step-3",
+            "index": 3,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/nmdb-jung-neutron_cts_1hour-infill-3"
+            }
+          },
           {
             "@id": "http://fdri.ceh.ac.uk/id/plan/nmdb-jung-neutron_cts_1hour-plan#step-0",
             "index": 0,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/nmdb-jung-neutron_cts_1hour-infill-1"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/nmdb-jung-neutron_cts_1hour-load_raw"
             }
           },
           {
             "@id": "http://fdri.ceh.ac.uk/id/plan/nmdb-jung-neutron_cts_1hour-plan#step-1",
             "index": 1,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/nmdb-jung-neutron_cts_1hour-infill-2"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/nmdb-jung-neutron_cts_1hour-plan#step-2",
-            "index": 2,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/nmdb-jung-neutron_cts_1hour-infill-3"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/nmdb-jung-neutron_cts_1hour-infill-1"
             }
           }
         ]
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-cts_min-1-mean_proc-pt1h-pt1h",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-total_prec-cts-pt1h-pt1h",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
             "prefLabel": [
@@ -72,52 +87,25 @@
             ]
           },
           "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts_min-1",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts",
             "prefLabel": [
-              "Counts min-1"
+              "Counts"
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_proc-pt1h-pt1h",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_proc"
-            },
-            "periodicity": "PT1H",
-            "resolution": "PT1H"
-          }
-        }
-      ],
-      "type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/nmdb/time-series/neutron_cts_1hour_processed",
-          "processingLevel": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total",
+            "prefLabel": [
+              "Total"
+            ]
           },
-          "measure": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-cts_min-1-mean_proc-pt1h-pt1h",
-              "variable": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
-                "prefLabel": [
-                  "Neutron count"
-                ]
-              },
-              "hasUnit": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts_min-1",
-                "prefLabel": [
-                  "Counts min-1"
-                ]
-              },
-              "aggregation": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean_proc-pt1h-pt1h",
-                "valueStatistic": {
-                  "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_proc"
-                },
-                "periodicity": "PT1H",
-                "resolution": "PT1H"
-              }
-            }
-          ]
+          "periodicity": "PT1H",
+          "resolution": "PT1H",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
+          }
         }
       ],
       "distribution": [
@@ -155,24 +143,54 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw"
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
+          ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw"
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
+          ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw"
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-APTY-NEUTRON_CTS_1HOUR_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
+          ]
         }
       ],
       "directDependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw"
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
+          ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw"
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
+          ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw"
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw",
+          "identifier": [
+            "NMDB-APTY-NEUTRON_CTS_1HOUR_RAW"
+          ]
         }
       ]
     }

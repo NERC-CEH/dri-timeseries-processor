@@ -62,8 +62,8 @@
       ],
       "hasGeometry": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-eastings",
-          "asWKT": "<http://www.opengis.net/def/crs/EPSG/0/27700> POINT(553029, 164280)",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-latlong",
+          "asWKT": "POINT(0.1964190449649131, 51.356986942291414)",
           "@type": [
             {
               "@id": "http://www.opengis.net/ont/geosparql#Geometry"
@@ -71,8 +71,8 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-latlong",
-          "asWKT": "POINT(0.1964190449649131, 51.356986942291414)",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-eastings",
+          "asWKT": "<http://www.opengis.net/def/crs/EPSG/0/27700> POINT(553029, 164280)",
           "@type": [
             {
               "@id": "http://www.opengis.net/ont/geosparql#Geometry"

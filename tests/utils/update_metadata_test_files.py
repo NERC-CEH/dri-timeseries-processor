@@ -50,7 +50,6 @@ MAPPING = {
     "deployment": {
         "cosmos-bunny-aws_anem.json": f"{BASE_URL}/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.json",
         "cosmos-elmst-tdt8-tdt.json": f"{BASE_URL}/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.json",
-        "fdri-se-carwe-01-ws-801.json": f"{BASE_URL}/id/deployment/fdri-se-carwe-01-ws-801.json",
     },
 }
 

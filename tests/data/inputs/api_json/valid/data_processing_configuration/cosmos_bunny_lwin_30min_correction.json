@@ -60,10 +60,10 @@
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.depts.value",
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed"
                   },
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw"
                   }
                 ],
                 "@type": [
