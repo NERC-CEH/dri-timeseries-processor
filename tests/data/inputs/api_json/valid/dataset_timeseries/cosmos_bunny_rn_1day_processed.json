@@ -139,10 +139,10 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rn-total_prec-mjm-2-d-p1d-p1d#aggregation",
             "valueStatistic": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
-          }
+            }
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D"
         }
       ],
       "distribution": [

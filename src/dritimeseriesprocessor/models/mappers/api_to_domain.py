@@ -46,8 +46,9 @@ def map_dataset_item(
     source_site = extract_uri_id(metadata_site_id) if metadata_site_id else None
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id if metadata_site_id else None
     source_network = extract_uri_id(item.originating_programme[0].id) if item.originating_programme else None
-    resolution = item.measure[0].aggregation.resolution if item.measure else None
-    periodicity = item.measure[0].aggregation.periodicity if item.measure else None
+    measure = next((m for m in item.measure if m.resolution), None) if item.measure else None
+    resolution = measure.resolution if measure else None
+    periodicity = measure.periodicity if measure else None
 
     dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
 

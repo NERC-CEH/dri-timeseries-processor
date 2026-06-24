@@ -21,19 +21,14 @@ class HasUnit(IDModel):
     pref_label: list[str] | None = Field(None, alias="prefLabel")
 
 
-class Aggregation(IDModel):
-    """Aggregation specification."""
-
-    periodicity: str
-    resolution: str
-
-
 class Measure(IDModel):
     """Measure specification with variable and unit."""
 
     variable: Variable | None = None
     has_unit: HasUnit | None = Field(None, alias="hasUnit")
-    aggregation: Aggregation
+    aggregation: IDModel | None = None
+    periodicity: str | None = None
+    resolution: str | None = None
 
 
 class MethodologyStep(IDModel):
