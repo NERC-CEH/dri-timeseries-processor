@@ -45,84 +45,14 @@
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-rn_1day-plan#step-0",
             "index": 0,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-rn_1day-mean_rad",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day-mean_rad",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day-mean_rad#argument.round",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day-mean_rad#argument.round.value",
-                        "value": [
-                          1
-                        ]
-                      }
-                    },
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day-mean_rad#argument.depts",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day-mean_rad#argument.depts.value",
-                        "valueReference": [
-                          {
-                            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed"
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day-mean_rad#argument.threshold",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-rn_1day-mean_rad#argument.threshold.value",
-                        "value": [
-                          43
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean_rad"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-rn_1day-mean_rad\",\"type\":\"aggregate\",\"method\":\"mean_rad\",\"dep_ts\":[\"COSMOS-BUNNY-RN_30MIN_PROCESSED\"],\"parameters\":[{\"param\":\"round\",\"value\":1},{\"param\":\"threshold\",\"value\":43}],\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-rn_1day-mean_rad"
             }
           }
         ]
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rn-total_prec-mjm-2-d-p1d-p1d",
-          "prefLabel": [
-            "Total net radiation over the preceding day in megajoules per metre squared"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rn-total_proc-mjm-2-d-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn",
             "prefLabel": [
@@ -136,13 +66,19 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/rn-total_prec-mjm-2-d-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-            }
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total",
+            "prefLabel": [
+              "Total"
+            ]
           },
           "periodicity": "P1D",
-          "resolution": "P1D"
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
+          }
         }
       ],
       "distribution": [
@@ -175,15 +111,9 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_processed",
           "identifier": [
-            "COSMOS-BUNNY-BATTV_30MIN_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw",
-          "identifier": [
-            "COSMOS-BUNNY-LWIN_UNC_30MIN_RAW"
+            "COSMOS-BUNNY-LWOUT_30MIN_PROCESSED"
           ]
         },
         {
@@ -193,15 +123,27 @@
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_unc_30min_raw",
+          "identifier": [
+            "COSMOS-BUNNY-LWOUT_UNC_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_raw",
           "identifier": [
             "COSMOS-BUNNY-LWOUT_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-scans_30min_raw",
           "identifier": [
-            "COSMOS-BUNNY-TA_30MIN_PROCESSED"
+            "COSMOS-BUNNY-SCANS_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw",
+          "identifier": [
+            "COSMOS-BUNNY-LWIN_UNC_30MIN_RAW"
           ]
         },
         {
@@ -211,9 +153,9 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
           "identifier": [
-            "COSMOS-BUNNY-LWOUT_30MIN_PROCESSED"
+            "COSMOS-BUNNY-SWIN_30MIN_PROCESSED"
           ]
         },
         {
@@ -229,21 +171,9 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed",
           "identifier": [
-            "COSMOS-BUNNY-SWOUT_30MIN_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-scans_30min_raw",
-          "identifier": [
-            "COSMOS-BUNNY-SCANS_30MIN_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
-          "identifier": [
-            "COSMOS-BUNNY-SWIN_30MIN_PROCESSED"
+            "COSMOS-BUNNY-RN_30MIN_PROCESSED"
           ]
         },
         {
@@ -253,9 +183,21 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_processed",
           "identifier": [
-            "COSMOS-BUNNY-RN_30MIN_PROCESSED"
+            "COSMOS-BUNNY-LWIN_30MIN_PROCESSED"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swout_30min_raw",
+          "identifier": [
+            "COSMOS-BUNNY-SWOUT_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw",
+          "identifier": [
+            "COSMOS-BUNNY-BATTV_30MIN_RAW"
           ]
         },
         {
@@ -265,15 +207,9 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwout_unc_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
           "identifier": [
-            "COSMOS-BUNNY-LWOUT_UNC_30MIN_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_processed",
-          "identifier": [
-            "COSMOS-BUNNY-LWIN_30MIN_PROCESSED"
+            "COSMOS-BUNNY-TA_30MIN_PROCESSED"
           ]
         }
       ],
@@ -287,17 +223,10 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed#flag_column.rn_qc_flag",
-          "columnName": "RN_QC_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed#flag_column.rn_core_flag",
+          "columnName": "RN_CORE_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed#flag_column.rn_infill_flag",
-          "columnName": "RN_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {
@@ -308,10 +237,17 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed#flag_column.rn_core_flag",
-          "columnName": "RN_CORE_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed#flag_column.rn_infill_flag",
+          "columnName": "RN_INFILL_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed#flag_column.rn_qc_flag",
+          "columnName": "RN_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
           }
         }
       ]

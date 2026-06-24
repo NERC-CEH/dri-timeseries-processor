@@ -38,6 +38,7 @@ class AggregationPipeline(OperationPipeline):
 
         for cfg in config.method_configs:
             cfg.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
+            cfg.params["aggregation_time_anchor"] = container.time_anchor
             cfg.params["source_column"] = container.source_column
 
         tf = super().run(container, dataset_repository, config)

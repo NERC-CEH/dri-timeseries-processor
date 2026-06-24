@@ -24,6 +24,7 @@ from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetada
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
+from dritimeseriesprocessor.utils.time_stream_utils import map_time_anchor
 
 
 def map_dataset_item(
@@ -46,9 +47,9 @@ def map_dataset_item(
     source_site = extract_uri_id(metadata_site_id) if metadata_site_id else None
     source_site_identifier = all_site_metadata[metadata_site_id].alt_id if metadata_site_id else None
     source_network = extract_uri_id(item.originating_programme[0].id) if item.originating_programme else None
-    measure = next((m for m in item.measure if m.resolution), None) if item.measure else None
-    resolution = measure.resolution if measure else None
-    periodicity = measure.periodicity if measure else None
+    resolution = item.measure[0].resolution if item.measure else None
+    periodicity = item.measure[0].periodicity if item.measure else None
+    time_anchor = map_time_anchor(extract_uri_id(item.measure[0].time_anchor.id)) if item.measure else None
 
     dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
 
@@ -69,6 +70,7 @@ def map_dataset_item(
         network=source_network,
         resolution=resolution,
         periodicity=periodicity,
+        time_anchor=time_anchor,
         processing_level=processing_level,
         source_bucket=getattr(item, "source_bucket", None),
         source_dataset=getattr(item, "source_dataset", None),

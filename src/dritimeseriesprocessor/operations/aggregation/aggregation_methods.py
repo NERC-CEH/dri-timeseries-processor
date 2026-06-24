@@ -46,6 +46,7 @@ class AggregationMethod(Operation, ABC):
         tf_agg = tf.aggregate(
             aggregation_period=config.params["aggregation_period"],
             aggregation_function=agg_func,
+            aggregation_time_anchor=config.params["aggregation_time_anchor"],
             columns=col_name,
             missing_criteria=missing_criteria,  # type: ignore[assignment]
             time_window=time_window,

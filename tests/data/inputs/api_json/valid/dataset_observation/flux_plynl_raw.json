@@ -42,34 +42,7 @@
             "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-raw-plan#step-0",
             "index": 0,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-raw-load-local-copy",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-raw-load-local-copy",
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/load-local-copy"
-                  },
-                  "rawConfiguration": "{\"id\":\"flux-plynl-raw-load-local-copy\",\"type\":\"load\",\"method\":\"load-local-copy\",\"site\":\"flux-plynl\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-raw-load-local-copy"
             }
           }
         ]

@@ -21,14 +21,27 @@ class HasUnit(IDModel):
     pref_label: list[str] | None = Field(None, alias="prefLabel")
 
 
+class Aggregation(IDModel):
+    """Aggregation specification."""
+
+    pref_label: list[str] | None = Field(None, alias="prefLabel")
+
+
+class TimeAnchor(IDModel):
+    """Time anchor of a dataset."""
+
+    pref_label: list[str] | None = Field(None, alias="prefLabel")
+
+
 class Measure(IDModel):
     """Measure specification with variable and unit."""
 
     variable: Variable | None = None
     has_unit: HasUnit | None = Field(None, alias="hasUnit")
-    aggregation: IDModel | None = None
-    periodicity: str | None = None
-    resolution: str | None = None
+    aggregation: Aggregation
+    periodicity: str
+    resolution: str
+    time_anchor: TimeAnchor = Field(..., alias="valueTimeAnchor")
 
 
 class MethodologyStep(IDModel):

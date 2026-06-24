@@ -42,6 +42,7 @@ class DerivationPipeline(OperationPipeline):
             cfg.params["output_col"] = container.source_column
             cfg.params["resolution"] = container.resolution
             cfg.params["periodicity"] = container.periodicity
+            cfg.params["time_anchor"] = container.time_anchor
 
         return super().run(container, dataset_repository, config)
 
