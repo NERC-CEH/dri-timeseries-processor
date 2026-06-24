@@ -23,32 +23,11 @@
       ],
       "hasTopConcept": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
           "prefLabel": [
-            "removed"
+            "missing"
           ],
-          "value": 8
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/suspicious",
-          "prefLabel": [
-            "suspicious"
-          ],
-          "value": 16
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/corrected",
-          "prefLabel": [
-            "corrected"
-          ],
-          "value": 1
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
-          "prefLabel": [
-            "unsuccessful_correction"
-          ],
-          "value": 64
+          "value": 4
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
@@ -58,11 +37,11 @@
           "value": 2
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
           "prefLabel": [
-            "missing"
+            "removed"
           ],
-          "value": 4
+          "value": 8
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unchecked",
@@ -70,6 +49,27 @@
             "unchecked"
           ],
           "value": 32
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/corrected",
+          "prefLabel": [
+            "corrected"
+          ],
+          "value": 1
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/suspicious",
+          "prefLabel": [
+            "suspicious"
+          ],
+          "value": 16
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
+          "prefLabel": [
+            "unsuccessful_correction"
+          ],
+          "value": 64
         }
       ]
     }
