@@ -14,6 +14,7 @@ from typing import Any
 
 import polars as pl
 import time_stream as ts
+from time_stream.types import TimeAnchor
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.utils.enums import DatasetType, ProcessingLevel
@@ -35,6 +36,7 @@ class TimeSeriesContainer:
 
     resolution: str | None
     periodicity: str | None
+    time_anchor: TimeAnchor | None
     processing_level: ProcessingLevel
 
     dataset_type: DatasetType | None = None
@@ -134,6 +136,7 @@ class TimeSeriesContainer:
                 time_name=self.time_column_name,  # type: ignore[arg-type] - always set before init_timeframe is called
                 resolution=self.resolution,
                 periodicity=self.periodicity,
+                time_anchor=self.time_anchor if self.time_anchor else "start",  # use a default anchor if not provided
             )
             .with_metadata({"column_name": self.source_column})
             .pad()
