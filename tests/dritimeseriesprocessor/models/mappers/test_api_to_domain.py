@@ -49,7 +49,7 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="P1D",
             periodicity="P1D",
-            time_anchor="end",
+            time_anchor="start",
             processing_level=ProcessingLevel.PROCESSED,
             dataset_type=DatasetType.TIMESERIES_DATASET,
             distribution_url="s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=BUNNY/",
