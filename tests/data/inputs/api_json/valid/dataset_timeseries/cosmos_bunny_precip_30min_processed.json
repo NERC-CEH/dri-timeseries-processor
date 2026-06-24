@@ -54,20 +54,6 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-precip_30min-plan#step-4",
-            "index": 4,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-precip_30min-pluvio_diag"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-precip_30min-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-precip_30min-sum"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-precip_30min-plan#step-1",
             "index": 1,
             "configuration": {
@@ -79,6 +65,20 @@
             "index": 3,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-precip_30min-error_code"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-precip_30min-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-precip_30min-sum"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-precip_30min-plan#step-4",
+            "index": 4,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-precip_30min-pluvio_diag"
             }
           }
         ]
@@ -149,12 +149,6 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_1min_raw",
-          "identifier": [
-            "COSMOS-BUNNY-PRECIP_1MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw",
           "identifier": [
             "COSMOS-BUNNY-BATTV_30MIN_RAW"
@@ -164,6 +158,12 @@
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_diag_30min_raw",
           "identifier": [
             "COSMOS-BUNNY-PRECIP_DIAG_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_1min_raw",
+          "identifier": [
+            "COSMOS-BUNNY-PRECIP_1MIN_RAW"
           ]
         }
       ],
@@ -189,6 +189,20 @@
       ],
       "hasFlagColumn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_30min_processed#flag_column.precip_infill_flag",
+          "columnName": "PRECIP_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_30min_processed#flag_column.precip_core_flag",
+          "columnName": "PRECIP_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_30min_processed#flag_column.precip_qc_flag",
           "columnName": "PRECIP_QC_FLAG",
           "valueScheme": {
@@ -200,20 +214,6 @@
           "columnName": "PRECIP_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_30min_processed#flag_column.precip_core_flag",
-          "columnName": "PRECIP_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-precip_30min_processed#flag_column.precip_infill_flag",
-          "columnName": "PRECIP_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         }
       ]

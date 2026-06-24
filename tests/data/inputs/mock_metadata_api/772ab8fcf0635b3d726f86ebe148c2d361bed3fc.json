@@ -33,39 +33,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min-calculate_rn",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min-calculate_rn#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min-calculate_rn#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_processed"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min-calculate_rn#argument.round",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min-calculate_rn#argument.round.value",
@@ -80,6 +47,39 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min-calculate_rn#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-rn_30min-calculate_rn#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwin_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-lwout_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swin_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-swout_30min_processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {
@@ -216,11 +216,11 @@
                   "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0",
                   "argument": [
                     {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.platform",
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.source",
                       "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.platform.platform.value",
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.source.source.value",
                         "value": [
-                          "cosmos-chimn-aws_anem"
+                          "deployment"
                         ],
                         "@type": [
                           {
@@ -229,7 +229,7 @@
                         ]
                       },
                       "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/wind_height.platform"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/wind_height.source"
                       },
                       "@type": [
                         {
@@ -260,11 +260,11 @@
                       ]
                     },
                     {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.source",
+                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.platform",
                       "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.source.source.value",
+                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.wind_height.structured.0.platform.platform.value",
                         "value": [
-                          "deployment"
+                          "cosmos-chimn-aws_anem"
                         ],
                         "@type": [
                           {
@@ -273,7 +273,7 @@
                         ]
                       },
                       "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/wind_height.source"
+                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/wind_height.platform"
                       },
                       "@type": [
                         {
@@ -286,45 +286,6 @@
               ],
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/wind_height"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-rh_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-rn_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_processed"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {
@@ -347,6 +308,45 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-pe_30min-calculate_pe#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-g_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-rn_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-rh_30min_processed"
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {

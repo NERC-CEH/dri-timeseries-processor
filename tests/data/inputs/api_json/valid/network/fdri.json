@@ -20,7 +20,22 @@
       "@id": "http://fdri.ceh.ac.uk/id/network/fdri",
       "contains": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01",
+          "label": [
+            "Carreg Wen"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-svtrp-01"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-ch-milfa-01",
+          "label": [
+            "Mill Farm, Chenies"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-fofad-01"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-hafrf-07",
@@ -32,21 +47,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl",
           "lat": 52.45,
           "long": -3.75
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-ch-milfa-01",
-          "label": [
-            "Mill Farm, Chenies"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01",
-          "label": [
-            "Carreg Wen"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-fofad-01"
         }
       ],
       "@type": [

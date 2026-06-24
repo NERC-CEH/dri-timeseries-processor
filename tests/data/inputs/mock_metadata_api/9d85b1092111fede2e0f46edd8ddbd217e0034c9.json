@@ -23,41 +23,6 @@
       ],
       "hasTopConcept": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
-          "prefLabel": [
-            "missing"
-          ],
-          "value": 4
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
-          "prefLabel": [
-            "unsuccessful_correction"
-          ],
-          "value": 64
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/corrected",
-          "prefLabel": [
-            "corrected"
-          ],
-          "value": 1
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
-          "prefLabel": [
-            "estimated"
-          ],
-          "value": 2
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unchecked",
-          "prefLabel": [
-            "unchecked"
-          ],
-          "value": 32
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
           "prefLabel": [
             "removed"
@@ -70,6 +35,41 @@
             "suspicious"
           ],
           "value": 16
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/corrected",
+          "prefLabel": [
+            "corrected"
+          ],
+          "value": 1
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
+          "prefLabel": [
+            "unsuccessful_correction"
+          ],
+          "value": 64
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
+          "prefLabel": [
+            "estimated"
+          ],
+          "value": 2
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
+          "prefLabel": [
+            "missing"
+          ],
+          "value": 4
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unchecked",
+          "prefLabel": [
+            "unchecked"
+          ],
+          "value": 32
         }
       ]
     }
