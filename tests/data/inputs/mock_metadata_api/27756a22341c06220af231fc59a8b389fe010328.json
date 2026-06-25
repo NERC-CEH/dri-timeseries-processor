@@ -74,7 +74,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],

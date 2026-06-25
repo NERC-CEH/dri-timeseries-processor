@@ -74,7 +74,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
@@ -155,7 +155,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
@@ -210,17 +210,17 @@
         ],
         "hasPart": [
           {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cts_mod2_30min-plan#step-4",
+            "index": 4,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-cts_mod2_30min-error_code"
+            }
+          },
+          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cts_mod2_30min-plan#step-0",
             "index": 0,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-cts_mod2_30min-load_raw"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cts_mod2_30min-plan#step-1",
-            "index": 1,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-cts_mod2_30min-spike"
             }
           },
           {
@@ -231,17 +231,17 @@
             }
           },
           {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cts_mod2_30min-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-cts_mod2_30min-spike"
+            }
+          },
+          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cts_mod2_30min-plan#step-3",
             "index": 3,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-cts_mod2_30min-battery_v"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-cts_mod2_30min-plan#step-4",
-            "index": 4,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-cts_mod2_30min-error_code"
             }
           },
           {
@@ -294,7 +294,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_30MIN/site=CHIMN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_30MIN/site=CHIMN/"
           ]
         }
       ],
@@ -319,9 +319,9 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
           "identifier": [
-            "COSMOS-CHIMN-CTS_MOD2_30MIN_RAW"
+            "COSMOS-CHIMN-SCANS_30MIN_RAW"
           ]
         },
         {
@@ -331,14 +331,20 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw",
           "identifier": [
-            "COSMOS-CHIMN-SCANS_30MIN_RAW"
+            "COSMOS-CHIMN-CTS_MOD2_30MIN_RAW"
           ]
         }
       ],
       "directDependsOn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
+          "identifier": [
+            "COSMOS-CHIMN-SCANS_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw",
           "identifier": [
             "COSMOS-CHIMN-CTS_MOD2_30MIN_RAW"
@@ -349,27 +355,21 @@
           "identifier": [
             "COSMOS-CHIMN-BATTV_30MIN_RAW"
           ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
-          "identifier": [
-            "COSMOS-CHIMN-SCANS_30MIN_RAW"
-          ]
         }
       ],
       "hasFlagColumn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed#flag_column.cts_mod2_core_flag",
-          "columnName": "CTS_MOD2_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
-          }
-        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed#flag_column.cts_mod2_corrs_flag",
           "columnName": "CTS_MOD2_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_processed#flag_column.cts_mod2_core_flag",
+          "columnName": "CTS_MOD2_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {
@@ -445,7 +445,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],

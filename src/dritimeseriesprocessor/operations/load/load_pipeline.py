@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 
+import time_stream as ts
+
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
     DataProcessingMethodConfig,
@@ -55,6 +57,18 @@ class LoadPipeline:
                     raise RuntimeError(f"No data found for base dependency: {dep.ts_id}")
                 tf = dep.data.select(container.source_column)
                 tf.metadata["column_name"] = container.source_column
+                # The source bundle may have a different time_anchor than this container
+                # (e.g. an ObservationDataset bundle has no measure so defaults to "start",
+                # while the extracted time-series dataset declares its own anchor via metadata).
+                if container.time_anchor and container.time_anchor != tf.time_anchor:
+                    tf = ts.TimeFrame(
+                        tf.df,
+                        tf.time_name,
+                        resolution=tf.resolution,
+                        periodicity=tf.periodicity,
+                        time_anchor=container.time_anchor,
+                    )
+                    tf.metadata["column_name"] = container.source_column
                 container.data = tf
 
             case "load-local-copy":

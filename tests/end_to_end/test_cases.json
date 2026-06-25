@@ -134,6 +134,19 @@
             "end_date": "2020-08-20"
           },
           {
+            "id": "flux-plynl-eddypro",
+            "description": "End-to-end test of the EddyPro flux processing pipeline at Plynlimon. EddyPro binary is mocked; 13 days of synthetic despiking history are pre-loaded from parquet-data/processed/.",
+            "network": "fdri",
+            "sites": ["flux-plynl"],
+            "measured_variables": ["H", "Tau", "co2_flux", "h2o_flux", "H_L2", "Tau_L2"],
+            "derived_variables": [],
+            "aggregated_variables": [],
+            "periodicities": ["PT30M"],
+            "start_date": "2026-01-20",
+            "end_date": "2026-01-21",
+            "check_variables": ["H", "Tau", "qc_H", "qc_Tau", "co2_flux", "h2o_flux", "H_L2", "Tau_L2", "Pressure_Avg"]
+          },
+          {
             "id": "load-only-from-different-networks",
             "description": "Test of derivation that uses a dependency from another network.",
             "network": "cosmos",

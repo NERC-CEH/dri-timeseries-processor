@@ -23,6 +23,20 @@
       ],
       "hasTopConcept": [
         {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/samples",
+          "prefLabel": [
+            "samples"
+          ],
+          "value": 4
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/hfp_removal",
+          "prefLabel": [
+            "hfp_removal"
+          ],
+          "value": 64
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/battery_v",
           "prefLabel": [
             "battery_v"
@@ -30,11 +44,25 @@
           "value": 2
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/samples",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/tdt_tsoil",
           "prefLabel": [
-            "samples"
+            "tdt_tsoil"
           ],
-          "value": 4
+          "value": 512
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/error_code",
+          "prefLabel": [
+            "error_code"
+          ],
+          "value": 8
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/snowd_signal",
+          "prefLabel": [
+            "snowd_signal"
+          ],
+          "value": 256
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/nr01_temp",
@@ -51,25 +79,11 @@
           "value": 16
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/tdt_tsoil",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/range",
           "prefLabel": [
-            "tdt_tsoil"
+            "range"
           ],
-          "value": 512
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/hfp_removal",
-          "prefLabel": [
-            "hfp_removal"
-          ],
-          "value": 64
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/error_code",
-          "prefLabel": [
-            "error_code"
-          ],
-          "value": 8
+          "value": 1
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/pluvio_diag",
@@ -77,20 +91,6 @@
             "pluvio_diag"
           ],
           "value": 128
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/snowd_signal",
-          "prefLabel": [
-            "snowd_signal"
-          ],
-          "value": 256
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/range",
-          "prefLabel": [
-            "range"
-          ],
-          "value": 1
         }
       ]
     }
