@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.operations.eddypro.eddypro_run_spec import (
     EddyProColumnSpec,
@@ -13,8 +13,8 @@ from dritimeseriesprocessor.utils.strings import extract_uri_id
 class EddyProMetadataMapper:
     """Map metadata into an EddyPro run spec."""
 
-    def build_run_spec(self, config: DataProcessingConfig, site_metadata: SiteMetadata) -> EddyProRunSpec:
-        params = config.method_configs[0].params if config.method_configs else {}
+    def build_run_spec(self, config: DataProcessingMethodConfig, site_metadata: SiteMetadata) -> EddyProRunSpec:
+        params = config.params or {}
 
         site_code = site_metadata.alt_id or extract_uri_id(site_metadata.site_id)
         columns = self._map_columns(params)
@@ -37,6 +37,10 @@ class EddyProMetadataMapper:
             instruments=instruments,
         )
 
+    @staticmethod
+    def _strip_prefix(data: dict) -> dict:
+        return {(k.split(".", 1)[-1] if "." in k else k): v for k, v in data.items()}
+
     def _map_columns(self, params: dict) -> list[EddyProColumnSpec]:
         column_items = (
             params.get("column_mapping")
@@ -45,9 +49,11 @@ class EddyProMetadataMapper:
             or []
         )
 
+        stripped_items = [self._strip_prefix(item or {}) for item in column_items]
+        stripped_items.sort(key=lambda item: int(item["column_index"]))
+
         columns: list[EddyProColumnSpec] = []
-        for item in column_items:
-            item_data = item or {}
+        for item_data in stripped_items:
             columns.append(
                 EddyProColumnSpec(
                     variable=str(item_data.get("variable") or "ignore"),
@@ -72,7 +78,7 @@ class EddyProMetadataMapper:
         instruments: list[EddyProInstrumentSpec] = []
 
         for item in instrument_items:
-            item_data = item or {}
+            item_data = self._strip_prefix(item or {})
             instruments.append(
                 EddyProInstrumentSpec(fields={str(k): "" if v is None else str(v) for k, v in item_data.items()})
             )

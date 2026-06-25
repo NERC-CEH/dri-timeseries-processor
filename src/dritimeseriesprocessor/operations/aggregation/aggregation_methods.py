@@ -3,15 +3,14 @@ from datetime import datetime
 
 import polars as pl
 import time_stream as ts
-from time_stream.enums import MissingCriteria
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 class AggregationMethod(Operation, ABC):
-    operation_type = OperationType.AGGREGATION
+    operation_type = ConfigurationType.AGGREGATION
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:
@@ -34,7 +33,7 @@ class AggregationMethod(Operation, ABC):
 
         missing_criteria = None
         if config.params.get("threshold", None) is not None:
-            missing_criteria = (MissingCriteria.AVAILABLE, config.params["threshold"])  # type: ignore[assignment]
+            missing_criteria = ("available", config.params["threshold"])  # type: ignore[assignment]
 
         time_window = None
         start_time_str = config.params.get("start_time")
@@ -47,6 +46,7 @@ class AggregationMethod(Operation, ABC):
         tf_agg = tf.aggregate(
             aggregation_period=config.params["aggregation_period"],
             aggregation_function=agg_func,
+            aggregation_time_anchor=config.params["aggregation_time_anchor"],
             columns=col_name,
             missing_criteria=missing_criteria,  # type: ignore[assignment]
             time_window=time_window,
@@ -58,10 +58,16 @@ class AggregationMethod(Operation, ABC):
 
 @AggregationMethod.register
 class MeanRad(AggregationMethod):
-    # Radiation is measured as: W m-2 = Js-1 m-2
-    # Mean radiation should be output as MJ[aggregation period]-1 m-2
-    # e.g. MJday-1 m-2 = (seconds in a day/10^6)*Js-1 m-2
-    # See https://www.fao.org/4/x0490e/x0490e0i.htm for conversion
+    """A specific aggregation method for calculating mean of radiation data.
+
+    Radiation is measured as:               W m-2 = Js-1 m-2
+    Mean radiation should be output as:     MJ[aggregation period]-1 m-2
+
+    e.g. MJ day-1 m-2 = (seconds in a day/10^6) * Js-1 m-2
+
+    References:
+        https://www.fao.org/4/x0490e/x0490e0i.htm
+    """
 
     name = "mean_rad"
 

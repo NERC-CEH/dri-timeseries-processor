@@ -1,19 +1,14 @@
 import logging
-from typing import Iterable
 
 import polars as pl
 import time_stream as ts
 
-from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
-    DataProcessingMethodConfig,
-)
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.flags.flag_methods import update_infill_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import INFILL_FLAG_SYS_NAME, infill_flag_column_name
+from dritimeseriesprocessor.operations.flags.flag_names import infill_flag_column_name
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +16,8 @@ logger = logging.getLogger(__name__)
 class InfillPipeline(OperationPipeline):
     """Processor for running infilling on a TimeSeriesContainer."""
 
-    def __init__(self):
-        super().__init__(OperationType.INFILLING, INFILL_FLAG_SYS_NAME)
+    def __init__(self, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.INFILLING, flag_systems)
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given infill method to the TimeFrame data.
@@ -46,28 +41,6 @@ class InfillPipeline(OperationPipeline):
         result = method.run(tf, config)
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         return result
-
-    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
-        """Extract the infill method configurations.
-
-        Args:
-            container: Time series container to get the infill method configurations from.
-
-        Returns:
-            List of infill configurations to be applied.
-        """
-        return container.infill_configs
-
-    def sort_configs(self, configs: Iterable[DataProcessingConfig]) -> list[DataProcessingConfig]:
-        """Sort the infilling configs into the correct order based on their "priority"
-
-        Args:
-            configs: List of infill configurations to be sorted.
-
-        Returns:
-            Sorted list of infill configurations
-        """
-        return sorted(configs, key=lambda cfg: cfg.annotations.get("priority", 0))
 
     def get_flag_column(self, column: str) -> str:
         """Determine the infill flag column name for a given data column.

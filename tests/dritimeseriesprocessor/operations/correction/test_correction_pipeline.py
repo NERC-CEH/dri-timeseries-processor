@@ -5,14 +5,9 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_series_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
-    DataProcessingMethodConfig,
-)
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 @pytest.fixture
@@ -24,45 +19,10 @@ def mock_timeframe() -> MagicMock:
     return tf
 
 
-@pytest.fixture
-def mock_container() -> MagicMock:
-    """Create a mock TimeSeriesContainer with correction configs."""
-    container = MagicMock(spec=TimeSeriesContainer)
-
-    method_config = MagicMock(spec=DataProcessingMethodConfig)
-    method_config.method = "add"
-    method_config.params = {"correction_factor": 10}
-
-    proc_config = MagicMock(spec=DataProcessingConfig)
-    proc_config.method_configs = [method_config]
-    proc_config.config_type = ConfigurationType.CORRECTION
-
-    container.correction_configs = {proc_config}
-    return container
-
-
-class TestGetConfigs:
-    def test_get_correction_configs(self, mock_container: MagicMock) -> None:
-        """Test that correction configs are extracted from container."""
-        pipeline = CorrectionPipeline()
-        result = pipeline.get_configs(mock_container)
-        assert result == mock_container.correction_configs
-
-    def test_empty_correction_configs(self) -> None:
-        """Test that empty set is returned when no correction configs."""
-        pipeline = CorrectionPipeline()
-        container = MagicMock(spec=TimeSeriesContainer)
-        container.correction_configs = set()
-
-        result = pipeline.get_configs(container)
-
-        assert result == set()
-
-
 class TestGetFlagColumn:
     def test_get_correction_flag_column(self) -> None:
         """Test that correct flag column name is returned."""
-        pipeline = CorrectionPipeline()
+        pipeline = CorrectionPipeline({})
         result = pipeline.get_flag_column("temperature")
         assert result == "temperature_CORRS_FLAG"
 
@@ -80,7 +40,7 @@ class TestComputeFlagMask:
     )
     def test_mask(self, before: list, after: list, expected: list) -> None:
         """Test that mask identifies when values are changed."""
-        pipeline = CorrectionPipeline()
+        pipeline = CorrectionPipeline({})
 
         original = MagicMock(spec=ts.TimeFrame)
         original.df = pl.DataFrame({"value": before})
@@ -104,7 +64,7 @@ class TestApply:
             mock_method.run.return_value = expected_result
             mock_get.return_value = mock_method
 
-            pipeline = CorrectionPipeline()
+            pipeline = CorrectionPipeline({})
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
 
@@ -120,6 +80,6 @@ class TestCoreFlagUpdater:
             mock_method,
         )
 
-        pipeline = CorrectionPipeline()
+        pipeline = CorrectionPipeline({})
         pipeline.core_flag_updater(mock_timeframe)
         mock_method.assert_called_once_with(mock_timeframe)

@@ -21,14 +21,7 @@ class Metrics:
         """
         self.registry = CollectorRegistry()
 
-        self.time_corrections = Histogram(
-            "time_corrections_seconds", "Time spent applying corrections", registry=self.registry
-        )
         self.time_load = Histogram("time_load_seconds", "Time spent loading data", registry=self.registry)
-        self.time_qc = Histogram("time_qc_seconds", "Time spent in quality control", registry=self.registry)
-        self.time_infill = Histogram("time_infill_seconds", "Time spent infilling data", registry=self.registry)
-        self.time_aggregate = Histogram("time_aggregate_seconds", "Time spent aggregating data", registry=self.registry)
-        self.time_derive = Histogram("time_derive_seconds", "Time spent deriving data", registry=self.registry)
         self.time_write = Histogram("time_write_seconds", "Time spent writing", registry=self.registry)
         self.time_pipeline = Histogram("time_pipeline_seconds", "Time spent for full pipeline", registry=self.registry)
 

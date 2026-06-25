@@ -14,7 +14,7 @@ from pathlib import Path
 import polars as pl
 
 from dritimeseriesprocessor import PACKAGE_ROOT
-from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.eddypro.eddypro_ancillary_builder import (
@@ -153,7 +153,7 @@ class EddyProPipeline:
     def run(
         self,
         raw_data_dir: Path,
-        method_config: DataProcessingConfig,
+        method_config: DataProcessingMethodConfig,
         site_metadata: SiteMetadata,
         start_date: date,
         end_date: date,
@@ -188,13 +188,13 @@ class EddyProPipeline:
             output_dir.mkdir(parents=True, exist_ok=True)
             inputs_dir.mkdir(parents=True, exist_ok=True)
 
-            # biomet is required — propagate any failure so the run is aborted.
+            # biomet is required - propagate any failure so the run is aborted.
             biomet_path = EddyProBiometBuilder().build(
                 containers=ancillary_containers or [],
                 output_path=inputs_dir / "biomet.csv",
             )
 
-            # dynamic metadata is optional — some sites may not have time-varying instrument metadata
+            # dynamic metadata is optional - some sites may not have time-varying instrument metadata
             dynamic_metadata_path = None
             if ancillary_containers:
                 try:

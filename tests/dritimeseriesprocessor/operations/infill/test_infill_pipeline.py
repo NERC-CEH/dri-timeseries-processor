@@ -5,14 +5,9 @@ import pytest
 import time_stream as ts
 from polars.testing import assert_series_equal
 
-from dritimeseriesprocessor.models.domain_models.processing_config import (
-    DataProcessingConfig,
-    DataProcessingMethodConfig,
-)
-from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 @pytest.fixture
@@ -24,68 +19,12 @@ def mock_timeframe() -> MagicMock:
     return tf
 
 
-@pytest.fixture
-def mock_container() -> MagicMock:
-    """Create a mock TimeSeriesContainer with correction configs."""
-    container = MagicMock(spec=TimeSeriesContainer)
-
-    method_config = MagicMock(spec=DataProcessingMethodConfig)
-    method_config.method = "linear"
-    method_config.params = {}
-
-    proc_config = MagicMock(spec=DataProcessingConfig)
-    proc_config.method_configs = [method_config]
-    proc_config.config_type = ConfigurationType.INFILLING
-    proc_config.annotations = {"priority": 1}
-
-    container.infill_configs = {proc_config}
-    return container
-
-
-class TestGetConfigs:
-    def test_get_infill_configs(self, mock_container: MagicMock) -> None:
-        """Test that infill configs are extracted from container."""
-        pipeline = InfillPipeline()
-        result = pipeline.get_configs(mock_container)
-        assert result == mock_container.infill_configs
-
-    def test_empty_infill_configs(self) -> None:
-        """Test that empty set is returned when no infill configs."""
-        pipeline = InfillPipeline()
-        container = MagicMock(spec=TimeSeriesContainer)
-        container.infill_configs = set()
-
-        result = pipeline.get_configs(container)
-
-        assert result == set()
-
-
 class TestGetFlagColumn:
     def test_get_infill_flag_column(self) -> None:
         """Test that correct flag column name is returned."""
-        pipeline = InfillPipeline()
+        pipeline = InfillPipeline({})
         result = pipeline.get_flag_column("temperature")
         assert result == "temperature_INFILL_FLAG"
-
-
-class TestSortConfigs:
-    def test_sorts_configs_by_priority(self) -> None:
-        """Test that configs are sorted by priority annotation."""
-        config1 = MagicMock(spec=DataProcessingConfig)
-        config1.annotations = {"priority": 3}
-
-        config2 = MagicMock(spec=DataProcessingConfig)
-        config2.annotations = {"priority": 1}
-
-        config3 = MagicMock(spec=DataProcessingConfig)
-        config3.annotations = {"priority": 2}
-
-        configs = {config1, config2, config3}
-
-        pipeline = InfillPipeline()
-        result = pipeline.sort_configs(configs)  # type: ignore[arg-type]
-
-        assert result == [config2, config3, config1]
 
 
 class TestComputeFlagMask:
@@ -101,7 +40,7 @@ class TestComputeFlagMask:
     )
     def test_mask(self, before: list, after: list, expected: list) -> None:
         """Test that mask identifies when values are changed."""
-        pipeline = InfillPipeline()
+        pipeline = InfillPipeline({})
 
         original = MagicMock(spec=ts.TimeFrame)
         original.df = pl.DataFrame({"value": before})
@@ -125,7 +64,7 @@ class TestApply:
             mock_method.run.return_value = expected_result
             mock_get.return_value = mock_method
 
-            pipeline = InfillPipeline()
+            pipeline = InfillPipeline({})
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
 
@@ -138,6 +77,6 @@ class TestCoreFlagUpdater:
             "dritimeseriesprocessor.operations.infill.infill_pipeline.update_infill_core_flags", mock_method
         )
 
-        pipeline = InfillPipeline()
+        pipeline = InfillPipeline({})
         pipeline.core_flag_updater(mock_timeframe)
         mock_method.assert_called_once_with(mock_timeframe)

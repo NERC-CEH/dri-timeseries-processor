@@ -84,8 +84,6 @@ def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
         time_column_name="time",
         resolution="P1D",
         periodicity="P1D",
+        time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
-        qc_configs=set(),
-        infill_configs=set(),
-        correction_configs=set(),
     )

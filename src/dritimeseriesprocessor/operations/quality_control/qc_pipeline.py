@@ -9,10 +9,10 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import QC_FLAG_SYS_NAME, qc_flag_column_name
+from dritimeseriesprocessor.operations.flags.flag_names import qc_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +20,23 @@ logger = logging.getLogger(__name__)
 class QCPipeline(OperationPipeline):
     """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer."""
 
-    def __init__(self):
-        super().__init__(OperationType.QUALITY_CONTROL, QC_FLAG_SYS_NAME)
+    def __init__(self, flag_systems: dict[str, dict[str, int]]):
+        super().__init__(ConfigurationType.QUALITY_CONTROL, flag_systems)
 
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
-        """Override the parent run method, as we need to remove QC'ed data at the end of the pipeline after all
-        QC tests have run.
-        """
-        tf = super().run(*args, **kwargs)
-        return self._remove_data(tf)
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+        *,
+        remove_flagged: bool = True,
+    ) -> ts.TimeFrame:
+        """Run QC checks and, if this is the last QC block in the plan, remove data that failed."""
+        tf = super().run(container, dataset_repository, config)
+        if remove_flagged and container.has_flags():
+            logger.info("Removing data that has failed QC checks")
+            tf = self.remove_flagged_data(tf)  # type: ignore[arg-type]
+        return tf
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.
@@ -41,9 +49,10 @@ class QCPipeline(OperationPipeline):
         Returns:
             Result of applying the QC method.
         """
-        tf_qc = tf
         if "dep_ts" in config.params:
             tf_qc = dataset_repository[config.params["dep_ts"]].data
+        else:
+            tf_qc = tf.copy(share_df=False)
 
         method = QcMethod.get(config.method)
         result = method.run(tf_qc, config)
@@ -55,17 +64,6 @@ class QCPipeline(OperationPipeline):
         result = result.with_df(result.df.drop(self.get_qc_result_column(tf.metadata["column_name"])))
 
         return result
-
-    def get_configs(self, container: TimeSeriesContainer) -> set[DataProcessingConfig]:
-        """Extract the QC method configurations.
-
-        Args:
-            container: Time series container to get the QC method configurations from.
-
-        Returns:
-            List of QC configurations to be applied.
-        """
-        return container.qc_configs
 
     def get_flag_column(self, column: str) -> str:
         """Determine the QC flag column name for a given data column.
@@ -116,20 +114,17 @@ class QCPipeline(OperationPipeline):
         """
         return f"__qc_result_{column}"
 
-    def _remove_data(self, tf: ts.TimeFrame) -> ts.TimeFrame:
-        """Remove data that has failed the qc check
+    @staticmethod
+    def remove_flagged_data(tf: ts.TimeFrame) -> ts.TimeFrame:
+        """Remove data that has failed any QC check.
 
         Args:
             tf: TimeFrame to remove bad data from.
 
         Returns:
-            TimeFrame with bad data removed.
+            TimeFrame with flagged data removed.
         """
-        df_qc = tf.df.with_columns(
-            pl.when(pl.col(self.get_flag_column(tf.metadata["column_name"])) > 0)
-            .then(None)
-            .otherwise(pl.col(tf.metadata["column_name"]))
-            .alias(tf.metadata["column_name"])
-        )
-
+        col_name = tf.metadata["column_name"]
+        flag_col = qc_flag_column_name(col_name)
+        df_qc = tf.df.with_columns(pl.when(pl.col(flag_col) > 0).then(None).otherwise(pl.col(col_name)).alias(col_name))
         return tf.with_df(df_qc)

@@ -1,13 +1,15 @@
-"""Module for reading parquet data"""
+"""Module for reading data from storage."""
 
 import logging
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import duckdb
 import polars as pl
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from dritimeseriesprocessor.io_backend.duckdb_connection import DuckDBConnectionFactory
+from dritimeseriesprocessor.storage.storage_client import StorageClient
 
 logger = logging.getLogger(__name__)
 
@@ -76,3 +78,41 @@ class DuckDBParquetReader(ParquetReaderInterface):
 
         finally:
             conn.close()
+
+
+class RawFileReader:
+    """Downloads raw files from storage to a local directory.
+
+    A thin counterpart to `DuckDBParquetReader`: it executes a prepared download
+    (a bucket and prefix) just as the parquet reader executes a prepared query.
+    Building prefixes from dataset metadata and managing the destination directory
+    are the router's responsibility.
+    """
+
+    def __init__(self, storage: StorageClient) -> None:
+        self._storage = storage
+
+    def download(self, bucket: str, prefix: str, local_dir: Path) -> list[Path]:
+        """Download every object under `prefix` in `bucket` into `local_dir`.
+
+        Args:
+            bucket: Storage bucket to read from.
+            prefix: Key prefix identifying the objects to download.
+            local_dir: Local directory to download the objects into.
+
+        Returns:
+            The local paths of the downloaded files.
+        """
+        keys = self._storage.list_keys_with_prefix(bucket, prefix)
+        if not keys:
+            logger.warning("No raw files found under s3://%s/%s", bucket, prefix)
+            return []
+
+        downloaded: list[Path] = []
+        for key in keys:
+            local_path = local_dir / key.rsplit("/", 1)[-1]
+            self._storage.download_file(bucket, key, local_path)
+            downloaded.append(local_path)
+            logger.debug("Downloaded: %s -> %s", key, local_path)
+
+        return downloaded

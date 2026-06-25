@@ -19,19 +19,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://dri-metadata-api-dev.staging.eds.ceh.ac.uk"
+BASE_URL = "https://dri-metadata-api.staging.dri.ceh.ac.uk"
 MAPPING = {
     "data_processing_configuration": {
-        "cosmos_bunny_lwin_30min_raw_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_raw",
-        "cosmos_bunny_swin_30min_raw_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction-configuration&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-        "cosmos_bunny_swin_30min_raw_infill.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill-configuration&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-        "cosmos_bunny_swin_30min_raw_qc.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
+        "cosmos_bunny_lwin_30min_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_30min_processed",
+        "cosmos_bunny_swin_30min_correction.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/correction&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+        "cosmos_bunny_swin_30min_infill.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/infill&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+        "cosmos_bunny_swin_30min_qc.json": f"{BASE_URL}/id/data-processing-configuration?type=http://fdri.ceh.ac.uk/ref/common/configuration-type/qc&appliesToDataset=http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
     },
     "dataset_timeseries": {
-        "cosmos_bunny_precip_30min_raw.json": f"{BASE_URL}/id/dataset/cosmos-bunny-precip_30min_raw.json?_view=timeseries",
+        "cosmos_bunny_precip_30min_processed.json": f"{BASE_URL}/id/dataset/cosmos-bunny-precip_30min_processed.json?_view=timeseries",
         "cosmos_bunny_rn_1day_processed.json": f"{BASE_URL}/id/dataset/cosmos-bunny-rn_1day_processed.json?_view=timeseries",
         "cosmos_bunny_swin_30min_processed.json": f"{BASE_URL}/id/dataset/cosmos-bunny-swin_30min_processed.json?_view=timeseries",
         "cosmos_bunny_ta_30min_raw.json": f"{BASE_URL}/id/dataset/cosmos-bunny-ta_30min_raw.json?_view=timeseries",
+    },
+    "dataset_observation": {
+        "flux_plynl_processed.json": f"{BASE_URL}/id/dataset/flux-plynl-processed.json?_view=timeseries",
+        "flux_plynl_raw.json": f"{BASE_URL}/id/dataset/flux-plynl-raw.json?_view=timeseries",
     },
     "network": {
         "cosmos.json": f"{BASE_URL}/id/network/cosmos.json",
@@ -44,9 +48,8 @@ MAPPING = {
         "nrfa_40018.json": f"{BASE_URL}/id/site/nrfa-40018.json",
     },
     "deployment": {
-        "cosmos-bunny-aws_anem.json": f"{BASE_URL}/id/deployment/cosmos-bunny-aws_anem-aws_anem-140810-2.json",
+        "cosmos-bunny-aws_anem.json": f"{BASE_URL}/id/deployment/cosmos-bunny-aws_anem-wind_anem-140404-3.json",
         "cosmos-elmst-tdt8-tdt.json": f"{BASE_URL}/id/deployment/cosmos-elmst-tdt8-tdt-6503264-1.json",
-        "fdri-se-carwe-01-ws-801.json": f"{BASE_URL}/id/deployment/fdri-se-carwe-01-ws-801.json",
     },
 }
 

@@ -12,7 +12,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
     check_common_attributes,
     group_containers,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
 from utils.data_creation import make_time_series_container
 
 
@@ -21,39 +21,22 @@ def make_daily_df(n_rows: int = 3, col_name: str = "value") -> pl.DataFrame:
     return pl.DataFrame({"time": dates, col_name: list(range(n_rows))})
 
 
-class TestIsObservationDataset:
-    def test_true_when_observation_dataset(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
-        assert c.is_observation_dataset is True
-
-    def test_false_when_timeseries_dataset(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = "TimeSeriesDataset"
-        assert c.is_observation_dataset is False
-
-    def test_false_when_none(self) -> None:
-        c = make_time_series_container("a")
-        assert c.dataset_type is None
-        assert c.is_observation_dataset is False
-
-
 class TestS3Bucket:
     def test_parses_bucket_from_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = "s3://my-bucket/some/path/"
         assert c.s3_bucket == "my-bucket"
 
     def test_falls_back_to_source_bucket_for_timeseries(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "TimeSeriesDataset"
+        c.dataset_type = DatasetType.TIMESERIES_DATASET
         c.distribution_url = "s3://ignored-bucket/path/"
         assert c.s3_bucket == c.source_bucket
 
     def test_falls_back_to_source_bucket_when_no_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = None
         assert c.s3_bucket == c.source_bucket
 
@@ -61,25 +44,25 @@ class TestS3Bucket:
 class TestS3DatasetPath:
     def test_parses_path_from_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = "s3://my-bucket/Flux/"
         assert c.s3_dataset_path == "Flux"
 
     def test_strips_trailing_slash(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = "s3://my-bucket/deep/nested/path/"
         assert c.s3_dataset_path == "deep/nested/path"
 
     def test_falls_back_to_source_dataset_for_timeseries(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "TimeSeriesDataset"
+        c.dataset_type = DatasetType.TIMESERIES_DATASET
         c.distribution_url = "s3://ignored/path/"
         assert c.s3_dataset_path == c.source_dataset
 
     def test_falls_back_to_source_dataset_when_no_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = "ObservationDataset"
+        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = None
         assert c.s3_dataset_path == c.source_dataset
 
@@ -225,28 +208,62 @@ class TestLoadOnly:
     def test_load_only_dependencies_returns_empty_when_no_load_dep_ts(self) -> None:
         """Test that load_only_dependencies returns an empty list when no configs have load_dep_ts."""
         container = make_time_series_container("a")
-        container.qc_configs = {_make_config("a", dep_ts=["b"])}
+        container.attach_configs([_make_config("a", dep_ts=["b"])])
         assert container.load_only_dependencies() == []
 
     def test_load_only_dependencies_returns_load_dep_ts_ids(self) -> None:
         """Test that load_only_dependencies returns the load_dep_ts ids from configs."""
         container = make_time_series_container("a")
-        container.qc_configs = {_make_config("a", load_dep_ts=["L"])}
+        container.attach_configs([_make_config("a", load_dep_ts=["L"])])
         assert container.load_only_dependencies() == ["L"]
 
     def test_load_only_dependencies_aggregates_across_configs(self) -> None:
-        """Test that load_only_dependencies deduplicates and aggregates ids across all config types."""
+        """Test that load_only_dependencies deduplicates and aggregates ids across all attached configs."""
         container = make_time_series_container("a")
-        container.qc_configs = {_make_config("a", config_id="qc", load_dep_ts=["L1"])}
-        container.correction_configs = {_make_config("a", config_id="corr", dep_ts=["b"])}
-        container.infill_configs = {_make_config("a", config_id="inf", load_dep_ts=["L2"])}
-        container.method_config = _make_config(
-            "a", config_id="method", load_dep_ts=["L1", "L3"], config_type=ConfigurationType.DERIVATION
+        container.attach_configs(
+            [
+                _make_config("a", config_id="qc", load_dep_ts=["L1"]),
+                _make_config("a", config_id="corr", dep_ts=["b"]),
+                _make_config("a", config_id="inf", load_dep_ts=["L2"]),
+                _make_config(
+                    "a", config_id="method", load_dep_ts=["L1", "L3"], config_type=ConfigurationType.DERIVATION
+                ),
+            ]
         )
         assert container.load_only_dependencies() == ["L1", "L2", "L3"]
 
-    def test_method_type_is_load_when_load_only_true(self) -> None:
-        """Test that method_type returns MethodType.LOAD when load_only is True."""
+    def test_is_load_true_when_no_configs_attached(self) -> None:
+        """Test that is_load returns True when no data processing configs are attached."""
         container = make_time_series_container("a")
-        container.load_only = True
-        assert container.method_type() == MethodType.LOAD
+        assert container.is_load() is True
+
+    def test_is_load_false_when_configs_attached(self) -> None:
+        """Test that is_load returns False once a data processing config is attached."""
+        container = make_time_series_container("a")
+        container.attach_configs([_make_config("a")])
+        assert container.is_load() is False
+
+
+class TestAttachConfigs:
+    def test_stores_configs_by_config_id(self) -> None:
+        """Tests that attach_configs indexes each config under its config_id."""
+        container = make_time_series_container("a")
+        cfg = _make_config("a", config_id="qc-1")
+        container.attach_configs([cfg])
+        assert container.data_processing_configs["qc-1"] is cfg
+
+    def test_appends_to_existing_configs(self) -> None:
+        """Tests that attaching a second config adds to the dict rather than replacing it."""
+        container = make_time_series_container("a")
+        cfg1 = _make_config("a", config_id="qc-1")
+        cfg2 = _make_config("a", config_id="corr-1", config_type=ConfigurationType.CORRECTION)
+        container.attach_configs([cfg1])
+        container.attach_configs([cfg2])
+        assert "qc-1" in container.data_processing_configs
+        assert "corr-1" in container.data_processing_configs
+
+    def test_plan_order_is_independent_of_attach_configs(self) -> None:
+        """Tests that plan_order is not set by attach_configs - it must be set separately."""
+        container = make_time_series_container("a")
+        container.attach_configs([_make_config("a", config_id="qc-1")])
+        assert container.plan_order == []

@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Iterator
 from unittest.mock import MagicMock
 
@@ -9,8 +10,8 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.configuration.app_config import app_config
 from dritimeseriesprocessor.io_backend.duckdb_connection import DuckDBConnectionFactory, create_duckdb_factory
-from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader
-from dritimeseriesprocessor.storage.storage_client import S3StorageClient
+from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader, RawFileReader
+from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
 from utils.s3_test_helpers import create_hourly_test_data
 from utils.validation_helpers import assert_unique_dates_in_dataframe
 
@@ -99,6 +100,49 @@ class TestDuckDBParquetReader:
         stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 1
         assert stats["idle_for"] == 0
+
+
+class TestRawFileReader:
+    def test_returns_empty_list_when_no_keys(self, tmp_path: Path) -> None:
+        """Tests that an empty list is returned and no downloads are attempted when no keys are found."""
+        storage = MagicMock(spec=StorageClient)
+        storage.list_keys_with_prefix.return_value = []
+        reader = RawFileReader(storage)
+
+        result = reader.download("my-bucket", "some/prefix/", tmp_path)
+
+        assert result == []
+        storage.download_file.assert_not_called()
+
+    def test_downloads_each_key_and_returns_local_paths(self, tmp_path: Path) -> None:
+        """Tests that each key is downloaded and the returned paths match the local filenames."""
+        storage = MagicMock(spec=StorageClient)
+        storage.list_keys_with_prefix.return_value = [
+            "some/prefix/date=2024-01-01/file_a.dat",
+            "some/prefix/date=2024-01-01/file_b.dat",
+        ]
+        reader = RawFileReader(storage)
+
+        result = reader.download("my-bucket", "some/prefix/", tmp_path)
+
+        assert result == [tmp_path / "file_a.dat", tmp_path / "file_b.dat"]
+        assert storage.download_file.call_count == 2
+        storage.download_file.assert_any_call(
+            "my-bucket", "some/prefix/date=2024-01-01/file_a.dat", tmp_path / "file_a.dat"
+        )
+        storage.download_file.assert_any_call(
+            "my-bucket", "some/prefix/date=2024-01-01/file_b.dat", tmp_path / "file_b.dat"
+        )
+
+    def test_strips_key_prefix_to_get_filename(self, tmp_path: Path) -> None:
+        """Tests that only the final path segment of each key is used as the local filename."""
+        storage = MagicMock(spec=StorageClient)
+        storage.list_keys_with_prefix.return_value = ["deep/nested/path/TOA5_25623.dat"]
+        reader = RawFileReader(storage)
+
+        result = reader.download("my-bucket", "deep/nested/path/", tmp_path)
+
+        assert result == [tmp_path / "TOA5_25623.dat"]
 
 
 BUCKET_NAME = "ukceh-dri-staging-ingested"

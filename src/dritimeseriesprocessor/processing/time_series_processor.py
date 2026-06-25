@@ -7,15 +7,12 @@ dataset's method type.
 """
 
 import logging
-import tempfile
 from collections.abc import Iterator
 from datetime import datetime
-from pathlib import Path
 
 import polars as pl
 
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
-from dritimeseriesprocessor.io_backend.flux_io import FluxS3Client
 from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
@@ -26,13 +23,16 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
-from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPipeline
-from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
-from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags
+from dritimeseriesprocessor.operations.flags.flag_methods import add_initial_core_flags, initialise_flag_systems
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
+from dritimeseriesprocessor.operations.load.load_pipeline import LoadPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
-from dritimeseriesprocessor.utils.enums import MethodType, OperationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import (
+    ConfigurationType,
+    DatasetType,
+    ProcessingLevel,
+)
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
@@ -40,15 +40,6 @@ from dritimeseriesprocessor.utils.timer import log_duration
 from dritimeseriesprocessor.utils.urls import SITE_URI
 
 logger = logging.getLogger(__name__)
-
-
-OPERATION_PIPELINES = {
-    OperationType.CORRECTION: CorrectionPipeline(),
-    OperationType.QUALITY_CONTROL: QCPipeline(),
-    OperationType.INFILLING: InfillPipeline(),
-    OperationType.AGGREGATION: AggregationPipeline(),
-    OperationType.DERIVATION: DerivationPipeline(),
-}
 
 
 class TimeSeriesProcessor:
@@ -65,18 +56,16 @@ class TimeSeriesProcessor:
         start_date: datetime,
         end_date: datetime,
         metrics: Metrics,
-        flux_s3_client: FluxS3Client | None = None,
     ):
         """Initialise the processor.
 
         Args:
             graph: Dependency graph containing dataset relationships and repository of dataset containers.
-            data_router: Router for retrieving raw data from storage.
+            data_router: Router for retrieving data from storage.
             data_writer: Handles writing data to parquet files.
             start_date: Start of the date range to process (inclusive).
             end_date: End of the date range to process (inclusive).
             metrics: Metrics reporter.
-            flux_s3_client: S3 client for raw .dat file download.
         """
         self.graph = graph
         self.data_router = data_router
@@ -84,10 +73,6 @@ class TimeSeriesProcessor:
         self.start_date = start_date
         self.end_date = end_date
         self.metrics = metrics
-        self.flux_s3_client = flux_s3_client
-
-        # Staged raw input for EddyPro dependencies.
-        self._raw_dirs: dict[str, tempfile.TemporaryDirectory] = {}
 
     def run(self) -> None:
         """Execute the processing pipeline by iterating through the dependency graph.
@@ -98,10 +83,8 @@ class TimeSeriesProcessor:
                 if not self.graph.datasets:
                     logger.error("No datasets found in dependency graph.")
                 else:
-                    # Collect all the "LOAD" datasets (can remove from the graph as we will have done their processing)
-                    load_containers = [c for c in self.graph.datasets.values() if c.method_type() == MethodType.LOAD]
-                    logger.info(f"Collecting and loading [{len(load_containers)}] datasets.")
-                    self._batch_load_raw(*load_containers)
+                    # Load data for all 'load' containers
+                    self._batch_load()
 
                     layers = self.graph.layered_topo_sort()
                     logger.info("Processing pipeline started.")
@@ -116,12 +99,7 @@ class TimeSeriesProcessor:
             logger.info("Processing pipeline finished. Pushing prometheus metrics.")
             self.metrics.export_metrics_to_pushgateway()
         finally:
-            for tmp in self._raw_dirs.values():
-                try:
-                    tmp.cleanup()
-                except Exception:
-                    logger.exception("Failed to clean up temporary directory.")
-            self._raw_dirs.clear()
+            self.data_router.cleanup()
 
     def process_layer(self, layer: list[str]) -> None:
         """Process an individual layer of the dependency graph.
@@ -148,46 +126,96 @@ class TimeSeriesProcessor:
         Args:
             dataset_id: The dataset to process.
         """
-
         container = self.graph.datasets[dataset_id]
+        if container.is_load():
+            # A "load" container has no processing configs - it is a raw dataset whose data was already
+            # fetched up-front by _batch_load(), so there is nothing to process here.
+            # This is different from the ConfigurationType.LOAD step below, which runs an explicit method as part of
+            # a container that *does* have a processing plan and processing configs. This runs methods in the
+            # LoadPipeline that do things like stage local copies, or moves data from one container to another.
+            return
+
+        logger.info(f"Processing dataset: {dataset_id}")
+
         for dep_id in container.all_dependencies():
             if self.graph.datasets[dep_id].failed:
                 container.failed = True
                 logger.error(f"Skipping {dataset_id} - dependency {dep_id} failed")
                 return
 
-        match container.method_type():
-            case MethodType.LOAD:
-                # Already handled by the initial batch loading
-                pass
+        for idx, plan_id in enumerate(container.plan_order):
+            config = container.data_processing_configs[plan_id]
 
-            case MethodType.LOAD_LOCAL_COPY:
-                self._load_local_copy(container)
+            match config.config_type:
+                case ConfigurationType.LOAD:
+                    container = LoadPipeline(self.data_router, self.start_date, self.end_date).run(
+                        container, self.graph.datasets, config
+                    )
+                    # LOAD brings in raw data: we need to register any flag systems, create the flag columns the
+                    # dataset declares, and set every row's core flag as "unchecked"
+                    initialise_flag_systems(container, self.graph.flagging_systems)
+                    add_initial_core_flags(container)
 
-            case MethodType.PROCESS:
-                self._process(container)
+                case ConfigurationType.CORRECTION:
+                    container.data = CorrectionPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
-            case MethodType.AGGREGATION:
-                self._aggregate(container)
+                case ConfigurationType.QUALITY_CONTROL:
+                    # Only remove flagged data after the last QC block - sequential QC blocks must
+                    # accumulate flags across all their checks before any data is nulled out.
+                    is_final_qc = self._get_next_step_type(container, idx) != ConfigurationType.QUALITY_CONTROL
+                    container.data = QCPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config, remove_flagged=is_final_qc
+                    )
 
-            case MethodType.DERIVATION:
-                self._derive(container)
+                case ConfigurationType.INFILLING:
+                    container.data = InfillPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
 
-            case MethodType.EDDYPRO:
-                self._run_eddypro(container)
+                case ConfigurationType.AGGREGATION:
+                    container.data = AggregationPipeline(self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
+
+                case ConfigurationType.DERIVATION:
+                    site_metadata = self.graph.site_metadata[f"{SITE_URI}/{container.source_site}"]
+                    for cfg in config.method_configs:
+                        cfg.params["processing_start_date"] = self.start_date.date()
+                        cfg.params["processing_end_date"] = self.end_date.date()
+                        cfg.params["data_router"] = self.data_router
+                    container.data = DerivationPipeline(site_metadata, self.graph.flagging_systems).run(
+                        container, self.graph.datasets, config
+                    )
+
+    @staticmethod
+    def _get_next_step_type(container: TimeSeriesContainer, current_idx: int) -> ConfigurationType | None:
+        """Return the config type of the next step in the plan, or None if there is no next step.
+
+        Args:
+            container: The container whose plan is being iterated.
+            current_idx: Index of the current step in `container.plan_order`.
+
+        Returns:
+            The `ConfigurationType` of the next step, or None if the current step is the last.
+        """
+        next_idx = current_idx + 1
+        if next_idx >= len(container.plan_order):
+            return None
+        return container.data_processing_configs[container.plan_order[next_idx]].config_type
 
     @log_duration("Loading datasets time taken: ", footer=True)
-    def _batch_load_raw(self, *containers: TimeSeriesContainer) -> None:
-        """Load raw time-series data for multiple datasets in grouped batches.
+    def _batch_load(self) -> None:
+        """Load time-series data for multiple datasets in grouped batches.
 
         Containers are grouped by network, site, resolution, and source dataset so that a single query
         can retrieve all columns for each group in one read. Each container's data is then extracted from
         the combined result and initialised into a TimeFrame.
-
-        Args:
-           containers: List of the containers to load.
         """
-        common_keys = ["network", "source_site_identifier", "resolution", "source_dataset"]
+        containers = [c for c in self.graph.datasets.values() if c.is_load()]
+        logger.info(f"Collecting and loading [{len(containers)}] datasets.")
+        common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
         groupings = group_containers(containers, common_keys)
 
         with self.metrics.time_load.time():
@@ -215,170 +243,12 @@ class TimeSeriesProcessor:
 
                         if container.data is None:
                             raise ValueError(f"No data returned for dataset: {container.ts_id}")
-                        else:
-                            container.data = add_initial_core_flags(container.data)
 
                     except Exception:
                         self.metrics.no_data.inc()
                         container.failed = True
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
-
-    def _load_local_copy(self, container: TimeSeriesContainer) -> None:
-        """Download raw .dat files from S3 into a temp directory for a downstream EddyPro run.
-
-        Args:
-            container: Raw flux dataset whose files should be staged locally.
-        """
-        logger.info(f"{MethodType.LOAD_LOCAL_COPY}: {container.ts_id}")
-        start_date = self.start_date.date()
-        end_date = self.end_date.date()
-        tmp = tempfile.TemporaryDirectory(prefix=f"eddypro_raw_{container.source_site_identifier}_")
-        self._raw_dirs[container.ts_id] = tmp
-
-        self.flux_s3_client.download_raw_dat_files(  # type: ignore[union-attr]
-            bucket=container.s3_bucket,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            site=container.source_site,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            dataset=container.s3_dataset_path,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            network=container.network,  # type: ignore[arg-type] - always set for LOAD_LOCAL_COPY containers
-            start_date=start_date,
-            end_date=end_date,
-            local_dir=Path(tmp.name),
-        )
-
-    def _process(self, container: TimeSeriesContainer) -> None:
-        """Process a single dataset according to the data processing configurations attached via metadata.
-
-        This runs the operations of: Corrections, Quality Control and Infilling (in that order) to the given dataset.
-        Each operation type has a pipeline class responsible for the specifics of how that method is carried out.
-        For `ObservationDataset` dependencies (e.g. the EddyPro intermediate bundle), the target column is
-        extracted before the pipelines run.
-
-        Args:
-            container: Time series container of metadata and data for the dataset to process.
-        """
-        logger.info(f"{MethodType.PROCESS}: {container.ts_id}")
-
-        dep_container = self._get_single_dependency(container)
-
-        if dep_container.is_observation_dataset:
-            # Wide bundle dep (e.g. EddyPro intermediate): extract the target column
-            # from the bundle, initialise container, then run pipelines on container.
-            df = dep_container.data.df.select([dep_container.time_column_name, container.source_column])  # type: ignore[union-attr]
-            container.init_timeframe(df)
-            container.data = add_initial_core_flags(container.data)  # type: ignore[arg-type]
-
-            with self.metrics.time_corrections.time():
-                container.data = OPERATION_PIPELINES[OperationType.CORRECTION].run(container, self.graph.datasets)
-
-            with self.metrics.time_qc.time():
-                container.data = OPERATION_PIPELINES[OperationType.QUALITY_CONTROL].run(container, self.graph.datasets)
-
-            with self.metrics.time_infill.time():
-                container.data = OPERATION_PIPELINES[OperationType.INFILLING].run(container, self.graph.datasets)
-
-        else:
-            # Standard FDRI pattern: QC/correction/infill configs are on the raw dep.
-            # Run pipelines on dep (which has the configs), then copy to container.
-            with self.metrics.time_corrections.time():
-                pipeline = OPERATION_PIPELINES[OperationType.CORRECTION]
-                dep_container.data = pipeline.run(dep_container, self.graph.datasets)
-
-            with self.metrics.time_qc.time():
-                pipeline = OPERATION_PIPELINES[OperationType.QUALITY_CONTROL]
-                dep_container.data = pipeline.run(dep_container, self.graph.datasets)
-
-            with self.metrics.time_infill.time():
-                pipeline = OPERATION_PIPELINES[OperationType.INFILLING]
-                dep_container.data = pipeline.run(dep_container, self.graph.datasets)
-
-            # shift the data into the primary container
-            container.data = dep_container.data
-
-    def _aggregate(self, container: TimeSeriesContainer) -> None:
-        """Run aggregation to create a single dataset according to the method configurations attached via metadata.
-
-        Args:
-            container: Time series container of metadata and data for dataset to create via aggregation.
-        """
-        logger.info(f"{MethodType.AGGREGATION}: {container.ts_id}")
-
-        with self.metrics.time_aggregate.time():
-            pipeline = OPERATION_PIPELINES[OperationType.AGGREGATION]
-            container.data = pipeline.run(container, self.graph.datasets)
-
-    def _derive(self, container: TimeSeriesContainer) -> None:
-        """Run derivation to create a single dataset according to the method configurations attached via metadata.
-
-        Args:
-            container: Time series container of metadata and data for dataset to create via derivation.
-        """
-        logger.info(f"{MethodType.DERIVATION}: {container.ts_id}")
-
-        with self.metrics.time_derive.time():
-            pipeline = OPERATION_PIPELINES[OperationType.DERIVATION]
-            container.data = pipeline.run(container, self.graph.datasets)
-
-    def _run_eddypro(self, container: TimeSeriesContainer) -> None:
-        """Run EddyPro for a flux site using the raw files staged by `_load_local_copy`.
-
-        Args:
-            container: Processed flux dataset whose method_type is EDDYPRO.
-        """
-        logger.info(f"{MethodType.EDDYPRO}: {container.ts_id}")
-
-        dep_ids = [dep_id for dep_id in container.all_dependencies() if dep_id in self.graph.datasets]
-        raw_candidates = [
-            self.graph.datasets[dep_id]
-            for dep_id in dep_ids
-            if self.graph.datasets[dep_id].method_type() == MethodType.LOAD_LOCAL_COPY
-        ]
-        if len(raw_candidates) != 1:
-            raise ValueError(
-                "Expected exactly one LOAD_LOCAL_COPY dependency for EddyPro staging. "
-                f"Found {len(raw_candidates)} among dependencies: {dep_ids}"
-            )
-        raw_container = raw_candidates[0]
-
-        # The LOAD_LOCAL_COPY dataset supplies the staged raw .dat files; every
-        # other resolved dependency is treated as ancillary EddyPro input.
-        ancillary_containers = [self.graph.datasets[ds_id] for ds_id in dep_ids if ds_id != raw_container.ts_id]
-        site_meta = self.graph.site_metadata.get(f"{SITE_URI}/{container.source_site}")
-        start_date = self.start_date.date()
-        end_date = self.end_date.date()
-
-        df = EddyProPipeline(runner=EddyProRunner()).run(
-            raw_data_dir=Path(self._raw_dirs[raw_container.ts_id].name),
-            method_config=container.method_config,  # type: ignore[arg-type] - always set for EDDYPRO containers
-            site_metadata=site_meta,  # type: ignore[arg-type] - always set for EDDYPRO containers
-            start_date=start_date,
-            end_date=end_date,
-            ancillary_containers=ancillary_containers,
-        )
-
-        container.time_column_name = "time"
-        container.init_timeframe(df)
-
-    def _get_single_dependency(self, container: TimeSeriesContainer) -> TimeSeriesContainer:
-        """Get the dependent time series container of the given container where it is assumed that there is only
-        a single dependency.
-
-        Uses `method_config._values_for_params("dep_ts")` rather than `container.all_dependencies()` so that QC
-        ancillary datasets (flux flags for EddyPro) are not counted as primary data-source dependencies.
-
-        Args:
-            container: Time series container for the dataset to fetch single dependency
-
-        Returns:
-            Dependent time series container.
-        """
-        dependencies = container.method_config._values_for_params("dep_ts")  # type: ignore[union-attr]
-        num_dependents = len(dependencies)
-        if num_dependents != 1:
-            raise ValueError(f"Expected a single dependent dataset. Found: {num_dependents}")
-
-        dep_id = dependencies[0]
-        return self.graph.datasets[dep_id]
 
     @log_duration("Saving datasets time taken: ", footer=True)
     def _save_datasets(self) -> None:
@@ -417,7 +287,7 @@ class TimeSeriesProcessor:
             and not c.failed
             and c.data is not None
             and not c.load_only
-            and not c.is_observation_dataset
+            and c.dataset_type != DatasetType.OBSERVATION_DATASET
         )
         if not processed:
             logger.warning("No datasets available to be saved.")
@@ -425,7 +295,7 @@ class TimeSeriesProcessor:
 
         groupings = group_containers(processed, common_keys)
 
-        for dataset_group, containers in groupings.items():
+        for _, containers in groupings.items():
             # Double check all containers have the same properties
             network, site_id, resolution, bucket = check_common_attributes(containers, common_keys)
 

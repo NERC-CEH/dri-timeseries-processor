@@ -24,7 +24,7 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
     map_processing_method_config,
     map_site_metadata,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
 
 
 class TestMapDatasetItem:
@@ -36,12 +36,12 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
+        result = map_dataset_item(api_model.items[0], site_metadata, {})  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
             network="cosmos",
-            source_bucket="ukceh-fdri-staging-timeseries-processed",
+            source_bucket="ukceh-dri-staging-processed",
             source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
             source_site="cosmos-bunny",
@@ -49,12 +49,11 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="P1D",
             periodicity="P1D",
+            time_anchor="start",
             processing_level=ProcessingLevel.PROCESSED,
-            dataset_type="TimeSeriesDataset",
-            correction_configs=set(),
-            qc_configs=set(),
-            infill_configs=set(),
-            method_config=None,
+            dataset_type=DatasetType.TIMESERIES_DATASET,
+            distribution_url="s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=BUNNY/",
+            plan_order=["http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-rn_1day-mean_rad"],
             data=None,
         )
 
@@ -68,12 +67,12 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata)  # type: ignore[arg-type]
+        result = map_dataset_item(api_model.items[0], site_metadata, {})  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
             network="cosmos",
-            source_bucket="ukceh-fdri-staging-timeseries-level-0",
+            source_bucket="ukceh-dri-staging-ingested",
             source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
             source_site="cosmos-bunny",
@@ -81,12 +80,10 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="PT30M",
             periodicity="PT30M",
+            time_anchor="end",
             processing_level=ProcessingLevel.RAW,
-            dataset_type="TimeSeriesDataset",
-            correction_configs=set(),
-            qc_configs=set(),
-            infill_configs=set(),
-            method_config=None,
+            dataset_type=DatasetType.TIMESERIES_DATASET,
+            distribution_url="s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=BUNNY/",
             data=None,
         )
 
@@ -105,9 +102,10 @@ class TestMapDatasetItem:
                         "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
                         "aggregation": {
                             "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
-                            "periodicity": "PT30M",
-                            "resolution": "PT30M",
                         },
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                        "valueTimeAnchor": {"@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/inst"},
                     }
                 ],
                 "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
@@ -118,7 +116,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
+        result = map_dataset_item(item, all_site_metadata, {})  # type: ignore[arg-type]
 
         assert result.source_bucket is None
         assert result.source_dataset is None
@@ -138,15 +136,16 @@ class TestMapDatasetItem:
                         "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
                         "aggregation": {
                             "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
-                            "periodicity": "PT30M",
-                            "resolution": "PT30M",
                         },
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                        "valueTimeAnchor": {"@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/inst"},
                     }
                 ],
                 "distribution": [
                     {
                         "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-raw",
-                        "accessUrl": ["s3://ukceh-fdri-staging-timeseries-level-0/Flux/"],
+                        "accessUrl": ["s3://ukceh-dri-staging-ingested/Flux/"],
                     }
                 ],
                 "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
@@ -157,21 +156,20 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, all_site_metadata)  # type: ignore[arg-type]
+        result = map_dataset_item(item, all_site_metadata, {})  # type: ignore[arg-type]
 
-        assert result.dataset_type == "ObservationDataset"
-        assert result.distribution_url == "s3://ukceh-fdri-staging-timeseries-level-0/Flux/"
-        assert result.is_observation_dataset is True
-        assert result.s3_bucket == "ukceh-fdri-staging-timeseries-level-0"
+        assert result.dataset_type == DatasetType.OBSERVATION_DATASET
+        assert result.distribution_url == "s3://ukceh-dri-staging-ingested/Flux/"
+        assert result.s3_bucket == "ukceh-dri-staging-ingested"
         assert result.s3_dataset_path == "Flux"
 
     def test_all_dependencies(self) -> None:
-        """Test that the all_dependencies method returns valid list, when there are no qc/correction/infill configs"""
+        """Test that the all_dependencies method returns a valid list from a single attached config."""
 
-        method_config = DataProcessingConfig(
+        config = DataProcessingConfig(
             ts_id="test_id",
             config_id="cfg",
-            config_type=ConfigurationType.PROCESS,
+            config_type=ConfigurationType.DERIVATION,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
             annotations={},
         )
@@ -187,18 +185,19 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="PT30M",
             periodicity="PT30M",
+            time_anchor="end",
             processing_level=ProcessingLevel.RAW,
-            method_config=method_config,
         )
+        item.attach_configs([config])
         assert item.all_dependencies() == ["dep1", "dep2", "dep3"]
 
     def test_all_dependencies_with_configs(self) -> None:
-        """Test that the all_dependencies method returns valid list, when there are a qc/correction/infill configs"""
+        """Test that all_dependencies aggregates and deduplicates dep_ts across multiple attached configs."""
 
         method_config = DataProcessingConfig(
             ts_id="test_id",
             config_id="method_cfg",
-            config_type=ConfigurationType.PROCESS,
+            config_type=ConfigurationType.DERIVATION,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
             annotations={},
         )
@@ -235,12 +234,10 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="PT30M",
             periodicity="PT30M",
+            time_anchor="end",
             processing_level=ProcessingLevel.RAW,
-            correction_configs={correction_config},
-            qc_configs={qc_config},
-            infill_configs={infill_config},
-            method_config=method_config,
         )
+        item.attach_configs([method_config, qc_config, correction_config, infill_config])
         assert item.all_dependencies() == ["dep1", "dep2", "dep3", "dep4", "dep5"]
 
 
@@ -534,14 +531,14 @@ class TestExtractAnnotations:
 
 class TestMapProcessingConfigItem:
     def test_qc_processing_config(self) -> None:
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_qc.json"
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_qc.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = DataProcessingConfig(
-            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min_raw-range",
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
                 DataProcessingMethodConfig(
@@ -555,36 +552,35 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_infill_processing_config(self) -> None:
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_infill.json"
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_infill.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = DataProcessingConfig(
-            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-infill-cosmos-bunny-swin_30min_raw",
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-infill",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
                 DataProcessingMethodConfig(
-                    method="linear_linear",
+                    method="linear_interp",
                     params={"max_gap_size": 6, "window": 1},
-                    start_date=datetime(2013, 1, 1, 0, 30, 0),
                 )
             ],
-            annotations={"priority": 1},
+            annotations={},
         )
 
         assert result == expected
 
     def test_correction_processing_config(self) -> None:
-        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_raw_correction.json"
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_correction.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
 
         result = map_processing_config_item(api_model.items[0], MagicMock())
 
         expected = DataProcessingConfig(
-            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
-            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/sgb0ag444qc40u99nsdo8n5m0kuscic7",
+            ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-correction-scalar",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
                 DataProcessingMethodConfig(

@@ -4,34 +4,20 @@ An orchestration class used to run for processing operations for corrections, qu
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable
 
 import polars as pl
 import time_stream as ts
-from time_stream.exceptions import FlagSystemNotFoundError
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
-from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
-from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
-from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
-from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.operations.flags.flag_methods import ensure_flag_column
+from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
-
-
-OPERATION_METHOD_REGISTRY = {
-    OperationType.CORRECTION: CorrectionMethod._REGISTRY,
-    OperationType.QUALITY_CONTROL: QcMethod._REGISTRY,
-    OperationType.INFILLING: InfillMethod._REGISTRY,
-    OperationType.AGGREGATION: AggregationMethod._REGISTRY,
-    OperationType.DERIVATION: DerivationMethod._REGISTRY,
-}
 
 
 class OperationPipeline(ABC):
@@ -41,16 +27,15 @@ class OperationPipeline(ABC):
     sorting configuration blocks, and constructing flag column names.
     """
 
-    def __init__(self, operation_type: OperationType, flag_system_name: str | None = None):
+    def __init__(self, operation_type: ConfigurationType, flag_systems: dict[str, dict[str, int]]):
         """Initialise the operation processor.
 
         Args:
             operation_type: Type of operation.
-            flag_system_name: Name of the flag system to use for this operation.
+            flag_systems: Flag systems to register on the result before updating core flags.
         """
         self.operation_type = operation_type
-        self.flag_system_name = flag_system_name
-        self.registry = OPERATION_METHOD_REGISTRY[self.operation_type]
+        self.flag_systems = flag_systems
 
     @abstractmethod
     def apply(
@@ -69,39 +54,18 @@ class OperationPipeline(ABC):
         pass
 
     @abstractmethod
-    def get_configs(self, container: TimeSeriesContainer) -> Iterable[DataProcessingConfig]:
-        """Extract the method configuration blocks for this operation.
+    def get_flag_column(self, column: str) -> str | None:
+        """Determine the operation-specific flag column name for a given data column.
 
-        Args:
-            container: Time series container of metadata and data.
-
-        Returns:
-            List of configuration blocks to be applied.
-        """
-        pass
-
-    def sort_configs(self, configs: Iterable[DataProcessingConfig]) -> Iterable[DataProcessingConfig]:
-        """Sort configuration blocks into execution order.
-
-        Override this method in subclasses to define custom ordering logic.
-
-        Args:
-            configs: List of configuration blocks.
-
-        Returns:
-            Sorted list of configuration blocks
-        """
-        return configs
-
-    @abstractmethod
-    def get_flag_column(self, column: str) -> str:
-        """Determine the flag column name for a given data column.
+        This is the flag column the operation writes during processing (e.g. the QC flag column for
+        quality control). Operations that do not produce their own flags (aggregation, derivation)
+        return None.
 
         Args:
             column: Name of the data column.
 
         Returns:
-            Name of the corresponding flag column.
+            Name of the corresponding flag column, or None if this operation does not produce flags.
         """
         pass
 
@@ -131,70 +95,81 @@ class OperationPipeline(ABC):
         """
         pass
 
-    def run(self, container: TimeSeriesContainer, dataset_repository: dict[str, TimeSeriesContainer]) -> ts.TimeFrame:
+    def run(
+        self,
+        container: TimeSeriesContainer,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        config: DataProcessingConfig,
+    ) -> ts.TimeFrame:
         """Execute the full operation workflow on the time series container.
 
         Args:
             container: Time series container of metadata and data for the primary dataset to process.
             dataset_repository: Repository for accessing additional datasets.
+            config: The data processing configuration to run.
 
         Returns:
             The updated TimeFrame after all operations and flag updates.
         """
         tf = container.data
 
-        if container.time_column_name is None:
-            raise RuntimeError(f"Container {container.ts_id} has no time column name set")
-
-        # Initialise the flags if required
-        if self.flag_system_name and tf is not None:
-            col_name = tf.metadata["column_name"]
-            self._initialise_flag_system(tf)
-            self._initialise_flag_column(tf, col_name)
-
-        # Extract the configs to run
-        configs = self.get_configs(container)
-        configs = self.sort_configs(configs)
+        # Operations that process existing data write their flags onto it during ``apply`` (e.g. a correction writes
+        # the corrections flag column), so make sure those flag columns exist first.
+        # The incoming TimeFrame may be one generated by a previous step (e.g. an aggregation result), which only
+        # carries the core flag system.
+        # Generative operations (e.g. aggregation, derivation) start without data here and build a fresh TimeFrame
+        # in apply, so there is nothing to set up yet.
+        if tf is not None and container.has_flags():
+            self._init_flag_columns(tf, container.flag_column_schemes)
 
         # Apply configs
-        for cfg_block in configs:
-            for cfg in cfg_block.method_configs:
-                logger.info(f"Operation: {self.operation_type} | {cfg.method}")
+        for cfg in config.method_configs:
+            logger.info(f"Operation: {self.operation_type} | {cfg.method}")
 
-                # Run the method
-                tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)  # type: ignore[arg-type]
-                tf = self.apply_rounding(tf, cfg)
+            # Run the method. Generative operations (e.g. aggregation, derivation) accept tf=None and build a
+            # fresh TimeFrame; every other operation receives the existing data set up above.
+            tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)  # type: ignore[arg-type]
+            tf = self.apply_rounding(tf, cfg)
 
-        # Update core flags
-        tf = self.core_flag_updater(tf)  # type: ignore[arg-type] - we know tf will exist at this point
+        # Every operation applies at least one method, so by this point tf is always a real TimeFrame.
+        if tf is None:
+            raise ValueError(f"Operation {self.operation_type} produced no data for: {container.ts_id}")
 
-        # Ensure time column name of tf is same as container's
-        tf = tf.rename_time_column(container.time_column_name)
+        if container.has_flags():
+            # Generative operations (e.g. aggregation, derivation) built a new TimeFrame during ``apply`` with no
+            # flagging, so set up its flag columns before updating core flags.
+            # This is a "no-op" when this was already done before the loop.
+            self._init_flag_columns(tf, container.flag_column_schemes)
+
+            # Update core flags
+            tf = self.core_flag_updater(tf)
+
+        # Ensure time column name of tf is same as container's (not set for ObservationDatasets)
+        if container.time_column_name is not None:
+            tf = tf.rename_time_column(container.time_column_name)
 
         return tf
 
-    def _initialise_flag_system(self, tf: ts.TimeFrame) -> None:
-        """Initialise the flag system for this operation (if not already initialised).
+    def _init_flag_columns(self, tf: ts.TimeFrame, flag_column_schemes: dict[str, str]) -> None:
+        """Create the flag columns this operation needs on the result TimeFrame.
+
+        Every operation needs the core flag column. Operations that produce their own flags also need
+        their operation-specific flag column (e.g. the QC flag column). Flag columns the dataset does
+        not define, or that already exist, are skipped.
 
         Args:
-            tf: TimeFrame to initialise flags on.
+            tf: The result TimeFrame to set up flag columns on.
+            flag_column_schemes: Flag column names mapped to the flag system that they relate to.
         """
-        try:
-            tf.get_flag_system(self.flag_system_name)  # type: ignore[arg-type]
-        except FlagSystemNotFoundError:
-            flag_system = {name: m.flag_value for name, m in self.registry.items()}  # type: ignore[arg-type]
-            tf.register_flag_system(self.flag_system_name, flag_system)  # type: ignore[arg-type]
+        for data_column in tf.data_columns:
+            flag_columns = [core_flag_column_name(data_column)]
 
-    def _initialise_flag_column(self, tf: ts.TimeFrame, col_name: str) -> None:
-        """Initialise the flag column for this operation (if not already initialised).
+            operation_flag_column = self.get_flag_column(data_column)
+            if operation_flag_column is not None:
+                flag_columns.append(operation_flag_column)
 
-        Args:
-            tf: TimeFrame to initialise flag column on.
-            col_name: Name of the parent column
-        """
-        flag_column = self.get_flag_column(col_name)
-        if flag_column not in tf.flag_columns:
-            tf.init_flag_column(self.flag_system_name, flag_column)  # type: ignore[arg-type]
+            for flag_column in flag_columns:
+                ensure_flag_column(tf, flag_column, self.flag_systems, flag_column_schemes)
 
     def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> None:
         """Apply a flag to the flag column
@@ -206,6 +181,9 @@ class OperationPipeline(ABC):
             flag_name: Type of flag to apply (must exist in the associated flag system).
         """
         flag_column = self.get_flag_column(col_name)
+        if flag_column is None or flag_column not in tf.flag_columns:
+            return
+
         mask = self.compute_flag_mask(tf, result, col_name)
         if mask is not None:
             result.add_flag(flag_column, flag_name, mask)

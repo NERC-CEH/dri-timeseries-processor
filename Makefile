@@ -68,3 +68,11 @@ clean-pyc:  ## Remove Python file artifacts
 clean-test:  ## Remove test and coverage artifacts
 	rm -f .coverage .coverage.*
 	rm -fr htmlcov/ .pytest_cache
+
+vulture:  ## Detect any dead code in the repository
+	@echo "Minimum confidence [default: 60%]: <leave blank for default>"; \
+	read MINCONF; \
+	MINCONF=$${MINCONF:-60}; \
+	uvx vulture src/ --min-confidence $$MINCONF; \
+	uvx vulture tests/ --min-confidence $$MINCONF; \
+	true

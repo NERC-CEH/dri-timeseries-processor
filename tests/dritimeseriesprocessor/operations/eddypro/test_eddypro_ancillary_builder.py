@@ -31,6 +31,7 @@ def make_container(
         time_column_name=time_column_name,
         resolution=periodicity,
         periodicity=periodicity,
+        time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
     )
     if df is not None:
@@ -207,7 +208,7 @@ class TestEddyProDynamicMetadataBuilder:
                 }
             ),
         )
-        # height_canopy has no data — rows should still appear (partial row, not dropped)
+        # height_canopy has no data - rows should still appear (partial row, not dropped)
         height_no_data = make_container(ts_id="height-canopy", source_column="height_canopy")
 
         output_path = EddyProDynamicMetadataBuilder().build(

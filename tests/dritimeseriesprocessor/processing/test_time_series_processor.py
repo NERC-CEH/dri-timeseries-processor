@@ -1,5 +1,4 @@
 from datetime import datetime
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -10,9 +9,8 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
-from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
-from dritimeseriesprocessor.utils.enums import ConfigurationType, MethodType, OperationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from utils.data_creation import create_timeframe, make_time_series_container
 
 
@@ -42,6 +40,7 @@ def create_mock_dag(topo_layers: list) -> MagicMock:
     datasets_dict = {ds_id: make_time_series_container(ds_id) for layer in topo_layers for ds_id in layer}
     graph.layered_topo_sort.return_value = topo_layers
     graph.datasets = datasets_dict
+    graph.flagging_systems = {}
     return graph
 
 
@@ -71,7 +70,7 @@ class TestTimeSeriesProcessor:
         )
         # override the process dataset function for this test
         processor.process_dataset = MagicMock()
-        processor._batch_load_raw = MagicMock()
+        processor._batch_load = MagicMock()
         processor._save_datasets = MagicMock()
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
@@ -95,6 +94,7 @@ class TestTimeSeriesProcessor:
         processor.process_dataset.assert_called_once_with("ds1")
 
     def test_load_raw(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Test that _batch_load reads a load container's data into a TimeFrame."""
         ds_id = "ds1"
         mock_graph = create_mock_dag([[ds_id]])
         processor = TimeSeriesProcessor(
@@ -108,7 +108,7 @@ class TestTimeSeriesProcessor:
 
         container = mock_graph.datasets[ds_id]
         container.source_column = "value"  # Need to set this as the generic name of the mock dataframe
-        processor._batch_load_raw(container)
+        processor._batch_load()
 
         mock_router.query_by_date_range.assert_called_once()
         assert isinstance(container.data, ts.TimeFrame)
@@ -116,179 +116,6 @@ class TestTimeSeriesProcessor:
         # Metadata should be set
         expected_metadata = {"column_name": "value"}
         assert container.data.metadata == expected_metadata
-
-        # Core flags should have been added
-        assert "core_flags" in container.data.flag_systems
-        assert "value_CORE_FLAG" in container.data.flag_columns
-
-    def test_process(self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that _process runs all three pipelines in order and updates container.data"""
-        raw_ds_id = "raw_ds1"
-        processed_ds_id = "processed_ds1"
-
-        mock_graph = create_mock_dag([[raw_ds_id], [processed_ds_id]])
-
-        tf_result = MagicMock(spec=ts.TimeFrame)
-
-        mock_corr_pipeline = MagicMock()
-        mock_corr_pipeline.run.return_value = tf_result
-
-        mock_infill_pipeline = MagicMock()
-        mock_infill_pipeline.run.return_value = tf_result
-
-        mock_qc_pipeline = MagicMock()
-        mock_qc_pipeline.run.return_value = tf_result
-
-        monkeypatch.setattr(
-            "dritimeseriesprocessor.processing.time_series_processor.OPERATION_PIPELINES",
-            {
-                OperationType.CORRECTION: mock_corr_pipeline,
-                OperationType.QUALITY_CONTROL: mock_qc_pipeline,
-                OperationType.INFILLING: mock_infill_pipeline,
-            },
-        )
-
-        processor = TimeSeriesProcessor(
-            graph=mock_graph,
-            data_router=mock_router,
-            data_writer=mock_writer,
-            start_date=datetime(2023, 1, 1),
-            end_date=datetime(2023, 1, 2),
-            metrics=MagicMock(),
-        )
-
-        raw_container = mock_graph.datasets[raw_ds_id]
-        raw_container.source_column = "value"
-        processor._batch_load_raw(raw_container)
-        processed_container = mock_graph.datasets[processed_ds_id]
-        processed_container.source_column = "value"
-        processed_container.all_dependencies = MagicMock(return_value=[raw_ds_id])
-        processed_container.method_config = DataProcessingConfig(
-            ts_id=processed_ds_id,
-            config_id="process_config",
-            config_type=ConfigurationType.PROCESS,
-            method_configs=[MagicMock(params={"dep_ts": raw_ds_id})],
-        )
-        processor._process(processed_container)
-
-        mock_corr_pipeline.run.assert_called_once()
-        mock_infill_pipeline.run.assert_called_once()
-        mock_qc_pipeline.run.assert_called_once()
-        assert processed_container.data == tf_result
-
-    def test_load_local_copy_downloads_raw_files_using_container_site_fields(
-        self, mock_router: MagicMock, mock_writer: MagicMock
-    ) -> None:
-        container = make_time_series_container("raw_flux")
-        container.source_bucket = "raw-bucket"
-        container.source_site = "flux-plynl"
-        container.source_site_identifier = "PLYNL"
-        container.source_dataset = "Flux"
-        container.network = "fdri"
-
-        mock_graph = create_mock_dag([["raw_flux"]])
-        mock_graph.datasets["raw_flux"] = container
-
-        flux_s3_client = MagicMock()
-        processor = TimeSeriesProcessor(
-            graph=mock_graph,
-            data_router=mock_router,
-            data_writer=mock_writer,
-            start_date=datetime(2025, 1, 1),
-            end_date=datetime(2025, 1, 2),
-            metrics=MagicMock(),
-            flux_s3_client=flux_s3_client,
-        )
-
-        processor._load_local_copy(container)
-
-        assert container.ts_id in processor._raw_dirs
-        local_dir = Path(processor._raw_dirs[container.ts_id].name)
-        assert local_dir.name.startswith("eddypro_raw_PLYNL_")
-        flux_s3_client.download_raw_dat_files.assert_called_once_with(
-            bucket="raw-bucket",
-            site="flux-plynl",
-            dataset="Flux",
-            network="fdri",
-            start_date=datetime(2025, 1, 1).date(),
-            end_date=datetime(2025, 1, 2).date(),
-            local_dir=local_dir,
-        )
-
-    def test_run_eddypro_passes_raw_dependency_and_ancillary_containers(
-        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        raw_container = make_time_series_container("raw_flux")
-        raw_container.method_type = MagicMock(return_value=MethodType.LOAD_LOCAL_COPY)
-        raw_container.source_site = "flux-plynl"
-
-        ancillary_container = make_time_series_container("ancillary")
-        ancillary_container.method_type = MagicMock(return_value=MethodType.LOAD)
-
-        eddypro_container = make_time_series_container("eddypro_output")
-        eddypro_container.method_type = MagicMock(return_value=MethodType.EDDYPRO)
-        eddypro_container.source_site = "flux-plynl"
-        eddypro_container.network = "fdri"
-        eddypro_container.source_bucket = "processed-bucket"
-        eddypro_container.source_dataset = "eddypro-full-output"
-        eddypro_container.method_config = DataProcessingConfig(
-            ts_id="eddypro_output",
-            config_id="config-1",
-            config_type=ConfigurationType.EDDYPRO,
-            method_configs=[],
-        )
-        eddypro_container.all_dependencies = MagicMock(return_value=["raw_flux", "ancillary"])
-
-        mock_graph = create_mock_dag([["raw_flux", "ancillary"], ["eddypro_output"]])
-        mock_graph.datasets = {
-            "raw_flux": raw_container,
-            "ancillary": ancillary_container,
-            "eddypro_output": eddypro_container,
-        }
-        mock_graph.site_metadata = {
-            "http://fdri.ceh.ac.uk/id/site/flux-plynl": SiteMetadata(
-                site_id="http://fdri.ceh.ac.uk/id/site/flux-plynl",
-                network="fdri",
-                alt_id="PLYNL",
-            )
-        }
-
-        pipeline_run = MagicMock()
-        pipeline_instance = MagicMock()
-        pipeline_instance.run = pipeline_run
-
-        monkeypatch.setattr(
-            "dritimeseriesprocessor.processing.time_series_processor.EddyProPipeline",
-            MagicMock(return_value=pipeline_instance),
-        )
-        monkeypatch.setattr(
-            "dritimeseriesprocessor.processing.time_series_processor.EddyProRunner",
-            MagicMock(return_value=MagicMock()),
-        )
-
-        flux_s3_client = MagicMock()
-        processor = TimeSeriesProcessor(
-            graph=mock_graph,
-            data_router=mock_router,
-            data_writer=mock_writer,
-            start_date=datetime(2025, 1, 1),
-            end_date=datetime(2025, 1, 2),
-            metrics=MagicMock(),
-            flux_s3_client=flux_s3_client,
-        )
-        processor._raw_dirs[raw_container.ts_id] = MagicMock(name="/tmp/staged_raw_dir")
-        processor._raw_dirs[raw_container.ts_id].name = "/tmp/staged_raw_dir"
-
-        processor._run_eddypro(eddypro_container)
-
-        pipeline_run.assert_called_once_with(
-            raw_data_dir=Path("/tmp/staged_raw_dir"),
-            method_config=eddypro_container.method_config,
-            site_metadata=mock_graph.site_metadata["http://fdri.ceh.ac.uk/id/site/flux-plynl"],
-            start_date=datetime(2025, 1, 1).date(),
-            end_date=datetime(2025, 1, 2).date(),
-            ancillary_containers=[ancillary_container],
-        )
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Test that failed tag is set to True when dataset fails processing.
@@ -304,6 +131,11 @@ class TestTimeSeriesProcessor:
 
         ds3.all_dependencies = MagicMock(return_value=["ds1", "ds2"])
         ds4.all_dependencies = MagicMock(return_value=["ds1"])
+
+        # Attach configs so ds3/ds4 are not treated as load-only and reach the dependency-failure check.
+        # plan_order is left empty so no pipeline actually runs.
+        ds3.data_processing_configs = {"cfg": MagicMock()}
+        ds4.data_processing_configs = {"cfg": MagicMock()}
 
         processor = TimeSeriesProcessor(
             graph=mock_graph,
@@ -321,7 +153,7 @@ class TestTimeSeriesProcessor:
                 raise Exception("boom during process_dataset")
             return real_process_dataset(dataset_id)
 
-        processor._batch_load_raw = MagicMock()
+        processor._batch_load = MagicMock()
         processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
         processor._save_datasets = MagicMock()
         processor.run()
@@ -361,7 +193,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "value"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load()
 
         assert ds1.failed
         assert ds2.failed
@@ -389,7 +221,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "value"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load()
 
         assert ds1.failed
         assert ds2.failed
@@ -421,7 +253,7 @@ class TestTimeSeriesProcessor:
         ds1.source_column = "value"
         ds2.source_column = "missing_col"
 
-        processor._batch_load_raw(ds1, ds2)
+        processor._batch_load()
 
         assert not ds1.failed
         assert ds1.data is not None
@@ -547,3 +379,121 @@ class TestTimeSeriesProcessor:
             assert result_key == expected_key
             assert_frame_equal(result_df, expected_df)
             assert result_time_name == expected_time_name
+
+
+class TestProcessDatasetQCRemoval:
+    def test_remove_flagged_requested_for_single_qc_block(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Tests that the single QC step is run with remove_flagged=True so flagged data is removed."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+
+        qc_cfg = MagicMock(spec=DataProcessingConfig)
+        qc_cfg.config_type = ConfigurationType.QUALITY_CONTROL
+        qc_cfg.method_configs = []
+        container.data_processing_configs = {"qc": qc_cfg}
+        container.plan_order = ["qc"]
+        container.data = create_timeframe([1.0, 2.0])
+
+        remove_flagged_calls: list[bool] = []
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
+            lambda self, container, repo, config, *, remove_flagged=True: (
+                remove_flagged_calls.append(remove_flagged),
+                container.data,
+            )[1],
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset("ds1")
+
+        assert remove_flagged_calls == [True]
+
+    def test_remove_flagged_requested_only_after_final_qc_step(
+        self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Tests that only the final QC step in a sequential pair is run with remove_flagged=True."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+
+        def _qc_cfg() -> MagicMock:
+            cfg = MagicMock(spec=DataProcessingConfig)
+            cfg.config_type = ConfigurationType.QUALITY_CONTROL
+            cfg.method_configs = []
+            return cfg
+
+        container.data_processing_configs = {"qc1": _qc_cfg(), "qc2": _qc_cfg()}
+        container.plan_order = ["qc1", "qc2"]
+        container.data = create_timeframe([1.0, 2.0])
+
+        remove_flagged_calls: list[bool] = []
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.processing.time_series_processor.QCPipeline.run",
+            lambda self, container, repo, config, *, remove_flagged=True: (
+                remove_flagged_calls.append(remove_flagged),
+                container.data,
+            )[1],
+        )
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset("ds1")
+
+        # qc1 runs without removal (a later QC step follows); qc2 runs with removal (it is the final QC step).
+        assert remove_flagged_calls == [False, True]
+
+
+class TestGetNextStepType:
+    def _make_processor(self, mock_router: MagicMock, mock_writer: MagicMock) -> TimeSeriesProcessor:
+        mock_graph = create_mock_dag([["ds1"]])
+        return TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+    def test_returns_config_type_of_next_step(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that the config type of the step after current_idx is returned."""
+        container = make_time_series_container("ds1")
+        container.plan_order = ["step_a", "step_b"]
+
+        cfg_a = MagicMock(spec=DataProcessingConfig)
+        cfg_a.config_type = ConfigurationType.QUALITY_CONTROL
+        cfg_b = MagicMock(spec=DataProcessingConfig)
+        cfg_b.config_type = ConfigurationType.INFILLING
+
+        container.data_processing_configs = {"step_a": cfg_a, "step_b": cfg_b}
+
+        result = TimeSeriesProcessor._get_next_step_type(container, 0)
+
+        assert result == ConfigurationType.INFILLING
+
+    def test_returns_none_when_current_step_is_last(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that None is returned when there is no step after current_idx."""
+        container = make_time_series_container("ds1")
+        container.plan_order = ["step_a"]
+
+        cfg_a = MagicMock(spec=DataProcessingConfig)
+        cfg_a.config_type = ConfigurationType.QUALITY_CONTROL
+        container.data_processing_configs = {"step_a": cfg_a}
+
+        result = TimeSeriesProcessor._get_next_step_type(container, 0)
+
+        assert result is None

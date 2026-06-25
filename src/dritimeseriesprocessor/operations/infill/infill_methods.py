@@ -5,7 +5,7 @@ import time_stream as ts
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime, datetime | None] | None:
@@ -15,7 +15,7 @@ def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime,
 
 
 class InfillMethod(Operation, ABC):
-    operation_type = OperationType.INFILLING
+    operation_type = ConfigurationType.INFILLING
 
     @abstractmethod
     def run(self, *args, **kwargs) -> ts.TimeFrame:
@@ -24,8 +24,7 @@ class InfillMethod(Operation, ABC):
 
 @InfillMethod.register
 class Linear(InfillMethod):
-    name = "linear_linear"
-    flag_value = 1
+    name = "linear_interp"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return tf.infill(
@@ -39,7 +38,6 @@ class Linear(InfillMethod):
 @InfillMethod.register
 class AltData(InfillMethod):
     name = "alt_data"
-    flag_value = 2
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return tf.infill(

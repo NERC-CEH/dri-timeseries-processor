@@ -8,46 +8,53 @@ explained below.
 
 ```mermaid
 flowchart TD
-Start([Command Line Interface - CLI]) --> Parse[Parse Arguments]
-Parse --> LoadConfig[Load Environment Configuration]
+Start([Command Line Interface]) --> Parse[Parse Arguments]
+Parse --> LoadConfig[Load Environment<br />Configuration]
 
 LoadConfig --> BuildDAG[Build Dependency Graph]
 BuildDAG --> MetaAPI[(Metadata Store API)]
 MetaAPI --> BuildDAG
 BuildDAG --> TopoSort[Topological Sort<br/>Determine execution order]
 
-TopoSort --> Pipeline[Processing Pipeline]
+TopoSort --> BatchLoad[Batch load raw datasets]
+BatchLoad --> S3Reader[(S3 Storage Reader)]
+
+BatchLoad --> Pipeline[Processing Pipeline]
 Pipeline --> StartLayer{{For each layer in DAG}}
 StartLayer --> StartProc{{For each dataset in layer}}
-StartProc --> StartLayer
+StartProc --> StartStep{{For each step in the plan}}
+StartStep --> CheckType{Dispatch on<br/>configuration type}
 
-StartProc --> CheckMethod{Check<br/>Method Type}
-CheckMethod --> StartProc
+CheckType -->|LOAD| RunLoad[Copy dependency data or<br/>stage raw files to local temp dir]
+RunLoad --> S3Reader
+RunLoad --> NextStep
 
-CheckMethod -->|LOAD| LoadRaw[Read raw parquet from S3]
-LoadRaw --> S3Reader[(S3 Storage Reader)]
-S3Reader --> LoadRaw
-LoadRaw --> CreateTF[Create TimeFrame<br/>Add initial flags]
-CreateTF --> NextDataset
+CheckType -->|CORRECTION| RunCorr[Run Corrections]
+RunCorr --> NextStep
 
-CheckMethod -->|PROCESS| Process[Run standard processing steps]
-Process --> RunCorr[Run Corrections]
-RunCorr --> RunQC[Run Quality Control Checks]
-RunQC --> RunInfill[Run Infilling]
-RunInfill --> NextDataset
+CheckType -->|QUALITY_CONTROL| RunQC[Run Quality Control Checks<br/>Remove failed data after last QC step]
+RunQC --> NextStep
 
-CheckMethod -->|AGGREGATE| Resample[Temporal Resampling]
-Resample --> NextDataset
+CheckType -->|INFILLING| RunInfill[Run Infilling]
+RunInfill --> NextStep
 
-CheckMethod -->|DERIVE| Compute[Compute derived variable<br/>e.g., Net Radiation]
-Compute --> NextDataset
+CheckType -->|AGGREGATION| Resample[Temporal Resampling]
+Resample --> NextStep
+
+CheckType -->|DERIVATION| Compute[Compute derived variable]
+Compute --> NextStep
+
+NextStep([Next step])
+NextStep -->|All steps done| NextDataset
 
 NextDataset([Next dataset])
 NextDataset -->|All datasets done| NextLayer
+
 NextLayer([Next layer])
-NextLayer -->|All layers done| SaveDatasets[Collect datasets and write to S3]
+NextLayer -->|All layers done| SaveDatasets[Collect datasets and<br />write to S3]
+
 SaveDatasets --> S3Writer[(S3 Storage Writer)]
-SaveDatasets --> ExportMetrics[Export Metrics to Prometheus]
+SaveDatasets --> ExportMetrics[Export Metrics to<br />Prometheus]
 ExportMetrics --> PrometheusGW[(Prometheus<br/>Pushgateway)]
 ExportMetrics --> Done([Processing Complete])
 
@@ -58,8 +65,8 @@ classDef storage fill:#C9C9C9,stroke:#9A9A9A,stroke-width:2px
 classDef completion fill:#C8E6C9,stroke:#9AB89C,stroke-width:2px
 
 class Start,Parse,LoadConfig setup
-class BuildDAG,TopoSort, orchestration
-class Pipeline,CheckMethod,StartLayer,StartProc,LoadRaw,CreateTF,Process,RunCorr,RunQC,RunInfill,Resample,Compute,SaveProc,SaveAgg,SaveDeriv,NextDataset,NextLayer processing
+class BuildDAG,TopoSort orchestration
+class Pipeline,CheckType,StartLayer,StartProc,StartStep,BatchLoad,RunLoad,RunCorr,RunQC,RunInfill,Resample,Compute,NextStep,NextDataset,NextLayer processing
 class MetaAPI,S3Reader,S3Writer,PrometheusGW storage
 class ExportMetrics,Done completion
 ```
@@ -68,10 +75,12 @@ class ExportMetrics,Done completion
 
 ### 1. Command line interface (CLI)
 
-Command line interface supporting two processing modes and one utility command:
+Command line interface supporting three processing modes and one utility command:
 
-- **Explicit mode**: Fine-grained control over specific site/variable/periodicity combinations
-- **Cross-product mode**: Bulk processing across dimensions
+- **Explicit mode** (`from-selection`): Fine-grained control over specific site/variable/periodicity combinations
+- **Cross-product mode** (`from-cross-product`): Bulk processing across dimensions
+- **From-datasets mode** (`from-datasets`): Request datasets directly by metadata API ID - works for both
+  `TimeSeriesDataset` and `ObservationDataset` records, and does not require a network argument
 - **List-sites**: Output active site IDs for a network as a JSON array
 
 See [CLI Usage](cli_usage.md).
@@ -131,7 +140,8 @@ Different behaviors based on environment:
 All processing decisions are driven by metadata fetched from the FDRI metadata API:
 
 - Dataset definitions and relationships
-- Processing method configurations (corrections, QC, infilling)
+- A processing **plan** for each dataset - an ordered list of data processing configurations (corrections, QC,
+  infilling, aggregation, derivation, load)
 - Site metadata (coordinates, altitude, operating periods)
 - Dependency chains between datasets
 
@@ -182,17 +192,17 @@ and derived outputs.
 
 Constructs a complete directed acyclic graph (DAG) of dataset dependencies by:
 
-1. Fetching the target (processed) datasets (based on user input of site(s), variable(s), periodicity(s)).
+1. Fetching the root (target) datasets. How they are fetched depends on the selection mode:
+   - **Dimension-based modes** (`from-selection`, `from-cross-product`): query the metadata API by site,
+     variable, and periodicity. If no sites are specified, all sites for the network are fetched first.
+     Sites whose operating period does not overlap the requested date window are excluded.
+   - **`from-datasets` mode**: fetch datasets directly by ID, with no site pre-filtering.
 2. Fetching all relevant data processing configurations (QC, Infill, Correction, Aggregation, Derivation).
-3. Resolving dependencies of these data processing configurations
+3. Resolving dependencies of these data processing configurations.
 4. Repeating for any new datasets introduced by these dependencies.
 
 This process produces a complete graph of the state of dependencies, where each node represents a dataset, and
 each edge represents a dependency.
-
-When no explicit sites are provided, all sites for the network are fetched from the metadata API. In both cases,
-sites whose operating period does not overlap the requested date window are excluded before the graph is built - i.e.
-a site that closed before the window start, or had not yet opened by the window end, will not be processed.
 
 The resolver guarantees that the graph is acyclic. If a cycle is detected (e.g., dataset A depends on dataset B which
 depends on dataset A), the resolver will fail.
@@ -272,21 +282,74 @@ The pipeline takes in a dependency graph, representing the datasets to be produc
 Each dataset is provided as a `TimeSeriesContainer`, which encapsulates:
 
 - dataset loading metadata (e.g. source bucket, column names, etc.)
-- its resolved processing metadata (corrections, QC, infilling)
+- its processing **plan** - an ordered list of data processing configurations to apply
 - A `TimeFrame` object that holds the actual data for the dataset
 
 The pipeline iterates over all the nodes (datasets) in topological order, ensuring each dataset is processed only
-after all its upstream dependencies have been completed and are available in memory. Each node contains instructions
-on how it should be processed. That could be one of 4 steps:
+after all its upstream dependencies have been completed and are available in memory.
 
-- **LOAD**: Load raw input data into a `TimeFrame` object
-- **PROCESS**: Apply processing stages (corrections, QC, infilling - in that order)
-- **AGGREGATE**: Temporal aggregation, e.g. 30 minute to Daily data
-- **DERIVE**: Derive non-observed dataset from other datasets (e.g. calculating net radiation from the measured
-  components of radiation)
+#### The processing plan
 
-This continues until the graph root nodes (i.e. the originally requested datasets) have been produced. Results of these
-datasets are saved using the configured output locations.
+Each dataset carries its own processing plan, built when the dependency graph is constructed. The plan has two parts
+on the `TimeSeriesContainer`:
+
+- `plan_order`: an ordered list of configuration IDs, defining the exact sequence steps must run in. The order comes
+  from the `index` of each step in the metadata.
+- `data_processing_configs`: a dictionary mapping each configuration ID to its `DataProcessingConfig`.
+
+Each `DataProcessingConfig` has a `config_type` (a `ConfigurationType`) that tells the pipeline which operation to run.
+The possible types are:
+
+- **LOAD**: Load data into this dataset's container
+- **CORRECTION**: Adjust values for known systematic errors
+- **QUALITY_CONTROL**: Flag invalid or erroneous values
+- **INFILLING**: Fill gaps in the data
+- **AGGREGATION**: Resample to a new temporal resolution (e.g. 30 minute to daily)
+- **DERIVATION**: Compute a new variable from other datasets (e.g. net radiation from its measured components)
+
+#### Loading data
+
+Before the plan iteration begins, the pipeline loads data for every "load" dataset in one up-front batch
+(`_batch_load`). A dataset is treated as a load dataset when it has **no** processing configurations attached -
+`TimeSeriesContainer.is_load()` returns `True`. These are the raw inputs at the "leaves" of the dependency graph.
+
+Load datasets are grouped by network, site, resolution and source dataset, so a single query can read all the columns
+for a group in one go. Each loaded column is wrapped in a `TimeFrame` and given its initial **core flags**.
+Load datasets that are only needed as inputs and are never saved are marked `load_only`.
+
+A `LOAD` step can also appear *inside* a plan, handled by the `LoadPipeline`. This covers two cases:
+
+- `load`: copy a dependency dataset's already-loaded data into this container.
+- `load-local-copy`: download raw files to a local temporary directory (used by EddyPro - see
+  [Flux / EddyPro](flux_eddypro.md)). The local path is recorded on the container's `staged_dir`.
+
+#### Iterating the plan
+
+For each dataset that is not a load dataset, the pipeline walks `plan_order` in sequence. For each step it looks up the
+configuration, then calls the matching operation pipeline based on the configuration type. The output
+`TimeFrame` of one step becomes the input to the next, so the data flows through the plan in order.
+
+If any of a dataset's dependencies have failed, the dataset is marked as failed and skipped before any step runs.
+
+#### Quality control data removal
+
+QC operations only **flag** bad values - they do not remove them. The actual removal (setting flagged values to null)
+happens once, after the **last** QC step in a contiguous run of QC steps.
+
+The pipeline detects this by looking ahead: after running a QC step it checks the type of the next step in the plan. If
+the next step is also QC, removal is deferred; if it is anything else (or the plan has ended), the removal runs. This
+means a run of consecutive QC checks all contribute their flags first, and the data is only cut once at the end of that
+run - rather than removing data between each individual check.
+
+#### Flag columns and backfilling
+
+Each operation that flags data creates a flag column - but the flag column is only added when that operation actually
+runs. A dataset whose plan has no correction step, for example, would never get a corrections flag column.
+
+To keep the flag columns consistent across all datasets, the pipeline runs a **backfill** step after the plan completes
+(`_backfill_flag_columns`). This initialises any flag systems and flag columns that were not created during the run, so
+every saved dataset ends up with the same set of flag columns regardless of which steps its plan contained. Operations
+that do not flag data (aggregation, derivation) are a no-op here. Core flags are already present from loading.
 
 #### Saving strategy - pooling and concurrent saves
 
@@ -311,13 +374,14 @@ passes through this layer.
 
 #### Reader
 
-The reader component loads dataset data and metadata from storage into memory:
+The reader component loads dataset data from storage into memory. There are two reader types:
 
-- locating the dataset based on network, site, periodicity and date
-- resolving storage paths or prefixes
-- reading parquet data for the requested time period
+- **`DuckDBParquetReader`**: reads parquet data for a time series dataset by querying a hive-partitioned S3 path
+  with DuckDB. Used for batch loading and for `load` steps.
+- **`RawFileReader`**: downloads raw files (e.g. `.dat` files) from an S3 prefix into a local temporary directory.
+  Used for `load-local-copy` steps, where a subsequent derivation step (such as `EddyProRun`) needs the files on disk.
 
-The reader is environment-aware. It gets bucket selection and credential access from the configuration layer.
+Both readers are environment-aware. Bucket selection and credentials come from the configuration layer.
 
 #### Writer
 

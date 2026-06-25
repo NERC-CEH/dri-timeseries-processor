@@ -6,7 +6,7 @@ import time_stream as ts
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.utils.enums import OperationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime, datetime | None] | None:
@@ -16,7 +16,7 @@ def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime,
 
 
 class QcMethod(Operation, ABC):
-    operation_type = OperationType.QUALITY_CONTROL
+    operation_type = ConfigurationType.QUALITY_CONTROL
 
     @abstractmethod
     def run(self, *args, **kwargs) -> pl.Series:
@@ -26,7 +26,6 @@ class QcMethod(Operation, ABC):
 @QcMethod.register
 class Range(QcMethod):
     name = "range"
-    flag_value = 1  # TODO : should these be in metadata? - yes
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -42,7 +41,6 @@ class Range(QcMethod):
 @QcMethod.register
 class BatteryVoltage(QcMethod):
     name = "battery_v"
-    flag_value = 2
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -57,7 +55,6 @@ class BatteryVoltage(QcMethod):
 @QcMethod.register
 class Samples(QcMethod):
     name = "samples"
-    flag_value = 4
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -72,7 +69,6 @@ class Samples(QcMethod):
 @QcMethod.register
 class ErrorCode(QcMethod):
     name = "error_code"
-    flag_value = 8
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -87,7 +83,6 @@ class ErrorCode(QcMethod):
 @QcMethod.register
 class Spike(QcMethod):
     name = "spike"
-    flag_value = 16
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -101,7 +96,6 @@ class Spike(QcMethod):
 @QcMethod.register
 class Nr01Temp(QcMethod):
     name = "nr01_temp"
-    flag_value = 32
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -117,7 +111,6 @@ class Nr01Temp(QcMethod):
 @QcMethod.register
 class HeatFluxPlateRemoval(QcMethod):
     name = "hfp_removal"
-    flag_value = 64
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -134,7 +127,6 @@ class HeatFluxPlateRemoval(QcMethod):
 @QcMethod.register
 class PluvioDiagnostic(QcMethod):
     name = "pluvio_diag"
-    flag_value = 128
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -149,7 +141,6 @@ class PluvioDiagnostic(QcMethod):
 @QcMethod.register
 class SnowDaySignal(QcMethod):
     name = "snowd_signal"
-    flag_value = 256
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -164,7 +155,6 @@ class SnowDaySignal(QcMethod):
 @QcMethod.register
 class TdtTSoil(QcMethod):
     name = "tdt_tsoil"
-    flag_value = 512
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         return tf.qc_check(
@@ -185,7 +175,6 @@ class FluxQcFlag(QcMethod):
     """
 
     name = "flux_qc_flag"
-    flag_value = 1024
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
         col = tf.metadata["column_name"]

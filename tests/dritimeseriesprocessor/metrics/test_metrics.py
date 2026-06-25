@@ -14,12 +14,12 @@ def metrics() -> Metrics:
 class TestMetrics:
     def test_histogram_time_records_duration(self, metrics: Metrics) -> None:
         """Test that histogram timing increases the recorded duration."""
-        before = metrics.time_qc._sum.get()
+        before = metrics.time_load._sum.get()
         wait_time = 0.1
-        with metrics.time_qc.time():
+        with metrics.time_load.time():
             time.sleep(wait_time)
 
-        after = metrics.time_qc._sum.get()
+        after = metrics.time_load._sum.get()
         assert math.isclose(after - before, wait_time, abs_tol=1e3)
 
     def test_counter_increments(self, metrics: Metrics) -> None:
