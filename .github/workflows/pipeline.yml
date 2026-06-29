@@ -72,9 +72,9 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_PRODUCTION }}
 
-  build-test-deploy-docker-eddypro-current:
+  build-test-deploy-docker-eddypro-staging:
     needs: [test-python]
-    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+    if: ${{ github.ref_name == 'staging' || github.base_ref == 'staging' }}
     uses: NERC-CEH/dri-cicd/.github/workflows/build-test-deploy-docker.yml@main
     with:
       use_uv: true
@@ -82,9 +82,10 @@ jobs:
       docker_target: prod-eddypro
       tag_suffix: -eddypro
       event_type: ${{ github.event_name }}
+      docker_build_args: "EDDYPRO_IMAGE=740991959481.dkr.ecr.eu-west-2.amazonaws.com/eddypro-engine:v0.1.3"
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN_STAGING }}
 
   create-staging-to-production-pr:
     needs: [build-test-deploy-docker-staging]
