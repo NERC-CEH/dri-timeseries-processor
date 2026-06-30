@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/site?_view=annotated&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fflux-plynl",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/site.ttl?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fflux-plynl&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.csv?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fflux-plynl&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.json?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fflux-plynl&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.geojson?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fflux-plynl&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.rdf?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fflux-plynl&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.html?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fflux-plynl&_view=annotated"
+    ],
+    "limit": 10
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl",
+      "easting": 284000.0,
+      "northing": 287000.0,
+      "lat": 52.45,
+      "long": -3.75,
+      "altitude": 540.0,
+      "identifier": [
+        "PLYNL"
+      ],
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl#operating-period",
+        "startDate": "2024-01-01"
+      }
+    }
+  ]
+}

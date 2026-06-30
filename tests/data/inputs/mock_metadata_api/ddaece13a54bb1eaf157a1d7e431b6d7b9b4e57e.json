@@ -74,7 +74,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -155,7 +155,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -236,7 +236,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -317,7 +317,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -398,7 +398,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -479,7 +479,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -534,10 +534,10 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ux_30min-plan#step-1",
-            "index": 1,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ux_30min-plan#step-3",
+            "index": 3,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min-range"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min-error_code"
             }
           },
           {
@@ -555,10 +555,10 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ux_30min-plan#step-3",
-            "index": 3,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ux_30min-plan#step-1",
+            "index": 1,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min-error_code"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ux_30min-range"
             }
           }
         ]
@@ -604,7 +604,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -643,15 +643,15 @@
       ],
       "directDependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
-          "identifier": [
-            "COSMOS-HOLLN-BATTV_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
           "identifier": [
             "COSMOS-HOLLN-UX_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "identifier": [
+            "COSMOS-HOLLN-BATTV_30MIN_RAW"
           ]
         }
       ],
@@ -661,13 +661,6 @@
           "columnName": "UX_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_core_flag",
-          "columnName": "UX_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {
@@ -682,6 +675,13 @@
           "columnName": "UX_QC_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_core_flag",
+          "columnName": "UX_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         }
       ]
@@ -717,17 +717,17 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-load_raw"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-1",
             "index": 1,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-range"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-2",
+            "index": 2,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-battery_v"
             }
           },
           {
@@ -738,10 +738,10 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-2",
-            "index": 2,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-0",
+            "index": 0,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-battery_v"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-load_raw"
             }
           }
         ]
@@ -787,7 +787,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -812,15 +812,15 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
-          "identifier": [
-            "COSMOS-HOLLN-UY_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
           "identifier": [
             "COSMOS-HOLLN-BATTV_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
+          "identifier": [
+            "COSMOS-HOLLN-UY_30MIN_RAW"
           ]
         }
       ],
@@ -840,6 +840,13 @@
       ],
       "hasFlagColumn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed#flag_column.uy_core_flag",
+          "columnName": "UY_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed#flag_column.uy_infill_flag",
           "columnName": "UY_INFILL_FLAG",
           "valueScheme": {
@@ -851,13 +858,6 @@
           "columnName": "UY_QC_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed#flag_column.uy_core_flag",
-          "columnName": "UY_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {

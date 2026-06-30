@@ -1,0 +1,548 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h2o-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-co2-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h2o-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-co2-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h2o-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-co2-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h2o-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-co2-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h2o-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-co2-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h2o-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-co2-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h2o-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-h&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-co2-flux&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau-l2&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fflux-plynl-tau"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h2o-flux-load",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h2o-flux",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h2o-flux-load",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h2o-flux-load#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h2o-flux-load#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-co2-flux-load",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-co2-flux",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-co2-flux-load",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-co2-flux-load#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-co2-flux-load#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-tau-qc-flag",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-tau",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-qc-flag",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-qc-flag#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-qc-flag#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-tau"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/flux_qc_flag",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-tau-load",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-tau",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-load",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-load#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-load#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-l2-load",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h-l2",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-l2-load",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-l2-load#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-l2-load#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-qc-flag",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-qc-flag",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-qc-flag#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-qc-flag#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-h"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/flux_qc_flag",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-load",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-load",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-load#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-h-load#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-tau-l2-load",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-tau-l2",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-l2-load",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-l2-load#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-tau-l2-load#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    }
+  ]
+}

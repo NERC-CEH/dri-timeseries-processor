@@ -205,6 +205,28 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min-battery_v",
           "argument": [
             {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min-battery_v#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min-battery_v#argument.lt.value",
+                "value": [
+                  10.5
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min-battery_v#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min-battery_v#argument.depts.value",
@@ -221,28 +243,6 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min-battery_v#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-ta_30min-battery_v#argument.lt.value",
-                "value": [
-                  10.5
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
