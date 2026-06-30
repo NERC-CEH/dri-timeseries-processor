@@ -143,7 +143,7 @@
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
             "start_date": "2026-01-20",
-            "end_date": "2026-01-21",
+            "end_date": "2026-01-20",
             "check_variables": ["H", "Tau", "qc_H", "qc_Tau", "co2_flux", "h2o_flux", "H_L2", "Tau_L2", "Pressure_Avg"]
           },
           {

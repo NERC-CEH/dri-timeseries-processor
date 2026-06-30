@@ -145,10 +145,6 @@ class TestMain:
                         expected_output_dir
                         / f"{network}/resolution={resolution}/site={s3_site_id}/date={date}/data.parquet"
                     )
-                    if not expected_path.exists():
-                        # No fixture for this date means the run produced no output — e.g.
-                        # 2026-01-21 for flux has no raw .dat files in S3. Skip rather than fail.
-                        continue
                     expected_s3_key = str(expected_path.relative_to(expected_output_dir))
                     result = pl.read_parquet(s3_storage_client.get_bytes(E2E_OUTPUT_BUCKET, expected_s3_key))
                     expected = pl.read_parquet(expected_path)
