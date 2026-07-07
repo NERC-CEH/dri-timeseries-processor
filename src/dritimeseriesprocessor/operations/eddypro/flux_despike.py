@@ -46,10 +46,12 @@ def spike_code(series: pl.Series, radiation: pl.Series, sensitivity: float, wind
         day_window = daytime_diff[window]
         night_window = nighttime_diff[window]
 
-        day_median = np.nanmedian(day_window)
-        night_median = np.nanmedian(night_window)
-        day_mad = np.nanmedian(np.abs(day_window - day_median))
-        night_mad = np.nanmedian(np.abs(night_window - night_median))
+        # nanmedian on an all-NaN slice returns NaN (correct) but emits a RuntimeWarning — suppress it.
+        with np.errstate(invalid="ignore"):
+            day_median = np.nanmedian(day_window)
+            night_median = np.nanmedian(night_window)
+            day_mad = np.nanmedian(np.abs(day_window - day_median))
+            night_mad = np.nanmedian(np.abs(night_window - night_median))
 
         day_lower = day_median - sensitivity * day_mad / MAD_TO_STD_SCALE
         day_upper = day_median + sensitivity * day_mad / MAD_TO_STD_SCALE
@@ -96,6 +98,9 @@ def despike_df(
     """
     if output_names is None:
         output_names = {col: f"{col}_L2" for col in columns}
+    # Must be time-sorted so its row order matches series.tail(n_current) below, which
+    # returns values in the time-ascending order of the sorted combined series.
+    current_df = current_df.sort("time")
     select_cols = ["time"] + columns + [reference_column]
     combined = pl.concat([history_df.select(select_cols), current_df.select(select_cols)]).sort("time")
 

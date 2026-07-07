@@ -31,6 +31,7 @@ def make_container(
         time_column_name=time_column_name,
         resolution=periodicity,
         periodicity=periodicity,
+        time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
     )
     if df is not None:

@@ -64,6 +64,7 @@ def create_method_config(
     params["output_col"] = output_col
     params["periodicity"] = "PT1H"
     params["resolution"] = "PT1H"
+    params["time_anchor"] = "start"
 
     return DataProcessingMethodConfig(method="test", params=params)
 

@@ -1,7 +1,7 @@
 # N.B. The Python versions in the builder and prod images must match.
 # Make sure to update *both* FROM lines when making changes!
 
-ARG EDDYPRO_IMAGE=654654490827.dkr.ecr.eu-west-2.amazonaws.com/eddypro-engine:v0.1.2
+ARG EDDYPRO_IMAGE=740991959481.dkr.ecr.eu-west-2.amazonaws.com/eddypro-engine:v0.1.5
 FROM ${EDDYPRO_IMAGE} AS eddypro
 
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
@@ -55,5 +55,5 @@ RUN ln -sf /opt/eddypro/bin/eddypro_rp /usr/local/bin/eddypro_rp \
 
 ENV PATH="/opt/eddypro/bin:/app/.venv/bin:$PATH" VIRTUAL_ENV="/app/.venv"
 
-# Default target (backwards compatible): base image without EddyPro
-FROM prod-base AS prod
+# Default target: production image with EddyPro
+FROM prod-eddypro AS prod

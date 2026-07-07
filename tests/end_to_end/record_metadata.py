@@ -81,6 +81,16 @@ class MetadataCacheSession(requests.Session):
         return resp
 
 
+def _rewrite_s3_uri(uri: Any) -> Any:
+    """Rewrite an s3://bucket/... URI to use the appropriate E2E test bucket."""
+    if not isinstance(uri, str) or not uri.startswith("s3://"):
+        return uri
+    without_scheme = uri[len("s3://") :]
+    bucket, _, rest = without_scheme.partition("/")
+    replacement = E2E_OUTPUT_BUCKET if "processed" in bucket else E2E_INPUT_BUCKET
+    return f"s3://{replacement}/{rest}"
+
+
 def rewrite_buckets(obj: Any) -> Any:
     """Recursively rewrite any sourceBucket fields to the known E2E test buckets.
 
@@ -102,6 +112,8 @@ def rewrite_buckets(obj: Any) -> Any:
                     obj[key] = E2E_OUTPUT_BUCKET
                 else:
                     obj[key] = E2E_INPUT_BUCKET
+            elif key == "accessUrl" and isinstance(value, list):
+                obj[key] = [_rewrite_s3_uri(v) for v in value]
             else:
                 obj[key] = rewrite_buckets(value)
 

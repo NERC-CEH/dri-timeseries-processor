@@ -7,6 +7,7 @@ from _pytest.mark.structures import ParameterSet
 
 PARQUET_DATA_INPUT_DIR = Path(__file__).parent.parent.parent / "parquet-data" / "raw"
 PARQUET_DATA_PROCESSED_DIR = Path(__file__).parent.parent.parent / "parquet-data" / "processed"
+FLUX_DATA_DIR = Path(__file__).parent.parent.parent / "flux-data"
 TEST_DATA_INPUT_DIR = Path(__file__).parent.parent / "data" / "inputs"
 TEST_DATA_OUTPUT_DIR = Path(__file__).parent.parent / "data" / "outputs"
 TEST_DATA_API_VALID = TEST_DATA_INPUT_DIR / "api_json" / "valid"
@@ -75,6 +76,7 @@ def discover_e2e_test_cases() -> list[ParameterSet]:
                 test_case["periodicities"],
                 test_case["start_date"],
                 test_case["end_date"],
+                test_case.get("check_variables"),
                 id=test_case["id"],
             )
         )

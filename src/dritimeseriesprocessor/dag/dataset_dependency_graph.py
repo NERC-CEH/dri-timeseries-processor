@@ -271,7 +271,7 @@ class DatasetDependencyGraph:
         """
         sites_params = [("originatingSite", site) for site in sites]
         variables_params = [("sourceColumnName", variable) for variable in variables]
-        periodicity_params = [("measure.aggregation.periodicity", periodicity) for periodicity in periodicities]
+        periodicity_params = [("measure.periodicity", periodicity) for periodicity in periodicities]
         other_params = [
             ("_view", "timeseries"),
             ("processingLevel", f"{PROCESSING_LEVEL_URI}/{ProcessingLevel.PROCESSED.value}"),

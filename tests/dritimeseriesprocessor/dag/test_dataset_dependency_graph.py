@@ -61,6 +61,7 @@ def make_time_series_container(
         time_column_name=ts_id + "time_column_name",
         resolution=ts_id + "_resolution",
         periodicity=ts_id + "_periodicity",
+        time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
     )
     container.attach_configs(configs)

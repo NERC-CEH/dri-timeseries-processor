@@ -20,10 +20,13 @@
       "@id": "http://fdri.ceh.ac.uk/id/network/fdri",
       "contains": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-hafrf-07",
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01",
           "label": [
-            "Severn Trap (Hafren Forest)"
+            "Carreg Wen"
           ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-svtrp-01"
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/fdri-ch-milfa-01",
@@ -32,9 +35,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-carwe-01",
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-fofad-01"
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/fdri-se-hafrf-07",
           "label": [
-            "Carreg Wen"
+            "Severn Trap (Hafren Forest)"
           ]
         },
         {
