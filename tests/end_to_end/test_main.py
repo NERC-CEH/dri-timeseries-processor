@@ -117,11 +117,17 @@ class TestMain:
         # check the outputs
         expected_output_dir = TEST_DATA_OUTPUT_DIR / "end_to_end"
 
+        # Define time column name for different networks
+        if network == "nmdb":
+            time_col = ["timestamp"]
+        else:
+            time_col = ["time"]
+
         # Flux/EddyPro datasets encode quality as integer data columns (qc_H, qc_Tau) rather
         # than the standard FDRI _CORE/_QC/_CORRS/_INFILL flag scheme, so the auto-derived
         # flag column list would look for columns that don't exist. check_variables overrides it.
         if check_variables is not None:
-            check_cols = check_variables + ["time"]
+            check_cols = check_variables + time_col
         else:
             # Build list of expected flag columns to validate alongside data variables.
             flag_cols = []
@@ -131,7 +137,7 @@ class TestMain:
                 flag_cols.append(corrs_flag_column_name(var))
                 flag_cols.append(infill_flag_column_name(var))
                 flag_cols.append(qc_flag_column_name(var))
-            check_cols = all_variables + flag_cols + ["time"]
+            check_cols = all_variables + flag_cols + time_col
 
         start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
         end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
