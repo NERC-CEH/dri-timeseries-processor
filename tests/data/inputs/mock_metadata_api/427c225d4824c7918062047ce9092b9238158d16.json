@@ -19,6 +19,9 @@
   "items": [
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cts_mod2_30min_raw",
+      "title": [
+        "Neutron count (CRNS 2)"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -82,11 +85,6 @@
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD2",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-crns2"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
