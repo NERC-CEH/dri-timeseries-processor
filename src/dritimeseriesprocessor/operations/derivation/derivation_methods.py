@@ -714,7 +714,7 @@ class VolumetricWaterContent(DerivationMethod):
                 https://doi.org/10.5194/hess-16-4079-2012
             - Desilets et al., 2010 https://doi.org/10.1029/2009WR008726
 
-        Uses:
+        Config requirements:
             Site attributes:
                 - ref_soc: Site attribute of reference soil organic carbon
                 - ref_bulkdensity: Site attribute of reference soil bulk density
@@ -751,6 +751,13 @@ class VolumetricWaterContent(DerivationMethod):
 
 @DerivationMethod.register
 class GetSnowEstimatedCounts(DerivationMethod):
+    """
+    Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
+               Estimating snow water equivalent using cosmic-ray neutron sensors
+               from the COSMOS-UK network. Hydrological Processes. 2021;35:e14048.
+               https://doi.org/10.1002/hyp.14048
+    """
+
     name = "get_snow_estimated_counts"
     inputs = ("snow", "cts_smo")
 
@@ -762,14 +769,14 @@ class GetSnowEstimatedCounts(DerivationMethod):
         cts_smo = columns["cts_smo"]
         time = columns["time"]
 
-        start_event = (snow == 1) & (snow_prev1 == 0) & (snow_prev2 == 0) & (time.dt.hour() == 0)
-        end_event = (snow == 0) & (snow_prev1 == 0) & (snow_prev2 == 1) & (time.dt.hour() == 0)
+        event_start_cond = (snow == 1) & (snow_prev1 == 0) & (snow_prev2 == 0) & (time.dt.hour() == 0)
+        event_end_cond = (snow == 0) & (snow_prev1 == 0) & (snow_prev2 == 1) & (time.dt.hour() == 0)
 
         # Define start of snow period as day before snow starts.
-        period_start = pl.when(start_event).then(True).otherwise(False)  # .shift(24)
+        period_start = pl.when(event_start_cond).then(True).otherwise(False).shift(24)
 
         # Define end of snow period.
-        period_end = pl.when(end_event).then(True).otherwise(False)  # .shift(-24)?
+        period_end = pl.when(event_end_cond).then(True).otherwise(False).shift(-24)
 
         # Define snow period mask
         start_count = period_start.cast(pl.Int64).cum_sum()
@@ -777,15 +784,13 @@ class GetSnowEstimatedCounts(DerivationMethod):
         in_snow_period = start_count > end_count
 
         # Define period id
-        period_id = pl.when(in_snow_period).then(start_count).otherwise(None)  # .alias("_period_id")
-
-        # Define initial estimate
-        # inisital_estimate = pl.when(period_start).then(cts_smo.shift(24))
+        period_id = pl.when(in_snow_period).then(start_count).otherwise(None)
 
         # Define estimated counts
         estimated_counts = pl.when(in_snow_period).then(cts_smo.cum_max().over(period_id)).otherwise(None)
 
-        return estimated_counts
+        # Remove estimated counts from day before snow starts
+        return pl.when(period_start).then(None).otherwise(estimated_counts)
 
     # Implement own run method to handle timeframes with different periodicities
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
@@ -806,15 +811,32 @@ class GetSnowEstimatedCounts(DerivationMethod):
         snow_daily_tf = config.params["snow"]
         cts_smo_tf = config.params["cts_smo"]
 
-        snow_hourly_tf = config.params["cts_smo"].with_df(
-            snow_daily_tf.df.upsample(snow_daily_tf.time_name, every="1h").with_columns(pl.col("snow").forward_fill())
+        time_name = snow_daily_tf.time_name
+        # upsample() only fills rows up to the last existing timestamp, leaving the final day with
+        # a single row at 00:00 instead of 24 hourly rows - so build the full hourly range explicitly.
+        hourly_range = pl.DataFrame(
+            {
+                time_name: pl.datetime_range(
+                    snow_daily_tf.df[time_name].min(),
+                    snow_daily_tf.df[time_name].max() + timedelta(hours=23),
+                    interval="1h",
+                    eager=True,
+                )
+            }
+        )
+        snow_hourly_tf = ts.TimeFrame(
+            df=hourly_range.join(snow_daily_tf.df, on=time_name, how="left").with_columns(
+                pl.col("snow").forward_fill()
+            ),
+            time_name=time_name,
+            resolution="PT1H",
         )
 
         tf_map = {"cts_smo": cts_smo_tf, "snow": snow_hourly_tf}
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
 
         # Get column references for calculation
-        columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
+        columns = {"cts_smo": pl.col("cts_smo"), "snow": pl.col("snow")}
 
         # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
         for param, value in config.params.items():

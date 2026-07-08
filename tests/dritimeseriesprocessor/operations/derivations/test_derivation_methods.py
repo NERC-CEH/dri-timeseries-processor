@@ -18,6 +18,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CorrectCounts,
     DerivationMethod,
     EddyProRun,
+    GetSnowEstimatedCounts,
     IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
@@ -585,6 +586,47 @@ class TestVolumetricWaterContent:
             pl.DataFrame({"vwc": [100.0, 100.0, 100.0, 100.0, 100.0, 61.311, 28.964, 11.083, 5.172]})
         )
         result = VolumetricWaterContent().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestGetSnowEstimatedCounts:
+    def test_get_snow_estimated_counts(self) -> None:
+
+        daily_cts_smo = [1000.0, 1002, 1995, 1996, 1003, 1000, 1001, 1002, 1003]
+
+        params = {
+            "cts_smo": dataframe_to_timeframe(
+                df=pl.DataFrame({"cts_smo": [i for item in daily_cts_smo for i in [item] * 24]}),
+                metadata={"column_name": "cts_smo"},
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "snow": [0, 1, 1, 0, 1, 0, 0, 1, 1],
+                        "time": [datetime(2025, 1, i) for i in range(1, 10)],
+                    }
+                ),
+                metadata={"column_name": "snow"},
+                resolution="P1D",
+            ),
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        daily_cts_est = [
+            None,
+            1002.0,
+            1995.0,
+            1996.0,
+            1996.0,
+            1996.0,
+            None,
+            1002.0,
+            1003.0,
+        ]
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"cts_est": [i for item in daily_cts_est for i in [item] * 24]}))
+        result = GetSnowEstimatedCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 
