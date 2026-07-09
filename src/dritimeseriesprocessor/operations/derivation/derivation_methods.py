@@ -770,25 +770,21 @@ class GetSnowEstimatedCounts(DerivationMethod):
         time = columns["time"]
 
         # use pl.col("cts_smo"), pl.col("snow"), pl.col("time")instead?
-        event_start_cond = (snow == 1) & (snow_prev1 == 0) & (snow_prev2 == 0) & (time.dt.hour() == 0)
-        event_end_cond = (snow == 0) & (snow_prev1 == 0) & (snow_prev2 == 1) & (time.dt.hour() == 0)
-        period_start = pl.when(event_start_cond).then(True).otherwise(False)
-        period_end = pl.when(event_end_cond).then(True).otherwise(False).shift(-24)
-        missed_start = (event_start_cond.is_null() & event_end_cond.shift(-48).fill_null(False)).any()
-        start_count = period_start.cast(pl.Int64).cum_sum() + missed_start.cast(
-            pl.Int64
-        )  # Takes care of case where snow period is at start of dataset,
-        # but cannot see even data to check if previuos two days had no snow.
-        end_count = period_end.cast(pl.Int64).cum_sum()
-        in_snow_period = (start_count > end_count) | (
-            (period_end.is_null()) & (snow == 1)
-        )  # Second condition ensures null that apears from shifting data is handled
-        init_cts_est = (
-            pl.when(period_start).then(cts_smo.shift(1)).otherwise(None)
-        )  # Value at end of previous day. Is this fine?
-        init_cts_est_forward_filled = pl.when(in_snow_period).then(init_cts_est.forward_fill())
+        event_start = (snow == 1) & (snow_prev1 == 0) & (snow_prev2 == 0) & (time.dt.hour() == 0)
+        event_end = (snow == 0) & (snow_prev1 == 0) & (snow_prev2 == 1) & (time.dt.hour() == 0)
+        period_boundary = pl.when(event_start).then(True).when(event_end.shift(-24)).then(False).otherwise(None)
+        # The event_end is identified when there has been two consecutive days of no snow,
+        # but the actual end of the snow period is when the snow stops, i.e. the first day of no snow,
+        # so the event_end is shifted back by 24 hours to denote the true end of the snow period.
+        # This shift means the last 24 hours in period_boundary are not defined, and become null.
+        # If there is snow in the last 24 hours, we know this is in a snow period,
+        # so we fill the nulls as True in this case.
+        in_snow_period = period_boundary.forward_fill().fill_null(snow == 1)
 
-        cts_est = pl.when(cts_smo > init_cts_est_forward_filled).then(cts_smo).otherwise(init_cts_est_forward_filled)
+        # Counts during snow period are initialised by the counts from the end of previous day.
+        init_cts_est = pl.when(in_snow_period).then(pl.when(event_start).then(cts_smo.shift(1)).forward_fill())
+
+        cts_est = pl.when(cts_smo > init_cts_est).then(cts_smo).otherwise(init_cts_est)
 
         return cts_est
 

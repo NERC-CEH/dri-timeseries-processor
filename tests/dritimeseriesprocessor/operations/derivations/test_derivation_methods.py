@@ -600,9 +600,9 @@ class TestGetSnowEstimatedCounts:
             or:
                 the value of smoothed counts.
         4. One day of no snow should not be considered the end of the snow period.
-        5. If there is a snow day at the beginning of the dataset,
-           but there is no data for the previous days to check if it is the start of the snow period,
-           no count estimate is given.
+        5. If there is a snow day within the first two days of the dataset,
+           then there is no data for the previous days to check if it is the start of the snow period,
+           so no count estimate is given.
         """
         daily_cts_smo = [995.0, 1000, 1002, 995, 996, 1003, 997, 1001, 1002, 992, 1000, 1000, 995]
 
