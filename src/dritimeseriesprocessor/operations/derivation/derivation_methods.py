@@ -763,39 +763,38 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
 
+        cts_smo = columns["cts_smo"]
         snow = columns["snow"]
         snow_prev1 = snow.shift(24)
         snow_prev2 = snow.shift(48)
-        cts_smo = columns["cts_smo"]
         time = columns["time"]
 
+        # use pl.col("cts_smo"), pl.col("snow"), pl.col("time")instead?
         event_start_cond = (snow == 1) & (snow_prev1 == 0) & (snow_prev2 == 0) & (time.dt.hour() == 0)
         event_end_cond = (snow == 0) & (snow_prev1 == 0) & (snow_prev2 == 1) & (time.dt.hour() == 0)
-
-        # Define start of snow period as day before snow starts.
-        period_start = pl.when(event_start_cond).then(True).otherwise(False).shift(24)
-
-        # Define end of snow period.
+        period_start = pl.when(event_start_cond).then(True).otherwise(False)
         period_end = pl.when(event_end_cond).then(True).otherwise(False).shift(-24)
-
-        # Define snow period mask
-        start_count = period_start.cast(pl.Int64).cum_sum()
+        missed_start = (event_start_cond.is_null() & event_end_cond.shift(-48).fill_null(False)).any()
+        start_count = (
+            period_start.cast(pl.Int64).cum_sum() + missed_start.cast(pl.Int64)
+        )  # Takes care of case where snow period is at start of dataset, but cannot see even data to check if previuos two days were not snowy.
         end_count = period_end.cast(pl.Int64).cum_sum()
-        in_snow_period = start_count > end_count
+        in_snow_period = (start_count > end_count) | (
+            (period_end.is_null()) & (snow == 1)
+        )  # Second condition ensures null that apears from shifting data is handled
+        init_cts_est = (
+            pl.when(period_start).then(cts_smo.shift(1)).otherwise(None)
+        )  # Value at end of previous day. Is this fine?
+        init_cts_est_forward_filled = pl.when(in_snow_period).then(init_cts_est.forward_fill())
 
-        # Define period id
-        period_id = pl.when(in_snow_period).then(start_count).otherwise(None)
+        cts_est = pl.when(cts_smo > init_cts_est_forward_filled).then(cts_smo).otherwise(init_cts_est_forward_filled)
 
-        # Define estimated counts
-        estimated_counts = pl.when(in_snow_period).then(cts_smo.cum_max().over(period_id)).otherwise(None)
+        return cts_est
 
-        # Remove estimated counts from day before snow starts
-        return pl.when(period_start).then(None).otherwise(estimated_counts)
-
-    # Implement own run method to handle timeframes with different periodicities
+    # Implement run method to handle timeframes with different periodicities instead of DerivationMethod run method.
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         """
-        Derivation to reconstruct CRNS counts expected values if there had been no snow.
+        Derivation to reconstruct CRNS counts expected values if there had been no snow, as snow supresses the counts.
         During a snow event, the estimated count is set to the value of the counts just before the snow started.
         If the counts increase, so should the estimate.
 
@@ -810,10 +809,9 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         snow_daily_tf = config.params["snow"]
         cts_smo_tf = config.params["cts_smo"]
-
         time_name = snow_daily_tf.time_name
-        # upsample() only fills rows up to the last existing timestamp, leaving the final day with
-        # a single row at 00:00 instead of 24 hourly rows - so build the full hourly range explicitly.
+
+        # Upsample snow_daily_tf to have hourly values
         hourly_range = pl.DataFrame(
             {
                 time_name: pl.datetime_range(
@@ -832,35 +830,28 @@ class GetSnowEstimatedCounts(DerivationMethod):
             resolution="PT1H",
         )
 
+        # We cannot use a shared config here, as is used in the DerivationMethod run method.
+        # A shared config enforces that all datasets must have the same perioditicy/resolution, which is not the case here.
+        # Without a shared config, which stores the column names, the column names must be given here explicity.
         tf_map = {"cts_smo": cts_smo_tf, "snow": snow_hourly_tf}
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
 
         # Get column references for calculation
-        columns = {"cts_smo": pl.col("cts_smo"), "snow": pl.col("snow")}
-
-        # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
-        for param, value in config.params.items():
-            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
-                # Join the deployment values to the main DataFrame
-                merged_tf = merged_tf.with_df(
-                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
-                )
-                # Make sure the deployment value column is available to any calculation method that needs it
-                columns[param] = pl.col(param)
+        columns = {"time": pl.col("time"), "cts_smo": pl.col("cts_smo"), "snow": pl.col("snow")}
 
         # Perform the calculation (subclass-specific)
-        calculation_expr = self.expr(columns).alias(config.params["output_col"])
+        calculation_expr = self.expr(columns).alias("cts_est")
         result_df = merged_tf.df.with_columns(calculation_expr)
 
         return (
             ts.TimeFrame(
                 df=result_df,
                 time_name=merged_tf.time_name,
-                resolution=config.params["resolution"],
-                periodicity=config.params["periodicity"],
+                resolution="PT1H",
+                periodicity="PT1H",
             )
-            .with_metadata({"column_name": config.params["output_col"]})
-            .select(config.params["output_col"])
+            .with_metadata({"column_name": "cts_est"})
+            .select("cts_est")
         )
 
 

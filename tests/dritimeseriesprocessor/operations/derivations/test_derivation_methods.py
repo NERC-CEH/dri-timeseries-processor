@@ -591,8 +591,20 @@ class TestVolumetricWaterContent:
 
 class TestGetSnowEstimatedCounts:
     def test_get_snow_estimated_counts(self) -> None:
-
-        daily_cts_smo = [1000.0, 1002, 1995, 1996, 1003, 1000, 1001, 1002, 1003]
+        """Test get_snow_estimated_counts using fictional, but realistic data, where snow suppresses the counts.
+        This test covers the following cases:
+        1. Snow period starts if there is snow on a given day, but there was no snow for at least two days previously.
+        2. Snow period ends after two consecutive days of now snow.
+        3. During snow period, counts should be the maximum of either:
+                the value of the smoothed counts just before the start of the snow period,
+            or:
+                the value of smoothed counts.
+        4. One day of no snow should not be considered the end of the snow period.
+        5. If there is a snow day at the beginning of the dataset,
+           but there is no data for the previous days to check if it is the start of the snow period,
+           no count estimate is given.
+        """
+        daily_cts_smo = [995.0, 1000, 1002, 995, 996, 1003, 997, 1001, 1002, 992, 1000, 1000, 995]
 
         params = {
             "cts_smo": dataframe_to_timeframe(
@@ -602,8 +614,8 @@ class TestGetSnowEstimatedCounts:
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
                     {
-                        "snow": [0, 1, 1, 0, 1, 0, 0, 1, 1],
-                        "time": [datetime(2025, 1, i) for i in range(1, 10)],
+                        "snow": [1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1],
+                        "time": [datetime(2025, 1, i) for i in range(1, 14)],
                     }
                 ),
                 metadata={"column_name": "snow"},
@@ -615,14 +627,18 @@ class TestGetSnowEstimatedCounts:
 
         daily_cts_est = [
             None,
-            1002.0,
-            1995.0,
-            1996.0,
-            1996.0,
-            1996.0,
+            None,
             None,
             1002.0,
+            1002.0,
             1003.0,
+            1002.0,
+            None,
+            None,
+            1002.0,
+            None,
+            None,
+            1000.0,
         ]
 
         expected = dataframe_to_timeframe(pl.DataFrame({"cts_est": [i for item in daily_cts_est for i in [item] * 24]}))
