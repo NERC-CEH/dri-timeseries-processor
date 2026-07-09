@@ -775,9 +775,10 @@ class GetSnowEstimatedCounts(DerivationMethod):
         period_start = pl.when(event_start_cond).then(True).otherwise(False)
         period_end = pl.when(event_end_cond).then(True).otherwise(False).shift(-24)
         missed_start = (event_start_cond.is_null() & event_end_cond.shift(-48).fill_null(False)).any()
-        start_count = (
-            period_start.cast(pl.Int64).cum_sum() + missed_start.cast(pl.Int64)
-        )  # Takes care of case where snow period is at start of dataset, but cannot see even data to check if previuos two days were not snowy.
+        start_count = period_start.cast(pl.Int64).cum_sum() + missed_start.cast(
+            pl.Int64
+        )  # Takes care of case where snow period is at start of dataset,
+        # but cannot see even data to check if previuos two days had no snow.
         end_count = period_end.cast(pl.Int64).cum_sum()
         in_snow_period = (start_count > end_count) | (
             (period_end.is_null()) & (snow == 1)
@@ -831,7 +832,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
         )
 
         # We cannot use a shared config here, as is used in the DerivationMethod run method.
-        # A shared config enforces that all datasets must have the same perioditicy/resolution, which is not the case here.
+        # A shared config enforces that all datasets must have the same perioditicy/resolution,
+        # which is not the case here.
         # Without a shared config, which stores the column names, the column names must be given here explicity.
         tf_map = {"cts_smo": cts_smo_tf, "snow": snow_hourly_tf}
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
