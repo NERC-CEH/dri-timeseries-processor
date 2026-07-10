@@ -752,27 +752,48 @@ class VolumetricWaterContent(DerivationMethod):
 @DerivationMethod.register
 class GetSnowEstimatedCounts(DerivationMethod):
     """
-    Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
-               Estimating snow water equivalent using cosmic-ray neutron sensors
-               from the COSMOS-UK network. Hydrological Processes. 2021;35:e14048.
-               https://doi.org/10.1002/hyp.14048
+    Calculate CRNS count estimates when there is snow.
     """
 
     name = "get_snow_estimated_counts"
     inputs = ("snow", "cts_smo")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate CRNS count estimates when there is snow.
+
+        This derivation reconstructs CRNS counts if there had been no snow, as snow supresses the counts.
+        During a snow event, the estimated count is set to the value of the counts just before the snow started.
+        If the counts increase, so should the estimate.
+
+        Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
+                Estimating snow water equivalent using cosmic-ray neutron sensors
+                from the COSMOS-UK network. Hydrological Processes. 2021;35:e14048.
+                https://doi.org/10.1002/hyp.14048
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
+                - snow: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
+                - time: hourly timestamps corresponding to cts_smo values.
+
+        Returns:
+            Polars expression for estimated counts during snow periods. Null when no in snow period.
+        """
+        HOURS_IN_A_DAY = 24
 
         cts_smo = columns["cts_smo"]
         snow = columns["snow"]
-        snow_prev1 = snow.shift(24)
-        snow_prev2 = snow.shift(48)
+        snow_prev1 = snow.shift(HOURS_IN_A_DAY)
+        snow_prev2 = snow.shift(2 * HOURS_IN_A_DAY)
         time = columns["time"]
 
-        # use pl.col("cts_smo"), pl.col("snow"), pl.col("time")instead?
         event_start = (snow == 1) & (snow_prev1 == 0) & (snow_prev2 == 0) & (time.dt.hour() == 0)
         event_end = (snow == 0) & (snow_prev1 == 0) & (snow_prev2 == 1) & (time.dt.hour() == 0)
-        period_boundary = pl.when(event_start).then(True).when(event_end.shift(-24)).then(False).otherwise(None)
+        period_boundary = (
+            pl.when(event_start).then(True).when(event_end.shift(-HOURS_IN_A_DAY)).then(False).otherwise(None)
+        )
+
         # The event_end is identified when there has been two consecutive days of no snow,
         # but the actual end of the snow period is when the snow stops, i.e. the first day of no snow,
         # so the event_end is shifted back by 24 hours to denote the true end of the snow period.
@@ -783,17 +804,12 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         # Counts during snow period are initialised by the counts from the end of previous day.
         init_cts_est = pl.when(in_snow_period).then(pl.when(event_start).then(cts_smo.shift(1)).forward_fill())
-
         cts_est = pl.when(cts_smo > init_cts_est).then(cts_smo).otherwise(init_cts_est)
-
         return cts_est
 
-    # Implement run method to handle timeframes with different periodicities instead of DerivationMethod run method.
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         """
-        Derivation to reconstruct CRNS counts expected values if there had been no snow, as snow supresses the counts.
-        During a snow event, the estimated count is set to the value of the counts just before the snow started.
-        If the counts increase, so should the estimate.
+        Implement run method to handle timeframes with different periodicities instead of DerivationMethod run method.
 
         Args:
             config: Configuration parameters including input TimeFrames and output specs
@@ -802,39 +818,24 @@ class GetSnowEstimatedCounts(DerivationMethod):
             TimeFrame containing the calculated derived variable
         """
 
-        self.config = config
-
         snow_daily_tf = config.params["snow"]
         cts_smo_tf = config.params["cts_smo"]
-        time_name = snow_daily_tf.time_name
 
-        # Upsample snow_daily_tf to have hourly values
-        hourly_range = pl.DataFrame(
-            {
-                time_name: pl.datetime_range(
-                    snow_daily_tf.df[time_name].min(),
-                    snow_daily_tf.df[time_name].max() + timedelta(hours=23),
-                    interval="1h",
-                    eager=True,
-                )
-            }
-        )
-        snow_hourly_tf = ts.TimeFrame(
-            df=hourly_range.join(snow_daily_tf.df, on=time_name, how="left").with_columns(
-                pl.col("snow").forward_fill()
-            ),
-            time_name=time_name,
-            resolution="PT1H",
+        # We cannot use merge_multiple_timeframes here without upsampling snow_daily_tf. Use join instead.
+        merged_tf = cts_smo_tf.with_df(
+            cts_smo_tf.df.with_columns(pl.col(cts_smo_tf.time_name).dt.date().alias("_date"))
+            .join(
+                snow_daily_tf.df.with_columns(pl.col(snow_daily_tf.time_name).dt.date().alias("_date")),
+                on="_date",
+                how="left",
+            )
+            .drop("_date")
         )
 
         # We cannot use a shared config here, as is used in the DerivationMethod run method.
         # A shared config enforces that all datasets must have the same perioditicy/resolution,
         # which is not the case here.
         # Without a shared config, which stores the column names, the column names must be given here explicity.
-        tf_map = {"cts_smo": cts_smo_tf, "snow": snow_hourly_tf}
-        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
-
-        # Get column references for calculation
         columns = {"time": pl.col("time"), "cts_smo": pl.col("cts_smo"), "snow": pl.col("snow")}
 
         # Perform the calculation (subclass-specific)
