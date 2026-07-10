@@ -27,6 +27,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     PotentialEvapotranspiration30Min,
     SolarZenith,
     VolumetricWaterContent,
+    VolumetricWaterContentWithSnow,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -557,9 +558,9 @@ class TestCorrectCounts:
                 "cosmosfactor_pa": [1.1914, 1.08646, 1.27831, 1.16301],
                 "cosmosfactor_q": [0.97707, 1.00791, 0.97690, 1.01832],
             },
-            "correct_counts",
+            "cts_mod_corr",
         )
-        expected = dataframe_to_timeframe(pl.DataFrame({"correct_counts": [885.847, 822.629, 979.390, 851.902]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"cts_mod_corr": [885.847, 822.629, 979.390, 851.902]}))
         result = CorrectCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
 
@@ -784,6 +785,62 @@ class TestGetSnowEstimatedCounts:
         expected = dataframe_to_timeframe(pl.DataFrame({"cts_est": [i for item in daily_cts_est for i in [item] * 24]}))
         result = GetSnowEstimatedCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestVolumetricWaterContentWithSnow:
+    """Test calculation for volumetric water content when there is snow,
+    using fictional but realistic data, borrowed from TestGetSnowEstimatedCounts."""
+
+    def test_vwc_with_snow(self) -> None:
+        daily_cts_mod_corr = [995.0, 1000, 1002, 995, 996, 1003, 997, 1001, 1002, 1003, 995]
+        daily_cts_est_crns = [
+            None,
+            None,
+            None,
+            1002.0,
+            1002.0,
+            1003.0,
+            1002.0,
+            None,
+            None,
+            1003.0,
+            1002.0,
+        ]
+
+        config = create_method_config(
+            {
+                "cts_mod_corr": [i for item in daily_cts_mod_corr for i in [item] * 24],
+                "cts_est_crns": [i for item in daily_cts_est_crns for i in [item] * 24],
+            },
+            "vwc_with_snow",
+        )
+
+        # Annotations from cosmos-holln
+        config.params["n0_mod"] = 2710.16689
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+        config.params["n_min"] = 1204.50827
+        config.params["n_max"] = 2281.33025
+
+        expected_daily_vwc_with_snow = [
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+            99.99999,
+        ]
+        expected_vwc_with_snow = [i for item in expected_daily_vwc_with_snow for i in [item] * 24]
+
+        # Do we need the annotations?
+        result = VolumetricWaterContentWithSnow().run(config)
+        assert [round(item, 5) for item in list(result.df["vwc_with_snow"])] == expected_vwc_with_snow
 
 
 class TestCalcFluxMeanShf:
