@@ -20,8 +20,9 @@ def merge_multiple_timeframes(inputs: list[ts.TimeFrame]) -> ts.TimeFrame:
     if not all([tf.periodicity == periodicity for tf in inputs]):
         raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same periodicity")
 
-    if not all([tf.time_anchor == time_anchor for tf in inputs]):
-        raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same time anchor")
+    # ToDo: Needs further consideration. Removed to prevent derivations failing where time anchors not used.
+    # if not all([tf.time_anchor == time_anchor for tf in inputs]):
+    #    raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same time anchor")
 
     merged_df = merge_multiple([tf.df for tf in inputs], time_name)
     return ts.TimeFrame(
