@@ -39,9 +39,6 @@ class _InterceptHandler(logging.Handler):
 def _local_formatter(record: dict) -> str:
     """Human-readable log format for local development.
 
-    The standard JSON format is machine-readable but hard to follow locally,
-    so this formatter is used when `environment` is not set.
-
     Args:
         record: the loguru record object.
 
@@ -67,8 +64,6 @@ def setup_logger(service_name: str) -> None:
     """Configure loguru for the service based on the run environment.
 
     Uses human-readable logs locally and structured JSON in staging/production.
-    Also intercepts the root stdlib logger so existing `logging.getLogger(__name__)`
-    call sites throughout the codebase are routed through loguru unchanged.
 
     Args:
         service_name: the name of the service
