@@ -2,8 +2,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# Filter warnings before importing anything that pulls in driutils, which imports autosemver,
-# which imports the deprecated pkg_resources, to keep that warning out of stdout before logging is set up.
+# Filter warnings form the logs
 from importlib.metadata import PackageNotFoundError, version  # noqa: E402
 from pathlib import Path  # noqa: E402
 
