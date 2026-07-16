@@ -33,6 +33,7 @@ class AppConfig(ABC):
     metadata_api_url: str
     environment: Environment
     pushgateway_url: str
+    service_name: str = "dri-timeseries-processor"
 
     def __init__(self):
         self.load_config()
