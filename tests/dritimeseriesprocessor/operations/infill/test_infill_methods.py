@@ -4,7 +4,7 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.infill.infill_methods import AltData, Linear
+from dritimeseriesprocessor.operations.infill.infill_methods import AltData, AltDataDynamic, Linear
 from utils.data_creation import create_timeframe
 
 
@@ -98,6 +98,51 @@ class TestAltData:
         result = AltData().run(tf, config)
 
         expected = [1.0, None, 3.0, 40.0, 5.0, None, 7.0]
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+
+        assert_frame_equal(result.df, expected_df)
+
+
+class TestAltDataDynamic:
+    def test_alt_data_simple(self) -> None:
+        """Test that the alt_data_dynamic function works across the full DataFrame."""
+        tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
+        alt_df = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
+        )
+        config = create_method_config(
+            alt_df=alt_df,
+            alt_data_column="alt",
+            max_threshold=2,
+            window_size="PT1H",
+        )
+
+        result = AltDataDynamic().run(tf, config)
+
+        expected = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+
+        assert_frame_equal(result.df, expected_df)
+
+    def test_alt_data_with_date_filter(self) -> None:
+        """Test that the alt_data function works with a date filter."""
+        tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
+        alt_df = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
+        )
+        config = create_method_config(
+            alt_df=alt_df,
+            alt_data_column="alt",
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
+            min_threshold=2,
+            max_threshold=2,
+            window_size="PT1H",
+        )
+
+        result = AltDataDynamic().run(tf, config)
+
+        expected = [1.0, None, 3.0, 4.0, 5.0, None, 7.0]
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
 
         assert_frame_equal(result.df, expected_df)

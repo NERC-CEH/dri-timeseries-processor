@@ -23,25 +23,11 @@
       ],
       "hasTopConcept": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/albedo_south_slope_correction",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/add",
           "prefLabel": [
-            "albedo_south_slope_correction"
+            "add"
           ],
-          "value": 128
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/pa_corr",
-          "prefLabel": [
-            "pa_corr"
-          ],
-          "value": 8
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/scalar",
-          "prefLabel": [
-            "scalar"
-          ],
-          "value": 4
+          "value": 1
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/clip",
@@ -51,18 +37,18 @@
           "value": 64
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/wd",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/scalar",
           "prefLabel": [
-            "wd"
+            "scalar"
           ],
-          "value": 32
+          "value": 4
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/lw_corr",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/pa_corr",
           "prefLabel": [
-            "lw_corr"
+            "pa_corr"
           ],
-          "value": 2
+          "value": 8
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/power",
@@ -72,11 +58,25 @@
           "value": 16
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/add",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/lw_corr",
           "prefLabel": [
-            "add"
+            "lw_corr"
           ],
-          "value": 1
+          "value": 2
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/wd",
+          "prefLabel": [
+            "wd"
+          ],
+          "value": 32
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme/albedo_south_slope_correction",
+          "prefLabel": [
+            "albedo_south_slope_correction"
+          ],
+          "value": 128
         }
       ]
     }

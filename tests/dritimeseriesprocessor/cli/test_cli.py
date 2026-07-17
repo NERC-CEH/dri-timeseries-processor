@@ -265,12 +265,14 @@ class TestParseDateRange:
         assert start_date == datetime(2024, 3, 1)
 
     def test_start_date_equals_end_date(self) -> None:
-        """Test that the error raised if start date = end date"""
+        """Test that start date == end date is valid (processes a single day)."""
         end_date = date(2024, 3, 10)
         start_date = date(2024, 3, 10)
 
-        with pytest.raises(argparse.ArgumentTypeError):
-            _parse_date_range(start_date, None, end_date)
+        result_start, result_end = _parse_date_range(start_date, None, end_date)
+
+        assert result_start == datetime(2024, 3, 10)
+        assert result_end == datetime(2024, 3, 10)
 
     def test_start_date_after_end_date(self) -> None:
         """Test that the error raised if start date > end date"""

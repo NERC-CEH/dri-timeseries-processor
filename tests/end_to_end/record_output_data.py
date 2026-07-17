@@ -28,14 +28,17 @@ processor. Only then should the outputs be committed and used for E2E testing.
 import os
 import shutil
 from pathlib import Path
+from unittest.mock import patch
 
 import polars as pl
 from tests.end_to_end.mock_metadata_api.mock_api import mock_metadata_api
+from tests.utils.eddypro_test_helpers import eddypro_mock_init, eddypro_mock_run
 from tests.utils.fixture_helpers import END_TO_END, TEST_DATA_OUTPUT_DIR, load_json_file
 from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
 from tests.utils.s3_test_helpers import get_s3_storage_client
 
 from dritimeseriesprocessor.__main__ import main as pipeline_main
+from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
 
 
 def reset_output_data_fixture_dir(path: Path) -> None:
@@ -79,8 +82,11 @@ def main() -> None:
                     test_case["end_date"],
                 ]
 
-                # run the processor
-                pipeline_main(cli_args)
+                with (
+                    patch.object(EddyProRunner, "__init__", eddypro_mock_init),
+                    patch.object(EddyProRunner, "run", eddypro_mock_run),
+                ):
+                    pipeline_main(cli_args)
 
             # get the outputs and save to disk
             all_keys = storage_client.list_keys(E2E_OUTPUT_BUCKET)

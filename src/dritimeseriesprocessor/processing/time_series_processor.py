@@ -92,7 +92,6 @@ class TimeSeriesProcessor:
                     for layer in layers:
                         self.process_layer(layer)
 
-                    logger.info("-" * 30)
                     logger.info("Collecting and saving datasets.")
                     self._save_datasets()
 
@@ -205,7 +204,7 @@ class TimeSeriesProcessor:
             return None
         return container.data_processing_configs[container.plan_order[next_idx]].config_type
 
-    @log_duration("Loading datasets time taken: ", footer=True)
+    @log_duration("Loading datasets time taken: ")
     def _batch_load(self) -> None:
         """Load time-series data for multiple datasets in grouped batches.
 
@@ -250,7 +249,7 @@ class TimeSeriesProcessor:
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
 
-    @log_duration("Saving datasets time taken: ", footer=True)
+    @log_duration("Saving datasets time taken: ")
     def _save_datasets(self) -> None:
         """Determine which datasets to save, pool them together in groups that are being saved to the same
         parquet file, then do some concurrent save tasks.

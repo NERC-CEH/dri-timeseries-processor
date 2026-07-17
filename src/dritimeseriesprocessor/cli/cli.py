@@ -197,7 +197,7 @@ def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_d
         Tuple of (start_date, end_date).
     """
     if start_date is not None:
-        if start_date >= end_date:
+        if start_date > end_date:
             raise argparse.ArgumentTypeError("--start-date must be earlier than --end-date")
         return to_datetime(start_date), to_datetime(end_date)
 

@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/site?_view=annotated&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/site.geojson?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.rdf?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.html?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.json?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.csv?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.ttl?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&_view=annotated"
+    ],
+    "limit": 10
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-apty",
+      "label": [
+        "Apatity"
+      ],
+      "lat": 67.57,
+      "long": 33.4,
+      "altitude": 181.0,
+      "identifier": [
+        "APTY"
+      ],
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-apty#operating-period",
+        "startDate": "1965-05-01"
+      }
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung1",
+      "label": [
+        "Jungfraujoch NM64"
+      ],
+      "lat": 46.55,
+      "long": 7.98,
+      "altitude": 3475.0,
+      "identifier": [
+        "JUNG1"
+      ],
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung1#operating-period",
+        "startDate": "1986-01-01"
+      }
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-newk",
+      "label": [
+        "Newark/Swarthmore"
+      ],
+      "lat": 39.68,
+      "long": -75.75,
+      "altitude": 50.0,
+      "identifier": [
+        "NEWK"
+      ],
+      "operatingPeriod": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-newk#operating-period",
+        "startDate": "1964-07-01"
+      }
+    }
+  ]
+}

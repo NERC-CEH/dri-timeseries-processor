@@ -19,6 +19,9 @@
   "items": [
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed",
+      "title": [
+        "Neutron count"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -118,7 +121,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/nmdb/dataset=PROCESSED_NMDB_1HOUR/site=JUNG/"
+            "s3://e2e-output/nmdb/dataset=PROCESSED_NMDB_1HOUR/site=JUNG/"
           ]
         }
       ],
@@ -126,11 +129,6 @@
       "sourceDataset": "PROCESSED_NMDB_1HOUR",
       "sourceColumnName": "CRNS-COUNT",
       "sourceTimeColumnName": "timestamp",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/nmdb-jung-crns"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung"
@@ -143,25 +141,37 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
-          "identifier": [
-            "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
           "identifier": [
             "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
           "identifier": [
             "NMDB-APTY-NEUTRON_CTS_1HOUR_RAW"
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
+          "identifier": [
+            "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
           "identifier": [
             "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
           ]
@@ -169,27 +179,39 @@
       ],
       "directDependsOn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
+          "identifier": [
+            "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
           "identifier": [
             "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
           "identifier": [
             "NMDB-APTY-NEUTRON_CTS_1HOUR_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
           "identifier": [
             "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
-          "identifier": [
-            "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
           ]
         }
       ],
