@@ -165,6 +165,9 @@ python -m dritimeseriesprocessor from-datasets \
 Outputs a JSON array of active site IDs for a given network to `/tmp/sites.json`. Sites whose operating period does
 not overlap the requested date window are excluded.
 
+By default, all sites for the network are listed. Pass `--sites` to limit the result to a specific set of sites -
+any listed site that isn't in the network is excluded too.
+
 Intended for use in Argo Workflows fan-out steps, where the output is captured as a step result and passed as input
 to downstream processing steps.
 
@@ -173,6 +176,7 @@ to downstream processing steps.
 ```bash
 python -m dritimeseriesprocessor list-sites
   --network NETWORK
+  [--sites SITE [SITE ...]]
   [--lookback DURATION | --start-date YYYY-MM-DD]
   [--end-date YYYY-MM-DD]
 ```
@@ -188,6 +192,15 @@ This writes to `/tmp/sites.json`:
 ```json
 ["cosmos-alic1", "cosmos-bunny", "cosmos-eustn"]
 ```
+
+**Example with `--sites`**:
+
+```bash
+python -m dritimeseriesprocessor list-sites --network cosmos --sites cosmos-alic1 cosmos-bunny --lookback P2D
+```
+
+This limits the result to just `cosmos-alic1` and `cosmos-bunny` (still subject to network membership and the
+date window).
 
 ### Site Names
 
