@@ -34,7 +34,7 @@ from dritimeseriesprocessor.utils.urls import SITE_URI
 logger = logging.getLogger(__name__)
 
 
-@log_duration("Total time taken: ", header=True)
+@log_duration("Total time taken: ")
 def run_from_config(run_config: RunConfig) -> None:
     """Execute a processing run from a valid RunConfig made of user args.
 
@@ -79,14 +79,10 @@ def _build_processor(
     """
     network = next((s.network for s in selection if isinstance(s, DimensionSelection)), None)
 
-    logger.info("-" * 30)
-    logger.info("Setting up processor for selections:")
-    logger.info(f"Start date            : {start_date}")
-    logger.info(f"End date              : {end_date}")
-    if network:
-        logger.info(f"Network               : {network}")
-    logger.info(f"Dataset selections    : {'\n' + '\n'.join([str(s) for s in selection])}")
-    logger.info("-" * 30)
+    logger.info(
+        f"Setting up processor: start_date={start_date}, end_date={end_date}, "
+        f"network={network or 'n/a'}, selections={[str(s) for s in selection]}"
+    )
 
     cfg = app_config()
 
@@ -127,7 +123,7 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
     )
 
 
-@log_duration("Dependency graph build duration: ", footer=True)
+@log_duration("Dependency graph build duration: ")
 def _build_dependency_graph(
     selection: list[Selection],
     metadata_router: MetadataRouter,
@@ -165,12 +161,7 @@ def list_sites(network: str, start_date: datetime, end_date: datetime) -> None:
         start_date: Start of the date range to find open sites for (inclusive).
         end_date: End of the date range to find open sites for (inclusive).
     """
-    logger.info("-" * 30)
-    logger.info("Listing sites for selections:")
-    logger.info(f"Start date : {start_date}")
-    logger.info(f"End date   : {end_date}")
-    logger.info(f"Network    : {network}")
-    logger.info("-" * 30)
+    logger.info(f"Listing sites: start_date={start_date}, end_date={end_date}, network={network}")
 
     cfg = app_config()
     router = MetadataRouter(cfg.metadata_api_url)
