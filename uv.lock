@@ -534,7 +534,7 @@ wheels = [
 
 [[package]]
 name = "dri-timeseries-processor"
-version = "0.6.2"
+version = "0.6.6"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
@@ -624,8 +624,8 @@ typecheck = [{ name = "pyright" }]
 
 [[package]]
 name = "dri-utils"
-version = "0.0.25"
-source = { git = "https://github.com/NERC-CEH/dri-utils.git#e759a543c415120632c50e6c5c7d9cf59882b73b" }
+version = "0.0.30"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git#b3660104c72104902be687a9a5a407aa2455d822" }
 dependencies = [
     { name = "autosemver" },
     { name = "boto3" },
