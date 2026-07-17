@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import polars as pl
 import pytest
@@ -8,6 +8,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import (
     AngularMean,
+    HourlyValueAsDaily,
     Max,
     Mean,
     MeanRad,
@@ -154,3 +155,18 @@ class TestStandardDeviation:
             }
         )
         assert_frame_equal(result.df["time", "value"], expected)
+
+
+class TestHourlyValueAsDaily:
+    def test_hourly_value_as_daily(self) -> None:
+        """
+        Test down sampling of hourly to daily data,
+        where the daily values are represented by the hourly values from the same hour hour each day.
+        """
+        tf = create_timeframe(list(range(48)))
+        config = create_method_config(ts.Period.of_days(2))
+        config.params["hour"] = 12
+
+        result = HourlyValueAsDaily().run(tf, config)
+        expected = pl.DataFrame({"time": [date(2025, 1, 1), date(2025, 1, 2)], "value": [12, 36]})
+        assert_frame_equal(result.df, expected)

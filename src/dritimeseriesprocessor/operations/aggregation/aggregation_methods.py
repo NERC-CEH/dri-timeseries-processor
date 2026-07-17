@@ -136,3 +136,19 @@ class StandardDeviation(AggregationMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "stdev")
+
+
+@AggregationMethod.register
+class HourlyValueAsDaily(AggregationMethod):
+    name = "hourly_value_as_daily"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        hour = config.params["hour"]
+        down_sampled_tf = ts.TimeFrame(
+            df=tf.df.filter(pl.col(tf.time_name).dt.hour() == hour).with_columns(
+                pl.col(tf.time_name).dt.date().alias(tf.time_name)
+            ),
+            time_name=tf.time_name,
+            resolution="P1D",
+        )
+        return down_sampled_tf
