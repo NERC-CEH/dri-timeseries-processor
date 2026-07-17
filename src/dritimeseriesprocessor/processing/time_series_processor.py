@@ -97,8 +97,21 @@ class TimeSeriesProcessor:
 
             logger.info("Processing pipeline finished. Pushing prometheus metrics.")
             self.metrics.export_metrics_to_pushgateway()
+
+            self._raise_if_failed()
         finally:
             self.data_router.cleanup()
+
+    def _raise_if_failed(self) -> None:
+        """Raise an exception if any dataset failed to load or process.
+
+        Dataset failures are caught and recorded per-dataset so that one failure doesn't stop the rest of the
+        run from being processed. Without this check, the process would exit with a success status even if some
+        datasets failed, which would hide the failure from anything monitoring the exit code
+        """
+        failed_ids = [dataset_id for dataset_id, container in self.graph.datasets.items() if container.failed]
+        if failed_ids:
+            raise RuntimeError(f"Processing failed for {len(failed_ids)} dataset(s): {failed_ids}")
 
     def process_layer(self, layer: list[str]) -> None:
         """Process an individual layer of the dependency graph.
