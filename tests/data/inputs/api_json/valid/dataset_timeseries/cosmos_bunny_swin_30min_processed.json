@@ -50,394 +50,49 @@
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-0",
             "index": 0,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-load_raw",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-load_raw",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-load_raw#argument.depts",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-load_raw#argument.depts.value",
-                        "valueReference": [
-                          {
-                            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw"
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/load"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-swin_30min-load_raw\",\"type\":\"load\",\"method\":\"load\",\"dep_ts\":[\"COSMOS-BUNNY-SWIN_30MIN_RAW\"],\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-load_raw"
             }
           },
           {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-2",
             "index": 2,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-range",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-range",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-range#argument.lt",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-range#argument.lt.value",
-                        "value": [
-                          -10.0
-                        ]
-                      }
-                    },
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-range#argument.gt",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-range#argument.gt.value",
-                        "value": [
-                          1200.0
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/range"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-swin_30min-range\",\"type\":\"qc\",\"method\":\"RANGE\",\"parameters\":[{\"param\":\"lt\",\"value\":-10.0},{\"param\":\"gt\",\"value\":1200.0}],\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-6",
-            "index": 6,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-infill",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-infill",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-infill#argument.window",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-infill#argument.window.value",
-                        "value": [
-                          1
-                        ]
-                      }
-                    },
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-infill#argument.max_gap_size",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-infill#argument.max_gap_size.value",
-                        "value": [
-                          6
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_linear"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-swin_30min-infill\",\"type\":\"infill\",\"parameters\":[{\"param\":\"window\",\"value\":1},{\"param\":\"max_gap_size\",\"value\":6}],\"method\":\"linear_linear\",\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/infill"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-1",
-            "index": 1,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-correction-scalar",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-correction-scalar",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-correction-scalar#argument.correction_factor",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-correction-scalar#argument.correction_factor.value",
-                        "value": [
-                          0.98787
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/scalar"
-                  },
-                  "observationInterval": {
-                    "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-correction-scalar#observationInterval"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-swin_30min-correction-scalar\",\"type\":\"correction\",\"method\":\"SCALAR\",\"parameters\":[{\"param\":\"correction_factor\",\"value\":0.98787}],\"observation_interval\":{\"start_date\":\"2020-08-10T09:30:00\",\"end_date\":\"2020-08-17T15:00:00\"},\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-4",
-            "index": 4,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-error_code",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-error_code",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-error_code#argument.value",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-error_code#argument.value.value",
-                        "value": [
-                          7999.0,
-                          8999.0
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/error_code"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-swin_30min-error_code\",\"type\":\"qc\",\"method\":\"ERROR_CODE\",\"parameters\":[{\"param\":\"value\",\"value\":[7999.0,8999.0]}],\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-5",
-            "index": 5,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-samples",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-samples",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-samples#argument.lt",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-samples#argument.lt.value",
-                        "value": [
-                          60.0
-                        ]
-                      }
-                    },
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-samples#argument.depts",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-samples#argument.depts.value",
-                        "valueReference": [
-                          {
-                            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-scans_30min_raw"
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/samples"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-swin_30min-samples\",\"type\":\"qc\",\"method\":\"SAMPLES\",\"dep_ts\":[\"COSMOS-BUNNY-SCANS_30MIN_RAW\"],\"parameters\":[{\"param\":\"lt\",\"value\":60.0}],\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-range"
             }
           },
           {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-3",
             "index": 3,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-battery_v",
-              "appliesToDataset": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed"
-                }
-              ],
-              "hasCurrentValue": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-battery_v",
-                  "argument": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-battery_v#argument.lt",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-battery_v#argument.lt.value",
-                        "value": [
-                          10.5
-                        ]
-                      }
-                    },
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-battery_v#argument.depts",
-                      "parameter": {
-                        "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-                      },
-                      "hasValue": {
-                        "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-swin_30min-battery_v#argument.depts.value",
-                        "valueReference": [
-                          {
-                            "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw"
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "method": {
-                    "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v"
-                  },
-                  "rawConfiguration": "{\"id\":\"cosmos-bunny-swin_30min-battery_v\",\"type\":\"qc\",\"method\":\"BATTERY_V\",\"dep_ts\":[\"COSMOS-BUNNY-BATTV_30MIN_RAW\"],\"parameters\":[{\"param\":\"lt\",\"value\":10.5}],\"site\":\"COSMOS-BUNNY\"}",
-                  "@type": [
-                    {
-                      "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationItem"
-                    }
-                  ]
-                }
-              ],
-              "type": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-                }
-              ]
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-battery_v"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-5",
+            "index": 5,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-samples"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-4",
+            "index": 4,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-error_code"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-correction-scalar"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-bunny-swin_30min-plan#step-6",
+            "index": 6,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-infill"
             }
           }
         ]
@@ -445,9 +100,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-mean_prec-wm-2-pt30m-pt30m",
-          "prefLabel": [
-            "Mean incoming shortwave radiation over preceding 30 minutes in watts per metre squared"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin",
             "prefLabel": [
@@ -461,12 +113,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/swin-mean_prec-wm-2-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -505,12 +163,6 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-scans_30min_raw",
-          "identifier": [
-            "COSMOS-BUNNY-SCANS_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_raw",
           "identifier": [
             "COSMOS-BUNNY-SWIN_30MIN_RAW"
@@ -520,6 +172,12 @@
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-battv_30min_raw",
           "identifier": [
             "COSMOS-BUNNY-BATTV_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-scans_30min_raw",
+          "identifier": [
+            "COSMOS-BUNNY-SCANS_30MIN_RAW"
           ]
         }
       ],
@@ -545,6 +203,20 @@
       ],
       "hasFlagColumn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed#flag_column.swin_core_flag",
+          "columnName": "SWIN_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed#flag_column.swin_qc_flag",
+          "columnName": "SWIN_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed#flag_column.swin_corrs_flag",
           "columnName": "SWIN_CORRS_FLAG",
           "valueScheme": {
@@ -556,20 +228,6 @@
           "columnName": "SWIN_INFILL_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed#flag_column.swin_qc_flag",
-          "columnName": "SWIN_QC_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed#flag_column.swin_core_flag",
-          "columnName": "SWIN_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         }
       ]

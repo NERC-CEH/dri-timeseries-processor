@@ -1,24 +1,27 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/dataset?originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS&measure.aggregation.periodicity=P1D&_view=timeseries&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
+    "@id": "http://fdri.ceh.ac.uk/id/dataset?originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS&measure.periodicity=P1D&_view=timeseries&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/dataset.ttl?_view=timeseries&measure.aggregation.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
-      "http://fdri.ceh.ac.uk/id/dataset.rdf?_view=timeseries&measure.aggregation.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
-      "http://fdri.ceh.ac.uk/id/dataset.geojson?_view=timeseries&measure.aggregation.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
-      "http://fdri.ceh.ac.uk/id/dataset.json?_view=timeseries&measure.aggregation.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
-      "http://fdri.ceh.ac.uk/id/dataset.html?_view=timeseries&measure.aggregation.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
-      "http://fdri.ceh.ac.uk/id/dataset.csv?_view=timeseries&measure.aggregation.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS"
+      "http://fdri.ceh.ac.uk/id/dataset.csv?_view=timeseries&measure.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
+      "http://fdri.ceh.ac.uk/id/dataset.json?_view=timeseries&measure.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
+      "http://fdri.ceh.ac.uk/id/dataset.ttl?_view=timeseries&measure.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
+      "http://fdri.ceh.ac.uk/id/dataset.geojson?_view=timeseries&measure.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
+      "http://fdri.ceh.ac.uk/id/dataset.rdf?_view=timeseries&measure.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS",
+      "http://fdri.ceh.ac.uk/id/dataset.html?_view=timeseries&measure.periodicity=P1D&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-alic1&originatingSite=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-chimn&processingLevel=http%3A%2F%2Ffdri.ceh.ac.uk%2Fref%2Fcommon%2Fprocessing-level%2Fprocessed&sourceColumnName=TA&sourceColumnName=PA&sourceColumnName=WS"
     ],
     "limit": 25
   },
   "items": [
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_1day_processed",
+      "title": [
+        "Atmospheric pressure"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -53,10 +56,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_prec-hpa-p1d-p1d",
-          "prefLabel": [
-            "Mean atmospheric pressure over the preceding day in hectopascals"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_proc-hpa-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa",
             "prefLabel": [
@@ -70,12 +70,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_prec-hpa-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -89,7 +95,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=HOLLN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=HOLLN/"
           ]
         }
       ],
@@ -97,11 +103,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -114,58 +115,72 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw",
-          "identifier": [
-            "COSMOS-HOLLN-SCANS_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
             "COSMOS-HOLLN-TA_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_30min_raw",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-HOLLN-PA_30MIN_RAW"
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
+          "identifier": [
+            "COSMOS-HOLLN-SCANS_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_30min_processed",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-HOLLN-PA_30MIN_PROCESSED"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
-            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+            "COSMOS-HOLLN-TA_30MIN_PROCESSED"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
-            "COSMOS-HOLLN-TA_30MIN_PROCESSED"
+            "COSMOS-HOLLN-BATTV_30MIN_RAW"
           ]
         }
       ],
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_30min_processed",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-HOLLN-PA_30MIN_PROCESSED"
           ]
         }
       ],
       "hasFlagColumn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_1day_processed#flag_column.pa_qc_flag",
-          "columnName": "PA_QC_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_1day_processed#flag_column.pa_infill_flag",
           "columnName": "PA_INFILL_FLAG",
@@ -174,10 +189,10 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_1day_processed#flag_column.pa_corrs_flag",
-          "columnName": "PA_CORRS_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_1day_processed#flag_column.pa_qc_flag",
+          "columnName": "PA_QC_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
           }
         },
         {
@@ -186,11 +201,21 @@
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-pa_1day_processed#flag_column.pa_corrs_flag",
+          "columnName": "PA_CORRS_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
         }
       ]
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed",
+      "title": [
+        "Air temperature"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -225,10 +250,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-p1d-p1d",
-          "prefLabel": [
-            "Mean air temperature over the preceding day in degrees Celsius"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_proc-degc-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
             "prefLabel": [
@@ -242,12 +264,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -261,7 +289,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=ALIC1/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=ALIC1/"
           ]
         }
       ],
@@ -269,11 +297,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -286,33 +309,48 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
-          "identifier": [
-            "COSMOS-ALIC1-TA_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-ALIC1-BATTV_30MIN_RAW"
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+          "label": [
+            "Air temperature"
+          ],
+          "identifier": [
+            "COSMOS-ALIC1-TA_30MIN_PROCESSED"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
           "identifier": [
             "COSMOS-ALIC1-SCANS_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
-            "COSMOS-ALIC1-TA_30MIN_PROCESSED"
+            "COSMOS-ALIC1-TA_30MIN_RAW"
           ]
         }
       ],
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
             "COSMOS-ALIC1-TA_30MIN_PROCESSED"
           ]
@@ -320,10 +358,10 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed#flag_column.ta_qc_flag",
-          "columnName": "TA_QC_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed#flag_column.ta_core_flag",
+          "columnName": "TA_CORE_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {
@@ -334,23 +372,26 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed#flag_column.ta_qc_flag",
+          "columnName": "TA_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed#flag_column.ta_corrs_flag",
           "columnName": "TA_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_1day_processed#flag_column.ta_core_flag",
-          "columnName": "TA_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         }
       ]
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_1day_processed",
+      "title": [
+        "Wind speed"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -385,10 +426,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-p1d-p1d",
-          "prefLabel": [
-            "Mean wind speed over the preceding day in meters per second"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_proc-ms-1-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws",
             "prefLabel": [
@@ -402,12 +440,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -421,7 +465,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=HOLLN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=HOLLN/"
           ]
         }
       ],
@@ -429,11 +473,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws_anem"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -447,32 +486,47 @@
       "dependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_30min_processed",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
             "COSMOS-HOLLN-WS_30MIN_PROCESSED"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
           "identifier": [
             "COSMOS-HOLLN-SCANS_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
-            "COSMOS-HOLLN-WS_30MIN_RAW"
+            "COSMOS-HOLLN-BATTV_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_30min_raw",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
-            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+            "COSMOS-HOLLN-WS_30MIN_RAW"
           ]
         }
       ],
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_30min_processed",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
             "COSMOS-HOLLN-WS_30MIN_PROCESSED"
           ]
@@ -494,23 +548,26 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_1day_processed#flag_column.ws_infill_flag",
-          "columnName": "WS_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_1day_processed#flag_column.ws_corrs_flag",
           "columnName": "WS_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ws_1day_processed#flag_column.ws_infill_flag",
+          "columnName": "WS_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         }
       ]
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_1day_processed",
+      "title": [
+        "Air temperature"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -545,10 +602,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-p1d-p1d",
-          "prefLabel": [
-            "Mean air temperature over the preceding day in degrees Celsius"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_proc-degc-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
             "prefLabel": [
@@ -562,12 +616,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -581,7 +641,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=HOLLN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=HOLLN/"
           ]
         }
       ],
@@ -589,11 +649,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -606,39 +661,61 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed",
-          "identifier": [
-            "COSMOS-HOLLN-TA_30MIN_PROCESSED"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
           "identifier": [
             "COSMOS-HOLLN-SCANS_30MIN_RAW"
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
+          "identifier": [
+            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
             "COSMOS-HOLLN-TA_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
-            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+            "COSMOS-HOLLN-TA_30MIN_PROCESSED"
           ]
         }
       ],
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
             "COSMOS-HOLLN-TA_30MIN_PROCESSED"
           ]
         }
       ],
       "hasFlagColumn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_1day_processed#flag_column.ta_core_flag",
+          "columnName": "TA_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_1day_processed#flag_column.ta_infill_flag",
           "columnName": "TA_INFILL_FLAG",
@@ -654,13 +731,6 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_1day_processed#flag_column.ta_core_flag",
-          "columnName": "TA_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_1day_processed#flag_column.ta_qc_flag",
           "columnName": "TA_QC_FLAG",
           "valueScheme": {
@@ -671,6 +741,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_1day_processed",
+      "title": [
+        "Atmospheric pressure"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -705,10 +778,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_prec-hpa-p1d-p1d",
-          "prefLabel": [
-            "Mean atmospheric pressure over the preceding day in hectopascals"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_proc-hpa-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa",
             "prefLabel": [
@@ -722,12 +792,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_prec-hpa-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -741,7 +817,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=CHIMN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=CHIMN/"
           ]
         }
       ],
@@ -749,11 +825,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
@@ -766,46 +837,54 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
           "identifier": [
-            "COSMOS-CHIMN-PA_30MIN_PROCESSED"
+            "COSMOS-CHIMN-SCANS_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_raw",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-CHIMN-PA_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-CHIMN-BATTV_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_processed",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
-            "COSMOS-CHIMN-SCANS_30MIN_RAW"
+            "COSMOS-CHIMN-PA_30MIN_PROCESSED"
           ]
         }
       ],
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_30min_processed",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-CHIMN-PA_30MIN_PROCESSED"
           ]
         }
       ],
       "hasFlagColumn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_1day_processed#flag_column.pa_infill_flag",
-          "columnName": "PA_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
-          }
-        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_1day_processed#flag_column.pa_qc_flag",
           "columnName": "PA_QC_FLAG",
@@ -821,6 +900,13 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_1day_processed#flag_column.pa_infill_flag",
+          "columnName": "PA_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-pa_1day_processed#flag_column.pa_corrs_flag",
           "columnName": "PA_CORRS_FLAG",
           "valueScheme": {
@@ -831,6 +917,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_1day_processed",
+      "title": [
+        "Atmospheric pressure"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -865,10 +954,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_prec-hpa-p1d-p1d",
-          "prefLabel": [
-            "Mean atmospheric pressure over the preceding day in hectopascals"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_proc-hpa-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa",
             "prefLabel": [
@@ -882,12 +968,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/pa-mean_prec-hpa-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -901,7 +993,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=ALIC1/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=ALIC1/"
           ]
         }
       ],
@@ -909,11 +1001,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -926,25 +1013,37 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
-          "identifier": [
-            "COSMOS-ALIC1-SCANS_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_raw",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-ALIC1-PA_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-ALIC1-BATTV_30MIN_RAW"
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
+          "identifier": [
+            "COSMOS-ALIC1-SCANS_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-ALIC1-PA_30MIN_PROCESSED"
           ]
@@ -953,6 +1052,9 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_30min_processed",
+          "label": [
+            "Atmospheric pressure"
+          ],
           "identifier": [
             "COSMOS-ALIC1-PA_30MIN_PROCESSED"
           ]
@@ -960,17 +1062,17 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_1day_processed#flag_column.pa_qc_flag",
-          "columnName": "PA_QC_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_1day_processed#flag_column.pa_corrs_flag",
           "columnName": "PA_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_1day_processed#flag_column.pa_core_flag",
+          "columnName": "PA_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {
@@ -981,16 +1083,19 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_1day_processed#flag_column.pa_core_flag",
-          "columnName": "PA_CORE_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-pa_1day_processed#flag_column.pa_qc_flag",
+          "columnName": "PA_QC_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
           }
         }
       ]
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_1day_processed",
+      "title": [
+        "Wind speed"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -1025,10 +1130,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-p1d-p1d",
-          "prefLabel": [
-            "Mean wind speed over the preceding day in meters per second"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_proc-ms-1-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws",
             "prefLabel": [
@@ -1042,12 +1144,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -1061,7 +1169,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=CHIMN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=CHIMN/"
           ]
         }
       ],
@@ -1069,11 +1177,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws_anem"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
@@ -1087,24 +1190,36 @@
       "dependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_processed",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
             "COSMOS-CHIMN-WS_30MIN_PROCESSED"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_raw",
-          "identifier": [
-            "COSMOS-CHIMN-WS_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-CHIMN-BATTV_30MIN_RAW"
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_raw",
+          "label": [
+            "Wind speed"
+          ],
+          "identifier": [
+            "COSMOS-CHIMN-WS_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
           "identifier": [
             "COSMOS-CHIMN-SCANS_30MIN_RAW"
           ]
@@ -1113,6 +1228,9 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_30min_processed",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
             "COSMOS-CHIMN-WS_30MIN_PROCESSED"
           ]
@@ -1120,17 +1238,17 @@
       ],
       "hasFlagColumn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_1day_processed#flag_column.ws_corrs_flag",
+          "columnName": "WS_CORRS_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_1day_processed#flag_column.ws_qc_flag",
           "columnName": "WS_QC_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_1day_processed#flag_column.ws_infill_flag",
-          "columnName": "WS_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         },
         {
@@ -1141,16 +1259,19 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_1day_processed#flag_column.ws_corrs_flag",
-          "columnName": "WS_CORRS_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ws_1day_processed#flag_column.ws_infill_flag",
+          "columnName": "WS_INFILL_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         }
       ]
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_1day_processed",
+      "title": [
+        "Air temperature"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -1185,10 +1306,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-p1d-p1d",
-          "prefLabel": [
-            "Mean air temperature over the preceding day in degrees Celsius"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_proc-degc-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air",
             "prefLabel": [
@@ -1202,12 +1320,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_air-mean_prec-degc-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -1221,7 +1345,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=CHIMN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=CHIMN/"
           ]
         }
       ],
@@ -1229,11 +1353,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn"
@@ -1246,25 +1365,37 @@
       ],
       "dependsOn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
+          "identifier": [
+            "COSMOS-CHIMN-BATTV_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
             "COSMOS-CHIMN-TA_30MIN_PROCESSED"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
             "COSMOS-CHIMN-TA_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-battv_30min_raw",
-          "identifier": [
-            "COSMOS-CHIMN-BATTV_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
           "identifier": [
             "COSMOS-CHIMN-SCANS_30MIN_RAW"
           ]
@@ -1273,6 +1404,9 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed",
+          "label": [
+            "Air temperature"
+          ],
           "identifier": [
             "COSMOS-CHIMN-TA_30MIN_PROCESSED"
           ]
@@ -1280,10 +1414,10 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_1day_processed#flag_column.ta_infill_flag",
-          "columnName": "TA_INFILL_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_1day_processed#flag_column.ta_qc_flag",
+          "columnName": "TA_QC_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
           }
         },
         {
@@ -1294,10 +1428,10 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_1day_processed#flag_column.ta_qc_flag",
-          "columnName": "TA_QC_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_1day_processed#flag_column.ta_infill_flag",
+          "columnName": "TA_INFILL_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         },
         {
@@ -1311,6 +1445,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_1day_processed",
+      "title": [
+        "Wind speed"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -1345,10 +1482,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-p1d-p1d",
-          "prefLabel": [
-            "Mean wind speed over the preceding day in meters per second"
-          ],
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_proc-ms-1-p1d-p1d",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws",
             "prefLabel": [
@@ -1362,12 +1496,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ws-mean_prec-ms-1-p1d-p1d#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "P1D",
-            "resolution": "P1D"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "P1D",
+          "resolution": "P1D",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
           }
         }
       ],
@@ -1381,7 +1521,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=ALIC1/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_1DAY/site=ALIC1/"
           ]
         }
       ],
@@ -1389,11 +1529,6 @@
       "sourceDataset": "PROCESSED_DATA_1DAY",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -1407,32 +1542,47 @@
       "dependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-ALIC1-BATTV_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
           "identifier": [
-            "COSMOS-ALIC1-WS_30MIN_RAW"
+            "COSMOS-ALIC1-SCANS_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_processed",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
             "COSMOS-ALIC1-WS_30MIN_PROCESSED"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_raw",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
-            "COSMOS-ALIC1-SCANS_30MIN_RAW"
+            "COSMOS-ALIC1-WS_30MIN_RAW"
           ]
         }
       ],
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_30min_processed",
+          "label": [
+            "Wind speed"
+          ],
           "identifier": [
             "COSMOS-ALIC1-WS_30MIN_PROCESSED"
           ]
@@ -1440,10 +1590,10 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_1day_processed#flag_column.ws_qc_flag",
-          "columnName": "WS_QC_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_1day_processed#flag_column.ws_corrs_flag",
+          "columnName": "WS_CORRS_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
           }
         },
         {
@@ -1454,17 +1604,17 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_1day_processed#flag_column.ws_qc_flag",
+          "columnName": "WS_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_1day_processed#flag_column.ws_infill_flag",
           "columnName": "WS_INFILL_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ws_1day_processed#flag_column.ws_corrs_flag",
-          "columnName": "WS_CORRS_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
           }
         }
       ]

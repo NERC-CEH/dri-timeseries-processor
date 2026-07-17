@@ -49,6 +49,7 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="P1D",
             periodicity="P1D",
+            time_anchor="start",
             processing_level=ProcessingLevel.PROCESSED,
             dataset_type=DatasetType.TIMESERIES_DATASET,
             distribution_url="s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=BUNNY/",
@@ -79,9 +80,10 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="PT30M",
             periodicity="PT30M",
+            time_anchor="end",
             processing_level=ProcessingLevel.RAW,
             dataset_type=DatasetType.TIMESERIES_DATASET,
-            distribution_url="s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=BUNNY/",
+            distribution_url="s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=BUNNY/",
             data=None,
         )
 
@@ -100,9 +102,10 @@ class TestMapDatasetItem:
                         "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
                         "aggregation": {
                             "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
-                            "periodicity": "PT30M",
-                            "resolution": "PT30M",
                         },
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                        "valueTimeAnchor": {"@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/inst"},
                     }
                 ],
                 "originatingSite": [{"@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"}],
@@ -133,9 +136,10 @@ class TestMapDatasetItem:
                         "hasUnit": {"@id": "http://fdri.ceh.ac.uk/ref/common/unit/not-applicable"},
                         "aggregation": {
                             "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/flux-plynl-raw",
-                            "periodicity": "PT30M",
-                            "resolution": "PT30M",
                         },
+                        "periodicity": "PT30M",
+                        "resolution": "PT30M",
+                        "valueTimeAnchor": {"@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/inst"},
                     }
                 ],
                 "distribution": [
@@ -181,6 +185,7 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="PT30M",
             periodicity="PT30M",
+            time_anchor="end",
             processing_level=ProcessingLevel.RAW,
         )
         item.attach_configs([config])
@@ -229,6 +234,7 @@ class TestMapDatasetItem:
             time_column_name="time",
             resolution="PT30M",
             periodicity="PT30M",
+            time_anchor="end",
             processing_level=ProcessingLevel.RAW,
         )
         item.attach_configs([method_config, qc_config, correction_config, infill_config])
@@ -557,7 +563,7 @@ class TestMapProcessingConfigItem:
             config_type=ConfigurationType.INFILLING,
             method_configs=[
                 DataProcessingMethodConfig(
-                    method="linear_linear",
+                    method="linear_interp",
                     params={"max_gap_size": 6, "window": 1},
                 )
             ],

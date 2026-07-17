@@ -65,6 +65,7 @@ class DerivationMethod(Operation, ABC):
                 time_name=merged_tf.time_name,
                 resolution=config.params["resolution"],
                 periodicity=config.params["periodicity"],
+                time_anchor=config.params["time_anchor"],
             )
             .with_metadata({"column_name": config.params["output_col"]})
             .select(config.params["output_col"])

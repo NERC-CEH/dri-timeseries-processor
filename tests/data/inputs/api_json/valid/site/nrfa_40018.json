@@ -22,18 +22,6 @@
       "northing": 164280.0,
       "hasAnnotation": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area",
-          "property": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/catchment_area_size"
-          },
-          "hasValue": {
-            "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area.value",
-            "value": [
-              118.4
-            ]
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-identifier",
           "property": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/operator_facility_id"
@@ -42,6 +30,18 @@
             "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-identifier.value",
             "value": [
               "451320001"
+            ]
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area",
+          "property": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/catchment_area_size"
+          },
+          "hasValue": {
+            "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#catchment-area.value",
+            "value": [
+              118.4
             ]
           }
         }
@@ -62,8 +62,8 @@
       ],
       "hasGeometry": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-eastings",
-          "asWKT": "<http://www.opengis.net/def/crs/EPSG/0/27700> POINT(553029, 164280)",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-latlong",
+          "asWKT": "POINT(0.1964190449649131, 51.356986942291414)",
           "@type": [
             {
               "@id": "http://www.opengis.net/ont/geosparql#Geometry"
@@ -71,8 +71,8 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-latlong",
-          "asWKT": "POINT(0.1964190449649131, 51.356986942291414)",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#geo-eastings",
+          "asWKT": "<http://www.opengis.net/def/crs/EPSG/0/27700> POINT(553029, 164280)",
           "@type": [
             {
               "@id": "http://www.opengis.net/ont/geosparql#Geometry"
@@ -96,12 +96,12 @@
       "long": 0.1964190449649131,
       "qualifiedAttribution": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-attribution",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#organisation-attribution",
           "hasRole": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator-organisation"
           },
           "agent": {
-            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-ea-ksl"
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-organisation-ea"
           },
           "@type": [
             {
@@ -110,12 +110,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#organisation-attribution",
+          "@id": "http://fdri.ceh.ac.uk/id/site/nrfa-40018#operator-attribution",
           "hasRole": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator-organisation"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/related-party-role/operator"
           },
           "agent": {
-            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-organisation-ea"
+            "@id": "http://fdri.ceh.ac.uk/id/agent/nrfa-operator-ea-ksl"
           },
           "@type": [
             {

@@ -33,6 +33,7 @@ class AppConfig(ABC):
     metadata_api_url: str
     environment: Environment
     pushgateway_url: str
+    service_name: str
 
     def __init__(self):
         self.load_config()
@@ -75,6 +76,7 @@ class AppConfigLocal(AppConfig):
 
             self.environment = Environment.LOCAL
             self.pushgateway_url = str(cfg["pushgateway_url"])
+            self.service_name = str(cfg["service_name"])
 
         except KeyNotFoundError as err:
             raise KeyError(f"Missing required local config key:\n{err}")
@@ -107,6 +109,7 @@ class AppConfigLive(AppConfig):
             self.metadata_api_url = os.environ["metadata_api_url"]
             self.environment = Environment(os.environ["environment"])
             self.pushgateway_url = os.environ["pushgateway_url"]
+            self.service_name = os.environ["service_name"]
 
         except KeyError as err:
             raise KeyError(f"Missing required live config key:\n{err}")

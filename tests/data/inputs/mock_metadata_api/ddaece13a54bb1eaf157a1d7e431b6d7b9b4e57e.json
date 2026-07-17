@@ -19,6 +19,9 @@
   "items": [
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-wd_30min_raw",
+      "title": [
+        "Wind direction"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -36,9 +39,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/wd-mean_prec-deg-pt30m-pt30m",
-          "prefLabel": [
-            "Mean wind direction over the preceding 30 minutes in degrees"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/wd",
             "prefLabel": [
@@ -52,12 +52,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/wd-mean_prec-deg-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -71,7 +77,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -79,11 +85,6 @@
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WD",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-aws_anem"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -97,6 +98,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_raw",
+      "title": [
+        "Wind direction"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -114,9 +118,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/wd-mean_prec-deg-pt30m-pt30m",
-          "prefLabel": [
-            "Mean wind direction over the preceding 30 minutes in degrees"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/wd",
             "prefLabel": [
@@ -130,12 +131,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/wd-mean_prec-deg-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -149,7 +156,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=HOLLN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -157,11 +164,6 @@
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WD",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws_anem"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -175,6 +177,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+      "title": [
+        "Battery voltage"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -192,9 +197,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/voltage_batt-mean_prec-v-pt30m-pt30m",
-          "prefLabel": [
-            "Mean battery voltage over the preceding 30 minutes in volts"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/voltage_batt",
             "prefLabel": [
@@ -208,12 +210,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/voltage_batt-mean_prec-v-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -227,7 +235,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=HOLLN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -235,11 +243,6 @@
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-logger"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -253,6 +256,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw",
+      "title": [
+        "Number of logger scans"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -270,9 +276,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m",
-          "prefLabel": [
-            "Total number of samples over the preceding 30 minutes (unitless)"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/samples_count",
             "prefLabel": [
@@ -286,12 +289,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total",
+            "prefLabel": [
+              "Total"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -305,7 +314,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=HOLLN/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -313,11 +322,6 @@
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-logger"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -331,6 +335,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+      "title": [
+        "Battery voltage"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -348,9 +355,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/voltage_batt-mean_prec-v-pt30m-pt30m",
-          "prefLabel": [
-            "Mean battery voltage over the preceding 30 minutes in volts"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/voltage_batt",
             "prefLabel": [
@@ -364,12 +368,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/voltage_batt-mean_prec-v-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -383,7 +393,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -391,11 +401,6 @@
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-logger"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -409,6 +414,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+      "title": [
+        "Number of logger scans"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -426,9 +434,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m",
-          "prefLabel": [
-            "Total number of samples over the preceding 30 minutes (unitless)"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/samples_count",
             "prefLabel": [
@@ -442,12 +447,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/samples_count-total_prec-unitless-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/total_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/total",
+            "prefLabel": [
+              "Total"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -461,7 +472,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/sites=ALIC1/"
+            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
@@ -469,11 +480,6 @@
       "sourceDataset": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-alic1-logger"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -487,6 +493,9 @@
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed",
+      "title": [
+        "X component of wind speed"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -548,9 +557,6 @@
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ux-mean_prec-ms-1-pt30m-pt30m",
-          "prefLabel": [
-            "Mean X component of wind speed over the preceding 30 minutes in meters per second"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ux",
             "prefLabel": [
@@ -564,12 +570,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/ux-mean_prec-ms-1-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -583,7 +595,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -591,11 +603,6 @@
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UX",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws_anem"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -609,12 +616,18 @@
       "dependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-HOLLN-BATTV_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
+          "label": [
+            "X component of wind speed"
+          ],
           "identifier": [
             "COSMOS-HOLLN-UX_30MIN_RAW"
           ]
@@ -623,25 +636,24 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-HOLLN-BATTV_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
+          "label": [
+            "X component of wind speed"
+          ],
           "identifier": [
             "COSMOS-HOLLN-UX_30MIN_RAW"
           ]
         }
       ],
       "hasFlagColumn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_infill_flag",
-          "columnName": "UX_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
-          }
-        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_corrs_flag",
           "columnName": "UX_CORRS_FLAG",
@@ -650,23 +662,33 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_qc_flag",
-          "columnName": "UX_QC_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_core_flag",
           "columnName": "UX_CORE_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_infill_flag",
+          "columnName": "UX_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed#flag_column.ux_qc_flag",
+          "columnName": "UX_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
           }
         }
       ]
     },
     {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed",
+      "title": [
+        "Y component of wind speed"
+      ],
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
@@ -696,6 +718,20 @@
         ],
         "hasPart": [
           {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-2",
+            "index": 2,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-battery_v"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-load_raw"
+            }
+          },
+          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-1",
             "index": 1,
             "configuration": {
@@ -708,29 +744,12 @@
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-error_code"
             }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-load_raw"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-uy_30min-plan#step-2",
-            "index": 2,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-uy_30min-battery_v"
-            }
           }
         ]
       },
       "measure": [
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/measure/uy-mean_prec-ms-1-pt30m-pt30m",
-          "prefLabel": [
-            "Mean Y component of wind speed over the preceding 30 minutes in meters per second"
-          ],
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/uy",
             "prefLabel": [
@@ -744,12 +763,18 @@
             ]
           },
           "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/measure/uy-mean_prec-ms-1-pt30m-pt30m#aggregation",
-            "valueStatistic": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/statistic/mean_prec"
-            },
-            "periodicity": "PT30M",
-            "resolution": "PT30M"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
           }
         }
       ],
@@ -763,7 +788,7 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
+            "s3://e2e-output/cosmos/dataset=PROCESSED_DATA_30MIN/site=HOLLN/"
           ]
         }
       ],
@@ -771,11 +796,6 @@
       "sourceDataset": "PROCESSED_DATA_30MIN",
       "sourceColumnName": "UY",
       "sourceTimeColumnName": "time",
-      "originatingFacility": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-holln-aws_anem"
-        }
-      ],
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln"
@@ -788,27 +808,39 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
-            "COSMOS-HOLLN-UY_30MIN_RAW"
+            "COSMOS-HOLLN-BATTV_30MIN_RAW"
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
+          "label": [
+            "Y component of wind speed"
+          ],
           "identifier": [
-            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+            "COSMOS-HOLLN-UY_30MIN_RAW"
           ]
         }
       ],
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
           "identifier": [
             "COSMOS-HOLLN-BATTV_30MIN_RAW"
           ]
         },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
+          "label": [
+            "Y component of wind speed"
+          ],
           "identifier": [
             "COSMOS-HOLLN-UY_30MIN_RAW"
           ]
@@ -823,10 +855,10 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed#flag_column.uy_corrs_flag",
-          "columnName": "UY_CORRS_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed#flag_column.uy_qc_flag",
+          "columnName": "UY_QC_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
           }
         },
         {
@@ -837,10 +869,10 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed#flag_column.uy_qc_flag",
-          "columnName": "UY_QC_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed#flag_column.uy_corrs_flag",
+          "columnName": "UY_CORRS_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
           }
         }
       ]

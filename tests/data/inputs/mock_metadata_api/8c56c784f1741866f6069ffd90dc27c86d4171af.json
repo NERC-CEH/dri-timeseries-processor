@@ -15,43 +15,5 @@
       "http://fdri.ceh.ac.uk/id/deployment.csv?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fplatform%2Fcosmos-chimn-aws_anem"
     ]
   },
-  "items": [
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-aws_anem-wind_anem-140318-1",
-      "deployedHeight": 2.6,
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of WIND_ANEM 140318 to AWS_ANEM at CHIMN"
-      ],
-      "startedAtTime": "2020-02-12T00:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/platform/cosmos-chimn-aws_anem",
-        "label": [
-          "AWS anemometer at Chimney Meadows"
-        ],
-        "isPartOf": {
-          "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-          "label": [
-            "Chimney Meadows"
-          ]
-        }
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/sensor/cosmos-wind_anem-140318",
-          "serialNumber": "140318",
-          "label": [
-            "WIND_ANEM 140318"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/cosmos/monitoring-system-type/wind_anem"
-          }
-        }
-      ]
-    }
-  ]
+  "items": []
 }

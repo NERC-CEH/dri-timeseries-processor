@@ -144,7 +144,9 @@ class TestSelectColumns:
         )
         input_tf = ts.TimeFrame(df, "time", resolution="PT30M").with_metadata({"column_name": "value"})
         # Do an aggregation, which adds the additional metadata columns about expected values
-        config = DataProcessingMethodConfig(method="test", params={"aggregation_period": "PT1H"})
+        config = DataProcessingMethodConfig(
+            method="test", params={"aggregation_period": "PT1H", "aggregation_time_anchor": "start"}
+        )
         agg_tf = Sum().run(input_tf, config)
 
         pipeline = AggregationPipeline({})

@@ -216,6 +216,20 @@ class TestListSitesMode:
         with pytest.raises(SystemExit):
             parse_args(["list-sites"])
 
+    def test_produces_list_sites_selection_with_sites(self) -> None:
+        """Tests that list-sites mode produces a ListSitesSelection with the given network and site IDs."""
+        cfg = parse_args(["list-sites", "--network", "cosmos", "--sites", "cosmos-alic1", "cosmos-bunny"])
+        assert cfg.selection == [
+            ListSitesSelection(network="cosmos", sites=[f"{SITE_URI}/cosmos-alic1", f"{SITE_URI}/cosmos-bunny"])
+        ]
+
+    def test_omitting_sites_defaults_to_none(self) -> None:
+        """Tests that omitting --sites leaves ListSitesSelection.sites as None."""
+        cfg = parse_args(["list-sites", "--network", "cosmos"])
+        selection = cfg.selection[0]
+        assert isinstance(selection, ListSitesSelection)
+        assert selection.sites is None
+
 
 class TestParseLookback:
     def test_valid_days(self) -> None:
@@ -265,12 +279,14 @@ class TestParseDateRange:
         assert start_date == datetime(2024, 3, 1)
 
     def test_start_date_equals_end_date(self) -> None:
-        """Test that the error raised if start date = end date"""
+        """Test that start date == end date is valid (processes a single day)."""
         end_date = date(2024, 3, 10)
         start_date = date(2024, 3, 10)
 
-        with pytest.raises(argparse.ArgumentTypeError):
-            _parse_date_range(start_date, None, end_date)
+        result_start, result_end = _parse_date_range(start_date, None, end_date)
+
+        assert result_start == datetime(2024, 3, 10)
+        assert result_end == datetime(2024, 3, 10)
 
     def test_start_date_after_end_date(self) -> None:
         """Test that the error raised if start date > end date"""

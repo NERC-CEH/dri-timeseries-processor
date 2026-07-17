@@ -24,8 +24,13 @@ class HasUnit(IDModel):
 class Aggregation(IDModel):
     """Aggregation specification."""
 
-    periodicity: str
-    resolution: str
+    pref_label: list[str] | None = Field(None, alias="prefLabel")
+
+
+class TimeAnchor(IDModel):
+    """Time anchor of a dataset."""
+
+    pref_label: list[str] | None = Field(None, alias="prefLabel")
 
 
 class Measure(IDModel):
@@ -34,6 +39,9 @@ class Measure(IDModel):
     variable: Variable | None = None
     has_unit: HasUnit | None = Field(None, alias="hasUnit")
     aggregation: Aggregation
+    periodicity: str
+    resolution: str
+    time_anchor: TimeAnchor = Field(..., alias="valueTimeAnchor")
 
 
 class MethodologyStep(IDModel):

@@ -75,6 +75,46 @@ class TestTimeSeriesProcessor:
         processor.run()
         assert processor.process_dataset.call_count == len(mock_graph.datasets)
 
+    def test_run_raises_when_a_dataset_is_marked_failed(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Test that run raises an exception if any dataset ends up marked as failed, even if no exception
+        propagated out of process_layer (e.g. because the failure happened during _batch_load).
+        """
+        mock_graph = create_mock_dag([["ds1"]])
+        mock_graph.datasets["ds1"].failed = True
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+        processor._batch_load = MagicMock()
+        processor._save_datasets = MagicMock()
+
+        with pytest.raises(RuntimeError, match="Processing failed for 1 dataset"):
+            processor.run()
+
+    def test_run_does_not_raise_when_no_datasets_failed(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Test that run completes without raising when no dataset is marked as failed."""
+        mock_graph = create_mock_dag([["ds1"]])
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+        processor._batch_load = MagicMock()
+        processor._save_datasets = MagicMock()
+
+        processor.run()
+
     def test_process_layer_skips_load_only_containers(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Load-only containers should not be passed to process_dataset."""
         mock_graph = create_mock_dag([["ds1", "ds2"]])
@@ -156,7 +196,8 @@ class TestTimeSeriesProcessor:
         processor._batch_load = MagicMock()
         processor.process_dataset = MagicMock(side_effect=fail_inside_process_dataset)
         processor._save_datasets = MagicMock()
-        processor.run()
+        with pytest.raises(RuntimeError, match="Processing failed for"):
+            processor.run()
 
         # ds1 should not be marked as failed
         assert not ds1.failed

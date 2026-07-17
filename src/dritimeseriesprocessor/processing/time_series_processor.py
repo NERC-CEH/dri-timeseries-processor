@@ -92,14 +92,26 @@ class TimeSeriesProcessor:
                     for layer in layers:
                         self.process_layer(layer)
 
-                    logger.info("-" * 30)
                     logger.info("Collecting and saving datasets.")
                     self._save_datasets()
 
             logger.info("Processing pipeline finished. Pushing prometheus metrics.")
             self.metrics.export_metrics_to_pushgateway()
+
+            self._raise_if_failed()
         finally:
             self.data_router.cleanup()
+
+    def _raise_if_failed(self) -> None:
+        """Raise an exception if any dataset failed to load or process.
+
+        Dataset failures are caught and recorded per-dataset so that one failure doesn't stop the rest of the
+        run from being processed. Without this check, the process would exit with a success status even if some
+        datasets failed, which would hide the failure from anything monitoring the exit code
+        """
+        failed_ids = [dataset_id for dataset_id, container in self.graph.datasets.items() if container.failed]
+        if failed_ids:
+            raise RuntimeError(f"Processing failed for {len(failed_ids)} dataset(s): {failed_ids}")
 
     def process_layer(self, layer: list[str]) -> None:
         """Process an individual layer of the dependency graph.
@@ -205,7 +217,7 @@ class TimeSeriesProcessor:
             return None
         return container.data_processing_configs[container.plan_order[next_idx]].config_type
 
-    @log_duration("Loading datasets time taken: ", footer=True)
+    @log_duration("Loading datasets time taken: ")
     def _batch_load(self) -> None:
         """Load time-series data for multiple datasets in grouped batches.
 
@@ -250,7 +262,7 @@ class TimeSeriesProcessor:
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue
 
-    @log_duration("Saving datasets time taken: ", footer=True)
+    @log_duration("Saving datasets time taken: ")
     def _save_datasets(self) -> None:
         """Determine which datasets to save, pool them together in groups that are being saved to the same
         parquet file, then do some concurrent save tasks.

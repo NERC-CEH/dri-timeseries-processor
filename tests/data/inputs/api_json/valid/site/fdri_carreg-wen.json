@@ -35,25 +35,11 @@
       ],
       "hasPart": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-raine"
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-ws",
           "label": [
+            "Carreg Wen",
             "WS"
           ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-logger"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-na"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-hmp"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/platform/fdri-se-carwe-01-aws_anem"
         }
       ],
       "identifier": [
@@ -77,62 +63,6 @@
       ],
       "label": [
         "Carreg Wen"
-      ],
-      "observes": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/pa"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/dew_point"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/wd"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precip_inten"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/soc_batt"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swout"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precip"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rh"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/albedo"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/voltage_batt"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/swin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/ws"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/rn"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_air"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/precip_tot"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/lwout"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cop/revolutions"
-        }
       ]
     }
   ]
