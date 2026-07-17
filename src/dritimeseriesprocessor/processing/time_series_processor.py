@@ -147,6 +147,9 @@ class TimeSeriesProcessor:
             # LoadPipeline that do things like stage local copies, or moves data from one container to another.
             return
 
+        if not container.plan_order:
+            raise RuntimeError(f"Dataset {dataset_id} has processing configs but no plan.")
+
         logger.info(f"Processing dataset: {dataset_id}")
 
         for dep_id in container.all_dependencies():
