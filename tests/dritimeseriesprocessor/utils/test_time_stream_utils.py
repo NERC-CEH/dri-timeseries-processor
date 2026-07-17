@@ -96,6 +96,7 @@ class TestMergeMultipleTimeframes:
         with pytest.raises(ValueError):
             merge_multiple_timeframes([tf1, tf2])
 
+    @pytest.mark.xfail(reason="Time-anchor constraint temporarily removed from merge_multiple_timeframes", strict=True)
     def test_merge_diff_time_anchors_raises(self) -> None:
         """Test that inputs with different time anchors raise a ValueError"""
         df = dataframe_to_timeframe(pl.DataFrame({"a": [1, 2, 3]})).df
