@@ -173,9 +173,11 @@ class TestTimeSeriesProcessor:
         ds4.all_dependencies = MagicMock(return_value=["ds1"])
 
         # Attach configs so ds3/ds4 are not treated as load-only and reach the dependency-failure check.
-        # plan_order is left empty so no pipeline actually runs.
+        # plan_order has an entry but the dependency check returns before any pipeline actually runs.
         ds3.data_processing_configs = {"cfg": MagicMock()}
+        ds3.plan_order = ["cfg"]
         ds4.data_processing_configs = {"cfg": MagicMock()}
+        ds4.plan_order = ["cfg"]
 
         processor = TimeSeriesProcessor(
             graph=mock_graph,
@@ -366,6 +368,27 @@ class TestTimeSeriesProcessor:
         for _, _, df, _ in tasks:
             assert "ds1-col" in df.columns
             assert "ds2-col" not in df.columns
+
+    def test_process_dataset_raises_when_plan_order_empty(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Tests that process_dataset raises if a container has processing configs but no plan_order - this
+        happens if the metadata service returns a dataset's processing configs but no methodology steps.
+        """
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+        container.data_processing_configs = {"cfg": MagicMock(spec=DataProcessingConfig)}
+        container.plan_order = []
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        with pytest.raises(RuntimeError, match="no plan"):
+            processor.process_dataset("ds1")
 
     def test_build_save_tasks(
         self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
