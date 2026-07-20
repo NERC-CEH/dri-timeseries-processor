@@ -100,7 +100,7 @@ class AggregationMethod(Operation, ABC):
                 .then(pl.col(agg_col_name))
                 .otherwise(None)
                 .alias(col_name)
-            ).select([tf_agg.time_name, col_name])
+            )
         )
 
         return tf_agg
