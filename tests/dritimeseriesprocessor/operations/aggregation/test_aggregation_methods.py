@@ -174,9 +174,14 @@ class TestStandardDeviation:
 class TestRollingMeanForCounts:
     def test_rolling_mean_for_counts(self) -> None:
         """
-        Windows where null count exceeds na_lim should produce null output.
-        Datapoints that have n_smooth datapoints on either side,
-        and fewer than na_lim null values in their window have a rolling mean applied.
+        Windows with less than the threshold amount of non nulls produce null output.
+
+        Datapoints that have window // 2 datapoints on either side,
+        and have at least the threshold number of non null values in their window
+        have a rolling mean applied.
+
+        Datapoints at the edges of the dataset that do not have a complete window,
+        are assigned a null value for the mean.
         """
         tf = create_timeframe(
             column_name="value",
@@ -201,6 +206,7 @@ class TestRollingMeanForCounts:
         config = create_rolling_aggregation_config()
         config.params["window_size"] = "PT5H"
         config.params["threshold"] = 3
+        config.params["alignment"] = "center"
 
         expected = pl.DataFrame(
             {
@@ -231,7 +237,7 @@ class TestRollingMeanForCounts:
 
     def test_rolling_mean_trailing_alignment(self) -> None:
         """With trailing alignment, each window ends at the current point, so only the start of the
-        dataset is masked (not enough preceding data), not the end."""
+        dataset is masked, not the end."""
         tf = create_timeframe(
             column_name="value",
             values=[
@@ -286,7 +292,7 @@ class TestRollingMeanForCounts:
 
     def test_rolling_mean_leading_alignment(self) -> None:
         """With leading alignment, each window starts at the current point, so only the end of the
-        dataset is masked (not enough following data), not the start."""
+        dataset is masked, not the start."""
         tf = create_timeframe(
             column_name="value",
             values=[

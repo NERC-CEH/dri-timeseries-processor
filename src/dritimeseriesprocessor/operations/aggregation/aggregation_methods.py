@@ -218,5 +218,4 @@ class RollingMeanForCounts(AggregationMethod):
     name = "rolling_mean_for_counts"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        config.params.setdefault("alignment", "center")
         return self._ts_rolling_aggregate(tf, config, "mean")
