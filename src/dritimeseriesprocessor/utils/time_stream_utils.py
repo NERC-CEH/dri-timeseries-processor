@@ -20,8 +20,11 @@ def merge_multiple_timeframes(inputs: list[ts.TimeFrame]) -> ts.TimeFrame:
     if not all([tf.periodicity == periodicity for tf in inputs]):
         raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same periodicity")
 
-    if not all([tf.time_anchor == time_anchor for tf in inputs]):
-        raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same time anchor")
+    # NOTE: Temporarily remove this constraint.  Realistically, we will never mix incompatible time-anchors in a network
+    #   so this is handled at the metadata level.  In future, we probably do want to do some checks here that
+    #   "compatible" time anchors are used (e.g. "inst" with "proc" or "prec", but not "proc" with "prec")
+    # if not all([tf.time_anchor == time_anchor for tf in inputs]):
+    #    raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same time anchor")
 
     merged_df = merge_multiple([tf.df for tf in inputs], time_name)
     return ts.TimeFrame(

@@ -29,12 +29,12 @@ from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRout
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
 from dritimeseriesprocessor.utils.timer import log_duration
-from dritimeseriesprocessor.utils.urls import SITE_URI
+from dritimeseriesprocessor.utils.urls import PROGRAMME_URI, SITE_URI
 
 logger = logging.getLogger(__name__)
 
 
-@log_duration("Total time taken: ", header=True)
+@log_duration("Total time taken: ")
 def run_from_config(run_config: RunConfig) -> None:
     """Execute a processing run from a valid RunConfig made of user args.
 
@@ -48,7 +48,7 @@ def run_from_config(run_config: RunConfig) -> None:
         list_sites_selection = run_config.selection[0]
         if not isinstance(list_sites_selection, ListSitesSelection):
             raise TypeError(f"Expected ListSitesSelection, got {type(list_sites_selection).__name__}")
-        list_sites(list_sites_selection.network, run_config.start_date, run_config.end_date)
+        list_sites(list_sites_selection.network, run_config.start_date, run_config.end_date, list_sites_selection.sites)
         return
 
     processor = _build_processor(
@@ -79,14 +79,10 @@ def _build_processor(
     """
     network = next((s.network for s in selection if isinstance(s, DimensionSelection)), None)
 
-    logger.info("-" * 30)
-    logger.info("Setting up processor for selections:")
-    logger.info(f"Start date            : {start_date}")
-    logger.info(f"End date              : {end_date}")
-    if network:
-        logger.info(f"Network               : {network}")
-    logger.info(f"Dataset selections    : {'\n' + '\n'.join([str(s) for s in selection])}")
-    logger.info("-" * 30)
+    logger.info(
+        f"Setting up processor: start_date={start_date}, end_date={end_date}, "
+        f"network={network or 'n/a'}, selections={[str(s) for s in selection]}"
+    )
 
     cfg = app_config()
 
@@ -127,7 +123,7 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
     )
 
 
-@log_duration("Dependency graph build duration: ", footer=True)
+@log_duration("Dependency graph build duration: ")
 def _build_dependency_graph(
     selection: list[Selection],
     metadata_router: MetadataRouter,
@@ -154,9 +150,10 @@ def _build_dependency_graph(
     return graph
 
 
-def list_sites(network: str, start_date: datetime, end_date: datetime) -> None:
+def list_sites(network: str, start_date: datetime, end_date: datetime, sites: list[str] | None = None) -> None:
     """Save a JSON array of site IDs for the given network to a temporary file. Option to specify start and end dates
-    to limit the listed sites to ones that were open during that date range.
+    to limit the listed sites to ones that were open during that date range, and/or a list of sites to limit the
+    result to (still checked for network membership and open dates).
 
     Argo Workflows can capture it as the step result to pass to further workflow steps.
 
@@ -164,21 +161,21 @@ def list_sites(network: str, start_date: datetime, end_date: datetime) -> None:
         network: The network identifier (e.g. "cosmos").
         start_date: Start of the date range to find open sites for (inclusive).
         end_date: End of the date range to find open sites for (inclusive).
+        sites: Site IDs to limit the result to. If omitted, all sites for the network are listed.
     """
-    logger.info("-" * 30)
-    logger.info("Listing sites for selections:")
-    logger.info(f"Start date : {start_date}")
-    logger.info(f"End date   : {end_date}")
-    logger.info(f"Network    : {network}")
-    logger.info("-" * 30)
+    logger.info(f"Listing sites: start_date={start_date}, end_date={end_date}, network={network}")
 
     cfg = app_config()
     router = MetadataRouter(cfg.metadata_api_url)
 
-    sites_response = router.fetch_sites_by_network(network)
+    network_uri = f"{PROGRAMME_URI}/{network}"
+    sites_response = router.fetch_sites(sites) if sites else router.fetch_sites_by_network(network)
     site_ids = []
     for item in sites_response.items:
         meta = map_site_metadata(item)
+        if sites and meta.network != network_uri:
+            logger.warning(f"Site [{meta.site_id}] is not in network [{network}], excluding.")
+            continue
         if meta.is_active(window_start=start_date, window_end=end_date):
             site_ids.append(meta.site_id.removeprefix(f"{SITE_URI}/"))
 
