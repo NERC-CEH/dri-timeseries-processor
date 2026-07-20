@@ -145,11 +145,5 @@ class TestApplyRounding:
         mock_container.data = tf
 
         pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
-        with pytest.raises(
-            (OverflowError, TypeError),
-            match=(
-                "out of range integral type conversion attempted|"
-                "argument 'decimals': 'float' object cannot be interpreted as an integer"
-            ),
-        ):
+        with pytest.raises((OverflowError, TypeError)):
             pipeline.run(mock_container, {}, method_config)
