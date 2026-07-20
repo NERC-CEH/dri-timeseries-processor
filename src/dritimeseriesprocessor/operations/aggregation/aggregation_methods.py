@@ -32,17 +32,8 @@ class AggregationMethod(Operation, ABC):
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
 
-        missing_criteria = None
-        if config.params.get("threshold", None) is not None:
-            missing_criteria = ("available", config.params["threshold"])  # type: ignore[assignment]
-
-        time_window = None
-        start_time_str = config.params.get("start_time")
-        end_time_str = config.params.get("end_time")
-        if isinstance(start_time_str, str) and isinstance(end_time_str, str):
-            start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
-            time_window = (start_time, end_time)
+        missing_criteria = AggregationMethod.missing_criteria(config)
+        time_window = AggregationMethod.time_window(config)
 
         tf_agg = tf.aggregate(
             aggregation_period=config.params["aggregation_period"],
@@ -71,37 +62,13 @@ class AggregationMethod(Operation, ABC):
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
         window_size = config.params["window_size"]
-
-        missing_criteria = None
-        if config.params.get("threshold", None) is not None:
-            missing_criteria = ("available", config.params["threshold"])  # type: ignore[assignment]
-
-        time_window = None
-        start_time_str = config.params.get("start_time")
-        end_time_str = config.params.get("end_time")
-        if isinstance(start_time_str, str) and isinstance(end_time_str, str):
-            start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
-            time_window = (start_time, end_time)
+        alignment = config.params["alignment"]
 
         # Define number of datapoints in window from window_size and periodicity
         window_count = tf.periodicity.count(configure_period_object(window_size))
 
-        # Count total rows per window (nulls included) via an auxiliary column
-        auxiliary_tf = ts.TimeFrame(
-            df=tf.df.with_columns(pl.lit(1).cast(pl.UInt32).alias("__aux__")),
-            time_name=tf.time_name,
-            resolution=tf.resolution,
-            periodicity=tf.periodicity,
-        )
-
-        # Determine number of datapoints per window across dataset
-        total_in_window = auxiliary_tf.rolling_aggregate(
-            window_size,
-            "sum",
-            columns=["__aux__"],
-            alignment=config.params["alignment"],
-        ).df.select([tf.time_name, pl.col("sum___aux__").alias("__total__")])
+        missing_criteria = AggregationMethod.missing_criteria(config)
+        time_window = AggregationMethod.time_window(config)
 
         # Calculate rolling mean across dataset
         tf_agg = tf.rolling_aggregate(
@@ -109,35 +76,51 @@ class AggregationMethod(Operation, ABC):
             aggregation_function=agg_func,
             columns=col_name,
             missing_criteria=missing_criteria,  # type: ignore[assignment]
-            alignment=config.params["alignment"],
+            alignment=alignment,
             time_window=time_window,
         )
 
-        # Remove rolling aggregation values near edges where there is not enough data available.
-        # This is because a timestamp may initially appear at the end of a dataset, but as data gets added,
-        # it will no longer be at the end of the dataset, and the rolling aggregation value will change.
-        # Applying a rolling aggregation only when there is enough data ensures consistency.
-        tf_agg = tf_agg.with_df(
-            tf_agg.df.join(total_in_window, on=tf.time_name)
-            .with_columns(
-                pl.when(
-                    (pl.col("__total__") == window_count) & (pl.col(f"count_{col_name}") >= config.params["threshold"])
-                )
-                .then(pl.col(f"{agg_func}_{col_name}"))
-                .otherwise(None)
-                .alias(f"{agg_func}_{col_name}")
-            )
-            .drop("__total__")
-        )
+        # Default alignment = "center"
+        rows_masked_at_start = window_count // 2
+        rows_masked_at_end = window_count // 2
 
-        # Filter for valid columns only
+        if alignment == "trailing":
+            rows_masked_at_start = window_count - 1
+            rows_masked_at_end = 0
+        elif alignment == "leading":
+            rows_masked_at_start = 0
+            rows_masked_at_end = window_count - 1
+
+        row_index = pl.int_range(pl.len())
+        truncated_window = (row_index >= rows_masked_at_start) & (row_index < pl.len() - rows_masked_at_end)
+
         tf_agg = tf_agg.with_df(
             tf_agg.df.with_columns(
-                pl.when(pl.col(f"valid_{col_name}")).then(pl.col(agg_col_name)).otherwise(None).alias(col_name)
-            )
+                pl.when(truncated_window & pl.col(f"valid_{col_name}") & pl.col(agg_col_name).is_not_null())
+                .then(pl.col(agg_col_name))
+                .otherwise(None)
+                .alias(col_name)
+            ).select([tf_agg.time_name, col_name])
         )
 
         return tf_agg
+
+    @staticmethod
+    def missing_criteria(config: DataProcessingMethodConfig) -> tuple[str, int] | None:
+        missing_criteria = None
+        if config.params.get("threshold", None) is not None:
+            missing_criteria = ("available", config.params["threshold"])  # type: ignore[assignment]
+        return missing_criteria
+
+    @staticmethod
+    def time_window(config: DataProcessingMethodConfig) -> tuple | None:
+        start_time_str = config.params.get("start_time")
+        end_time_str = config.params.get("end_time")
+        if isinstance(start_time_str, str) and isinstance(end_time_str, str):
+            start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
+            end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
+            return (start_time, end_time)
+        return None
 
 
 @AggregationMethod.register
@@ -224,10 +207,16 @@ class StandardDeviation(AggregationMethod):
 
 @AggregationMethod.register
 class RollingMeanForCounts(AggregationMethod):
+    """
+    Calculates a mean for each data point from a window of surrounding datapoints on either side.
+    Date points at the edges of a dataset, up to an index that is half the size of the window, are not assigned a mean.
+    If there are too few datapoints available (eg. not null) within the window, the mean is assigned a null value.
+
+    The window size and minimum threshold of datapoints required in the window are specified in the config parameters.
+    """
+
     name = "rolling_mean_for_counts"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        config.params.setdefault("window_size", "PT25H")
         config.params.setdefault("alignment", "center")
-        config.params.setdefault("threshold", 21)
         return self._ts_rolling_aggregate(tf, config, "mean")

@@ -182,20 +182,20 @@ class TestRollingMeanForCounts:
             column_name="value",
             values=[
                 100.0,
-                100.0,
-                100.0,
+                101.0,
+                102.0,
                 None,
                 None,
                 None,
-                100.0,
-                100.0,
-                100.0,
+                103.0,
+                104.0,
+                105.0,
                 None,
                 None,
-                100.0,
-                100.0,
-                100.0,
-                100.0,
+                106.0,
+                107.0,
+                108.0,
+                109.0,
             ],
         )
         config = create_rolling_aggregation_config()
@@ -208,17 +208,127 @@ class TestRollingMeanForCounts:
                     [
                         None,
                         None,
-                        100.0,
+                        101.0,
                         None,
                         None,
                         None,
-                        100.0,
-                        100.0,
-                        100.0,
-                        100.0,
-                        100.0,
-                        100.0,
-                        100.0,
+                        104.0,
+                        104.0,
+                        104.0,
+                        105.0,
+                        106.0,
+                        107.0,
+                        107.5,
+                        None,
+                        None,
+                    ],
+                    dtype=pl.Float64,
+                )
+            }
+        )
+        result = RollingMeanForCounts().run(tf, config)
+        assert_frame_equal(result.df.select("value"), expected)
+
+    def test_rolling_mean_trailing_alignment(self) -> None:
+        """With trailing alignment, each window ends at the current point, so only the start of the
+        dataset is masked (not enough preceding data), not the end."""
+        tf = create_timeframe(
+            column_name="value",
+            values=[
+                100.0,
+                101.0,
+                102.0,
+                None,
+                None,
+                None,
+                103.0,
+                104.0,
+                105.0,
+                None,
+                None,
+                106.0,
+                107.0,
+                108.0,
+                109.0,
+            ],
+        )
+        config = create_rolling_aggregation_config()
+        config.params["window_size"] = "PT5H"
+        config.params["threshold"] = 3
+        config.params["alignment"] = "trailing"
+
+        expected = pl.DataFrame(
+            {
+                "value": pl.Series(
+                    [
+                        None,
+                        None,
+                        None,
+                        None,
+                        101.0,
+                        None,
+                        None,
+                        None,
+                        104.0,
+                        104.0,
+                        104.0,
+                        105.0,
+                        106.0,
+                        107.0,
+                        107.5,
+                    ],
+                    dtype=pl.Float64,
+                )
+            }
+        )
+        result = RollingMeanForCounts().run(tf, config)
+        assert_frame_equal(result.df.select("value"), expected)
+
+    def test_rolling_mean_leading_alignment(self) -> None:
+        """With leading alignment, each window starts at the current point, so only the end of the
+        dataset is masked (not enough following data), not the start."""
+        tf = create_timeframe(
+            column_name="value",
+            values=[
+                100.0,
+                101.0,
+                102.0,
+                None,
+                None,
+                None,
+                103.0,
+                104.0,
+                105.0,
+                None,
+                None,
+                106.0,
+                107.0,
+                108.0,
+                109.0,
+            ],
+        )
+        config = create_rolling_aggregation_config()
+        config.params["window_size"] = "PT5H"
+        config.params["threshold"] = 3
+        config.params["alignment"] = "leading"
+
+        expected = pl.DataFrame(
+            {
+                "value": pl.Series(
+                    [
+                        101.0,
+                        None,
+                        None,
+                        None,
+                        104.0,
+                        104.0,
+                        104.0,
+                        105.0,
+                        106.0,
+                        107.0,
+                        107.5,
+                        None,
+                        None,
                         None,
                         None,
                     ],
