@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 
 import polars as pl
@@ -11,7 +11,7 @@ from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
-from utils.data_creation import create_timeframe, make_time_series_container
+from utils.data_creation import create_timeframe, dataframe_to_timeframe, make_time_series_container
 
 
 @pytest.fixture
@@ -156,6 +156,64 @@ class TestTimeSeriesProcessor:
         # Metadata should be set
         expected_metadata = {"column_name": "value"}
         assert container.data.metadata == expected_metadata
+
+    def test_batch_load_reads_wider_than_the_requested_window(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that the load window is widened so aggregation buckets at each edge get their full source data.
+
+        A bucket labelled T covers (T - period, T] for a preceding time anchor and [T, T + period) for a following
+        one, so source data is needed on both sides of the requested window.
+        """
+        ds_id = "ds1"
+        mock_graph = create_mock_dag([[ds_id]])
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 10),
+            end_date=datetime(2025, 1, 12),
+            metrics=MagicMock(),
+        )
+
+        mock_graph.datasets[ds_id].source_column = "value"
+        processor._batch_load()
+
+        call_kwargs = mock_router.query_by_date_range.call_args.kwargs
+        assert call_kwargs["start_date"] == datetime(2025, 1, 9)
+        assert call_kwargs["end_date"] == datetime(2025, 1, 13)
+
+    def test_build_save_tasks_drops_rows_outside_the_requested_window(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that rows read only to complete edge buckets are not written out as their own day partitions."""
+        ds_id = "ds1"
+        mock_graph = create_mock_dag([[ds_id]])
+        container = mock_graph.datasets[ds_id]
+        container.processing_level = ProcessingLevel.PROCESSED
+        container.network = "my_network"
+        container.source_site_identifier = "SITE_A"
+        container.resolution = "PT30M"
+        container.source_bucket = "my_bucket"
+        container.source_dataset = "my_dataset"
+        container.source_column = "value"
+
+        # Half-hourly data covering a day either side of the requested window
+        times = [datetime(2025, 1, 1) + timedelta(minutes=30 * step) for step in range(192)]
+        df = pl.DataFrame({"time": times, "value": [float(step) for step in range(192)]})
+        container.data = dataframe_to_timeframe(df, resolution="PT30M", metadata={"column_name": "value"})
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 2),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+
+        written_dates = [key.split("date=")[1].split("/")[0] for _, key, _, _ in processor._build_save_tasks()]
+        assert written_dates == ["2025-01-02", "2025-01-03"]
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Test that failed tag is set to True when dataset fails processing.

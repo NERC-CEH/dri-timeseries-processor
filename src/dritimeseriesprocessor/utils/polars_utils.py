@@ -35,11 +35,15 @@ def split_by_date(df: pl.DataFrame, time_col: str) -> list[tuple[datetime, pl.Da
 
 
 def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.DataFrame:
-    """Merge two aligned Polars DataFrames.
+    """Merge two aligned Polars DataFrames, with the second taking precedence.
+
+    Where a row appears in both, df2 decides the value of every column it holds, including where that value is
+    null - this lets a re-run remove a value it has decided is bad, and keeps a flag column in step with the data
+    column it describes. Columns that only df1 holds are kept as they are. Rows that only df1 holds are kept too.
 
     Args:
         df1: First Polars DataFrame to merge
-        df2: Second Polars DataFrame to merge
+        df2: Second Polars DataFrame to merge, taking precedence over the first
         join_col: The column to join on
 
     Returns:
@@ -63,18 +67,27 @@ def merge_dataframes(df1: pl.DataFrame, df2: pl.DataFrame, join_col: str) -> pl.
     extra_from_df1 = set(df1.columns) - common_cols
     extra_from_df2 = set(df2.columns) - common_cols
 
-    # Outer join with suffixing for new_df
-    combined_df = df1.join(
-        df2,
+    # A marker column that is only non-null for rows that came from df2, so it can be distinguished from a column
+    # that is null because df2 explicitly holds a null for that row.
+    from_df2_marker = "__from_df2__"
+    df2 = df2.with_columns(pl.lit(True).alias(from_df2_marker))
+
+    # the suffix applies to the right frame's colliding columns, so join df1 as the right frame and tag as "_previous".
+    combined_df = df2.join(
+        df1,
         on=join_col,
         how="full",
-        suffix="_current",
+        suffix="_previous",
         coalesce=True,
     )
 
-    # Build final set of columns
-    coalesce_cols = [pl.coalesce(f"{col}_current", col).alias(col) for col in update_cols]
-    combined_df = combined_df.select(join_col, *extra_from_df2, *coalesce_cols, *extra_from_df1).sort(join_col)
+    # For columns present in both, take df2's value wherever df2 has a row for that join key (even if that value
+    # is null), and only fall back to df1's value for rows that only exist in df1.
+    update_exprs = [
+        pl.when(pl.col(from_df2_marker)).then(pl.col(col)).otherwise(pl.col(f"{col}_previous")).alias(col)
+        for col in update_cols
+    ]
+    combined_df = combined_df.select(join_col, *extra_from_df2, *update_exprs, *extra_from_df1).sort(join_col)
 
     return combined_df
 
