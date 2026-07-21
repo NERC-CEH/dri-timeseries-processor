@@ -36,6 +36,7 @@ from dritimeseriesprocessor.utils.enums import (
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
+from dritimeseriesprocessor.utils.time_utils import extend_date_range
 from dritimeseriesprocessor.utils.timer import log_duration
 from dritimeseriesprocessor.utils.urls import SITE_URI
 
@@ -233,11 +234,15 @@ class TimeSeriesProcessor:
         common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
         groupings = group_containers(containers, common_keys)
 
+        # Read wider than the requested window so aggregation buckets on the window edges get all of their source
+        # data. The extra rows are trimmed back off again when the results are saved.
+        load_start_date, load_end_date = extend_date_range(self.start_date, self.end_date)
+
         with self.metrics.time_load.time():
             for dataset_group, containers_in_group in groupings.items():
                 try:
                     combined_df = self.data_router.query_by_date_range(
-                        *containers_in_group, start_date=self.start_date, end_date=self.end_date
+                        *containers_in_group, start_date=load_start_date, end_date=load_end_date
                     )
 
                     if combined_df.is_empty():
@@ -317,8 +322,14 @@ class TimeSeriesProcessor:
             # Merge the data for all containers
             group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])
 
+            # Drop the rows that were only read to complete the aggregation buckets on the window edges, so a run
+            # only ever writes days it was asked to process.
+            save_window = group_tf.df.filter(
+                pl.col(group_tf.time_name).dt.date().is_between(self.start_date.date(), self.end_date.date())
+            )
+
             # Data saved "per day", so split the grouped data by day
-            data_to_write = split_by_date(group_tf.df, group_tf.time_name)
+            data_to_write = split_by_date(save_window, group_tf.time_name)
 
             # Yield specific save tasks
             for data_date, df in data_to_write:

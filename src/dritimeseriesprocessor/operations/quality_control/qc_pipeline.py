@@ -13,6 +13,7 @@ from dritimeseriesprocessor.operations.flags.flag_names import qc_flag_column_na
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 logger = logging.getLogger(__name__)
 
@@ -55,13 +56,19 @@ class QCPipeline(OperationPipeline):
             tf_qc = tf.copy(share_df=False)
 
         method = QcMethod.get(config.method)
-        result = method.run(tf_qc, config)
+        qc_result = method.run(tf_qc, config)
+        qc_result_column = self.get_qc_result_column(tf.metadata["column_name"])
 
-        result = tf.with_df(
-            tf.df.with_columns(pl.Series(self.get_qc_result_column(tf.metadata["column_name"]), result))
+        # The check ran against ``tf_qc``, which for a "dep_ts" check (e.g. BATTV) is a different dataset that can
+        # cover a different set of time values to tf. Join the result on by time and join "left" so that ``tf``
+        # decides which rows are kept; rows that ``tf`` has but the dependency doesn't get a null result
+        qc_result_tf = tf_qc.with_df(
+            tf_qc.df.select(tf_qc.time_name).with_columns(pl.Series(qc_result_column, qc_result))
         )
+        merged = merge_multiple_timeframes([tf, qc_result_tf], "left")
+        result = tf.with_df(merged.df)
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
-        result = result.with_df(result.df.drop(self.get_qc_result_column(tf.metadata["column_name"])))
+        result = result.with_df(result.df.drop(qc_result_column))
 
         return result
 

@@ -16,7 +16,7 @@ from dritimeseriesprocessor.operations.correction.correction_methods import (
     Scalar,
     WDCorrection,
 )
-from utils.data_creation import create_timeframe
+from utils.data_creation import create_timeframe, dataframe_to_timeframe
 
 
 def create_method_config(
@@ -184,6 +184,71 @@ class TestLWCorrection:
             [373.9, 381.5, 377.7449872014795, 394.1243133190569, 379.22105814566305, 387.3, 391.8], "lw"
         ).df
         assert_frame_equal(result.df, expected_df)
+
+
+class TestLWCorrectionDependencyAlignment:
+    def test_dependency_covering_fewer_time_values(self) -> None:
+        """Tests that a ta dataset covering fewer time values than lw is matched up by time, not by position."""
+        lw = create_timeframe([373.9, 381.5, 386.9], "lw")
+        lw_unc = create_timeframe([-53.24, -56.31, -56.64], "lw_unc")
+        ta = create_timeframe([20.33, 21.74], "ta")
+        config = create_method_config(correction_factor=1.00924, lwin_unc=lw_unc, ta=ta)
+
+        result = LWCorrection().run(lw, config)
+
+        assert result.df["lw"][0] == pytest.approx(366.89501779404736)
+        assert result.df["lw"][1] == pytest.approx(371.93855976840695)
+        assert result.df["lw"][2] is None
+
+
+class TestPaCorrectionDependencyAlignment:
+    def test_dependency_covering_fewer_time_values(self) -> None:
+        """Tests that a ta dataset covering fewer time values than pa is matched up by time, not by position."""
+        pa = create_timeframe([1007.504, 1007.391, 1007.359], "pa")
+        ta = create_timeframe([12.25, 12.49], "ta")
+        config = create_method_config(correction_factor=-5.1, ta=ta, altitude=74.0)
+
+        result = PACorrection().run(pa, config)
+
+        assert result.df["pa"][0] == pytest.approx(1002.4489, abs=1e-4)
+        assert result.df["pa"][1] == pytest.approx(1002.3359, abs=1e-4)
+        assert result.df["pa"][2] is None
+
+
+class TestWdCorrectionDependencyAlignment:
+    def test_dependencies_offset_in_time(self) -> None:
+        """Tests that ux and uy datasets starting later than wd are matched up by time, not by position."""
+        wd = create_timeframe([84.89191, 19.17, 185.9], "wd")
+        # Same values as the aligned test, but shifted an hour later so position and time disagree
+        ux = dataframe_to_timeframe(
+            pl.DataFrame({"ux": [0.204, 0.94, -3.747]}), metadata={"column_name": "ux"}, time_shift=1
+        )
+        uy = dataframe_to_timeframe(
+            pl.DataFrame({"uy": [2.324, 0.327, -0.384]}), metadata={"column_name": "uy"}, time_shift=1
+        )
+        config = create_method_config(ux=ux, uy=uy)
+
+        result = WDCorrection().run(wd, config)
+
+        # wd's first time value has no ux/uy, and the rest line up with the first two ux/uy values
+        assert result.df["wd"][0] is None
+        assert result.df["wd"][1] == pytest.approx(95.016, abs=0.001)
+        assert result.df["wd"][2] == pytest.approx(160.819, abs=0.001)
+
+
+class TestAlbedoSouthSlopeCorrectionDependencyAlignment:
+    def test_dependency_covering_fewer_time_values(self) -> None:
+        """Tests that a solar zenith dataset covering fewer time values is matched up by time, not by position."""
+        albedo = create_timeframe([0.183, 0.171, 0.229], "albedo")
+        swin = create_timeframe([20.2, 24.6, 16.6], "swin")
+        solar_zenith = create_timeframe([1.506, 1.419], "solar_zenith")
+        config = create_method_config(swin=swin, solar_zenith=solar_zenith, theta_g=0.3128764)
+
+        result = AlbedoSouthSlopeCorrection().run(albedo, config)
+
+        assert result.df["albedo"][0] == pytest.approx(0.496, abs=0.001)
+        assert result.df["albedo"][1] == pytest.approx(0.381, abs=0.001)
+        assert result.df["albedo"][2] is None
 
 
 class TestPaCorrection:
