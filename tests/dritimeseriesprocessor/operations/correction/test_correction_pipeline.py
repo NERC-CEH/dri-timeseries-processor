@@ -8,6 +8,8 @@ from polars.testing import assert_series_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
+from dritimeseriesprocessor.operations.flags.flag_methods import update_corrections_core_flags
+from utils.data_creation import create_timeframe
 
 
 @pytest.fixture
@@ -67,6 +69,31 @@ class TestApply:
             pipeline = CorrectionPipeline({})
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
+
+
+class TestUncoveredTimeValues:
+    def test_row_with_no_dependency_value_is_flagged_unsuccessful(self) -> None:
+        """Tests that a row the dependency doesn't cover is flagged as an unsuccessful correction, not as corrected."""
+        core_flags = {"unchecked": 1, "corrected": 4, "unsuccessful_correction": 64}
+
+        pa = create_timeframe([1007.504, 1007.391, 1007.359], "pa")
+        pa.register_flag_system("core", core_flags)
+        pa.init_flag_column("core", "pa_CORE_FLAG")
+        pa.register_flag_system("corrs", {"pa_corr": 2})
+        pa.init_flag_column("corrs", "pa_CORRS_FLAG")
+
+        # ta covers one time value fewer than pa, so pa's last row has nothing to correct against
+        ta = create_timeframe([12.25, 12.49], "ta")
+        config = DataProcessingMethodConfig(
+            method="pa_corr", params={"correction_factor": -5.1, "ta": ta, "altitude": 74.0}
+        )
+
+        pipeline = CorrectionPipeline({"core": core_flags})
+        result = update_corrections_core_flags(pipeline.apply(pa, config, {}))
+
+        # The correction was attempted on every row, so all three carry the corrections flag
+        assert result.df["pa_CORRS_FLAG"].to_list() == [2, 2, 2]
+        assert result.df["pa_CORE_FLAG"].to_list() == [4, 4, 64]
 
 
 class TestCoreFlagUpdater:

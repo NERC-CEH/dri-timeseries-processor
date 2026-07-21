@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import polars as pl
 import pytest
+from botocore.exceptions import ClientError
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.configuration.app_config import app_config
@@ -56,6 +57,41 @@ class TestByteParquetWriter:
         bucket, key, data = mock_storage.put_bytes.call_args.args
         out_df = pl.read_parquet(data)
         assert out_df.equals(df)
+
+    def test_s3_error_does_not_overwrite_existing_data(self) -> None:
+        """Tests that an S3 error other than a missing file is raised rather than treated as an empty file."""
+        mock_storage = MagicMock(spec=S3StorageClient)
+        mock_storage.client = MagicMock()
+        mock_storage.client.exceptions.NoSuchKey = FakeNoSuchKey
+        mock_storage.get_bytes.side_effect = ClientError(
+            {"Error": {"Code": "InternalError", "Message": "We encountered an internal error"}}, "GetObject"
+        )
+
+        writer = ByteParquetWriter(storage=mock_storage)
+        df = pl.DataFrame({"t": [1], "value": [10]})
+
+        with pytest.raises(ClientError):
+            writer.write("bucket", "file.parquet", df, time_col="t")
+
+        # The existing object must be left alone, otherwise a whole day of data is replaced by a partial run
+        mock_storage.put_bytes.assert_not_called()
+
+    def test_missing_key_client_error_writes_new_file(self) -> None:
+        """Tests that a genuine missing-file error still results in the new data being written."""
+        mock_storage = MagicMock(spec=S3StorageClient)
+        mock_storage.client = MagicMock()
+        mock_storage.client.exceptions.NoSuchKey = FakeNoSuchKey
+        mock_storage.get_bytes.side_effect = ClientError(
+            {"Error": {"Code": "404", "Message": "Not Found"}}, "HeadObject"
+        )
+
+        writer = ByteParquetWriter(storage=mock_storage)
+        df = pl.DataFrame({"t": [1], "value": [10]})
+
+        writer.write("bucket", "file.parquet", df, time_col="t")
+
+        _, _, data = mock_storage.put_bytes.call_args.args
+        assert_frame_equal(pl.read_parquet(data), df)
 
     def test_write_merge_with_existing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that file found writes the new data merged with the previous data"""

@@ -6,7 +6,7 @@ import pytest
 
 from dritimeseriesprocessor.app.run import list_sites
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
-from dritimeseriesprocessor.utils.urls import SITE_URI
+from dritimeseriesprocessor.utils.urls import PROGRAMME_URI, SITE_URI
 
 
 def make_sites_response(site_ids: list[str]) -> MagicMock:
@@ -16,10 +16,12 @@ def make_sites_response(site_ids: list[str]) -> MagicMock:
     return response
 
 
-def make_site_metadata(site_id: str, start_date: datetime, end_date: datetime | None = None) -> SiteMetadata:
+def make_site_metadata(
+    site_id: str, start_date: datetime, end_date: datetime | None = None, network: str = f"{PROGRAMME_URI}/cosmos"
+) -> SiteMetadata:
     return SiteMetadata(
         site_id=f"{SITE_URI}/{site_id}",
-        network="cosmos",
+        network=network,
         start_date=start_date,
         end_date=end_date,
     )
@@ -80,3 +82,47 @@ class TestListSites:
 
         with open("/tmp/sites.json") as f:
             assert json.load(f) == []
+
+    def test_sites_filter_uses_fetch_sites(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """When sites are given, list_sites should fetch by site ID rather than by network."""
+        self._setup_env(monkeypatch)
+        fetch_sites_mock = MagicMock(return_value=make_sites_response(["cosmos-alic1"]))
+        monkeypatch.setattr("dritimeseriesprocessor.app.run.MetadataRouter.fetch_sites", fetch_sites_mock)
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.app.run.map_site_metadata",
+            lambda item: make_site_metadata(item.id.removeprefix(f"{SITE_URI}/"), datetime(2000, 1, 1)),
+        )
+
+        list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1), sites=[f"{SITE_URI}/cosmos-alic1"])
+
+        assert fetch_sites_mock.call_args[0][0] == [f"{SITE_URI}/cosmos-alic1"]
+        with open("/tmp/sites.json") as f:
+            assert json.load(f) == ["cosmos-alic1"]
+
+    def test_sites_filter_excludes_sites_not_in_network(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Sites returned by fetch_sites that don't belong to the requested network are excluded."""
+        self._setup_env(monkeypatch)
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.app.run.MetadataRouter.fetch_sites",
+            lambda _self, _site_ids: make_sites_response(["cosmos-alic1", "other-network-site"]),
+        )
+        site_metas = {
+            "cosmos-alic1": make_site_metadata("cosmos-alic1", datetime(2000, 1, 1)),
+            "other-network-site": make_site_metadata(
+                "other-network-site", datetime(2000, 1, 1), network=f"{PROGRAMME_URI}/other-network"
+            ),
+        }
+        monkeypatch.setattr(
+            "dritimeseriesprocessor.app.run.map_site_metadata",
+            lambda item: site_metas[item.id.removeprefix(f"{SITE_URI}/")],
+        )
+
+        list_sites(
+            "cosmos",
+            datetime(2024, 1, 1),
+            datetime(2025, 1, 1),
+            sites=[f"{SITE_URI}/cosmos-alic1", f"{SITE_URI}/other-network-site"],
+        )
+
+        with open("/tmp/sites.json") as f:
+            assert json.load(f) == ["cosmos-alic1"]

@@ -52,7 +52,16 @@ class ByteParquetWriter(ParquetWriterInterface):
             existing_df = pl.read_parquet(existing_bytes)
             combined_df = merge_dataframes(existing_df, df, time_col)
             logger.debug(f"Merging existing and new data for {bucket}/{key}")
-        except tuple(exceptions_to_catch):
+        except tuple(exceptions_to_catch) as error:
+            # ClientError is the base class for every botocore error, so only treat it as a missing file when the
+            # error says so. Any other error must not be mistaken for an empty file, or this write replaces a
+            # whole day of existing data with just the rows in this run.
+
+            # S3 error codes that mean the object genuinely isn't there yet, rather than that the read failed
+            missing_keys = {"404", "NoSuchKey"}
+            if isinstance(error, ClientError) and error.response.get("Error", {}).get("Code") not in missing_keys:
+                raise
+
             combined_df = df
             logger.debug(f"No existing parquet at {bucket}/{key}; writing new file")
 
