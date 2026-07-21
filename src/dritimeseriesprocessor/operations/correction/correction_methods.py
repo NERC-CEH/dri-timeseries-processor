@@ -50,7 +50,7 @@ class LWCorrection(CorrectionMethod):
         lw_unc_col = lw_unc_tf.metadata["column_name"]
         ta_col = ta_tf.metadata["column_name"]
 
-        # Join the dependencies on by time
+        # Join the dependencies on time
         merged = merge_multiple_timeframes([tf, lw_unc_tf, ta_tf], "left").df
 
         # First correct the uncalibrated values.
@@ -124,7 +124,7 @@ class PACorrection(CorrectionMethod):
 
         altitude = config.params["altitude"]
 
-        # Join the dependency on by time - it is a separate dataset and need not hold the same time values
+        # Join the dependency on time - it is a separate dataset and need not hold the same time values
         merged = merge_multiple_timeframes([tf, ta_tf], "left").df
 
         pa_corr = (
