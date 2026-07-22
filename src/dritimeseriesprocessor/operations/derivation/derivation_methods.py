@@ -40,20 +40,12 @@ class DerivationMethod(Operation, ABC):
 
         # Extract and merge input data
         tf_map = {name: config.params[name] for name in self.inputs}
-        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
 
         # Get column references for calculation
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
 
         # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
-        for param, value in config.params.items():
-            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
-                # Join the deployment values to the main DataFrame
-                merged_tf = merged_tf.with_df(
-                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
-                )
-                # Make sure the deployment value column is available to any calculation method that needs it
-                columns[param] = pl.col(param)
+        columns, merged_tf = self.merge_inputs(config, tf_map, columns)
 
         # Perform the calculation (subclass-specific)
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
@@ -70,6 +62,37 @@ class DerivationMethod(Operation, ABC):
             .with_metadata({"column_name": config.params["output_col"]})
             .select(config.params["output_col"])
         )
+
+    @classmethod
+    def merge_inputs(cls, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
+        """Merge the input TimeFrames into one, and join in any time-bound attribute columns.
+
+        Assumes all input TimeFrames share a common periodicity, so they can be merged directly with
+        `merge_multiple_timeframes`. Subclasses whose inputs have differing periodicities should
+        override this method with their own merge/join strategy.
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs
+            tf_map: Mapping of input name to its TimeFrame, one entry per name in `inputs`
+            columns: Mapping of input name to its Polars column expression, one entry per name in `inputs`
+
+        Returns:
+            Tuple of:
+                - columns: The input `columns` dict, with an added entry for each time-bound
+                  attribute (e.g. anemometer sensor height) found in `config.params`
+                - merged_tf: The merged TimeFrame, with any time-bound attribute columns joined in
+        """
+        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
+        # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
+        for param, value in config.params.items():
+            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
+                # Join the deployment values to the main DataFrame
+                merged_tf = merged_tf.with_df(
+                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
+                )
+                # Make sure the deployment value column is available to any calculation method that needs it
+                columns[param] = pl.col(param)
+        return columns, merged_tf
 
     @abstractmethod
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
@@ -784,14 +807,14 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         cts_smo_crns = columns["cts_smo_crns"]
         snow = columns["snow"]
-        snow_prev1 = snow.shift(HOURS_IN_A_DAY)
-        snow_prev2 = snow.shift(2 * HOURS_IN_A_DAY)
+        snow_prev1 = snow.shift(hours_in_a_day)
+        snow_prev2 = snow.shift(2 * hours_in_a_day)
         time = columns["time"]
 
         event_start = snow & (~snow_prev1) & (~snow_prev2) & (time.dt.hour() == 0)
         event_end = (~snow) & (~snow_prev1) & snow_prev2 & (time.dt.hour() == 0)
         period_boundary = (
-            pl.when(event_start).then(True).when(event_end.shift(-HOURS_IN_A_DAY)).then(False).otherwise(None)
+            pl.when(event_start).then(True).when(event_end.shift(-hours_in_a_day)).then(False).otherwise(None)
         )
 
         # The event_end is identified when there has been two consecutive days of no snow,
@@ -807,21 +830,26 @@ class GetSnowEstimatedCounts(DerivationMethod):
         cts_est = pl.when(cts_smo_crns > init_cts_est).then(cts_smo_crns).otherwise(init_cts_est)
         return cts_est
 
-    def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        """
-        Implement run method to handle timeframes with different periodicities instead of DerivationMethod run method.
+    @classmethod
+    def merge_inputs(cls, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
+        """Merge TimeFrames with different periodicities, broadcasting lower resolution to the higher resolution.
+
+        Overrides the base `merge_inputs` because `snow` and `cts_smo_crns` have different
+        periodicities (eg. daily vs. hourly), so `merge_multiple_timeframes` cannot be used directly.
 
         Args:
-            config: Configuration parameters including input TimeFrames and output specs
+            config: Configuration parameters including input TimeFrames and output specs. Unused.
+            tf_map: Mapping of input name to its TimeFrame.
+            columns: Mapping of input name to its Polars column expression.
 
         Returns:
-            TimeFrame containing the calculated derived variable
+            Tuple of:
+                - columns: The input `columns` dict, with a "time" entry added.
+                - merged_tf: The TimeFrame with the lower resolution values joined onto each row.
         """
+        snow_daily_tf = tf_map["snow"]
+        cts_smo_tf = tf_map["cts_smo_crns"]
 
-        snow_daily_tf = config.params["snow"]
-        cts_smo_tf = config.params["cts_smo_crns"]
-
-        # We cannot use merge_multiple_timeframes here without upsampling snow_daily_tf. Use join instead.
         merged_tf = cts_smo_tf.with_df(
             cts_smo_tf.df.with_columns(pl.col(cts_smo_tf.time_name).dt.date().alias("_date"))
             .join(
@@ -831,28 +859,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
             )
             .drop("_date")
         )
-
-        # We cannot use a shared config here, as is used in the DerivationMethod run method.
-        # A shared config enforces that all datasets must have the same perioditicy/resolution,
-        # which is not the case here.
-        # Without a shared config, which stores the column names, the column names must be given here explicity.
-        # Expressions have to use upper case to match those in snow_daily_tf and cts_smo_tf
-        columns = {"time": pl.col("time"), "cts_smo_crns": pl.col("CTS_SMO_CRNS"), "snow": pl.col("SNOW")}
-
-        # Perform the calculation (subclass-specific)
-        calculation_expr = self.expr(columns).alias("cts_est")
-        result_df = merged_tf.df.with_columns(calculation_expr)
-
-        return (
-            ts.TimeFrame(
-                df=result_df,
-                time_name=merged_tf.time_name,
-                resolution="PT1H",
-                periodicity="PT1H",
-            )
-            .with_metadata({"column_name": "cts_est"})
-            .select("cts_est")
-        )
+        columns["time"] = pl.col(cts_smo_tf.time_name)
+        return columns, merged_tf
 
 
 @DerivationMethod.register

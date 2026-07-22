@@ -610,6 +610,7 @@ class TestGetSnowEstimatedCounts:
         params = {
             "cts_smo_crns": dataframe_to_timeframe(
                 df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
@@ -618,8 +619,13 @@ class TestGetSnowEstimatedCounts:
                         "time": [datetime(2025, 1, i) for i in range(1, 12)],
                     }
                 ),
+                metadata={"column_name": "SNOW"},
                 resolution="P1D",
             ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
         }
 
         config = DataProcessingMethodConfig(method="test", params=params)
@@ -638,7 +644,9 @@ class TestGetSnowEstimatedCounts:
             1002.0,
         ]
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"cts_est": [i for item in daily_cts_est for i in [item] * 24]}))
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
+        )
         result = GetSnowEstimatedCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
@@ -648,6 +656,7 @@ class TestGetSnowEstimatedCounts:
         params = {
             "cts_smo_crns": dataframe_to_timeframe(
                 df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
@@ -656,8 +665,13 @@ class TestGetSnowEstimatedCounts:
                         "time": [datetime(2025, 1, i) for i in range(1, 5)],
                     }
                 ),
+                metadata={"column_name": "SNOW"},
                 resolution="P1D",
             ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
         }
 
         config = DataProcessingMethodConfig(method="test", params=params)
@@ -666,7 +680,8 @@ class TestGetSnowEstimatedCounts:
 
         expected = dataframe_to_timeframe(
             pl.DataFrame(
-                {"cts_est": [i for item in daily_cts_est for i in [item] * 24]}, schema={"cts_est": pl.Float64}
+                {"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]},
+                schema={"cts_est_crns": pl.Float64},
             )
         )
         result = GetSnowEstimatedCounts().run(config)
@@ -678,6 +693,7 @@ class TestGetSnowEstimatedCounts:
         params = {
             "cts_smo_crns": dataframe_to_timeframe(
                 df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
@@ -686,8 +702,13 @@ class TestGetSnowEstimatedCounts:
                         "time": [datetime(2025, 1, i) for i in range(1, 5)],
                     }
                 ),
+                metadata={"column_name": "SNOW"},
                 resolution="P1D",
             ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
         }
 
         config = DataProcessingMethodConfig(method="test", params=params)
@@ -696,7 +717,8 @@ class TestGetSnowEstimatedCounts:
 
         expected = dataframe_to_timeframe(
             pl.DataFrame(
-                {"cts_est": [i for item in daily_cts_est for i in [item] * 24]}, schema={"cts_est": pl.Float64}
+                {"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]},
+                schema={"cts_est_crns": pl.Float64},
             )
         )
         result = GetSnowEstimatedCounts().run(config)
@@ -717,8 +739,13 @@ class TestGetSnowEstimatedCounts:
                         "time": [datetime(2025, 1, i) for i in range(1, 9)],
                     }
                 ),
+                metadata={"column_name": "SNOW"},
                 resolution="P1D",
             ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
         }
 
         config = DataProcessingMethodConfig(method="test", params=params)
@@ -734,7 +761,9 @@ class TestGetSnowEstimatedCounts:
             1001.0,
         ]
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"cts_est": [i for item in daily_cts_est for i in [item] * 24]}))
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
+        )
         result = GetSnowEstimatedCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
@@ -748,6 +777,7 @@ class TestGetSnowEstimatedCounts:
         params = {
             "cts_smo_crns": dataframe_to_timeframe(
                 df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
@@ -756,8 +786,13 @@ class TestGetSnowEstimatedCounts:
                         "time": [datetime(2025, 1, i) for i in range(1, 8)],
                     }
                 ),
+                metadata={"column_name": "SNOW"},
                 resolution="P1D",
             ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
         }
 
         config = DataProcessingMethodConfig(method="test", params=params)
@@ -772,7 +807,9 @@ class TestGetSnowEstimatedCounts:
             1002.0,
         ]
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"cts_est": [i for item in daily_cts_est for i in [item] * 24]}))
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
+        )
         result = GetSnowEstimatedCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
