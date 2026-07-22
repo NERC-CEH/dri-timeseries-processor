@@ -780,7 +780,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
         Returns:
             Polars expression for estimated counts during snow periods. Null when no in snow period.
         """
-        HOURS_IN_A_DAY = 24
+        hours_in_a_day = 24
 
         cts_smo_crns = columns["cts_smo_crns"]
         snow = columns["snow"]
