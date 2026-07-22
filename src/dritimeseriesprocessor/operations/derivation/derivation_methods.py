@@ -762,7 +762,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
         """
         Calculate CRNS count estimates when there is snow.
 
-        This derivation reconstructs CRNS counts if there had been no snow, as snow supresses the counts.
+        This derivation reconstructs CRNS counts as if there had been no snow, because snow supresses the counts.
         During a snow event, the estimated count is set to the value of the counts just before the snow started.
         If the counts increase, so should the estimate.
 
