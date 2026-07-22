@@ -813,6 +813,47 @@ class TestGetSnowEstimatedCounts:
         result = GetSnowEstimatedCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
+    @pytest.mark.parametrize(
+        ("cts_smo_resolution", "snow_resolution"),
+        [
+            ("P1D", "P1D"),  # cts_smo_crns should be hourly, not daily
+            ("PT1H", "PT1H"),  # snow should be daily, not hourly
+        ],
+    )
+    def test_raises_when_periodicities_are_incorrect(self, cts_smo_resolution: str, snow_resolution: str) -> None:
+        """Test a ValueError is raised if cts_smo_crns is not hourly, or snow is not daily."""
+        params = {
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "CTS_SMO_CRNS": [995.0, 1000, 1002, 995],
+                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
+                    }
+                ),
+                metadata={"column_name": "CTS_SMO_CRNS"},
+                resolution=cts_smo_resolution,
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "SNOW": [True, False, False, True],
+                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
+                    }
+                ),
+                metadata={"column_name": "SNOW"},
+                resolution=snow_resolution,
+            ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        with pytest.raises(ValueError):
+            GetSnowEstimatedCounts().run(config)
+
 
 class TestCalcFluxMeanShf:
     def test_averages_two_shf_plates(self) -> None:

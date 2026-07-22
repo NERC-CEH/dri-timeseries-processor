@@ -850,6 +850,11 @@ class GetSnowEstimatedCounts(DerivationMethod):
         snow_daily_tf = tf_map["snow"]
         cts_smo_tf = tf_map["cts_smo_crns"]
 
+        if (str(cts_smo_tf.resolution) != "PT1H") or (str(snow_daily_tf.resolution) != "P1D"):
+            raise ValueError(
+                "The resolution of the cts_smo_crns dataset must be hourly", "and the snow dataset must be daily."
+            )
+
         merged_tf = cts_smo_tf.with_df(
             cts_smo_tf.df.with_columns(pl.col(cts_smo_tf.time_name).dt.date().alias("_date"))
             .join(
