@@ -788,8 +788,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
         snow_prev2 = snow.shift(2 * HOURS_IN_A_DAY)
         time = columns["time"]
 
-        event_start = (snow) & (~snow_prev1) & (~snow_prev2) & (time.dt.hour() == 0)
-        event_end = (~snow) & (~snow_prev1) & (snow_prev2) & (time.dt.hour() == 0)
+        event_start = snow & (~snow_prev1) & (~snow_prev2) & (time.dt.hour() == 0)
+        event_end = (~snow) & (~snow_prev1) & snow_prev2 & (time.dt.hour() == 0)
         period_boundary = (
             pl.when(event_start).then(True).when(event_end.shift(-HOURS_IN_A_DAY)).then(False).otherwise(None)
         )
