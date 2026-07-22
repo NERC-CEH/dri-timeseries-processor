@@ -756,7 +756,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
     """
 
     name = "get_snow_estimated_counts"
-    inputs = ("snow", "cts_smo")
+    inputs = ("snow", "cts_smo_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
