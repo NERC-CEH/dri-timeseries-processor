@@ -773,8 +773,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - cts_smo: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
-                - snow: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
+                - CTS_SMO_CRNS: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
+                - SNOW: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
                 - time: hourly timestamps corresponding to cts_smo values.
 
         Returns:
@@ -782,14 +782,14 @@ class GetSnowEstimatedCounts(DerivationMethod):
         """
         HOURS_IN_A_DAY = 24
 
-        cts_smo = columns["cts_smo"]
+        cts_smo_crns = columns["cts_smo_crns"]
         snow = columns["snow"]
         snow_prev1 = snow.shift(HOURS_IN_A_DAY)
         snow_prev2 = snow.shift(2 * HOURS_IN_A_DAY)
         time = columns["time"]
 
-        event_start = (snow == 1) & (snow_prev1 == 0) & (snow_prev2 == 0) & (time.dt.hour() == 0)
-        event_end = (snow == 0) & (snow_prev1 == 0) & (snow_prev2 == 1) & (time.dt.hour() == 0)
+        event_start = (snow) & (~snow_prev1) & (~snow_prev2) & (time.dt.hour() == 0)
+        event_end = (~snow) & (~snow_prev1) & (snow_prev2) & (time.dt.hour() == 0)
         period_boundary = (
             pl.when(event_start).then(True).when(event_end.shift(-HOURS_IN_A_DAY)).then(False).otherwise(None)
         )
@@ -800,11 +800,11 @@ class GetSnowEstimatedCounts(DerivationMethod):
         # This shift means the last 24 hours in period_boundary are not defined, and become null.
         # If there is snow in the last 24 hours, we know this is in a snow period,
         # so we fill the nulls as True in this case.
-        in_snow_period = period_boundary.forward_fill().fill_null(snow == 1)
+        in_snow_period = period_boundary.forward_fill().fill_null(snow)
 
         # Counts during snow period are initialised by the counts from the end of previous day.
-        init_cts_est = pl.when(in_snow_period).then(pl.when(event_start).then(cts_smo.shift(1)).forward_fill())
-        cts_est = pl.when(cts_smo > init_cts_est).then(cts_smo).otherwise(init_cts_est)
+        init_cts_est = pl.when(in_snow_period).then(pl.when(event_start).then(cts_smo_crns.shift(1)).forward_fill())
+        cts_est = pl.when(cts_smo_crns > init_cts_est).then(cts_smo_crns).otherwise(init_cts_est)
         return cts_est
 
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
@@ -819,7 +819,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
         """
 
         snow_daily_tf = config.params["snow"]
-        cts_smo_tf = config.params["cts_smo"]
+        cts_smo_tf = config.params["cts_smo_crns"]
 
         # We cannot use merge_multiple_timeframes here without upsampling snow_daily_tf. Use join instead.
         merged_tf = cts_smo_tf.with_df(
@@ -836,7 +836,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
         # A shared config enforces that all datasets must have the same perioditicy/resolution,
         # which is not the case here.
         # Without a shared config, which stores the column names, the column names must be given here explicity.
-        columns = {"time": pl.col("time"), "cts_smo": pl.col("cts_smo"), "snow": pl.col("snow")}
+        # Expressions have to use upper case to match those in snow_daily_tf and cts_smo_tf
+        columns = {"time": pl.col("time"), "cts_smo_crns": pl.col("CTS_SMO_CRNS"), "snow": pl.col("SNOW")}
 
         # Perform the calculation (subclass-specific)
         calculation_expr = self.expr(columns).alias("cts_est")

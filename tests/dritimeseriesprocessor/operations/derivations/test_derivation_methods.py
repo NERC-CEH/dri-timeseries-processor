@@ -605,21 +605,19 @@ class TestGetSnowEstimatedCounts:
            so no count estimate is given.
         6. A snow period at the end of the dataset is handled correctly, even if event_end.shift(-24) is null.
         """
-        daily_cts_smo = [995.0, 1000, 1002, 995, 996, 1003, 997, 1001, 1002, 1003, 995]
+        daily_cts_smo_crns = [995.0, 1000, 1002, 995, 996, 1003, 997, 1001, 1002, 1003, 995]
 
         params = {
-            "cts_smo": dataframe_to_timeframe(
-                df=pl.DataFrame({"cts_smo": [i for item in daily_cts_smo for i in [item] * 24]}),
-                metadata={"column_name": "cts_smo"},
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
                     {
-                        "snow": [1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1],
+                        "SNOW": [True, False, False, True, True, False, True, False, False, True, True],
                         "time": [datetime(2025, 1, i) for i in range(1, 12)],
                     }
                 ),
-                metadata={"column_name": "snow"},
                 resolution="P1D",
             ),
         }
@@ -645,21 +643,19 @@ class TestGetSnowEstimatedCounts:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
     def test_all_snow(self) -> None:
-        daily_cts_smo = [995.0, 996, 997, 998]
+        daily_cts_smo_crns = [995.0, 996, 997, 998]
 
         params = {
-            "cts_smo": dataframe_to_timeframe(
-                df=pl.DataFrame({"cts_smo": [i for item in daily_cts_smo for i in [item] * 24]}),
-                metadata={"column_name": "cts_smo"},
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
                     {
-                        "snow": [1, 1, 1, 1],
+                        "SNOW": [True, True, True, True],
                         "time": [datetime(2025, 1, i) for i in range(1, 5)],
                     }
                 ),
-                metadata={"column_name": "snow"},
                 resolution="P1D",
             ),
         }
@@ -677,21 +673,19 @@ class TestGetSnowEstimatedCounts:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
     def test_no_snow(self) -> None:
-        daily_cts_smo = [1000.0, 1001, 1002, 1003]
+        daily_cts_smo_crns = [1000.0, 1001, 1002, 1003]
 
         params = {
-            "cts_smo": dataframe_to_timeframe(
-                df=pl.DataFrame({"cts_smo": [i for item in daily_cts_smo for i in [item] * 24]}),
-                metadata={"column_name": "cts_smo"},
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
                     {
-                        "snow": [0, 0, 0, 0],
+                        "SNOW": [False, False, False, False],
                         "time": [datetime(2025, 1, i) for i in range(1, 5)],
                     }
                 ),
-                metadata={"column_name": "snow"},
                 resolution="P1D",
             ),
         }
@@ -709,21 +703,20 @@ class TestGetSnowEstimatedCounts:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
     def test_null_snow_values(self) -> None:
-        daily_cts_smo = [995.0, 1000, 995, 1003, 1001, 1002, 995, 996]
+        daily_cts_smo_crns = [995.0, 1000, 995, 1003, 1001, 1002, 995, 996]
 
         params = {
-            "cts_smo": dataframe_to_timeframe(
-                df=pl.DataFrame({"cts_smo": [i for item in daily_cts_smo for i in [item] * 24]}),
-                metadata={"column_name": "cts_smo"},
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
                     {
-                        "snow": [None, 0, 1, 0, 0, 1, None, 1],
+                        "SNOW": [None, False, True, False, False, True, None, True],
                         "time": [datetime(2025, 1, i) for i in range(1, 9)],
                     }
                 ),
-                metadata={"column_name": "snow"},
                 resolution="P1D",
             ),
         }
@@ -750,21 +743,19 @@ class TestGetSnowEstimatedCounts:
         Null counts should remain null when not in a snow period.
         Null counts should get filled with an estimated if during a snow period.
         """
-        daily_cts_smo = [1000.0, None, 1001, 1002, 995, None, 996]
+        daily_cts_smo_crns = [1000.0, None, 1001, 1002, 995, None, 996]
 
         params = {
-            "cts_smo": dataframe_to_timeframe(
-                df=pl.DataFrame({"cts_smo": [i for item in daily_cts_smo for i in [item] * 24]}),
-                metadata={"column_name": "cts_smo"},
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
             ),
             "snow": dataframe_to_timeframe(
                 df=pl.DataFrame(
                     {
-                        "snow": [0, 0, 0, 0, 1, 1, 1],
+                        "SNOW": [False, False, False, False, True, True, True],
                         "time": [datetime(2025, 1, i) for i in range(1, 8)],
                     }
                 ),
-                metadata={"column_name": "snow"},
                 resolution="P1D",
             ),
         }
