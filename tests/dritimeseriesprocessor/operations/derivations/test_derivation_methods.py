@@ -814,13 +814,15 @@ class TestGetSnowEstimatedCounts:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
     @pytest.mark.parametrize(
-        ("cts_smo_resolution", "snow_resolution"),
+        ("cts_smo_resolution", "snow_resolution", "expected_message"),
         [
-            ("P1D", "P1D"),  # cts_smo_crns should be hourly, not daily
-            ("PT1H", "PT1H"),  # snow should be daily, not hourly
+            ("P1D", "P1D", "Resolution of cts_smo_crns must be hourly"),  # cts_smo_crns should be hourly, not daily
+            ("PT1H", "PT1H", "Resolution of snow must be daily"),  # snow should be daily, not hourly
         ],
     )
-    def test_raises_when_periodicities_are_incorrect(self, cts_smo_resolution: str, snow_resolution: str) -> None:
+    def test_raises_when_periodicities_are_incorrect(
+        self, cts_smo_resolution: str, snow_resolution: str, expected_message: str
+    ) -> None:
         """Test a ValueError is raised if cts_smo_crns is not hourly, or snow is not daily."""
         params = {
             "cts_smo_crns": dataframe_to_timeframe(
@@ -851,7 +853,7 @@ class TestGetSnowEstimatedCounts:
 
         config = DataProcessingMethodConfig(method="test", params=params)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=expected_message):
             GetSnowEstimatedCounts().run(config)
 
 

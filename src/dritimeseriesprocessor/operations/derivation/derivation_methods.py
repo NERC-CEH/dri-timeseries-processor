@@ -63,13 +63,13 @@ class DerivationMethod(Operation, ABC):
             .select(config.params["output_col"])
         )
 
-    @classmethod
-    def merge_inputs(cls, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
+    def merge_inputs(self, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
         """Merge the input TimeFrames into one, and join in any time-bound attribute columns.
 
         Assumes all input TimeFrames share a common periodicity, so they can be merged directly with
         `merge_multiple_timeframes`. Subclasses whose inputs have differing periodicities should
-        override this method with their own merge/join strategy.
+        override this method with their own merge/join strategy, calling `join_deployment_attributes`
+        themselves if they also need time-bound attribute columns joined in.
 
         Args:
             config: Configuration parameters including input TimeFrames and output specs
@@ -83,7 +83,23 @@ class DerivationMethod(Operation, ABC):
                 - merged_tf: The merged TimeFrame, with any time-bound attribute columns joined in
         """
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
-        # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
+        return self.join_deployment_attributes(config, columns, merged_tf)
+
+    @staticmethod
+    def join_deployment_attributes(config: DataProcessingMethodConfig, columns: dict, merged_tf: ts.TimeFrame) -> tuple:
+        """Join any time-bound deployment attribute columns (e.g. anemometer sensor height) onto a TimeFrame.
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs
+            columns: Mapping of input name to its Polars column expression
+            merged_tf: The already-merged TimeFrame that deployment attribute columns should be joined onto
+
+        Returns:
+            Tuple of:
+                - columns: The input `columns` dict, with an added entry for each time-bound
+                  attribute (e.g. anemometer sensor height) found in `config.params`
+                - merged_tf: The input `merged_tf`, with any time-bound attribute columns joined in
+        """
         for param, value in config.params.items():
             if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
                 # Join the deployment values to the main DataFrame
@@ -830,8 +846,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
         cts_est = pl.when(cts_smo_crns > init_cts_est).then(cts_smo_crns).otherwise(init_cts_est)
         return cts_est
 
-    @classmethod
-    def merge_inputs(cls, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
+    def merge_inputs(self, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
         """Merge TimeFrames with different periodicities, broadcasting lower resolution to the higher resolution.
 
         Overrides the base `merge_inputs` because `snow` and `cts_smo_crns` have different
@@ -850,10 +865,11 @@ class GetSnowEstimatedCounts(DerivationMethod):
         snow_daily_tf = tf_map["snow"]
         cts_smo_tf = tf_map["cts_smo_crns"]
 
-        if (str(cts_smo_tf.resolution) != "PT1H") or (str(snow_daily_tf.resolution) != "P1D"):
-            raise ValueError(
-                "The resolution of the cts_smo_crns dataset must be hourly", "and the snow dataset must be daily."
-            )
+        if cts_smo_tf.resolution != ts.Period.of_hours(1):
+            raise ValueError(f"Resolution of cts_smo_crns must be hourly. Got: {cts_smo_tf.resolution}")
+
+        if snow_daily_tf.resolution != ts.Period.of_days(1):
+            raise ValueError(f"Resolution of snow must be daily. Got: {snow_daily_tf.resolution}")
 
         merged_tf = cts_smo_tf.with_df(
             cts_smo_tf.df.with_columns(pl.col(cts_smo_tf.time_name).dt.date().alias("_date"))
