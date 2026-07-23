@@ -4,6 +4,7 @@ from datetime import datetime
 import polars as pl
 import time_stream as ts
 from time_stream.operation import Operation
+from time_stream.utils import configure_period_object
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -31,17 +32,8 @@ class AggregationMethod(Operation, ABC):
         col_name = tf.metadata["column_name"]
         agg_col_name = f"{agg_func}_{col_name}"
 
-        missing_criteria = None
-        if config.params.get("threshold", None) is not None:
-            missing_criteria = ("available", config.params["threshold"])  # type: ignore[assignment]
-
-        time_window = None
-        start_time_str = config.params.get("start_time")
-        end_time_str = config.params.get("end_time")
-        if isinstance(start_time_str, str) and isinstance(end_time_str, str):
-            start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
-            time_window = (start_time, end_time)
+        missing_criteria = AggregationMethod.missing_criteria(config)
+        time_window = AggregationMethod.time_window(config)
 
         tf_agg = tf.aggregate(
             aggregation_period=config.params["aggregation_period"],
@@ -54,6 +46,81 @@ class AggregationMethod(Operation, ABC):
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))
 
         return tf_agg
+
+    @staticmethod
+    def _ts_rolling_aggregate(tf: ts.TimeFrame, config: DataProcessingMethodConfig, agg_func: str) -> ts.TimeFrame:
+        """Run a rolling aggregation using in-built methods in the Time-Stream package.
+
+        Args:
+            tf: TimeFrame to aggregate.
+            config: Configuration options for the aggregation method.
+            agg_func: The Time-Stream aggregation function to run.
+
+        Returns:
+            Aggregated TimeFrame.
+        """
+        col_name = tf.metadata["column_name"]
+        agg_col_name = f"{agg_func}_{col_name}"
+        window_size = config.params["window_size"]
+        alignment = config.params["alignment"]
+
+        # Define number of datapoints in window from window_size and periodicity
+        window_count = tf.periodicity.count(configure_period_object(window_size))
+
+        missing_criteria = AggregationMethod.missing_criteria(config)
+        time_window = AggregationMethod.time_window(config)
+
+        # Calculate rolling mean across dataset
+        tf_agg = tf.rolling_aggregate(
+            window_size=window_size,
+            aggregation_function=agg_func,
+            columns=col_name,
+            missing_criteria=missing_criteria,  # type: ignore[assignment]
+            alignment=alignment,
+            time_window=time_window,
+        )
+
+        # Default alignment = "center"
+        rows_masked_at_start = window_count // 2
+        rows_masked_at_end = window_count // 2
+
+        if alignment == "trailing":
+            rows_masked_at_start = window_count - 1
+            rows_masked_at_end = 0
+        elif alignment == "leading":
+            rows_masked_at_start = 0
+            rows_masked_at_end = window_count - 1
+
+        row_index = pl.int_range(pl.len())
+        truncated_window = (row_index >= rows_masked_at_start) & (row_index < pl.len() - rows_masked_at_end)
+
+        tf_agg = tf_agg.with_df(
+            tf_agg.df.with_columns(
+                pl.when(truncated_window & pl.col(f"valid_{col_name}") & pl.col(agg_col_name).is_not_null())
+                .then(pl.col(agg_col_name))
+                .otherwise(None)
+                .alias(col_name)
+            )
+        )
+
+        return tf_agg
+
+    @staticmethod
+    def missing_criteria(config: DataProcessingMethodConfig) -> tuple[str, int] | None:
+        missing_criteria = None
+        if config.params.get("threshold", None) is not None:
+            missing_criteria = ("available", config.params["threshold"])  # type: ignore[assignment]
+        return missing_criteria
+
+    @staticmethod
+    def time_window(config: DataProcessingMethodConfig) -> tuple | None:
+        start_time_str = config.params.get("start_time")
+        end_time_str = config.params.get("end_time")
+        if isinstance(start_time_str, str) and isinstance(end_time_str, str):
+            start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
+            end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
+            return (start_time, end_time)
+        return None
 
 
 @AggregationMethod.register
@@ -152,3 +219,18 @@ class HourlyValueAsDaily(AggregationMethod):
             resolution="P1D",
         )
         return down_sampled_tf
+
+
+class RollingMeanForCounts(AggregationMethod):
+    """
+    Calculates a mean for each data point from a window of surrounding datapoints on either side.
+    Date points at the edges of a dataset, up to an index that is half the size of the window, are not assigned a mean.
+    If there are too few datapoints available (eg. not null) within the window, the mean is assigned a null value.
+
+    The window size and minimum threshold of datapoints required in the window are specified in the config parameters.
+    """
+
+    name = "rolling_mean_for_counts"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_rolling_aggregate(tf, config, "mean")

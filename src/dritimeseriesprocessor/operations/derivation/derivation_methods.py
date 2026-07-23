@@ -40,20 +40,12 @@ class DerivationMethod(Operation, ABC):
 
         # Extract and merge input data
         tf_map = {name: config.params[name] for name in self.inputs}
-        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
 
         # Get column references for calculation
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
 
         # Build data columns for any time-bound deployment attributes (e.g. anemometer sensor height)
-        for param, value in config.params.items():
-            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
-                # Join the deployment values to the main DataFrame
-                merged_tf = merged_tf.with_df(
-                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
-                )
-                # Make sure the deployment value column is available to any calculation method that needs it
-                columns[param] = pl.col(param)
+        columns, merged_tf = self.merge_inputs(config, tf_map, columns)
 
         # Perform the calculation (subclass-specific)
         calculation_expr = self.expr(columns).alias(config.params["output_col"])
@@ -70,6 +62,53 @@ class DerivationMethod(Operation, ABC):
             .with_metadata({"column_name": config.params["output_col"]})
             .select(config.params["output_col"])
         )
+
+    def merge_inputs(self, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
+        """Merge the input TimeFrames into one, and join in any time-bound attribute columns.
+
+        Assumes all input TimeFrames share a common periodicity, so they can be merged directly with
+        `merge_multiple_timeframes`. Subclasses whose inputs have differing periodicities should
+        override this method with their own merge/join strategy, calling `join_deployment_attributes`
+        themselves if they also need time-bound attribute columns joined in.
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs
+            tf_map: Mapping of input name to its TimeFrame, one entry per name in `inputs`
+            columns: Mapping of input name to its Polars column expression, one entry per name in `inputs`
+
+        Returns:
+            Tuple of:
+                - columns: The input `columns` dict, with an added entry for each time-bound
+                  attribute (e.g. anemometer sensor height) found in `config.params`
+                - merged_tf: The merged TimeFrame, with any time-bound attribute columns joined in
+        """
+        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
+        return self.join_deployment_attributes(config, columns, merged_tf)
+
+    @staticmethod
+    def join_deployment_attributes(config: DataProcessingMethodConfig, columns: dict, merged_tf: ts.TimeFrame) -> tuple:
+        """Join any time-bound deployment attribute columns (e.g. anemometer sensor height) onto a TimeFrame.
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs
+            columns: Mapping of input name to its Polars column expression
+            merged_tf: The already-merged TimeFrame that deployment attribute columns should be joined onto
+
+        Returns:
+            Tuple of:
+                - columns: The input `columns` dict, with an added entry for each time-bound
+                  attribute (e.g. anemometer sensor height) found in `config.params`
+                - merged_tf: The input `merged_tf`, with any time-bound attribute columns joined in
+        """
+        for param, value in config.params.items():
+            if isinstance(value, dict) and value.get(f"{param}.source", "") == "deployment":
+                # Join the deployment values to the main DataFrame
+                merged_tf = merged_tf.with_df(
+                    join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
+                )
+                # Make sure the deployment value column is available to any calculation method that needs it
+                columns[param] = pl.col(param)
+        return columns, merged_tf
 
     @abstractmethod
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
@@ -637,7 +676,7 @@ class IsSnowDay(DerivationMethod):
         albedo_max_threshold = self.config.params["albedo_max_threshold"]
 
         albedo_prev = albedo.shift()
-        expr = (
+        snow = (
             pl.when(albedo_prev.is_null())
             .then(
                 pl.when(albedo >= albedo_max_threshold)
@@ -662,7 +701,7 @@ class IsSnowDay(DerivationMethod):
                 .otherwise(None)
             )
         )
-        return expr
+        return snow
 
 
 @DerivationMethod.register
@@ -714,7 +753,7 @@ class VolumetricWaterContent(DerivationMethod):
                 https://doi.org/10.5194/hess-16-4079-2012
             - Desilets et al., 2010 https://doi.org/10.1029/2009WR008726
 
-        Uses:
+        Config requirements:
             Site attributes:
                 - ref_soc: Site attribute of reference soil organic carbon
                 - ref_bulkdensity: Site attribute of reference soil bulk density
@@ -747,6 +786,102 @@ class VolumetricWaterContent(DerivationMethod):
 
         vwc = 100 * ref_bd * (a0 / ((cts_mod_corr / n0_mod) - a1) - a2 - ref_lw - ref_soc)
         return vwc.clip(0.0, 100.0)
+
+
+@DerivationMethod.register
+class GetSnowEstimatedCounts(DerivationMethod):
+    """
+    Calculate CRNS count estimates when there is snow.
+    """
+
+    name = "get_snow_estimated_counts"
+    inputs = ("snow", "cts_smo_crns")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate CRNS count estimates when there is snow.
+
+        This derivation reconstructs CRNS counts as if there had been no snow, because snow supresses the counts.
+        During a snow event, the estimated count is set to the value of the counts just before the snow started.
+        If the counts increase, so should the estimate.
+
+        Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
+                Estimating snow water equivalent using cosmic-ray neutron sensors
+                from the COSMOS-UK network. Hydrological Processes. 2021;35:e14048.
+                https://doi.org/10.1002/hyp.14048
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - CTS_SMO_CRNS: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
+                - SNOW: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
+                - time: hourly timestamps corresponding to cts_smo values.
+
+        Returns:
+            Polars expression for estimated counts during snow periods. Null when no in snow period.
+        """
+        hours_in_a_day = 24
+
+        cts_smo_crns = columns["cts_smo_crns"]
+        snow = columns["snow"]
+        snow_prev1 = snow.shift(hours_in_a_day)
+        snow_prev2 = snow.shift(2 * hours_in_a_day)
+        time = columns["time"]
+
+        event_start = snow & (~snow_prev1) & (~snow_prev2) & (time.dt.hour() == 0)
+        event_end = (~snow) & (~snow_prev1) & snow_prev2 & (time.dt.hour() == 0)
+        period_boundary = (
+            pl.when(event_start).then(True).when(event_end.shift(-hours_in_a_day)).then(False).otherwise(None)
+        )
+
+        # The event_end is identified when there has been two consecutive days of no snow,
+        # but the actual end of the snow period is when the snow stops, i.e. the first day of no snow,
+        # so the event_end is shifted back by 24 hours to denote the true end of the snow period.
+        # This shift means the last 24 hours in period_boundary are not defined, and become null.
+        # If there is snow in the last 24 hours, we know this is in a snow period,
+        # so we fill the nulls as True in this case.
+        in_snow_period = period_boundary.forward_fill().fill_null(snow)
+
+        # Counts during snow period are initialised by the counts from the end of previous day.
+        init_cts_est = pl.when(in_snow_period).then(pl.when(event_start).then(cts_smo_crns.shift(1)).forward_fill())
+        cts_est = pl.when(cts_smo_crns > init_cts_est).then(cts_smo_crns).otherwise(init_cts_est)
+        return cts_est
+
+    def merge_inputs(self, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
+        """Merge TimeFrames with different periodicities, broadcasting lower resolution to the higher resolution.
+
+        Overrides the base `merge_inputs` because `snow` and `cts_smo_crns` have different
+        periodicities (eg. daily vs. hourly), so `merge_multiple_timeframes` cannot be used directly.
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs. Unused.
+            tf_map: Mapping of input name to its TimeFrame.
+            columns: Mapping of input name to its Polars column expression.
+
+        Returns:
+            Tuple of:
+                - columns: The input `columns` dict, with a "time" entry added.
+                - merged_tf: The TimeFrame with the lower resolution values joined onto each row.
+        """
+        snow_daily_tf = tf_map["snow"]
+        cts_smo_tf = tf_map["cts_smo_crns"]
+
+        if cts_smo_tf.resolution != ts.Period.of_hours(1):
+            raise ValueError(f"Resolution of cts_smo_crns must be hourly. Got: {cts_smo_tf.resolution}")
+
+        if snow_daily_tf.resolution != ts.Period.of_days(1):
+            raise ValueError(f"Resolution of snow must be daily. Got: {snow_daily_tf.resolution}")
+
+        merged_tf = cts_smo_tf.with_df(
+            cts_smo_tf.df.with_columns(pl.col(cts_smo_tf.time_name).dt.date().alias("_date"))
+            .join(
+                snow_daily_tf.df.with_columns(pl.col(snow_daily_tf.time_name).dt.date().alias("_date")),
+                on="_date",
+                how="left",
+            )
+            .drop("_date")
+        )
+        columns["time"] = pl.col(cts_smo_tf.time_name)
+        return columns, merged_tf
 
 
 @DerivationMethod.register

@@ -1,10 +1,20 @@
 import time_stream as ts
 from time_stream.types import TimeAnchor
 
-from dritimeseriesprocessor.utils.polars_utils import merge_multiple
+from dritimeseriesprocessor.utils.polars_utils import JoinStrategy, merge_multiple
 
 
-def merge_multiple_timeframes(inputs: list[ts.TimeFrame]) -> ts.TimeFrame:
+def merge_multiple_timeframes(inputs: list[ts.TimeFrame], join_type: JoinStrategy = "full") -> ts.TimeFrame:
+    """Merge TimeFrames onto a shared time column.
+
+    Args:
+        inputs: TimeFrames to merge. All must have the same time name, resolution and periodicity.
+        join_type: How to join the frames. The default "full" keeps every time value from every input. Use "left"
+            when the first input should decide which time values end up in the result.
+
+    Returns:
+        A TimeFrame holding the columns of all inputs, joined on time.
+    """
     time_name = inputs[0].time_name
     resolution = inputs[0].resolution
     periodicity = inputs[0].periodicity
@@ -20,10 +30,13 @@ def merge_multiple_timeframes(inputs: list[ts.TimeFrame]) -> ts.TimeFrame:
     if not all([tf.periodicity == periodicity for tf in inputs]):
         raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same periodicity")
 
-    if not all([tf.time_anchor == time_anchor for tf in inputs]):
-        raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same time anchor")
+    # NOTE: Temporarily remove this constraint.  Realistically, we will never mix incompatible time-anchors in a network
+    #   so this is handled at the metadata level.  In future, we probably do want to do some checks here that
+    #   "compatible" time anchors are used (e.g. "inst" with "proc" or "prec", but not "proc" with "prec")
+    # if not all([tf.time_anchor == time_anchor for tf in inputs]):
+    #    raise ValueError("Not all inputs to `merge_multiple_timeframes` have the same time anchor")
 
-    merged_df = merge_multiple([tf.df for tf in inputs], time_name)
+    merged_df = merge_multiple([tf.df for tf in inputs], time_name, join_type)
     return ts.TimeFrame(
         merged_df.sort(time_name), time_name, resolution=resolution, periodicity=periodicity, time_anchor=time_anchor
     )

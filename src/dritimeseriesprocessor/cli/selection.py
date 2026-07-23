@@ -57,15 +57,18 @@ class DatasetIdSelection:
 
 @dataclass(frozen=True)
 class ListSitesSelection:
-    """Represents a request to list all sites for a network."""
+    """Represents a request to list sites for a network. If `sites` is given, only those sites are considered
+    (still checked for network membership); otherwise all sites for the network are listed."""
 
     network: str
+    sites: list[str] | None = None
 
     def __repr__(self) -> str:
-        return f"network={self.network}"
+        return f"network={self.network} | sites={', '.join(self.sites) if self.sites else 'ALL'}"
 
     def __hash__(self) -> int:
-        return hash(self.network)
+        sites_str = "/".join(self.sites or [""])
+        return hash(f"{self.network}{sites_str}")
 
 
 Selection = DimensionSelection | DatasetIdSelection | ListSitesSelection
