@@ -18,6 +18,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CorrectCounts,
     DerivationMethod,
     EddyProRun,
+    GetPrecipTipping,
     GetSnowEstimatedCounts,
     IsSnowDay,
     MeanSeaLevelPressure,
@@ -855,6 +856,45 @@ class TestGetSnowEstimatedCounts:
 
         with pytest.raises(ValueError, match=expected_message):
             GetSnowEstimatedCounts().run(config)
+
+
+class TestGetPrecipTipping:
+    def test_consolidates_equal_values(self) -> None:
+        """Tests that equal A and B values are consolidated to that same value."""
+        config = create_method_config(
+            {"precip_tipping_a": [0.2, 1.0], "precip_tipping_b": [0.2, 1.0]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert list(result.df["precip_tipping"]) == [0.2, 1.0]
+
+    def test_consolidates_to_higher_value_when_not_equal(self) -> None:
+        """Tests that the higher of A and B is picked when they differ."""
+        config = create_method_config(
+            {"precip_tipping_a": [0.2, 1.5], "precip_tipping_b": [0.6, 1.0]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert list(result.df["precip_tipping"]) == [0.6, 1.5]
+
+    def test_null_in_one_gauge_returns_non_null_value(self) -> None:
+        """Tests that a null in one gauge falls back to the non-null value from the other."""
+        config = create_method_config(
+            {"precip_tipping_a": [None, 0.4], "precip_tipping_b": [0.4, None]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert result.df["precip_tipping"][0] == 0.4
+        assert result.df["precip_tipping"][1] == 0.4
+
+    def test_null_in_both_gauges_returns_null(self) -> None:
+        """Tests that a null in both gauges is treated as equivalent and returns null."""
+        config = create_method_config(
+            {"precip_tipping_a": [None], "precip_tipping_b": [None]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert result.df["precip_tipping"][0] is None
 
 
 class TestCalcFluxMeanShf:
