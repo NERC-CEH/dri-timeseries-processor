@@ -884,8 +884,7 @@ class TestGetPrecipTipping:
             "precip_tipping",
         )
         result = GetPrecipTipping().run(config)
-        assert result.df["precip_tipping"][0] == 0.4
-        assert result.df["precip_tipping"][1] == 0.4
+        assert list(result.df["precip_tipping"]) == [0.4, 0.4]
 
     def test_null_in_both_gauges_returns_null(self) -> None:
         """Tests that a null in both gauges is treated as equivalent and returns null."""
