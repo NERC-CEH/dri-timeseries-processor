@@ -885,6 +885,28 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
 
 @DerivationMethod.register
+class GetPrecipTipping(DerivationMethod):
+    """Consolidate the tipping bucket rain gauges into one dataset."""
+
+    name = "get_precip_tipping"
+    inputs = ("precip_tipping_a", "precip_tipping_b")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Consolidate dataset PRECIP_TIPPING_A and PRECIP_TIPPING_B into a single PRECIP_TIPPING dataset
+        (using the higher value where A and B are not the same)
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - precip_tipping_a: Precipitation from tipping bucket gauge A [mm]
+                - precip_tipping_b: Precipitation from tipping bucket gauge B [mm]
+
+        Returns:
+            Polars expression consolidating tipping buckets A and B
+        """
+        return pl.max_horizontal(columns["precip_tipping_a"], columns["precip_tipping_b"])
+
+
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
