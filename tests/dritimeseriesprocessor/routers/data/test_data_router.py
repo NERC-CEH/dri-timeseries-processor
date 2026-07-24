@@ -60,7 +60,7 @@ class TestS3DataRouter:
         )
 
         expected_query = """
-            SELECT a_time, "a_column_name"
+            SELECT a_time, COLUMNS(c -> c IN ('a_column_name'))
             FROM read_parquet(
                 's3://a_bucket/a_network/dataset=a_data/site=A_SITE/**/date=*/data.parquet', hive_partitioning=true
             )
@@ -74,6 +74,39 @@ class TestS3DataRouter:
         assert_frame_equal(result, TEST_DF)  # Return what the mock_reader returned
         assert call_query.strip() == expected_query.strip()
         assert call_params == [start, end]
+
+    def test_query_by_date_range_builds_columns_lambda_for_multiple_containers(
+        self, router: S3DataRouter, mock_reader: MagicMock
+    ) -> None:
+        """Tests that every container's source column is included in the COLUMNS(...) predicate."""
+        start = datetime(2023, 1, 1)
+        end = datetime(2023, 1, 2)
+
+        container_1 = MagicMock(
+            source_bucket="a_bucket",
+            source_dataset="a_data",
+            network="a_network",
+            source_column="col_one",
+            source_site_identifier="A_SITE",
+            resolution="PT30M",
+            time_column_name="a_time",
+            processing_level=ProcessingLevel.RAW,
+        )
+        container_2 = MagicMock(
+            source_bucket="a_bucket",
+            source_dataset="a_data",
+            network="a_network",
+            source_column="col_two",
+            source_site_identifier="A_SITE",
+            resolution="PT30M",
+            time_column_name="a_time",
+            processing_level=ProcessingLevel.RAW,
+        )
+
+        router.query_by_date_range(container_1, container_2, start_date=start, end_date=end)
+        call_query, _ = mock_reader.read.call_args.args
+
+        assert "COLUMNS(c -> c IN ('col_one', 'col_two'))" in call_query
 
     @pytest.mark.parametrize("prefix", ["a", "b"])
     def test_read_from_partitioned_directory(self, prefix: str, s3_storage_client: S3StorageClient) -> None:
@@ -106,6 +139,46 @@ class TestS3DataRouter:
         result = router.query_by_date_range(container, start_date=start, end_date=end)
 
         assert_frame_equal(result, expected)
+
+    def test_missing_column_is_dropped_without_failing_other_containers(
+        self, s3_storage_client: S3StorageClient
+    ) -> None:
+        """Tests that a source_column not present in the parquet files is silently omitted from the result,
+        rather than raising and losing every other container queried in the same group.
+        """
+        start = datetime(2023, 1, 1)
+        end = datetime(2023, 1, 1)
+
+        reader = DuckDBParquetReader(create_duckdb_factory())
+        raw_reader = MagicMock(spec=RawFileReader)
+        router = S3DataRouter(reader, raw_reader)
+
+        existing_column_container = MagicMock(
+            source_bucket=E2E_INPUT_BUCKET,
+            source_dataset="a_data",
+            network="a_network",
+            source_column="value",
+            source_site_identifier="A_SITE",
+            resolution="PT30M",
+            time_column_name="time",
+        )
+        missing_column_container = MagicMock(
+            source_bucket=E2E_INPUT_BUCKET,
+            source_dataset="a_data",
+            network="a_network",
+            source_column="does_not_exist",
+            source_site_identifier="A_SITE",
+            resolution="PT30M",
+            time_column_name="time",
+        )
+
+        result = router.query_by_date_range(
+            existing_column_container, missing_column_container, start_date=start, end_date=end
+        )
+
+        assert "value" in result.columns
+        assert "does_not_exist" not in result.columns
+        assert not result.is_empty()
 
 
 class TestSitePartitionPrefix:
