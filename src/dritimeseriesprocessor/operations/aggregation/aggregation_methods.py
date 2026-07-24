@@ -228,7 +228,7 @@ class HourlyValueAsDaily(AggregationMethod):
 
         # Takes value at given hour, sets time to midnight.
         # Set time to midnight to be compatible with P1D resolution.
-        # Time, as well as date, required to merge_multiple_timeframes with snow dataset when saving parquet files.
+        # Time, as well as date, required to merge_multiple_timeframes with other datasets when saving parquet files.
         down_sampled_tf = ts.TimeFrame(
             df=tf.df.filter(pl.col(tf.time_name).dt.hour() == hour).with_columns(
                 pl.col(tf.time_name).dt.truncate("1d").alias(tf.time_name)
