@@ -226,7 +226,7 @@ class HourlyValueAsDaily(AggregationMethod):
         hour = config.params["hour"]
         col_name = tf.metadata["column_name"]
 
-        # Takes value at 12th hour, sets time to midnight.
+        # Takes value at given hour, sets time to midnight.
         # Set time to midnight to be compatible with P1D resolution.
         # Time, as well as date, required to merge_multiple_timeframes with snow dataset when saving parquet files.
         down_sampled_tf = ts.TimeFrame(
