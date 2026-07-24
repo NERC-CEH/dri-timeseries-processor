@@ -3,6 +3,7 @@ from datetime import datetime
 
 import polars as pl
 import time_stream as ts
+from time_stream.aggregation import AggregationCtx, AggregationFunction
 from time_stream.operation import Operation
 from time_stream.utils import configure_period_object
 
@@ -205,22 +206,44 @@ class StandardDeviation(AggregationMethod):
         return self._ts_aggregate(tf, config, "stdev")
 
 
+@AggregationFunction.register
+class First(AggregationFunction):
+    """
+    Selects the first value within an aggregation period.
+    """
+
+    name = "first"
+
+    def expr(self, ctx: AggregationCtx, columns: list[str]) -> list[pl.Expr]:
+        return [pl.col(col).first().alias(f"{self.name}_{col}") for col in columns]
+
+
 @AggregationMethod.register
 class HourlyValueAsDaily(AggregationMethod):
     name = "hourly_value_as_daily"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         hour = config.params["hour"]
+        col_name = tf.metadata["column_name"]
+
+        # Takes value at 12th hour, sets time to midnight.
+        # Set time to midnight to be compatible with P1D resolution.
+        # Time, as well as date, required to merge_multiple_timeframes with snow dataset when saving parquet files.
         down_sampled_tf = ts.TimeFrame(
             df=tf.df.filter(pl.col(tf.time_name).dt.hour() == hour).with_columns(
-                pl.col(tf.time_name).dt.date().alias(tf.time_name)
+                pl.col(tf.time_name).dt.truncate("1d").alias(tf.time_name)
             ),
             time_name=tf.time_name,
             resolution="P1D",
-        )
-        return down_sampled_tf
+        ).with_metadata({"column_name": col_name})
+
+        # Run through the standard Time-Stream aggregation pipeline (using "first", since down-sampling
+        # above already leaves at most one value per day) so count_/expected_count_/valid_ columns are
+        # populated the same way as every other aggregation method.
+        return self._ts_aggregate(down_sampled_tf, config, "first")
 
 
+@AggregationMethod.register
 class RollingMeanForCounts(AggregationMethod):
     """
     Calculates a mean for each data point from a window of surrounding datapoints on either side.

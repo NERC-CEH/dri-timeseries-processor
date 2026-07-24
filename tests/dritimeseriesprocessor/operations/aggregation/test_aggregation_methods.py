@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 
 import polars as pl
 import pytest
@@ -172,6 +172,21 @@ class TestStandardDeviation:
         assert_frame_equal(result.df["time", "value"], expected)
 
 
+class TestFirst:
+    def test_first(self) -> None:
+        """Test that the "first" Time-Stream aggregation function selects the first value in each period."""
+        tf = create_timeframe(list(range(48)))
+
+        result = tf.aggregate(
+            aggregation_period=ts.Period.of_days(1),
+            aggregation_function="first",
+            aggregation_time_anchor="start",
+            columns="value",
+        )
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1), datetime(2025, 1, 2)], "first_value": [0, 24]})
+        assert_frame_equal(result.df["time", "first_value"], expected)
+
+
 class TestHourlyValueAsDaily:
     def test_hourly_value_as_daily(self) -> None:
         """
@@ -179,12 +194,12 @@ class TestHourlyValueAsDaily:
         where the daily values are represented by the hourly values from the same hour hour each day.
         """
         tf = create_timeframe(list(range(48)))
-        config = create_aggregation_config(ts.Period.of_days(2))
+        config = create_aggregation_config(ts.Period.of_days(1))
         config.params["hour"] = 12
 
         result = HourlyValueAsDaily().run(tf, config)
-        expected = pl.DataFrame({"time": [date(2025, 1, 1), date(2025, 1, 2)], "value": [12, 36]})
-        assert_frame_equal(result.df, expected)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1), datetime(2025, 1, 2)], "value": [12, 36]})
+        assert_frame_equal(result.df["time", "value"], expected)
 
 
 class TestRollingMeanForCounts:
