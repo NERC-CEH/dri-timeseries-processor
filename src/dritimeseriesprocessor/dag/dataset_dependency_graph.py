@@ -339,6 +339,10 @@ class DatasetDependencyGraph:
             if meta.is_active(window_start=self.start_date, window_end=self.end_date):
                 self.site_metadata[meta.site_id] = meta
                 fetched_site_ids.append(meta.site_id)
+
+        if not fetched_site_ids:
+            raise RuntimeError("no active sites found during requested processing window")
+
         return fetched_site_ids
 
     def _fetch_missing_site_metadata(self, site_ids: list[str]) -> list[str]:
