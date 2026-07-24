@@ -255,6 +255,14 @@ class TestFetchDatasets:
 
         assert mock_router.fetch_sites_by_network.call_count == 1
 
+    def test_get_site_metadata_raises_when_no_active_sites(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that _fetch_site_metadata raises a RuntimeError when no active sites are found."""
+        mock_router = setup_mocks([], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), datetime(2026, 1, 1), datetime(2026, 1, 2))
+
+        with pytest.raises(RuntimeError):
+            builder._fetch_site_metadata(["site1"])
+
     def test_fetch_root_datasets_by_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Tests that fetch_dataset_by_ids is called with the given IDs and the mapped containers are returned."""
         ts_id = "ds1"
