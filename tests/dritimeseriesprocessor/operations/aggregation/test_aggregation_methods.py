@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import polars as pl
 import pytest
@@ -12,6 +12,7 @@ from dritimeseriesprocessor.operations.aggregation.aggregation_methods import (
     Mean,
     MeanRad,
     Min,
+    PointEstimate,
     RollingMeanForCounts,
     StandardDeviation,
     Sum,
@@ -169,6 +170,44 @@ class TestStandardDeviation:
             }
         )
         assert_frame_equal(result.df["time", "value"], expected)
+
+
+class TestPointEstimate:
+    def test_point_estimate(self) -> None:
+        """
+        Test down sampling of hourly to daily data, for default "start-anchored" data.
+        """
+        tf = create_timeframe(list(range(48)))
+        config = create_aggregation_config(ts.Period.of_days(1))
+        config.params["n"] = 12  # Use 12th hour of the day as the aggregation value
+
+        result = PointEstimate().run(tf, config)
+        expected = pl.DataFrame({"time": [datetime(2025, 1, 1), datetime(2025, 1, 2)], "value": [12, 36]})
+        assert_frame_equal(result.df["time", "value"], expected)
+        assert result.df["time_of_nth_value"].to_list() == [
+            datetime(2025, 1, 1, 12),
+            datetime(2025, 1, 2, 12),
+        ]
+
+    def test_point_estimate_with_end_time_anchor(self) -> None:
+        """
+        Test down sampling of hourly to daily data, for default "start-anchored" data.
+        """
+        dates = [datetime(2025, 1, 1) + timedelta(hours=h) for h in range(48)]
+        df = pl.DataFrame({"time": dates, "value": list(range(48))})
+        config = create_aggregation_config(ts.Period.of_days(1))
+        config.params["n"] = 12
+
+        tf = ts.TimeFrame(df=df, time_name="time", resolution="PT1H", time_anchor="end").with_metadata(
+            {"column_name": "value"}
+        )
+
+        result = PointEstimate().run(tf, config)
+        assert result.df["value"].to_list()[1:] == [13, 37]
+        assert result.df["time_of_nth_value"].to_list()[1:] == [
+            datetime(2025, 1, 1, 13),
+            datetime(2025, 1, 2, 13),
+        ]
 
 
 class TestRollingMeanForCounts:

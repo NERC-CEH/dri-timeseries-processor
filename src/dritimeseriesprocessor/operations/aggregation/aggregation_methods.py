@@ -33,6 +33,7 @@ class AggregationMethod(Operation, ABC):
         agg_col_name = f"{agg_func}_{col_name}"
 
         missing_criteria = AggregationMethod.missing_criteria(config)
+        n = AggregationMethod.point_estimate_index(config)
         time_window = AggregationMethod.time_window(config)
 
         tf_agg = tf.aggregate(
@@ -41,6 +42,7 @@ class AggregationMethod(Operation, ABC):
             aggregation_time_anchor=config.params["aggregation_time_anchor"],
             columns=col_name,
             missing_criteria=missing_criteria,  # type: ignore[assignment]
+            n=n,
             time_window=time_window,
         )
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))
@@ -104,6 +106,13 @@ class AggregationMethod(Operation, ABC):
         )
 
         return tf_agg
+
+    @staticmethod
+    def point_estimate_index(config: DataProcessingMethodConfig) -> int | None:
+        point_estimate_index = None
+        if config.params.get("n", None) is not None:
+            point_estimate_index = config.params["n"] + 1  # index is 1-based
+        return point_estimate_index
 
     @staticmethod
     def missing_criteria(config: DataProcessingMethodConfig) -> tuple[str, int] | None:
@@ -203,6 +212,18 @@ class StandardDeviation(AggregationMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         return self._ts_aggregate(tf, config, "stdev")
+
+
+@AggregationMethod.register
+class PointEstimate(AggregationMethod):
+    """
+    Uses the nth (1-based) value in each aggregation period as the aggregation value.
+    """
+
+    name = "point_estimate"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        return self._ts_aggregate(tf, config, "nth")
 
 
 @AggregationMethod.register
