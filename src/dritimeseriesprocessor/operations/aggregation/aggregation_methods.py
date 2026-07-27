@@ -128,7 +128,7 @@ class AggregationMethod(Operation, ABC):
         if isinstance(start_time_str, str) and isinstance(end_time_str, str):
             start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
             end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
-            return (start_time, end_time)
+            return start_time, end_time
         return None
 
 

@@ -146,3 +146,21 @@ class TestAltDataDynamic:
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
 
         assert_frame_equal(result.df, expected_df)
+
+    def test_alt_data_default_window_size(self) -> None:
+        """Test that the alt_data_dynamic function uses a valid default window_size when none is given in config."""
+        tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
+        alt_df = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
+        )
+        config = create_method_config(
+            alt_df=alt_df,
+            alt_data_column="alt",
+        )
+
+        result = AltDataDynamic().run(tf, config)
+
+        expected = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+
+        assert_frame_equal(result.df, expected_df)
