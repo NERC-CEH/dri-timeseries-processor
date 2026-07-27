@@ -28,6 +28,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     PotentialEvapotranspiration30Min,
     SolarZenith,
     VolumetricWaterContent,
+    VolumetricWaterContentWithSnow,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -558,9 +559,9 @@ class TestCorrectCounts:
                 "cosmosfactor_pa": [1.1914, 1.08646, 1.27831, 1.16301],
                 "cosmosfactor_q": [0.97707, 1.00791, 0.97690, 1.01832],
             },
-            "correct_counts",
+            "cts_mod_corr",
         )
-        expected = dataframe_to_timeframe(pl.DataFrame({"correct_counts": [885.847, 822.629, 979.390, 851.902]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"cts_mod_corr": [885.847, 822.629, 979.390, 851.902]}))
         result = CorrectCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
 
@@ -590,9 +591,38 @@ class TestVolumetricWaterContent:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 
+class TestVolumetricWaterContentWithSnow:
+    def test_calculate_vwc_with_snow(self) -> None:
+        """Test calculate_vwc_with_snow using cosmos-holln site annotations.
+
+        Where cts_est_crns (the snow-period count estimate) is present, it should take precedence
+        over cts_mod_corr. Where cts_est_crns is null (i.e. not in a snow period), cts_mod_corr
+        should be used instead. Expected vwc values are taken from TestVolumetricWaterContent.
+        """
+        config = create_method_config(
+            {
+                "cts_mod_corr": [0.0, 1300.0, 1500.0, 1800.0, 2000.0],
+                "cts_est_crns": [None, 1500.0, None, 2000.0, None],
+            },
+            "vwc_with_snow",
+        )
+        # Annotations from cosmos-holln
+        config.params["n0_mod"] = 2710.16689
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+        config.params["n_min"] = 1204.50827
+        config.params["n_max"] = 2281.33025
+
+        # Effective counts used: [0.0, 1500.0, 1500.0, 2000.0, 2000.0]
+        expected = dataframe_to_timeframe(pl.DataFrame({"vwc_with_snow": [100.0, 28.964, 28.964, 5.172, 5.172]}))
+        result = VolumetricWaterContentWithSnow().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
 class TestGetSnowEstimatedCounts:
     def test_get_snow_estimated_counts(self) -> None:
-        """Test get_snow_estimated_counts using fictional, but realistic data, where snow suppresses the counts.
+        """Test get_snow_estimated_counts using fictional data, where snow suppresses the counts.
         This test covers the following cases:
         1. Snow period starts if there is snow on a given day, but there was no snow for at least two days previously.
         2. Snow period ends after two consecutive days of now snow.
@@ -652,6 +682,8 @@ class TestGetSnowEstimatedCounts:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
     def test_all_snow(self) -> None:
+        """Test no counts are estimated if the entire dataset consists of snow days. Since we don't know when
+        the snow period started, we cannot use the counts from before the snow period as an estimate."""
         daily_cts_smo_crns = [995.0, 996, 997, 998]
 
         params = {
@@ -689,6 +721,7 @@ class TestGetSnowEstimatedCounts:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
     def test_no_snow(self) -> None:
+        """Test no counts are estimated the the entire dataset consists of no snow days."""
         daily_cts_smo_crns = [1000.0, 1001, 1002, 1003]
 
         params = {
@@ -726,6 +759,10 @@ class TestGetSnowEstimatedCounts:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
     def test_null_snow_values(self) -> None:
+        """
+        Test where snow is null, followed by False, then True, the latter is not considered start of a snow period.
+        Test where snow is null within a snow period, estimated counts still propegate.
+        """
         daily_cts_smo_crns = [995.0, 1000, 995, 1003, 1001, 1002, 995, 996]
 
         params = {
@@ -770,8 +807,8 @@ class TestGetSnowEstimatedCounts:
 
     def test_null_cts(self) -> None:
         """
-        Null counts should remain null when not in a snow period.
-        Null counts should get filled with an estimated if during a snow period.
+        Test null counts remain null when not in a snow period.
+        Test null counts are filled with an estimated if during a snow period.
         """
         daily_cts_smo_crns = [1000.0, None, 1001, 1002, 995, None, 996]
 

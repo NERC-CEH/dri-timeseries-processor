@@ -907,6 +907,54 @@ class GetPrecipTipping(DerivationMethod):
 
 
 @DerivationMethod.register
+class VolumetricWaterContentWithSnow(VolumetricWaterContent):
+    """Calculate volumetric water content with snow.
+
+    Uses CTS_EST_CRNS, the estimated counts as if there was no snow,
+    to calculate VWC when there is snow.
+
+    Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
+                    Estimating snow water equivalent using cosmic-ray neutron sensors
+                    from the COSMOS-UK network. Hydrological Processes. 2021;35:e14048.
+                    https://doi.org/10.1002/hyp.14048
+
+    """
+
+    name = "calculate_vwc_with_snow"
+    inputs = ("cts_mod_corr", "cts_est_crns")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate volumetric water content with snow.
+
+        Reference:
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon
+                - ref_bulkdensity: Site attribute of reference soil bulk density
+                - ref_latticewater: Site attribute of reference lattice water content
+                - n0_mod: Site attribute of a calibration coefficient obtained from field calibration
+                - n_max: Site attribute of maximum range for nuetron counts
+                - n_min: Site attribute of minimum range for nuetron counts
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+            - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
+            - cts_est_crns: estimated counts during snow periods
+
+        Returns:
+            Polars expression for VWC with snow
+        """
+        cts_mod_corr = columns["cts_mod_corr"]
+        cts_est_crns = columns["cts_est_crns"]
+        cts_mod_corr_with_snow_estimates = cts_est_crns.fill_null(cts_mod_corr)
+
+        vwc_with_snow = super().expr({"cts_mod_corr": cts_mod_corr_with_snow_estimates})
+
+        return vwc_with_snow
+
+
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
