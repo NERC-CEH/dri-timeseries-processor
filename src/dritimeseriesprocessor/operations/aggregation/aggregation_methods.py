@@ -3,7 +3,6 @@ from datetime import datetime
 
 import polars as pl
 import time_stream as ts
-from time_stream.aggregation import AggregationCtx, AggregationFunction
 from time_stream.operation import Operation
 from time_stream.utils import configure_period_object
 
@@ -34,6 +33,7 @@ class AggregationMethod(Operation, ABC):
         agg_col_name = f"{agg_func}_{col_name}"
 
         missing_criteria = AggregationMethod.missing_criteria(config)
+        n = AggregationMethod.point_estimate_index(config)
         time_window = AggregationMethod.time_window(config)
 
         tf_agg = tf.aggregate(
@@ -42,6 +42,7 @@ class AggregationMethod(Operation, ABC):
             aggregation_time_anchor=config.params["aggregation_time_anchor"],
             columns=col_name,
             missing_criteria=missing_criteria,  # type: ignore[assignment]
+            n=n,
             time_window=time_window,
         )
         tf_agg = tf_agg.with_df(tf_agg.df.rename({agg_col_name: col_name}))
@@ -105,6 +106,13 @@ class AggregationMethod(Operation, ABC):
         )
 
         return tf_agg
+
+    @staticmethod
+    def point_estimate_index(config: DataProcessingMethodConfig) -> int | None:
+        point_estimate_index = None
+        if config.params.get("n", None) is not None:
+            point_estimate_index = config.params["n"] + 1  # index is 1-based
+        return point_estimate_index
 
     @staticmethod
     def missing_criteria(config: DataProcessingMethodConfig) -> tuple[str, int] | None:
@@ -206,41 +214,16 @@ class StandardDeviation(AggregationMethod):
         return self._ts_aggregate(tf, config, "stdev")
 
 
-@AggregationFunction.register
-class First(AggregationFunction):
-    """
-    Selects the first value within an aggregation period.
-    """
-
-    name = "first"
-
-    def expr(self, ctx: AggregationCtx, columns: list[str]) -> list[pl.Expr]:
-        return [pl.col(col).first().alias(f"{self.name}_{col}") for col in columns]
-
-
 @AggregationMethod.register
-class HourlyValueAsDaily(AggregationMethod):
-    name = "hourly_value_as_daily"
+class PointEstimate(AggregationMethod):
+    """
+    Uses the nth (1-based) value in each aggregation period as the aggregation value.
+    """
+
+    name = "point_estimate"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        hour = config.params["hour"]
-        col_name = tf.metadata["column_name"]
-
-        # Takes value at given hour, sets time to midnight.
-        # Set time to midnight to be compatible with P1D resolution.
-        # Time, as well as date, required to merge_multiple_timeframes with other datasets when saving parquet files.
-        down_sampled_tf = ts.TimeFrame(
-            df=tf.df.filter(pl.col(tf.time_name).dt.hour() == hour).with_columns(
-                pl.col(tf.time_name).dt.truncate("1d").alias(tf.time_name)
-            ),
-            time_name=tf.time_name,
-            resolution="P1D",
-        ).with_metadata({"column_name": col_name})
-
-        # Run through the standard Time-Stream aggregation pipeline (using "first", since down-sampling
-        # above already leaves at most one value per day) so count_/expected_count_/valid_ columns are
-        # populated the same way as every other aggregation method.
-        return self._ts_aggregate(down_sampled_tf, config, "first")
+        return self._ts_aggregate(tf, config, "nth")
 
 
 @AggregationMethod.register
