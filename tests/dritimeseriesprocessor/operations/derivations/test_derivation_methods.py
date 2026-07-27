@@ -28,6 +28,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     PotentialEvapotranspiration30Min,
     SolarZenith,
     VolumetricWaterContent,
+    VolumetricWaterContentWithSnow,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -587,6 +588,35 @@ class TestVolumetricWaterContent:
             pl.DataFrame({"vwc": [100.0, 100.0, 100.0, 100.0, 100.0, 61.311, 28.964, 11.083, 5.172]})
         )
         result = VolumetricWaterContent().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestVolumetricWaterContentWithSnow:
+    def test_calculate_vwc_with_snow(self) -> None:
+        """Test calculate_vwc_with_snow using cosmos-holln site annotations.
+
+        Where cts_est_crns (the snow-period count estimate) is present, it should take precedence
+        over cts_mod_corr. Where cts_est_crns is null (i.e. not in a snow period), cts_mod_corr
+        should be used instead. Expected vwc values are taken from TestVolumetricWaterContent.
+        """
+        config = create_method_config(
+            {
+                "cts_mod_corr": [0.0, 1300.0, 1500.0, 1800.0, 2000.0],
+                "cts_est_crns": [None, 1500.0, None, 2000.0, None],
+            },
+            "vwc_with_snow",
+        )
+        # Annotations from cosmos-holln
+        config.params["n0_mod"] = 2710.16689
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+        config.params["n_min"] = 1204.50827
+        config.params["n_max"] = 2281.33025
+
+        # Effective counts used: [0.0, 1500.0, 1500.0, 2000.0, 2000.0]
+        expected = dataframe_to_timeframe(pl.DataFrame({"vwc_with_snow": [100.0, 28.964, 28.964, 5.172, 5.172]}))
+        result = VolumetricWaterContentWithSnow().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 

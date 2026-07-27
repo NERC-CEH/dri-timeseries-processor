@@ -908,7 +908,17 @@ class GetPrecipTipping(DerivationMethod):
 
 @DerivationMethod.register
 class VolumetricWaterContentWithSnow(VolumetricWaterContent):
-    """Calculate volumetric water content with snow."""
+    """Calculate volumetric water content with snow.
+
+    Uses CTS_EST_CRNS, the estimated counts as if there was no snow,
+    to calculate VWC when there is snow.
+
+    Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
+                    Estimating snow water equivalent using cosmic-ray neutron sensors
+                    from the COSMOS-UK network. Hydrological Processes. 2021;35:e14048.
+                    https://doi.org/10.1002/hyp.14048
+
+    """
 
     name = "calculate_vwc_with_snow"
     inputs = ("cts_mod_corr", "cts_est_crns")
