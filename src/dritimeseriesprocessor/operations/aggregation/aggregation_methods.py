@@ -121,7 +121,6 @@ class AggregationMethod(Operation, ABC):
             missing_criteria = ("available", config.params["threshold"])  # type: ignore[assignment]
         return missing_criteria
 
-
     @staticmethod
     def time_window(config: DataProcessingMethodConfig) -> tuple | None:
         start_time_str = config.params.get("start_time")
