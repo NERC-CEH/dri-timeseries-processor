@@ -57,7 +57,7 @@ def _local_formatter(record: dict) -> str:
         parts.append(f"{key}={value}")
     parts.append(f"message={record['message']}")
 
-    return (" ".join(parts) + "\n").replace("{", "{{").replace("}", "}}")
+    return (" ".join(parts) + "\n").replace("{", "{{").replace("}", "}}") + "{exception}"
 
 
 def setup_logger(service_name: str) -> None:
