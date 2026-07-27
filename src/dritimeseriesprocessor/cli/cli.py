@@ -111,9 +111,16 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Space-separated dataset IDs, e.g. flux-plynl-processed.",
     )
 
-    # Utility command: list all site IDs for a network as a JSON array.
+    # Utility command: list site IDs for a network as a JSON array.
     # Used by the Argo workflow fan-out step.
-    subparsers.add_parser(CliSelectionMode.LIST_SITES.value, parents=[date_range_parent, network_parent])
+    list_sites_parser = subparsers.add_parser(
+        CliSelectionMode.LIST_SITES.value, parents=[date_range_parent, network_parent]
+    )
+    list_sites_parser.add_argument(
+        "--sites",
+        nargs="+",
+        help="Space-separated list, e.g. cosmos-alic1 cosmos-bunny. If omitted, list all sites for network.",
+    )
 
     return parser
 
@@ -229,7 +236,8 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
         return _parse_dataset_id_selection(args)
 
     if mode == CliSelectionMode.LIST_SITES:
-        return [ListSitesSelection(network=args.network)]
+        sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
+        return [ListSitesSelection(network=args.network, sites=sites)]
 
     parser.error(f"Invalid selection mode: {mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
 

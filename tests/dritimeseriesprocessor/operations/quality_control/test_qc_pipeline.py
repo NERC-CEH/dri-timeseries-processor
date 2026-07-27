@@ -1,4 +1,5 @@
-from unittest.mock import MagicMock, patch
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock
 
 import polars as pl
 import pytest
@@ -9,7 +10,6 @@ from tests.utils.data_creation import create_timeframe
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 
 
@@ -46,21 +46,80 @@ class TestComputeFlagMask:
 
 
 class TestApply:
-    def test_returns_method_result(self, mock_timeframe: MagicMock) -> None:
+    def test_returns_method_result(self) -> None:
         """Test that apply returns a TimeFrame"""
-        config = MagicMock(spec=DataProcessingMethodConfig)
-        config.method = "range"
-        config.params = {"lt": 0, "gt": 100}
+        config = DataProcessingMethodConfig(method="range", params={"lt": 0, "gt": 100})
+        tf = create_timeframe([1.0, 2.0, 3.0], column_name="value")
 
-        expected_result = MagicMock(spec=pl.Series)
-        with patch.object(QcMethod, "get") as mock_get:
-            mock_method = MagicMock()
-            mock_method.run.return_value = expected_result
-            mock_get.return_value = mock_method
+        pipeline = QCPipeline({})
+        result = pipeline.apply(tf, config, {})
 
-            pipeline = QCPipeline({})
-            result = pipeline.apply(mock_timeframe, config, {})
-            assert isinstance(result, ts.TimeFrame)
+        assert isinstance(result, ts.TimeFrame)
+
+    def test_drops_the_temporary_qc_result_column(self) -> None:
+        """Test that the column holding the QC check result is not left on the returned TimeFrame"""
+        config = DataProcessingMethodConfig(method="range", params={"lt": 0, "gt": 100})
+        tf = create_timeframe([1.0, 2.0, 3.0], column_name="value")
+
+        pipeline = QCPipeline({})
+        result = pipeline.apply(tf, config, {})
+
+        assert QCPipeline.get_qc_result_column("value") not in result.df.columns
+
+
+class Test1minTsExtent:
+    """Tests for the case where a dataframe has a different row count to another dataframe in the process.
+
+    Reproduces a bug (FPM-1188) where a precip dataset built by aggregating 1-minute data to 30 minutes can end up one
+    row longer than a 30-minute dependent dataset, if the 1-minute data extends past the last complete 30-minute step.
+    `QCPipeline.apply` attaches the `dep_ts` QC result onto the frame being processed with a positional `with_columns`,
+    so any row count mismatch raises a `ShapeError` instead of aligning the two frames by time.
+    """
+
+    @staticmethod
+    def _make_padded_timeframe(
+        times: list[datetime], column_name: str, values: list[float], periodicity: str
+    ) -> ts.TimeFrame:
+        df = pl.DataFrame({"time": times, column_name: values})
+        return (
+            ts.TimeFrame(df=df, time_name="time", resolution=periodicity, periodicity=periodicity, time_anchor="start")
+            .with_metadata({"column_name": column_name})
+            .pad()
+        )
+
+    def test_dep_ts_frame_one_row_shorter(self) -> None:
+        """Tests that a 1-minute aggregation extending past the dep_ts frame's extent does not cause an error."""
+        start = datetime(2025, 1, 1)
+
+        # 1-minute data: 30 complete half-hour buckets, plus 5 minutes of a 31st (partial) bucket
+        minute_count = 30 * 30 + 5
+        precip_1min = self._make_padded_timeframe(
+            [start + timedelta(minutes=i) for i in range(minute_count)], "PRECIP", [0.1] * minute_count, "PT1M"
+        )
+        precip_30min = precip_1min.aggregate(
+            aggregation_period=ts.Period.of_iso_duration("PT30M"),
+            aggregation_function="sum",
+            aggregation_time_anchor="start",
+            columns="PRECIP",
+        )
+        precip_30min = precip_30min.with_df(precip_30min.df.rename({"sum_PRECIP": "PRECIP"})).with_metadata(
+            {"column_name": "PRECIP"}
+        )
+
+        # Example battery dataset loaded (and padded) at 30-minute periodicity, ending at the last complete bucket -
+        # one row fewer than the precip aggregation above.
+        battery_30min = self._make_padded_timeframe(
+            [start + timedelta(minutes=30 * i) for i in range(30)], "BATTERY_V", [12.5] * 30, "PT30M"
+        )
+
+        # Now use both of these together in a QC run
+        dep_container = MagicMock(spec=TimeSeriesContainer)
+        dep_container.data = battery_30min
+
+        config = DataProcessingMethodConfig(method="battery_v", params={"lt": 11.0, "dep_ts": "battery-ts-id"})
+        pipeline = QCPipeline({})
+
+        pipeline.apply(precip_30min, config, {"battery-ts-id": dep_container})
 
 
 class TestRun:
