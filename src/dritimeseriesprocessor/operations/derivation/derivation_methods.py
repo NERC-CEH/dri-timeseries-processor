@@ -910,7 +910,7 @@ class GetPrecipTipping(DerivationMethod):
 class VolumetricWaterContentWithSnow(VolumetricWaterContent):
     """Calculate volumetric water content with snow.
 
-    Uses CTS_EST_CRNS, the estimated counts as if there was no snow,
+    Uses CTS_EST_CRNS, the estimated counts during snow periods,
     to calculate VWC when there is snow.
 
     Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
