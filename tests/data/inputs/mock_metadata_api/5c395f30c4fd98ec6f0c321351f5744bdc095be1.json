@@ -1,0 +1,1278 @@
+{
+  "meta": {
+    "@id": "http://fdri.ceh.ac.uk/id/deployment?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln",
+    "publisher": "UK Centre for Ecology & Hydrology",
+    "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "licenseName": "OGL 3",
+    "comment": "",
+    "version": "1.0.0",
+    "hasFormat": [
+      "http://fdri.ceh.ac.uk/id/deployment.rdf?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln",
+      "http://fdri.ceh.ac.uk/id/deployment.ttl?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln",
+      "http://fdri.ceh.ac.uk/id/deployment.csv?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln",
+      "http://fdri.ceh.ac.uk/id/deployment.json?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln",
+      "http://fdri.ceh.ac.uk/id/deployment.geojson?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln",
+      "http://fdri.ceh.ac.uk/id/deployment.html?deployedOnPlatform=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fcosmos-holln"
+    ]
+  },
+  "items": [
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-aws-metpak-14070001-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of METPAK 14070001 to AWS at HOLLN"
+      ],
+      "endedAtTime": "2019-12-03T00:00:00",
+      "startedAtTime": "2018-12-19T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-metpak-14070001",
+          "serialNumber": "14070001",
+          "label": [
+            "METPAK 14070001"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/metpak"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-imko2-imko-36156-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of IMKO 36156 to IMKO2 at HOLLN"
+      ],
+      "endedAtTime": "2016-04-05T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-36156",
+          "serialNumber": "36156",
+          "label": [
+            "IMKO 36156"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-logger-logger_cr3000-13072-3",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of LOGGER_CR3000 13072 to LOGGER at HOLLN"
+      ],
+      "startedAtTime": "2021-05-20T09:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-13072",
+          "serialNumber": "13072",
+          "label": [
+            "LOGGER_CR3000 13072"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2a-20135095-8",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2A 20135095 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2021-05-20T09:00:00",
+      "startedAtTime": "2020-08-06T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2a-20135095",
+          "serialNumber": "20135095",
+          "label": [
+            "HYGROCLIP_HC2A 20135095"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2a"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-4cr-nr01-2131-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2131 to 4CR at HOLLN"
+      ],
+      "endedAtTime": "2018-12-19T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2131",
+          "serialNumber": "2131",
+          "label": [
+            "NR01 2131"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-aws_anem-wind_anem-140321-1",
+      "deployedHeight": 2.6,
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of WIND_ANEM 140321 to AWS_ANEM at HOLLN"
+      ],
+      "endedAtTime": "2021-05-20T09:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-wind_anem-140321",
+          "serialNumber": "140321",
+          "label": [
+            "WIND_ANEM 140321"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/wind_anem"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-tdt2-tdt-6503280-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6503280 to TDT2 at HOLLN"
+      ],
+      "startedAtTime": "2018-12-19T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503280",
+          "serialNumber": "6503280",
+          "label": [
+            "TDT 6503280"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2-61222971-3",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2 61222971 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2017-08-01T12:00:00",
+      "startedAtTime": "2016-10-05T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2-61222971",
+          "serialNumber": "61222971",
+          "label": [
+            "HYGROCLIP_HC2 61222971"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-raine-raine-881821.0032-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of RAINE 881821.0032 to RAINE at HOLLN"
+      ],
+      "startedAtTime": "2022-06-27T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-raine-881821.0032",
+          "serialNumber": "881821.0032",
+          "label": [
+            "RAINE 881821.0032"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/raine"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hfp1-hfp01sc-3675-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HFP01SC 3675 to HFP1 at HOLLN"
+      ],
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hfp01sc-3675",
+          "serialNumber": "3675",
+          "label": [
+            "HFP01SC 3675"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hfp01sc"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-4cr-nr01-2897-3",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2897 to 4CR at HOLLN"
+      ],
+      "endedAtTime": "2019-12-03T00:00:00",
+      "startedAtTime": "2019-05-22T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2897",
+          "serialNumber": "2897",
+          "label": [
+            "NR01 2897"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-tdt1-tdt-6503277-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6503277 to TDT1 at HOLLN"
+      ],
+      "startedAtTime": "2018-12-19T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503277",
+          "serialNumber": "6503277",
+          "label": [
+            "TDT 6503277"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-imko1-imko-36155-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of IMKO 36155 to IMKO1 at HOLLN"
+      ],
+      "endedAtTime": "2016-04-05T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-36155",
+          "serialNumber": "36155",
+          "label": [
+            "IMKO 36155"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-tdt2-tdt-6501084-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6501084 to TDT2 at HOLLN"
+      ],
+      "endedAtTime": "2018-12-19T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6501084",
+          "serialNumber": "6501084",
+          "label": [
+            "TDT 6501084"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-logger-logger_cr3000-8803-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of LOGGER_CR3000 8803 to LOGGER at HOLLN"
+      ],
+      "endedAtTime": "2019-05-23T10:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-8803",
+          "serialNumber": "8803",
+          "label": [
+            "LOGGER_CR3000 8803"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2a-20269328-6",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2A 20269328 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2019-12-03T00:00:00",
+      "startedAtTime": "2018-12-19T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2a-20269328",
+          "serialNumber": "20269328",
+          "label": [
+            "HYGROCLIP_HC2A 20269328"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2a"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-aws_anem-wind_anem-140302-2",
+      "deployedHeight": 2.6,
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of WIND_ANEM 140302 to AWS_ANEM at HOLLN"
+      ],
+      "startedAtTime": "2021-05-20T09:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-wind_anem-140302",
+          "serialNumber": "140302",
+          "label": [
+            "WIND_ANEM 140302"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/wind_anem"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hfp2-hfp01sc-3668-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HFP01SC 3668 to HFP2 at HOLLN"
+      ],
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hfp01sc-3668",
+          "serialNumber": "3668",
+          "label": [
+            "HFP01SC 3668"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hfp01sc"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2-61018754-4",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2 61018754 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2018-12-12T11:00:00",
+      "startedAtTime": "2017-08-01T14:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2-61018754",
+          "serialNumber": "61018754",
+          "label": [
+            "HYGROCLIP_HC2 61018754"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-pluvio-pluvio2-340992-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of PLUVIO2 340992 to PLUVIO at HOLLN"
+      ],
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-pluvio2-340992",
+          "serialNumber": "340992",
+          "label": [
+            "PLUVIO2 340992"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/pluvio2"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-4cr-nr01-2457-5",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2457 to 4CR at HOLLN"
+      ],
+      "startedAtTime": "2021-05-20T09:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2457",
+          "serialNumber": "2457",
+          "label": [
+            "NR01 2457"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2-61212106-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2 61212106 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2016-10-05T12:00:00",
+      "startedAtTime": "2015-09-01T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2-61212106",
+          "serialNumber": "61212106",
+          "label": [
+            "HYGROCLIP_HC2 61212106"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-phenocam-phenocam-10.12.112.239-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of PHENOCAM 10.12.112.239 to PHENOCAM at HOLLN"
+      ],
+      "startedAtTime": "2018-12-19T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-phenocam-10.12.112.239",
+          "serialNumber": "10.12.112.239",
+          "label": [
+            "PHENOCAM 10.12.112.239"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/phenocam"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-4cr-nr01-2127-4",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2127 to 4CR at HOLLN"
+      ],
+      "endedAtTime": "2021-05-20T09:00:00",
+      "startedAtTime": "2019-12-03T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2127",
+          "serialNumber": "2127",
+          "label": [
+            "NR01 2127"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-stp-stp-2222-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of STP 2222 to STP at HOLLN"
+      ],
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-stp-2222",
+          "serialNumber": "2222",
+          "label": [
+            "STP 2222"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/stp"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-aws-metpak-14080003-4",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of METPAK 14080003 to AWS at HOLLN"
+      ],
+      "endedAtTime": "2022-05-03T12:00:00",
+      "startedAtTime": "2021-05-20T09:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-metpak-14080003",
+          "serialNumber": "14080003",
+          "label": [
+            "METPAK 14080003"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/metpak"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-crns-crns_2000-hi-tc02-2010-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_2000 HI-TC02-2010 to CRNS at HOLLN"
+      ],
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_2000-hi-tc02-2010",
+          "serialNumber": "HI-TC02-2010",
+          "label": [
+            "CRNS_2000 HI-TC02-2010"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_2000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-crns2-crns_2000-hi-tc02-1081-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_2000 HI-TC02-1081 to CRNS2 at HOLLN"
+      ],
+      "startedAtTime": "2022-06-27T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_2000-hi-tc02-1081",
+          "serialNumber": "HI-TC02-1081",
+          "label": [
+            "CRNS_2000 HI-TC02-1081"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_2000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-pa-cs106-t4650757-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CS106 T4650757 to PA at HOLLN"
+      ],
+      "startedAtTime": "2022-05-03T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-cs106-t4650757",
+          "serialNumber": "T4650757",
+          "label": [
+            "CS106 T4650757"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/cs106"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hmp-hmp155-t4721225-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HMP155 T4721225 to HMP at HOLLN"
+      ],
+      "startedAtTime": "2022-05-03T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-t4721225",
+          "serialNumber": "T4721225",
+          "label": [
+            "HMP155 T4721225"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-aws-metpak-14080006-3",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of METPAK 14080006 to AWS at HOLLN"
+      ],
+      "endedAtTime": "2021-05-20T09:00:00",
+      "startedAtTime": "2019-12-03T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-metpak-14080006",
+          "serialNumber": "14080006",
+          "label": [
+            "METPAK 14080006"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/metpak"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-logger-logger_cr3000-12803-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of LOGGER_CR3000 12803 to LOGGER at HOLLN"
+      ],
+      "endedAtTime": "2021-05-20T09:00:00",
+      "startedAtTime": "2019-05-23T10:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-12803",
+          "serialNumber": "12803",
+          "label": [
+            "LOGGER_CR3000 12803"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-imko3-imko-36157-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of IMKO 36157 to IMKO3 at HOLLN"
+      ],
+      "endedAtTime": "2016-04-05T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-36157",
+          "serialNumber": "36157",
+          "label": [
+            "IMKO 36157"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2a-20135087-9",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2A 20135087 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2022-05-03T12:00:00",
+      "startedAtTime": "2021-05-20T09:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2a-20135087",
+          "serialNumber": "20135087",
+          "label": [
+            "HYGROCLIP_HC2A 20135087"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2a"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-crns2-crns_2000-hi-tc02-2011-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_2000 HI-TC02-2011 to CRNS2 at HOLLN"
+      ],
+      "endedAtTime": "2019-11-05T12:30:00",
+      "startedAtTime": "2018-12-19T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_2000-hi-tc02-2011",
+          "serialNumber": "HI-TC02-2011",
+          "label": [
+            "CRNS_2000 HI-TC02-2011"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_2000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2a-20134991-7",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2A 20134991 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2020-08-06T00:00:00",
+      "startedAtTime": "2019-12-03T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2a-20134991",
+          "serialNumber": "20134991",
+          "label": [
+            "HYGROCLIP_HC2A 20134991"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2a"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2a-20269320-5",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2A 20269320 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2018-12-19T12:00:00",
+      "startedAtTime": "2018-12-12T11:10:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2a-20269320",
+          "serialNumber": "20269320",
+          "label": [
+            "HYGROCLIP_HC2A 20269320"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2a"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-hygroclip-hygroclip_hc2-61019670-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HYGROCLIP_HC2 61019670 to HYGROCLIP at HOLLN"
+      ],
+      "endedAtTime": "2015-09-01T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hygroclip_hc2-61019670",
+          "serialNumber": "61019670",
+          "label": [
+            "HYGROCLIP_HC2 61019670"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-4cr-nr01-2758-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2758 to 4CR at HOLLN"
+      ],
+      "endedAtTime": "2019-05-22T00:00:00",
+      "startedAtTime": "2018-12-19T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2758",
+          "serialNumber": "2758",
+          "label": [
+            "NR01 2758"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-aws-metpak-14040022-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of METPAK 14040022 to AWS at HOLLN"
+      ],
+      "endedAtTime": "2018-12-19T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-metpak-14040022",
+          "serialNumber": "14040022",
+          "label": [
+            "METPAK 14040022"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/metpak"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-tdt1-tdt-6501086-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6501086 to TDT1 at HOLLN"
+      ],
+      "endedAtTime": "2018-12-19T12:00:00",
+      "startedAtTime": "2014-03-25T12:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
+        "label": [
+          "Hollin Hill"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6501086",
+          "serialNumber": "6501086",
+          "label": [
+            "TDT 6501086"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    }
+  ]
+}

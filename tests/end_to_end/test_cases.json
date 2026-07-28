@@ -101,7 +101,7 @@
             "id": "derived-multiple-site-multiple-var",
             "description": "Test of multiple variables, mixed between observed and derived, at multiple sites",
             "network": "cosmos",
-            "sites": ["cosmos-alic1", "cosmos-chimn"],
+            "sites": ["cosmos-holln", "cosmos-chimn"],
             "measured_variables": ["TA", "RH", "WS"],
             "derived_variables": ["RN", "PE"],
             "aggregated_variables": [],

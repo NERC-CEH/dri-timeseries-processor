@@ -23,11 +23,11 @@
       ],
       "hasTopConcept": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/samples",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/battery_v",
           "prefLabel": [
-            "samples"
+            "battery_v"
           ],
-          "value": 4
+          "value": 2
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/range",
@@ -37,11 +37,18 @@
           "value": 1
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/error_code",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/snowd_signal",
           "prefLabel": [
-            "error_code"
+            "snowd_signal"
           ],
-          "value": 8
+          "value": 256
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/spike",
+          "prefLabel": [
+            "spike"
+          ],
+          "value": 16
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/nr01_temp",
@@ -58,18 +65,11 @@
           "value": 64
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/snowd_signal",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/error_code",
           "prefLabel": [
-            "snowd_signal"
+            "error_code"
           ],
-          "value": 256
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/tdt_tsoil",
-          "prefLabel": [
-            "tdt_tsoil"
-          ],
-          "value": 512
+          "value": 8
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/pluvio_diag",
@@ -79,18 +79,18 @@
           "value": 128
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/battery_v",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/samples",
           "prefLabel": [
-            "battery_v"
+            "samples"
           ],
-          "value": 2
+          "value": 4
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/spike",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme/tdt_tsoil",
           "prefLabel": [
-            "spike"
+            "tdt_tsoil"
           ],
-          "value": 16
+          "value": 512
         }
       ]
     }

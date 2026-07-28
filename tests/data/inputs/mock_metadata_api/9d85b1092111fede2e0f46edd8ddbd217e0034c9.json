@@ -23,11 +23,11 @@
       ],
       "hasTopConcept": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
           "prefLabel": [
-            "estimated"
+            "removed"
           ],
-          "value": 2
+          "value": 8
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/missing",
@@ -37,11 +37,11 @@
           "value": 4
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/suspicious",
           "prefLabel": [
-            "unsuccessful_correction"
+            "suspicious"
           ],
-          "value": 64
+          "value": 16
         },
         {
           "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unchecked",
@@ -58,18 +58,18 @@
           "value": 1
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/removed",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/estimated",
           "prefLabel": [
-            "removed"
+            "estimated"
           ],
-          "value": 8
+          "value": 2
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/suspicious",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme/unsuccessful_correction",
           "prefLabel": [
-            "suspicious"
+            "unsuccessful_correction"
           ],
-          "value": 16
+          "value": 64
         }
       ]
     }

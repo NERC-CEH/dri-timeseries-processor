@@ -43,6 +43,7 @@ def make_time_series_container(
         configs.append(
             DataProcessingConfig(
                 ts_id=ts_id,
+                site_id=ts_id + "_site",
                 config_id=ts_id + "_cfg",
                 config_type=ConfigurationType.DERIVATION,
                 method_configs=[DataProcessingMethodConfig(method="m", params=params)],
@@ -79,6 +80,7 @@ def make_processing_config_container(ts_id: str) -> DataProcessingConfig:
     """
     return DataProcessingConfig(
         ts_id=ts_id,
+        site_id=ts_id + "_site",
         config_id=ts_id + "_config_id",
         config_type=ConfigurationType.CORRECTION,
         method_configs=[],
@@ -369,6 +371,50 @@ class TestBuild:
         assert mock_router.fetch_processing_configs.call_count == 1
 
 
+class TestGetDeploymentAttributes:
+    params = {
+        "wind_height": {
+            "wind_height.source": "deployment",
+            "wind_height.platform": "anemometer_1",
+            "wind_height.attribute": "wind_height",
+        }
+    }
+
+    def make_mapped_config(self, params: dict) -> DataProcessingConfig:
+        return DataProcessingConfig(
+            ts_id="ds1",
+            site_id="site1",
+            config_id="ds1_cfg",
+            config_type=ConfigurationType.DERIVATION,
+            method_configs=[DataProcessingMethodConfig(method="calculate_pe", params=params)],
+            annotations={},
+        )
+
+    def test_filters_deployments_to_matching_platform(self) -> None:
+        """Test that only deployments whose id contains the requested platform are kept."""
+        matching = SimpleNamespace(id="anemometer_1", start_date=datetime(2020, 1, 1), end_date=None, wind_height=2.6)
+        other = SimpleNamespace(id="raingauge_1", start_date=datetime(2020, 1, 1), end_date=None, wind_height=99.0)
+        mock_router = MagicMock()
+        mock_router.fetch_deployment_by_platform.return_value = SimpleNamespace(items=[other, matching])
+        params = {k: dict(v) for k, v in self.params.items()}
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+
+        builder._get_deployment_attributes(self.make_mapped_config(params))
+
+        assert params["wind_height"]["wind_height.value"] == [(datetime(2020, 1, 1), None, 2.6)]
+        mock_router.fetch_deployment_by_platform.assert_called_once_with("site1")
+
+    def test_raises_when_no_deployments_match_platform(self) -> None:
+        """Test that a ValueError is raised when no deployment covers the requested platform."""
+        mock_router = MagicMock()
+        mock_router.fetch_deployment_by_platform.return_value = SimpleNamespace(items=[])
+        params = {k: dict(v) for k, v in self.params.items()}
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+
+        with pytest.raises(ValueError):
+            builder._get_deployment_attributes(self.make_mapped_config(params))
+
+
 class TestEnsureSiteMetadata:
     def test_fetch_missing_site_metadata_fetches_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that a site not yet in site_metadata is fetched and cached."""
@@ -545,6 +591,7 @@ class TestBuildResolver:
             i: [
                 DataProcessingConfig(
                     ts_id=i,
+                    site_id=i + "_site",
                     config_id="config_id",
                     config_type=ConfigurationType.QUALITY_CONTROL,
                     method_configs=[DataProcessingMethodConfig(method="method_with_dependency", params={"dep_ts": d})],
@@ -699,6 +746,7 @@ class TestLoadOnlyDependencies:
             "L": [
                 DataProcessingConfig(
                     ts_id="L",
+                    site_id="L_site",
                     config_id="L_cfg",
                     config_type=ConfigurationType.QUALITY_CONTROL,
                     method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": "M"})],
@@ -749,6 +797,7 @@ class TestLoadOnlyDependencies:
             "C": [
                 DataProcessingConfig(
                     ts_id="C",
+                    site_id="C_site",
                     config_id="C_cfg",
                     config_type=ConfigurationType.QUALITY_CONTROL,
                     method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": "L"})],
