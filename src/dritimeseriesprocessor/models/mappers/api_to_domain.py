@@ -113,6 +113,7 @@ def map_processing_config_item(
 
     return DataProcessingConfig(
         ts_id=ts_id,
+        site_id=site_id,
         config_id=item.id,
         config_type=config_type,
         method_configs=method_configs,
