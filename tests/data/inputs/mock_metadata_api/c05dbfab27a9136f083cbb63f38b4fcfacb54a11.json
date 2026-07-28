@@ -55,6 +55,29 @@
               ]
             },
             {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation.value",
+                "value": [
+                  "REF_C0",
+                  "GAMMA"
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
@@ -74,29 +97,6 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-chimn-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation.value",
-                "value": [
-                  "REF_C0",
-                  "GAMMA"
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
               },
               "@type": [
                 {
@@ -155,11 +155,16 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.round",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.round.value",
-                "value": [
-                  5
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed",
+                    "label": [
+                      "Neutron count"
+                    ]
+                  }
                 ],
                 "@type": [
                   {
@@ -168,7 +173,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
               },
               "@type": [
                 {
@@ -200,16 +205,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed",
-                    "label": [
-                      "Neutron count"
-                    ]
-                  }
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-holln-cosmosfactor_inten_1hour-calc_factor_inten#argument.round.value",
+                "value": [
+                  5
                 ],
                 "@type": [
                   {
@@ -218,7 +218,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
               },
               "@type": [
                 {
@@ -277,12 +277,16 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation.value",
-                "value": [
-                  "REF_C0",
-                  "GAMMA"
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed",
+                    "label": [
+                      "Neutron count"
+                    ]
+                  }
                 ],
                 "@type": [
                   {
@@ -291,7 +295,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
               },
               "@type": [
                 {
@@ -322,16 +326,12 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.loadts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed",
-                    "label": [
-                      "Neutron count"
-                    ]
-                  }
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-cosmosfactor_inten_1hour-calc_factor_inten#argument.annotation.value",
+                "value": [
+                  "REF_C0",
+                  "GAMMA"
                 ],
                 "@type": [
                   {
@@ -340,7 +340,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/load_dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
               },
               "@type": [
                 {

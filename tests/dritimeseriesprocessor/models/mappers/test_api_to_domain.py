@@ -168,6 +168,7 @@ class TestMapDatasetItem:
 
         config = DataProcessingConfig(
             ts_id="test_id",
+            site_id="test_id_site",
             config_id="cfg",
             config_type=ConfigurationType.DERIVATION,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
@@ -196,6 +197,7 @@ class TestMapDatasetItem:
 
         method_config = DataProcessingConfig(
             ts_id="test_id",
+            site_id="test_id_site",
             config_id="method_cfg",
             config_type=ConfigurationType.DERIVATION,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep2", "dep3"]})],
@@ -203,6 +205,7 @@ class TestMapDatasetItem:
         )
         qc_config = DataProcessingConfig(
             ts_id="test_id",
+            site_id="test_id_site",
             config_id="qc_cfg",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep1", "dep4"]})],
@@ -210,6 +213,7 @@ class TestMapDatasetItem:
         )
         correction_config = DataProcessingConfig(
             ts_id="test_id",
+            site_id="test_id_site",
             config_id="correction_cfg",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": ["dep4", "dep5"]})],
@@ -217,6 +221,7 @@ class TestMapDatasetItem:
         )
         infill_config = DataProcessingConfig(
             ts_id="test_id",
+            site_id="test_id_site",
             config_id="infill_cfg",
             config_type=ConfigurationType.INFILLING,
             method_configs=[DataProcessingMethodConfig(method="m", params={})],
@@ -538,6 +543,7 @@ class TestMapProcessingConfigItem:
 
         expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            site_id="http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-range",
             config_type=ConfigurationType.QUALITY_CONTROL,
             method_configs=[
@@ -559,6 +565,7 @@ class TestMapProcessingConfigItem:
 
         expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            site_id="http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-infill",
             config_type=ConfigurationType.INFILLING,
             method_configs=[
@@ -580,6 +587,7 @@ class TestMapProcessingConfigItem:
 
         expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
+            site_id="http://fdri.ceh.ac.uk/id/site/cosmos-bunny",
             config_id="http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-swin_30min-correction-scalar",
             config_type=ConfigurationType.CORRECTION,
             method_configs=[
