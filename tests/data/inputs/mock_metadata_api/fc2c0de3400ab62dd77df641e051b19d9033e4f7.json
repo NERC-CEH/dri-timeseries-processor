@@ -28,6 +28,14 @@
       "identifier": [
         "JUNG"
       ],
+      "utilisedBy": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/nmdb",
+          "label": [
+            "NMDB: The Neutron Monitor Database"
+          ]
+        }
+      ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung#operating-period",
         "startDate": "1958-10-01"

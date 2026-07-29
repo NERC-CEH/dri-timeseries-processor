@@ -27,6 +27,7 @@ class DataProcessingMethodConfig:
 @dataclass
 class DataProcessingConfig:
     ts_id: str
+    site_id: str
     config_id: str
     config_type: ConfigurationType
     method_configs: list[DataProcessingMethodConfig]

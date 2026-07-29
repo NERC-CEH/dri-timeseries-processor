@@ -10,6 +10,7 @@ def make_config(params: dict | list[dict], ts_id: str = "ts1") -> DataProcessing
         params = [params]
     return DataProcessingConfig(
         ts_id=ts_id,
+        site_id="site1",
         config_id="cfg1",
         config_type=ConfigurationType.DERIVATION,
         method_configs=[DataProcessingMethodConfig(method="m", params=p) for p in params],
@@ -47,6 +48,7 @@ class TestValuesForParams:
         """Test that values are aggregated and deduplicated across multiple method configs."""
         config = DataProcessingConfig(
             ts_id="ts1",
+            site_id="site1",
             config_id="cfg1",
             config_type=ConfigurationType.DERIVATION,
             method_configs=[
