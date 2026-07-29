@@ -216,6 +216,20 @@ class TestListSitesMode:
         with pytest.raises(SystemExit):
             parse_args(["list-sites"])
 
+    def test_produces_list_sites_selection_with_sites(self) -> None:
+        """Tests that list-sites mode produces a ListSitesSelection with the given network and site IDs."""
+        cfg = parse_args(["list-sites", "--network", "cosmos", "--sites", "cosmos-alic1", "cosmos-bunny"])
+        assert cfg.selection == [
+            ListSitesSelection(network="cosmos", sites=[f"{SITE_URI}/cosmos-alic1", f"{SITE_URI}/cosmos-bunny"])
+        ]
+
+    def test_omitting_sites_defaults_to_none(self) -> None:
+        """Tests that omitting --sites leaves ListSitesSelection.sites as None."""
+        cfg = parse_args(["list-sites", "--network", "cosmos"])
+        selection = cfg.selection[0]
+        assert isinstance(selection, ListSitesSelection)
+        assert selection.sites is None
+
 
 class TestParseLookback:
     def test_valid_days(self) -> None:

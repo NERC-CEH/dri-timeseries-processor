@@ -109,6 +109,36 @@ class TestMergeDataframes:
         result = merge_dataframes(df1, df2, "join")
         assert_frame_equal(result, expected, check_column_order=False)
 
+    def test_merge_null_in_new_data_removes_existing_value(self) -> None:
+        """Tests that a null in the new data removes a value that was stored by an earlier run."""
+        schema = {"join": pl.Int64, "value": pl.Int64}
+        existing = pl.DataFrame({"join": [1, 2], "value": [10, 20]}, schema=schema)
+        new = pl.DataFrame({"join": [2], "value": [None]}, schema=schema)
+        expected = pl.DataFrame({"join": [1, 2], "value": [10, None]}, schema=schema)
+
+        result = merge_dataframes(existing, new, "join")
+        assert_frame_equal(result, expected, check_column_order=False)
+
+    def test_merge_keeps_flags_consistent_with_their_data(self) -> None:
+        """Tests that a row present in the new data takes both its value and its flag from the new data."""
+        schema = {"join": pl.Int64, "value": pl.Int64, "value_QC_FLAG": pl.Int64}
+        existing = pl.DataFrame({"join": [1], "value": [10], "value_QC_FLAG": [0]}, schema=schema)
+        new = pl.DataFrame({"join": [1], "value": [None], "value_QC_FLAG": [4]}, schema=schema)
+        expected = pl.DataFrame({"join": [1], "value": [None], "value_QC_FLAG": [4]}, schema=schema)
+
+        result = merge_dataframes(existing, new, "join")
+        assert_frame_equal(result, expected, check_column_order=False)
+
+    def test_merge_leaves_rows_the_new_data_does_not_cover(self) -> None:
+        """Tests that rows outside the time values of the new data keep their stored values."""
+        schema = {"join": pl.Int64, "value": pl.Int64}
+        existing = pl.DataFrame({"join": [1, 2, 3], "value": [10, 20, 30]}, schema=schema)
+        new = pl.DataFrame({"join": [2], "value": [999]}, schema=schema)
+        expected = pl.DataFrame({"join": [1, 2, 3], "value": [10, 999, 30]}, schema=schema)
+
+        result = merge_dataframes(existing, new, "join")
+        assert_frame_equal(result, expected, check_column_order=False)
+
     def test_merge_dataframes_missing_join_col(self) -> None:
         """Test error raise if one of the DataFrames doesn't contain the join column"""
         df1 = pl.DataFrame({"a": [10, 20]})

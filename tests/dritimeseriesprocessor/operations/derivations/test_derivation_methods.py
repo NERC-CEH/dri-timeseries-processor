@@ -18,6 +18,8 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CorrectCounts,
     DerivationMethod,
     EddyProRun,
+    GetPrecipTipping,
+    GetSnowEstimatedCounts,
     IsSnowDay,
     MeanSeaLevelPressure,
     MeanSoilHeatFlux,
@@ -26,6 +28,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     PotentialEvapotranspiration30Min,
     SolarZenith,
     VolumetricWaterContent,
+    VolumetricWaterContentWithSnow,
 )
 from utils.data_creation import dataframe_to_timeframe
 
@@ -556,9 +559,9 @@ class TestCorrectCounts:
                 "cosmosfactor_pa": [1.1914, 1.08646, 1.27831, 1.16301],
                 "cosmosfactor_q": [0.97707, 1.00791, 0.97690, 1.01832],
             },
-            "correct_counts",
+            "cts_mod_corr",
         )
-        expected = dataframe_to_timeframe(pl.DataFrame({"correct_counts": [885.847, 822.629, 979.390, 851.902]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"cts_mod_corr": [885.847, 822.629, 979.390, 851.902]}))
         result = CorrectCounts().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
 
@@ -586,6 +589,348 @@ class TestVolumetricWaterContent:
         )
         result = VolumetricWaterContent().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestVolumetricWaterContentWithSnow:
+    def test_calculate_vwc_with_snow(self) -> None:
+        """Test calculate_vwc_with_snow using cosmos-holln site annotations.
+
+        Where cts_est_crns (the snow-period count estimate) is present, it should take precedence
+        over cts_mod_corr. Where cts_est_crns is null (i.e. not in a snow period), cts_mod_corr
+        should be used instead. Expected vwc values are taken from TestVolumetricWaterContent.
+        """
+        config = create_method_config(
+            {
+                "cts_mod_corr": [0.0, 1300.0, 1500.0, 1800.0, 2000.0],
+                "cts_est_crns": [None, 1500.0, None, 2000.0, None],
+            },
+            "vwc_with_snow",
+        )
+        # Annotations from cosmos-holln
+        config.params["n0_mod"] = 2710.16689
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+        config.params["n_min"] = 1204.50827
+        config.params["n_max"] = 2281.33025
+
+        # Effective counts used: [0.0, 1500.0, 1500.0, 2000.0, 2000.0]
+        expected = dataframe_to_timeframe(pl.DataFrame({"vwc_with_snow": [100.0, 28.964, 28.964, 5.172, 5.172]}))
+        result = VolumetricWaterContentWithSnow().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestGetSnowEstimatedCounts:
+    def test_get_snow_estimated_counts(self) -> None:
+        """Test get_snow_estimated_counts using fictional data, where snow suppresses the counts.
+        This test covers the following cases:
+        1. Snow period starts if there is snow on a given day, but there was no snow for at least two days previously.
+        2. Snow period ends after two consecutive days of now snow.
+        3. During snow period, counts should be the maximum of either:
+                the value of the smoothed counts just before the start of the snow period,
+            or:
+                the value of smoothed counts.
+        4. One day of no snow should not be considered the end of the snow period.
+        5. If there is a snow day within the first two days of the dataset,
+           then there is no data for the previous days to check if it is the start of the snow period,
+           so no count estimate is given.
+        6. A snow period at the end of the dataset is handled correctly, even if event_end.shift(-24) is null.
+        """
+        daily_cts_smo_crns = [995.0, 1000, 1002, 995, 996, 1003, 997, 1001, 1002, 1003, 995]
+
+        params = {
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "SNOW": [True, False, False, True, True, False, True, False, False, True, True],
+                        "time": [datetime(2025, 1, i) for i in range(1, 12)],
+                    }
+                ),
+                metadata={"column_name": "SNOW"},
+                resolution="P1D",
+            ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        daily_cts_est = [
+            None,
+            None,
+            None,
+            1002.0,
+            1002.0,
+            1003.0,
+            1002.0,
+            None,
+            None,
+            1003.0,
+            1002.0,
+        ]
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
+        )
+        result = GetSnowEstimatedCounts().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+    def test_all_snow(self) -> None:
+        """Test no counts are estimated if the entire dataset consists of snow days. Since we don't know when
+        the snow period started, we cannot use the counts from before the snow period as an estimate."""
+        daily_cts_smo_crns = [995.0, 996, 997, 998]
+
+        params = {
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "SNOW": [True, True, True, True],
+                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
+                    }
+                ),
+                metadata={"column_name": "SNOW"},
+                resolution="P1D",
+            ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        daily_cts_est = [None, None, None, None]
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]},
+                schema={"cts_est_crns": pl.Float64},
+            )
+        )
+        result = GetSnowEstimatedCounts().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+    def test_no_snow(self) -> None:
+        """Test no counts are estimated the the entire dataset consists of no snow days."""
+        daily_cts_smo_crns = [1000.0, 1001, 1002, 1003]
+
+        params = {
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "SNOW": [False, False, False, False],
+                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
+                    }
+                ),
+                metadata={"column_name": "SNOW"},
+                resolution="P1D",
+            ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        daily_cts_est = [None, None, None, None]
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]},
+                schema={"cts_est_crns": pl.Float64},
+            )
+        )
+        result = GetSnowEstimatedCounts().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+    def test_null_snow_values(self) -> None:
+        """
+        Test where snow is null, followed by False, then True, the latter is not considered start of a snow period.
+        Test where snow is null within a snow period, estimated counts still propegate.
+        """
+        daily_cts_smo_crns = [995.0, 1000, 995, 1003, 1001, 1002, 995, 996]
+
+        params = {
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "SNOW": [None, False, True, False, False, True, None, True],
+                        "time": [datetime(2025, 1, i) for i in range(1, 9)],
+                    }
+                ),
+                metadata={"column_name": "SNOW"},
+                resolution="P1D",
+            ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        daily_cts_est = [
+            None,
+            None,
+            None,
+            None,
+            None,
+            1002.0,
+            1001.0,
+            1001.0,
+        ]
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
+        )
+        result = GetSnowEstimatedCounts().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+    def test_null_cts(self) -> None:
+        """
+        Test null counts remain null when not in a snow period.
+        Test null counts are filled with an estimated if during a snow period.
+        """
+        daily_cts_smo_crns = [1000.0, None, 1001, 1002, 995, None, 996]
+
+        params = {
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                metadata={"column_name": "CTS_SMO_CRNS"},
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "SNOW": [False, False, False, False, True, True, True],
+                        "time": [datetime(2025, 1, i) for i in range(1, 8)],
+                    }
+                ),
+                metadata={"column_name": "SNOW"},
+                resolution="P1D",
+            ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        daily_cts_est = [
+            None,
+            None,
+            None,
+            None,
+            1002.0,
+            1002.0,
+            1002.0,
+        ]
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
+        )
+        result = GetSnowEstimatedCounts().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+    @pytest.mark.parametrize(
+        ("cts_smo_resolution", "snow_resolution", "expected_message"),
+        [
+            ("P1D", "P1D", "Resolution of cts_smo_crns must be hourly"),  # cts_smo_crns should be hourly, not daily
+            ("PT1H", "PT1H", "Resolution of snow must be daily"),  # snow should be daily, not hourly
+        ],
+    )
+    def test_raises_when_periodicities_are_incorrect(
+        self, cts_smo_resolution: str, snow_resolution: str, expected_message: str
+    ) -> None:
+        """Test a ValueError is raised if cts_smo_crns is not hourly, or snow is not daily."""
+        params = {
+            "cts_smo_crns": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "CTS_SMO_CRNS": [995.0, 1000, 1002, 995],
+                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
+                    }
+                ),
+                metadata={"column_name": "CTS_SMO_CRNS"},
+                resolution=cts_smo_resolution,
+            ),
+            "snow": dataframe_to_timeframe(
+                df=pl.DataFrame(
+                    {
+                        "SNOW": [True, False, False, True],
+                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
+                    }
+                ),
+                metadata={"column_name": "SNOW"},
+                resolution=snow_resolution,
+            ),
+            "output_col": "cts_est_crns",
+            "periodicity": "PT1H",
+            "resolution": "PT1H",
+            "time_anchor": "start",
+        }
+
+        config = DataProcessingMethodConfig(method="test", params=params)
+
+        with pytest.raises(ValueError, match=expected_message):
+            GetSnowEstimatedCounts().run(config)
+
+
+class TestGetPrecipTipping:
+    def test_consolidates_equal_values(self) -> None:
+        """Tests that equal A and B values are consolidated to that same value."""
+        config = create_method_config(
+            {"precip_tipping_a": [0.2, 1.0], "precip_tipping_b": [0.2, 1.0]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert list(result.df["precip_tipping"]) == [0.2, 1.0]
+
+    def test_consolidates_to_higher_value_when_not_equal(self) -> None:
+        """Tests that the higher of A and B is picked when they differ."""
+        config = create_method_config(
+            {"precip_tipping_a": [0.2, 1.5], "precip_tipping_b": [0.6, 1.0]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert list(result.df["precip_tipping"]) == [0.6, 1.5]
+
+    def test_null_in_one_gauge_returns_non_null_value(self) -> None:
+        """Tests that a null in one gauge falls back to the non-null value from the other."""
+        config = create_method_config(
+            {"precip_tipping_a": [None, 0.4], "precip_tipping_b": [0.4, None]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert list(result.df["precip_tipping"]) == [0.4, 0.4]
+
+    def test_null_in_both_gauges_returns_null(self) -> None:
+        """Tests that a null in both gauges is treated as equivalent and returns null."""
+        config = create_method_config(
+            {"precip_tipping_a": [None], "precip_tipping_b": [None]},
+            "precip_tipping",
+        )
+        result = GetPrecipTipping().run(config)
+        assert result.df["precip_tipping"][0] is None
 
 
 class TestCalcFluxMeanShf:

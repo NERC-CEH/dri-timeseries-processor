@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import polars as pl
+import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -114,7 +115,7 @@ class TestAltDataDynamic:
             alt_df=alt_df,
             alt_data_column="alt",
             max_threshold=2,
-            window_size="PT1H",
+            window="PT1H",
         )
 
         result = AltDataDynamic().run(tf, config)
@@ -137,7 +138,7 @@ class TestAltDataDynamic:
             end_date=datetime(2025, 1, 1, 4, 59),
             min_threshold=2,
             max_threshold=2,
-            window_size="PT1H",
+            window="PT1H",
         )
 
         result = AltDataDynamic().run(tf, config)
@@ -146,3 +147,17 @@ class TestAltDataDynamic:
         expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
 
         assert_frame_equal(result.df, expected_df)
+
+    def test_alt_data_missing_window_raises(self) -> None:
+        """Test that the alt_data_dynamic function raises a KeyError when window is not given in config."""
+        tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
+        alt_df = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
+        )
+        config = create_method_config(
+            alt_df=alt_df,
+            alt_data_column="alt",
+        )
+
+        with pytest.raises(KeyError):
+            AltDataDynamic().run(tf, config)

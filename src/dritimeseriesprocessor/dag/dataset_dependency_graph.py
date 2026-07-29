@@ -28,7 +28,7 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.utils.enums import ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
-from dritimeseriesprocessor.utils.urls import PLATFORM_URI, PROCESSING_LEVEL_URI
+from dritimeseriesprocessor.utils.urls import PROCESSING_LEVEL_URI
 
 logger = logging.getLogger(__name__)
 
@@ -339,6 +339,10 @@ class DatasetDependencyGraph:
             if meta.is_active(window_start=self.start_date, window_end=self.end_date):
                 self.site_metadata[meta.site_id] = meta
                 fetched_site_ids.append(meta.site_id)
+
+        if not fetched_site_ids:
+            raise RuntimeError("no active sites found during requested processing window")
+
         return fetched_site_ids
 
     def _fetch_missing_site_metadata(self, site_ids: list[str]) -> list[str]:
@@ -441,15 +445,18 @@ class DatasetDependencyGraph:
                     attribute = value[f"{param}.attribute"]
 
                     # Send this to the deployment API endpoint to get the value of the requested attribute
-                    platform_id = f"{PLATFORM_URI}/{platform}"
-                    deployment_info = self.metadata_router.fetch_deployment_by_platform(platform_id)
+                    deployment_info = self.metadata_router.fetch_deployment_by_platform(mapped_config.site_id)
 
                     attribute_values = []
                     for deployment in deployment_info.items:
-                        start_date = deployment.start_date
-                        end_date = deployment.end_date
-                        attribute_value = getattr(deployment, attribute)
-                        attribute_values.append((start_date, end_date, attribute_value))
+                        if platform in deployment.id:
+                            start_date = deployment.start_date
+                            end_date = deployment.end_date
+                            attribute_value = getattr(deployment, attribute)
+                            attribute_values.append((start_date, end_date, attribute_value))
+
+                    if not attribute_values:
+                        raise ValueError(f"No deployment attributes found for {platform}:{attribute}")
 
                     value[f"{param}.value"] = attribute_values
 

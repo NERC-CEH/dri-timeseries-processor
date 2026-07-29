@@ -192,6 +192,7 @@ def _make_config(
         params["load_dep_ts"] = load_dep_ts
     return DataProcessingConfig(
         ts_id=ts_id,
+        site_id=ts_id + "_site",
         config_id=config_id,
         config_type=config_type,
         method_configs=[DataProcessingMethodConfig(method="m", params=params)],

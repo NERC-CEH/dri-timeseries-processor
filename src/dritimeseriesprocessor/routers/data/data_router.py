@@ -96,8 +96,10 @@ class S3DataRouter(DataRouter):
             ["network", "source_site_identifier", "resolution", "source_bucket", "time_column_name"],
         )
 
-        # Ensure columns with hyphens can be parsed by SQL
-        columns = ", ".join([f'"{c.source_column}"' for c in containers])
+        # Select via COLUMNS(lambda) rather than naming columns directly: a source_column that doesn't exist in the
+        # parquet files is then silently omitted from the result instead of failing the whole query, so the caller
+        # can fail that one dataset without losing the rest of the group.
+        requested_columns = ", ".join([f"'{c.source_column}'" for c in containers])
 
         if any(c.processing_level is ProcessingLevel.PROCESSED for c in containers):
             base = self._site_partition_prefix(network, "resolution", resolution, site_id)
@@ -107,7 +109,7 @@ class S3DataRouter(DataRouter):
 
         bucket_path = f"s3://{bucket}/{base}/**/date=*/data.parquet"
         query = f"""
-            SELECT {time_column_name}, {columns}
+            SELECT {time_column_name}, COLUMNS(c -> c IN ({requested_columns}))
             FROM read_parquet(
                 '{bucket_path}', hive_partitioning=true
             )

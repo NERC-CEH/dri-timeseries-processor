@@ -46,28 +46,29 @@ class LWCorrection(CorrectionMethod):
         lw_unc_tf = self._get_lw_unc(config)
         ta_tf = config.params["ta"]
 
+        col_name = tf.metadata["column_name"]
         lw_unc_col = lw_unc_tf.metadata["column_name"]
         ta_col = ta_tf.metadata["column_name"]
 
+        # Join the dependencies on time
+        merged = merge_multiple_timeframes([tf, lw_unc_tf, ta_tf], "left").df
+
         # First correct the uncalibrated values.
-        lw_unc_corr = lw_unc_tf.df.with_columns(pl.col(lw_unc_col) * config.params["correction_factor"])
+        lw_unc_corr = pl.col(lw_unc_col) * config.params["correction_factor"]
 
         # Now re-calibrate LW value with temperature adjustment.
         # Convert temperature to Kelvin
-        ta_k = ta_tf.df.with_columns(pl.col(ta_col) + 273.15)
+        ta_k = pl.col(ta_col) + 273.15
 
         # Get adjustment amount from Stefan-Boltzmann constant 5.67 * 10^-8
-        sb_adj = ta_k.with_columns((pl.col(ta_col).pow(4) * 5.67 * 1e-8).alias("SB_adj")).select("SB_adj")
+        sb_adj = ta_k.pow(4) * 5.67 * 1e-8
 
         # Recalculate LW value
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then((lw_unc_corr[lw_unc_col] + sb_adj["SB_adj"]).alias(tf.metadata["column_name"]))
-                .otherwise(pl.col(tf.metadata["column_name"]))
-            )
+        corrected = merged.with_columns(
+            pl.when(date_filter).then(lw_unc_corr + sb_adj).otherwise(pl.col(col_name)).alias(col_name)
         )
+        return tf.with_df(corrected.select(tf.df.columns))
 
     @staticmethod
     def _get_lw_unc(config: DataProcessingMethodConfig) -> ts.TimeFrame:
@@ -123,22 +124,19 @@ class PACorrection(CorrectionMethod):
 
         altitude = config.params["altitude"]
 
-        pa_corr = ta_tf.df.with_columns(
-            (
-                config.params["correction_factor"]
-                * (1 - ((0.0065 * altitude) / (pl.col(ta_col) + (0.0065 * altitude) + 273.15))) ** 5.257
-            ).alias("pa_corr")
+        # Join the dependency on time - it is a separate dataset and need not hold the same time values
+        merged = merge_multiple_timeframes([tf, ta_tf], "left").df
+
+        pa_corr = (
+            config.params["correction_factor"]
+            * (1 - ((0.0065 * altitude) / (pl.col(ta_col) + (0.0065 * altitude) + 273.15))) ** 5.257
         )
 
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(pl.col(primary_col) + pa_corr["pa_corr"])
-                .otherwise(pl.col(primary_col))
-                .alias(primary_col)
-            )
+        corrected = merged.with_columns(
+            pl.when(date_filter).then(pl.col(primary_col) + pa_corr).otherwise(pl.col(primary_col)).alias(primary_col)
         )
+        return tf.with_df(corrected.select(tf.df.columns))
 
 
 @CorrectionMethod.register
@@ -167,11 +165,13 @@ class WDCorrection(CorrectionMethod):
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         ux_tf = config.params["ux"]
         uy_tf = config.params["uy"]
-        merged_tf = merge_multiple_timeframes([ux_tf, uy_tf])
 
         primary_col = tf.metadata["column_name"]
         ux_col = ux_tf.metadata["column_name"]
         uy_col = uy_tf.metadata["column_name"]
+
+        # Join the dependencies on by time
+        merged = merge_multiple_timeframes([tf, ux_tf, uy_tf], "left").df
 
         # Core WD correction expression
         wd_expr = (180.0 / pl.lit(math.pi)) * pl.arctan2(pl.col(ux_col), pl.col(uy_col)) + 90.0
@@ -180,9 +180,9 @@ class WDCorrection(CorrectionMethod):
         wd_wrapped = pl.when(wd_expr < 0.0).then(wd_expr + 360.0).otherwise(wd_expr)
 
         # Calculate and round to 5 decimal places
-        wd_corr = merged_tf.df.with_columns(wd_wrapped.round(5).alias(primary_col))[primary_col]
+        corrected = merged.with_columns(wd_wrapped.round(5).alias(primary_col))
 
-        return tf.with_df(tf.df.with_columns(wd_corr.alias(primary_col)))
+        return tf.with_df(corrected.select(tf.df.columns))
 
 
 @CorrectionMethod.register
@@ -247,8 +247,11 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
         swin_col = swin_tf.metadata["column_name"]
         theta_s_col = theta_s_tf.metadata["column_name"]
 
-        swin_expr = swin_tf.df[swin_col]
-        theta_s_expr = theta_s_tf.df[theta_s_col]
+        # Join the dependencies on by time
+        merged = merge_multiple_timeframes([tf, swin_tf, theta_s_tf], "left").df
+
+        swin_expr = pl.col(swin_col)
+        theta_s_expr = pl.col(theta_s_col)
 
         # Calculate theoretical estimate of SWIN for clear sky
         swin_clear_expr = s_max * theta_s_expr.cos()
@@ -257,16 +260,16 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
         beta_expr = ((swin_expr - s_min_fc * swin_clear_expr) / ((1 - s_min_fc) * swin_clear_expr)).clip(0, 1)
 
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(
-                    (
-                        pl.col(primary_col)
-                        * (1 - beta_expr + beta_expr * theta_s_expr.cos())
-                        / (theta_s_expr - theta_g).cos()
-                    ).clip(0, 1)
-                )
-                .otherwise(pl.col(primary_col))
+        corrected = merged.with_columns(
+            pl.when(date_filter)
+            .then(
+                (
+                    pl.col(primary_col)
+                    * (1 - beta_expr + beta_expr * theta_s_expr.cos())
+                    / (theta_s_expr - theta_g).cos()
+                ).clip(0, 1)
             )
+            .otherwise(pl.col(primary_col))
+            .alias(primary_col)
         )
+        return tf.with_df(corrected.select(tf.df.columns))
