@@ -609,8 +609,8 @@ typecheck = [{ name = "pyright" }]
 
 [[package]]
 name = "dri-utils"
-version = "0.0.30"
-source = { git = "https://github.com/NERC-CEH/dri-utils.git#b3660104c72104902be687a9a5a407aa2455d822" }
+version = "0.0.31"
+source = { git = "https://github.com/NERC-CEH/dri-utils.git#2d79dc43b83451968253bcc5e04f0f81481a3b27" }
 dependencies = [
     { name = "autosemver" },
     { name = "boto3" },
