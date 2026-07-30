@@ -14,6 +14,7 @@ REQUIRED_LOCAL_CONFIG_KEYS = [
     "metadata_api_url",
     "endpoint_url",
     "pushgateway_url",
+    "pushgateway_job_name",
     "service_name",
 ]
 
@@ -27,6 +28,7 @@ REQUIRED_LIVE_CONFIG_KEYS = [
     "AWS_DEFAULT_REGION",
     "metadata_api_url",
     "pushgateway_url",
+    "pushgateway_job_name",
     "service_name",
 ]
 
