@@ -109,21 +109,16 @@ class TestAppConfig:
             AppConfigLive(Environment.LOCAL)
 
     @pytest.mark.parametrize("env", LIVE_ENVIRONMENTS)
-    def test_live_empty_pushgateway_job_name_falls_back_to_service_name(
-        self, env: str, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """Tests that an empty pushgateway_job_name falls back to service_name instead of an empty string being used."""
+    def test_live_empty_pushgateway_job_name_raises(self, env: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that an empty pushgateway_job_name raises rather than being used as-is."""
         patch_live(env, monkeypatch)
         monkeypatch.setenv("pushgateway_job_name", "")
 
-        cfg = AppConfigLive(Environment(env))
+        with pytest.raises(ValueError):
+            AppConfigLive(Environment(env))
 
-        assert cfg.pushgateway_job_name == cfg.service_name
-
-    def test_local_empty_pushgateway_job_name_falls_back_to_service_name(
-        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-    ) -> None:
-        """Tests that an empty pushgateway_job_name falls back to service_name instead of an empty string being used."""
+    def test_local_empty_pushgateway_job_name_raises(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        """Tests that an empty pushgateway_job_name raises rather than being used as-is."""
         source = TEST_DATA_ASSETS_VALID / "env_local.cfg"
         contents = source.read_text().replace(
             'pushgateway_job_name: "value_pushgateway_job_name"', 'pushgateway_job_name: ""'
@@ -132,6 +127,5 @@ class TestAppConfig:
         filename.write_text(contents)
         patch_local(filename, monkeypatch)
 
-        cfg = AppConfigLocal(Environment.LOCAL)
-
-        assert cfg.pushgateway_job_name == cfg.service_name
+        with pytest.raises(ValueError):
+            AppConfigLocal(Environment.LOCAL)
