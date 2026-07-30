@@ -14,6 +14,7 @@ REQUIRED_LOCAL_CONFIG_KEYS = [
     "metadata_api_url",
     "endpoint_url",
     "pushgateway_url",
+    "pushgateway_job_name",
     "service_name",
 ]
 
@@ -27,6 +28,7 @@ REQUIRED_LIVE_CONFIG_KEYS = [
     "AWS_DEFAULT_REGION",
     "metadata_api_url",
     "pushgateway_url",
+    "pushgateway_job_name",
     "service_name",
 ]
 
@@ -105,3 +107,25 @@ class TestAppConfig:
     def test_live_config_invalid_env(self) -> None:
         with pytest.raises(EnvironmentError):
             AppConfigLive(Environment.LOCAL)
+
+    @pytest.mark.parametrize("env", LIVE_ENVIRONMENTS)
+    def test_live_empty_pushgateway_job_name_raises(self, env: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that an empty pushgateway_job_name raises rather than being used as-is."""
+        patch_live(env, monkeypatch)
+        monkeypatch.setenv("pushgateway_job_name", "")
+
+        with pytest.raises(ValueError):
+            AppConfigLive(Environment(env))
+
+    def test_local_empty_pushgateway_job_name_raises(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        """Tests that an empty pushgateway_job_name raises rather than being used as-is."""
+        source = TEST_DATA_ASSETS_VALID / "env_local.cfg"
+        contents = source.read_text().replace(
+            'pushgateway_job_name: "value_pushgateway_job_name"', 'pushgateway_job_name: ""'
+        )
+        filename = tmp_path / "env_local.cfg"
+        filename.write_text(contents)
+        patch_local(filename, monkeypatch)
+
+        with pytest.raises(ValueError):
+            AppConfigLocal(Environment.LOCAL)
