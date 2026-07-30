@@ -88,7 +88,7 @@ class TestCheckCommonAttributes:
         assert check_common_attributes(self.containers, ["time_column_name", "resolution", "processing_level"]) == [
             "time",
             "P1D",
-            ProcessingLevel.PROCESSED,
+            ProcessingLevel.RAW,
         ]
 
     def test_single_attr_not_common(self) -> None:
