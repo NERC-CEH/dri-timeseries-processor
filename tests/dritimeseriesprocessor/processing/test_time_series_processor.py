@@ -361,6 +361,71 @@ class TestTimeSeriesProcessor:
         assert ds2.failed
         assert ds2.data is None
 
+    def test_collect_load_containers_skips_processed_dataset_with_no_configs(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that a processed dataset with no processing configs is marked as failed and not loaded."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+        container.processing_level = ProcessingLevel.PROCESSED
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        assert processor._collect_load_containers() == []
+        assert container.failed
+        assert processor.metrics.no_data.inc.call_count == 1  # type: ignore[union-attr]
+
+    def test_collect_load_containers_keeps_load_only_processed_dataset(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that a load-only processed dataset is still loaded, since it is read from the processed store."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+        container.processing_level = ProcessingLevel.PROCESSED
+        container.load_only = True
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        assert processor._collect_load_containers() == [container]
+        assert not container.failed
+
+    def test_batch_load_does_not_query_for_processed_dataset_with_no_configs(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that a processed dataset with no configs is failed without the data router being queried."""
+        mock_graph = create_mock_dag([["ds1"]])
+        container = mock_graph.datasets["ds1"]
+        container.processing_level = ProcessingLevel.PROCESSED
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 2),
+            metrics=MagicMock(),
+        )
+
+        processor._batch_load()
+
+        mock_router.query_by_date_range.assert_not_called()
+        assert container.failed
+        assert container.data is None
+
     def test_build_save_tasks_excludes_load_only_containers(
         self, mock_router: MagicMock, mock_writer: MagicMock
     ) -> None:

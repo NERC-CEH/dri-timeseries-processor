@@ -221,6 +221,33 @@ class TimeSeriesProcessor:
             return None
         return container.data_processing_configs[container.plan_order[next_idx]].config_type
 
+    def _collect_load_containers(self) -> list[TimeSeriesContainer]:
+        """Gather the containers that need data loading, leaving out any that cannot return data.
+
+        A processed dataset with no processing configs is a gap in the metadata - nothing in this run writes its
+        column, so reading the processed store for it can only fail. Those datasets are marked as failed and left
+        out, so the rest of the run still goes ahead and `_raise_if_failed` reports them at the end.
+
+        Load-only dependencies are left alone: a `load_dep_ts` reference to a processed dataset is meant to be
+        read straight from the processed store, so having no configs of its own is expected.
+
+        Returns:
+            The containers to load data for.
+        """
+        containers = []
+        for container in self.graph.datasets.values():
+            if not container.is_load():
+                continue
+
+            if container.processing_level is ProcessingLevel.PROCESSED and not container.load_only:
+                logger.error(f"Skipping {container.ts_id}. Detected as a processed dataset with no processing configs.")
+                self.metrics.no_data.inc()
+                container.failed = True
+                continue
+
+            containers.append(container)
+        return containers
+
     @log_duration("Loading datasets time taken: ")
     def _batch_load(self) -> None:
         """Load time-series data for multiple datasets in grouped batches.
@@ -229,7 +256,7 @@ class TimeSeriesProcessor:
         can retrieve all columns for each group in one read. Each container's data is then extracted from
         the combined result and initialised into a TimeFrame.
         """
-        containers = [c for c in self.graph.datasets.values() if c.is_load()]
+        containers = self._collect_load_containers()
         logger.info(f"Collecting and loading [{len(containers)}] datasets.")
         common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
         groupings = group_containers(containers, common_keys)
