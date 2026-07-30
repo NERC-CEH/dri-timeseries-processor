@@ -64,11 +64,15 @@ def dataframe_to_timeframe(
     return tf
 
 
-def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
+def make_time_series_container(
+    ts_id: str, processing_level: ProcessingLevel = ProcessingLevel.RAW
+) -> TimeSeriesContainer:
     """Create a lightweight fake TimeSeriesContainer for use in tests.
 
     Args:
         ts_id: The time series ID.
+        processing_level: Processing level of the dataset. Defaults to RAW, which is what a container with no
+            processing configs is in a real run - a processed dataset with no configs gets skipped by the loader.
 
     Returns:
         A TimeSeriesContainer instance
@@ -85,5 +89,5 @@ def make_time_series_container(ts_id: str) -> TimeSeriesContainer:
         resolution="P1D",
         periodicity="P1D",
         time_anchor="start",
-        processing_level=ProcessingLevel.PROCESSED,
+        processing_level=processing_level,
     )
