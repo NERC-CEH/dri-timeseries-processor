@@ -38,6 +38,9 @@ class AppConfig(ABC):
 
     def __init__(self):
         self.load_config()
+        if not self.pushgateway_job_name:
+            logger.warning(f"pushgateway_job_name is empty, falling back to service_name: '{self.service_name}'")
+            self.pushgateway_job_name = self.service_name
 
     @abstractmethod
     def load_config(self) -> None:
