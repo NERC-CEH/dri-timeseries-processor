@@ -25,7 +25,7 @@ class DeploymentItem(IDModel):
 
     field_type: list[IDModel] = Field(..., alias="@type")
     label: list[str] | None = None
-    start_date: datetime = Field(..., alias="startedAtTime")
+    start_date: datetime | None = Field(None, alias="startedAtTime")  # Can be None if unknown at an existing site
     end_date: datetime | None = Field(None, alias="endedAtTime")
     deployedHeight: float | None = None
     deployedSystem: list[DeployedSystem] = Field(default_factory=list)
