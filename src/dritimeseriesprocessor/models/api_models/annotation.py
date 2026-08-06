@@ -6,7 +6,7 @@ FDRI metadata API.
 """
 
 from datetime import datetime
-from typing import Self
+from typing import Any, Self
 
 from pydantic import BaseModel, Field, model_validator
 from pydantic_core import PydanticCustomError
@@ -35,6 +35,7 @@ class HasCurrentValueItem(IDModel):
     field_type: list[IDModel] = Field(..., alias="@type")
     interval: Interval | None = None
     qualifier: list[QualifierItem] = Field(default_factory=list)
+    value: list[Any] | int | float | str | list[str] | None = None
     value_reference: list[IDModel] = Field(default_factory=list, alias="valueReference")
 
 
