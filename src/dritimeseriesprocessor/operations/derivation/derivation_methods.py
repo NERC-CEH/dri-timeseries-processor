@@ -1036,8 +1036,13 @@ class SoilMoistureIndex(DerivationMethod):
 class EffectveDepth(DerivationMethod):
     """Original effective depth calulation from SIMPLE VWC method.
 
-    Reference:
-
+    References:
+        - Franz TE, Zreda M, Rosolem R, Ferre TPA. (2013) A universal calibration function for
+          determination of soil moisture with cosmic-ray neutrons. Hydrology and Earth System
+          Sciences 17: 453-460. DOI:10.5194/hess-17-453-2013
+        - COSMOS-UK User Guide; Section 7.4 The CRNS footprint (compares this effective depth
+          calculation against the D86 footprint depths now used operationally):
+          https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
     """
 
     name = "calculate_eff_depth"
@@ -1057,7 +1062,7 @@ class EffectveDepth(DerivationMethod):
                 - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
 
         Returns:
-            Polars expression calculating soil moisture index
+            Polars expression calculating effective depth
         """
 
         ref_bd = self.config.params["ref_bulkdensity"]
