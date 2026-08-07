@@ -1000,6 +1000,10 @@ class SoilMoistureIndex(DerivationMethod):
             - between 1 and 2, when VWC is between field capacity and saturation
             - 2, when VWC is at or above saturation
 
+        Reference:
+            COSMOS-UK User Guide; Appendix H Soil Moisture Index
+                https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
+
         Args:
             columns: Dict with keys of required columns for the calculation.
                 - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
