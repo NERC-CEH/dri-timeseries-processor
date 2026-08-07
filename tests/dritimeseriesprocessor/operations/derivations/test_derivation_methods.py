@@ -26,6 +26,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NetRadiation,
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
+    SigmaSnowWaterEquivalence,
     SoilMoistureIndex,
     SolarZenith,
     VolumetricWaterContent,
@@ -637,6 +638,29 @@ class TestVolumetricWaterContentWithSnow:
         expected = dataframe_to_timeframe(pl.DataFrame({"vwc_with_snow": [100.0, 28.964, 28.964, 5.172, 5.172]}))
         result = VolumetricWaterContentWithSnow().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestSigmaSnowWaterEquivalence:
+    def test_calculation(self) -> None:
+        """Test uncertainty in the snow water equivalence (SWE) calculation.
+
+        cts_smo_crns is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
+        no-snow baseline count. Where the two are equal (no suppression), sigma_swe should still be
+        positive - the uncertainty does not collapse to zero just because SWE itself is ~0.
+        """
+        config = create_method_config(
+            {
+                "cts_smo_crns": [1500.0, 1600.0, 1500.0, 1750.0],
+                "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
+            },
+            "sigma_swe",
+        )
+        config.params["n0_mod"] = 2710.16689  # holln
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [0.002166, 0.001498, 0.001472, 0.001449]}))
+
+        result = SigmaSnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.000001)
 
 
 class TestGetSnowEstimatedCounts:
