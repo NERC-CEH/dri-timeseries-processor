@@ -1084,6 +1084,48 @@ class SoilMoistureIndex(DerivationMethod):
 
 
 @DerivationMethod.register
+class EffectiveDepth(DerivationMethod):
+    """Original effective depth calulation from SIMPLE VWC method.
+
+    References:
+        - Franz TE, Zreda M, Rosolem R, Ferre TPA. (2013) A universal calibration function for
+          determination of soil moisture with cosmic-ray neutrons. Hydrology and Earth System
+          Sciences 17: 453-460. DOI:10.5194/hess-17-453-2013
+        - COSMOS-UK User Guide; Section 7.4 The CRNS footprint (compares this effective depth
+          calculation against the D86 footprint depths now used operationally):
+          https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
+    """
+
+    name = "calculate_eff_depth"
+    inputs = ("cosmos_vwc",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Original effective depth calulation from SIMPLE VWC method.
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon.
+                - ref_bulkdensity: Site attribute of reference soil bulk density.
+                - ref_latticewater: Site attribute of reference lattice water content.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+
+        Returns:
+            Polars expression calculating effective depth
+        """
+
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        ref_soc = self.config.params["ref_soc"]
+
+        cosmos_vwc = columns["cosmos_vwc"]
+
+        return 5.8 / (ref_bd * (ref_lw + ref_soc) + cosmos_vwc / 100.0 + 0.0829)
+
+
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
