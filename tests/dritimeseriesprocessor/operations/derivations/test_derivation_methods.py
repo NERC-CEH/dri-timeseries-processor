@@ -18,7 +18,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CorrectCounts,
     DerivationMethod,
     EddyProRun,
-    EffectveDepth,
+    EffectiveDepth,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
     IsSnowDay,
@@ -1010,7 +1010,7 @@ class TestEffectveDepth:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"eff_depth": [40.469, 23.837, 13.396, 7.668, 5.073]}))
 
-        result = EffectveDepth().run(config)
+        result = EffectiveDepth().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 

@@ -1033,7 +1033,7 @@ class SoilMoistureIndex(DerivationMethod):
 
 
 @DerivationMethod.register
-class EffectveDepth(DerivationMethod):
+class EffectiveDepth(DerivationMethod):
     """Original effective depth calulation from SIMPLE VWC method.
 
     References:
