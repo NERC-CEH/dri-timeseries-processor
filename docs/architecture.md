@@ -122,6 +122,7 @@ The runtime environment is determined from the `environment` environment variabl
 | metadata_api_url      | FDRI metadata API endpoint                    | All                |
 | endpoint_url          | S3 endpoint override (LocalStack)             | Local only         |
 | pushgateway_url       | Prometheus Pushgateway for metrics            | Staging/Production |
+| pushgateway_job_name  | Pushgateway job name, distinct per deployment | All                |
 
 #### Environment Specific Behavior
 

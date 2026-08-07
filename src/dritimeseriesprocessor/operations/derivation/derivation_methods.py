@@ -69,7 +69,7 @@ class DerivationMethod(Operation, ABC):
         Assumes all input TimeFrames share a common periodicity, so they can be merged directly with
         `merge_multiple_timeframes`. Subclasses whose inputs have differing periodicities should
         override this method with their own merge/join strategy, calling `join_deployment_attributes`
-        themselves if they also need time-bound attribute columns joined in.
+        and `join_annotation_attributes` themselves if they also need time-bound attribute columns joined in.
 
         Args:
             config: Configuration parameters including input TimeFrames and output specs
@@ -83,11 +83,16 @@ class DerivationMethod(Operation, ABC):
                 - merged_tf: The merged TimeFrame, with any time-bound attribute columns joined in
         """
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
-        return self.join_deployment_attributes(config, columns, merged_tf)
+        columns, merged_tf = self.join_deployment_attributes(config, columns, merged_tf)
+        columns, merged_tf = self.join_annotation_attributes(config, columns, merged_tf)
+        return columns, merged_tf
 
     @staticmethod
     def join_deployment_attributes(config: DataProcessingMethodConfig, columns: dict, merged_tf: ts.TimeFrame) -> tuple:
         """Join any time-bound deployment attribute columns (e.g. anemometer sensor height) onto a TimeFrame.
+
+        A deployment attribute is metadata about something deployed at a site (e.g. a sensor), which can be
+        replaced or moved over time.
 
         Args:
             config: Configuration parameters including input TimeFrames and output specs
@@ -107,6 +112,32 @@ class DerivationMethod(Operation, ABC):
                     join_time_intervals(value[f"{param}.value"], merged_tf.df, merged_tf.time_name, param)
                 )
                 # Make sure the deployment value column is available to any calculation method that needs it
+                columns[param] = pl.col(param)
+        return columns, merged_tf
+
+    @staticmethod
+    def join_annotation_attributes(config: DataProcessingMethodConfig, columns: dict, merged_tf: ts.TimeFrame) -> tuple:
+        """Join any time-variable site annotation columns (e.g. soil properties) onto a TimeFrame.
+
+        A site annotation describes the site itself and can vary over time (e.g. soil saturation, wilting point,
+        field capacity).
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs
+            columns: Mapping of input name to its Polars column expression
+            merged_tf: The already-merged TimeFrame that annotation attribute columns should be joined onto
+
+        Returns:
+            Tuple of:
+                - columns: The input `columns` dict, with an added entry for each time-variable
+                  annotation found in `config.params`
+                - merged_tf: The input `merged_tf`, with any time-variable annotation columns joined in
+        """
+        for param, value in config.params.items():
+            if isinstance(value, list) and value and isinstance(value[0], tuple):
+                # Join the annotation's dated values to the main DataFrame
+                merged_tf = merged_tf.with_df(join_time_intervals(value, merged_tf.df, merged_tf.time_name, param))
+                # Make sure the annotation value column is available to any calculation method that needs it
                 columns[param] = pl.col(param)
         return columns, merged_tf
 

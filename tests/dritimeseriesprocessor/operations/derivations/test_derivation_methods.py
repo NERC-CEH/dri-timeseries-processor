@@ -42,6 +42,14 @@ class SimpleAddition(DerivationMethod):
         return columns["a"] + columns["b"]
 
 
+class AddAnnotationAttribute(DerivationMethod):
+    name = "add_annotation_attribute"
+    inputs = ("a",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return columns["a"] + columns["saturation"]
+
+
 def create_method_config(
     data: dict[str, list[float | None]],
     output_col: str,
@@ -81,6 +89,16 @@ class TestDerivationMethod:
 
         result = method.run(config)
         expected = dataframe_to_timeframe(pl.DataFrame({"out": [15.0, 30.0, 45.0]}), metadata={"column_name": "out"})
+        assert result == expected
+
+    def test_join_annotation_attributes_joins_time_variable_site_annotation(self) -> None:
+        """Tests that a time-variable site annotation param is joined onto the calculation as a column."""
+        method = AddAnnotationAttribute()
+        config = create_method_config({"a": [1.0, 2.0, 3.0]}, "out")
+        config.params["saturation"] = [(datetime(2025, 1, 1), None, 10.0)]
+
+        result = method.run(config)
+        expected = dataframe_to_timeframe(pl.DataFrame({"out": [11.0, 12.0, 13.0]}), metadata={"column_name": "out"})
         assert result == expected
 
 

@@ -92,7 +92,7 @@ def _build_processor(
     raw_reader = RawFileReader(storage)
     writer = ByteParquetWriter(storage)
     data_router = S3DataRouter(reader, raw_reader)
-    metrics = Metrics(cfg.pushgateway_url, "timeseries-processor")
+    metrics = Metrics(cfg.pushgateway_url, cfg.pushgateway_job_name)
 
     graph = _build_dependency_graph(selection, metadata_router, start_date, end_date)
 
