@@ -9,6 +9,7 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
+    D86,
     AbsoluteHumidity,
     AbsoluteHumidityFactor,
     Albedo,
@@ -1036,6 +1037,34 @@ class TestEffectveDepth:
 
         result = EffectiveDepth().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestD86:
+    # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
+    #   Site: HOLLN,
+    #   Dates: [2015-03-14, 2017-05-30, 2022-01-18, 2026-08-01]
+    @pytest.mark.parametrize(
+        "distance, vwc, pa, d86",
+        [
+            (1.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [23.2, 16.7, 19.3, 17]),
+            (5.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [22.9, 16.5, 19, 16.9]),
+            (25.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [21.6, 15.7, 18, 16]),
+            (75.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [19.2, 14.4, 16.3, 14.6]),
+            (150.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [17.2, 13.2, 14.8, 13.4]),
+            (200.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [16.5, 12.8, 14.3, 13]),
+        ],
+    )
+    def test_calculate_d86(self, distance: float, vwc: list, pa: list, d86: list) -> None:
+        """Test calculate_d86 using cosmos-holln site annotations."""
+        config = create_method_config({"cosmos_vwc": vwc, "pa": pa}, "d86")
+        config.params["distance"] = distance
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"d86": d86}))
+        result = D86().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 
 class TestCalcFluxMeanShf:
