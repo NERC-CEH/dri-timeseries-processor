@@ -989,7 +989,9 @@ class SnowWaterEquivalence(DerivationMethod):
     Calculate snow water equivance (SWE) for the above ground COSMOS sensor.
 
     References: - See VWC
-                - Constants from Howat, I. M. et al. (2018) method SWE from SnowFox
+                - Constants from Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
+                  Autonomous ice sheet surface mass balance measurements from cosmic rays.
+                  The Cryosphere, 12, 2099–2108. https://doi.org/10.5194/tc-12-2099-2018
                 - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture
                   probe for snow water equivalent. Hydroinnova Technical Document 17-01.
     """
