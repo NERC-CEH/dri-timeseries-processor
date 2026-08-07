@@ -965,13 +965,13 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
                 - ref_bulkdensity: Site attribute of reference soil bulk density
                 - ref_latticewater: Site attribute of reference lattice water content
                 - n0_mod: Site attribute of a calibration coefficient obtained from field calibration
-                - n_max: Site attribute of maximum range for nuetron counts
-                - n_min: Site attribute of minimum range for nuetron counts
+                - n_max: Site attribute of maximum range for neutron counts
+                - n_min: Site attribute of minimum range for neutron counts
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
-            - cts_est_crns: estimated counts during snow periods
+                - cts_mod_corr: Neutron counts (corrected for influences on cosmic-ray intensity).
+                - cts_est_crns: estimated counts during snow periods
 
         Returns:
             Polars expression for VWC with snow
@@ -1003,6 +1003,11 @@ class SoilMoistureIndex(DerivationMethod):
         Reference:
             COSMOS-UK User Guide; Appendix H Soil Moisture Index
                 https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon
+                - ref_bulkdensity: Site attribute of reference soil bulk density
 
         Args:
             columns: Dict with keys of required columns for the calculation.
@@ -1052,14 +1057,17 @@ class D86(DerivationMethod):
                 Improving calibration and validation of cosmic-ray neutron sensors in the light of spatial sensitivity,
                 Hydrol. Earth Syst. Sci., 21, 5009–5030, https://doi.org/10.5194/hess-21-5009-2017, 2017
 
-        Args:
-            columns: Dict with keys of required columns for the calculation.
-                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
-                - pa: Atmospheric Pressure [hPa]
+        Config requirements:
+            Site attributes:
                 - ref_soc: Site attribute of reference soil organic carbon
                 - ref_bulkdensity: Site attribute of reference soil bulk density
                 - ref_latticewater: Site attribute of reference lattice water content
                 - distance: Distance away from the CRNS the calculation is valid for
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+                - pa: Atmospheric Pressure [hPa]
 
         Returns:
             Polars expression calculating d86
