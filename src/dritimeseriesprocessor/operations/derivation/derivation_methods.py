@@ -1033,6 +1033,43 @@ class SoilMoistureIndex(DerivationMethod):
 
 
 @DerivationMethod.register
+class EffectveDepth(DerivationMethod):
+    """Original effective depth calulation from SIMPLE VWC method.
+
+    Reference:
+
+    """
+
+    name = "calculate_eff_depth"
+    inputs = ("cosmos_vwc",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Original effective depth calulation from SIMPLE VWC method.
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon.
+                - ref_bulkdensity: Site attribute of reference soil bulk density.
+                - ref_latticewater: Site attribute of reference lattice water content.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+
+        Returns:
+            Polars expression calculating soil moisture index
+        """
+
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        ref_soc = self.config.params["ref_soc"]
+
+        cosmos_vwc = columns["cosmos_vwc"]
+
+        return 5.8 / (ref_bd * (ref_lw + ref_soc) + cosmos_vwc / 100.0 + 0.0829)
+
+
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
