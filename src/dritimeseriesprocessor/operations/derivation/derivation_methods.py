@@ -965,13 +965,13 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
                 - ref_bulkdensity: Site attribute of reference soil bulk density
                 - ref_latticewater: Site attribute of reference lattice water content
                 - n0_mod: Site attribute of a calibration coefficient obtained from field calibration
-                - n_max: Site attribute of maximum range for nuetron counts
-                - n_min: Site attribute of minimum range for nuetron counts
+                - n_max: Site attribute of maximum range for neutron counts
+                - n_min: Site attribute of minimum range for neutron counts
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
-            - cts_est_crns: estimated counts during snow periods
+                - cts_mod_corr: Neutron counts (corrected for influences on cosmic-ray intensity).
+                - cts_est_crns: estimated counts during snow periods
 
         Returns:
             Polars expression for VWC with snow
@@ -1052,6 +1052,11 @@ class SoilMoistureIndex(DerivationMethod):
             COSMOS-UK User Guide; Appendix H Soil Moisture Index
                 https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
 
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon
+                - ref_bulkdensity: Site attribute of reference soil bulk density
+
         Args:
             columns: Dict with keys of required columns for the calculation.
                 - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
@@ -1078,6 +1083,135 @@ class SoilMoistureIndex(DerivationMethod):
             .then((cosmos_vwc - field_capacity) / (saturation - field_capacity) + 1)
             .otherwise(2.0)
         )
+
+
+@DerivationMethod.register
+class EffectiveDepth(DerivationMethod):
+    """Original effective depth calulation from SIMPLE VWC method.
+
+    References:
+        - Franz TE, Zreda M, Rosolem R, Ferre TPA. (2013) A universal calibration function for
+          determination of soil moisture with cosmic-ray neutrons. Hydrology and Earth System
+          Sciences 17: 453-460. DOI:10.5194/hess-17-453-2013
+        - COSMOS-UK User Guide; Section 7.4 The CRNS footprint (compares this effective depth
+          calculation against the D86 footprint depths now used operationally):
+          https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
+    """
+
+    name = "calculate_eff_depth"
+    inputs = ("cosmos_vwc",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Original effective depth calulation from SIMPLE VWC method.
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon.
+                - ref_bulkdensity: Site attribute of reference soil bulk density.
+                - ref_latticewater: Site attribute of reference lattice water content.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+
+        Returns:
+            Polars expression calculating effective depth
+        """
+
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        ref_soc = self.config.params["ref_soc"]
+
+        cosmos_vwc = columns["cosmos_vwc"]
+
+        return 5.8 / (ref_bd * (ref_lw + ref_soc) + cosmos_vwc / 100.0 + 0.0829)
+
+
+@DerivationMethod.register
+class D86(DerivationMethod):
+    """Calculate d86 value."""
+
+    name = "calculate_d86"
+    inputs = ("cosmos_vwc", "pa")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """D86 is defined as the depth to which 86% of the detected cosmic ray neutrons had contact with constituents
+        of the soil.
+
+        It can be calculated at given distances from the Cosmic Ray Neutron Sensor (CRNS).
+
+        Reference:
+            Schrön, M., Köhli, M., Scheiffele, L., Iwema, J., Bogena, H. R., Lv, L., Martini, E., Baroni, G.,
+            Rosolem, R., Weimar, J., Mai, J., Cuntz, M., Rebmann, C., Oswald, S. E., Dietrich, P., Schmidt, U.,
+            and Zacharias, S.
+                Improving calibration and validation of cosmic-ray neutron sensors in the light of spatial sensitivity,
+                Hydrol. Earth Syst. Sci., 21, 5009–5030, https://doi.org/10.5194/hess-21-5009-2017, 2017
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon
+                - ref_bulkdensity: Site attribute of reference soil bulk density
+                - ref_latticewater: Site attribute of reference lattice water content
+                - distance: Distance away from the CRNS the calculation is valid for
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+                - pa: Atmospheric Pressure [hPa]
+
+        Returns:
+            Polars expression calculating d86
+        """
+        cosmos_vwc = columns["cosmos_vwc"]
+        pa = columns["pa"]
+        ref_soc = self.config.params["ref_soc"]
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        distance = self.config.params["distance"]
+
+        # Constants used in the d86 calculation - from Schrön et al. (2017); Appendix A: Table A1
+        p0 = 8.321
+        p1 = 0.14249
+        p2 = 0.96655
+        p3 = 0.01
+        p4 = 20.0
+        p5 = 0.0429
+
+        # Convert VWC from % to cm-3/cm-3
+        cosmos_vwc = cosmos_vwc / 100.0
+        # Reconstructs total water-equivalent content (free soil water [the current cosmos_vwc] + water bound in
+        #   lattice/organic matter), for use in the footprint depth equation
+        total_water_equivalent = cosmos_vwc + ref_bd * (ref_lw + ref_soc)
+
+        # Calculate adjusted distance r_star
+        fp = self.parameter_function_fp(pa)
+        # NOTE: There is a Fveg function in Schrön et al. (2017) that can adjust the D86 based on vegetation height.
+        #   This would need a wider metadata update that is out of scope as of [08/2026]
+        fveg = 1.0
+        r_star = distance / fp / fveg
+
+        # D86 equation from Schrön et al. (2017); Appendix A
+        p2_term = p2 + (-p3 * r_star).exp()
+        p4_term = p4 + total_water_equivalent
+        p5_term = p5 + total_water_equivalent
+        return (1 / ref_bd) * (p0 + (p1 * p2_term * (p4_term / p5_term)))
+
+    @staticmethod
+    def parameter_function_fp(pa: pl.Expr) -> pl.Expr:
+        """Parameter function 'Fp' for use in D86 calculation
+
+        Steps taken from Schrön et al. (2017); Appendix A: The revised weighting functions
+
+        Args:
+            pa: Atmospheric pressure [hPa]
+
+        Returns:
+            Polars expression to calculate Fp
+        """
+        # Constants used in the fp calculation - from Schrön et al. (2017); Appendix A: Table A1
+        p0 = 0.4922
+        p1 = 0.86
+        return p0 / (p1 - ((-pa / 1013.0).exp()))
 
 
 @DerivationMethod.register
