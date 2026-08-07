@@ -992,7 +992,8 @@ class SigmaSnowWaterEquivalence(DerivationMethod):
 
     References: - See VWC
                 - Constants from Howat, I. M. et al. (2018) method SWE from SnowFox
-                - Desilets (2017)
+                - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture probe for snow water equivalent.
+                  Hydroinnova Technical Document 17-01.
     """
 
     name = "calculate_crns_sigma_swe"
