@@ -649,14 +649,14 @@ class TestSnowWaterEquivalence:
         """
         config = create_method_config(
             {
-                "cts_smo": [1500.0, 1600.0, 1500.0, 1750.0],
+                "cts_smo_crns": [1500.0, 1600.0, 1500.0, 1750.0],
                 "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
             },
-            "swe",
+            "swe_crns",
         )
         config.params["n0_mod"] = 2710.16689  # holln
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"swe": [0.0, 0.0213, 0.0511, 0.0]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [0.0, 0.0213, 0.0511, 0.0]}))
 
         result = SnowWaterEquivalence().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)

@@ -993,8 +993,8 @@ class SnowWaterEquivalence(DerivationMethod):
                 - Desilets (2017)
     """
 
-    name = "calcaulte_crns_swe"
-    inputs = ("cts_est_crns", "cts_smo")
+    name = "calculate_crns_swe"
+    inputs = ("cts_est_crns", "cts_smo_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
@@ -1006,7 +1006,7 @@ class SnowWaterEquivalence(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - cts_smo: smoothed nuetron counts (corrected for influences on cosmic-ray intensity).
+                - cts_smo_crns: smoothed nuetron counts (corrected for influences on cosmic-ray intensity).
                 - cts_est_crns: estimated counts during snow periods.
 
         Returns:
@@ -1016,7 +1016,7 @@ class SnowWaterEquivalence(DerivationMethod):
         nwat_fac = 0.38  # 0.24 in Desilets (2017)
         n_wat = self.config.params["n0_mod"] * nwat_fac
 
-        cts_smo = columns["cts_smo"]
+        cts_smo = columns["cts_smo_crns"]
         cts_est = columns["cts_est_crns"]
 
         n_star = cts_smo / cts_est
