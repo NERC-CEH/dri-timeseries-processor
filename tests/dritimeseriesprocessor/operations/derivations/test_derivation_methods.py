@@ -27,6 +27,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
     SnowWaterEquivalence,
+    SoilMoistureIndex,
     SolarZenith,
     VolumetricWaterContent,
     VolumetricWaterContentWithSnow,
@@ -973,6 +974,45 @@ class TestGetPrecipTipping:
         )
         result = GetPrecipTipping().run(config)
         assert result.df["precip_tipping"][0] is None
+
+
+class TestSoilMoistureIndex:
+    def _make_config(self, vwc_values: list) -> DataProcessingMethodConfig:
+        config = create_method_config({"cosmos_vwc": vwc_values}, "smi")
+        config.params["vwc_wilting_point"] = [(datetime(2025, 1, 1), None, 10.0)]
+        config.params["vwc_field_capacity"] = [(datetime(2025, 1, 1), None, 30.0)]
+        config.params["vwc_saturation"] = [(datetime(2025, 1, 1), None, 50.0)]
+        return config
+
+    def test_vwc_at_or_below_wilting_point(self) -> None:
+        """Tests that SMI is 0 when VWC is at or below the wilting point."""
+        config = self._make_config([5.0, 10.0])
+        result = SoilMoistureIndex().run(config)
+        assert list(result.df["smi"]) == [0.0, 0.0]
+
+    def test_vwc_between_wilting_point_and_field_capacity(self) -> None:
+        """Tests that SMI scales linearly from 0 to 1 between the wilting point and field capacity."""
+        config = self._make_config([20.0, 30.0])
+        result = SoilMoistureIndex().run(config)
+        assert list(result.df["smi"]) == [0.5, 1.0]
+
+    def test_vwc_between_field_capacity_and_saturation(self) -> None:
+        """Tests that SMI scales linearly from 1 to 2 between field capacity and saturation."""
+        config = self._make_config([40.0, 50.0])
+        result = SoilMoistureIndex().run(config)
+        assert list(result.df["smi"]) == [1.5, 2.0]
+
+    def test_vwc_above_saturation(self) -> None:
+        """Tests that SMI is capped at 2 when VWC is above saturation."""
+        config = self._make_config([60.0])
+        result = SoilMoistureIndex().run(config)
+        assert list(result.df["smi"]) == [2.0]
+
+    def test_vwc_null(self) -> None:
+        """Tests that SMI is null when VWC is null."""
+        config = self._make_config([None])
+        result = SoilMoistureIndex().run(config)
+        assert list(result.df["smi"]) == [None]
 
 
 class TestCalcFluxMeanShf:

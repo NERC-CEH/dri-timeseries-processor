@@ -1034,6 +1034,53 @@ class SnowWaterEquivalence(DerivationMethod):
 
 
 @DerivationMethod.register
+class SoilMoistureIndex(DerivationMethod):
+    """Calculate soil moisture index."""
+
+    name = "calculate_smi"
+    inputs = ("cosmos_vwc",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """SMI (soil moisture index) is a normalised measure of soil wetness relative to the wilting point, field
+        capacity and saturation of the soil:
+            - 0, when VWC is at or below the wilting point
+            - between 0 and 1, when VWC is between the wilting point and field capacity
+            - between 1 and 2, when VWC is between field capacity and saturation
+            - 2, when VWC is at or above saturation
+
+        Reference:
+            COSMOS-UK User Guide; Appendix H Soil Moisture Index
+                https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+                - vwc_wilting_point: The volumetric water content at the wilting point of the soil [%]
+                - vwc_field_capacity: The volumetric water content at field capacity [%]
+                - vwc_saturation: The volumetric water content when the soil is fully saturated [%]
+
+        Returns:
+            Polars expression calculating soil moisture index
+        """
+        cosmos_vwc = columns["cosmos_vwc"]
+        wilting_point = columns["vwc_wilting_point"]
+        field_capacity = columns["vwc_field_capacity"]
+        saturation = columns["vwc_saturation"]
+
+        return (
+            pl.when(cosmos_vwc.is_null())
+            .then(None)
+            .when(cosmos_vwc <= wilting_point)
+            .then(0.0)
+            .when(cosmos_vwc <= field_capacity)
+            .then((cosmos_vwc - wilting_point) / (field_capacity - wilting_point))
+            .when(cosmos_vwc <= saturation)
+            .then((cosmos_vwc - field_capacity) / (saturation - field_capacity) + 1)
+            .otherwise(2.0)
+        )
+
+
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
