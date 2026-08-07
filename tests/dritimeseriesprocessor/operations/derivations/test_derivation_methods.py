@@ -658,7 +658,7 @@ class TestSnowWaterEquivalence:
         )
         config.params["n0_mod"] = 2710.16689  # holln
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [0.0, 0.0213, 0.0511, 0.0]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [0.0, 14.4332, 34.7719, 0.0]}))
 
         result = SnowWaterEquivalence().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)

@@ -986,7 +986,7 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
 @DerivationMethod.register
 class SnowWaterEquivalence(DerivationMethod):
     """
-    Calculate snow water equivance (SWE) for the above ground COSMOS sensor.
+    Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
 
     References: - See VWC
                 - Constants from Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
@@ -1016,24 +1016,15 @@ class SnowWaterEquivalence(DerivationMethod):
             Polars expression for SWE
         """
 
-        nwat_fac = 0.38  # 0.24 in Desilets (2017)
+        nwat_fac = 0.38
         n_wat = self.config.params["n0_mod"] * nwat_fac
 
         cts_smo = columns["cts_smo_crns"]
         cts_est = columns["cts_est_crns"]
 
-        n_star = cts_smo / cts_est
+        lambda_ = 48  # from Desilets (2017)
 
-        a1 = 0.3133
-        a2 = 0.08268
-        a3 = 1.117
-        amax = 114.4
-        amin = 14.11
-
-        # Lambda = 48 in Desilets (2017)
-        Lambda = (1 / amax) - ((1 / amax) - (1 / amin)) * (1 + ((a1 - n_star) / a2).exp()) ** (-a3)
-
-        return -Lambda * (((cts_smo - n_wat) / (cts_est - n_wat)).log())
+        return -lambda_ * (((cts_smo - n_wat) / (cts_est - n_wat)).log())
 
 
 @DerivationMethod.register
