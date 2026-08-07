@@ -1001,7 +1001,7 @@ class SnowWaterEquivalence(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
-        Calculate snow water equivance (SWE) for the above ground COSMOS sensor.
+        Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
 
         Config requirements:
             Site attributes:
@@ -1009,7 +1009,7 @@ class SnowWaterEquivalence(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - cts_smo_crns: smoothed nuetron counts (corrected for influences on cosmic-ray intensity).
+                - cts_smo_crns: smoothed neutron counts (corrected for influences on cosmic-ray intensity).
                 - cts_est_crns: estimated counts during snow periods.
 
         Returns:
