@@ -26,6 +26,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NetRadiation,
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
+    SnowWaterEquivalence,
     SolarZenith,
     VolumetricWaterContent,
     VolumetricWaterContentWithSnow,
@@ -618,6 +619,29 @@ class TestVolumetricWaterContentWithSnow:
         expected = dataframe_to_timeframe(pl.DataFrame({"vwc_with_snow": [100.0, 28.964, 28.964, 5.172, 5.172]}))
         result = VolumetricWaterContentWithSnow().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestSnowWaterEquivalence:
+    def test_calculation(self) -> None:
+        """Test snow water equivalence (SWE) calculation.
+
+        cts_smo is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
+        no-snow baseline count. Where the two are equal (no suppression), SWE should be ~0.
+        As cts_smo drops further below cts_est_crns (more suppression), SWE should increase.
+        """
+        config = create_method_config(
+            {
+                "cts_smo": [1500.0, 1600.0, 1500.0, 1750.0],
+                "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
+            },
+            "swe",
+        )
+        config.params["n0_mod"] = 2710.16689  # holln
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"swe": [0.0, 0.0213, 0.0511, 0.0]}))
+
+        result = SnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
 class TestGetSnowEstimatedCounts:

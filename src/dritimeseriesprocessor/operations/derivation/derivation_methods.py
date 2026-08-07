@@ -812,8 +812,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - CTS_SMO_CRNS: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
-                - SNOW: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
+                - cts_smo_crns: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
+                - snow: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
                 - time: hourly timestamps corresponding to cts_smo values.
 
         Returns:
@@ -926,8 +926,6 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate volumetric water content with snow.
 
-        Reference:
-
         Config requirements:
             Site attributes:
                 - ref_soc: Site attribute of reference soil organic carbon
@@ -952,6 +950,56 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
         vwc_with_snow = super().expr({"cts_mod_corr": cts_mod_corr_with_snow_estimates})
 
         return vwc_with_snow
+
+
+@DerivationMethod.register
+class SnowWaterEquivalence(DerivationMethod):
+    """
+    Calculate snow water equivance (SWE) for the above ground COSMOS sensor.
+
+    References: - See VWC
+                - Constants from Howat, I. M. et al. (2018) method SWE from SnowFox
+                - Desilets (2017)
+    """
+
+    name = "calcaulte_crns_swe"
+    inputs = ("cts_est_crns", "cts_smo")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate snow water equivance (SWE) for the above ground COSMOS sensor.
+
+        Config requirements:
+            Site attributes:
+                - n0_mod: Site attribute of a calibration coefficient obtained from field calibration.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo: smoothed nuetron counts (corrected for influences on cosmic-ray intensity).
+                - cts_est_crns: estimated counts during snow periods.
+
+        Returns:
+            Polars expression for SWE
+        """
+
+        nwat_fac = 0.38  # 0.24 in Desilets (2017)
+        n_wat = self.config.params["n0_mod"] * nwat_fac
+
+        cts_smo = columns["cts_smo"]
+        cts_est = columns["cts_est_crns"]
+
+        n_star = cts_smo / cts_est
+
+        a1 = 0.3133
+        a2 = 0.08268
+        a3 = 1.117
+        amax = 114.4
+        amin = 14.11
+
+        # Lambda = 48 in Desilets (2017)
+        Lambda = (1 / amax) - ((1 / amax) - (1 / amin)) * (1 + ((a1 - n_star) / a2).exp()) ** (-a3)
+
+        return -Lambda * (((cts_smo - n_wat) / (cts_est - n_wat)).log())
 
 
 @DerivationMethod.register
