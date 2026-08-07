@@ -657,10 +657,10 @@ class TestSigmaSnowWaterEquivalence:
         )
         config.params["n0_mod"] = 2710.16689  # holln
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [0.002166, 0.001498, 0.001472, 0.001449]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.46716, 1.01583, 1.00201, 0.98169]}))
 
         result = SigmaSnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.000001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
 class TestGetSnowEstimatedCounts:

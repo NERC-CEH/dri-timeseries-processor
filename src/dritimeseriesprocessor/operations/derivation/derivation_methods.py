@@ -988,7 +988,7 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
 @DerivationMethod.register
 class SigmaSnowWaterEquivalence(DerivationMethod):
     """
-    Calculate uncertainty in a snow water equivance (SWE) calculation for the above ground COSMOS sensor.
+    Calculate uncertainty in a snow water equivalence (SWE) calculation for the above ground COSMOS sensor.
 
     References: - See VWC
                 - Constants from Howat, I. M. et al. (2018) method SWE from SnowFox
@@ -1001,7 +1001,7 @@ class SigmaSnowWaterEquivalence(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
-        Calculate uncertainty in a snow water equivance (SWE) calculation for the above ground COSMOS sensor.
+        Calculate uncertainty in a snow water equivalence (SWE) calculation for the above ground COSMOS sensor.
 
         Config requirements:
             Site attributes:
@@ -1009,35 +1009,26 @@ class SigmaSnowWaterEquivalence(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - cts_smo_crns: smoothed nuetron counts (corrected for influences on cosmic-ray intensity).
+                - cts_smo_crns: smoothed neutron counts (corrected for influences on cosmic-ray intensity).
                 - cts_est_crns: estimated counts during snow periods.
 
         Returns:
             Polars expression for SWE uncertainty
         """
 
-        nwat_fac = 0.38  # 0.24 in Desilets (2017)
+        nwat_fac = 0.38
         n_wat = self.config.params["n0_mod"] * nwat_fac
 
         cts_smo = columns["cts_smo_crns"]
         cts_est = columns["cts_est_crns"]
 
-        n_star = cts_smo / cts_est
-
-        a1 = 0.3133
-        a2 = 0.08268
-        a3 = 1.117
-        amax = 114.4
-        amin = 14.11
-
-        # Lambda = 48 in Desilets (2017)
-        Lambda = (1 / amax) - ((1 / amax) - (1 / amin)) * (1 + ((a1 - n_star) / a2).exp()) ** (-a3)
+        lambda_ = 48  # from Desilets (2017)
 
         n_smooth = 12
         sigma_n_theta = 12
 
-        sigma_swe_cts = Lambda * cts_smo.pow(1 / 2) / ((cts_smo - n_wat) * (pl.lit(2 * n_smooth).pow(1 / 2)))
-        sigma_swe_n_theta = sigma_n_theta * Lambda / (cts_est - n_wat)
+        sigma_swe_cts = lambda_ * cts_smo.pow(1 / 2) / ((cts_smo - n_wat) * (pl.lit(2 * n_smooth).pow(1 / 2)))
+        sigma_swe_n_theta = sigma_n_theta * lambda_ / (cts_est - n_wat)
 
         return (sigma_swe_cts.pow(2) + sigma_swe_n_theta.pow(2)).pow(1 / 2)
 
