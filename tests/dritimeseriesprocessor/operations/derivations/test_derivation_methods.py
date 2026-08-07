@@ -18,6 +18,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CorrectCounts,
     DerivationMethod,
     EddyProRun,
+    EffectiveDepth,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
     IsSnowDay,
@@ -989,6 +990,28 @@ class TestSoilMoistureIndex:
         config = self._make_config([None])
         result = SoilMoistureIndex().run(config)
         assert list(result.df["smi"]) == [None]
+
+
+class TestEffectveDepth:
+    def test_calculation(self) -> None:
+        """Test effective depth calculation, using cosmos-holln reference soil attributes.
+
+        Effective depth should decrease as VWC increases - wetter soil attenuates the CRNS
+        signal over a shallower depth.
+        """
+        config = create_method_config(
+            {"cosmos_vwc": [0.0, 10.0, 28.964, 61.311, 100.0]},
+            "eff_depth",
+        )
+        # Annotations from cosmos-holln
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"eff_depth": [40.469, 23.837, 13.396, 7.668, 5.073]}))
+
+        result = EffectiveDepth().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
 class TestCalcFluxMeanShf:
