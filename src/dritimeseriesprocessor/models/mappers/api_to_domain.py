@@ -173,7 +173,18 @@ def extract_annotations(annotations: list[HasAnnotationItem]) -> dict[str, Any] 
             elif ref is not None:
                 extracted[key] = ref[0] if isinstance(ref, list) else ref
         elif ann.has_value_series:
-            extracted[key] = ann.has_value_series.has_current_value
+            current_values = ann.has_value_series.has_current_value
+            if current_values and all(item.value is not None for item in current_values):
+                extracted[key] = [
+                    (
+                        item.interval.start_date if item.interval else None,
+                        item.interval.end_date if item.interval else None,
+                        item.value[0] if isinstance(item.value, list) else item.value,
+                    )
+                    for item in current_values
+                ]
+            else:
+                extracted[key] = current_values
 
     return extracted
 
