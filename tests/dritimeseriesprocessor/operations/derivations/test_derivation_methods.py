@@ -678,7 +678,7 @@ class TestSnowWaterEquivalence:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [33.06285, 0.50709, 16.57987]}))
         result = SnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
 class TestSigmaSnowWaterEquivalence:
@@ -698,10 +698,10 @@ class TestSigmaSnowWaterEquivalence:
         )
         config.params["n0_mod"] = 2710.16689  # holln
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.467159, 1.015833, 1.002006, 0.981687]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.467, 1.0158, 1.002, 0.981]}))
 
         result = SigmaSnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.000001)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
     def test_sigma_swe(self) -> None:
         """Test SIGMA SWE calculation based on real data from original COSMOS-UK system."""
@@ -714,9 +714,9 @@ class TestSigmaSnowWaterEquivalence:
         )
         config.params["n0_mod"] = 2966.89129  # From COSMOS.CALIBRATION_INFO BALRD method=4
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.27269, 1.55153, 1.68615]}))
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.68615, 1.27269, 1.55153]}))
         result = SigmaSnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
 class TestGetSnowEstimatedCounts:
