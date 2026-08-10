@@ -985,15 +985,14 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
 
 @DerivationMethod.register
 class SnowWaterEquivalence(DerivationMethod):
-    """
-    Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
+    """Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
 
-    References: - See VWC
-                - Constants from Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
-                  Autonomous ice sheet surface mass balance measurements from cosmic rays.
-                  The Cryosphere, 12, 2099–2108. https://doi.org/10.5194/tc-12-2099-2018
-                - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture
-                  probe for snow water equivalent. Hydroinnova Technical Document 17-01.
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture probe for snow water equivalent.
+            Hydroinnova Technical Document 17-01.
     """
 
     name = "calculate_crns_swe"
@@ -1016,15 +1015,15 @@ class SnowWaterEquivalence(DerivationMethod):
             Polars expression for SWE
         """
 
+        # Wallbank et al. 2020, eq. 8
         nwat_fac = 0.38
         n_wat = self.config.params["n0_mod"] * nwat_fac
 
+        # Wallbank et al. 2020, eq. 1
         cts_smo = columns["cts_smo_crns"]
         cts_est = columns["cts_est_crns"]
-
-        lambda_ = 48  # from Desilets (2017)
-
-        return -lambda_ * (((cts_smo - n_wat) / (cts_est - n_wat)).log())
+        lambda_ = 48  # In Wallbank et al. 2020, cited as from Desilets, 2017
+        return -lambda_ * ((cts_smo - n_wat) / (cts_est - n_wat)).log()
 
 
 @DerivationMethod.register
