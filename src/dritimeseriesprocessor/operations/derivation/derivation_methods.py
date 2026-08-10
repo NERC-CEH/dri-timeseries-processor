@@ -843,8 +843,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - CTS_SMO_CRNS: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
-                - SNOW: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
+                - cts_smo_crns: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
+                - snow: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
                 - time: hourly timestamps corresponding to cts_smo values.
 
         Returns:
@@ -957,8 +957,6 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate volumetric water content with snow.
 
-        Reference:
-
         Config requirements:
             Site attributes:
                 - ref_soc: Site attribute of reference soil organic carbon
@@ -983,6 +981,49 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
         vwc_with_snow = super().expr({"cts_mod_corr": cts_mod_corr_with_snow_estimates})
 
         return vwc_with_snow
+
+
+@DerivationMethod.register
+class SnowWaterEquivalence(DerivationMethod):
+    """Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
+
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture probe for snow water equivalent.
+            Hydroinnova Technical Document 17-01.
+    """
+
+    name = "calculate_crns_swe"
+    inputs = ("cts_est_crns", "cts_smo_crns")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
+
+        Config requirements:
+            Site attributes:
+                - n0_mod: Site attribute of a calibration coefficient obtained from field calibration.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo_crns: smoothed neutron counts (corrected for influences on cosmic-ray intensity).
+                - cts_est_crns: estimated counts during snow periods.
+
+        Returns:
+            Polars expression for SWE
+        """
+
+        # Wallbank et al. 2020, eq. 8
+        nwat_fac = 0.38
+        n_wat = self.config.params["n0_mod"] * nwat_fac
+
+        # Wallbank et al. 2020, eq. 1
+        cts_smo = columns["cts_smo_crns"]
+        cts_est = columns["cts_est_crns"]
+        lambda_ = 48  # In Wallbank et al. 2020, cited as from Desilets, 2017
+        return -lambda_ * ((cts_smo - n_wat) / (cts_est - n_wat)).log()
 
 
 @DerivationMethod.register

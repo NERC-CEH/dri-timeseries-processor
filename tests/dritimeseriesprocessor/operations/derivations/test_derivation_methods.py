@@ -28,6 +28,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NetRadiation,
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
+    SnowWaterEquivalence,
     SoilMoistureIndex,
     SolarZenith,
     VolumetricWaterContent,
@@ -638,6 +639,44 @@ class TestVolumetricWaterContentWithSnow:
         # Effective counts used: [0.0, 1500.0, 1500.0, 2000.0, 2000.0]
         expected = dataframe_to_timeframe(pl.DataFrame({"vwc_with_snow": [100.0, 28.964, 28.964, 5.172, 5.172]}))
         result = VolumetricWaterContentWithSnow().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+
+
+class TestSnowWaterEquivalence:
+    def test_calculation(self) -> None:
+        """Test snow water equivalence (SWE) calculation.
+
+        cts_smo is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
+        no-snow baseline count. Where the two are equal (no suppression), SWE should be ~0.
+        As cts_smo drops further below cts_est_crns (more suppression), SWE should increase.
+        """
+        config = create_method_config(
+            {
+                "cts_smo_crns": [1500.0, 1600.0, 1500.0, 1750.0],
+                "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
+            },
+            "swe_crns",
+        )
+        config.params["n0_mod"] = 2710.16689  # holln
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [0.0, 14.4332, 34.7719, 0.0]}))
+
+        result = SnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+    def test_swe(self) -> None:
+        """Test SWE calculation based on real data from original COSMOS-UK system."""
+        # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
+        #   Site: BALRD,
+        #   Dates: [2018-03-04 00:00:00, 2015-11-29 00:00:00, 2021-02-09 00:00:00]
+        config = create_method_config(
+            {"cts_smo_crns": [1404.65, 1674.98, 1485.63], "cts_est_crns": [1679.48307, 1680.79596, 1633.42392]},
+            "swe_crns",
+        )
+        config.params["n0_mod"] = 2966.89129  # From COSMOS.CALIBRATION_INFO BALRD method=4
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [33.06285, 0.50709, 16.57987]}))
+        result = SnowWaterEquivalence().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 
