@@ -1010,7 +1010,9 @@ class SnowWaterEquivalence(DerivationMethod):
             columns: Dict with keys of required columns for the calculation.
                 - cts_smo_crns: smoothed neutron counts (corrected for influences on cosmic-ray intensity).
                 - cts_est_crns: estimated counts during snow periods.
-        Returns: Polars expression for SWE
+
+        Returns:
+            Polars expression for SWE
         """
 
         # Wallbank et al. 2020, eq. 8
@@ -1027,14 +1029,14 @@ class SnowWaterEquivalence(DerivationMethod):
 @DerivationMethod.register
 class SigmaSnowWaterEquivalence(DerivationMethod):
     """
-    Calculate uncertainty in a snow water equivalence (SWE) calculation for the above ground COSMOS sensor.
+    Calculate **uncertainty** in a snow water equivalence (SWE) calculation for the above ground COSMOS sensor.
 
     References:
-        - Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
-            Autonomous ice sheet surface mass balance measurements from cosmic rays.
-            The Cryosphere, 12, 2099–2108. https://doi.org/10.5194/tc-12-2099-2018
-        - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture
-            probe for snow water equivalent. Hydroinnova Technical Document 17-01.
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture probe for snow water equivalent.
+            Hydroinnova Technical Document 17-01.
     """
 
     name = "calculate_crns_sigma_swe"
@@ -1056,22 +1058,26 @@ class SigmaSnowWaterEquivalence(DerivationMethod):
         Returns:
             Polars expression for SWE uncertainty
         """
-
-        nwat_fac = 0.38
-        n_wat = self.config.params["n0_mod"] * nwat_fac
-
         cts_smo = columns["cts_smo_crns"]
         cts_est = columns["cts_est_crns"]
 
-        lambda_ = 48  # from Desilets (2017)
+        # Wallbank et al. 2020, eq. 8
+        nwat_fac = 0.38
+        n_wat = self.config.params["n0_mod"] * nwat_fac
+        lambda_ = 48  # In Wallbank et al. 2020, cited as from Desilets, 2017
 
-        n_smooth = 12
-        sigma_n_theta = 12
+        # Wallbank et al. 2020, section 5.4
+        sigma_n = (cts_smo / 24).sqrt()
+        sigma_n_theta = 12  # empirical uncertainty in N0(t), Wallbank et al. (2020) Section 6.1
 
-        sigma_swe_cts = lambda_ * cts_smo.pow(1 / 2) / ((cts_smo - n_wat) * (pl.lit(2 * n_smooth).pow(1 / 2)))
-        sigma_swe_n_theta = sigma_n_theta * lambda_ / (cts_est - n_wat)
+        # Wallbank et al. 2020, eq. 15
+        dswe_d_n = -lambda_ / (cts_smo - n_wat)
+        dswe_d_n_theta = lambda_ / (cts_est - n_wat)
 
-        return (sigma_swe_cts.pow(2) + sigma_swe_n_theta.pow(2)).pow(1 / 2)
+        # Wallbank et al. 2020, eq. 14
+        sigma_swe_n = dswe_d_n * sigma_n
+        sigma_swe_n_theta = dswe_d_n_theta * sigma_n_theta
+        return (sigma_swe_n.pow(2) + sigma_swe_n_theta.pow(2)).sqrt()
 
 
 @DerivationMethod.register
