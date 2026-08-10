@@ -264,8 +264,9 @@ class TestTimeSeriesProcessor:
 
         # ds2 raised an exception, so it should be marked as failed
         assert ds2.failed
-        # Only ds2 should have triggered the metrics failure counter
-        assert processor.metrics.failed.inc.call_count == 1  # type: ignore[union-attr]
+        # Only ds2 should have triggered the metrics failure counter, labelled with its dataset id
+        processor.metrics.failed.labels.assert_called_once_with(dataset="ds2")  # type: ignore[union-attr]
+        assert processor.metrics.failed.labels.return_value.inc.call_count == 1  # type: ignore[union-attr]
 
         # ds3 depends on ds2, so it should be marked as failed too
         assert ds3.failed
@@ -380,7 +381,8 @@ class TestTimeSeriesProcessor:
 
         assert processor._collect_load_containers() == []
         assert container.failed
-        assert processor.metrics.no_data.inc.call_count == 1  # type: ignore[union-attr]
+        processor.metrics.no_data.labels.assert_called_once_with(dataset=container.ts_id)  # type: ignore[union-attr]
+        assert processor.metrics.no_data.labels.return_value.inc.call_count == 1  # type: ignore[union-attr]
 
     def test_collect_load_containers_keeps_load_only_processed_dataset(
         self, mock_router: MagicMock, mock_writer: MagicMock

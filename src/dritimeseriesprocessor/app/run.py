@@ -92,9 +92,9 @@ def _build_processor(
     raw_reader = RawFileReader(storage)
     writer = ByteParquetWriter(storage)
     data_router = S3DataRouter(reader, raw_reader)
-    metrics = Metrics(cfg.pushgateway_url, cfg.pushgateway_job_name)
 
     graph = _build_dependency_graph(selection, metadata_router, start_date, end_date)
+    metrics = Metrics(cfg.pushgateway_url, cfg.pushgateway_job_name, site=_resolve_site_label(graph))
 
     return TimeSeriesProcessor(
         graph=graph,
@@ -104,6 +104,23 @@ def _build_processor(
         end_date=end_date,
         metrics=metrics,
     )
+
+
+def _resolve_site_label(graph: DatasetDependencyGraph) -> str:
+    """Derive a metrics site label from the datasets actually resolved into the graph.
+
+    Reading it off the resolved graph (rather than the raw selection) means this works regardless of
+    selection mode - including `DatasetIdSelection`, which doesn't carry site information up front.
+
+    Args:
+        graph: The built dependency graph for this run.
+
+    Returns:
+        A comma-separated list of the distinct site identifiers present in the graph, or "unknown" if
+        none could be determined (e.g. an empty graph).
+    """
+    sites = sorted({c.source_site_identifier for c in graph.datasets.values() if c.source_site_identifier})
+    return ",".join(sites) if sites else "unknown"
 
 
 def _build_storage(cfg: AppConfig) -> StorageClient:
