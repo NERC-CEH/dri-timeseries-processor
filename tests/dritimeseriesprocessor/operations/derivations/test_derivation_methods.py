@@ -645,8 +645,8 @@ class TestVolumetricWaterContentWithSnow:
 
 
 class TestSnowWaterEquivalence:
-    def test_calculation(self) -> None:
-        """Test snow water equivalence (SWE) calculation.
+    def test_swe_theoretical_data(self) -> None:
+        """Test snow water equivalence (SWE) calculation using theoretical data.
 
         cts_smo is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
         no-snow baseline count. Where the two are equal (no suppression), SWE should be ~0.
@@ -666,7 +666,7 @@ class TestSnowWaterEquivalence:
         result = SnowWaterEquivalence().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
-    def test_swe(self) -> None:
+    def test_swe_real_data(self) -> None:
         """Test SWE calculation based on real data from original COSMOS-UK system."""
         # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
         #   Site: BALRD,
@@ -683,8 +683,8 @@ class TestSnowWaterEquivalence:
 
 
 class TestSnowWaterEquivalenceSnowfox:
-    def test_calculation(self) -> None:
-        """Test snow water equivalence (SWE) snowfox calculation."""
+    def test_swe_snowfox_theoretical_data(self) -> None:
+        """Test snow water equivalence (SWE) snowfox calculation, using theoretical data"""
         config = create_method_config(
             {
                 "cts_smo_snowfox": [1500.0, 1600.0, 1500.0, 1750.0],
@@ -696,7 +696,7 @@ class TestSnowWaterEquivalenceSnowfox:
         result = SnowWaterEquivalenceSnowfox().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
-    def test_swe_snowfox(self) -> None:
+    def test_swe_snowfox_real_data(self) -> None:
         """Test SWE calculation based on real data from original COSMOS-UK system."""
         # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
         #   Site: CGARW,
@@ -711,8 +711,8 @@ class TestSnowWaterEquivalenceSnowfox:
 
 
 class TestSigmaSnowWaterEquivalence:
-    def test_calculation(self) -> None:
-        """Test uncertainty in the snow water equivalence (SWE) calculation.
+    def test_sigma_swe_theoretical_data(self) -> None:
+        """Test uncertainty in the snow water equivalence (SWE) calculation using theoretical data.
 
         cts_smo_crns is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
         no-snow baseline count. Where the two are equal (no suppression), sigma_swe should still be
@@ -732,7 +732,7 @@ class TestSigmaSnowWaterEquivalence:
         result = SigmaSnowWaterEquivalence().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
-    def test_sigma_swe(self) -> None:
+    def test_sigma_swe_real_data(self) -> None:
         """Test SIGMA SWE calculation based on real data from original COSMOS-UK system."""
         # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
         #   Site: BALRD,
