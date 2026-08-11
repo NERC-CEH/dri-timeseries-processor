@@ -150,11 +150,11 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_nr-mean_prec-degc-pt1m-pt1m",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/temp_sensor-mean_prec-degc-pt1m-pt1m",
           "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_nr",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/temp_sensor",
             "prefLabel": [
-              "Net radiometer temperature"
+              "Sensor temperature"
             ]
           },
           "hasUnit": {

@@ -51,38 +51,10 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-4",
-            "index": 4,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-samples"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-6",
-            "index": 6,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-infill"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-5",
-            "index": 5,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-spike"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-3",
             "index": 3,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-error_code"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-1",
-            "index": 1,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-range"
             }
           },
           {
@@ -93,10 +65,38 @@
             }
           },
           {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-6",
+            "index": 6,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-infill"
+            }
+          },
+          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-0",
             "index": 0,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-load_raw"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-range"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-5",
+            "index": 5,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-spike"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-chimn-ta_30min-plan#step-4",
+            "index": 4,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-chimn-ta_30min-samples"
             }
           }
         ]
@@ -191,12 +191,12 @@
       ],
       "directDependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw",
           "label": [
-            "Number of logger scans"
+            "Air temperature"
           ],
           "identifier": [
-            "COSMOS-CHIMN-SCANS_30MIN_RAW"
+            "COSMOS-CHIMN-TA_30MIN_RAW"
           ]
         },
         {
@@ -209,21 +209,21 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-scans_30min_raw",
           "label": [
-            "Air temperature"
+            "Number of logger scans"
           ],
           "identifier": [
-            "COSMOS-CHIMN-TA_30MIN_RAW"
+            "COSMOS-CHIMN-SCANS_30MIN_RAW"
           ]
         }
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed#flag_column.ta_qc_flag",
-          "columnName": "TA_QC_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed#flag_column.ta_infill_flag",
+          "columnName": "TA_INFILL_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         },
         {
@@ -234,17 +234,17 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed#flag_column.ta_qc_flag",
+          "columnName": "TA_QC_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed#flag_column.ta_core_flag",
           "columnName": "TA_CORE_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-ta_30min_processed#flag_column.ta_infill_flag",
-          "columnName": "TA_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         }
       ]
@@ -283,24 +283,10 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-4",
-            "index": 4,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-2",
+            "index": 2,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-samples"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-load_raw"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-6",
-            "index": 6,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-infill"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-battery_v"
             }
           },
           {
@@ -311,17 +297,17 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-2",
-            "index": 2,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-4",
+            "index": 4,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-battery_v"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-samples"
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-5",
-            "index": 5,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-6",
+            "index": 6,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-spike"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-infill"
             }
           },
           {
@@ -329,6 +315,20 @@
             "index": 3,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-error_code"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-load_raw"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-ta_30min-plan#step-5",
+            "index": 5,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-ta_30min-spike"
             }
           }
         ]
@@ -403,6 +403,26 @@
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
+          "identifier": [
+            "COSMOS-HOLLN-SCANS_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw",
+          "label": [
+            "Air temperature"
+          ],
+          "identifier": [
+            "COSMOS-HOLLN-TA_30MIN_RAW"
+          ]
+        }
+      ],
+      "directDependsOn": [
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw",
           "label": [
             "Air temperature"
@@ -411,17 +431,6 @@
             "COSMOS-HOLLN-TA_30MIN_RAW"
           ]
         },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-scans_30min_raw",
-          "label": [
-            "Number of logger scans"
-          ],
-          "identifier": [
-            "COSMOS-HOLLN-SCANS_30MIN_RAW"
-          ]
-        }
-      ],
-      "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
           "label": [
@@ -439,18 +448,16 @@
           "identifier": [
             "COSMOS-HOLLN-SCANS_30MIN_RAW"
           ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_raw",
-          "label": [
-            "Air temperature"
-          ],
-          "identifier": [
-            "COSMOS-HOLLN-TA_30MIN_RAW"
-          ]
         }
       ],
       "hasFlagColumn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed#flag_column.ta_infill_flag",
+          "columnName": "TA_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed#flag_column.ta_corrs_flag",
           "columnName": "TA_CORRS_FLAG",
@@ -463,13 +470,6 @@
           "columnName": "TA_QC_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ta_30min_processed#flag_column.ta_infill_flag",
-          "columnName": "TA_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         },
         {
@@ -515,17 +515,17 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-3",
-            "index": 3,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-0",
+            "index": 0,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-error_code"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-load_raw"
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-6",
-            "index": 6,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-5",
+            "index": 5,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-infill"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-spike"
             }
           },
           {
@@ -543,10 +543,10 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-0",
-            "index": 0,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-6",
+            "index": 6,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-load_raw"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-infill"
             }
           },
           {
@@ -557,10 +557,10 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-5",
-            "index": 5,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-ta_30min-plan#step-3",
+            "index": 3,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-spike"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-ta_30min-error_code"
             }
           }
         ]
@@ -655,21 +655,21 @@
       ],
       "directDependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
-          "label": [
-            "Air temperature"
-          ],
-          "identifier": [
-            "COSMOS-ALIC1-TA_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
           "label": [
             "Battery voltage"
           ],
           "identifier": [
             "COSMOS-ALIC1-BATTV_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_raw",
+          "label": [
+            "Air temperature"
+          ],
+          "identifier": [
+            "COSMOS-ALIC1-TA_30MIN_RAW"
           ]
         },
         {
@@ -684,20 +684,6 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_corrs_flag",
-          "columnName": "TA_CORRS_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_core_flag",
-          "columnName": "TA_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_infill_flag",
           "columnName": "TA_INFILL_FLAG",
           "valueScheme": {
@@ -705,10 +691,24 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_corrs_flag",
+          "columnName": "TA_CORRS_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_qc_flag",
           "columnName": "TA_QC_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed#flag_column.ta_core_flag",
+          "columnName": "TA_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         }
       ]

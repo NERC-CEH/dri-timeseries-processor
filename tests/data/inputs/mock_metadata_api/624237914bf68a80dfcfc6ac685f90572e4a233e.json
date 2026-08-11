@@ -994,36 +994,6 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-phenocam-phenocam-10.12.147.232-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of PHENOCAM 10.12.147.232 to PHENOCAM at CHIMN"
-      ],
-      "startedAtTime": "2019-06-25T10:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-phenocam-10.12.147.232",
-          "serialNumber": "10.12.147.232",
-          "label": [
-            "PHENOCAM 10.12.147.232"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/phenocam"
-          }
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt1-tdt-6501042-1",
       "@type": [
         {

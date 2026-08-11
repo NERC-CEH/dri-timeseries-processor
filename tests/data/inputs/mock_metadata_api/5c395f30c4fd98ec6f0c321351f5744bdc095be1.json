@@ -692,36 +692,6 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-phenocam-phenocam-10.12.112.239-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of PHENOCAM 10.12.112.239 to PHENOCAM at HOLLN"
-      ],
-      "startedAtTime": "2018-12-19T12:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-holln",
-        "label": [
-          "Hollin Hill"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-phenocam-10.12.112.239",
-          "serialNumber": "10.12.112.239",
-          "label": [
-            "PHENOCAM 10.12.112.239"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/phenocam"
-          }
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-holln-4cr-nr01-2127-4",
       "@type": [
         {
