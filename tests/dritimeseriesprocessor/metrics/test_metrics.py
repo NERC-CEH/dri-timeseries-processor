@@ -1,5 +1,6 @@
 import math
 import time
+from unittest.mock import patch
 
 import pytest
 
@@ -43,3 +44,20 @@ class TestMetrics:
 
         metrics.run_result.set(0)
         assert metrics.run_result._value.get() == 0
+
+    def test_export_pushes_with_site_grouping_key(self, metrics: Metrics) -> None:
+        """Test that exporting pushes the registry under the job name and a site grouping key."""
+        with patch("dritimeseriesprocessor.metrics.metrics.push_to_gateway") as mock_push:
+            metrics.export_metrics_to_pushgateway()
+
+        mock_push.assert_called_once_with(
+            gateway="dummy-url",
+            job="test-job",
+            registry=metrics.registry,
+            grouping_key={"site": "site-a"},
+        )
+
+    def test_export_does_not_raise_when_push_fails(self, metrics: Metrics) -> None:
+        """Test that a failure to reach the pushgateway is logged and swallowed rather than ending the run."""
+        with patch("dritimeseriesprocessor.metrics.metrics.push_to_gateway", side_effect=OSError("gateway down")):
+            metrics.export_metrics_to_pushgateway()

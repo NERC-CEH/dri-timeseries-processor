@@ -107,17 +107,17 @@ def _build_processor(
 
 
 def _resolve_site_label(graph: DatasetDependencyGraph) -> str:
-    """Derive a metrics site label from the datasets actually resolved into the graph.
+    """Derive a metrics site label from the root sites requested for the graph.
+
+    The graph already stores its root sites as bare site IDs, so they only need sorting into a stable order.
 
     Args:
         graph: The built dependency graph for this run.
 
     Returns:
-        A comma-separated list of the distinct site identifiers present in the graph, or "unknown" if
-        none could be determined.
+        A comma-separated list of the site IDs requested for this run, in alphabetical order.
     """
-    sites = sorted({c.source_site_identifier for c in graph.datasets.values() if c.source_site_identifier})
-    return ",".join(sites) if sites else "unknown"
+    return ",".join(sorted(graph.root_site_ids))
 
 
 def _build_storage(cfg: AppConfig) -> StorageClient:

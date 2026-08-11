@@ -115,6 +115,137 @@ class TestTimeSeriesProcessor:
 
         processor.run()
 
+    def test_run_pushes_metrics_on_success(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Test that a clean run pushes metrics to the pushgateway exactly once and cleans up the router."""
+        mock_graph = create_mock_dag([["ds1"]])
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+        processor._batch_load = MagicMock()
+        processor._save_datasets = MagicMock()
+
+        processor.run()
+
+        processor.metrics.export_metrics_to_pushgateway.assert_called_once()  # type: ignore[union-attr]
+        mock_router.cleanup.assert_called_once()
+
+    def test_run_pushes_metrics_when_pipeline_raises(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
+        """Test that metrics are still pushed and the router still cleaned up when the pipeline raises part way."""
+        mock_graph = create_mock_dag([["ds1"]])
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+        processor._batch_load = MagicMock(side_effect=RuntimeError("batch load exploded"))
+        processor._save_datasets = MagicMock()
+
+        with pytest.raises(RuntimeError, match="batch load exploded"):
+            processor.run()
+
+        processor.metrics.export_metrics_to_pushgateway.assert_called_once()  # type: ignore[union-attr]
+        mock_router.cleanup.assert_called_once()
+
+    def test_run_sets_run_result_to_one_when_no_datasets_failed(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Test that the run_result gauge is set to 1 when every dataset in the run succeeded."""
+        mock_graph = create_mock_dag([["ds1"]])
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+        processor._batch_load = MagicMock()
+        processor._save_datasets = MagicMock()
+
+        processor.run()
+
+        processor.metrics.run_result.set.assert_called_once_with(1)  # type: ignore[union-attr]
+
+    def test_run_sets_run_result_to_zero_when_a_dataset_failed(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Test that the run_result gauge is set to 0 before the failure is raised out of run."""
+        mock_graph = create_mock_dag([["ds1"]])
+        mock_graph.datasets["ds1"].failed = True
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+        processor._batch_load = MagicMock()
+        processor._save_datasets = MagicMock()
+
+        with pytest.raises(RuntimeError, match="Processing failed for 1 dataset"):
+            processor.run()
+
+        processor.metrics.run_result.set.assert_called_once_with(0)  # type: ignore[union-attr]
+
+    def test_process_layer_labels_success_with_bare_dataset_id(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Test that the success counter is labelled with the final segment of the dataset URI, not the whole URI."""
+        dataset_id = "http://fdri.ceh.ac.uk/id/dataset/ds1"
+        mock_graph = create_mock_dag([[dataset_id]])
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock()
+
+        processor.process_layer([dataset_id])
+
+        processor.metrics.success.labels.assert_called_once_with(dataset="ds1")  # type: ignore[union-attr]
+
+    def test_process_layer_labels_failure_with_bare_dataset_id(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Test that the failure counter is labelled with the final segment of the dataset URI, not the whole URI."""
+        dataset_id = "http://fdri.ceh.ac.uk/id/dataset/ds1"
+        mock_graph = create_mock_dag([[dataset_id]])
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 3),
+            metrics=MagicMock(),
+        )
+        processor.process_dataset = MagicMock(side_effect=RuntimeError("processing exploded"))
+
+        processor.process_layer([dataset_id])
+
+        processor.metrics.failed.labels.assert_called_once_with(dataset="ds1")  # type: ignore[union-attr]
+
     def test_process_layer_skips_load_only_containers(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
         """Load-only containers should not be passed to process_dataset."""
         mock_graph = create_mock_dag([["ds1", "ds2"]])

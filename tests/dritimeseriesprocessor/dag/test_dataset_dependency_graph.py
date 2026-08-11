@@ -370,6 +370,30 @@ class TestBuild:
         assert mock_router.fetch_dataset_by_ids.call_count == 1
         assert mock_router.fetch_processing_configs.call_count == 1
 
+    def test_build_records_root_dataset_and_site_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that build records the IDs and sites of the root datasets, and not those of resolved dependencies."""
+        container_a = make_time_series_container("A", depends_on=["B"])
+        mock_router = setup_mocks(["A", "B"], monkeypatch)
+
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
+
+        assert builder.root_dataset_ids == ["A"]
+        assert builder.root_site_ids == ["A_site"]
+
+    def test_build_records_unknown_for_root_dataset_with_no_source_site(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that a root dataset with no source site is recorded as "unknown"."""
+        container_a = make_time_series_container("A")
+        container_a.source_site = None
+        mock_router = setup_mocks(["A"], monkeypatch)
+
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
+
+        assert builder.root_site_ids == ["unknown"]
+
 
 class TestGetDeploymentAttributes:
     params = {
@@ -767,6 +791,15 @@ class TestLoadOnlyDependencies:
         builder.reset()
         assert builder._dep_ts_ids == set()
         assert builder._load_dep_ts_ids == set()
+
+    def test_reset_clears_root_dataset_and_site_ids(self) -> None:
+        """Test that reset() clears the recorded root dataset and site IDs from any previous build."""
+        builder = DatasetDependencyGraph(MagicMock(), MagicMock(), MagicMock(), MagicMock())
+        builder.root_dataset_ids.append("A")
+        builder.root_site_ids.append("A_site")
+        builder.reset()
+        assert builder.root_dataset_ids == []
+        assert builder.root_site_ids == []
 
     def test_dep_ts_vs_load_dep_ts_conflict(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """When A references L via load_dep_ts and B references L via dep_ts in the same batch, L is not load-only.
