@@ -102,28 +102,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-range",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-range#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-range#argument.lt.value",
-                "value": [
-                  -35.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-range#argument.gt",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-range#argument.gt.value",
@@ -138,6 +116,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-range#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-range#argument.lt.value",
+                "value": [
+                  -35.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -208,28 +208,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-battery_v",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-battery_v#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-battery_v#argument.lt.value",
-                "value": [
-                  10.5
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-battery_v#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-battery_v#argument.depts.value",
@@ -249,6 +227,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-battery_v#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-battery_v#argument.lt.value",
+                "value": [
+                  10.5
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -482,28 +482,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-samples",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-samples#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-samples#argument.lt.value",
-                "value": [
-                  60.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-samples#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-samples#argument.depts.value",
@@ -523,6 +501,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-samples#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-ta_30min-samples#argument.lt.value",
+                "value": [
+                  60.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {

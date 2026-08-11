@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import replace
 from datetime import date, datetime, timedelta
-from typing import ClassVar
+from typing import Iterable, Literal
 
 import polars as pl
 import time_stream as ts
@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 class DerivationMethod(Operation, ABC):
     operation_type = ConfigurationType.DERIVATION
-    inputs: ClassVar[tuple]
     config: DataProcessingMethodConfig
 
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
@@ -39,7 +38,12 @@ class DerivationMethod(Operation, ABC):
         self.config = config
 
         # Extract and merge input data
-        tf_map = {name: config.params[name] for name in self.inputs}
+        # NOTE: This collects *all* timeframe objects rather than named timeframe objects required by the
+        #   method (as was done previously - i.e ``{name: config.params[name] for name in self.inputs}``).
+        #   This is to handle scenarios where certain timeseries use derivation methods with different input column
+        #   names - e.g. the standard CRNS vs. SNOWFOX sensor that both use the CorrectCounts / GetSnowEstimatedCounts
+        #   methods.
+        tf_map = {key: val for key, val in config.params.items() if isinstance(val, ts.TimeFrame)}
 
         # Get column references for calculation
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
@@ -159,7 +163,6 @@ class NetRadiation(DerivationMethod):
     """Calculate net radiation - the difference between the downward and upward total radiation."""
 
     name = "calculate_rn"
-    inputs = ("swin", "swout", "lwin", "lwout")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate net radiation (rn) [W m-2]
@@ -186,7 +189,6 @@ class MeanSoilHeatFlux(DerivationMethod):
     """
 
     name = "calc_mean_g"
-    inputs = ("g1", "g2")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean soil heat flux (g) [MJ m-2 30min-1]
@@ -215,7 +217,6 @@ class MeanSeaLevelPressure(DerivationMethod):
     """
 
     name = "calculate_mslp"
-    inputs = ("pa", "ta")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean sea level pressure (mslp) [hPa]
@@ -247,7 +248,6 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
     """
 
     name = "calculate_pe"
-    inputs = ("g", "pa", "rh", "rn", "ta", "ws")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate potential evapotranspiration (pet) [mm day-1]
@@ -414,7 +414,6 @@ class AbsoluteHumidity(DerivationMethod):
     """Calculate absolute humidity (Q) - a measure of the actual amount of water vapor in the air."""
 
     name = "calculate_q"
-    inputs = ("ta", "rh")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity Q [g m-3] (grams per cubic meter)
@@ -471,7 +470,6 @@ class SolarZenith(DerivationMethod):
     """Calculate Solar Zenith - the angle of the sun from the vertical."""
 
     name = "solar_zenith"
-    inputs = ("swin",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate angle of the sun from the vertical [radians]
@@ -525,7 +523,6 @@ class Albedo(DerivationMethod):
     """Calculate albedo - the ratio of reflected solar radiation to the total incoming solar radiation."""
 
     name = "calc_albedo"
-    inputs = ("swin", "swout", "solar_zenith")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate albedo [unitless fraction]
@@ -565,7 +562,6 @@ class NeutronIntensityFactor(DerivationMethod):
     """Calculate incoming neutron count intensity correction factor using a background reference station."""
 
     name = "calc_factor_inten"
-    inputs = ("crns-count",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate incoming neutron count intensity correction factor.
@@ -601,7 +597,6 @@ class AbsoluteHumidityFactor(DerivationMethod):
     """Calculate absolute humidity correction factor to neutron counts."""
 
     name = "calc_factor_q"
-    inputs = ("q",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity correction factor to neutron counts.
@@ -641,7 +636,6 @@ class AtmosphericPressureFactor(DerivationMethod):
     """Calculate atmospheric pressure correction factor to neutron counts"""
 
     name = "calc_factor_PA"
-    inputs = ("pa",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate atmospheric pressure correction factor to neutron counts.
@@ -675,7 +669,6 @@ class IsSnowDay(DerivationMethod):
     """Calculate if a given day is a snow day."""
 
     name = "is_snow_day"
-    inputs = ("albedo",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate if snow day. True is snow, False if not.
@@ -746,13 +739,13 @@ class CorrectCounts(DerivationMethod):
     """
 
     name = "correct_counts"
-    inputs = ("cts_mod", "cosmosfactor_inten", "cosmosfactor_pa", "cosmosfactor_q")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate corrected neutron counts using correction factors.
 
         Args:
             columns: Dict with keys of required columns for the calculation.
+                - cts_mod / cts_snowfox: neutron counts to be corrected.
                 - cosmosfactor_inten: correction factor to neutron intensity counts.
                 - cosmosfactor_pa: atmospheric pressure correction factor to neutron counts.
                 - cosmosfactor_q: absolute humidity correction factor to neutron counts.
@@ -760,7 +753,7 @@ class CorrectCounts(DerivationMethod):
         Returns:
             Polars expression of corrected mod counts.
         """
-        cts_mod = columns["cts_mod"]
+        cts_mod = columns[_get_crns_column(columns.keys(), "cts_mod")]
         correction_factors = columns["cosmosfactor_inten"] * columns["cosmosfactor_pa"] * columns["cosmosfactor_q"]
         return cts_mod * correction_factors
 
@@ -774,7 +767,6 @@ class VolumetricWaterContent(DerivationMethod):
     """
 
     name = "calculate_vwc"
-    inputs = ("cts_mod_corr",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate volumetric water content (VWC) from corrected neutron counts and site annotations.
@@ -821,18 +813,14 @@ class VolumetricWaterContent(DerivationMethod):
 
 @DerivationMethod.register
 class GetSnowEstimatedCounts(DerivationMethod):
-    """
-    Calculate CRNS count estimates when there is snow.
-    """
+    """Calculate CRNS count estimates when there is snow."""
 
     name = "get_snow_estimated_counts"
-    inputs = ("snow", "cts_smo_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """
-        Calculate CRNS count estimates when there is snow.
+        """Calculate CRNS count estimates when there is snow.
 
-        This derivation reconstructs CRNS counts as if there had been no snow, because snow supresses the counts.
+        This derivation reconstructs CRNS counts as if there had been no snow, because snow suppresses the counts.
         During a snow event, the estimated count is set to the value of the counts just before the snow started.
         If the counts increase, so should the estimate.
 
@@ -843,7 +831,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - cts_smo_crns: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
+                - cts_smo_crns: smoothed neutron counts (already corrected for influences on cosmic-ray intensity).
                 - snow: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
                 - time: hourly timestamps corresponding to cts_smo values.
 
@@ -852,7 +840,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
         """
         hours_in_a_day = 24
 
-        cts_smo_crns = columns["cts_smo_crns"]
+        cts_smo_crns = columns[_get_crns_column(columns.keys(), "cts_smo")]
         snow = columns["snow"]
         snow_prev1 = snow.shift(hours_in_a_day)
         snow_prev2 = snow.shift(2 * hours_in_a_day)
@@ -894,7 +882,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
                 - merged_tf: The TimeFrame with the lower resolution values joined onto each row.
         """
         snow_daily_tf = tf_map["snow"]
-        cts_smo_tf = tf_map["cts_smo_crns"]
+        cts_smo_tf = tf_map[_get_crns_column(columns.keys(), "cts_smo")]
 
         if cts_smo_tf.resolution != ts.Period.of_hours(1):
             raise ValueError(f"Resolution of cts_smo_crns must be hourly. Got: {cts_smo_tf.resolution}")
@@ -920,7 +908,6 @@ class GetPrecipTipping(DerivationMethod):
     """Consolidate the tipping bucket rain gauges into one dataset."""
 
     name = "get_precip_tipping"
-    inputs = ("precip_tipping_a", "precip_tipping_b")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Consolidate dataset PRECIP_TIPPING_A and PRECIP_TIPPING_B into a single PRECIP_TIPPING dataset
@@ -952,7 +939,6 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
     """
 
     name = "calculate_vwc_with_snow"
-    inputs = ("cts_mod_corr", "cts_est_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate volumetric water content with snow.
@@ -996,7 +982,6 @@ class SnowWaterEquivalence(DerivationMethod):
     """
 
     name = "calculate_crns_swe"
-    inputs = ("cts_est_crns", "cts_smo_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate snow water equivalence (SWE) for an above ground COSMOS sensor.
@@ -1039,7 +1024,6 @@ class SnowWaterEquivalenceSnowfox(DerivationMethod):
     """
 
     name = "calculate_snowfox_swe"
-    inputs = ("cts_est_snowfox", "cts_smo_snowfox")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate snow water equivalence (SWE) for a below ground COSMOS sensor.
@@ -1088,7 +1072,6 @@ class SigmaSnowWaterEquivalence(DerivationMethod):
     """
 
     name = "calculate_crns_sigma_swe"
-    inputs = ("cts_est_crns", "cts_smo_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """
@@ -1133,7 +1116,6 @@ class SoilMoistureIndex(DerivationMethod):
     """Calculate soil moisture index."""
 
     name = "calculate_smi"
-    inputs = ("cosmos_vwc",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """SMI (soil moisture index) is a normalised measure of soil wetness relative to the wilting point, field
@@ -1194,7 +1176,6 @@ class EffectiveDepth(DerivationMethod):
     """
 
     name = "calculate_eff_depth"
-    inputs = ("cosmos_vwc",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Original effective depth calulation from SIMPLE VWC method.
@@ -1227,7 +1208,6 @@ class D86(DerivationMethod):
     """Calculate d86 value."""
 
     name = "calculate_d86"
-    inputs = ("cosmos_vwc", "pa")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """D86 is defined as the depth to which 86% of the detected cosmic ray neutrons had contact with constituents
@@ -1314,7 +1294,6 @@ class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
     name = "calc_flux_mean_shf"
-    inputs = ("g_plate_1_1_1", "g_plate_1_1_2")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean soil heat flux [W m-2]
@@ -1335,7 +1314,6 @@ class CalcFluxLeL1(DerivationMethod):
     """Calculate latent heat flux LE_L1 = Rn - SHF - H [W m-2]."""
 
     name = "calc_flux_le_l1"
-    inputs = ("t_nr_avg", "shf", "h")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate latent heat flux LE_L1 [W m-2]
@@ -1357,7 +1335,6 @@ class CalcFluxEtL1(DerivationMethod):
     """Calculate evapotranspiration ET_L1 = LE_L1 / lambda / 1000 [mm 30min-1]."""
 
     name = "calc_flux_et_l1"
-    inputs = ("le_l1", "airtemp_c")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate evapotranspiration ET_L1 [mm 30min-1]
@@ -1379,7 +1356,6 @@ class CalcFluxLeL2(DerivationMethod):
     """Calculate latent heat flux LE_L2 = Rn - SHF - H_L2 [W m-2], using despiked H."""
 
     name = "calc_flux_le_l2"
-    inputs = ("t_nr_avg", "shf", "h_l2")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate latent heat flux LE_L2 [W m-2]
@@ -1401,7 +1377,6 @@ class CalcFluxEtL2(DerivationMethod):
     """Calculate evapotranspiration ET_L2 = LE_L2 / lambda / 1000 [mm 30min-1], using despiked LE."""
 
     name = "calc_flux_et_l2"
-    inputs = ("le_l2", "airtemp_c")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate evapotranspiration ET_L2 [mm 30min-1]
@@ -1429,7 +1404,6 @@ class EddyProRun(DerivationMethod):
     """
 
     name = "eddypro-run"
-    inputs: ClassVar[tuple] = ()
 
     # Should these be wired through the processing config / metadata API?
     # In practice these parameters are unlikely to change
@@ -1576,3 +1550,37 @@ class EddyProRun(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         raise NotImplementedError("EddyProRun overrides run() directly")
+
+
+def _get_crns_column(input_column_names: Iterable[str], option: Literal["cts_mod", "cts_smo"]) -> str:
+    """Retrieve the expected CRNS column name from the input column mapping.
+
+    This is a workaround to support calculations that are used by the standard above ground CRNS and the
+    below ground SNOWFOX CRNS.
+
+    To keep downstream logic generic, this function resolves which input dataset it's been provided with and
+    return that column name.
+
+    NOTE: This is a temporary solution to a wider problem that we want to solve via metadata. The solution will be
+        some way in the metadata to be able to specify dependent timeseries (dep_ts) inputs that are named against
+        the input parameter names expected by the given derivation method. So the derivation method input parameter
+        names stay generic, and the data processing configurations can handle the specific mapping.
+
+    Args:
+        input_column_names: Column names provided to the calculation
+
+    Returns:
+        The CTS MOD column name
+    """
+    match option:
+        case "cts_mod":
+            possible_keys = {"cts_mod", "cts_snowfox"}
+        case "cts_smo":
+            possible_keys = {"cts_smo_crns", "cts_smo_snowfox"}
+
+    found_keys = possible_keys & set(input_column_names)
+
+    if len(found_keys) != 1:
+        raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
+
+    return found_keys.pop()

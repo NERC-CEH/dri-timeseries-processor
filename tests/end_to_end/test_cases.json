@@ -169,6 +169,18 @@
             "periodicities": ["PT1H"],
             "start_date": "2020-08-18",
             "end_date": "2020-08-20"
+          },
+         {
+            "id": "vwc-soil-moisture",
+            "description": "Test of soil moisture variables",
+            "network": "cosmos",
+            "sites": ["cosmos-cgarw"],
+            "measured_variables": [],
+            "derived_variables": ["COSMOS_VWC", "D86_150M", "SWE_CRNS", "SIGMA_SWE_CRNS", "SWE_SNOWFOX"],
+            "aggregated_variables": [],
+            "periodicities": ["P1D"],
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           }
       ]
 }
