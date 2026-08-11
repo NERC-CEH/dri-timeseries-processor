@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import replace
 from datetime import date, datetime, timedelta
-from typing import ClassVar, Iterable, Literal
+from typing import Iterable, Literal
 
 import polars as pl
 import time_stream as ts
@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 class DerivationMethod(Operation, ABC):
     operation_type = ConfigurationType.DERIVATION
-    inputs: ClassVar[tuple]
     config: DataProcessingMethodConfig
 
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
@@ -1405,7 +1404,6 @@ class EddyProRun(DerivationMethod):
     """
 
     name = "eddypro-run"
-    inputs: ClassVar[tuple] = ()
 
     # Should these be wired through the processing config / metadata API?
     # In practice these parameters are unlikely to change
