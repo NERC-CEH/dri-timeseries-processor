@@ -176,7 +176,7 @@
             "network": "cosmos",
             "sites": ["cosmos-cgarw"],
             "measured_variables": [],
-            "derived_variables": ["COSMOS_VWC", "D86_150M", "SWE_CRNS", "SIGMA_SWE_CRNS", "SWE_SNOWFOX"],
+            "derived_variables": ["COSMOS_VWC", "D86_150M", "SWE_CRNS", "SIGMA_SWE_CRNS", "SWE_SNOWFOX", "SIGMA_SWE_SNOWFOX"],
             "aggregated_variables": [],
             "periodicities": ["P1D"],
             "start_date": "2020-08-18",
