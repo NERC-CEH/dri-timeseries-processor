@@ -78,6 +78,9 @@ class LWCorrection(CorrectionMethod):
         a corresponding uncorrected time series (LWIN_UNC or LWOUT_UNC). To keep downstream logic generic,
         this function resolves exactly one of these parameters and returns it as the longwave uncertainty input.
 
+        NOTE: This is a temporary solution to a wider problem that we want to solve via metadata.
+            See derivation_methods.py:_get_crns_column for more detailed 'note' tag.
+
         Args:
             config: Configuration of the correction method.
 
