@@ -19,9 +19,7 @@ class Metrics:
             pushgateway_url: The hostname and port of the Pushgateway to send metrics to.
             job_name: Job identifier used by the Pushgateway to group run metrics.
             site: The site(s) processed by this run (a single site ID for the deployed Argo per-site fan-out,
-                or a comma-separated list for ad-hoc multi-site runs). Used as the Pushgateway grouping key so
-                concurrent per-site pods sharing the same job don't overwrite each other's pushed metrics, and
-                so every metric can be sliced by site in Grafana.
+                or a comma-separated list for ad-hoc multi-site runs).
         """
         self.registry = CollectorRegistry()
 

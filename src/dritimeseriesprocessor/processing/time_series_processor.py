@@ -110,8 +110,7 @@ class TimeSeriesProcessor:
         """Return the IDs of every dataset currently marked as failed."""
         return [dataset_id for dataset_id, container in self.graph.datasets.items() if container.failed]
 
-    @staticmethod
-    def _raise_if_failed(failed_ids: list[str]) -> None:
+    def _raise_if_failed(self, failed_ids: list[str]) -> None:
         """Raise an exception if any dataset failed to load or process.
 
         Dataset failures are caught and recorded per-dataset so that one failure doesn't stop the rest of the
