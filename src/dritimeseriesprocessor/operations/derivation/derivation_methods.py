@@ -985,7 +985,7 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
 
 @DerivationMethod.register
 class SnowWaterEquivalence(DerivationMethod):
-    """Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
+    """Calculate snow water equivalence (SWE) for an above ground COSMOS sensor.
 
     References:
         - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
@@ -999,8 +999,7 @@ class SnowWaterEquivalence(DerivationMethod):
     inputs = ("cts_est_crns", "cts_smo_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """
-        Calculate snow water equivalence (SWE) for the above ground COSMOS sensor.
+        """Calculate snow water equivalence (SWE) for an above ground COSMOS sensor.
 
         Config requirements:
             Site attributes:
@@ -1024,6 +1023,55 @@ class SnowWaterEquivalence(DerivationMethod):
         cts_est = columns["cts_est_crns"]
         lambda_ = 48  # In Wallbank et al. 2020, cited as from Desilets, 2017
         return -lambda_ * ((cts_smo - n_wat) / (cts_est - n_wat)).log()
+
+
+@DerivationMethod.register
+class SnowWaterEquivalenceSnowfox(DerivationMethod):
+    """Calculate snow water equivalence (SWE) for a below ground (SnowFox) COSMOS sensor.
+
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
+            Autonomous ice sheet surface mass balance measurements from cosmic rays.
+            The Cryosphere, 12, 2099-2108. https://doi.org/10.5194/tc-12-2099-2018
+    """
+
+    name = "calculate_snowfox_swe"
+    inputs = ("cts_est_snowfox", "cts_smo_snowfox")
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate snow water equivalence (SWE) for a below ground COSMOS sensor.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo_snowfox: smoothed neutron counts from snowfox sensor
+                                    (corrected for influences on cosmic-ray intensity).
+                - cts_est_snowfox: estimated counts during snow periods from snowfox sensor
+                                    (i.e. the snow-free count rate, N0(t)).
+
+        Returns:
+            Polars expression for SWE
+        """
+        cts_smo = columns["cts_smo_snowfox"]
+        cts_est = columns["cts_est_snowfox"]
+
+        # Wallbank et al. 2020, eq. 10
+        n_star = cts_smo / cts_est
+
+        # Howat et al. 2018, table 1
+        a1 = 0.3133
+        a2 = 0.08268
+        a3 = 1.117
+        amax = 114.4
+        amin = 14.11
+
+        # Howat et al. 2018, eq. 5
+        lambda_ = (1 / amax) - ((1 / amax) - (1 / amin)) * (1 + ((a1 - n_star) / a2).exp()) ** (-a3)
+
+        # Howat et al. 2018, eq. 4 - multiply by 10 to convert cm to mm
+        return -lambda_.pow(-1) * n_star.log() * 10
 
 
 @DerivationMethod.register
