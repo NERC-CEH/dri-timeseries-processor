@@ -9,6 +9,7 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
+    D86,
     AbsoluteHumidity,
     AbsoluteHumidityFactor,
     Albedo,
@@ -18,6 +19,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CorrectCounts,
     DerivationMethod,
     EddyProRun,
+    EffectiveDepth,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
     IsSnowDay,
@@ -26,6 +28,8 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NetRadiation,
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
+    SigmaSnowWaterEquivalence,
+    SnowWaterEquivalence,
     SoilMoistureIndex,
     SolarZenith,
     VolumetricWaterContent,
@@ -639,6 +643,82 @@ class TestVolumetricWaterContentWithSnow:
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 
+class TestSnowWaterEquivalence:
+    def test_calculation(self) -> None:
+        """Test snow water equivalence (SWE) calculation.
+
+        cts_smo is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
+        no-snow baseline count. Where the two are equal (no suppression), SWE should be ~0.
+        As cts_smo drops further below cts_est_crns (more suppression), SWE should increase.
+        """
+        config = create_method_config(
+            {
+                "cts_smo_crns": [1500.0, 1600.0, 1500.0, 1750.0],
+                "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
+            },
+            "swe_crns",
+        )
+        config.params["n0_mod"] = 2710.16689  # holln
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [0.0, 14.4332, 34.7719, 0.0]}))
+
+        result = SnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+    def test_swe(self) -> None:
+        """Test SWE calculation based on real data from original COSMOS-UK system."""
+        # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
+        #   Site: BALRD,
+        #   Dates: [2018-03-04 00:00:00, 2015-11-29 00:00:00, 2021-02-09 00:00:00]
+        config = create_method_config(
+            {"cts_smo_crns": [1404.65, 1674.98, 1485.63], "cts_est_crns": [1679.48307, 1680.79596, 1633.42392]},
+            "swe_crns",
+        )
+        config.params["n0_mod"] = 2966.89129  # From COSMOS.CALIBRATION_INFO BALRD method=4
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [33.06285, 0.50709, 16.57987]}))
+        result = SnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestSigmaSnowWaterEquivalence:
+    def test_calculation(self) -> None:
+        """Test uncertainty in the snow water equivalence (SWE) calculation.
+
+        cts_smo_crns is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
+        no-snow baseline count. Where the two are equal (no suppression), sigma_swe should still be
+        positive - the uncertainty does not collapse to zero just because SWE itself is ~0.
+        """
+        config = create_method_config(
+            {
+                "cts_smo_crns": [1500.0, 1600.0, 1500.0, 1750.0],
+                "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
+            },
+            "sigma_swe",
+        )
+        config.params["n0_mod"] = 2710.16689  # holln
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.467, 1.0158, 1.002, 0.981]}))
+
+        result = SigmaSnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+    def test_sigma_swe(self) -> None:
+        """Test SIGMA SWE calculation based on real data from original COSMOS-UK system."""
+        # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
+        #   Site: BALRD,
+        #   Dates: [2018-03-04 00:00:00, 2015-11-29 00:00:00, 2021-02-09 00:00:00]
+        config = create_method_config(
+            {"cts_smo_crns": [1404.65, 1674.98, 1485.63], "cts_est_crns": [1679.48307, 1680.79596, 1633.42392]},
+            "sigma_swe",
+        )
+        config.params["n0_mod"] = 2966.89129  # From COSMOS.CALIBRATION_INFO BALRD method=4
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.68615, 1.27269, 1.55153]}))
+        result = SigmaSnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
 class TestGetSnowEstimatedCounts:
     def test_get_snow_estimated_counts(self) -> None:
         """Test get_snow_estimated_counts using fictional data, where snow suppresses the counts.
@@ -989,6 +1069,56 @@ class TestSoilMoistureIndex:
         config = self._make_config([None])
         result = SoilMoistureIndex().run(config)
         assert list(result.df["smi"]) == [None]
+
+
+class TestEffectveDepth:
+    def test_calculation(self) -> None:
+        """Test effective depth calculation, using cosmos-holln reference soil attributes.
+
+        Effective depth should decrease as VWC increases - wetter soil attenuates the CRNS
+        signal over a shallower depth.
+        """
+        config = create_method_config(
+            {"cosmos_vwc": [0.0, 10.0, 28.964, 61.311, 100.0]},
+            "eff_depth",
+        )
+        # Annotations from cosmos-holln
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"eff_depth": [40.469, 23.837, 13.396, 7.668, 5.073]}))
+
+        result = EffectiveDepth().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestD86:
+    # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
+    #   Site: HOLLN,
+    #   Dates: [2015-03-14, 2017-05-30, 2022-01-18, 2026-08-01]
+    @pytest.mark.parametrize(
+        "distance, vwc, pa, d86",
+        [
+            (1.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [23.2, 16.7, 19.3, 17]),
+            (5.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [22.9, 16.5, 19, 16.9]),
+            (25.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [21.6, 15.7, 18, 16]),
+            (75.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [19.2, 14.4, 16.3, 14.6]),
+            (150.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [17.2, 13.2, 14.8, 13.4]),
+            (200.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [16.5, 12.8, 14.3, 13]),
+        ],
+    )
+    def test_calculate_d86(self, distance: float, vwc: list, pa: list, d86: list) -> None:
+        """Test calculate_d86 using cosmos-holln site annotations."""
+        config = create_method_config({"cosmos_vwc": vwc, "pa": pa}, "d86")
+        config.params["distance"] = distance
+        config.params["ref_bulkdensity"] = 1.06
+        config.params["ref_latticewater"] = 0.025
+        config.params["ref_soc"] = 0.032
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"d86": d86}))
+        result = D86().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
 
 class TestCalcFluxMeanShf:
