@@ -1112,6 +1112,56 @@ class SigmaSnowWaterEquivalence(DerivationMethod):
 
 
 @DerivationMethod.register
+class SigmaSnowWaterEquivalenceSnowfox(DerivationMethod):
+    """Calculate **uncertainty** in a snow water equivalence (SWE) calculation for a below ground (SnowFox) COSMOS
+    sensor.
+
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
+            Autonomous ice sheet surface mass balance measurements from cosmic rays.
+            The Cryosphere, 12, 2099-2108. https://doi.org/10.5194/tc-12-2099-2018
+    """
+
+    name = "calculate_snowfox_sigma_swe"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate uncertainty in a snow water equivalence (SWE) calculation for a below ground COSMOS sensor.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo_snowfox: smoothed neutron counts from snowfox sensor
+                                    (corrected for influences on cosmic-ray intensity).
+                - cts_est_snowfox: estimated counts during snow periods from snowfox sensor
+                                    (i.e. the snow-free count rate, N0(t)).
+
+        Returns:
+            Polars expression for SWE uncertainty
+        """
+        cts_smo = columns["cts_smo_snowfox"]
+        cts_est = columns["cts_est_snowfox"]
+
+        # Wallbank et al. 2020, eq. 16
+        # estimated from the 0-30 mm portion of the attenuation curve in Howat et al. 2018
+        c_howat = -157
+
+        # Wallbank et al. 2020, section 5.4
+        sigma_n = (cts_smo / 24).sqrt()
+        sigma_n_theta = 16  # empirical uncertainty in N0(t), Wallbank et al. (2020) Section 6.1
+
+        # Wallbank et al. 2020, eq. 16
+        dswe_d_n = c_howat / cts_est
+        dswe_d_n_theta = (-c_howat * cts_smo) / cts_est.pow(2)
+
+        # Wallbank et al. 2020, eq. 14
+        sigma_swe_n = dswe_d_n * sigma_n
+        sigma_swe_n_theta = dswe_d_n_theta * sigma_n_theta
+        return (sigma_swe_n.pow(2) + sigma_swe_n_theta.pow(2)).sqrt()
+
+
+@DerivationMethod.register
 class SoilMoistureIndex(DerivationMethod):
     """Calculate soil moisture index."""
 

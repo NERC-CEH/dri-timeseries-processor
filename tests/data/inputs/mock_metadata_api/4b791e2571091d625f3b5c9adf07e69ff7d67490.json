@@ -194,21 +194,12 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-rh_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-ta_30min_raw",
           "label": [
-            "Relative humidity"
+            "Air temperature"
           ],
           "identifier": [
-            "COSMOS-CGARW-RH_30MIN_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-rh_30min_processed",
-          "label": [
-            "Relative humidity"
-          ],
-          "identifier": [
-            "COSMOS-CGARW-RH_30MIN_PROCESSED"
+            "COSMOS-CGARW-TA_30MIN_RAW"
           ]
         },
         {
@@ -230,12 +221,21 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-ta_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-rh_30min_processed",
           "label": [
-            "Air temperature"
+            "Relative humidity"
           ],
           "identifier": [
-            "COSMOS-CGARW-TA_30MIN_RAW"
+            "COSMOS-CGARW-RH_30MIN_PROCESSED"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-rh_30min_raw",
+          "label": [
+            "Relative humidity"
+          ],
+          "identifier": [
+            "COSMOS-CGARW-RH_30MIN_RAW"
           ]
         },
         {
@@ -277,17 +277,17 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-q_30min_processed#flag_column.q_corrs_flag",
-          "columnName": "Q_CORRS_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-q_30min_processed#flag_column.q_infill_flag",
           "columnName": "Q_INFILL_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-q_30min_processed#flag_column.q_corrs_flag",
+          "columnName": "Q_CORRS_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
           }
         },
         {
@@ -397,33 +397,6 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-swin_30min_processed",
-          "label": [
-            "Incoming shortwave radiation"
-          ],
-          "identifier": [
-            "COSMOS-CGARW-SWIN_30MIN_PROCESSED"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-scans_30min_raw",
-          "label": [
-            "Number of logger scans"
-          ],
-          "identifier": [
-            "COSMOS-CGARW-SCANS_30MIN_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-swin_30min_raw",
-          "label": [
-            "Incoming shortwave radiation"
-          ],
-          "identifier": [
-            "COSMOS-CGARW-SWIN_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-solar_zenith_30min_processed",
           "label": [
             "Solar zenith angle"
@@ -433,12 +406,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-swout_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-swin_30min_raw",
           "label": [
-            "Outgoing shortwave radiation"
+            "Incoming shortwave radiation"
           ],
           "identifier": [
-            "COSMOS-CGARW-SWOUT_30MIN_PROCESSED"
+            "COSMOS-CGARW-SWIN_30MIN_RAW"
           ]
         },
         {
@@ -458,9 +431,25 @@
           "identifier": [
             "COSMOS-CGARW-BATTV_30MIN_RAW"
           ]
-        }
-      ],
-      "directDependsOn": [
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-swin_30min_processed",
+          "label": [
+            "Incoming shortwave radiation"
+          ],
+          "identifier": [
+            "COSMOS-CGARW-SWIN_30MIN_PROCESSED"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
+          "identifier": [
+            "COSMOS-CGARW-SCANS_30MIN_RAW"
+          ]
+        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-swout_30min_processed",
           "label": [
@@ -469,7 +458,9 @@
           "identifier": [
             "COSMOS-CGARW-SWOUT_30MIN_PROCESSED"
           ]
-        },
+        }
+      ],
+      "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-solar_zenith_30min_processed",
           "label": [
@@ -477,6 +468,15 @@
           ],
           "identifier": [
             "COSMOS-CGARW-SOLAR_ZENITH_30MIN_PROCESSED"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-swout_30min_processed",
+          "label": [
+            "Outgoing shortwave radiation"
+          ],
+          "identifier": [
+            "COSMOS-CGARW-SWOUT_30MIN_PROCESSED"
           ]
         },
         {
@@ -498,6 +498,13 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-albedo_30min_processed#flag_column.albedo_core_flag",
+          "columnName": "ALBEDO_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-albedo_30min_processed#flag_column.albedo_infill_flag",
           "columnName": "ALBEDO_INFILL_FLAG",
           "valueScheme": {
@@ -509,13 +516,6 @@
           "columnName": "ALBEDO_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-albedo_30min_processed#flag_column.albedo_core_flag",
-          "columnName": "ALBEDO_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         }
       ]
@@ -554,13 +554,6 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cgarw-cts_snow_30min-plan#step-1",
-            "index": 1,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-cts_snow_30min-spike"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cgarw-cts_snow_30min-plan#step-3",
             "index": 3,
             "configuration": {
@@ -568,17 +561,10 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cgarw-cts_snow_30min-plan#step-4",
-            "index": 4,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cgarw-cts_snow_30min-plan#step-1",
+            "index": 1,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-cts_snow_30min-error_code"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cgarw-cts_snow_30min-plan#step-5",
-            "index": 5,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-cts_snow_30min-samples"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-cts_snow_30min-spike"
             }
           },
           {
@@ -593,6 +579,20 @@
             "index": 0,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-cts_snow_30min-load_raw"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cgarw-cts_snow_30min-plan#step-5",
+            "index": 5,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-cts_snow_30min-samples"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-cgarw-cts_snow_30min-plan#step-4",
+            "index": 4,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-cts_snow_30min-error_code"
             }
           }
         ]
@@ -658,6 +658,15 @@
       ],
       "dependsOn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
+          "identifier": [
+            "COSMOS-CGARW-SCANS_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_snow_30min_raw",
           "label": [
             "Neutron count (SnowFox)"
@@ -673,15 +682,6 @@
           ],
           "identifier": [
             "COSMOS-CGARW-BATTV_30MIN_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-scans_30min_raw",
-          "label": [
-            "Number of logger scans"
-          ],
-          "identifier": [
-            "COSMOS-CGARW-SCANS_30MIN_RAW"
           ]
         }
       ],
@@ -723,6 +723,13 @@
           }
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_snow_30min_processed#flag_column.cts_snow_core_flag",
+          "columnName": "CTS_SNOW_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+          }
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_snow_30min_processed#flag_column.cts_snow_corrs_flag",
           "columnName": "CTS_SNOW_CORRS_FLAG",
           "valueScheme": {
@@ -734,13 +741,6 @@
           "columnName": "CTS_SNOW_QC_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_quality_control_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_snow_30min_processed#flag_column.cts_snow_core_flag",
-          "columnName": "CTS_SNOW_CORE_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         }
       ]

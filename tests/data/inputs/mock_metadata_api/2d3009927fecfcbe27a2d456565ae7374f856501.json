@@ -102,28 +102,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-range",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-range#argument.gt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-range#argument.gt.value",
-                "value": [
-                  50.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-range#argument.lt",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-range#argument.lt.value",
@@ -138,6 +116,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-range#argument.gt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-range#argument.gt.value",
+                "value": [
+                  50.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
               },
               "@type": [
                 {
@@ -401,28 +401,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-samples",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-samples#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-samples#argument.lt.value",
-                "value": [
-                  60.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-samples#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-samples#argument.depts.value",
@@ -442,6 +420,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-samples#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-ta_30min-samples#argument.lt.value",
+                "value": [
+                  60.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -880,28 +880,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-battery_v",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-battery_v#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-battery_v#argument.lt.value",
-                "value": [
-                  10.5
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-battery_v#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-battery_v#argument.depts.value",
@@ -921,6 +899,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-battery_v#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-battery_v#argument.lt.value",
+                "value": [
+                  10.5
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -991,28 +991,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-range",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-range#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-range#argument.lt.value",
-                "value": [
-                  0.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-range#argument.gt",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-range#argument.gt.value",
@@ -1027,6 +1005,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-range#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-range#argument.lt.value",
+                "value": [
+                  0.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -1166,28 +1166,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-infill",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-infill#argument.max_gap_size",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-infill#argument.max_gap_size.value",
-                "value": [
-                  6
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-infill#argument.window",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-infill#argument.window.value",
@@ -1202,6 +1180,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-infill#argument.max_gap_size",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-rh_30min-infill#argument.max_gap_size.value",
+                "value": [
+                  6
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"
               },
               "@type": [
                 {
@@ -1453,6 +1453,28 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swin_30min-battery_v",
           "argument": [
             {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swin_30min-battery_v#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swin_30min-battery_v#argument.lt.value",
+                "value": [
+                  10.5
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swin_30min-battery_v#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swin_30min-battery_v#argument.depts.value",
@@ -1472,28 +1494,6 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swin_30min-battery_v#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swin_30min-battery_v#argument.lt.value",
-                "value": [
-                  10.5
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -2201,28 +2201,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swout_30min-samples",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swout_30min-samples#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swout_30min-samples#argument.lt.value",
-                "value": [
-                  60.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swout_30min-samples#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swout_30min-samples#argument.depts.value",
@@ -2242,6 +2220,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swout_30min-samples#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swout_30min-samples#argument.lt.value",
+                "value": [
+                  60.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -2433,28 +2433,6 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-solar_zenith_30min-solar_zenith#argument.round",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-solar_zenith_30min-solar_zenith#argument.round.value",
-                "value": [
-                  3
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-solar_zenith_30min-solar_zenith#argument.site_attribute",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-solar_zenith_30min-solar_zenith#argument.site_attribute.value",
@@ -2469,6 +2447,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/site_attribute"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-solar_zenith_30min-solar_zenith#argument.round",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-solar_zenith_30min-solar_zenith#argument.round.value",
+                "value": [
+                  3
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
               },
               "@type": [
                 {

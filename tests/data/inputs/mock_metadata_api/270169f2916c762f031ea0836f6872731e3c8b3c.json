@@ -1,18 +1,18 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed"
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_est_crns_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-cts_mod_corr_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_snowfox_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-swe_crns_1hour_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-pa_1day_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-cgarw-sigma_swe_crns_1hour_processed"
     ]
   },
   "items": [
@@ -129,28 +129,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-cts_mod_corr_1day-mean",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-cts_mod_corr_1day-mean#argument.threshold",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-cts_mod_corr_1day-mean#argument.threshold.value",
-                "value": [
-                  20
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-cts_mod_corr_1day-mean#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-cts_mod_corr_1day-mean#argument.depts.value",
@@ -192,6 +170,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-cts_mod_corr_1day-mean#argument.threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-cts_mod_corr_1day-mean#argument.threshold.value",
+                "value": [
+                  20
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
               },
               "@type": [
                 {
@@ -240,10 +240,10 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-sigma_swe_snowfox_1hour-calculate_snowfox_sigma_swe",
       "appliesToDataset": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-sigma_swe_crns_1hour_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-sigma_swe_snowfox_1hour_processed",
           "originatingSite": [
             {
               "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cgarw"
@@ -253,23 +253,45 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_snowfox_1hour-calculate_snowfox_sigma_swe",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe#argument.depts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_snowfox_1hour-calculate_snowfox_sigma_swe#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe#argument.depts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_snowfox_1hour-calculate_snowfox_sigma_swe#argument.round.value",
+                "value": [
+                  5
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_snowfox_1hour-calculate_snowfox_sigma_swe#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_snowfox_1hour-calculate_snowfox_sigma_swe#argument.depts.value",
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_smo_crns_1hour_processed",
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_est_snowfox_1hour_processed",
                     "label": [
-                      "Smoothed neutron count"
+                      "Estimated neutron count"
                     ]
                   },
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_est_crns_1hour_processed",
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_smo_snowfox_1hour_processed",
                     "label": [
-                      "Estimated neutron count"
+                      "Smoothed neutron count"
                     ]
                   }
                 ],
@@ -287,7 +309,54 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/calculate_snowfox_sigma_swe",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
             },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/calculate"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-sigma_swe_crns_1hour_processed",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-cgarw"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe",
+          "argument": [
             {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe#argument.round",
               "hasValue": {
@@ -325,6 +394,39 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-sigma_swe_crns_1hour-calculate_crns_sigma_swe#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_est_crns_1hour_processed",
+                    "label": [
+                      "Estimated neutron count"
+                    ]
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_smo_crns_1hour_processed",
+                    "label": [
+                      "Smoothed neutron count"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {
@@ -380,11 +482,22 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.round",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.depts",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.round.value",
-                "value": [
-                  5
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_est_crns_1hour_processed",
+                    "label": [
+                      "Estimated neutron count"
+                    ]
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_smo_crns_1hour_processed",
+                    "label": [
+                      "Smoothed neutron count"
+                    ]
+                  }
                 ],
                 "@type": [
                   {
@@ -393,7 +506,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {
@@ -424,22 +537,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.depts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.round",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_smo_crns_1hour_processed",
-                    "label": [
-                      "Smoothed neutron count"
-                    ]
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_est_crns_1hour_processed",
-                    "label": [
-                      "Estimated neutron count"
-                    ]
-                  }
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_crns_1hour-calculate_crns_swe#argument.round.value",
+                "value": [
+                  5
                 ],
                 "@type": [
                   {
@@ -448,7 +550,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
               },
               "@type": [
                 {
@@ -526,6 +628,28 @@
               ]
             },
             {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-pa_1day-mean#argument.threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-pa_1day-mean#argument.threshold.value",
+                "value": [
+                  39
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-pa_1day-mean#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-pa_1day-mean#argument.depts.value",
@@ -545,28 +669,6 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-pa_1day-mean#argument.threshold",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-pa_1day-mean#argument.threshold.value",
-                "value": [
-                  39
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
               },
               "@type": [
                 {
@@ -631,39 +733,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_snowfox_1hour-calculate_snowfox_swe",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_snowfox_1hour-calculate_snowfox_swe#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_snowfox_1hour-calculate_snowfox_swe#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_est_snowfox_1hour_processed",
-                    "label": [
-                      "Estimated neutron count"
-                    ]
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_smo_snowfox_1hour_processed",
-                    "label": [
-                      "Smoothed neutron count"
-                    ]
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_snowfox_1hour-calculate_snowfox_swe#argument.round",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_snowfox_1hour-calculate_snowfox_swe#argument.round.value",
@@ -678,6 +747,39 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_snowfox_1hour-calculate_snowfox_swe#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-cgarw-swe_snowfox_1hour-calculate_snowfox_swe#argument.depts.value",
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_smo_snowfox_1hour_processed",
+                    "label": [
+                      "Smoothed neutron count"
+                    ]
+                  },
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-cgarw-cts_est_snowfox_1hour_processed",
+                    "label": [
+                      "Estimated neutron count"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
               },
               "@type": [
                 {
