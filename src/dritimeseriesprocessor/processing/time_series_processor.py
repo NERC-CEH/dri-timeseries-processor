@@ -34,6 +34,7 @@ from dritimeseriesprocessor.utils.enums import (
     ProcessingLevel,
 )
 from dritimeseriesprocessor.utils.polars_utils import split_by_date
+from dritimeseriesprocessor.utils.strings import extract_uri_id
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 from dritimeseriesprocessor.utils.time_utils import extend_date_range
@@ -96,21 +97,23 @@ class TimeSeriesProcessor:
                     logger.info("Collecting and saving datasets.")
                     self._save_datasets()
 
+            # Collect any datasets that failed during the processing run
+            self._collect_dataset_failures()
+
+        finally:
             logger.info("Processing pipeline finished. Pushing prometheus metrics.")
             self.metrics.export_metrics_to_pushgateway()
-
-            self._raise_if_failed()
-        finally:
             self.data_router.cleanup()
 
-    def _raise_if_failed(self) -> None:
-        """Raise an exception if any dataset failed to load or process.
+    def _collect_dataset_failures(self) -> None:
+        """Log and raise an exception if any dataset failed to load or process.
 
         Dataset failures are caught and recorded per-dataset so that one failure doesn't stop the rest of the
         run from being processed. Without this check, the process would exit with a success status even if some
         datasets failed, which would hide the failure from anything monitoring the exit code
         """
         failed_ids = [dataset_id for dataset_id, container in self.graph.datasets.items() if container.failed]
+        self.metrics.run_result.set(0 if failed_ids else 1)
         if failed_ids:
             raise RuntimeError(f"Processing failed for {len(failed_ids)} dataset(s): {failed_ids}")
 
@@ -127,11 +130,11 @@ class TimeSeriesProcessor:
             try:
                 self.process_dataset(dataset_id)
             except Exception:
-                self.metrics.failed.inc()
+                self.metrics.failed.labels(dataset=extract_uri_id(dataset_id)).inc()
                 self.graph.datasets[dataset_id].failed = True
                 logger.exception(f"Processing failed. Failed status added to container: {dataset_id}")
             else:
-                self.metrics.success.inc()
+                self.metrics.success.labels(dataset=extract_uri_id(dataset_id)).inc()
 
     def process_dataset(self, dataset_id: str) -> None:
         """Process a single dataset according to the configured method type in its metadata.
@@ -241,7 +244,7 @@ class TimeSeriesProcessor:
 
             if container.processing_level is ProcessingLevel.PROCESSED and not container.load_only:
                 logger.error(f"Skipping {container.ts_id}. Detected as a processed dataset with no processing configs.")
-                self.metrics.no_data.inc()
+                self.metrics.no_data.labels(dataset=extract_uri_id(container.ts_id)).inc()
                 container.failed = True
                 continue
 
@@ -277,7 +280,7 @@ class TimeSeriesProcessor:
 
                 except Exception:
                     for container in containers_in_group:
-                        self.metrics.no_data.inc()
+                        self.metrics.no_data.labels(dataset=extract_uri_id(container.ts_id)).inc()
                         container.failed = True
                     logger.exception(f"Failed to load data for group: {dataset_group}")
                     continue
@@ -292,7 +295,7 @@ class TimeSeriesProcessor:
                             raise ValueError(f"No data returned for dataset: {container.ts_id}")
 
                     except Exception:
-                        self.metrics.no_data.inc()
+                        self.metrics.no_data.labels(dataset=extract_uri_id(container.ts_id)).inc()
                         container.failed = True
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")
                         continue

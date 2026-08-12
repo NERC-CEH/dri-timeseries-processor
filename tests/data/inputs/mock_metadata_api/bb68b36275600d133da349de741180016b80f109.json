@@ -115,6 +115,15 @@
       ],
       "dependsOn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
+          "identifier": [
+            "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_processed",
           "label": [
             "Neutron count"
@@ -133,15 +142,6 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
-          "label": [
-            "Neutron count"
-          ],
-          "identifier": [
-            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw",
           "label": [
             "Neutron count"
@@ -151,12 +151,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
           "label": [
             "Neutron count"
           ],
           "identifier": [
-            "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
+            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
           ]
         }
       ],
@@ -173,17 +173,10 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_infill_flag",
-          "columnName": "COSMOSFACTOR_INTEN_INFILL_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_core_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORE_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_corrs_flag",
-          "columnName": "COSMOSFACTOR_INTEN_CORRS_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {
@@ -194,10 +187,17 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_core_flag",
-          "columnName": "COSMOSFACTOR_INTEN_CORE_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_corrs_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORRS_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-chimn-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_infill_flag",
+          "columnName": "COSMOSFACTOR_INTEN_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         }
       ]
@@ -300,6 +300,15 @@
       ],
       "dependsOn": [
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
+          "identifier": [
+            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
           "label": [
             "Neutron count"
@@ -324,15 +333,6 @@
           ],
           "identifier": [
             "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
-          "label": [
-            "Neutron count"
-          ],
-          "identifier": [
-            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
           ]
         },
         {
@@ -485,12 +485,12 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
           "label": [
             "Neutron count"
           ],
           "identifier": [
-            "NMDB-APTY-NEUTRON_CTS_1HOUR_RAW"
+            "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
           ]
         },
         {
@@ -503,21 +503,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-apty-neutron_cts_1hour_raw",
           "label": [
             "Neutron count"
           ],
           "identifier": [
-            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
-          ]
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-newk-neutron_cts_1hour_raw",
-          "label": [
-            "Neutron count"
-          ],
-          "identifier": [
-            "NMDB-NEWK-NEUTRON_CTS_1HOUR_RAW"
+            "NMDB-APTY-NEUTRON_CTS_1HOUR_RAW"
           ]
         },
         {
@@ -527,6 +518,15 @@
           ],
           "identifier": [
             "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung1-neutron_cts_1hour_raw",
+          "label": [
+            "Neutron count"
+          ],
+          "identifier": [
+            "NMDB-JUNG1-NEUTRON_CTS_1HOUR_RAW"
           ]
         }
       ],
@@ -543,13 +543,6 @@
       ],
       "hasFlagColumn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_corrs_flag",
-          "columnName": "COSMOSFACTOR_INTEN_CORRS_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_qc_flag",
           "columnName": "COSMOSFACTOR_INTEN_QC_FLAG",
           "valueScheme": {
@@ -557,10 +550,10 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_core_flag",
-          "columnName": "COSMOSFACTOR_INTEN_CORE_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_corrs_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORRS_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
           }
         },
         {
@@ -568,6 +561,13 @@
           "columnName": "COSMOSFACTOR_INTEN_INFILL_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-cosmosfactor_inten_1hour_processed#flag_column.cosmosfactor_inten_core_flag",
+          "columnName": "COSMOSFACTOR_INTEN_CORE_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         }
       ]

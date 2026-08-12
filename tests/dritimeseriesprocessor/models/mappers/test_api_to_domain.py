@@ -378,6 +378,29 @@ class TestExtractArguments:
         }
         assert result == expected
 
+    def test_extract_argument_annotation_time_variable_series(self) -> None:
+        """Tests that an annotation argument resolving to a time-variable series"""
+        data = [
+            {
+                "@id": "arg1_id",
+                "hasValue": {
+                    "@id": "value1_id",
+                    "value": ["SATURATION"],
+                    "@type": [{"@id": "http://schema.org/PropertyValue"}],
+                },
+                "parameter": {"@id": "http://fdri.ceh.ac.uk/ref/common/parameter/annotation"},
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
+            }
+        ]
+
+        series = [(datetime(2013, 1, 1), None, 54.0)]
+        site_metadata = SiteMetadata(site_id="site1", network="cosmos", annotations={"saturation": series})
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+        result = extract_arguments(api_model, site_metadata)
+
+        assert result == {"saturation": series}
+
 
 class TestMapProcessingMethodConfig:
     def test_simple_method_config(self) -> None:
@@ -532,6 +555,68 @@ class TestExtractAnnotations:
         result = extract_annotations(api_model)
         expected = {"data_processing_configuration_priority": 1, "another_annotation": "abc"}
         assert result == expected
+
+    def test_value_series_annotation_with_direct_values(self) -> None:
+        """Tests that a hasValueSeries annotation with direct scalar values resolves to (start, end, value) tuples."""
+        data = [
+            {
+                "@id": "top_level_id",
+                "hasValueSeries": {
+                    "@id": "series_id",
+                    "hasCurrentValue": [
+                        {
+                            "@id": "value1_id",
+                            "interval": {"startDate": "2013-01-01T00:00:00", "endDate": "2018-01-01T00:00:00"},
+                            "value": [54.0],
+                            "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeBoundPropertyValue"}],
+                        },
+                        {
+                            "@id": "value2_id",
+                            "interval": {"startDate": "2018-01-01T00:00:00"},
+                            "value": [60.0],
+                            "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeBoundPropertyValue"}],
+                        },
+                    ],
+                },
+                "property": {"@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/vwc_saturation"},
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"}],
+            }
+        ]
+
+        api_model = [HasAnnotationItem.model_validate(ann) for ann in data]
+        result = extract_annotations(api_model)
+        expected = {
+            "vwc_saturation": [
+                (datetime(2013, 1, 1), datetime(2018, 1, 1), 54.0),
+                (datetime(2018, 1, 1), None, 60.0),
+            ]
+        }
+        assert result == expected
+
+    def test_value_series_annotation_without_direct_values(self) -> None:
+        """Tests that a hasValueSeries annotation with no direct value keeps the raw item list."""
+        data = [
+            {
+                "@id": "top_level_id",
+                "hasValueSeries": {
+                    "@id": "series_id",
+                    "hasCurrentValue": [
+                        {
+                            "@id": "value1_id",
+                            "interval": {"startDate": "2013-01-01T00:00:00"},
+                            "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeBoundPropertyValue"}],
+                        },
+                    ],
+                },
+                "property": {"@id": "http://fdri.ceh.ac.uk/ref/common/annotation-property/observed-land-cover"},
+                "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/Annotation"}],
+            }
+        ]
+
+        api_model = [HasAnnotationItem.model_validate(ann) for ann in data]
+        result = extract_annotations(api_model)
+        assert result is not None
+        assert result["observed_land_cover"] == api_model[0].has_value_series.has_current_value  # type: ignore[union-attr]
 
 
 class TestMapProcessingConfigItem:

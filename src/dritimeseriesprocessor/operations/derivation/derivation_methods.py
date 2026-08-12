@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import replace
 from datetime import date, datetime, timedelta
-from typing import ClassVar
+from typing import Iterable, Literal
 
 import polars as pl
 import time_stream as ts
@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 class DerivationMethod(Operation, ABC):
     operation_type = ConfigurationType.DERIVATION
-    inputs: ClassVar[tuple]
     config: DataProcessingMethodConfig
 
     def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
@@ -39,7 +38,12 @@ class DerivationMethod(Operation, ABC):
         self.config = config
 
         # Extract and merge input data
-        tf_map = {name: config.params[name] for name in self.inputs}
+        # NOTE: This collects *all* timeframe objects rather than named timeframe objects required by the
+        #   method (as was done previously - i.e ``{name: config.params[name] for name in self.inputs}``).
+        #   This is to handle scenarios where certain timeseries use derivation methods with different input column
+        #   names - e.g. the standard CRNS vs. SNOWFOX sensor that both use the CorrectCounts / GetSnowEstimatedCounts
+        #   methods.
+        tf_map = {key: val for key, val in config.params.items() if isinstance(val, ts.TimeFrame)}
 
         # Get column references for calculation
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
@@ -69,7 +73,7 @@ class DerivationMethod(Operation, ABC):
         Assumes all input TimeFrames share a common periodicity, so they can be merged directly with
         `merge_multiple_timeframes`. Subclasses whose inputs have differing periodicities should
         override this method with their own merge/join strategy, calling `join_deployment_attributes`
-        themselves if they also need time-bound attribute columns joined in.
+        and `join_annotation_attributes` themselves if they also need time-bound attribute columns joined in.
 
         Args:
             config: Configuration parameters including input TimeFrames and output specs
@@ -83,11 +87,16 @@ class DerivationMethod(Operation, ABC):
                 - merged_tf: The merged TimeFrame, with any time-bound attribute columns joined in
         """
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
-        return self.join_deployment_attributes(config, columns, merged_tf)
+        columns, merged_tf = self.join_deployment_attributes(config, columns, merged_tf)
+        columns, merged_tf = self.join_annotation_attributes(config, columns, merged_tf)
+        return columns, merged_tf
 
     @staticmethod
     def join_deployment_attributes(config: DataProcessingMethodConfig, columns: dict, merged_tf: ts.TimeFrame) -> tuple:
         """Join any time-bound deployment attribute columns (e.g. anemometer sensor height) onto a TimeFrame.
+
+        A deployment attribute is metadata about something deployed at a site (e.g. a sensor), which can be
+        replaced or moved over time.
 
         Args:
             config: Configuration parameters including input TimeFrames and output specs
@@ -110,6 +119,32 @@ class DerivationMethod(Operation, ABC):
                 columns[param] = pl.col(param)
         return columns, merged_tf
 
+    @staticmethod
+    def join_annotation_attributes(config: DataProcessingMethodConfig, columns: dict, merged_tf: ts.TimeFrame) -> tuple:
+        """Join any time-variable site annotation columns (e.g. soil properties) onto a TimeFrame.
+
+        A site annotation describes the site itself and can vary over time (e.g. soil saturation, wilting point,
+        field capacity).
+
+        Args:
+            config: Configuration parameters including input TimeFrames and output specs
+            columns: Mapping of input name to its Polars column expression
+            merged_tf: The already-merged TimeFrame that annotation attribute columns should be joined onto
+
+        Returns:
+            Tuple of:
+                - columns: The input `columns` dict, with an added entry for each time-variable
+                  annotation found in `config.params`
+                - merged_tf: The input `merged_tf`, with any time-variable annotation columns joined in
+        """
+        for param, value in config.params.items():
+            if isinstance(value, list) and value and isinstance(value[0], tuple):
+                # Join the annotation's dated values to the main DataFrame
+                merged_tf = merged_tf.with_df(join_time_intervals(value, merged_tf.df, merged_tf.time_name, param))
+                # Make sure the annotation value column is available to any calculation method that needs it
+                columns[param] = pl.col(param)
+        return columns, merged_tf
+
     @abstractmethod
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Define the calculation expression for this derivation.
@@ -128,7 +163,6 @@ class NetRadiation(DerivationMethod):
     """Calculate net radiation - the difference between the downward and upward total radiation."""
 
     name = "calculate_rn"
-    inputs = ("swin", "swout", "lwin", "lwout")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate net radiation (rn) [W m-2]
@@ -155,7 +189,6 @@ class MeanSoilHeatFlux(DerivationMethod):
     """
 
     name = "calc_mean_g"
-    inputs = ("g1", "g2")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean soil heat flux (g) [MJ m-2 30min-1]
@@ -184,7 +217,6 @@ class MeanSeaLevelPressure(DerivationMethod):
     """
 
     name = "calculate_mslp"
-    inputs = ("pa", "ta")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean sea level pressure (mslp) [hPa]
@@ -216,7 +248,6 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
     """
 
     name = "calculate_pe"
-    inputs = ("g", "pa", "rh", "rn", "ta", "ws")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate potential evapotranspiration (pet) [mm day-1]
@@ -383,7 +414,6 @@ class AbsoluteHumidity(DerivationMethod):
     """Calculate absolute humidity (Q) - a measure of the actual amount of water vapor in the air."""
 
     name = "calculate_q"
-    inputs = ("ta", "rh")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity Q [g m-3] (grams per cubic meter)
@@ -440,7 +470,6 @@ class SolarZenith(DerivationMethod):
     """Calculate Solar Zenith - the angle of the sun from the vertical."""
 
     name = "solar_zenith"
-    inputs = ("swin",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate angle of the sun from the vertical [radians]
@@ -494,7 +523,6 @@ class Albedo(DerivationMethod):
     """Calculate albedo - the ratio of reflected solar radiation to the total incoming solar radiation."""
 
     name = "calc_albedo"
-    inputs = ("swin", "swout", "solar_zenith")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate albedo [unitless fraction]
@@ -534,7 +562,6 @@ class NeutronIntensityFactor(DerivationMethod):
     """Calculate incoming neutron count intensity correction factor using a background reference station."""
 
     name = "calc_factor_inten"
-    inputs = ("crns-count",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate incoming neutron count intensity correction factor.
@@ -570,7 +597,6 @@ class AbsoluteHumidityFactor(DerivationMethod):
     """Calculate absolute humidity correction factor to neutron counts."""
 
     name = "calc_factor_q"
-    inputs = ("q",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate absolute humidity correction factor to neutron counts.
@@ -610,7 +636,6 @@ class AtmosphericPressureFactor(DerivationMethod):
     """Calculate atmospheric pressure correction factor to neutron counts"""
 
     name = "calc_factor_PA"
-    inputs = ("pa",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate atmospheric pressure correction factor to neutron counts.
@@ -644,7 +669,6 @@ class IsSnowDay(DerivationMethod):
     """Calculate if a given day is a snow day."""
 
     name = "is_snow_day"
-    inputs = ("albedo",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate if snow day. True is snow, False if not.
@@ -715,13 +739,13 @@ class CorrectCounts(DerivationMethod):
     """
 
     name = "correct_counts"
-    inputs = ("cts_mod", "cosmosfactor_inten", "cosmosfactor_pa", "cosmosfactor_q")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate corrected neutron counts using correction factors.
 
         Args:
             columns: Dict with keys of required columns for the calculation.
+                - cts_mod / cts_snowfox: neutron counts to be corrected.
                 - cosmosfactor_inten: correction factor to neutron intensity counts.
                 - cosmosfactor_pa: atmospheric pressure correction factor to neutron counts.
                 - cosmosfactor_q: absolute humidity correction factor to neutron counts.
@@ -729,7 +753,7 @@ class CorrectCounts(DerivationMethod):
         Returns:
             Polars expression of corrected mod counts.
         """
-        cts_mod = columns["cts_mod"]
+        cts_mod = columns[_get_crns_column(columns.keys(), "cts_mod")]
         correction_factors = columns["cosmosfactor_inten"] * columns["cosmosfactor_pa"] * columns["cosmosfactor_q"]
         return cts_mod * correction_factors
 
@@ -743,7 +767,6 @@ class VolumetricWaterContent(DerivationMethod):
     """
 
     name = "calculate_vwc"
-    inputs = ("cts_mod_corr",)
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate volumetric water content (VWC) from corrected neutron counts and site annotations.
@@ -790,18 +813,14 @@ class VolumetricWaterContent(DerivationMethod):
 
 @DerivationMethod.register
 class GetSnowEstimatedCounts(DerivationMethod):
-    """
-    Calculate CRNS count estimates when there is snow.
-    """
+    """Calculate CRNS count estimates when there is snow."""
 
     name = "get_snow_estimated_counts"
-    inputs = ("snow", "cts_smo_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        """
-        Calculate CRNS count estimates when there is snow.
+        """Calculate CRNS count estimates when there is snow.
 
-        This derivation reconstructs CRNS counts as if there had been no snow, because snow supresses the counts.
+        This derivation reconstructs CRNS counts as if there had been no snow, because snow suppresses the counts.
         During a snow event, the estimated count is set to the value of the counts just before the snow started.
         If the counts increase, so should the estimate.
 
@@ -812,8 +831,8 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-                - CTS_SMO_CRNS: smoothed nuetron counts (already corrected for influences on cosmic-ray intensity).
-                - SNOW: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
+                - cts_smo_crns: smoothed neutron counts (already corrected for influences on cosmic-ray intensity).
+                - snow: binary values indicating if snow is present on that day. Daily values broadcasted hourly.
                 - time: hourly timestamps corresponding to cts_smo values.
 
         Returns:
@@ -821,7 +840,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
         """
         hours_in_a_day = 24
 
-        cts_smo_crns = columns["cts_smo_crns"]
+        cts_smo_crns = columns[_get_crns_column(columns.keys(), "cts_smo")]
         snow = columns["snow"]
         snow_prev1 = snow.shift(hours_in_a_day)
         snow_prev2 = snow.shift(2 * hours_in_a_day)
@@ -863,7 +882,7 @@ class GetSnowEstimatedCounts(DerivationMethod):
                 - merged_tf: The TimeFrame with the lower resolution values joined onto each row.
         """
         snow_daily_tf = tf_map["snow"]
-        cts_smo_tf = tf_map["cts_smo_crns"]
+        cts_smo_tf = tf_map[_get_crns_column(columns.keys(), "cts_smo")]
 
         if cts_smo_tf.resolution != ts.Period.of_hours(1):
             raise ValueError(f"Resolution of cts_smo_crns must be hourly. Got: {cts_smo_tf.resolution}")
@@ -889,7 +908,6 @@ class GetPrecipTipping(DerivationMethod):
     """Consolidate the tipping bucket rain gauges into one dataset."""
 
     name = "get_precip_tipping"
-    inputs = ("precip_tipping_a", "precip_tipping_b")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Consolidate dataset PRECIP_TIPPING_A and PRECIP_TIPPING_B into a single PRECIP_TIPPING dataset
@@ -921,12 +939,9 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
     """
 
     name = "calculate_vwc_with_snow"
-    inputs = ("cts_mod_corr", "cts_est_crns")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate volumetric water content with snow.
-
-        Reference:
 
         Config requirements:
             Site attributes:
@@ -934,13 +949,13 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
                 - ref_bulkdensity: Site attribute of reference soil bulk density
                 - ref_latticewater: Site attribute of reference lattice water content
                 - n0_mod: Site attribute of a calibration coefficient obtained from field calibration
-                - n_max: Site attribute of maximum range for nuetron counts
-                - n_min: Site attribute of minimum range for nuetron counts
+                - n_max: Site attribute of maximum range for neutron counts
+                - n_min: Site attribute of minimum range for neutron counts
 
         Args:
             columns: Dict with keys of required columns for the calculation.
-            - cts_mod_corr: Nuetron counts (corrected for influences on cosmic-ray intensity).
-            - cts_est_crns: estimated counts during snow periods
+                - cts_mod_corr: Neutron counts (corrected for influences on cosmic-ray intensity).
+                - cts_est_crns: estimated counts during snow periods
 
         Returns:
             Polars expression for VWC with snow
@@ -955,11 +970,380 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
 
 
 @DerivationMethod.register
+class SnowWaterEquivalence(DerivationMethod):
+    """Calculate snow water equivalence (SWE) for an above ground COSMOS sensor.
+
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture probe for snow water equivalent.
+            Hydroinnova Technical Document 17-01.
+    """
+
+    name = "calculate_crns_swe"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate snow water equivalence (SWE) for an above ground COSMOS sensor.
+
+        Config requirements:
+            Site attributes:
+                - n0_mod: Site attribute of a calibration coefficient obtained from field calibration.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo_crns: smoothed neutron counts (corrected for influences on cosmic-ray intensity).
+                - cts_est_crns: estimated counts during snow periods.
+
+        Returns:
+            Polars expression for SWE
+        """
+
+        # Wallbank et al. 2020, eq. 8
+        nwat_fac = 0.38
+        n_wat = self.config.params["n0_mod"] * nwat_fac
+
+        # Wallbank et al. 2020, eq. 1
+        cts_smo = columns["cts_smo_crns"]
+        cts_est = columns["cts_est_crns"]
+        lambda_ = 48  # In Wallbank et al. 2020, cited as from Desilets, 2017
+        return -lambda_ * ((cts_smo - n_wat) / (cts_est - n_wat)).log()
+
+
+@DerivationMethod.register
+class SnowWaterEquivalenceSnowfox(DerivationMethod):
+    """Calculate snow water equivalence (SWE) for a below ground (SnowFox) COSMOS sensor.
+
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
+            Autonomous ice sheet surface mass balance measurements from cosmic rays.
+            The Cryosphere, 12, 2099-2108. https://doi.org/10.5194/tc-12-2099-2018
+    """
+
+    name = "calculate_snowfox_swe"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate snow water equivalence (SWE) for a below ground COSMOS sensor.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo_snowfox: smoothed neutron counts from snowfox sensor
+                                    (corrected for influences on cosmic-ray intensity).
+                - cts_est_snowfox: estimated counts during snow periods from snowfox sensor
+                                    (i.e. the snow-free count rate, N0(t)).
+
+        Returns:
+            Polars expression for SWE
+        """
+        cts_smo = columns["cts_smo_snowfox"]
+        cts_est = columns["cts_est_snowfox"]
+
+        # Wallbank et al. 2020, eq. 10
+        n_star = cts_smo / cts_est
+
+        # Howat et al. 2018, table 1
+        a1 = 0.3133
+        a2 = 0.08268
+        a3 = 1.117
+        amax = 114.4
+        amin = 14.11
+
+        # Howat et al. 2018, eq. 5
+        lambda_ = (1 / amax) - ((1 / amax) - (1 / amin)) * (1 + ((a1 - n_star) / a2).exp()) ** (-a3)
+
+        # Howat et al. 2018, eq. 4 - multiply by 10 to convert cm to mm
+        return -lambda_.pow(-1) * n_star.log() * 10
+
+
+@DerivationMethod.register
+class SigmaSnowWaterEquivalence(DerivationMethod):
+    """
+    Calculate **uncertainty** in a snow water equivalence (SWE) calculation for the above ground COSMOS sensor.
+
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Desilets, D. (2017). Calibrating a non-invasive cosmic ray soil moisture probe for snow water equivalent.
+            Hydroinnova Technical Document 17-01.
+    """
+
+    name = "calculate_crns_sigma_swe"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """
+        Calculate uncertainty in a snow water equivalence (SWE) calculation for the above ground COSMOS sensor.
+
+        Config requirements:
+            Site attributes:
+                - n0_mod: Site attribute of a calibration coefficient obtained from field calibration.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo_crns: smoothed neutron counts (corrected for influences on cosmic-ray intensity).
+                - cts_est_crns: estimated counts during snow periods.
+
+        Returns:
+            Polars expression for SWE uncertainty
+        """
+        cts_smo = columns["cts_smo_crns"]
+        cts_est = columns["cts_est_crns"]
+
+        # Wallbank et al. 2020, eq. 8
+        nwat_fac = 0.38
+        n_wat = self.config.params["n0_mod"] * nwat_fac
+        lambda_ = 48  # In Wallbank et al. 2020, cited as from Desilets, 2017
+
+        # Wallbank et al. 2020, section 5.4
+        sigma_n = (cts_smo / 24).sqrt()
+        sigma_n_theta = 12  # empirical uncertainty in N0(t), Wallbank et al. (2020) Section 6.1
+
+        # Wallbank et al. 2020, eq. 15
+        dswe_d_n = -lambda_ / (cts_smo - n_wat)
+        dswe_d_n_theta = lambda_ / (cts_est - n_wat)
+
+        # Wallbank et al. 2020, eq. 14
+        sigma_swe_n = dswe_d_n * sigma_n
+        sigma_swe_n_theta = dswe_d_n_theta * sigma_n_theta
+        return (sigma_swe_n.pow(2) + sigma_swe_n_theta.pow(2)).sqrt()
+
+
+@DerivationMethod.register
+class SigmaSnowWaterEquivalenceSnowfox(DerivationMethod):
+    """Calculate **uncertainty** in a snow water equivalence (SWE) calculation for a below ground (SnowFox) COSMOS
+    sensor.
+
+    References:
+        - Wallbank J. R., Cole S. J., Moore R. J., Anderson S. R., Mellor E. J. (2020),
+            Estimating snow water equivalent using cosmic-ray neutron sensors from the COSMOS-UK network,
+            Hydrological Processes, 35(5), e14048. https://doi.org/10.1002/hyp.14048
+        - Howat, I. M., de la Peña, S., Desilets, D., & Womack, G. (2018).
+            Autonomous ice sheet surface mass balance measurements from cosmic rays.
+            The Cryosphere, 12, 2099-2108. https://doi.org/10.5194/tc-12-2099-2018
+    """
+
+    name = "calculate_snowfox_sigma_swe"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Calculate uncertainty in a snow water equivalence (SWE) calculation for a below ground COSMOS sensor.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cts_smo_snowfox: smoothed neutron counts from snowfox sensor
+                                    (corrected for influences on cosmic-ray intensity).
+                - cts_est_snowfox: estimated counts during snow periods from snowfox sensor
+                                    (i.e. the snow-free count rate, N0(t)).
+
+        Returns:
+            Polars expression for SWE uncertainty
+        """
+        cts_smo = columns["cts_smo_snowfox"]
+        cts_est = columns["cts_est_snowfox"]
+
+        # Wallbank et al. 2020, eq. 16
+        # estimated from the 0-30 mm portion of the attenuation curve in Howat et al. 2018
+        c_howat = -157
+
+        # Wallbank et al. 2020, section 5.4
+        sigma_n = (cts_smo / 24).sqrt()
+        sigma_n_theta = 16  # empirical uncertainty in N0(t), Wallbank et al. (2020) Section 6.1
+
+        # Wallbank et al. 2020, eq. 16
+        dswe_d_n = c_howat / cts_est
+        dswe_d_n_theta = (-c_howat * cts_smo) / cts_est.pow(2)
+
+        # Wallbank et al. 2020, eq. 14
+        sigma_swe_n = dswe_d_n * sigma_n
+        sigma_swe_n_theta = dswe_d_n_theta * sigma_n_theta
+        return (sigma_swe_n.pow(2) + sigma_swe_n_theta.pow(2)).sqrt()
+
+
+@DerivationMethod.register
+class SoilMoistureIndex(DerivationMethod):
+    """Calculate soil moisture index."""
+
+    name = "calculate_smi"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """SMI (soil moisture index) is a normalised measure of soil wetness relative to the wilting point, field
+        capacity and saturation of the soil:
+            - 0, when VWC is at or below the wilting point
+            - between 0 and 1, when VWC is between the wilting point and field capacity
+            - between 1 and 2, when VWC is between field capacity and saturation
+            - 2, when VWC is at or above saturation
+
+        Reference:
+            COSMOS-UK User Guide; Appendix H Soil Moisture Index
+                https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon
+                - ref_bulkdensity: Site attribute of reference soil bulk density
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+                - vwc_wilting_point: The volumetric water content at the wilting point of the soil [%]
+                - vwc_field_capacity: The volumetric water content at field capacity [%]
+                - vwc_saturation: The volumetric water content when the soil is fully saturated [%]
+
+        Returns:
+            Polars expression calculating soil moisture index
+        """
+        cosmos_vwc = columns["cosmos_vwc"]
+        wilting_point = columns["vwc_wilting_point"]
+        field_capacity = columns["vwc_field_capacity"]
+        saturation = columns["vwc_saturation"]
+
+        return (
+            pl.when(cosmos_vwc.is_null())
+            .then(None)
+            .when(cosmos_vwc <= wilting_point)
+            .then(0.0)
+            .when(cosmos_vwc <= field_capacity)
+            .then((cosmos_vwc - wilting_point) / (field_capacity - wilting_point))
+            .when(cosmos_vwc <= saturation)
+            .then((cosmos_vwc - field_capacity) / (saturation - field_capacity) + 1)
+            .otherwise(2.0)
+        )
+
+
+@DerivationMethod.register
+class EffectiveDepth(DerivationMethod):
+    """Original effective depth calulation from SIMPLE VWC method.
+
+    References:
+        - Franz TE, Zreda M, Rosolem R, Ferre TPA. (2013) A universal calibration function for
+          determination of soil moisture with cosmic-ray neutrons. Hydrology and Earth System
+          Sciences 17: 453-460. DOI:10.5194/hess-17-453-2013
+        - COSMOS-UK User Guide; Section 7.4 The CRNS footprint (compares this effective depth
+          calculation against the D86 footprint depths now used operationally):
+          https://cosmos.ceh.ac.uk/sites/default/files/2024-12/COSMOS-UK_User_guide_v3_08_0.pdf
+    """
+
+    name = "calculate_eff_depth"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """Original effective depth calulation from SIMPLE VWC method.
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon.
+                - ref_bulkdensity: Site attribute of reference soil bulk density.
+                - ref_latticewater: Site attribute of reference lattice water content.
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+
+        Returns:
+            Polars expression calculating effective depth
+        """
+
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        ref_soc = self.config.params["ref_soc"]
+
+        cosmos_vwc = columns["cosmos_vwc"]
+
+        return 5.8 / (ref_bd * (ref_lw + ref_soc) + cosmos_vwc / 100.0 + 0.0829)
+
+
+@DerivationMethod.register
+class D86(DerivationMethod):
+    """Calculate d86 value."""
+
+    name = "calculate_d86"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        """D86 is defined as the depth to which 86% of the detected cosmic ray neutrons had contact with constituents
+        of the soil.
+
+        It can be calculated at given distances from the Cosmic Ray Neutron Sensor (CRNS).
+
+        Reference:
+            Schrön, M., Köhli, M., Scheiffele, L., Iwema, J., Bogena, H. R., Lv, L., Martini, E., Baroni, G.,
+            Rosolem, R., Weimar, J., Mai, J., Cuntz, M., Rebmann, C., Oswald, S. E., Dietrich, P., Schmidt, U.,
+            and Zacharias, S.
+                Improving calibration and validation of cosmic-ray neutron sensors in the light of spatial sensitivity,
+                Hydrol. Earth Syst. Sci., 21, 5009–5030, https://doi.org/10.5194/hess-21-5009-2017, 2017
+
+        Config requirements:
+            Site attributes:
+                - ref_soc: Site attribute of reference soil organic carbon
+                - ref_bulkdensity: Site attribute of reference soil bulk density
+                - ref_latticewater: Site attribute of reference lattice water content
+                - distance: Distance away from the CRNS the calculation is valid for
+
+        Args:
+            columns: Dict with keys of required columns for the calculation.
+                - cosmos_vwc: Volumetric Water Content (soil moisture) [%]
+                - pa: Atmospheric Pressure [hPa]
+
+        Returns:
+            Polars expression calculating d86
+        """
+        cosmos_vwc = columns["cosmos_vwc"]
+        pa = columns["pa"]
+        ref_soc = self.config.params["ref_soc"]
+        ref_bd = self.config.params["ref_bulkdensity"]
+        ref_lw = self.config.params["ref_latticewater"]
+        distance = self.config.params["distance"]
+
+        # Constants used in the d86 calculation - from Schrön et al. (2017); Appendix A: Table A1
+        p0 = 8.321
+        p1 = 0.14249
+        p2 = 0.96655
+        p3 = 0.01
+        p4 = 20.0
+        p5 = 0.0429
+
+        # Convert VWC from % to cm-3/cm-3
+        cosmos_vwc = cosmos_vwc / 100.0
+        # Reconstructs total water-equivalent content (free soil water [the current cosmos_vwc] + water bound in
+        #   lattice/organic matter), for use in the footprint depth equation
+        total_water_equivalent = cosmos_vwc + ref_bd * (ref_lw + ref_soc)
+
+        # Calculate adjusted distance r_star
+        fp = self.parameter_function_fp(pa)
+        # NOTE: There is a Fveg function in Schrön et al. (2017) that can adjust the D86 based on vegetation height.
+        #   This would need a wider metadata update that is out of scope as of [08/2026]
+        fveg = 1.0
+        r_star = distance / fp / fveg
+
+        # D86 equation from Schrön et al. (2017); Appendix A
+        p2_term = p2 + (-p3 * r_star).exp()
+        p4_term = p4 + total_water_equivalent
+        p5_term = p5 + total_water_equivalent
+        return (1 / ref_bd) * (p0 + (p1 * p2_term * (p4_term / p5_term)))
+
+    @staticmethod
+    def parameter_function_fp(pa: pl.Expr) -> pl.Expr:
+        """Parameter function 'Fp' for use in D86 calculation
+
+        Steps taken from Schrön et al. (2017); Appendix A: The revised weighting functions
+
+        Args:
+            pa: Atmospheric pressure [hPa]
+
+        Returns:
+            Polars expression to calculate Fp
+        """
+        # Constants used in the fp calculation - from Schrön et al. (2017); Appendix A: Table A1
+        p0 = 0.4922
+        p1 = 0.86
+        return p0 / (p1 - ((-pa / 1013.0).exp()))
+
+
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements."""
 
     name = "calc_flux_mean_shf"
-    inputs = ("g_plate_1_1_1", "g_plate_1_1_2")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate mean soil heat flux [W m-2]
@@ -980,7 +1364,6 @@ class CalcFluxLeL1(DerivationMethod):
     """Calculate latent heat flux LE_L1 = Rn - SHF - H [W m-2]."""
 
     name = "calc_flux_le_l1"
-    inputs = ("t_nr_avg", "shf", "h")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate latent heat flux LE_L1 [W m-2]
@@ -1002,7 +1385,6 @@ class CalcFluxEtL1(DerivationMethod):
     """Calculate evapotranspiration ET_L1 = LE_L1 / lambda / 1000 [mm 30min-1]."""
 
     name = "calc_flux_et_l1"
-    inputs = ("le_l1", "airtemp_c")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate evapotranspiration ET_L1 [mm 30min-1]
@@ -1024,7 +1406,6 @@ class CalcFluxLeL2(DerivationMethod):
     """Calculate latent heat flux LE_L2 = Rn - SHF - H_L2 [W m-2], using despiked H."""
 
     name = "calc_flux_le_l2"
-    inputs = ("t_nr_avg", "shf", "h_l2")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate latent heat flux LE_L2 [W m-2]
@@ -1046,7 +1427,6 @@ class CalcFluxEtL2(DerivationMethod):
     """Calculate evapotranspiration ET_L2 = LE_L2 / lambda / 1000 [mm 30min-1], using despiked LE."""
 
     name = "calc_flux_et_l2"
-    inputs = ("le_l2", "airtemp_c")
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Calculate evapotranspiration ET_L2 [mm 30min-1]
@@ -1074,7 +1454,6 @@ class EddyProRun(DerivationMethod):
     """
 
     name = "eddypro-run"
-    inputs: ClassVar[tuple] = ()
 
     # Should these be wired through the processing config / metadata API?
     # In practice these parameters are unlikely to change
@@ -1221,3 +1600,37 @@ class EddyProRun(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         raise NotImplementedError("EddyProRun overrides run() directly")
+
+
+def _get_crns_column(input_column_names: Iterable[str], option: Literal["cts_mod", "cts_smo"]) -> str:
+    """Retrieve the expected CRNS column name from the input column mapping.
+
+    This is a workaround to support calculations that are used by the standard above ground CRNS and the
+    below ground SNOWFOX CRNS.
+
+    To keep downstream logic generic, this function resolves which input dataset it's been provided with and
+    return that column name.
+
+    NOTE: This is a temporary solution to a wider problem that we want to solve via metadata. The solution will be
+        some way in the metadata to be able to specify dependent timeseries (dep_ts) inputs that are named against
+        the input parameter names expected by the given derivation method. So the derivation method input parameter
+        names stay generic, and the data processing configurations can handle the specific mapping.
+
+    Args:
+        input_column_names: Column names provided to the calculation
+
+    Returns:
+        The CTS MOD column name
+    """
+    match option:
+        case "cts_mod":
+            possible_keys = {"cts_mod", "cts_snowfox"}
+        case "cts_smo":
+            possible_keys = {"cts_smo_crns", "cts_smo_snowfox"}
+
+    found_keys = possible_keys & set(input_column_names)
+
+    if len(found_keys) != 1:
+        raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
+
+    return found_keys.pop()
