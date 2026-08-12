@@ -74,6 +74,9 @@ class DatasetDependencyGraph:
         self.site_metadata: dict[str, SiteMetadata] = {}
         self.flagging_systems: dict[str, dict[str, int]] = {}
 
+        self.root_dataset_ids: list[str] = []
+        self.root_site_ids: list[str] = []
+
         self._dep_ts_ids: set[str] = set()
         self._load_dep_ts_ids: set[str] = set()
 
@@ -110,6 +113,8 @@ class DatasetDependencyGraph:
 
         # Fetch the root datasets - i.e. the ones originally requested by the user.
         root_datasets = self._resolve_root_datasets()
+        self.root_dataset_ids = [d.ts_id for d in root_datasets]
+        self.root_site_ids = list({d.source_site or "unknown" for d in root_datasets})
 
         # Start the batch with the root datasets
         current_batch = {ds.ts_id: ds for ds in root_datasets}
@@ -507,3 +512,5 @@ class DatasetDependencyGraph:
         self.site_metadata.clear()
         self._dep_ts_ids.clear()
         self._load_dep_ts_ids.clear()
+        self.root_dataset_ids.clear()
+        self.root_site_ids.clear()

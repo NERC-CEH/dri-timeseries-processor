@@ -92,9 +92,9 @@ def _build_processor(
     raw_reader = RawFileReader(storage)
     writer = ByteParquetWriter(storage)
     data_router = S3DataRouter(reader, raw_reader)
-    metrics = Metrics(cfg.pushgateway_url, cfg.pushgateway_job_name)
 
     graph = _build_dependency_graph(selection, metadata_router, start_date, end_date)
+    metrics = Metrics(cfg.pushgateway_url, cfg.pushgateway_job_name, site=_resolve_site_label(graph))
 
     return TimeSeriesProcessor(
         graph=graph,
@@ -104,6 +104,20 @@ def _build_processor(
         end_date=end_date,
         metrics=metrics,
     )
+
+
+def _resolve_site_label(graph: DatasetDependencyGraph) -> str:
+    """Derive a metrics site label from the root sites requested for the graph.
+
+    The graph already stores its root sites as bare site IDs, so they only need sorting into a stable order.
+
+    Args:
+        graph: The built dependency graph for this run.
+
+    Returns:
+        A comma-separated list of the site IDs requested for this run, in alphabetical order.
+    """
+    return ",".join(sorted(graph.root_site_ids))
 
 
 def _build_storage(cfg: AppConfig) -> StorageClient:
