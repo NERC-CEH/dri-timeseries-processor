@@ -29,6 +29,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     NeutronIntensityFactor,
     PotentialEvapotranspiration30Min,
     SigmaSnowWaterEquivalence,
+    SigmaSnowWaterEquivalenceSnowfox,
     SnowWaterEquivalence,
     SnowWaterEquivalenceSnowfox,
     SoilMoistureIndex,
@@ -745,6 +746,42 @@ class TestSigmaSnowWaterEquivalence:
 
         expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.68615, 1.27269, 1.55153]}))
         result = SigmaSnowWaterEquivalence().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+
+class TestSigmaSnowWaterEquivalenceSnowfox:
+    def test_sigma_swe_snowfox_theoretical_data(self) -> None:
+        """Test uncertainty in the snowfox SWE calculation using theoretical data.
+
+        cts_smo_snowfox is the actual (snow-suppressed) smoothed count, cts_est_snowfox is the estimated
+        no-snow baseline count. Where the two are equal (no suppression), sigma_swe_snowfox should still
+        be positive - the uncertainty does not collapse to zero just because SWE itself is ~0.
+        """
+        config = create_method_config(
+            {
+                "cts_smo_snowfox": [1500.0, 1600.0, 1500.0, 1750.0],
+                "cts_est_snowfox": [1500.0, 1800.0, 2000.0, 1750.0],
+            },
+            "sigma_swe_snowfox",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe_snowfox": [1.8679, 1.4304, 1.128, 1.627]}))
+
+        result = SigmaSnowWaterEquivalenceSnowfox().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+    def test_sigma_swe_snowfox_real_data(self) -> None:
+        """Test snowfox SIGMA SWE calculation based on real data from original COSMOS-UK system."""
+        # Counts taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
+        #   Site: CGARW,
+        #   Dates: [2025-11-21 00:00:00, 2018-03-18 00:00:00, 2026-01-10 00:00:00]
+        config = create_method_config(
+            {"cts_smo_snowfox": [512.03, 781.28, 702.85], "cts_est_snowfox": [754.97, 787.975, 755.234]},
+            "sigma_swe_snowfox",
+        )
+
+        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe_snowfox": [2.45254, 3.35906, 3.29351]}))
+        result = SigmaSnowWaterEquivalenceSnowfox().run(config)
         assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
 
 
