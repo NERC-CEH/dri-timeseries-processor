@@ -6,6 +6,7 @@ from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import (
+    Absolute,
     Add,
     AlbedoSouthSlopeCorrection,
     Clip,
@@ -67,6 +68,31 @@ def run_function_with_date_filter_test(factor: float, expected: list[float], fn:
     result = fn.run(tf, config)
     expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
     assert_frame_equal(result.df, expected_df)
+
+
+class TestAbsolute:
+    def test_add_simple(self) -> None:
+        """Test that the add function works across the full DataFrame."""
+        tf = create_timeframe([1.2, -2.1, -3.0, 4.5, 6.0, -2.0, 0.0])
+        config = create_method_config()
+        result = Absolute().run(tf, config)
+        expected_df = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": [1.2, 2.1, 3.0, 4.5, 6.0, 2.0, 0.0]}
+        )
+        assert_frame_equal(result.df, expected_df)
+
+    def test_add_with_date_filter(self) -> None:
+        """Test that the add function works with a date filter."""
+        tf = create_timeframe([1.2, -2.1, -3.0, 4.5, 6.0, -2.0, 0.0])
+        config = create_method_config(
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
+        )
+        result = Absolute().run(tf, config)
+        expected_df = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": [1.2, -2.1, 3.0, 4.5, 6.0, -2.0, 0.0]}
+        )
+        assert_frame_equal(result.df, expected_df)
 
 
 class TestAdd:
