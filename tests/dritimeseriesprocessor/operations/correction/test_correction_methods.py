@@ -204,9 +204,11 @@ class TestLWCorrection:
 
     def test_lw_correction_no_unc_dependant(self) -> None:
         """Test that the lw correction function works across the full DataFrame."""
-        lw = create_timeframe([-38.14216, -38.28978, -40.08758, -40.57142, -41.9975, -43.12814, -44.89819], "R_LW_out_Avg")
+        lw = create_timeframe(
+            [-38.14216, -38.28978, -40.08758, -40.57142, -41.9975, -43.12814, -44.89819], "R_LW_out_Avg"
+        )
         ta = create_timeframe([287.2861, 287.2568, 287.305, 287.2736, 287.1685, 287.0863, 287.0037], "T_nr_Avg")
-        factor = 1.
+        factor = 1.0
         config = create_method_config(
             correction_factor=factor,
             ta=ta,
