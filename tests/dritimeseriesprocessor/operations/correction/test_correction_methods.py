@@ -10,6 +10,7 @@ from dritimeseriesprocessor.operations.correction.correction_methods import (
     AlbedoSouthSlopeCorrection,
     Clip,
     CorrectionMethod,
+    DegreeCToKelvin,
     LWCorrection,
     PACorrection,
     Power,
@@ -49,7 +50,7 @@ def create_method_config(
     )
 
 
-def run_function_test(factor: float, expected: list[float], fn: CorrectionMethod) -> None:
+def run_function_test(factor: float | None, expected: list[float], fn: CorrectionMethod) -> None:
     tf = create_timeframe()
     config = create_method_config(correction_factor=factor)
     result = fn.run(tf, config)
@@ -57,7 +58,7 @@ def run_function_test(factor: float, expected: list[float], fn: CorrectionMethod
     assert_frame_equal(result.df, expected_df)
 
 
-def run_function_with_date_filter_test(factor: float, expected: list[float], fn: CorrectionMethod) -> None:
+def run_function_with_date_filter_test(factor: float | None, expected: list[float], fn: CorrectionMethod) -> None:
     tf = create_timeframe()
     config = create_method_config(
         correction_factor=factor,
@@ -139,12 +140,28 @@ class TestPower:
         run_function_with_date_filter_test(2, [1.0, 2.0, 9.0, 16.0, 25.0, 6.0, 7.0], Power())
 
 
+class TestDegreeCToKelvin:
+    @pytest.mark.parametrize(
+        "expected",
+        [
+            ([274.15, 275.15, 276.15, 277.15, 278.15, 279.15, 280.15]),
+        ],
+    )
+    def test_convert_simple(self, expected: list[float]) -> None:
+        """Test that the add function works across the full DataFrame."""
+        run_function_test(None, expected, DegreeCToKelvin())
+
+    def test_convert_with_date_filter(self) -> None:
+        """Test that the add function works with a date filter."""
+        run_function_with_date_filter_test(None, [1.0, 2.0, 276.15, 277.15, 278.15, 6.0, 7.0], DegreeCToKelvin())
+
+
 class TestLWCorrection:
     def test_lw_correction_simple(self) -> None:
         """Test that the lw correction function works across the full DataFrame."""
         lw = create_timeframe([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8], "lw")
         lw_unc = create_timeframe([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5], "lw_unc")
-        ta = create_timeframe([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27], "ta")
+        ta = create_timeframe([293.48, 294.89, 295.94, 296.06, 297.45, 298.87, 300.42], "ta")
         factor = 1.00924
         config = create_method_config(correction_factor=factor, lwin_unc=lw_unc, ta=ta)
 
@@ -168,7 +185,7 @@ class TestLWCorrection:
         """Test that LWCorrection works with a date filter."""
         lw = create_timeframe([373.9, 381.5, 386.9, 398.9, 387.7, 387.3, 391.8], "lw")
         lw_unc = create_timeframe([-53.24, -56.31, -56.64, -41.11, -64.04, -75.39, -81.5], "lwin_unc")
-        ta = create_timeframe([20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27], "ta")
+        ta = create_timeframe([293.48, 294.89, 295.94, 296.06, 297.45, 298.87, 300.42], "ta")
         factor = 1.00924
 
         config = create_method_config(
@@ -185,13 +202,31 @@ class TestLWCorrection:
         ).df
         assert_frame_equal(result.df, expected_df)
 
+    def test_lw_correction_no_unc_dependant(self) -> None:
+        """Test that the lw correction function works across the full DataFrame."""
+        lw = create_timeframe([-38.14216, -38.28978, -40.08758, -40.57142, -41.9975, -43.12814, -44.89819], "R_LW_out_Avg")
+        ta = create_timeframe([287.2861, 287.2568, 287.305, 287.2736, 287.1685, 287.0863, 287.0037], "T_nr_Avg")
+        factor = 1.
+        config = create_method_config(
+            correction_factor=factor,
+            ta=ta,
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
+        )
+
+        result = LWCorrection().run(lw, config)
+        expected_df = create_timeframe(
+            [-38.14216, -38.28978, 346.2400728, 345.5873711, 343.5964913, -43.12814, -44.89819], "R_LW_out_Avg"
+        ).df
+        assert_frame_equal(result.df, expected_df)
+
 
 class TestLWCorrectionDependencyAlignment:
     def test_dependency_covering_fewer_time_values(self) -> None:
         """Tests that a ta dataset covering fewer time values than lw is matched up by time, not by position."""
         lw = create_timeframe([373.9, 381.5, 386.9], "lw")
         lw_unc = create_timeframe([-53.24, -56.31, -56.64], "lw_unc")
-        ta = create_timeframe([20.33, 21.74], "ta")
+        ta = create_timeframe([293.48, 294.89], "ta")
         config = create_method_config(correction_factor=1.00924, lwin_unc=lw_unc, ta=ta)
 
         result = LWCorrection().run(lw, config)
