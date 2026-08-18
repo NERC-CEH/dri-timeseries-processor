@@ -57,8 +57,19 @@ class LWCorrection(CorrectionMethod):
         lw_unc_corr = pl.col(lw_unc_col) * config.params["correction_factor"]
 
         # Now re-calibrate LW value with temperature adjustment.
+        ta_unit = ta_tf.metadata["unit"]
+
+        match ta_unit:
+            case "http://fdri.ceh.ac.uk/ref/common/unit/kel":
+                ta_k = pl.col(ta_col)
+            case "http://fdri.ceh.ac.uk/ref/common/unit/degc":
+                # Convert to kelvin
+                ta_k = pl.col(ta_col) + 273.15
+            case _:
+                raise ValueError(f"Unsupported temperature unit: {ta_unit}. Must be degC or Kelvin.")
+
         # Get adjustment amount from Stefan-Boltzmann constant 5.67 * 10^-8
-        sb_adj = pl.col(ta_col).pow(4) * 5.67 * 1e-8
+        sb_adj = ta_k.pow(4) * 5.67 * 1e-8
 
         # Recalculate LW value
         date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
@@ -119,23 +130,6 @@ class LWCorrection(CorrectionMethod):
             raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
 
         return config.params[found_keys.pop()]
-
-
-@CorrectionMethod.register
-class DegreeCToKelvin(CorrectionMethod):
-    """Covert degrees Celcius to Kelvin operation class."""
-
-    name = "degree_C_to_kelvin"
-
-    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(pl.col(tf.metadata["column_name"]) + 273.15)
-                .otherwise(pl.col(tf.metadata["column_name"]))
-            )
-        )
 
 
 @CorrectionMethod.register
