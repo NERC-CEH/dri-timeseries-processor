@@ -245,7 +245,7 @@ class TestLWCorrectionDependencyAlignment:
         """Tests that a ta dataset covering fewer time values than lw is matched up by time, not by position."""
         lw = create_timeframe([373.9, 381.5, 386.9], "lw")
         lw_unc = create_timeframe([-53.24, -56.31, -56.64], "lw_unc")
-        ta = create_timeframe([20.33, 21.74], "ta")
+        ta = create_timeframe([20.33, 21.74], "ta", unit="http://fdri.ceh.ac.uk/ref/common/unit/degc")
         config = create_method_config(correction_factor=1.00924, lwin_unc=lw_unc, ta=ta)
 
         result = LWCorrection().run(lw, config)

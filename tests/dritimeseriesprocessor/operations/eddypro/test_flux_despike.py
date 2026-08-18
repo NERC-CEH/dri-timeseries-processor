@@ -142,6 +142,7 @@ def _make_container(site: str = "flux-plynl", source_bucket: str = "source-bucke
         source_site=None,
         source_site_identifier=site,
         time_column_name="time",
+        unit=None,
         resolution="PT30M",
         periodicity="PT30M",
         time_anchor="start",

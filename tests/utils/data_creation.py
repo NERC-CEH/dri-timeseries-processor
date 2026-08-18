@@ -88,6 +88,7 @@ def make_time_series_container(
         source_dataset=ts_id + "_dataset",
         source_site_identifier=ts_id + "_site_identifier",
         time_column_name="time",
+        unit=None,
         resolution="P1D",
         periodicity="P1D",
         time_anchor="start",
