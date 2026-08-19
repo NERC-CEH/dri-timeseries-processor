@@ -285,7 +285,7 @@ class TestTimeSeriesProcessor:
         assert isinstance(container.data, ts.TimeFrame)
 
         # Metadata should be set
-        expected_metadata = {"column_name": "value"}
+        expected_metadata = {"column_name": "value", "unit": None}
         assert container.data.metadata == expected_metadata
 
     def test_batch_load_reads_wider_than_the_requested_window(
