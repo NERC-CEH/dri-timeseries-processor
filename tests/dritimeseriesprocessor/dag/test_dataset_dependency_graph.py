@@ -60,6 +60,7 @@ def make_time_series_container(
         source_dataset=ts_id + "_dataset",
         source_site_identifier=ts_id + "site_identifier",
         time_column_name=ts_id + "time_column_name",
+        unit=None,
         resolution=ts_id + "_resolution",
         periodicity=ts_id + "_periodicity",
         time_anchor="start",
