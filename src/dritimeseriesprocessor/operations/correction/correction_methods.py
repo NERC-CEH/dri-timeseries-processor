@@ -196,6 +196,23 @@ class Power(CorrectionMethod):
 
 
 @CorrectionMethod.register
+class Absolute(CorrectionMethod):
+    """Absolute operation class."""
+
+    name = "absolute"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
+        return tf.with_df(
+            tf.df.with_columns(
+                pl.when(date_filter)
+                .then(pl.col(tf.metadata["column_name"]).abs())
+                .otherwise(pl.col(tf.metadata["column_name"]))
+            )
+        )
+
+
+@CorrectionMethod.register
 class WDCorrection(CorrectionMethod):
     """Wind direction correction operation class."""
 
