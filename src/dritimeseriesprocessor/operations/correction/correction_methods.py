@@ -43,8 +43,8 @@ class LWCorrection(CorrectionMethod):
     name = "lw_corr"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        lw_unc_tf = self._get_lw_unc(config)
-        ta_tf = config.params["ta"]
+        lw_unc_tf = self._get_lw_unc(tf, config)
+        ta_tf = self._get_temp(config)
 
         col_name = tf.metadata["column_name"]
         lw_unc_col = lw_unc_tf.metadata["column_name"]
@@ -57,8 +57,16 @@ class LWCorrection(CorrectionMethod):
         lw_unc_corr = pl.col(lw_unc_col) * config.params["correction_factor"]
 
         # Now re-calibrate LW value with temperature adjustment.
-        # Convert temperature to Kelvin
-        ta_k = pl.col(ta_col) + 273.15
+        ta_unit = ta_tf.metadata["unit"]
+
+        match ta_unit:
+            case "http://fdri.ceh.ac.uk/ref/common/unit/kel":
+                ta_k = pl.col(ta_col)
+            case "http://fdri.ceh.ac.uk/ref/common/unit/degc":
+                # Convert to kelvin
+                ta_k = pl.col(ta_col) + 273.15
+            case _:
+                raise ValueError(f"Unsupported temperature unit: {ta_unit}. Must be degC or Kelvin.")
 
         # Get adjustment amount from Stefan-Boltzmann constant 5.67 * 10^-8
         sb_adj = ta_k.pow(4) * 5.67 * 1e-8
@@ -71,7 +79,7 @@ class LWCorrection(CorrectionMethod):
         return tf.with_df(corrected.select(tf.df.columns))
 
     @staticmethod
-    def _get_lw_unc(config: DataProcessingMethodConfig) -> ts.TimeFrame:
+    def _get_lw_unc(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         """Retrieve the longwave radiation uncorrected (lw_unc) TimeFrame from processing configuration.
 
         This supports processing methods that operate on either LWIN or LWOUT datasets, each of which depends on
@@ -87,7 +95,35 @@ class LWCorrection(CorrectionMethod):
         Returns:
             The lw_unc TimeFrame corresponding to either LWIN_UNC or LWOUT_UNC
         """
-        possible_keys = {"lwin_unc", "lwout_unc"}
+        if tf.metadata["column_name"] in ["R_LW_in_Avg", "R_LW_out_Avg"]:
+            # There is no dependant LW uncorrected TS, we correct the LW data in place
+            return tf.copy()
+        else:
+            possible_keys = {"lwin_unc", "lwout_unc"}
+            found_keys = possible_keys & config.params.keys()
+
+            if len(found_keys) != 1:
+                raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
+
+            return config.params[found_keys.pop()]
+
+    @staticmethod
+    def _get_temp(config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        """Retrieve the temperature TimeFrame from processing configuration.
+
+        This supports processing methods that operate using either air temperature (TA) or NR01 sensor temperature
+        (T_nr_Avg)
+
+        NOTE: This is a temporary solution to a wider problem that we want to solve via metadata.
+            See derivation_methods.py:_get_crns_column for more detailed 'note' tag.
+
+        Args:
+            config: Configuration of the correction method.
+
+        Returns:
+            The temp TimeFrame corresponding to either TA or TNR01
+        """
+        possible_keys = {"ta", "T_nr_Avg"}
         found_keys = possible_keys & config.params.keys()
 
         if len(found_keys) != 1:
@@ -154,6 +190,23 @@ class Power(CorrectionMethod):
             tf.df.with_columns(
                 pl.when(date_filter)
                 .then(pl.col(tf.metadata["column_name"]).pow(config.params["correction_factor"]))
+                .otherwise(pl.col(tf.metadata["column_name"]))
+            )
+        )
+
+
+@CorrectionMethod.register
+class Absolute(CorrectionMethod):
+    """Absolute operation class."""
+
+    name = "absolute"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
+        return tf.with_df(
+            tf.df.with_columns(
+                pl.when(date_filter)
+                .then(pl.col(tf.metadata["column_name"]).abs())
                 .otherwise(pl.col(tf.metadata["column_name"]))
             )
         )

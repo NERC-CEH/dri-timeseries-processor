@@ -7,7 +7,9 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.utils.enums import ProcessingLevel
 
 
-def create_timeframe(values: list[float | None] | None = None, column_name: str = "value") -> ts.TimeFrame:
+def create_timeframe(
+    values: list[float | None] | None = None, column_name: str = "value", unit: str | None = None
+) -> ts.TimeFrame:
     """Create a test TimeFrame with sequential hourly timestamps.
 
     Args:
@@ -20,7 +22,7 @@ def create_timeframe(values: list[float | None] | None = None, column_name: str 
     if values is None:
         values = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
     df = pl.DataFrame({column_name: values})
-    return dataframe_to_timeframe(df, metadata={"column_name": column_name})
+    return dataframe_to_timeframe(df, metadata={"column_name": column_name, "unit": unit})
 
 
 def dataframe_to_timeframe(
@@ -86,6 +88,7 @@ def make_time_series_container(
         source_dataset=ts_id + "_dataset",
         source_site_identifier=ts_id + "_site_identifier",
         time_column_name="time",
+        unit=None,
         resolution="P1D",
         periodicity="P1D",
         time_anchor="start",

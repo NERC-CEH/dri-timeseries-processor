@@ -49,6 +49,7 @@ def map_dataset_item(
     source_network = extract_uri_id(item.originating_programme[0].id) if item.originating_programme else None
     resolution = item.measure[0].resolution if item.measure else None
     periodicity = item.measure[0].periodicity if item.measure else None
+    unit = item.measure[0].has_unit if item.measure else None
     time_anchor = map_time_anchor(extract_uri_id(item.measure[0].time_anchor.id)) if item.measure else None
 
     dataset_type = DatasetType(extract_uri_id(item.field_type[0].id))
@@ -78,6 +79,7 @@ def map_dataset_item(
         source_site=source_site,
         source_site_identifier=source_site_identifier,
         time_column_name=getattr(item, "time_column_name", None),
+        unit=unit.id if unit else None,
         dataset_type=dataset_type,
         distribution_url=item.distribution_url,
         plan_order=plan_order,
