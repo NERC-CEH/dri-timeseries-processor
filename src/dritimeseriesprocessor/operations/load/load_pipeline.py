@@ -70,6 +70,7 @@ class LoadPipeline:
                         time_anchor=container.time_anchor,
                     )
                     tf.metadata["column_name"] = container.source_column
+                    tf.metadata["unit"] = container.unit
                 container.data = tf
 
             case "load-local-copy":
