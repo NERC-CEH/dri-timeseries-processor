@@ -71,8 +71,8 @@ def run_function_with_date_filter_test(factor: float, expected: list[float], fn:
 
 
 class TestAbsolute:
-    def test_add_simple(self) -> None:
-        """Test that the add function works across the full DataFrame."""
+    def test_absolute_simple(self) -> None:
+        """Test that the absolute function works across the full DataFrame."""
         tf = create_timeframe([1.2, -2.1, -3.0, 4.5, 6.0, -2.0, 0.0])
         config = create_method_config()
         result = Absolute().run(tf, config)
@@ -81,8 +81,8 @@ class TestAbsolute:
         )
         assert_frame_equal(result.df, expected_df)
 
-    def test_add_with_date_filter(self) -> None:
-        """Test that the add function works with a date filter."""
+    def test_absolute_with_date_filter(self) -> None:
+        """Test that the absolute function works with a date filter."""
         tf = create_timeframe([1.2, -2.1, -3.0, 4.5, 6.0, -2.0, 0.0])
         config = create_method_config(
             start_date=datetime(2025, 1, 1, 2),
