@@ -57,6 +57,7 @@ class LoadPipeline:
                     raise RuntimeError(f"No data found for base dependency: {dep.ts_id}")
                 tf = dep.data.select(container.source_column)
                 tf.metadata["column_name"] = container.source_column
+                tf.metadata["unit"] = container.unit
                 # The source bundle may have a different time_anchor than this container
                 # (e.g. an ObservationDataset bundle has no measure so defaults to "start",
                 # while the extracted time-series dataset declares its own anchor via metadata).
@@ -69,6 +70,7 @@ class LoadPipeline:
                         time_anchor=container.time_anchor,
                     )
                     tf.metadata["column_name"] = container.source_column
+                    tf.metadata["unit"] = container.unit
                 container.data = tf
 
             case "load-local-copy":

@@ -33,6 +33,7 @@ class TimeSeriesContainer:
     source_site: str | None
     source_site_identifier: str | None
     time_column_name: str | None
+    unit: str | None
 
     resolution: str | None
     periodicity: str | None
@@ -138,7 +139,7 @@ class TimeSeriesContainer:
                 periodicity=self.periodicity,
                 time_anchor=self.time_anchor if self.time_anchor else "start",  # use a default anchor if not provided
             )
-            .with_metadata({"column_name": self.source_column})
+            .with_metadata({"column_name": self.source_column, "unit": self.unit})
             .pad()
         )
         self.data = tf

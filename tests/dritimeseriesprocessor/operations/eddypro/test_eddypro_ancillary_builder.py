@@ -29,6 +29,7 @@ def make_container(
         source_site="PLYNL",
         source_site_identifier="PLYNL",
         time_column_name=time_column_name,
+        unit=None,
         resolution=periodicity,
         periodicity=periodicity,
         time_anchor="start",
