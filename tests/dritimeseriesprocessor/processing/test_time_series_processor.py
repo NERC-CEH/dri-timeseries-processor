@@ -314,6 +314,40 @@ class TestTimeSeriesProcessor:
         assert call_kwargs["start_date"] == datetime(2025, 1, 9)
         assert call_kwargs["end_date"] == datetime(2025, 1, 13)
 
+    def test_batch_load_splits_multi_year_window_into_yearly_chunks(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """A load window spanning multiple calendar years should be queried in separate per-year chunks, so a
+        large backfill never pulls more than a year's worth of data into memory in a single query. The widened
+        (extend_date_range) window is what gets chunked, so the first and last chunk carry that day's margin.
+        """
+        ds_id = "ds1"
+        mock_graph = create_mock_dag([[ds_id]])
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2021, 6, 1),
+            end_date=datetime(2023, 3, 1),
+            metrics=MagicMock(),
+        )
+        mock_graph.datasets[ds_id].source_column = "value"
+
+        # Return a single, distinct row per chunk so the concatenated result has no duplicate timestamps.
+        mock_router.query_by_date_range.side_effect = lambda *containers, start_date, end_date: pl.DataFrame(
+            {"time": [start_date], "value": [start_date.year]}
+        )
+
+        processor._batch_load()
+
+        calls = mock_router.query_by_date_range.call_args_list
+        assert [(call.kwargs["start_date"], call.kwargs["end_date"]) for call in calls] == [
+            (datetime(2021, 5, 31), datetime(2021, 12, 31)),
+            (datetime(2022, 1, 1), datetime(2022, 12, 31)),
+            (datetime(2023, 1, 1), datetime(2023, 3, 2)),
+        ]
+        assert isinstance(mock_graph.datasets[ds_id].data, ts.TimeFrame)
+
     def test_build_save_tasks_drops_rows_outside_the_requested_window(
         self, mock_router: MagicMock, mock_writer: MagicMock
     ) -> None:
