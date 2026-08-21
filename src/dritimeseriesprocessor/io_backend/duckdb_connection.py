@@ -31,6 +31,7 @@ class DuckDBConnectionFactory(ABC):
             INSTALL httpfs;
             LOAD httpfs;
             SET force_download=true;
+            SET THREADS=64;
         """)
         return conn
 

@@ -111,7 +111,7 @@ class S3DataRouter(DataRouter):
         query = f"""
             SELECT {time_column_name}, COLUMNS(c -> c IN ({requested_columns}))
             FROM read_parquet(
-                '{bucket_path}', hive_partitioning=true
+                '{bucket_path}', hive_partitioning=true, union_by_name=true
             )
             WHERE
                 (date BETWEEN ? AND ?);
