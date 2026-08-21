@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dri-timeseries-processor"
-version = "0.7.31"
+version = "0.7.32"
 description = "Timeseries processor service."
 readme = "README.md"
 license = { file = "LICENSE" }
