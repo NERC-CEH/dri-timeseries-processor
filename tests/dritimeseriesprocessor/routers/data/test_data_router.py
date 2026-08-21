@@ -1,3 +1,4 @@
+import io
 from datetime import datetime
 from pathlib import Path
 from typing import Iterator
@@ -62,7 +63,8 @@ class TestS3DataRouter:
         expected_query = """
             SELECT a_time, COLUMNS(c -> c IN ('a_column_name'))
             FROM read_parquet(
-                's3://a_bucket/a_network/dataset=a_data/site=A_SITE/**/date=*/data.parquet', hive_partitioning=true
+                's3://a_bucket/a_network/dataset=a_data/site=A_SITE/**/date=*/data.parquet', hive_partitioning=true,
+                union_by_name=true
             )
             WHERE
                 (date BETWEEN ? AND ?);
@@ -72,7 +74,7 @@ class TestS3DataRouter:
         call_query, call_params = mock_reader.read.call_args.args
 
         assert_frame_equal(result, TEST_DF)  # Return what the mock_reader returned
-        assert call_query.strip() == expected_query.strip()
+        assert " ".join(call_query.split()) == " ".join(expected_query.split())  # Collapse the whitespace for compare
         assert call_params == [start, end]
 
     def test_query_by_date_range_builds_columns_lambda_for_multiple_containers(
@@ -179,6 +181,76 @@ class TestS3DataRouter:
         assert "value" in result.columns
         assert "does_not_exist" not in result.columns
         assert not result.is_empty()
+
+    @pytest.mark.parametrize(
+        ("site_identifier", "first_file", "second_file", "expected_extra_column"),
+        [
+            pytest.param(
+                "ADDED_SITE",
+                pl.DataFrame({"time": [datetime(2023, 1, 1)], "value": [1.0]}),
+                pl.DataFrame({"time": [datetime(2023, 1, 2)], "value": [2.0], "extra_column": [3.0]}),
+                [None, 3.0],
+                id="column_added_in_second_file",
+            ),
+            pytest.param(
+                "REMOVED_SITE",
+                pl.DataFrame({"time": [datetime(2023, 1, 1)], "value": [1.0], "extra_column": [3.0]}),
+                pl.DataFrame({"time": [datetime(2023, 1, 2)], "value": [2.0]}),
+                [3.0, None],
+                id="column_missing_from_second_file",
+            ),
+        ],
+    )
+    def test_reads_files_with_differing_schemas_in_one_query(
+        self,
+        site_identifier: str,
+        first_file: pl.DataFrame,
+        second_file: pl.DataFrame,
+        expected_extra_column: list[float | None],
+        s3_storage_client: S3StorageClient,
+    ) -> None:
+        """Tests that both dates are read by a single query when their parquet files hold different columns.
+
+        DuckDB takes the schema from the first file it reads, so a column that only one of the files has fails
+        the whole read unless the query unions the files by name.
+        """
+        start = datetime(2023, 1, 1)
+        end = datetime(2023, 1, 2)
+        site_prefix = f"evolving_network/dataset=evolving_data/site={site_identifier}"
+
+        for date, frame in [("2023-01-01", first_file), ("2023-01-02", second_file)]:
+            buffer = io.BytesIO()
+            frame.write_parquet(buffer)
+            s3_storage_client.put_bytes(E2E_INPUT_BUCKET, f"{site_prefix}/date={date}/data.parquet", buffer.getvalue())
+
+        reader = DuckDBParquetReader(create_duckdb_factory())
+        raw_reader = MagicMock(spec=RawFileReader)
+        router = S3DataRouter(reader, raw_reader)
+
+        containers = [
+            MagicMock(
+                source_bucket=E2E_INPUT_BUCKET,
+                source_dataset="evolving_data",
+                network="evolving_network",
+                source_column=source_column,
+                source_site_identifier=site_identifier,
+                resolution="PT30M",
+                time_column_name="time",
+                processing_level=ProcessingLevel.RAW,
+            )
+            for source_column in ("value", "extra_column")
+        ]
+
+        result = router.query_by_date_range(*containers, start_date=start, end_date=end)
+
+        expected = pl.DataFrame(
+            {
+                "time": [datetime(2023, 1, 1), datetime(2023, 1, 2)],
+                "value": [1.0, 2.0],
+                "extra_column": expected_extra_column,
+            }
+        )
+        assert_frame_equal(result, expected)
 
 
 class TestSitePartitionPrefix:
