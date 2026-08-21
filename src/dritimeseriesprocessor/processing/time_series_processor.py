@@ -37,7 +37,7 @@ from dritimeseriesprocessor.utils.polars_utils import split_by_date
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 from dritimeseriesprocessor.utils.task_pool import run_threaded_tasks
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
-from dritimeseriesprocessor.utils.time_utils import extend_date_range, year_chunks
+from dritimeseriesprocessor.utils.time_utils import extend_date_range
 from dritimeseriesprocessor.utils.timer import log_duration
 from dritimeseriesprocessor.utils.urls import SITE_URI
 
@@ -258,34 +258,21 @@ class TimeSeriesProcessor:
         Containers are grouped by network, site, resolution, and source dataset so that a single query
         can retrieve all columns for each group in one read. Each container's data is then extracted from
         the combined result and initialised into a TimeFrame.
-
-        The load window is read in per-calendar-year chunks rather than as one query over the whole window, so a
-        large multi-year run reads at most a year's worth of data at a time instead of pulling everything into
-        memory in one go. A window that falls within a single year is unaffected - it still resolves to one chunk.
         """
         containers = self._collect_load_containers()
         logger.info(f"Collecting and loading [{len(containers)}] datasets.")
         common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
         groupings = group_containers(containers, common_keys)
 
-        # Chunk the requested window into calendar years first, then widen only the outer edges of the whole
-        # window (not every internal chunk boundary) so aggregation buckets at the requested window's edges get
-        # all of their source data. The extra rows are trimmed back off again when the results are saved. Widening
-        # each chunk individually instead would make adjacent chunks overlap and read the same rows twice.
-        chunks = year_chunks(self.start_date, self.end_date)
-        widened_start, widened_end = extend_date_range(self.start_date, self.end_date)
-        if chunks:
-            chunks[0] = (widened_start, chunks[0][1])
-            chunks[-1] = (chunks[-1][0], widened_end)
+        # Read wider than the requested window so aggregation buckets on the window edges get all of their source
+        # data. The extra rows are trimmed back off again when the results are saved.
+        load_start_date, load_end_date = extend_date_range(self.start_date, self.end_date)
 
         with self.metrics.time_load.time():
             for dataset_group, containers_in_group in groupings.items():
                 try:
-                    combined_df = pl.concat(
-                        self.data_router.query_by_date_range(
-                            *containers_in_group, start_date=chunk_start, end_date=chunk_end
-                        )
-                        for chunk_start, chunk_end in chunks
+                    combined_df = self.data_router.query_by_date_range(
+                        *containers_in_group, start_date=load_start_date, end_date=load_end_date
                     )
 
                     if combined_df.is_empty():
