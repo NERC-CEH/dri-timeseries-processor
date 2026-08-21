@@ -549,7 +549,7 @@ wheels = [
 
 [[package]]
 name = "dri-timeseries-processor"
-version = "0.7.29"
+version = "0.7.31"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
