@@ -123,7 +123,7 @@ class LWCorrection(CorrectionMethod):
         Returns:
             The temp TimeFrame corresponding to either TA or TNR01
         """
-        possible_keys = {"ta", "T_nr_Avg"}
+        possible_keys = {"ta", "t_nr_avg"}
         found_keys = possible_keys & config.params.keys()
 
         if len(found_keys) != 1:
