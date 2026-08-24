@@ -11,6 +11,7 @@ from typing import Any
 
 from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationItem
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import (
+    AppliesToDataset,
     DataProcessingConfigurationItem,
 )
 from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
@@ -89,23 +90,29 @@ def map_dataset_item(
 
 
 def map_processing_config_item(
-    item: DataProcessingConfigurationItem, all_site_metadata: dict[str, SiteMetadata]
+    item: DataProcessingConfigurationItem,
+    applies_to: AppliesToDataset,
+    all_site_metadata: dict[str, SiteMetadata],
 ) -> DataProcessingConfig:
     """Map a DataProcessingConfigurationItem to a ProcessingConfig domain model.
 
     Some processing configurations will have "site_attribute" parameters that require fetching this metadata
     key from the site metadata.
 
+    A configuration can apply to more than one dataset. We use `applies_to` to pick which of those datasets this
+    config is being mapped for.
+
     Args:
         item: The validated DataProcessingConfigurationItem from the API.
+        applies_to: The dataset, from the item's `appliesToDataset` list, to map this config for.
         all_site_metadata: Metadata for sites.
 
     Returns:
         A ProcessingConfig domain object containing annotations and a list of MethodConfig objects which provide
         specific method configurations for use in the processing pipeline
     """
-    ts_id = item.applies_to_dataset[0].id
-    site_id = item.applies_to_dataset[0].originating_site[0].id
+    ts_id = applies_to.id
+    site_id = applies_to.originating_site[0].id
     config_type = ConfigurationType(extract_uri_id(item.type.id))
     annotations = extract_annotations(item.has_annotation)
 

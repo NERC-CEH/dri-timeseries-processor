@@ -301,7 +301,7 @@ class DatasetDependencyGraph:
             return {}
 
         response = self.metadata_router.fetch_processing_configs(dataset_ids)
-        dataset_configs = self._build_processing_configs(response)
+        dataset_configs = self._build_processing_configs(response, dataset_ids)
         return dataset_configs
 
     def _fetch_root_datasets_by_ids(self, dataset_ids: list[str]) -> list[TimeSeriesContainer]:
@@ -418,21 +418,33 @@ class DatasetDependencyGraph:
         return all_containers
 
     def _build_processing_configs(
-        self, dataset_response: DataProcessingConfiguration
+        self, dataset_response: DataProcessingConfiguration, requested_ids: list[str]
     ) -> dict[str, list[DataProcessingConfig]]:
         """Parse an API response containing processing configuration items and return them grouped by timeseries ID.
 
+        A configuration can apply to several datasets. Each of those datasets gets its own copy of the config, so the
+        grouping does not depend on the order the API happens to list them in.
+
         Args:
             dataset_response: The DataProcessingConfig representing a set of processing configs.
+            requested_ids: The dataset IDs the configs were requested for.
 
         Returns:
             A dictionary keyed by timeseries ID, with value as the list of associated processing configs.
         """
+        requested = set(requested_ids)
         dataset_configs = defaultdict(list)
         for item in dataset_response.items:
-            mapped_config = map_processing_config_item(item, self.site_metadata)
-            self._get_deployment_attributes(mapped_config)
-            dataset_configs[mapped_config.ts_id].append(mapped_config)
+            applies_to_requested = [applies_to for applies_to in item.applies_to_dataset if applies_to.id in requested]
+            if not applies_to_requested:
+                logger.warning(
+                    f"Config {item.id} applies to none of the requested datasets: "
+                    f"{[applies_to.id for applies_to in item.applies_to_dataset]}"
+                )
+            for applies_to in applies_to_requested:
+                mapped_config = map_processing_config_item(item, applies_to, self.site_metadata)
+                self._get_deployment_attributes(mapped_config)
+                dataset_configs[mapped_config.ts_id].append(mapped_config)
         return dataset_configs
 
     def _get_deployment_attributes(self, mapped_config: DataProcessingConfig) -> None:
