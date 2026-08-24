@@ -625,10 +625,12 @@ class TestExtractAnnotations:
 
 class TestMapProcessingConfigItem:
     def test_qc_processing_config(self) -> None:
+        """Tests that a QC configuration item maps to a DataProcessingConfig with its method and parameters."""
         filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_qc.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
+        item = api_model.items[0]
 
-        result = map_processing_config_item(api_model.items[0], MagicMock())
+        result = map_processing_config_item(item, item.applies_to_dataset[0], MagicMock())
 
         expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
@@ -647,10 +649,12 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_infill_processing_config(self) -> None:
+        """Tests that an infill configuration item maps to a DataProcessingConfig with its method and parameters."""
         filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_infill.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
+        item = api_model.items[0]
 
-        result = map_processing_config_item(api_model.items[0], MagicMock())
+        result = map_processing_config_item(item, item.applies_to_dataset[0], MagicMock())
 
         expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",
@@ -669,10 +673,12 @@ class TestMapProcessingConfigItem:
         assert result == expected
 
     def test_correction_processing_config(self) -> None:
+        """Tests that a correction configuration item maps to a DataProcessingConfig with its observation interval."""
         filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_correction.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
+        item = api_model.items[0]
 
-        result = map_processing_config_item(api_model.items[0], MagicMock())
+        result = map_processing_config_item(item, item.applies_to_dataset[0], MagicMock())
 
         expected = DataProcessingConfig(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-swin_30min_processed",

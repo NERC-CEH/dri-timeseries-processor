@@ -114,6 +114,7 @@ def create_items_list(ts_ids: str | list) -> list:
         item = MagicMock()
         item.__getitem__ = MagicMock(side_effect=lambda key, _id=ts_id: _id)
         item.originating_site = [MagicMock(id=ts_id)]
+        item.applies_to_dataset = [MagicMock(id=ts_id)]
         items.append(item)
     return items
 
@@ -175,7 +176,7 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(
         "dritimeseriesprocessor.dag.dataset_dependency_graph.map_processing_config_item",
-        lambda item, _: make_processing_config_container(item["@id"]),
+        lambda _item, applies_to, _site_metadata: make_processing_config_container(applies_to.id),
     )
 
     monkeypatch.setattr(
@@ -220,6 +221,35 @@ class TestFetchDatasets:
 
         assert result == {ts_id: [container]}
         assert mock_router.fetch_processing_configs.call_count == 1
+
+    @pytest.mark.parametrize("applies_to_ids", [["ds1", "ds2"], ["ds2", "ds1"]])
+    def test_fetch_configs_for_shared_config(self, applies_to_ids: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that a config applying to several datasets is returned for each of them, whatever order the
+        metadata API lists those datasets in."""
+        mock_router = setup_mocks(["ds1", "ds2"], monkeypatch)
+        shared_item = create_items_list("shared_config")[0]
+        shared_item.applies_to_dataset = [MagicMock(id=ts_id) for ts_id in applies_to_ids]
+        mock_router.fetch_processing_configs.return_value = SimpleNamespace(items=[shared_item])
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+
+        result = builder._fetch_configs_for_dataset(["ds1", "ds2"])
+
+        assert result == {
+            "ds1": [make_processing_config_container("ds1")],
+            "ds2": [make_processing_config_container("ds2")],
+        }
+
+    def test_fetch_configs_ignores_unrequested_datasets(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that a config is not returned for datasets that were not asked for."""
+        mock_router = setup_mocks(["ds1", "ds2"], monkeypatch)
+        shared_item = create_items_list("shared_config")[0]
+        shared_item.applies_to_dataset = [MagicMock(id="ds2")]
+        mock_router.fetch_processing_configs.return_value = SimpleNamespace(items=[shared_item])
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+
+        result = builder._fetch_configs_for_dataset(["ds1"])
+
+        assert result == {}
 
     @pytest.mark.parametrize(
         "sites",
