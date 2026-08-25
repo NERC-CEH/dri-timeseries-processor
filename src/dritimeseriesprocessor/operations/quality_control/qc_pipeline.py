@@ -33,6 +33,12 @@ class QCPipeline(OperationPipeline):
         remove_flagged: bool = True,
     ) -> ts.TimeFrame:
         """Run QC checks and, if this is the last QC block in the plan, remove data that failed."""
+        # Checks that need to know which site they are running on (e.g. manual_removal) read these. Other checks
+        # ignore them.
+        for cfg in config.method_configs:
+            cfg.params["network"] = container.network
+            cfg.params["site_id"] = container.source_site_identifier
+
         tf = super().run(container, dataset_repository, config)
         if remove_flagged and container.has_flags():
             logger.info("Removing data that has failed QC checks")

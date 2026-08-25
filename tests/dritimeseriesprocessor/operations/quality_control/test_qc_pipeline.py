@@ -156,6 +156,25 @@ class TestRun:
         pipeline.remove_flagged_data.assert_not_called()
         assert result is qc_result
 
+    def test_injects_container_site_into_method_configs(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that the network and site code are put into every method config before the checks run."""
+        monkeypatch.setattr(OperationPipeline, "run", lambda self, container, repo, config: MagicMock())
+
+        container = self._make_container()
+        container.network = "cosmos"
+        container.source_site_identifier = "ALIC1"
+        method_configs = [
+            DataProcessingMethodConfig(method="range", params={"gt": 1}),
+            DataProcessingMethodConfig(method="manual_removal", params={}),
+        ]
+        config = MagicMock(method_configs=method_configs)
+
+        QCPipeline({}).run(container, {}, config, remove_flagged=False)
+
+        for method_config in method_configs:
+            assert method_config.params["network"] == "cosmos"
+            assert method_config.params["site_id"] == "ALIC1"
+
 
 class TestCoreFlagUpdater:
     def test_calls_update_qc_core_flags(self, mock_timeframe: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
