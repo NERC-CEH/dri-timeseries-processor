@@ -77,6 +77,18 @@ All QC methods are registered in `operations/quality_control/qc_methods.py`.
          )
 ```
 
+### Manual flagging
+
+Most QC methods take their thresholds from metadata. The `manual_removal` check is different - the data points it
+flags come from `__assets__/manual_flagging/<network>/manual_flags.csv`, a hand-maintained list of site, variable
+and date range for points that have been checked by a person and found to be bad. Each network has its own file,
+and COSMOS is the only one with a list so far.
+
+The check needs the network and the short site code (e.g. `ALIC1`) to look a data point up. `QCPipeline` puts both
+into every method config before the checks run, taken from the container, so the metadata configuration needs no
+arguments. The file is read by the `ManualRemoval` class itself, where a variable of `ALL` means every variable at
+that site and an empty end date means the period runs to the end of the data.
+
 ## Infilling
 
 Infilling replaces missing or removed data values to produce a complete time series. Infilling may reference
