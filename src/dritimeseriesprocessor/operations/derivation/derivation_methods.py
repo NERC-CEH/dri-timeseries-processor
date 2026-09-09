@@ -6,6 +6,7 @@ from typing import Iterable, Literal
 
 import polars as pl
 import time_stream as ts
+from isoperiod import Period
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -884,10 +885,10 @@ class GetSnowEstimatedCounts(DerivationMethod):
         snow_daily_tf = tf_map["snow"]
         cts_smo_tf = tf_map[_get_crns_column(columns.keys(), "cts_smo")]
 
-        if cts_smo_tf.resolution != ts.Period.of_hours(1):
+        if cts_smo_tf.resolution != Period.of_hours(1):
             raise ValueError(f"Resolution of cts_smo_crns must be hourly. Got: {cts_smo_tf.resolution}")
 
-        if snow_daily_tf.resolution != ts.Period.of_days(1):
+        if snow_daily_tf.resolution != Period.of_days(1):
             raise ValueError(f"Resolution of snow must be daily. Got: {snow_daily_tf.resolution}")
 
         merged_tf = cts_smo_tf.with_df(

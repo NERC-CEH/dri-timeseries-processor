@@ -44,6 +44,7 @@ dependencies = [
     "dri-utils @ git+https://github.com/NERC-CEH/dri-utils.git",
     "httpx",
     "isodate",
+    "isoperiod",
     "polars>=1.42.1",
     "prometheus-client",
     "pyarrow>=25.0.0",
@@ -161,3 +162,4 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
+isoperiod = { git = "https://github.com/NERC-CEH/isoperiod.git" }
