@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import polars as pl
 import pytest
 import time_stream as ts
+from isoperiod import Period
 from polars.testing import assert_series_equal
 from tests.utils.data_creation import create_timeframe
 
@@ -97,7 +98,7 @@ class Test1minTsExtent:
             [start + timedelta(minutes=i) for i in range(minute_count)], "PRECIP", [0.1] * minute_count, "PT1M"
         )
         precip_30min = precip_1min.aggregate(
-            aggregation_period=ts.Period.of_iso_duration("PT30M"),
+            aggregation_period=Period.of_iso_duration("PT30M"),
             aggregation_function="sum",
             aggregation_time_anchor="start",
             columns="PRECIP",
