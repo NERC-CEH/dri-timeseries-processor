@@ -384,3 +384,14 @@ class TestRollingMeanForCounts:
         )
         result = RollingMeanForCounts().run(tf, config)
         assert_frame_equal(result.df.select("value"), expected)
+
+    def test_rolling_mean_month_based_window_raises(self) -> None:
+        """Tests that a month-based window size raises a ValueError."""
+        tf = create_timeframe([1.0, 2.0, 3.0])
+        config = create_rolling_aggregation_config()
+        config.params["window_size"] = "P1M"
+        config.params["threshold"] = 1
+        config.params["alignment"] = "center"
+
+        with pytest.raises(ValueError):
+            RollingMeanForCounts().run(tf, config)
