@@ -546,14 +546,17 @@ class Albedo(DerivationMethod):
         """
         swin = columns["swin"]
         swout = columns["swout"]
-        theta_s = columns["solar_zenith"]
+        theta_s = columns["solar_zenith"] if "solar_zenith" in columns else None
 
         # Albedo
         albedo = pl.when((swin.is_not_null()) & (swin > 0)).then(swout / swin).otherwise(None)
 
         # Remove nighttime values
-        swin_clear = theta_s.cos()
-        albedo_day = pl.when(swin_clear > 0).then(albedo).otherwise(None)
+        if theta_s is not None:
+            swin_clear = theta_s.cos()
+            albedo_day = pl.when(swin_clear > 0).then(albedo).otherwise(None)
+        else:
+            albedo_day = pl.when(swin >= swout).then(albedo).otherwise(None)
 
         return albedo_day.clip(0.0, 1.0)
 

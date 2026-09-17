@@ -357,8 +357,8 @@ class TestSolarZenith:
 
 
 class TestAlbedo:
-    def test_albedo(self) -> None:
-        """Test albedo calculation.
+    def test_albedo_with_solar_zenith(self) -> None:
+        """Test albedo calculation with solar zenith.
         Use fictitious test data, not enough test data available. Data was randomly generated.
         To test this method, both day and night times should be used."""
         config = create_method_config(
@@ -440,6 +440,104 @@ class TestAlbedo:
                     2.344,
                     2.472,
                     2.564,
+                ],
+            },
+            "albedo",
+        )
+
+        expected = dataframe_to_timeframe(
+            pl.DataFrame(
+                {
+                    "albedo": [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        0.183,
+                        0.171,
+                        0.229,
+                        0.186,
+                        0.275,
+                        0.247,
+                        0.174,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ]
+                }
+            )
+        )
+
+        result = Albedo().run(config)
+        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+
+    def test_albedo_without_solar_zenith(self) -> None:
+        """Test albedo calculation without solar zenith.
+        Use fictitious test data, not enough test data available. Data was randomly generated.
+        To test this method, both day and night times should be used."""
+        config = create_method_config(
+            {
+                "swin": [
+                    22.9,
+                    17.7,
+                    21.0,
+                    26.0,
+                    15.5,
+                    18.5,
+                    22.0,
+                    24.2,
+                    20.6,
+                    20.2,
+                    24.6,
+                    16.6,
+                    26.9,
+                    17.1,
+                    23.1,
+                    17.2,
+                    13.9,
+                    21.1,
+                    25.5,
+                    20.9,
+                    15.0,
+                    16.6,
+                    21.2,
+                    18.0,
+                ],
+                "swout": [
+                    2.6,
+                    4.0,
+                    5.6,
+                    3.0,
+                    5.9,
+                    2.8,
+                    4.0,
+                    5.4,
+                    3.8,
+                    3.7,
+                    4.2,
+                    3.8,
+                    5.0,
+                    4.7,
+                    5.7,
+                    3.0,
+                    2.6,
+                    5.4,
+                    3.0,
+                    4.5,
+                    3.3,
+                    5.7,
+                    5.5,
+                    4.3,
                 ],
             },
             "albedo",
