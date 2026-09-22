@@ -43,6 +43,8 @@ class QCPipeline(OperationPipeline):
         if remove_flagged and container.has_flags():
             logger.info("Removing data that has failed QC checks")
             tf = self.remove_flagged_data(tf)  # type: ignore[arg-type]
+            # Need to update the core flags now. This adds the "removed" flag for those values removed by QC.
+            tf = self.core_flag_updater(tf)
         return tf
 
     def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
