@@ -135,6 +135,17 @@ class TestUpdateQualityControlCoreFlags:
         # Should be left with missing (4) plus unchecked (32) flags.
         assert list(tf.df[flag_col]) == [0, 36, 0, 36, 0]
 
+    def test_corrected_flag_kept_where_removed(self, sample_container: TimeSeriesContainer) -> None:
+        """Test that the 'corrected' core flag (1) is kept where the 'removed' core flag (8) is added."""
+        tf = add_initial_core_flags(sample_container).data
+        assert tf is not None
+        flag_col = core_flag_column_name("value")
+        # Mark a value that is later removed by QC, and a value that is kept, as corrected.
+        tf.add_flag(flag_col, "corrected", pl.Series([False, True, True, False, False]))
+        tf = update_quality_control_core_flags(tf)
+        # Row 1 keeps corrected (1) alongside missing (4) and removed (8) flags. Row 2 keeps corrected (1).
+        assert list(tf.df[flag_col]) == [0, 13, 1, 12, 0]
+
     def test_no_core_flag_column(self, timeframe_without_core_flag: ts.TimeFrame) -> None:
         """Test that an error is raised if the core flag column is not found."""
         with pytest.raises(ValueError):

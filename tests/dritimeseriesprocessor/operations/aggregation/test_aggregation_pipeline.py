@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 import polars as pl
 import pytest
 import time_stream as ts
+from isoperiod import Period
 from polars.testing import assert_frame_equal
-from time_stream.period import Period
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Sum

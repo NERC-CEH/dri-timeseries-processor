@@ -68,6 +68,10 @@ class AggregationMethod(Operation, ABC):
 
         # Define number of datapoints in window from window_size and periodicity
         window_count = tf.periodicity.count(configure_period_object(window_size))
+        if window_count is None:
+            # count() returns None for month-based periodicities, which have no fixed number of rows
+            # per window and so cannot drive the edge masking below.
+            raise ValueError(f"Rolling aggregation needs a periodicity with a fixed window count. Got: {window_size}")
 
         missing_criteria = AggregationMethod.missing_criteria(config)
         time_window = AggregationMethod.time_window(config)

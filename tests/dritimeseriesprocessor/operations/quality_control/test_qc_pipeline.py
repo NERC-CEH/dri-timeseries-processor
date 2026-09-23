@@ -4,13 +4,19 @@ from unittest.mock import MagicMock
 import polars as pl
 import pytest
 import time_stream as ts
+from isoperiod import Period
 from polars.testing import assert_series_equal
-from tests.utils.data_creation import create_timeframe
+from tests.utils.data_creation import create_timeframe, make_time_series_container
 
-from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.processing_config import (
+    DataProcessingConfig,
+    DataProcessingMethodConfig,
+)
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.operations.flags.flag_methods import ensure_flag_column
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
 @pytest.fixture
@@ -97,7 +103,7 @@ class Test1minTsExtent:
             [start + timedelta(minutes=i) for i in range(minute_count)], "PRECIP", [0.1] * minute_count, "PT1M"
         )
         precip_30min = precip_1min.aggregate(
-            aggregation_period=ts.Period.of_iso_duration("PT30M"),
+            aggregation_period=Period.of_iso_duration("PT30M"),
             aggregation_function="sum",
             aggregation_time_anchor="start",
             columns="PRECIP",
@@ -174,6 +180,62 @@ class TestRun:
         for method_config in method_configs:
             assert method_config.params["network"] == "cosmos"
             assert method_config.params["site_id"] == "ALIC1"
+
+
+class TestRunCoreFlags:
+    """Tests that run the QC pipeline for real, to check the core flags that end up on data removed by QC."""
+
+    CORE_FLAGS = {"corrected": 1, "missing": 4, "removed": 8, "unchecked": 32}
+    FLAG_SYSTEMS = {"core_flags": CORE_FLAGS, "qc_flags": {"range": 1}, "corrs_flags": {"ADD": 1}}
+
+    def _make_container(self) -> TimeSeriesContainer:
+        """Create a container where values 1 and 3 fail a range check, and values 1 and 2 have been corrected."""
+        container = make_time_series_container("test")
+        container.flag_column_schemes = {
+            "value_CORE_FLAG": "core_flags",
+            "value_QC_FLAG": "qc_flags",
+            "value_CORRS_FLAG": "corrs_flags",
+        }
+
+        tf = create_timeframe([10.0, 200.0, 30.0, 300.0], column_name="value")
+        ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
+        ensure_flag_column(tf, "value_CORRS_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
+        corrected = pl.Series([False, True, True, False])
+        tf.add_flag("value_CORE_FLAG", "unchecked", pl.lit(True))
+        tf.add_flag("value_CORE_FLAG", "corrected", corrected)
+        tf.add_flag("value_CORRS_FLAG", "ADD", corrected)
+        container.data = tf
+        return container
+
+    def _make_config(self) -> DataProcessingConfig:
+        """Create a QC config with a single range check that fails values outside 0 to 100."""
+        return DataProcessingConfig(
+            ts_id="test",
+            site_id="test_site",
+            config_id="test_config",
+            config_type=ConfigurationType.QUALITY_CONTROL,
+            method_configs=[DataProcessingMethodConfig(method="range", params={"lt": 0, "gt": 100})],
+        )
+
+    def test_removed_flag_added_when_remove_flagged_true(self) -> None:
+        """Tests that values removed by QC are nulled, get the 'removed' core flag and keep their corrected flags."""
+        result = QCPipeline(self.FLAG_SYSTEMS).run(self._make_container(), {}, self._make_config(), remove_flagged=True)
+
+        assert result.df["value"].to_list() == [10.0, None, 30.0, None]
+        # Row 1 keeps corrected (1) and gets removed (8). Row 2 keeps corrected. Unchecked (32) is cleared everywhere.
+        assert result.df["value_CORE_FLAG"].to_list() == [0, 9, 1, 8]
+        assert result.df["value_CORRS_FLAG"].to_list() == [0, 1, 1, 0]
+
+    def test_no_removed_flag_when_remove_flagged_false(self) -> None:
+        """Tests that no values are removed or given the 'removed' core flag when remove_flagged is False."""
+        result = QCPipeline(self.FLAG_SYSTEMS).run(
+            self._make_container(), {}, self._make_config(), remove_flagged=False
+        )
+
+        assert result.df["value"].to_list() == [10.0, 200.0, 30.0, 300.0]
+        # Corrected (1) is kept and unchecked (32) is cleared everywhere.
+        assert result.df["value_CORE_FLAG"].to_list() == [0, 1, 1, 0]
+        assert result.df["value_CORRS_FLAG"].to_list() == [0, 1, 1, 0]
 
 
 class TestCoreFlagUpdater:

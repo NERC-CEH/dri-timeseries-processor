@@ -6,6 +6,7 @@ import logging
 
 import polars as pl
 import time_stream as ts
+from isoperiod import Period
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
@@ -37,7 +38,7 @@ class AggregationPipeline(OperationPipeline):
             raise ValueError(f"No periodicity found for: {container.ts_id}")
 
         for cfg in config.method_configs:
-            cfg.params["aggregation_period"] = ts.Period.of_iso_duration(container.periodicity)
+            cfg.params["aggregation_period"] = Period.of_iso_duration(container.periodicity)
             cfg.params["aggregation_time_anchor"] = container.time_anchor
             cfg.params["source_column"] = container.source_column
 
