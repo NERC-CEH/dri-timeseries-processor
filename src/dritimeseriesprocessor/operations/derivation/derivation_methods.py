@@ -244,9 +244,29 @@ class SolarZenith(DerivationMethod):
     name = "solar_zenith"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        swin_tf = self.config.params["swin"]
-        time_expr = pl.col(swin_tf.time_name)
-        return meteorology.solar_zenith(time=time_expr, latitude=self.config.params["lat"])
+        swin_tf = self._get_swin_tf()
+        return meteorology.solar_zenith(time=pl.col(swin_tf.time_name), latitude=self.config.params["lat"])
+
+    def _get_swin_tf(self) -> ts.TimeFrame:
+        """
+        Different networks may use the same method, but have different column names.
+        The allowed column names for this method are listed in possible_keys below
+
+
+        Raises:
+            KeyError: If both possible_keys are found, it is not clear which should be used.
+                      If no possible_keys are found, a new key may need to be added.
+
+        Returns:
+            ts.TimeFrame: TimeFrame of shortwave ingoing radiation
+        """
+        possible_keys = {"swin", "r_sw_in_avg"}
+        found_keys = possible_keys & self.config.params.keys()
+
+        if len(found_keys) != 1:
+            raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
+
+        return self.config.params[found_keys.pop()]
 
 
 @DerivationMethod.register
@@ -259,9 +279,32 @@ class Albedo(DerivationMethod):
     name = "calc_albedo"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return meteorology.albedo(
-            swin=columns["swin"], swout=columns["swout"], solar_zenith_angle=columns["solar_zenith"]
-        )
+        swin, swout = self._get_sw_column_names(columns)
+        return meteorology.albedo(swin=swin, swout=swout, solar_zenith_angle=columns["solar_zenith"])
+
+    def _get_sw_column_names(self, columns: dict[str, pl.Expr]) -> tuple[pl.Expr, pl.Expr]:
+        """
+        Different networks may use the same method, but have different column names.
+        The allowed column names for this method are listed in possible_keys below
+
+        Raises:
+            KeyError: If both possible_keys are found, it is not clear which should be used.
+                      If no possible_keys are found, a new key may need to be added.
+
+        Returns:
+            tuple[pl.Expr,pl.Expr]: expressions for ingoing and outgoing short wave radiation.
+        """
+        possible_keys_in = {"swin", "r_sw_in_avg"}
+        possible_keys_out = {"swout", "r_sw_out_avg"}
+        found_keys_in = possible_keys_in & columns.keys()
+        found_keys_out = possible_keys_out & columns.keys()
+
+        if len(found_keys_in) != 1 and len(found_keys_out) != 1:
+            raise KeyError(
+                f"Expected exactly one of {possible_keys_in} and one of{possible_keys_out}, found {found_keys_out}"
+            )
+
+        return columns[found_keys_in.pop()], columns[found_keys_out.pop()]
 
 
 @DerivationMethod.register
