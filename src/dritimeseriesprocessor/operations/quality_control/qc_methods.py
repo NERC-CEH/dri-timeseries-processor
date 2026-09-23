@@ -192,9 +192,10 @@ class ManualRemoval(QcMethod):
         # The network and site code are put into the params by QCPipeline, taken from the container.
         periods = self.flag_periods(config.params["network"], config.params["site_id"], tf.metadata["column_name"])
 
+        time_dtype = tf.df.schema[tf.time_name]
         flagged = pl.repeat(False, pl.len())
         for period in periods:
-            flagged = flagged | get_date_filter(tf.time_name, period)
+            flagged = flagged | get_date_filter(tf.time_name, period, time_dtype)
 
         return tf.df.select(flagged).to_series()
 

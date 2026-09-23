@@ -29,7 +29,7 @@ class CorrectionMethod(OperationMethod[ts.TimeFrame, ts.TimeFrame]):
         Returns:
             DataFrame with `col_name` corrected within the date range, and unchanged outside it.
         """
-        date_filter = get_date_filter(time_name, (config.start_date, config.end_date))
+        date_filter = get_date_filter(time_name, (config.start_date, config.end_date), df.schema[time_name])
         return df.with_columns(pl.when(date_filter).then(expr).otherwise(pl.col(col_name)).alias(col_name))
 
 
