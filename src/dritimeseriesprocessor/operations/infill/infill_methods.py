@@ -1,11 +1,13 @@
+from abc import ABC
+
 import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.operation_method import OperationMethod, observation_interval
+from dritimeseriesprocessor.operations.operation_method import TransformMethod, observation_interval
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
-class InfillMethod(OperationMethod[ts.TimeFrame, ts.TimeFrame]):
+class InfillMethod(TransformMethod[ts.TimeFrame], ABC):
     operation_type = ConfigurationType.INFILLING
 
 

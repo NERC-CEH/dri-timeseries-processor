@@ -1,16 +1,17 @@
 import math
+from abc import ABC
 
 import polars as pl
 import time_stream as ts
 from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.operation_method import OperationMethod
+from dritimeseriesprocessor.operations.operation_method import TransformMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 
-class CorrectionMethod(OperationMethod[ts.TimeFrame, ts.TimeFrame]):
+class CorrectionMethod(TransformMethod[ts.TimeFrame], ABC):
     operation_type = ConfigurationType.CORRECTION
 
     @staticmethod

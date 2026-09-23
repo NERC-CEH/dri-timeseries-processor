@@ -1,3 +1,4 @@
+from abc import ABC
 from datetime import datetime
 
 import polars as pl
@@ -5,11 +6,11 @@ import time_stream as ts
 from time_stream.utils import configure_period_object
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.operation_method import OperationMethod
+from dritimeseriesprocessor.operations.operation_method import TransformMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
-class AggregationMethod(OperationMethod[ts.TimeFrame, ts.TimeFrame]):
+class AggregationMethod(TransformMethod[ts.TimeFrame], ABC):
     operation_type = ConfigurationType.AGGREGATION
 
     @staticmethod

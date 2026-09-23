@@ -53,7 +53,7 @@ class DerivationPipeline(OperationPipeline):
         """Apply the given derivation method to the TimeFrame data.
 
         Args:
-            tf: Unused - derivation is generative, so its inputs come from `config.params` instead.
+            tf: Unused - derivation builds its result from `config.params` instead.
             config: Configuration of the derivation method.
             dataset_repository: Repository for accessing additional datasets.
 
@@ -65,7 +65,7 @@ class DerivationPipeline(OperationPipeline):
         self._inject_dependency_timeframes(config, dataset_repository, ("dep_ts", "load_dep_ts"))
 
         method = DerivationMethod.get(config.method)
-        return method.run(tf, config)
+        return method.run(config)
 
     def get_flag_column(self, column: str) -> str | None:
         """Derivation does not produce its own flag column."""

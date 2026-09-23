@@ -1,3 +1,4 @@
+from abc import ABC
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
@@ -9,11 +10,11 @@ from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor import PACKAGE_ROOT
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.operation_method import OperationMethod, observation_interval
+from dritimeseriesprocessor.operations.operation_method import TransformMethod, observation_interval
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
-class QcMethod(OperationMethod[ts.TimeFrame, pl.Series]):
+class QcMethod(TransformMethod[pl.Series], ABC):
     operation_type = ConfigurationType.QUALITY_CONTROL
 
 

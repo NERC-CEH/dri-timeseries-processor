@@ -48,7 +48,7 @@ class EddyProRun(DerivationMethod):
     _DESPIKE_SENSITIVITY = 5.5
     _DESPIKE_ITERATIONS = 1
 
-    def run(self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         container = config.params["container"]
         dataset_repository = config.params["dataset_repository"]
         start_date = config.params["processing_start_date"]

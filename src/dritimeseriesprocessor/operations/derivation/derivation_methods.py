@@ -1,5 +1,5 @@
 import logging
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Iterable, Literal
 
 import polars as pl
@@ -8,7 +8,7 @@ from hydrometlib import cosmos, evapotranspiration, flux, meteorology
 from isoperiod import Period
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.operation_method import OperationMethod
+from dritimeseriesprocessor.operations.operation_method import GenerativeMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
@@ -16,18 +16,14 @@ from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timefr
 logger = logging.getLogger(__name__)
 
 
-class DerivationMethod(OperationMethod[ts.TimeFrame | None, ts.TimeFrame]):
+class DerivationMethod(GenerativeMethod, ABC):
     operation_type = ConfigurationType.DERIVATION
     config: DataProcessingMethodConfig
 
-    def run(self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+    def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         """Execute the common workflow to carry out a derivation calculation.
 
-        Derivation is generative - its inputs come from `config.params`, not `tf` - so `tf` is unused here.
-        It is part of the signature only so every operation family shares the same method contract.
-
         Args:
-            tf: Unused. Derivation methods build their result from `config.params` instead.
             config: Configuration parameters including input TimeFrames and output specs
 
         Returns:

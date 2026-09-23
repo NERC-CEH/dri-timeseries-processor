@@ -1,39 +1,60 @@
-"""Shared method contract for all operation families (correction, QC, infill, aggregation, derivation).
-
-Every registered method - regardless of family - implements `run(tf, config) -> result`. The two type
-parameters let each family fix its own input and result type: most families transform a `TimeFrame` into
-another `TimeFrame`; QC checks a `TimeFrame` and returns a boolean `pl.Series` mask; derivation is generative
-so its input is `TimeFrame | None`.
-"""
+"""Shared method classes for all operation families (correction, QC, infill, aggregation, derivation)."""
 
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import ClassVar, Generic, TypeVar
 
+import time_stream as ts
 from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
-InputT = TypeVar("InputT")
 ResultT = TypeVar("ResultT")
 
 
-class OperationMethod(Operation, ABC, Generic[InputT, ResultT]):
-    """Base class for a single operation method: run(tf, config) -> result."""
+class OperationMethod(Operation, ABC):
+    """Base class for a single operation method, which a pipeline looks up by name and runs."""
 
     operation_type: ClassVar[ConfigurationType]
 
+
+class TransformMethod(OperationMethod, ABC, Generic[ResultT]):
+    """A method that works on existing data: run(tf, config) -> result.
+
+    The result type depends on the operation family: corrections, infilling and aggregation return a new
+    `TimeFrame`, while QC returns a boolean pass/fail mask.
+    """
+
     @abstractmethod
-    def run(self, tf: InputT, config: DataProcessingMethodConfig) -> ResultT:
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ResultT:
         """Execute this method.
 
         Args:
-            tf: The data to run the method against. `None` for generative methods (e.g. derivation).
+            tf: The data to run the method against.
             config: Configuration parameters for the method.
 
         Returns:
-            Result of running the method. Type depends on the operation family.
+            Result of running the method.
+        """
+        pass
+
+
+class GenerativeMethod(OperationMethod, ABC):
+    """A method that builds new data rather than working on existing data: run(config) -> TimeFrame.
+
+    Everything it needs comes from its configuration, including the input datasets the pipeline puts there.
+    """
+
+    @abstractmethod
+    def run(self, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        """Execute this method.
+
+        Args:
+            config: Configuration parameters for the method, including its input data.
+
+        Returns:
+            The TimeFrame this method builds.
         """
         pass
 

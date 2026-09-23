@@ -80,7 +80,7 @@ class TestApply:
             mock_get.return_value.run.return_value = expected
             result = pipeline.apply(None, config, {})
 
-        mock_get.return_value.run.assert_called_once_with(None, config)
+        mock_get.return_value.run.assert_called_once_with(config)
         assert result is expected
 
 

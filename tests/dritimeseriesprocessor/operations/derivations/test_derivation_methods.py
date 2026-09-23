@@ -84,7 +84,7 @@ class TestDerivationMethod:
         method = SimpleAddition()
         config = create_method_config({"a": [10.0, 20.0, 30.0], "b": [5.0, 10.0, 15.0]}, "out")
 
-        result = method.run(None, config)
+        result = method.run(config)
         expected = dataframe_to_timeframe(pl.DataFrame({"out": [15.0, 30.0, 45.0]}), metadata={"column_name": "out"})
         assert result == expected
 
@@ -94,7 +94,7 @@ class TestDerivationMethod:
         config = create_method_config({"a": [1.0, 2.0, 3.0]}, "out")
         config.params["saturation"] = [(datetime(2025, 1, 1), None, 10.0)]
 
-        result = method.run(None, config)
+        result = method.run(config)
         expected = dataframe_to_timeframe(pl.DataFrame({"out": [11.0, 12.0, 13.0]}), metadata={"column_name": "out"})
         assert result == expected
 
@@ -107,7 +107,7 @@ class TestDerivationMethod:
             "sensor_height.value": [(datetime(2025, 1, 1), None, 2.0)],
         }
 
-        result = method.run(None, config)
+        result = method.run(config)
         expected = dataframe_to_timeframe(pl.DataFrame({"out": [3.0, 4.0, 5.0]}), metadata={"column_name": "out"})
         assert result == expected
 
@@ -116,7 +116,7 @@ class TestDerivationMethod:
         method = SimpleAddition()
         config = create_method_config({"a": [10.0, 20.0], "b": [5.0, 10.0]}, "out")
 
-        result = method.run(None, config)
+        result = method.run(config)
         assert result.df.columns == ["time", "out"]
         assert result.metadata["column_name"] == "out"
 
@@ -128,7 +128,7 @@ class TestDerivationMethod:
         config.params["periodicity"] = "P1D"
         config.params["time_anchor"] = "end"
 
-        result = method.run(None, config)
+        result = method.run(config)
         assert result.resolution == Period.of_minutes(30)
         assert result.periodicity == Period.of_days(1)
         assert result.time_anchor == "end"
@@ -139,7 +139,7 @@ class TestDerivationMethod:
         config = create_method_config({"a": [10.0, 20.0], "b": [5.0, 10.0]}, "out")
         config.params["some_site_value"] = 42.0
 
-        result = method.run(None, config)
+        result = method.run(config)
         assert result.df.columns == ["time", "out"]
 
     def test_method_is_looked_up_by_its_registered_name(self) -> None:
@@ -153,7 +153,7 @@ class TestSolarZenith:
         config = create_method_config({"swin": [0.0] * 24}, "solar_zenith")
         config.params["lat"] = 54.110665
 
-        result = SolarZenith().run(None, config)
+        result = SolarZenith().run(config)
         angles = result.df["solar_zenith"].to_list()
 
         # swin itself is constant, so any variation can only have come from the time column.
@@ -178,13 +178,13 @@ class TestVolumetricWaterContentWithSnow:
 
         config = create_method_config({"cts_mod_corr": cts_mod_corr, "cts_est_crns": cts_est_crns}, "vwc")
         config.params.update(site_annotations)
-        result = VolumetricWaterContentWithSnow().run(None, config)
+        result = VolumetricWaterContentWithSnow().run(config)
 
         # The same calculation, given the counts the fallback should have chosen.
         expected_counts = [est if est is not None else corr for est, corr in zip(cts_est_crns, cts_mod_corr)]
         expected_config = create_method_config({"cts_mod_corr": expected_counts}, "vwc")
         expected_config.params.update(site_annotations)
-        expected = VolumetricWaterContent().run(None, expected_config)
+        expected = VolumetricWaterContent().run(expected_config)
 
         assert_frame_equal(result.df, expected.df)
 
@@ -255,7 +255,7 @@ class TestGetSnowEstimatedCounts:
         config = DataProcessingMethodConfig(method="test", params=params)
 
         with pytest.raises(ValueError, match=expected_message):
-            GetSnowEstimatedCounts().run(None, config)
+            GetSnowEstimatedCounts().run(config)
 
 
 class TestGetPrecipTipping:
@@ -265,7 +265,7 @@ class TestGetPrecipTipping:
             {"precip_tipping_a": [0.2, 1.0], "precip_tipping_b": [0.2, 1.0]},
             "precip_tipping",
         )
-        result = GetPrecipTipping().run(None, config)
+        result = GetPrecipTipping().run(config)
         assert list(result.df["precip_tipping"]) == [0.2, 1.0]
 
     def test_consolidates_to_higher_value_when_not_equal(self) -> None:
@@ -274,7 +274,7 @@ class TestGetPrecipTipping:
             {"precip_tipping_a": [0.2, 1.5], "precip_tipping_b": [0.6, 1.0]},
             "precip_tipping",
         )
-        result = GetPrecipTipping().run(None, config)
+        result = GetPrecipTipping().run(config)
         assert list(result.df["precip_tipping"]) == [0.6, 1.5]
 
     def test_null_in_one_gauge_returns_non_null_value(self) -> None:
@@ -283,7 +283,7 @@ class TestGetPrecipTipping:
             {"precip_tipping_a": [None, 0.4], "precip_tipping_b": [0.4, None]},
             "precip_tipping",
         )
-        result = GetPrecipTipping().run(None, config)
+        result = GetPrecipTipping().run(config)
         assert list(result.df["precip_tipping"]) == [0.4, 0.4]
 
     def test_null_in_both_gauges_returns_null(self) -> None:
@@ -292,7 +292,7 @@ class TestGetPrecipTipping:
             {"precip_tipping_a": [None], "precip_tipping_b": [None]},
             "precip_tipping",
         )
-        result = GetPrecipTipping().run(None, config)
+        result = GetPrecipTipping().run(config)
         assert result.df["precip_tipping"][0] is None
 
 
@@ -326,7 +326,7 @@ class TestEddyProRun:
         config = _make_eddypro_config(container, {})
 
         with pytest.raises(ValueError):
-            EddyProRun().run(None, config)
+            EddyProRun().run(config)
 
     def test_raises_when_multiple_base_dependencies(self) -> None:
         """Tests that a ValueError is raised when the container has more than one base dependency."""
@@ -336,7 +336,7 @@ class TestEddyProRun:
         config = _make_eddypro_config(container, {"dep-1": MagicMock(), "dep-2": MagicMock()})
 
         with pytest.raises(ValueError):
-            EddyProRun().run(None, config)
+            EddyProRun().run(config)
 
     def test_raises_when_staged_dir_is_none(self) -> None:
         """Tests that a ValueError is raised when the raw dependency has not been staged locally."""
@@ -349,7 +349,7 @@ class TestEddyProRun:
         config = _make_eddypro_config(container, {"raw-dep": raw_dep})
 
         with pytest.raises(ValueError):
-            EddyProRun().run(None, config)
+            EddyProRun().run(config)
 
     def test_calls_pipeline_with_staged_dir_and_date_range(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -377,7 +377,7 @@ class TestEddyProRun:
             lambda *args, **kwargs: mock_pipeline,
         )
 
-        EddyProRun().run(None, _make_eddypro_config(container, {"raw-dep": raw_dep}, start_date=start, end_date=end))
+        EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}, start_date=start, end_date=end))
 
         call_kwargs = mock_pipeline.run.call_args.kwargs
         assert call_kwargs["raw_data_dir"] == tmp_path
@@ -407,7 +407,7 @@ class TestEddyProRun:
             lambda *args, **kwargs: mock_pipeline,
         )
 
-        EddyProRun().run(None, _make_eddypro_config(container, {"raw-dep": raw_dep}, file_duration=30))
+        EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}, file_duration=30))
 
         assert container.time_column_name == "time"
         assert container.resolution == "PT30M"
@@ -434,7 +434,7 @@ class TestEddyProRun:
             lambda *args, **kwargs: mock_pipeline,
         )
 
-        result = EddyProRun().run(None, _make_eddypro_config(container, {"raw-dep": raw_dep}))
+        result = EddyProRun().run(_make_eddypro_config(container, {"raw-dep": raw_dep}))
 
         container.init_timeframe.assert_called_once()
         assert result == container.data
