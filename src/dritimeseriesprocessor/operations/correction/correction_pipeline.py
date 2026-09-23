@@ -19,7 +19,9 @@ class CorrectionPipeline(OperationPipeline):
     def __init__(self, flag_systems: dict[str, dict[str, int]]):
         super().__init__(ConfigurationType.CORRECTION, flag_systems)
 
-    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(
+        self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig, dataset_repository: dict
+    ) -> ts.TimeFrame:
         """Apply the given correction method to the TimeFrame data.
 
         Args:
@@ -30,17 +32,10 @@ class CorrectionPipeline(OperationPipeline):
         Returns:
             Result of applying the correction method.
         """
-        params = config.params
+        if tf is None:
+            raise ValueError(f"Correction method {config.method} requires existing data, but none was provided.")
 
-        # Name any dependent timeseries with their column names
-        dep_ids = config.params.get("dep_ts", [])
-        if isinstance(dep_ids, str):
-            dep_ids = [dep_ids]
-
-        for dep_id in dep_ids:
-            dep_tf = dataset_repository[dep_id].data
-            dep_name = dep_tf.metadata["column_name"].lower()
-            params[dep_name] = dep_tf
+        self._inject_dependency_timeframes(config, dataset_repository, ("dep_ts",))
 
         method = CorrectionMethod.get(config.method)
         result = method.run(tf, config)

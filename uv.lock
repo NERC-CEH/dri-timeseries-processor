@@ -431,6 +431,7 @@ dependencies = [
     { name = "dri-utils" },
     { name = "duckdb" },
     { name = "httpx" },
+    { name = "hydrometlib" },
     { name = "isodate" },
     { name = "isoperiod" },
     { name = "polars" },
@@ -477,6 +478,7 @@ requires-dist = [
     { name = "dri-utils", git = "https://github.com/NERC-CEH/dri-utils.git" },
     { name = "duckdb", specifier = ">=1.5.4" },
     { name = "httpx" },
+    { name = "hydrometlib", git = "https://github.com/NERC-CEH/hydrometlib.git?branch=main" },
     { name = "isodate" },
     { name = "isoperiod", git = "https://github.com/NERC-CEH/isoperiod.git" },
     { name = "polars", specifier = ">=1.42.1" },
@@ -647,6 +649,14 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "hydrometlib"
+version = "1.0.0"
+source = { git = "https://github.com/NERC-CEH/hydrometlib.git?branch=main#fa5e3ac68443c67cd1b15101f2c6553809908b0c" }
+dependencies = [
+    { name = "polars" },
 ]
 
 [[package]]
@@ -1330,8 +1340,8 @@ wheels = [
 
 [[package]]
 name = "time-stream"
-version = "2.0.0"
-source = { git = "https://github.com/NERC-CEH/time-stream.git#b465acb2590c3b9c635d8bf092ab5b586cae2e68" }
+version = "3.0.0"
+source = { git = "https://github.com/NERC-CEH/time-stream.git#0e465d1861ca3011eed64fd1184b1578566d35d2" }
 dependencies = [
     { name = "isoperiod" },
     { name = "numpy" },

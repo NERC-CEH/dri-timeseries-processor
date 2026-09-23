@@ -1,21 +1,16 @@
-from abc import ABC, abstractmethod
 from datetime import datetime
 
 import polars as pl
 import time_stream as ts
-from time_stream.operation import Operation
 from time_stream.utils import configure_period_object
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.operations.operation_method import OperationMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
-class AggregationMethod(Operation, ABC):
+class AggregationMethod(OperationMethod[ts.TimeFrame, ts.TimeFrame]):
     operation_type = ConfigurationType.AGGREGATION
-
-    @abstractmethod
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
-        pass
 
     @staticmethod
     def _ts_aggregate(tf: ts.TimeFrame, config: DataProcessingMethodConfig, agg_func: str) -> ts.TimeFrame:

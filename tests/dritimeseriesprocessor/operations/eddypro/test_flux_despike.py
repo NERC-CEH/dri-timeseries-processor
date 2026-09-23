@@ -9,7 +9,7 @@ import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.operations.derivation.derivation_methods import EddyProRun
+from dritimeseriesprocessor.operations.eddypro.eddypro_run_method import EddyProRun
 from dritimeseriesprocessor.operations.eddypro.flux_despike import despike_df, spike_code
 from dritimeseriesprocessor.utils.enums import ProcessingLevel
 

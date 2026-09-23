@@ -18,7 +18,6 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CalcFluxMeanShf,
     CorrectCounts,
     DerivationMethod,
-    EddyProRun,
     EffectiveDepth,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
@@ -37,6 +36,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     VolumetricWaterContent,
     VolumetricWaterContentWithSnow,
 )
+from dritimeseriesprocessor.operations.eddypro.eddypro_run_method import EddyProRun
 from utils.data_creation import dataframe_to_timeframe
 
 

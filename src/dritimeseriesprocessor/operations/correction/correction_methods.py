@@ -1,22 +1,36 @@
 import math
-from abc import ABC, abstractmethod
 
 import polars as pl
 import time_stream as ts
-from time_stream.operation import Operation
 from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.operations.operation_method import OperationMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 
-class CorrectionMethod(Operation, ABC):
+class CorrectionMethod(OperationMethod[ts.TimeFrame, ts.TimeFrame]):
     operation_type = ConfigurationType.CORRECTION
 
-    @abstractmethod
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
-        pass
+    @staticmethod
+    def apply_within_dates(
+        df: pl.DataFrame, time_name: str, col_name: str, expr: pl.Expr, config: DataProcessingMethodConfig
+    ) -> pl.DataFrame:
+        """Apply a correction expression only to rows within the config's date range, leaving others unchanged.
+
+        Args:
+            df: DataFrame to correct (already containing any dependency columns the expression needs).
+            time_name: Name of the time column.
+            col_name: Name of the column being corrected.
+            expr: Expression computing the corrected value.
+            config: Configuration providing the date range to restrict the correction to.
+
+        Returns:
+            DataFrame with `col_name` corrected within the date range, and unchanged outside it.
+        """
+        date_filter = get_date_filter(time_name, (config.start_date, config.end_date))
+        return df.with_columns(pl.when(date_filter).then(expr).otherwise(pl.col(col_name)).alias(col_name))
 
 
 @CorrectionMethod.register
@@ -26,14 +40,9 @@ class Add(CorrectionMethod):
     name = "add"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(pl.col(tf.metadata["column_name"]) + config.params["correction_factor"])
-                .otherwise(pl.col(tf.metadata["column_name"]))
-            )
-        )
+        col_name = tf.metadata["column_name"]
+        expr = pl.col(col_name) + config.params["correction_factor"]
+        return tf.with_df(self.apply_within_dates(tf.df, tf.time_name, col_name, expr, config))
 
 
 @CorrectionMethod.register
@@ -72,10 +81,7 @@ class LWCorrection(CorrectionMethod):
         sb_adj = ta_k.pow(4) * 5.67 * 1e-8
 
         # Recalculate LW value
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        corrected = merged.with_columns(
-            pl.when(date_filter).then(lw_unc_corr + sb_adj).otherwise(pl.col(col_name)).alias(col_name)
-        )
+        corrected = self.apply_within_dates(merged, tf.time_name, col_name, lw_unc_corr + sb_adj, config)
         return tf.with_df(corrected.select(tf.df.columns))
 
     @staticmethod
@@ -139,14 +145,9 @@ class Scalar(CorrectionMethod):
     name = "scalar"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(pl.col(tf.metadata["column_name"]) * config.params["correction_factor"])
-                .otherwise(pl.col(tf.metadata["column_name"]))
-            )
-        )
+        col_name = tf.metadata["column_name"]
+        expr = pl.col(col_name) * config.params["correction_factor"]
+        return tf.with_df(self.apply_within_dates(tf.df, tf.time_name, col_name, expr, config))
 
 
 @CorrectionMethod.register
@@ -171,10 +172,7 @@ class PACorrection(CorrectionMethod):
             * (1 - ((0.0065 * altitude) / (pl.col(ta_col) + (0.0065 * altitude) + 273.15))) ** 5.257
         )
 
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        corrected = merged.with_columns(
-            pl.when(date_filter).then(pl.col(primary_col) + pa_corr).otherwise(pl.col(primary_col)).alias(primary_col)
-        )
+        corrected = self.apply_within_dates(merged, tf.time_name, primary_col, pl.col(primary_col) + pa_corr, config)
         return tf.with_df(corrected.select(tf.df.columns))
 
 
@@ -185,14 +183,9 @@ class Power(CorrectionMethod):
     name = "power"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(pl.col(tf.metadata["column_name"]).pow(config.params["correction_factor"]))
-                .otherwise(pl.col(tf.metadata["column_name"]))
-            )
-        )
+        col_name = tf.metadata["column_name"]
+        expr = pl.col(col_name).pow(config.params["correction_factor"])
+        return tf.with_df(self.apply_within_dates(tf.df, tf.time_name, col_name, expr, config))
 
 
 @CorrectionMethod.register
@@ -202,14 +195,9 @@ class Absolute(CorrectionMethod):
     name = "absolute"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(pl.col(tf.metadata["column_name"]).abs())
-                .otherwise(pl.col(tf.metadata["column_name"]))
-            )
-        )
+        col_name = tf.metadata["column_name"]
+        expr = pl.col(col_name).abs()
+        return tf.with_df(self.apply_within_dates(tf.df, tf.time_name, col_name, expr, config))
 
 
 @CorrectionMethod.register
@@ -265,18 +253,8 @@ class Clip(CorrectionMethod):
         if min_threshold is None and max_threshold is None:
             raise ValueError("Missing metadata parameter. At least one threshold must be specified in Clip method")
 
-        # Return when date filter is promoted to an abstract method:
-        # tf_clipped = tf.with_df(tf.df.with_columns(pl.col(col_name).clip(min_threshold, max_threshold)))
-
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-
-        return tf.with_df(
-            tf.df.with_columns(
-                pl.when(date_filter)
-                .then(pl.col(col_name).clip(min_threshold, max_threshold))
-                .otherwise(pl.col(col_name))
-            )
-        )
+        expr = pl.col(col_name).clip(min_threshold, max_threshold)
+        return tf.with_df(self.apply_within_dates(tf.df, tf.time_name, col_name, expr, config))
 
 
 @CorrectionMethod.register
@@ -315,17 +293,8 @@ class AlbedoSouthSlopeCorrection(CorrectionMethod):
         # Beta varies from 1 on clear days, to 0 if SWIN is less than s_min_fac
         beta_expr = ((swin_expr - s_min_fc * swin_clear_expr) / ((1 - s_min_fc) * swin_clear_expr)).clip(0, 1)
 
-        date_filter = get_date_filter(tf.time_name, (config.start_date, config.end_date))
-        corrected = merged.with_columns(
-            pl.when(date_filter)
-            .then(
-                (
-                    pl.col(primary_col)
-                    * (1 - beta_expr + beta_expr * theta_s_expr.cos())
-                    / (theta_s_expr - theta_g).cos()
-                ).clip(0, 1)
-            )
-            .otherwise(pl.col(primary_col))
-            .alias(primary_col)
-        )
+        expr = (
+            pl.col(primary_col) * (1 - beta_expr + beta_expr * theta_s_expr.cos()) / (theta_s_expr - theta_g).cos()
+        ).clip(0, 1)
+        corrected = self.apply_within_dates(merged, tf.time_name, primary_col, expr, config)
         return tf.with_df(corrected.select(tf.df.columns))
