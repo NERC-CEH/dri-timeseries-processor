@@ -163,5 +163,5 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
-hydrometlib = { git = "https://github.com/NERC-CEH/hydrometlib.git", branch = "main" }
+hydrometlib = { git = "https://github.com/NERC-CEH/hydrometlib.git" }
 isoperiod = { git = "https://github.com/NERC-CEH/isoperiod.git" }

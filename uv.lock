@@ -550,7 +550,7 @@ requires-dist = [
     { name = "dri-utils", git = "https://github.com/NERC-CEH/dri-utils.git" },
     { name = "duckdb", specifier = ">=1.5.4" },
     { name = "httpx" },
-    { name = "hydrometlib", git = "https://github.com/NERC-CEH/hydrometlib.git?branch=main" },
+    { name = "hydrometlib", git = "https://github.com/NERC-CEH/hydrometlib.git" },
     { name = "isodate" },
     { name = "isoperiod", git = "https://github.com/NERC-CEH/isoperiod.git" },
     { name = "polars", specifier = ">=1.42.1" },
@@ -740,7 +740,7 @@ wheels = [
 [[package]]
 name = "hydrometlib"
 version = "1.0.0"
-source = { git = "https://github.com/NERC-CEH/hydrometlib.git?branch=main#fa5e3ac68443c67cd1b15101f2c6553809908b0c" }
+source = { git = "https://github.com/NERC-CEH/hydrometlib.git#4fd3d19c47468e4f0b5f77e1011d5159f8da1f4e" }
 dependencies = [
     { name = "polars" },
 ]
