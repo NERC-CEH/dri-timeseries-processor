@@ -39,12 +39,16 @@ class OperationPipeline(ABC):
 
     @abstractmethod
     def apply(
-        self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict[str, TimeSeriesContainer]
+        self,
+        tf: ts.TimeFrame | None,
+        config: DataProcessingMethodConfig,
+        dataset_repository: dict[str, TimeSeriesContainer],
     ) -> ts.TimeFrame:
         """Apply a specific method to the time series data.
 
         Args:
-            tf: Time series frame to process.
+            tf: Time series frame to process, or `None` for generative operations (e.g. derivation) that
+                build their result from `config.params` instead.
             config: Configuration that the method requires.
             dataset_repository: Repository for accessing additional datasets.
 
@@ -128,7 +132,7 @@ class OperationPipeline(ABC):
 
             # Run the method. Generative operations (e.g. aggregation, derivation) accept tf=None and build a
             # fresh TimeFrame; every other operation receives the existing data set up above.
-            tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)  # type: ignore[arg-type]
+            tf = self.apply(tf=tf, config=cfg, dataset_repository=dataset_repository)
             tf = self.apply_rounding(tf, cfg)
 
         # Every operation applies at least one method, so by this point tf is always a real TimeFrame.
@@ -187,6 +191,37 @@ class OperationPipeline(ABC):
         mask = self.compute_flag_mask(tf, result, col_name)
         if mask is not None:
             result.add_flag(flag_column, flag_name, mask)
+
+    @staticmethod
+    def _inject_dependency_timeframes(
+        config: DataProcessingMethodConfig,
+        dataset_repository: dict[str, TimeSeriesContainer],
+        keys: tuple[str, ...],
+    ) -> None:
+        """Inject each dependency's TimeFrame into `config.params`, keyed by its lowercased source column.
+
+        Reads dependency dataset ids from `config.params` under the given `keys` (each may hold a single id
+        string or a list of ids), and adds `config.params[dep_column.lower()] = dep_container.data` for each.
+        This lets a method's `run`/`expr` refer to a dependency by its own column name, regardless of which
+        param the pipeline received the dependency id under.
+
+        Args:
+            config: Configuration whose params supply dependency ids and receive the injected TimeFrames.
+            dataset_repository: Repository for accessing dependency containers.
+            keys: Names of the `config.params` entries that hold dependency dataset ids.
+        """
+        dep_ids: list[str] = []
+        for key in keys:
+            values = config.params.get(key) or []
+            if isinstance(values, str):
+                dep_ids.append(values)
+            else:
+                dep_ids.extend(values)
+
+        for dep_id in dep_ids:
+            dep_container = dataset_repository[dep_id]
+            if dep_container.source_column:
+                config.params[dep_container.source_column.lower()] = dep_container.data
 
     @staticmethod
     def apply_rounding(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:

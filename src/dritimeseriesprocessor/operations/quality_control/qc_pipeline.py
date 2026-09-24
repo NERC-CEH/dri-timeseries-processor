@@ -47,7 +47,9 @@ class QCPipeline(OperationPipeline):
             tf = self.core_flag_updater(tf)
         return tf
 
-    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(
+        self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig, dataset_repository: dict
+    ) -> ts.TimeFrame:
         """Apply the given quality control method to the TimeFrame data.
 
         Args:
@@ -58,6 +60,9 @@ class QCPipeline(OperationPipeline):
         Returns:
             Result of applying the QC method.
         """
+        if tf is None:
+            raise ValueError(f"QC method {config.method} requires existing data, but none was provided.")
+
         if "dep_ts" in config.params:
             tf_qc = dataset_repository[config.params["dep_ts"]].data
         else:

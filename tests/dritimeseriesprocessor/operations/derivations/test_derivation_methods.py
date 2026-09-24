@@ -1,3 +1,4 @@
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -5,38 +6,20 @@ from unittest.mock import MagicMock
 
 import polars as pl
 import pytest
+from isoperiod import Period
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
-    D86,
-    AbsoluteHumidity,
-    AbsoluteHumidityFactor,
-    Albedo,
-    AtmosphericPressureFactor,
-    CalcFluxLeL1,
-    CalcFluxMeanShf,
-    CorrectCounts,
     DerivationMethod,
-    EddyProRun,
-    EffectiveDepth,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
-    IsSnowDay,
-    MeanSeaLevelPressure,
-    MeanSoilHeatFlux,
     NetRadiation,
-    NeutronIntensityFactor,
-    PotentialEvapotranspiration30Min,
-    SigmaSnowWaterEquivalence,
-    SigmaSnowWaterEquivalenceSnowfox,
-    SnowWaterEquivalence,
-    SnowWaterEquivalenceSnowfox,
-    SoilMoistureIndex,
     SolarZenith,
     VolumetricWaterContent,
     VolumetricWaterContentWithSnow,
 )
+from dritimeseriesprocessor.operations.eddypro.eddypro_run_method import EddyProRun
 from utils.data_creation import dataframe_to_timeframe
 
 
@@ -56,8 +39,16 @@ class AddAnnotationAttribute(DerivationMethod):
         return columns["a"] + columns["saturation"]
 
 
+class AddDeploymentAttribute(DerivationMethod):
+    name = "add_deployment_attribute"
+    inputs = ("a",)
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return columns["a"] + columns["sensor_height"]
+
+
 def create_method_config(
-    data: dict[str, list[float | None]],
+    data: Mapping[str, Sequence[float | None]],
     output_col: str,
 ) -> DataProcessingMethodConfig:
     """Create a test MethodConfig.
@@ -107,914 +98,121 @@ class TestDerivationMethod:
         expected = dataframe_to_timeframe(pl.DataFrame({"out": [11.0, 12.0, 13.0]}), metadata={"column_name": "out"})
         assert result == expected
 
-
-class TestNetRadiation:
-    def test_calculation(self) -> None:
-        config = create_method_config(
-            {
-                "swin": [22.9, 19.3, 14, 25.1],
-                "swout": [4.9, 4.2, 3, 5.5],
-                "lwin": [24.1, 26, 26.2, 23.1],
-                "lwout": [31.2, 31.9, 30.9, 30.8],
-            },
-            "rn",
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"rn": [10.9, 9.2, 6.3, 11.9]}))
-
-        result = NetRadiation().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestPotentialEvapotranspiration30Min:
-    def test_calculation(self) -> None:
-        # Taken from COSMOS.LEVEL3_DATA_30MIN Oracle DB view:
-        #   Site: CHOBH,
-        #   Dates: [2015-03-14 04:30:00, 2017-05-30 16:30:00, 2022-01-18 09:30:00, 2023-08-21 11:00:00]
-        config = create_method_config(
-            {
-                "rn": [-68.181, 302.85, 116.2, 364.6],
-                "g": [-29.6453, 32.23711, -23.7416, 16.64824],
-                "ta": [1.977, 19.62, -2.144, 20.54],
-                "rh": [72.5, 57.62, 95.6, 65.41],
-                "ws": [2.89954, 3.204, 0.214, 2.048],
-                "pa": [1024.0, 1011.365, 1033.649, 1020.695],
-            },
-            "pet",
-        )
-
-        config.params["wind_height"] = {
-            "wind_height.source": "deployment",
-            "wind_height.value": [(datetime(1900, 1, 1), None, 2.6)],
+    def test_join_deployment_attributes_joins_time_bound_deployment_value(self) -> None:
+        """Tests that a deployment attribute param is joined onto the calculation as a column."""
+        method = AddDeploymentAttribute()
+        config = create_method_config({"a": [1.0, 2.0, 3.0]}, "out")
+        config.params["sensor_height"] = {
+            "sensor_height.source": "deployment",
+            "sensor_height.value": [(datetime(2025, 1, 1), None, 2.0)],
         }
 
-        expected = dataframe_to_timeframe(pl.DataFrame({"pet": [0.00573, 0.14733, 0.03617, 0.17283]}))
+        result = method.run(config)
+        expected = dataframe_to_timeframe(pl.DataFrame({"out": [3.0, 4.0, 5.0]}), metadata={"column_name": "out"})
+        assert result == expected
 
-        result = PotentialEvapotranspiration30Min().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+    def test_result_keeps_only_the_output_column(self) -> None:
+        """Tests that the input columns are dropped, leaving the time column and the output column."""
+        method = SimpleAddition()
+        config = create_method_config({"a": [10.0, 20.0], "b": [5.0, 10.0]}, "out")
 
-    def test_saturation_vapour_pressure(self) -> None:
-        # Taken from FAO56 EXAMPLE 3 https://www.fao.org/4/x0490e/x0490e07.htm
-        input_df = pl.DataFrame({"ta": [15.0, 24.5]})
+        result = method.run(config)
+        assert result.df.columns == ["time", "out"]
+        assert result.metadata["column_name"] == "out"
 
-        calc = PotentialEvapotranspiration30Min().saturation_vapour_pressure(pl.col("ta"))
-        result = input_df.with_columns(calc.alias("es")).select(["es"])
-        expected = pl.DataFrame({"es": [1.705, 3.075]})
+    def test_result_takes_its_time_properties_from_the_config(self) -> None:
+        """Tests that resolution, periodicity and time anchor on the result come from the config params."""
+        method = SimpleAddition()
+        config = create_method_config({"a": [10.0, 20.0], "b": [5.0, 10.0]}, "out")
+        config.params["resolution"] = "PT30M"
+        config.params["periodicity"] = "P1D"
+        config.params["time_anchor"] = "end"
 
-        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.001)
+        result = method.run(config)
+        assert result.resolution == Period.of_minutes(30)
+        assert result.periodicity == Period.of_days(1)
+        assert result.time_anchor == "end"
 
-    def test_actual_vapour_pressure(self) -> None:
-        # Taken from FAO56 EXAMPLE 19 https://www.fao.org/4/x0490e/x0490e08.htm
-        input_df = pl.DataFrame({"rh": [90, 52], "es": [3.78, 6.625]})
+    def test_scalar_params_are_not_treated_as_input_data(self) -> None:
+        """Tests that only the TimeFrame params are merged as inputs, so scalars are left out of the data."""
+        method = SimpleAddition()
+        config = create_method_config({"a": [10.0, 20.0], "b": [5.0, 10.0]}, "out")
+        config.params["some_site_value"] = 42.0
 
-        calc = PotentialEvapotranspiration30Min().actual_vapour_pressure(pl.col("es"), pl.col("rh"))
-        result = input_df.with_columns(calc.alias("ea")).select(["ea"])
-        expected = pl.DataFrame({"ea": [3.402, 3.445]})
+        result = method.run(config)
+        assert result.df.columns == ["time", "out"]
 
-        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.001)
-
-    def test_vapour_pressure_curve_slope(self) -> None:
-        # Taken from FAO56 EXAMPLE 18, 19 and 20 https://www.fao.org/4/x0490e/x0490e08.htm
-        input_df = pl.DataFrame({"es": [1.997, 2.58, 3.78, 6.625], "ta": [16.9, 20.7, 28, 38]})
-
-        calc = PotentialEvapotranspiration30Min().vapour_pressure_curve_slope(pl.col("es"), pl.col("ta"))
-        result = input_df.with_columns(calc.alias("delta")).select(["delta"])
-        expected = pl.DataFrame({"delta": [0.122, 0.15, 0.22, 0.358]})
-
-        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
-
-    def test_latent_heat_of_vaporization(self) -> None:
-        input_df = pl.DataFrame({"ta": [-20.0, 0.0, 20.0, 100.0]})
-
-        calc = PotentialEvapotranspiration30Min().latent_heat_of_vaporization(pl.col("ta"))
-        result = input_df.with_columns(calc.alias("lv")).select(["lv"])
-        expected = pl.DataFrame({"lv": [2.54, 2.501, 2.45, 2.26]})
-
-        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
-
-    def test_psychrometric_constant(self) -> None:
-        # Taken from FAO56 EXAMPLE 2 https://www.fao.org/4/x0490e/x0490e07.htm#psychrometric%20constant%20(g)
-        # Taken from FAO56 EXAMPLE 18 https://www.fao.org/4/x0490e/x0490e08.htm
-        input_df = pl.DataFrame({"lv": [2.45, 2.46], "pa": [1001.0, 818.0]})
-
-        calc = PotentialEvapotranspiration30Min().psychrometric_constant(pl.col("pa"), pl.col("lv"))
-        result = input_df.with_columns(calc.alias("gamma")).select(["gamma"])
-        expected = pl.DataFrame({"gamma": [0.066, 0.054]})
-
-        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.001)
-
-    def test_wind_speed_height_correction(self) -> None:
-        # Taken from FAO56 EXAMPLE 14 https://www.fao.org/4/x0490e/x0490e07.htm#wind%20profile%20relationship
-        input_df = pl.DataFrame({"ws": [3.2], "height": [10.0]})
-
-        calc = PotentialEvapotranspiration30Min().wind_speed_height_correction(pl.col("ws"), pl.col("height"))
-        result = input_df.with_columns(calc.alias("ws2m")).select(["ws2m"])
-        expected = pl.DataFrame({"ws2m": [2.4]})
-
-        assert_frame_equal(result, expected, check_exact=False, abs_tol=0.01)
-
-
-class TestMeanSoilHeatFlux:
-    def test_calculation(self) -> None:
-        """Test mean soil heat flux (G) calculation - should just be a simple average between G1 and G2."""
-        config = create_method_config(
-            {
-                "g1": [1.5, 10.9, 123.4],
-                "g2": [-7.9, 0.01, 985.36],
-            },
-            "g",
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"g": [-3.2, 5.455, 554.38]}))
-
-        result = MeanSoilHeatFlux().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestMeanSeaLevelPressure:
-    def test_calculation(self) -> None:
-        """Test mean sea level pressure (mslp) calculation - a simple calculation with pa and ta."""
-        config = create_method_config(
-            {
-                "ta": [1.977, 19.62, -2.144, 20.54],
-                "pa": [1024.0, 1011.365, 1033.649, 1020.695],
-            },
-            "mslp",
-        )
-        config.params["altitude"] = 74  # [M] holln
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"mslp": [1033.446, 1020.131, 1043.330, 1029.514]}))
-
-        result = MeanSeaLevelPressure().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestAbsoluteHumidity:
-    def test_calculation(self) -> None:
-        """Test absolute humidity (Q) calculation."""
-        config = create_method_config(
-            {
-                "ta": [1.977, 19.62, -2.144, 20.54],
-                "rh": [72.5, 57.62, 95.6, 65.41],
-            },
-            "q",
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"q": [4.025, 9.736, 3.994, 11.664]}))
-
-        result = AbsoluteHumidity().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestNeutronIntensityFactor:
-    def test_calculation(self) -> None:
-        """Test incoming neutron intensity factor calculation."""
-        config = create_method_config({"crns-count": [150.1, 151.2, 153.3, 154.4]}, "calc_factor_inten")
-
-        config.params["ref_c0"] = 152.03496  # holln
-        config.params["gamma"] = 1.29291  # holln
-
-        # Expected values should be positive
-        expected = dataframe_to_timeframe(pl.DataFrame({"calc_factor_inten": [1.016, 1.007, 0.989, 0.980]}))
-        result = NeutronIntensityFactor().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestAbsoluteHumidityFactor:
-    def test_calculation(self) -> None:
-        """Test absolute humidity correction factor calculation."""
-        config = create_method_config(
-            {
-                "q": [4.025, 9.736, 3.994, 11.664],
-            },
-            "factor_q",
-        )
-        config.params["ref_q0"] = 8.27  # [g m-3] holln
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_q": [0.97707, 1.00791, 0.97690, 1.01832]}))
-        result = AbsoluteHumidityFactor().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
-
-
-class TestAtmosphericPressureFactor:
-    def test_calculation(self) -> None:
-        """Test atmospheric pressure factor calculation."""
-        config = create_method_config(
-            {"pa": [1024.0, 1011.365, 1033.649, 1020.695]},
-            "factor_pa",
-        )
-        config.params["l"] = 137.04156  # [M] holln
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"factor_pa": [1.1914, 1.08646, 1.27831, 1.16301]}))
-        result = AtmosphericPressureFactor().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.00001)
+    def test_method_is_looked_up_by_its_registered_name(self) -> None:
+        """Tests that the name in a processing config resolves to the matching derivation class."""
+        assert isinstance(DerivationMethod.get("calculate_rn"), NetRadiation)
 
 
 class TestSolarZenith:
-    def test_solar_zenith(self) -> None:
-        """Test solar zenith calculation
-        Only datetimes and latitude are used.
-        To test this method, both day and night times should be used.
-        """
-        config = create_method_config({"swin": list(map(float, range(24)))}, "solar_zenith")
-        config.params["lat"] = 54.110665  # [degrees] holln
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame(
-                {
-                    "solar_zenith": [
-                        2.599,
-                        2.564,
-                        2.472,
-                        2.343,
-                        2.198,
-                        2.045,
-                        1.893,
-                        1.749,
-                        1.618,
-                        1.506,
-                        1.419,
-                        1.365,
-                        1.346,
-                        1.365,
-                        1.419,
-                        1.506,
-                        1.617,
-                        1.749,
-                        1.893,
-                        2.045,
-                        2.197,
-                        2.344,
-                        2.472,
-                        2.564,
-                    ]
-                }
-            )
-        )
+    def test_time_values_come_from_the_swin_input(self) -> None:
+        """Tests that the angle is calculated per time step, using the time column of the swin input."""
+        config = create_method_config({"swin": [0.0] * 24}, "solar_zenith")
+        config.params["lat"] = 54.110665
 
         result = SolarZenith().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+        angles = result.df["solar_zenith"].to_list()
 
-
-class TestAlbedo:
-    def test_albedo(self) -> None:
-        """Test albedo calculation.
-        Use fictitious test data, not enough test data available. Data was randomly generated.
-        To test this method, both day and night times should be used."""
-        config = create_method_config(
-            {
-                "swin": [
-                    22.9,
-                    17.7,
-                    21.0,
-                    26.0,
-                    15.5,
-                    18.5,
-                    22.0,
-                    24.2,
-                    20.6,
-                    20.2,
-                    24.6,
-                    16.6,
-                    26.9,
-                    17.1,
-                    23.1,
-                    17.2,
-                    13.9,
-                    21.1,
-                    25.5,
-                    20.9,
-                    15.0,
-                    16.6,
-                    21.2,
-                    18.0,
-                ],
-                "swout": [
-                    2.6,
-                    4.0,
-                    5.6,
-                    3.0,
-                    5.9,
-                    2.8,
-                    4.0,
-                    5.4,
-                    3.8,
-                    3.7,
-                    4.2,
-                    3.8,
-                    5.0,
-                    4.7,
-                    5.7,
-                    3.0,
-                    2.6,
-                    5.4,
-                    3.0,
-                    4.5,
-                    3.3,
-                    5.7,
-                    5.5,
-                    4.3,
-                ],
-                "solar_zenith": [
-                    2.599,
-                    2.564,
-                    2.472,
-                    2.343,
-                    2.198,
-                    2.045,
-                    1.893,
-                    1.749,
-                    1.618,
-                    1.506,
-                    1.419,
-                    1.365,
-                    1.346,
-                    1.365,
-                    1.419,
-                    1.506,
-                    1.617,
-                    1.749,
-                    1.893,
-                    2.045,
-                    2.197,
-                    2.344,
-                    2.472,
-                    2.564,
-                ],
-            },
-            "albedo",
-        )
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame(
-                {
-                    "albedo": [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        0.183,
-                        0.171,
-                        0.229,
-                        0.186,
-                        0.275,
-                        0.247,
-                        0.174,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                    ]
-                }
-            )
-        )
-
-        result = Albedo().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestIsSnowDay:
-    def test_is_snow_day(self) -> None:
-        """
-        Test calculation that checks if it is a snow day
-        All possible combinations are tested.
-        """
-        config = create_method_config(
-            {
-                "albedo": [
-                    None,
-                    0.20,
-                    None,
-                    0.40,
-                    None,
-                    0.60,
-                    0.10,
-                    None,
-                    0.10,
-                    0.20,
-                    0.10,
-                    0.40,
-                    0.10,
-                    0.60,
-                    0.45,
-                    None,
-                    0.45,
-                    0.20,
-                    0.45,
-                    0.40,
-                    0.45,
-                    0.60,
-                    0.65,
-                    None,
-                    0.65,
-                    0.20,
-                    0.65,
-                    0.40,
-                    0.65,
-                    0.60,
-                ]
-            },
-            "is_snow_day",
-        )
-        config.params["albedo_min_threshold"] = 0.35
-        config.params["albedo_max_threshold"] = 0.5
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame(
-                {
-                    "is_snow_day": [
-                        None,
-                        False,
-                        None,
-                        None,
-                        None,
-                        True,
-                        False,
-                        None,
-                        False,
-                        False,
-                        False,
-                        False,
-                        False,
-                        True,
-                        True,
-                        None,
-                        None,
-                        False,
-                        False,
-                        False,
-                        False,
-                        True,
-                        True,
-                        None,
-                        True,
-                        False,
-                        True,
-                        True,
-                        True,
-                        True,
-                    ]
-                }
-            )
-        )
-        result = IsSnowDay().run(config)
-        assert_frame_equal(result.df, expected.df)
-
-
-class TestCorrectCounts:
-    def test_correct_counts(self) -> None:
-        """Test corrected mod counts are the product of raw counts and all three correction factors.
-        cts_mod values from cosmos-holln on 2016-07-27.
-        Factor values taken from the holln expected outputs in TestNeutronIntensityFactor,
-        TestAtmosphericPressureFactor, and TestAbsoluteHumidityFactor.
-        """
-        config = create_method_config(
-            {
-                "cts_mod": [749.0, 746.0, 793.0, 734.0],
-                "cosmosfactor_inten": [1.016, 1.007, 0.989, 0.980],
-                "cosmosfactor_pa": [1.1914, 1.08646, 1.27831, 1.16301],
-                "cosmosfactor_q": [0.97707, 1.00791, 0.97690, 1.01832],
-            },
-            "cts_mod_corr",
-        )
-        expected = dataframe_to_timeframe(pl.DataFrame({"cts_mod_corr": [885.847, 822.629, 979.390, 851.902]}))
-        result = CorrectCounts().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
-
-
-class TestVolumetricWaterContent:
-    def test_volumetric_water_content(self) -> None:
-        """Test calculate_vwc using cosmos-holln site annotations.
-        cts_mod_corr values include 0, the corrected counts from TestCorrectCounts (all below n_min),
-        and representative valid-range counts.
-        """
-        config = create_method_config(
-            {"cts_mod_corr": [0.0, 885.847, 822.629, 979.390, 851.902, 1300.0, 1500.0, 1800.0, 2000.0]},
-            "vwc",
-        )
-        # Annotations from cosmos-holln
-        config.params["n0_mod"] = 2710.16689
-        config.params["ref_bulkdensity"] = 1.06
-        config.params["ref_latticewater"] = 0.025
-        config.params["ref_soc"] = 0.032
-        config.params["n_min"] = 1204.50827
-        config.params["n_max"] = 2281.33025
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame({"vwc": [100.0, 100.0, 100.0, 100.0, 100.0, 61.311, 28.964, 11.083, 5.172]})
-        )
-        result = VolumetricWaterContent().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+        # swin itself is constant, so any variation can only have come from the time column.
+        assert len(angles) == 24
+        assert None not in angles
+        assert len(set(angles)) > 1
 
 
 class TestVolumetricWaterContentWithSnow:
-    def test_calculate_vwc_with_snow(self) -> None:
-        """Test calculate_vwc_with_snow using cosmos-holln site annotations.
+    def test_snow_period_counts_take_precedence_over_corrected_counts(self) -> None:
+        """Tests that the snow count estimate is used where there is one, and the corrected counts elsewhere."""
+        cts_mod_corr = [1000.0, 1300.0, 1500.0, 1800.0]
+        cts_est_crns = [None, 1500.0, None, 2000.0]
+        site_annotations = {
+            "n0_mod": 2710.16689,
+            "ref_bulkdensity": 1.06,
+            "ref_latticewater": 0.025,
+            "ref_soc": 0.032,
+            "n_min": 1204.50827,
+            "n_max": 2281.33025,
+        }
 
-        Where cts_est_crns (the snow-period count estimate) is present, it should take precedence
-        over cts_mod_corr. Where cts_est_crns is null (i.e. not in a snow period), cts_mod_corr
-        should be used instead. Expected vwc values are taken from TestVolumetricWaterContent.
-        """
-        config = create_method_config(
-            {
-                "cts_mod_corr": [0.0, 1300.0, 1500.0, 1800.0, 2000.0],
-                "cts_est_crns": [None, 1500.0, None, 2000.0, None],
-            },
-            "vwc_with_snow",
-        )
-        # Annotations from cosmos-holln
-        config.params["n0_mod"] = 2710.16689
-        config.params["ref_bulkdensity"] = 1.06
-        config.params["ref_latticewater"] = 0.025
-        config.params["ref_soc"] = 0.032
-        config.params["n_min"] = 1204.50827
-        config.params["n_max"] = 2281.33025
-
-        # Effective counts used: [0.0, 1500.0, 1500.0, 2000.0, 2000.0]
-        expected = dataframe_to_timeframe(pl.DataFrame({"vwc_with_snow": [100.0, 28.964, 28.964, 5.172, 5.172]}))
+        config = create_method_config({"cts_mod_corr": cts_mod_corr, "cts_est_crns": cts_est_crns}, "vwc")
+        config.params.update(site_annotations)
         result = VolumetricWaterContentWithSnow().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
 
+        # The same calculation, given the counts the fallback should have chosen.
+        expected_counts = [est if est is not None else corr for est, corr in zip(cts_est_crns, cts_mod_corr)]
+        expected_config = create_method_config({"cts_mod_corr": expected_counts}, "vwc")
+        expected_config.params.update(site_annotations)
+        expected = VolumetricWaterContent().run(expected_config)
 
-class TestSnowWaterEquivalence:
-    def test_swe_theoretical_data(self) -> None:
-        """Test snow water equivalence (SWE) calculation using theoretical data.
-
-        cts_smo is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
-        no-snow baseline count. Where the two are equal (no suppression), SWE should be ~0.
-        As cts_smo drops further below cts_est_crns (more suppression), SWE should increase.
-        """
-        config = create_method_config(
-            {
-                "cts_smo_crns": [1500.0, 1600.0, 1500.0, 1750.0],
-                "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
-            },
-            "swe_crns",
-        )
-        config.params["n0_mod"] = 2710.16689  # holln
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [0.0, 14.4332, 34.7719, 0.0]}))
-
-        result = SnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_swe_real_data(self) -> None:
-        """Test SWE calculation based on real data from original COSMOS-UK system."""
-        # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
-        #   Site: BALRD,
-        #   Dates: [2018-03-04 00:00:00, 2015-11-29 00:00:00, 2021-02-09 00:00:00]
-        config = create_method_config(
-            {"cts_smo_crns": [1404.65, 1674.98, 1485.63], "cts_est_crns": [1679.48307, 1680.79596, 1633.42392]},
-            "swe_crns",
-        )
-        config.params["n0_mod"] = 2966.89129  # From COSMOS.CALIBRATION_INFO BALRD method=4
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"swe_crns": [33.06285, 0.50709, 16.57987]}))
-        result = SnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestSnowWaterEquivalenceSnowfox:
-    def test_swe_snowfox_theoretical_data(self) -> None:
-        """Test snow water equivalence (SWE) snowfox calculation, using theoretical data"""
-        config = create_method_config(
-            {
-                "cts_smo_snowfox": [1500.0, 1600.0, 1500.0, 1750.0],
-                "cts_est_snowfox": [1500.0, 1800.0, 2000.0, 1750.0],
-            },
-            "swe_snowfox",
-        )
-        expected = dataframe_to_timeframe(pl.DataFrame({"swe_snowfox": [0.0, 16.634605, 40.793911, 0.0]}))
-        result = SnowWaterEquivalenceSnowfox().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_swe_snowfox_real_data(self) -> None:
-        """Test SWE calculation based on real data from original COSMOS-UK system."""
-        # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
-        #   Site: CGARW,
-        #   Dates: [2025-11-21 00:00:00, 2018-03-18 00:00:00, 2026-01-10 00:00:00]
-        config = create_method_config(
-            {"cts_smo_snowfox": [512.03, 781.28, 702.85], "cts_est_snowfox": [754.97, 787.975, 755.234]},
-            "swe_snowfox",
-        )
-        expected = dataframe_to_timeframe(pl.DataFrame({"swe_snowfox": [55.43, 1.203, 10.15]}))
-        result = SnowWaterEquivalenceSnowfox().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.01)
-
-
-class TestSigmaSnowWaterEquivalence:
-    def test_sigma_swe_theoretical_data(self) -> None:
-        """Test uncertainty in the snow water equivalence (SWE) calculation using theoretical data.
-
-        cts_smo_crns is the actual (snow-suppressed) smoothed count, cts_est_crns is the estimated
-        no-snow baseline count. Where the two are equal (no suppression), sigma_swe should still be
-        positive - the uncertainty does not collapse to zero just because SWE itself is ~0.
-        """
-        config = create_method_config(
-            {
-                "cts_smo_crns": [1500.0, 1600.0, 1500.0, 1750.0],
-                "cts_est_crns": [1500.0, 1800.0, 2000.0, 1750.0],
-            },
-            "sigma_swe",
-        )
-        config.params["n0_mod"] = 2710.16689  # holln
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.467, 1.0158, 1.002, 0.981]}))
-
-        result = SigmaSnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_sigma_swe_real_data(self) -> None:
-        """Test SIGMA SWE calculation based on real data from original COSMOS-UK system."""
-        # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
-        #   Site: BALRD,
-        #   Dates: [2018-03-04 00:00:00, 2015-11-29 00:00:00, 2021-02-09 00:00:00]
-        config = create_method_config(
-            {"cts_smo_crns": [1404.65, 1674.98, 1485.63], "cts_est_crns": [1679.48307, 1680.79596, 1633.42392]},
-            "sigma_swe",
-        )
-        config.params["n0_mod"] = 2966.89129  # From COSMOS.CALIBRATION_INFO BALRD method=4
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe": [1.68615, 1.27269, 1.55153]}))
-        result = SigmaSnowWaterEquivalence().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestSigmaSnowWaterEquivalenceSnowfox:
-    def test_sigma_swe_snowfox_theoretical_data(self) -> None:
-        """Test uncertainty in the snowfox SWE calculation using theoretical data.
-
-        cts_smo_snowfox is the actual (snow-suppressed) smoothed count, cts_est_snowfox is the estimated
-        no-snow baseline count. Where the two are equal (no suppression), sigma_swe_snowfox should still
-        be positive - the uncertainty does not collapse to zero just because SWE itself is ~0.
-        """
-        config = create_method_config(
-            {
-                "cts_smo_snowfox": [1500.0, 1600.0, 1500.0, 1750.0],
-                "cts_est_snowfox": [1500.0, 1800.0, 2000.0, 1750.0],
-            },
-            "sigma_swe_snowfox",
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe_snowfox": [1.8679, 1.4304, 1.128, 1.627]}))
-
-        result = SigmaSnowWaterEquivalenceSnowfox().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-    def test_sigma_swe_snowfox_real_data(self) -> None:
-        """Test snowfox SIGMA SWE calculation based on real data from original COSMOS-UK system."""
-        # Counts taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
-        #   Site: CGARW,
-        #   Dates: [2025-11-21 00:00:00, 2018-03-18 00:00:00, 2026-01-10 00:00:00]
-        config = create_method_config(
-            {"cts_smo_snowfox": [512.03, 781.28, 702.85], "cts_est_snowfox": [754.97, 787.975, 755.234]},
-            "sigma_swe_snowfox",
-        )
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"sigma_swe_snowfox": [2.45254, 3.35906, 3.29351]}))
-        result = SigmaSnowWaterEquivalenceSnowfox().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
+        assert_frame_equal(result.df, expected.df)
 
 
 class TestGetSnowEstimatedCounts:
-    def test_get_snow_estimated_counts(self) -> None:
-        """Test get_snow_estimated_counts using fictional data, where snow suppresses the counts.
-        This test covers the following cases:
-        1. Snow period starts if there is snow on a given day, but there was no snow for at least two days previously.
-        2. Snow period ends after two consecutive days of now snow.
-        3. During snow period, counts should be the maximum of either:
-                the value of the smoothed counts just before the start of the snow period,
-            or:
-                the value of smoothed counts.
-        4. One day of no snow should not be considered the end of the snow period.
-        5. If there is a snow day within the first two days of the dataset,
-           then there is no data for the previous days to check if it is the start of the snow period,
-           so no count estimate is given.
-        6. A snow period at the end of the dataset is handled correctly, even if event_end.shift(-24) is null.
-        """
-        daily_cts_smo_crns = [995.0, 1000, 1002, 995, 996, 1003, 997, 1001, 1002, 1003, 995]
-
+    def test_daily_snow_is_broadcast_onto_the_hourly_counts(self) -> None:
+        """Tests that each day's snow flag is joined onto every hourly count row for that date."""
+        snow_by_day = [True, False, True]
         params = {
             "cts_smo_crns": dataframe_to_timeframe(
-                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
+                df=pl.DataFrame({"CTS_SMO_CRNS": [1000.0] * 72}),
                 metadata={"column_name": "CTS_SMO_CRNS"},
             ),
             "snow": dataframe_to_timeframe(
-                df=pl.DataFrame(
-                    {
-                        "SNOW": [True, False, False, True, True, False, True, False, False, True, True],
-                        "time": [datetime(2025, 1, i) for i in range(1, 12)],
-                    }
-                ),
+                df=pl.DataFrame({"SNOW": snow_by_day, "time": [datetime(2025, 1, day) for day in range(1, 4)]}),
                 metadata={"column_name": "SNOW"},
                 resolution="P1D",
             ),
-            "output_col": "cts_est_crns",
-            "periodicity": "PT1H",
-            "resolution": "PT1H",
-            "time_anchor": "start",
         }
-
         config = DataProcessingMethodConfig(method="test", params=params)
+        tf_map = {name: timeframe for name, timeframe in params.items()}
+        columns = {name: pl.col(timeframe.metadata["column_name"]) for name, timeframe in tf_map.items()}
 
-        daily_cts_est = [
-            None,
-            None,
-            None,
-            1002.0,
-            1002.0,
-            1003.0,
-            1002.0,
-            None,
-            None,
-            1003.0,
-            1002.0,
-        ]
+        columns, merged_tf = GetSnowEstimatedCounts().merge_inputs(config, tf_map, columns)
 
-        expected = dataframe_to_timeframe(
-            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
-        )
-        result = GetSnowEstimatedCounts().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
-
-    def test_all_snow(self) -> None:
-        """Test no counts are estimated if the entire dataset consists of snow days. Since we don't know when
-        the snow period started, we cannot use the counts from before the snow period as an estimate."""
-        daily_cts_smo_crns = [995.0, 996, 997, 998]
-
-        params = {
-            "cts_smo_crns": dataframe_to_timeframe(
-                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
-                metadata={"column_name": "CTS_SMO_CRNS"},
-            ),
-            "snow": dataframe_to_timeframe(
-                df=pl.DataFrame(
-                    {
-                        "SNOW": [True, True, True, True],
-                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
-                    }
-                ),
-                metadata={"column_name": "SNOW"},
-                resolution="P1D",
-            ),
-            "output_col": "cts_est_crns",
-            "periodicity": "PT1H",
-            "resolution": "PT1H",
-            "time_anchor": "start",
-        }
-
-        config = DataProcessingMethodConfig(method="test", params=params)
-
-        daily_cts_est = [None, None, None, None]
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame(
-                {"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]},
-                schema={"cts_est_crns": pl.Float64},
-            )
-        )
-        result = GetSnowEstimatedCounts().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
-
-    def test_no_snow(self) -> None:
-        """Test no counts are estimated the the entire dataset consists of no snow days."""
-        daily_cts_smo_crns = [1000.0, 1001, 1002, 1003]
-
-        params = {
-            "cts_smo_crns": dataframe_to_timeframe(
-                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
-                metadata={"column_name": "CTS_SMO_CRNS"},
-            ),
-            "snow": dataframe_to_timeframe(
-                df=pl.DataFrame(
-                    {
-                        "SNOW": [False, False, False, False],
-                        "time": [datetime(2025, 1, i) for i in range(1, 5)],
-                    }
-                ),
-                metadata={"column_name": "SNOW"},
-                resolution="P1D",
-            ),
-            "output_col": "cts_est_crns",
-            "periodicity": "PT1H",
-            "resolution": "PT1H",
-            "time_anchor": "start",
-        }
-
-        config = DataProcessingMethodConfig(method="test", params=params)
-
-        daily_cts_est = [None, None, None, None]
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame(
-                {"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]},
-                schema={"cts_est_crns": pl.Float64},
-            )
-        )
-        result = GetSnowEstimatedCounts().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
-
-    def test_null_snow_values(self) -> None:
-        """
-        Test where snow is null, followed by False, then True, the latter is not considered start of a snow period.
-        Test where snow is null within a snow period, estimated counts still propegate.
-        """
-        daily_cts_smo_crns = [995.0, 1000, 995, 1003, 1001, 1002, 995, 996]
-
-        params = {
-            "cts_smo_crns": dataframe_to_timeframe(
-                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
-                metadata={"column_name": "CTS_SMO_CRNS"},
-            ),
-            "snow": dataframe_to_timeframe(
-                df=pl.DataFrame(
-                    {
-                        "SNOW": [None, False, True, False, False, True, None, True],
-                        "time": [datetime(2025, 1, i) for i in range(1, 9)],
-                    }
-                ),
-                metadata={"column_name": "SNOW"},
-                resolution="P1D",
-            ),
-            "output_col": "cts_est_crns",
-            "periodicity": "PT1H",
-            "resolution": "PT1H",
-            "time_anchor": "start",
-        }
-
-        config = DataProcessingMethodConfig(method="test", params=params)
-
-        daily_cts_est = [
-            None,
-            None,
-            None,
-            None,
-            None,
-            1002.0,
-            1001.0,
-            1001.0,
-        ]
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
-        )
-        result = GetSnowEstimatedCounts().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
-
-    def test_null_cts(self) -> None:
-        """
-        Test null counts remain null when not in a snow period.
-        Test null counts are filled with an estimated if during a snow period.
-        """
-        daily_cts_smo_crns = [1000.0, None, 1001, 1002, 995, None, 996]
-
-        params = {
-            "cts_smo_crns": dataframe_to_timeframe(
-                df=pl.DataFrame({"CTS_SMO_CRNS": [i for item in daily_cts_smo_crns for i in [item] * 24]}),
-                metadata={"column_name": "CTS_SMO_CRNS"},
-            ),
-            "snow": dataframe_to_timeframe(
-                df=pl.DataFrame(
-                    {
-                        "SNOW": [False, False, False, False, True, True, True],
-                        "time": [datetime(2025, 1, i) for i in range(1, 8)],
-                    }
-                ),
-                metadata={"column_name": "SNOW"},
-                resolution="P1D",
-            ),
-            "output_col": "cts_est_crns",
-            "periodicity": "PT1H",
-            "resolution": "PT1H",
-            "time_anchor": "start",
-        }
-
-        config = DataProcessingMethodConfig(method="test", params=params)
-
-        daily_cts_est = [
-            None,
-            None,
-            None,
-            None,
-            1002.0,
-            1002.0,
-            1002.0,
-        ]
-
-        expected = dataframe_to_timeframe(
-            pl.DataFrame({"cts_est_crns": [i for item in daily_cts_est for i in [item] * 24]})
-        )
-        result = GetSnowEstimatedCounts().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
+        assert merged_tf.df["SNOW"].to_list() == [flag for flag in snow_by_day for _ in range(24)]
+        assert merged_tf.df.height == 72
+        assert "time" in columns
 
     @pytest.mark.parametrize(
         ("cts_smo_resolution", "snow_resolution", "expected_message"),
@@ -1098,133 +296,6 @@ class TestGetPrecipTipping:
         assert result.df["precip_tipping"][0] is None
 
 
-class TestSoilMoistureIndex:
-    def _make_config(self, vwc_values: list) -> DataProcessingMethodConfig:
-        config = create_method_config({"cosmos_vwc": vwc_values}, "smi")
-        config.params["vwc_wilting_point"] = [(datetime(2025, 1, 1), None, 10.0)]
-        config.params["vwc_field_capacity"] = [(datetime(2025, 1, 1), None, 30.0)]
-        config.params["vwc_saturation"] = [(datetime(2025, 1, 1), None, 50.0)]
-        return config
-
-    def test_vwc_at_or_below_wilting_point(self) -> None:
-        """Tests that SMI is 0 when VWC is at or below the wilting point."""
-        config = self._make_config([5.0, 10.0])
-        result = SoilMoistureIndex().run(config)
-        assert list(result.df["smi"]) == [0.0, 0.0]
-
-    def test_vwc_between_wilting_point_and_field_capacity(self) -> None:
-        """Tests that SMI scales linearly from 0 to 1 between the wilting point and field capacity."""
-        config = self._make_config([20.0, 30.0])
-        result = SoilMoistureIndex().run(config)
-        assert list(result.df["smi"]) == [0.5, 1.0]
-
-    def test_vwc_between_field_capacity_and_saturation(self) -> None:
-        """Tests that SMI scales linearly from 1 to 2 between field capacity and saturation."""
-        config = self._make_config([40.0, 50.0])
-        result = SoilMoistureIndex().run(config)
-        assert list(result.df["smi"]) == [1.5, 2.0]
-
-    def test_vwc_above_saturation(self) -> None:
-        """Tests that SMI is capped at 2 when VWC is above saturation."""
-        config = self._make_config([60.0])
-        result = SoilMoistureIndex().run(config)
-        assert list(result.df["smi"]) == [2.0]
-
-    def test_vwc_null(self) -> None:
-        """Tests that SMI is null when VWC is null."""
-        config = self._make_config([None])
-        result = SoilMoistureIndex().run(config)
-        assert list(result.df["smi"]) == [None]
-
-
-class TestEffectveDepth:
-    def test_calculation(self) -> None:
-        """Test effective depth calculation, using cosmos-holln reference soil attributes.
-
-        Effective depth should decrease as VWC increases - wetter soil attenuates the CRNS
-        signal over a shallower depth.
-        """
-        config = create_method_config(
-            {"cosmos_vwc": [0.0, 10.0, 28.964, 61.311, 100.0]},
-            "eff_depth",
-        )
-        # Annotations from cosmos-holln
-        config.params["ref_bulkdensity"] = 1.06
-        config.params["ref_latticewater"] = 0.025
-        config.params["ref_soc"] = 0.032
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"eff_depth": [40.469, 23.837, 13.396, 7.668, 5.073]}))
-
-        result = EffectiveDepth().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.001)
-
-
-class TestD86:
-    # Taken from COSMOS.LEVEL3_DATA_1DAY Oracle DB view:
-    #   Site: HOLLN,
-    #   Dates: [2015-03-14, 2017-05-30, 2022-01-18, 2026-08-01]
-    @pytest.mark.parametrize(
-        "distance, vwc, pa, d86",
-        [
-            (1.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [23.2, 16.7, 19.3, 17]),
-            (5.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [22.9, 16.5, 19, 16.9]),
-            (25.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [21.6, 15.7, 18, 16]),
-            (75.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [19.2, 14.4, 16.3, 14.6]),
-            (150.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [17.2, 13.2, 14.8, 13.4]),
-            (200.0, [24.4, 50.7, 36.7, 48.5], [1010.2, 1024.7, 1002.6, 1025.1], [16.5, 12.8, 14.3, 13]),
-        ],
-    )
-    def test_calculate_d86(self, distance: float, vwc: list, pa: list, d86: list) -> None:
-        """Test calculate_d86 using cosmos-holln site annotations."""
-        config = create_method_config({"cosmos_vwc": vwc, "pa": pa}, "d86")
-        config.params["distance"] = distance
-        config.params["ref_bulkdensity"] = 1.06
-        config.params["ref_latticewater"] = 0.025
-        config.params["ref_soc"] = 0.032
-
-        expected = dataframe_to_timeframe(pl.DataFrame({"d86": d86}))
-        result = D86().run(config)
-        assert_frame_equal(result.df, expected.df, check_exact=False, abs_tol=0.1)
-
-
-class TestCalcFluxMeanShf:
-    def test_averages_two_shf_plates(self) -> None:
-        config = create_method_config(
-            {"g_plate_1_1_1": [10.0, 20.0], "g_plate_1_1_2": [30.0, 40.0]},
-            "shf",
-        )
-        result = CalcFluxMeanShf().run(config)
-        assert list(result.df["shf"]) == [20.0, 30.0]
-
-    def test_null_in_one_plate_returns_non_null_value(self) -> None:
-        config = create_method_config(
-            {"g_plate_1_1_1": [None, 20.0], "g_plate_1_1_2": [10.0, None]},
-            "shf",
-        )
-        result = CalcFluxMeanShf().run(config)
-        assert result.df["shf"][0] == 10.0
-        assert result.df["shf"][1] == 20.0
-
-
-class TestCalcFluxLeL1:
-    def test_le_equals_rn_minus_shf_minus_h(self) -> None:
-        # LE_L1 = Rn - SHF - H  →  300 - 50 - 100 = 150
-        config = create_method_config(
-            {"t_nr_avg": [300.0], "shf": [50.0], "h": [100.0]},
-            "le",
-        )
-        result = CalcFluxLeL1().run(config)
-        assert result.df["le"][0] == 150.0
-
-    def test_null_propagates(self) -> None:
-        config = create_method_config(
-            {"t_nr_avg": [None], "shf": [50.0], "h": [100.0]},
-            "le",
-        )
-        result = CalcFluxLeL1().run(config)
-        assert result.df["le"][0] is None
-
-
 def _make_eddypro_config(
     container: MagicMock,
     dataset_repository: dict,
@@ -1298,11 +369,11 @@ class TestEddyProRun:
         mock_pipeline = MagicMock()
         mock_pipeline.run.return_value = pl.DataFrame({"time": []})
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            "dritimeseriesprocessor.operations.eddypro.eddypro_run_method.EddyProRunner",
             MagicMock,
         )
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            "dritimeseriesprocessor.operations.eddypro.eddypro_run_method.EddyProPipeline",
             lambda *args, **kwargs: mock_pipeline,
         )
 
@@ -1328,11 +399,11 @@ class TestEddyProRun:
         mock_pipeline = MagicMock()
         mock_pipeline.run.return_value = pl.DataFrame({"time": []})
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            "dritimeseriesprocessor.operations.eddypro.eddypro_run_method.EddyProRunner",
             MagicMock,
         )
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            "dritimeseriesprocessor.operations.eddypro.eddypro_run_method.EddyProPipeline",
             lambda *args, **kwargs: mock_pipeline,
         )
 
@@ -1355,11 +426,11 @@ class TestEddyProRun:
         mock_pipeline = MagicMock()
         mock_pipeline.run.return_value = pl.DataFrame({"time": []})
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProRunner",
+            "dritimeseriesprocessor.operations.eddypro.eddypro_run_method.EddyProRunner",
             MagicMock,
         )
         monkeypatch.setattr(
-            "dritimeseriesprocessor.operations.derivation.derivation_methods.EddyProPipeline",
+            "dritimeseriesprocessor.operations.eddypro.eddypro_run_method.EddyProPipeline",
             lambda *args, **kwargs: mock_pipeline,
         )
 

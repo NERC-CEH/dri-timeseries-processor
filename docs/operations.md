@@ -1,7 +1,7 @@
 # Operations
 
 Operations are the core execution units that perform data transformations during processing. Each operation implements
-one specific functional behaviour applied to a `TimeFrame` and returning a modified `TimeFrame`.
+one specific functional behaviour, applied to a `TimeFrame`.
 
 ## How operations are run
 
@@ -15,6 +15,23 @@ Each configuration has a type (`ConfigurationType`) that selects the operation t
 Most operations share a common workflow defined in `OperationPipeline`: initialise the flag system and flag column if
 needed, apply each method in the configuration, then update the core flags. The exception is `LoadPipeline`, which
 loads data into the container rather than transforming an existing `TimeFrame`.
+
+## The method base class
+
+Every method is an `OperationMethod`, defined in `operations/operation_method.py`, which a pipeline looks up by name
+and runs. There are two shapes, depending on whether the method works on existing data or builds new data:
+
+- a `TransformMethod` is run as `method.run(tf, config)`
+- a `GenerativeMethod` is run as `method.run(config)`, and gets everything it needs, including its input datasets,
+  from the configuration
+
+| Method type     | Shape              | Returns                                |
+|-----------------|--------------------|----------------------------------------|
+| Correction      | `TransformMethod`  | `TimeFrame`                            |
+| Quality control | `TransformMethod`  | `pl.Series` - a boolean pass/fail mask |
+| Infilling       | `TransformMethod`  | `TimeFrame`                            |
+| Aggregation     | `TransformMethod`  | `TimeFrame`                            |
+| Derivation      | `GenerativeMethod` | `TimeFrame`                            |
 
 ## Corrections
 
@@ -35,20 +52,20 @@ All correction methods are registered in `operations/correction/correction_metho
 
 ```python
  @CorrectionMethod.register
- class MyCorrection(CorrectionMethod):
-     name = "my_correction"
-     flag_value = 64  # Next power of 2
+class MyCorrection(CorrectionMethod):
+    name = "my_correction"
+    flag_value = 64  # Next power of 2
 
-     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
-         # Implement correction logic
-         correction_factor = config.params["correction_factor"]
-         # ... apply correction
-         return tf
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+        # Implement correction logic
+        correction_factor = config.params["correction_factor"]
+        # ... apply correction
+        return tf
 ```
 
 ## Quality Control (QC)
 
-Quality control tests identify values that are invalid or  erroneous. QC does not change values - it flags them.
+Quality control tests identify values that are invalid or erroneous. QC does not change values - it flags them.
 
 QC behaviour is defined by metadata, which specifies:
 
@@ -64,17 +81,17 @@ All QC methods are registered in `operations/quality_control/qc_methods.py`.
 
 ```python
  @QcMethod.register
- class MyCheck(QcMethod):
-     name = "my_check"
-     flag_value = 1024  # Next power of 2
+class MyCheck(QcMethod):
+    name = "my_check"
+    flag_value = 1024  # Next power of 2
 
-     def run(self, tf: ts.TimeFrame, config: MethodConfig) -> ts.TimeFrame:
-         return tf.qc_check(
-             "range",
-             max_value=config.params["max"],
-             min_value=config.params["min"],
-             column_name=tf.metadata["column_name"],
-         )
+    def run(self, tf: ts.TimeFrame, config: MethodConfig) -> pl.Series:
+        return tf.qc_check(
+            "range",
+            max_value=config.params["max"],
+            min_value=config.params["min"],
+            column_name=tf.metadata["column_name"],
+        )
 ```
 
 ### Manual flagging
@@ -107,14 +124,14 @@ All infilling methods are registered in `operations/infill/infill_methods.py`.
 
 ```python
  @InfillingMethod.register
- class MyInterpolation(InfillingMethod):
-     name = "my_infill"
-     flag_value = 8  # Next power of 2
+class MyInterpolation(InfillingMethod):
+    name = "my_infill"
+    flag_value = 8  # Next power of 2
 
-     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
-         # Implement interpolation logic
-         # ... insert values for missing data
-         return tf
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+        # Implement interpolation logic
+        # ... insert values for missing data
+        return tf
 ```
 
 ## Aggregation
@@ -135,13 +152,13 @@ These typically use built-in `time-stream` aggregation functions.
 
 ```python
  @AggregationMethod.register
- class MyAggregation(AggregationMethod):
-     name = "my_agg"
+class MyAggregation(AggregationMethod):
+    name = "my_agg"
 
-     def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
-         # Implement aggregation logic
-         # ... convert values to target resolution
-         return tf
+    def run(self, tf: ts.TimeFrame, config: ProcessingMethodConfig) -> ts.TimeFrame:
+        # Implement aggregation logic
+        # ... convert values to target resolution
+        return tf
 ```
 
 ## Derivation
@@ -158,16 +175,25 @@ Derivation behaviour is defined by metadata, which specifies:
 
 ### Derivation Methods
 
-All derivation methods are registered in `operations/derivation/derivation_methods.py`
-and implemented using specialised calculation classes.
+The calculations themselves come from [`hydrometlib`](https://NERC-CEH.github.io/hydrometlib/), a separate package of
+hydrometeorological calculations grouped into `meteorology`, `evapotranspiration`, `cosmos` and `flux`. Each function
+takes Polars expressions and plain numbers, and returns a Polars expression.
+
+All derivation methods are registered in `operations/derivation/derivation_methods.py`. Each one maps the input
+datasets and site attributes the pipeline provides onto the matching `hydrometlib` function.
 
 ```python
  @DerivationMethod.register
- class MyDerivation(DerivationMethod):
-     name = "calculate-my_variable"
-     inputs = ("input1", "input2")  # Required input TimeFrames
+class MyDerivation(DerivationMethod):
+    name = "calculate-my_variable"
+    inputs = ("swin", "swout", "zenith")  # Required input TimeFrames
 
-     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-         # Return Polars expression for calculation
-         return columns["input1"] * columns["input2"]
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return meteorology.albedo(swin=columns["swin"], swout=columns["swout"], solar_zenith_angle=columns["zenith"])
 ```
+
+A calculation that is specific to this service, rather than one of general use, is written directly in the method's
+`expr` instead of being added to `hydrometlib` (e.g. tipping bucket averaging).
+
+`EddyProRun` is registered in `operations/eddypro/eddypro_run_method.py`, as it runs the EddyPro flux pipeline rather
+than a calculation. See [EddyPro flux processing](flux_eddypro.md).

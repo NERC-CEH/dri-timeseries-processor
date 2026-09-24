@@ -58,8 +58,8 @@
             "derived_variables": [],
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
-            "start_date": "2016-07-27",
-            "end_date": "2016-07-29"
+            "start_date": "2017-10-01",
+            "end_date": "2017-10-03"
           },
         {
             "id": "pa-correction",
@@ -94,8 +94,8 @@
             "derived_variables": ["RN", "PE"],
             "aggregated_variables": [],
             "periodicities": ["PT30M"],
-            "start_date": "2016-07-27",
-            "end_date": "2016-07-29"
+            "start_date": "2020-08-18",
+            "end_date": "2020-08-20"
           },
         {
             "id": "derived-multiple-site-multiple-var",
