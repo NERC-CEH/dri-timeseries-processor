@@ -12,7 +12,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 
 
 class MockOperationPipeline(OperationPipeline):
@@ -147,3 +147,73 @@ class TestApplyRounding:
         pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
         with pytest.raises((OverflowError, TypeError)):
             pipeline.run(mock_container, {}, method_config)
+
+
+class TestInjectDependencyTimeframes:
+    @staticmethod
+    def dependency(source_column: str | None) -> TimeSeriesContainer:
+        """Create a dependency container holding a TimeFrame of its own."""
+        data = create_timeframe([1.0, 2.0], source_column) if source_column else None
+        return TimeSeriesContainer(
+            ts_id=f"ts-{source_column}",
+            network="cosmos",
+            source_bucket=None,
+            source_dataset=None,
+            source_column=source_column,
+            source_site=None,
+            source_site_identifier=None,
+            time_column_name="time",
+            unit=None,
+            resolution="PT1H",
+            periodicity="PT1H",
+            time_anchor="start",
+            processing_level=ProcessingLevel.PROCESSED,
+            data=data,
+        )
+
+    def test_single_dependency_id_is_injected_under_its_column_name(self) -> None:
+        """Tests that a param holding one dataset id adds that dependency's data under its lowercased column."""
+        config = DataProcessingMethodConfig(method="test", params={"dep_ts": "ts_1"})
+        repository = {"ts_1": self.dependency("TA")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository, ("dep_ts",))
+
+        assert config.params["ta"] is repository["ts_1"].data
+
+    def test_list_of_dependency_ids_is_injected(self) -> None:
+        """Tests that a param holding several dataset ids adds every one of those dependencies."""
+        config = DataProcessingMethodConfig(method="test", params={"dep_ts": ["ts_1", "ts_2"]})
+        repository = {"ts_1": self.dependency("TA"), "ts_2": self.dependency("RH")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository, ("dep_ts",))
+
+        assert config.params["ta"] is repository["ts_1"].data
+        assert config.params["rh"] is repository["ts_2"].data
+
+    def test_dependencies_are_collected_from_every_given_key(self) -> None:
+        """Tests that dependency ids are read from all of the param names the pipeline asks for."""
+        config = DataProcessingMethodConfig(method="test", params={"dep_ts": "ts_1", "load_dep_ts": "ts_2"})
+        repository = {"ts_1": self.dependency("TA"), "ts_2": self.dependency("RH")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository, ("dep_ts", "load_dep_ts"))
+
+        assert config.params["ta"] is repository["ts_1"].data
+        assert config.params["rh"] is repository["ts_2"].data
+
+    def test_dependency_without_a_source_column_is_skipped(self) -> None:
+        """Tests that a dependency with no source column of its own is left out, as it cannot be keyed."""
+        config = DataProcessingMethodConfig(method="test", params={"dep_ts": "ts_1"})
+        repository = {"ts_1": self.dependency(None)}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository, ("dep_ts",))
+
+        assert config.params == {"dep_ts": "ts_1"}
+
+    @pytest.mark.parametrize("params", [{}, {"dep_ts": None}], ids=["key missing", "key empty"])
+    def test_nothing_is_injected_when_there_are_no_dependency_ids(self, params: dict) -> None:
+        """Tests that params are left alone when the dependency key is absent or holds nothing."""
+        config = DataProcessingMethodConfig(method="test", params=dict(params))
+
+        OperationPipeline._inject_dependency_timeframes(config, {}, ("dep_ts",))
+
+        assert config.params == params

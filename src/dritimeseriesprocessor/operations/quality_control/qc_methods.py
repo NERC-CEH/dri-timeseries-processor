@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
@@ -6,26 +6,16 @@ from pathlib import Path
 
 import polars as pl
 import time_stream as ts
-from time_stream.operation import Operation
 from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor import PACKAGE_ROOT
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.operations.operation_method import TransformMethod, observation_interval
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
-def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime, datetime | None] | None:
-    if config.start_date is None:
-        return None
-    return config.start_date, config.end_date
-
-
-class QcMethod(Operation, ABC):
+class QcMethod(TransformMethod[pl.Series], ABC):
     operation_type = ConfigurationType.QUALITY_CONTROL
-
-    @abstractmethod
-    def run(self, *args, **kwargs) -> pl.Series:
-        pass
 
 
 @QcMethod.register
@@ -39,7 +29,7 @@ class Range(QcMethod):
             min_value=config.params["lt"],
             within=False,
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -53,7 +43,7 @@ class BatteryVoltage(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -67,7 +57,7 @@ class Samples(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -81,7 +71,7 @@ class ErrorCode(QcMethod):
             operator="is_in",
             compare_to=config.params["value"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -94,7 +84,7 @@ class Spike(QcMethod):
             "spike",
             threshold=config.params["gt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -109,7 +99,7 @@ class Nr01Temp(QcMethod):
             min_value=config.params["lt"],
             within=False,
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -125,7 +115,7 @@ class HeatFluxPlateRemoval(QcMethod):
             within=True,
             closed="both",
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -139,7 +129,7 @@ class PluvioDiagnostic(QcMethod):
             operator=">",
             compare_to=config.params["gt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -153,7 +143,7 @@ class SnowDaySignal(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -167,7 +157,7 @@ class TdtTSoil(QcMethod):
             operator="<",
             compare_to=config.params["lt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -203,9 +193,10 @@ class ManualRemoval(QcMethod):
         # The network and site code are put into the params by QCPipeline, taken from the container.
         periods = self.flag_periods(config.params["network"], config.params["site_id"], tf.metadata["column_name"])
 
+        time_dtype = tf.df.schema[tf.time_name]
         flagged = pl.repeat(False, pl.len())
         for period in periods:
-            flagged = flagged | get_date_filter(tf.time_name, period)
+            flagged = flagged | get_date_filter(tf.time_name, period, time_dtype)
 
         return tf.df.select(flagged).to_series()
 

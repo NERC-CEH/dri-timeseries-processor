@@ -14,6 +14,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
+from dritimeseriesprocessor.operations.eddypro import eddypro_run_method  # noqa: F401  (registers EddyProRun)
 from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
@@ -46,11 +47,13 @@ class DerivationPipeline(OperationPipeline):
 
         return super().run(container, dataset_repository, config)
 
-    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(
+        self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig, dataset_repository: dict
+    ) -> ts.TimeFrame:
         """Apply the given derivation method to the TimeFrame data.
 
         Args:
-            tf: Time series frame to derive, or `None` for generate-from-scratch derivations.
+            tf: Unused - derivation builds its result from `config.params` instead.
             config: Configuration of the derivation method.
             dataset_repository: Repository for accessing additional datasets.
 
@@ -59,22 +62,10 @@ class DerivationPipeline(OperationPipeline):
         """
         config.params["dataset_repository"] = dataset_repository
 
-        dep_ids = []
-        for key in ("dep_ts", "load_dep_ts"):
-            values = config.params.get(key) or []
-            if isinstance(values, str):
-                dep_ids.append(values)
-            else:
-                dep_ids.extend(values)
-
-        for dep_id in dep_ids:
-            dep_container = dataset_repository[dep_id]
-            if dep_container.source_column:
-                config.params[dep_container.source_column.lower()] = dep_container.data
+        self._inject_dependency_timeframes(config, dataset_repository, ("dep_ts", "load_dep_ts"))
 
         method = DerivationMethod.get(config.method)
-        tf = method.run(config)
-        return tf
+        return method.run(config)
 
     def get_flag_column(self, column: str) -> str | None:
         """Derivation does not produce its own flag column."""
