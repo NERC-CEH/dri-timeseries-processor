@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dri-timeseries-processor"
-version = "0.8.5"
+version = "0.8.8"
 description = "Timeseries processor service."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -43,6 +43,7 @@ dependencies = [
     "duckdb>=1.5.4",
     "dri-utils @ git+https://github.com/NERC-CEH/dri-utils.git",
     "httpx",
+    "hydrometlib",
     "isodate",
     "isoperiod",
     "polars>=1.42.1",
@@ -162,4 +163,5 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
+hydrometlib = { git = "https://github.com/NERC-CEH/hydrometlib.git" }
 isoperiod = { git = "https://github.com/NERC-CEH/isoperiod.git" }

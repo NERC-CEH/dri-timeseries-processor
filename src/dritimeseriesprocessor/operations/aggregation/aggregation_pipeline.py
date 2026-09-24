@@ -47,10 +47,13 @@ class AggregationPipeline(OperationPipeline):
         tf = self._select_columns(tf)
         return tf
 
-    def apply(self, config: DataProcessingMethodConfig, dataset_repository: dict, *_, **__) -> ts.TimeFrame:
+    def apply(
+        self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig, dataset_repository: dict
+    ) -> ts.TimeFrame:
         """Apply the given aggregation method to the TimeFrame data.
 
         Args:
+            tf: Unused - aggregation reads its dependency container instead.
             config: Configuration of the aggregation method.
             dataset_repository: Repository for accessing additional datasets.
 
