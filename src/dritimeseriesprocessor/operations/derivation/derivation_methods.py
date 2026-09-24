@@ -218,6 +218,22 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
 
 
 @DerivationMethod.register
+class LatentHeatFluxToEvapotranspiration(DerivationMethod):
+    """Calculate Evapotranspiration (ET) from latent heat and tempertaure.
+
+    See `hydrometlib.evapotranspiration.latent_heat_to_evapotranspiration` for the science.
+    """
+
+    name = "latent_heat_to_et"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return evapotranspiration.latent_heat_to_evapotranspiration(
+            le=columns["LE"],
+            ta=columns["AirTemp_C"],
+        )
+
+
+@DerivationMethod.register
 class AbsoluteHumidity(DerivationMethod):
     """Calculate absolute humidity (Q) - a measure of the actual amount of water vapor in the air.
 
