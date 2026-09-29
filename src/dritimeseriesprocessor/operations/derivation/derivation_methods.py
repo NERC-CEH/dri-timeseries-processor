@@ -4,7 +4,7 @@ from typing import Iterable, Literal
 
 import polars as pl
 import time_stream as ts
-from hydrometlib import cosmos, evapotranspiration, flux, meteorology
+from hydrometlib import cosmos, evapotranspiration, flux, hydrology, meteorology
 from isoperiod import Period
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -611,6 +611,21 @@ class D86(DerivationMethod):
             ref_bulkdensity=self.config.params["ref_bulkdensity"],
             ref_latticewater=self.config.params["ref_latticewater"],
             distance=self.config.params["distance"],
+        )
+
+
+@DerivationMethod.register
+class DistanceToWaterLevel(DerivationMethod):
+    """
+
+    See `hydrometlib.hydrology.distance_to_water_level_conversion` for the science.
+    """
+
+    name = "distance_to_level"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return hydrology.distance_to_water_level_conversion(
+            dist_to_water=columns["Distance_m_Avg"], sensor_height=self.config.params["sensor_height"]
         )
 
 
