@@ -188,15 +188,17 @@ class OperationPipeline(ABC):
         dataset_repository: dict[str, TimeSeriesContainer],
         keys: tuple[str, ...],
     ) -> None:
-        """Inject each dependency's TimeFrame into `config.params`, keyed by its lowercased source column.
+        """Inject each dependency's TimeFrame into `config.params`.
 
-        Reads dependency dataset ids from `config.params` under the given `keys` (each may hold a single id
-        string or a list of ids), and adds `config.params[dep_column.lower()] = dep_container.data` for each.
-        This lets a method's `run`/`expr` refer to a dependency by its own column name, regardless of which
-        param the pipeline received the dependency id under.
+        Named inputs in `config.inputs` are added under their input name, so a method's `run`/`expr` can refer to
+        them by the names it expects, e.g. `config.params["swin"]`.
+
+        Dependency ids in `config.params` under the given `keys` (each may hold a single id string or a list of ids)
+        are added under the dependency's lowercased source column name.
 
         Args:
-            config: Configuration whose params supply dependency ids and receive the injected TimeFrames.
+            config: Configuration whose inputs and params supply dependency ids, and whose params receive the
+                injected TimeFrames.
             dataset_repository: Repository for accessing dependency containers.
             keys: Names of the `config.params` entries that hold dependency dataset ids.
         """
@@ -212,6 +214,9 @@ class OperationPipeline(ABC):
             dep_container = dataset_repository[dep_id]
             if dep_container.source_column:
                 config.params[dep_container.source_column.lower()] = dep_container.data
+
+        for input_name, dataset_id in config.inputs.items():
+            config.params[input_name] = dataset_repository[dataset_id].data
 
     @staticmethod
     def apply_rounding(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
