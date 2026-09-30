@@ -1,17 +1,24 @@
+from collections.abc import Callable
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import time_stream as ts
 from polars.testing import assert_frame_equal
-from tests.utils.data_creation import create_timeframe
+from tests.utils.data_creation import create_timeframe, make_time_series_container
 
 from dritimeseriesprocessor.models.domain_models.processing_config import (
     DataProcessingConfig,
     DataProcessingMethodConfig,
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
+from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
+from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
+from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
+from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
+from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
+from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 
 
@@ -65,19 +72,24 @@ def proc_config() -> MagicMock:
 
 
 class TestInitFlagColumns:
-    def test_creates_core_and_operation_flag_columns(self, mock_timeframe: MagicMock) -> None:
-        """Tests that the core and operation-specific flag columns are set up for each data column."""
+    def test_creates_every_declared_flag_column(self, mock_timeframe: MagicMock) -> None:
+        """Tests that every declared flag column is set up, including ones for other operations."""
         pipeline = MockOperationPipeline(
             ConfigurationType.QUALITY_CONTROL,
-            {"core_flags": {"unchecked": 32}, "test_flags": {"flag1": 1}},
+            {"core_flags": {"unchecked": 32}, "test_flags": {"flag1": 1}, "infill_flags": {"linear_interp": 1}},
         )
         mock_timeframe.flag_systems = {}
-        flag_column_schemes = {"value_CORE_FLAG": "core_flags", "value_TEST_FLAG": "test_flags"}
+        flag_column_schemes = {
+            "value_CORE_FLAG": "core_flags",
+            "value_TEST_FLAG": "test_flags",
+            "value_INFILL_FLAG": "infill_flags",
+        }
 
         pipeline._init_flag_columns(mock_timeframe, flag_column_schemes)
 
         mock_timeframe.init_flag_column.assert_any_call("core_flags", "value_CORE_FLAG")
         mock_timeframe.init_flag_column.assert_any_call("test_flags", "value_TEST_FLAG")
+        mock_timeframe.init_flag_column.assert_any_call("infill_flags", "value_INFILL_FLAG")
 
     def test_skips_columns_not_in_schemes(self, mock_timeframe: MagicMock) -> None:
         """Tests that flag columns the dataset does not define are not created."""
@@ -100,6 +112,94 @@ class TestRun:
 
         result = pipeline.run(mock_container, {}, proc_config)
         assert result is updated_tf.rename_time_column()
+
+
+# Every flag column a processed dataset can declare in its metadata, and the flag systems behind them.
+DECLARED_FLAG_COLUMNS = {
+    "value_CORE_FLAG": "core_flags",
+    "value_QC_FLAG": "qc_flags",
+    "value_CORRS_FLAG": "corrs_flags",
+    "value_INFILL_FLAG": "infill_flags",
+}
+FLAG_SYSTEMS = {
+    "core_flags": {
+        "estimated": 2,
+        "missing": 4,
+        "removed": 8,
+        "corrected": 16,
+        "unchecked": 32,
+        "unsuccessful_correction": 64,
+    },
+    "qc_flags": {"range": 1},
+    "corrs_flags": {"add": 1},
+    "infill_flags": {"linear_interp": 1},
+}
+
+
+def run_correction(container: TimeSeriesContainer) -> ts.TimeFrame:
+    """Run a correction on the container's existing data."""
+    config = MagicMock(spec=DataProcessingConfig)
+    config.method_configs = [DataProcessingMethodConfig(method="add", params={"correction_factor": 1})]
+    return CorrectionPipeline(FLAG_SYSTEMS).run(container, {}, config)
+
+
+def run_quality_control(container: TimeSeriesContainer) -> ts.TimeFrame:
+    """Run a QC check on the container's existing data."""
+    config = MagicMock(spec=DataProcessingConfig)
+    config.method_configs = [DataProcessingMethodConfig(method="range", params={"lt": 0, "gt": 100})]
+    return QCPipeline(FLAG_SYSTEMS).run(container, {}, config)
+
+
+def run_infill(container: TimeSeriesContainer) -> ts.TimeFrame:
+    """Run an infill on the container's existing data."""
+    config = MagicMock(spec=DataProcessingConfig)
+    config.method_configs = [DataProcessingMethodConfig(method="linear_interp", params={})]
+    return InfillPipeline(FLAG_SYSTEMS).run(container, {}, config)
+
+
+def run_aggregation(container: TimeSeriesContainer) -> ts.TimeFrame:
+    """Aggregate hourly dependency data into a new daily TimeFrame."""
+    dependency = make_time_series_container("dependency")
+    dependency.source_column = "value"
+    dependency.data = create_timeframe(list(range(48)))
+
+    config = MagicMock(spec=DataProcessingConfig)
+    config.method_configs = [DataProcessingMethodConfig(method="mean", params={"dep_ts": "dependency"})]
+    return AggregationPipeline(FLAG_SYSTEMS).run(container, {"dependency": dependency}, config)
+
+
+def run_derivation(container: TimeSeriesContainer) -> ts.TimeFrame:
+    """Derive a new TimeFrame, using a stand-in derivation method that returns fresh data with no flag columns."""
+    config = MagicMock(spec=DataProcessingConfig)
+    config.method_configs = [DataProcessingMethodConfig(method="test", params={})]
+    with patch.object(DerivationMethod, "get") as mock_get:
+        mock_get.return_value.run.return_value = create_timeframe([1.0, None, 3.0])
+        return DerivationPipeline(MagicMock(), FLAG_SYSTEMS).run(container, {}, config)
+
+
+class TestDeclaredFlagColumnsAreCreated:
+    @pytest.mark.parametrize(
+        "run_operation, has_existing_data",
+        [
+            (run_correction, True),
+            (run_quality_control, True),
+            (run_infill, True),
+            (run_aggregation, False),
+            (run_derivation, False),
+        ],
+        ids=["correction", "quality_control", "infill", "aggregation", "derivation"],
+    )
+    def test_every_declared_flag_column_is_created(self, run_operation: Callable, has_existing_data: bool) -> None:
+        """Tests that each operation's result has every flag column the dataset declares, not just its own."""
+        container = make_time_series_container("processed", ProcessingLevel.PROCESSED)
+        container.source_column = "value"
+        container.flag_column_schemes = dict(DECLARED_FLAG_COLUMNS)
+        container.data = create_timeframe([1.0, None, 3.0]) if has_existing_data else None
+
+        result = run_operation(container)
+
+        assert sorted(result.flag_columns) == sorted(DECLARED_FLAG_COLUMNS)
+        assert set(DECLARED_FLAG_COLUMNS).issubset(result.df.columns)
 
 
 class TestApplyRounding:
