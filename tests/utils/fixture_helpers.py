@@ -58,6 +58,31 @@ def load_json_string(json_str: str) -> dict[str, Any]:
     return json.loads(json_str)
 
 
+def load_declared_flag_columns() -> dict[tuple[str, str, str], list[str]]:
+    """Read the flag columns each processed dataset declares in the recorded mock metadata.
+
+    Returns:
+        Flag column names, keyed by (site id, source column name, periodicity) - e.g.
+        `("cosmos-chimn", "RN", "PT30M")`.
+    """
+    declared_flag_columns: dict[tuple[str, str, str], set[str]] = {}
+    for path in TEST_DATA_MOCK_METADATA.glob("*.json"):
+        response = load_json_file(path)
+        for item in response.get("items", []):
+            is_processed = item.get("processingLevel", {}).get("@id", "").endswith("/processed")
+            if "sourceColumnName" not in item or not is_processed:
+                continue
+
+            flag_columns = {flag_column["columnName"] for flag_column in item.get("hasFlagColumn", [])}
+            for site in item.get("originatingSite", []):
+                site_id = site["@id"].rsplit("/", 1)[-1]
+                for measure in item.get("measure", []):
+                    key = (site_id, item["sourceColumnName"], measure["periodicity"])
+                    declared_flag_columns.setdefault(key, set()).update(flag_columns)
+
+    return {key: sorted(flag_columns) for key, flag_columns in declared_flag_columns.items()}
+
+
 def discover_e2e_test_cases() -> list[ParameterSet]:
     """Discover all test cases from the test case JSON file for use with @pytest.mark.parametrize.
 
