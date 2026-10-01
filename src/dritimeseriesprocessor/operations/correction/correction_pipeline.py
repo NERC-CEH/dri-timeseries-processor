@@ -35,7 +35,7 @@ class CorrectionPipeline(OperationPipeline):
         if tf is None:
             raise ValueError(f"Correction method {config.method} requires existing data, but none was provided.")
 
-        self._inject_dependency_timeframes(config, dataset_repository, ("dep_ts",))
+        self._inject_dependency_timeframes(config, dataset_repository)
 
         method = CorrectionMethod.get(config.method)
         result = method.run(tf, config)

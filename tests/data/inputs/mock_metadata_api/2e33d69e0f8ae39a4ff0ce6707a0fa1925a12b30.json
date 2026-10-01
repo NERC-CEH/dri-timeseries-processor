@@ -36,9 +36,95 @@
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-pa-30min-aggregate#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-pa-30min-aggregate#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-biomet-rh-30min-aggregate",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rh-30min-aggregate",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rh-30min-aggregate#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rh-30min-aggregate#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
                   }
                 ],
                 "@type": [
@@ -116,169 +202,12 @@
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rn-30min-aggregate#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rn-30min-aggregate#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
-            "parameter": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              }
-            ],
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
-            },
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-biomet-shf2-30min-aggregate",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf2-30min-aggregate",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf2-30min-aggregate#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf2-30min-aggregate#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
-            "parameter": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              }
-            ],
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
-            },
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-biomet-ta-30min-aggregate",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-ta-30min-aggregate",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-ta-30min-aggregate#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-ta-30min-aggregate#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
                   }
                 ],
                 "@type": [
@@ -356,9 +285,95 @@
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf1-30min-aggregate#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf1-30min-aggregate#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-biomet-shf2-30min-aggregate",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf2-30min-aggregate",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf2-30min-aggregate#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-shf2-30min-aggregate#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
                   }
                 ],
                 "@type": [
@@ -436,9 +451,95 @@
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-swin-30min-aggregate#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-swin-30min-aggregate#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-biomet-ta-30min-aggregate",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-ta-30min-aggregate",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-ta-30min-aggregate#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-ta-30min-aggregate#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
                   }
                 ],
                 "@type": [
@@ -529,86 +630,6 @@
       ],
       "type": {
         "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-biomet-rh-30min-aggregate",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rh-30min-aggregate",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rh-30min-aggregate#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/flux-plynl-biomet-rh-30min-aggregate#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/mean",
-            "parameter": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/start_time"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/end_time"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/threshold"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/round"
-              }
-            ],
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
-            },
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/aggregate"
       },
       "@type": [
         {

@@ -38,7 +38,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-apty#operating-period",
-        "startDate": "1965-05-01"
+        "startDate": "1965-05-01T00:00:00"
       }
     },
     {
@@ -62,7 +62,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung1#operating-period",
-        "startDate": "1986-01-01"
+        "startDate": "1986-01-01T00:00:00"
       }
     },
     {
@@ -86,7 +86,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-newk#operating-period",
-        "startDate": "1964-07-01"
+        "startDate": "1964-07-01T00:00:00"
       }
     }
   ]

@@ -6,11 +6,17 @@ from unittest.mock import MagicMock
 
 import polars as pl
 import pytest
+from hydrometlib import flux, meteorology
 from isoperiod import Period
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.derivation.derivation_methods import (
+    CalcFluxEtL1,
+    CalcFluxEtL2,
+    CalcFluxLeL1,
+    CalcFluxLeL2,
+    CalcFluxMeanShf,
     DerivationMethod,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
@@ -166,7 +172,7 @@ class TestVolumetricWaterContentWithSnow:
     def test_snow_period_counts_take_precedence_over_corrected_counts(self) -> None:
         """Tests that the snow count estimate is used where there is one, and the corrected counts elsewhere."""
         cts_mod_corr = [1000.0, 1300.0, 1500.0, 1800.0]
-        cts_est_crns = [None, 1500.0, None, 2000.0]
+        cts_est = [None, 1500.0, None, 2000.0]
         site_annotations = {
             "n0_mod": 2710.16689,
             "ref_bulkdensity": 1.06,
@@ -176,12 +182,12 @@ class TestVolumetricWaterContentWithSnow:
             "n_max": 2281.33025,
         }
 
-        config = create_method_config({"cts_mod_corr": cts_mod_corr, "cts_est_crns": cts_est_crns}, "vwc")
+        config = create_method_config({"cts_mod_corr": cts_mod_corr, "cts_est": cts_est}, "vwc")
         config.params.update(site_annotations)
         result = VolumetricWaterContentWithSnow().run(config)
 
         # The same calculation, given the counts the fallback should have chosen.
-        expected_counts = [est if est is not None else corr for est, corr in zip(cts_est_crns, cts_mod_corr)]
+        expected_counts = [est if est is not None else corr for est, corr in zip(cts_est, cts_mod_corr)]
         expected_config = create_method_config({"cts_mod_corr": expected_counts}, "vwc")
         expected_config.params.update(site_annotations)
         expected = VolumetricWaterContent().run(expected_config)
@@ -194,7 +200,7 @@ class TestGetSnowEstimatedCounts:
         """Tests that each day's snow flag is joined onto every hourly count row for that date."""
         snow_by_day = [True, False, True]
         params = {
-            "cts_smo_crns": dataframe_to_timeframe(
+            "cts_smo": dataframe_to_timeframe(
                 df=pl.DataFrame({"CTS_SMO_CRNS": [1000.0] * 72}),
                 metadata={"column_name": "CTS_SMO_CRNS"},
             ),
@@ -217,16 +223,16 @@ class TestGetSnowEstimatedCounts:
     @pytest.mark.parametrize(
         ("cts_smo_resolution", "snow_resolution", "expected_message"),
         [
-            ("P1D", "P1D", "Resolution of cts_smo_crns must be hourly"),  # cts_smo_crns should be hourly, not daily
+            ("P1D", "P1D", "Resolution of cts_smo must be hourly"),  # cts_smo should be hourly, not daily
             ("PT1H", "PT1H", "Resolution of snow must be daily"),  # snow should be daily, not hourly
         ],
     )
     def test_raises_when_periodicities_are_incorrect(
         self, cts_smo_resolution: str, snow_resolution: str, expected_message: str
     ) -> None:
-        """Test a ValueError is raised if cts_smo_crns is not hourly, or snow is not daily."""
+        """Tests that a ValueError is raised if cts_smo is not hourly, or snow is not daily."""
         params = {
-            "cts_smo_crns": dataframe_to_timeframe(
+            "cts_smo": dataframe_to_timeframe(
                 df=pl.DataFrame(
                     {
                         "CTS_SMO_CRNS": [995.0, 1000, 1002, 995],
@@ -315,6 +321,43 @@ def _make_eddypro_config(
             "file_duration": file_duration,
         },
     )
+
+
+class TestFluxDerivations:
+    @pytest.mark.parametrize("method", [CalcFluxLeL1(), CalcFluxLeL2()], ids=["l1", "l2"])
+    def test_latent_heat_flux_reads_named_inputs(self, method: DerivationMethod) -> None:
+        """Tests that latent heat flux is calculated from the rn, g and h inputs."""
+        config = create_method_config({"rn": [400.0, 350.0], "g": [20.0, 15.0], "h": [100.0, 120.0]}, "LE")
+
+        result = method.run(config)
+
+        expected = pl.DataFrame({"rn": [400.0, 350.0], "g": [20.0, 15.0], "h": [100.0, 120.0]}).select(
+            flux.latent_heat_flux(rn=pl.col("rn"), shf=pl.col("g"), h=pl.col("h")).alias("LE")
+        )
+        assert result.df["LE"].to_list() == pytest.approx(expected["LE"].to_list())
+
+    @pytest.mark.parametrize("method", [CalcFluxEtL1(), CalcFluxEtL2()], ids=["l1", "l2"])
+    def test_evapotranspiration_reads_named_inputs(self, method: DerivationMethod) -> None:
+        """Tests that evapotranspiration is calculated from the latent_heat_flux and ta inputs."""
+        config = create_method_config({"latent_heat_flux": [280.0, 215.0], "ta": [15.0, 17.5]}, "ET")
+
+        result = method.run(config)
+
+        expected = pl.DataFrame({"le": [280.0, 215.0], "ta": [15.0, 17.5]}).select(
+            flux.evapotranspiration_from_latent_heat_flux(le=pl.col("le"), ta=pl.col("ta")).alias("ET")
+        )
+        assert result.df["ET"].to_list() == pytest.approx(expected["ET"].to_list())
+
+    def test_mean_soil_heat_flux_reads_named_inputs(self) -> None:
+        """Tests that the mean soil heat flux is calculated from the g1 and g2 inputs."""
+        config = create_method_config({"g1": [10.0, 20.0], "g2": [30.0, 40.0]}, "SHF")
+
+        result = CalcFluxMeanShf().run(config)
+
+        expected = pl.DataFrame({"g1": [10.0, 20.0], "g2": [30.0, 40.0]}).select(
+            meteorology.mean_soil_heat_flux(g1=pl.col("g1"), g2=pl.col("g2")).alias("SHF")
+        )
+        assert result.df["SHF"].to_list() == pytest.approx(expected["SHF"].to_list())
 
 
 class TestEddyProRun:

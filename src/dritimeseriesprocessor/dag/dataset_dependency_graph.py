@@ -169,8 +169,8 @@ class DatasetDependencyGraph:
     def _is_load_only(self, ts_id: str) -> bool:
         """Return True if a dataset should be loaded but not processed.
 
-        A dataset is treated as load-only when it has been referenced via `load_dep_ts` but never via `dep_ts`.
-        If both references exist, full processing (`dep_ts`) takes priority.
+        A dataset is treated as load-only when it has been referenced via `load_dep_ts` but never as a full
+        dependency (`dep_ts` or a named input). If both exist, full processing takes priority.
 
         Args:
             ts_id: The dataset ID to check.
@@ -186,8 +186,8 @@ class DatasetDependencyGraph:
         """Add dataset dependencies into the next batch for resolution.
 
         For every dependency ID listed by the container (from metadata or configs):
-            - Classifies the dep as either a full-processing dep (dep_ts) or load-only dep (load_dep_ts).
-            - If already resolved as load-only but now encountered via "dep_ts", pulls it back out of
+            - Classifies the dep as either a full-processing dep (dep_ts or named input) or load-only dep (load_dep_ts).
+            - If already resolved as load-only but now encountered as a full dependency, pulls it back out of
               self.datasets and re-queues it so it gets full config fetching and dependency resolution.
             - If not yet seen, queues it for the next batch (using the cache if available, otherwise marking it
               as None so it gets fetched from the metadata API in bulk).
@@ -198,13 +198,13 @@ class DatasetDependencyGraph:
         """
         load_only_deps = set(container.load_only_dependencies())
         for dep_id in container.all_dependencies():
-            # Classify the reference - dep_ts always wins over load_dep_ts if both are seen
+            # Classify the reference - a full dependency always wins over load_dep_ts if both are seen
             if dep_id in load_only_deps:
                 self._load_dep_ts_ids.add(dep_id)
             else:
                 self._dep_ts_ids.add(dep_id)
 
-            # If we already resolved this dep as load-only in an earlier batch but now have a full dep_ts
+            # If we already resolved this dep as load-only in an earlier batch but now have a full dependency
             # reference to it, we need to redo it properly. Pull it back out and re-queue it - it will go
             # through config fetching and dependency resolution in the next iteration like any normal dep.
             if dep_id in self.datasets and self.datasets[dep_id].load_only and not self._is_load_only(dep_id):
