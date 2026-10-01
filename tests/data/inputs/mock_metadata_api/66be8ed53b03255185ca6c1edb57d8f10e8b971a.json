@@ -29,7 +29,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl#operating-period",
-        "startDate": "2024-01-01"
+        "startDate": "2024-01-01T00:00:00+00:00"
       }
     }
   ]

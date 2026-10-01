@@ -38,7 +38,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung#operating-period",
-        "startDate": "1958-10-01"
+        "startDate": "1958-10-01T00:00:00"
       }
     }
   ]

@@ -1,18 +1,18 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/site?_view=annotated&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty",
+    "@id": "http://fdri.ceh.ac.uk/id/site?_view=annotated&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/site.json?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
-      "http://fdri.ceh.ac.uk/id/site.csv?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
-      "http://fdri.ceh.ac.uk/id/site.ttl?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
-      "http://fdri.ceh.ac.uk/id/site.rdf?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
-      "http://fdri.ceh.ac.uk/id/site.html?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
-      "http://fdri.ceh.ac.uk/id/site.geojson?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated"
+      "http://fdri.ceh.ac.uk/id/site.ttl?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.html?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.rdf?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.json?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.geojson?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated",
+      "http://fdri.ceh.ac.uk/id/site.csv?%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-newk&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-jung1&%40id=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fsite%2Fnmdb-apty&_view=annotated"
     ],
     "limit": 10
   },
@@ -38,7 +38,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-apty#operating-period",
-        "startDate": "1965-05-01"
+        "startDate": "1965-05-01T00:00:00"
       }
     },
     {
@@ -62,7 +62,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung1#operating-period",
-        "startDate": "1986-01-01"
+        "startDate": "1986-01-01T00:00:00"
       }
     },
     {
@@ -86,7 +86,7 @@
       ],
       "operatingPeriod": {
         "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-newk#operating-period",
-        "startDate": "1964-07-01"
+        "startDate": "1964-07-01T00:00:00"
       }
     }
   ]
