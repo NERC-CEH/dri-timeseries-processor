@@ -1,6 +1,5 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable, Literal
 
 import polars as pl
 import time_stream as ts
@@ -32,12 +31,9 @@ class DerivationMethod(GenerativeMethod, ABC):
 
         self.config = config
 
-        # Extract and merge input data
-        # NOTE: This collects *all* timeframe objects rather than named timeframe objects required by the
-        #   method (as was done previously - i.e ``{name: config.params[name] for name in self.inputs}``).
-        #   This is to handle scenarios where certain timeseries use derivation methods with different input column
-        #   names - e.g. the standard CRNS vs. SNOWFOX sensor that both use the CorrectCounts / GetSnowEstimatedCounts
-        #   methods.
+        # Extract and merge input data.
+        # Named inputs are keyed by the method's input name. Inputs given via "load_dep_ts" (calc_factor_inten) are
+        # keyed by their lowercased column name instead, so collect every TimeFrame in params.
         tf_map = {key: val for key, val in config.params.items() if isinstance(val, ts.TimeFrame)}
 
         # Get column references for calculation
@@ -244,29 +240,8 @@ class SolarZenith(DerivationMethod):
     name = "solar_zenith"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        swin_tf = self._get_swin_tf()
+        swin_tf = self.config.params["swin"]
         return meteorology.solar_zenith(time=pl.col(swin_tf.time_name), latitude=self.config.params["lat"])
-
-    def _get_swin_tf(self) -> ts.TimeFrame:
-        """
-        Different networks may use the same method, but have different column names.
-        The allowed column names for this method are listed in possible_keys below
-
-
-        Raises:
-            KeyError: If both possible_keys are found, it is not clear which should be used.
-                      If no possible_keys are found, a new key may need to be added.
-
-        Returns:
-            ts.TimeFrame: TimeFrame of shortwave ingoing radiation
-        """
-        possible_keys = {"swin", "r_sw_in_avg"}
-        found_keys = possible_keys & self.config.params.keys()
-
-        if len(found_keys) != 1:
-            raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
-
-        return self.config.params[found_keys.pop()]
 
 
 @DerivationMethod.register
@@ -279,32 +254,9 @@ class Albedo(DerivationMethod):
     name = "calc_albedo"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        swin, swout = self._get_sw_column_names(columns)
-        return meteorology.albedo(swin=swin, swout=swout, solar_zenith_angle=columns["solar_zenith"])
-
-    def _get_sw_column_names(self, columns: dict[str, pl.Expr]) -> tuple[pl.Expr, pl.Expr]:
-        """
-        Different networks may use the same method, but have different column names.
-        The allowed column names for this method are listed in possible_keys below
-
-        Raises:
-            KeyError: If both possible_keys are found, it is not clear which should be used.
-                      If no possible_keys are found, a new key may need to be added.
-
-        Returns:
-            tuple[pl.Expr,pl.Expr]: expressions for ingoing and outgoing short wave radiation.
-        """
-        possible_keys_in = {"swin", "r_sw_in_avg"}
-        possible_keys_out = {"swout", "r_sw_out_avg"}
-        found_keys_in = possible_keys_in & columns.keys()
-        found_keys_out = possible_keys_out & columns.keys()
-
-        if len(found_keys_in) != 1 and len(found_keys_out) != 1:
-            raise KeyError(
-                f"Expected exactly one of {possible_keys_in} and one of{possible_keys_out}, found {found_keys_out}"
-            )
-
-        return columns[found_keys_in.pop()], columns[found_keys_out.pop()]
+        return meteorology.albedo(
+            swin=columns["swin"], swout=columns["swout"], solar_zenith_angle=columns["solar_zenith"]
+        )
 
 
 @DerivationMethod.register
@@ -379,9 +331,8 @@ class CorrectCounts(DerivationMethod):
     name = "correct_counts"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        cts_mod = columns[_get_crns_column(columns.keys(), "cts_mod")]
         return cosmos.correct_counts(
-            cts_mod=cts_mod,
+            cts_mod=columns["cts_mod"],
             factor_inten=columns["cosmosfactor_inten"],
             factor_pa=columns["cosmosfactor_pa"],
             factor_q=columns["cosmosfactor_q"],
@@ -419,13 +370,12 @@ class GetSnowEstimatedCounts(DerivationMethod):
     name = "get_snow_estimated_counts"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        cts_smo_crns = columns[_get_crns_column(columns.keys(), "cts_smo")]
-        return cosmos.snow_estimated_counts(cts_smo=cts_smo_crns, snow=columns["snow"], time=columns["time"])
+        return cosmos.snow_estimated_counts(cts_smo=columns["cts_smo"], snow=columns["snow"], time=columns["time"])
 
     def merge_inputs(self, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
         """Merge TimeFrames with different periodicities, broadcasting lower resolution to the higher resolution.
 
-        Overrides the base `merge_inputs` because `snow` and `cts_smo_crns` have different
+        Overrides the base `merge_inputs` because `snow` and `cts_smo` have different
         periodicities (eg. daily vs. hourly), so `merge_multiple_timeframes` cannot be used directly.
 
         Args:
@@ -439,10 +389,10 @@ class GetSnowEstimatedCounts(DerivationMethod):
                 - merged_tf: The TimeFrame with the lower resolution values joined onto each row.
         """
         snow_daily_tf = tf_map["snow"]
-        cts_smo_tf = tf_map[_get_crns_column(columns.keys(), "cts_smo")]
+        cts_smo_tf = tf_map["cts_smo"]
 
         if cts_smo_tf.resolution != Period.of_hours(1):
-            raise ValueError(f"Resolution of cts_smo_crns must be hourly. Got: {cts_smo_tf.resolution}")
+            raise ValueError(f"Resolution of cts_smo must be hourly. Got: {cts_smo_tf.resolution}")
 
         if snow_daily_tf.resolution != Period.of_days(1):
             raise ValueError(f"Resolution of snow must be daily. Got: {snow_daily_tf.resolution}")
@@ -478,7 +428,7 @@ class GetPrecipTipping(DerivationMethod):
 class VolumetricWaterContentWithSnow(VolumetricWaterContent):
     """Calculate volumetric water content with snow.
 
-    Uses CTS_EST_CRNS, the estimated counts during snow periods, to calculate VWC when there is snow.
+    Uses the `cts_est` input, the estimated counts during snow periods, to calculate VWC when there is snow.
     See `hydrometlib.cosmos.volumetric_water_content` for the science.
 
     Reference: Wallbank JR, Cole SJ, Moore RJ, Anderson SR, Mellor EJ.
@@ -491,8 +441,8 @@ class VolumetricWaterContentWithSnow(VolumetricWaterContent):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         cts_mod_corr = columns["cts_mod_corr"]
-        cts_est_crns = columns["cts_est_crns"]
-        cts_mod_corr_with_snow_estimates = cts_est_crns.fill_null(cts_mod_corr)
+        cts_est = columns["cts_est"]
+        cts_mod_corr_with_snow_estimates = cts_est.fill_null(cts_mod_corr)
 
         return super().expr({"cts_mod_corr": cts_mod_corr_with_snow_estimates})
 
@@ -508,7 +458,7 @@ class SnowWaterEquivalence(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         return cosmos.snow_water_equivalence(
-            cts_smo=columns["cts_smo_crns"], cts_est=columns["cts_est_crns"], n0_mod=self.config.params["n0_mod"]
+            cts_smo=columns["cts_smo"], cts_est=columns["cts_est"], n0_mod=self.config.params["n0_mod"]
         )
 
 
@@ -522,9 +472,7 @@ class SnowWaterEquivalenceSnowfox(DerivationMethod):
     name = "calculate_snowfox_swe"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return cosmos.snow_water_equivalence_snowfox(
-            cts_smo=columns["cts_smo_snowfox"], cts_est=columns["cts_est_snowfox"]
-        )
+        return cosmos.snow_water_equivalence_snowfox(cts_smo=columns["cts_smo"], cts_est=columns["cts_est"])
 
 
 @DerivationMethod.register
@@ -538,7 +486,7 @@ class SigmaSnowWaterEquivalence(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         return cosmos.sigma_snow_water_equivalence(
-            cts_smo=columns["cts_smo_crns"], cts_est=columns["cts_est_crns"], n0_mod=self.config.params["n0_mod"]
+            cts_smo=columns["cts_smo"], cts_est=columns["cts_est"], n0_mod=self.config.params["n0_mod"]
         )
 
 
@@ -553,9 +501,7 @@ class SigmaSnowWaterEquivalenceSnowfox(DerivationMethod):
     name = "calculate_snowfox_sigma_swe"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return cosmos.sigma_snow_water_equivalence_snowfox(
-            cts_smo=columns["cts_smo_snowfox"], cts_est=columns["cts_est_snowfox"]
-        )
+        return cosmos.sigma_snow_water_equivalence_snowfox(cts_smo=columns["cts_smo"], cts_est=columns["cts_est"])
 
 
 @DerivationMethod.register
@@ -639,7 +585,7 @@ class CalcFluxMeanShf(DerivationMethod):
     name = "calc_flux_mean_shf"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return meteorology.mean_soil_heat_flux(g1=columns["g_plate_1_1_1"], g2=columns["g_plate_1_1_2"])
+        return meteorology.mean_soil_heat_flux(g1=columns["g1"], g2=columns["g2"])
 
 
 @DerivationMethod.register
@@ -652,7 +598,7 @@ class CalcFluxLeL1(DerivationMethod):
     name = "calc_flux_le_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["t_nr_avg"], shf=columns["shf"], h=columns["h"])
+        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
@@ -665,7 +611,7 @@ class CalcFluxEtL1(DerivationMethod):
     name = "calc_flux_et_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["le_l1"], ta=columns["airtemp_c"])
+        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])
 
 
 @DerivationMethod.register
@@ -678,7 +624,7 @@ class CalcFluxLeL2(DerivationMethod):
     name = "calc_flux_le_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["t_nr_avg"], shf=columns["shf"], h=columns["h_l2"])
+        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
@@ -691,38 +637,4 @@ class CalcFluxEtL2(DerivationMethod):
     name = "calc_flux_et_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["le_l2"], ta=columns["airtemp_c"])
-
-
-def _get_crns_column(input_column_names: Iterable[str], option: Literal["cts_mod", "cts_smo"]) -> str:
-    """Retrieve the expected CRNS column name from the input column mapping.
-
-    This is a workaround to support calculations that are used by the standard above ground CRNS and the
-    below ground SNOWFOX CRNS.
-
-    To keep downstream logic generic, this function resolves which input dataset it's been provided with and
-    return that column name.
-
-    NOTE: This is a temporary solution to a wider problem that we want to solve via metadata. The solution will be
-        some way in the metadata to be able to specify dependent timeseries (dep_ts) inputs that are named against
-        the input parameter names expected by the given derivation method. So the derivation method input parameter
-        names stay generic, and the data processing configurations can handle the specific mapping.
-
-    Args:
-        input_column_names: Column names provided to the calculation
-
-    Returns:
-        The CTS MOD column name
-    """
-    match option:
-        case "cts_mod":
-            possible_keys = {"cts_mod", "cts_snowfox"}
-        case "cts_smo":
-            possible_keys = {"cts_smo_crns", "cts_smo_snowfox"}
-
-    found_keys = possible_keys & set(input_column_names)
-
-    if len(found_keys) != 1:
-        raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
-
-    return found_keys.pop()
+        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])

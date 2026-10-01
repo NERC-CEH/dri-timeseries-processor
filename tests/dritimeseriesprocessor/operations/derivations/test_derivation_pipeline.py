@@ -56,11 +56,11 @@ class TestRun:
 
 class TestApply:
     def test_dependencies_are_injected_before_the_method_runs(self, site_metadata: SiteMetadata) -> None:
-        """Tests that a dependency's data is put into the params under its own column name before dispatch."""
+        """Tests that a load_dep_ts dependency's data is put into the params under its own column name."""
         dependency = MagicMock(spec=TimeSeriesContainer)
         dependency.source_column = "TA"
         dependency.data = create_timeframe([1.0, 2.0], "TA")
-        config = DataProcessingMethodConfig(method="test", params={"dep_ts": "ts_1"})
+        config = DataProcessingMethodConfig(method="test", params={"load_dep_ts": "ts_1"})
 
         pipeline = DerivationPipeline(site_metadata, {})
         with patch.object(DerivationMethod, "get") as mock_get:
@@ -69,6 +69,20 @@ class TestApply:
         assert config.params["ta"] is dependency.data
         assert config.params["dataset_repository"] == {"ts_1": dependency}
         mock_get.assert_called_once_with("test")
+
+    def test_named_inputs_are_injected_before_the_method_runs(self, site_metadata: SiteMetadata) -> None:
+        """Tests that a named input's data is put into the params under the input name before dispatch."""
+        dependency = MagicMock(spec=TimeSeriesContainer)
+        dependency.source_column = "TA"
+        dependency.data = create_timeframe([1.0, 2.0], "TA")
+        config = DataProcessingMethodConfig(method="test", inputs={"temperature": "ts_1"})
+
+        pipeline = DerivationPipeline(site_metadata, {})
+        with patch.object(DerivationMethod, "get"):
+            pipeline.apply(None, config, {"ts_1": dependency})
+
+        assert config.params["temperature"] is dependency.data
+        assert "ta" not in config.params
 
     def test_method_is_run_with_the_timeframe_it_was_given(self, site_metadata: SiteMetadata) -> None:
         """Tests that the TimeFrame is handed to the method, which ignores it as derivation builds its own."""

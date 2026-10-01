@@ -20,6 +20,7 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType
 class DataProcessingMethodConfig:
     method: str
     params: dict[str, Any] = field(default_factory=dict)
+    inputs: dict[str, str] = field(default_factory=dict)
     start_date: datetime | None = None
     end_date: datetime | None = None
 
@@ -37,7 +38,7 @@ class DataProcessingConfig:
         """Collect and deduplicate values from the given parameter keys across all method configs.
 
         Args:
-            keys: One or more parameter key names to extract values from (e.g. `dep_ts`, `load_dep_ts`).
+            keys: One or more parameter key names to extract values from.
 
         Returns:
             Sorted, deduplicated list of values found across all method configs for the given keys.
@@ -52,6 +53,17 @@ class DataProcessingConfig:
                     else:
                         values.add(v)
         return sorted(values)
+
+    def input_ids(self) -> list[str]:
+        """Collect and deduplicate the dataset ids of the named inputs across all method configs.
+
+        Returns:
+            Sorted, deduplicated list of dataset ids used as named inputs.
+        """
+        dataset_ids: set[str] = set()
+        for method_config in self.method_configs:
+            dataset_ids.update(method_config.inputs.values())
+        return sorted(dataset_ids)
 
     def __hash__(self) -> int:
         """Allow this container to be used as a dict or set key."""

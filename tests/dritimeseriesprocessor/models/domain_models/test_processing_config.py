@@ -58,3 +58,37 @@ class TestValuesForParams:
             annotations={},
         )
         assert config.values_for_params("load_dep_ts") == ["X", "Y"]
+
+
+class TestInputIds:
+    def test_returns_dataset_ids_of_named_inputs(self) -> None:
+        """Tests that the dataset ids of the named inputs are returned, sorted."""
+        config = DataProcessingConfig(
+            ts_id="ts1",
+            site_id="site1",
+            config_id="cfg1",
+            config_type=ConfigurationType.DERIVATION,
+            method_configs=[DataProcessingMethodConfig(method="m", inputs={"swout": "B", "swin": "A"})],
+            annotations={},
+        )
+        assert config.input_ids() == ["A", "B"]
+
+    def test_aggregates_and_dedupes_across_multiple_method_configs(self) -> None:
+        """Tests that input dataset ids are combined and deduplicated across method configs."""
+        config = DataProcessingConfig(
+            ts_id="ts1",
+            site_id="site1",
+            config_id="cfg1",
+            config_type=ConfigurationType.DERIVATION,
+            method_configs=[
+                DataProcessingMethodConfig(method="m1", inputs={"swin": "A", "swout": "B"}),
+                DataProcessingMethodConfig(method="m2", inputs={"swin": "A", "lwin": "C"}),
+            ],
+            annotations={},
+        )
+        assert config.input_ids() == ["A", "B", "C"]
+
+    def test_ignores_dependency_params(self) -> None:
+        """Tests that dep_ts and load_dep_ts params are not counted as named inputs."""
+        config = make_config({"dep_ts": "A", "load_dep_ts": "B"})
+        assert config.input_ids() == []

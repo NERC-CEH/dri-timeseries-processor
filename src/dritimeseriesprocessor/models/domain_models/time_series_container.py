@@ -70,12 +70,15 @@ class TimeSeriesContainer:
 
     def all_dependencies(self) -> list[str]:
         """Get a list of all dataset IDs that are dependents of this TimeSeriesContainer, including
-        from "dep_ts" and "load_dep_ts" dependency references.
+        from "dep_ts" and "load_dep_ts" dependency references, and named method inputs.
 
         Returns:
             Sorted list of all dependency dataset IDs.
         """
-        return self._ids_across_configs("dep_ts", "load_dep_ts")
+        dependency_ids = set(self._ids_across_configs("dep_ts", "load_dep_ts"))
+        for config in self.data_processing_configs.values():
+            dependency_ids.update(config.input_ids())
+        return sorted(dependency_ids)
 
     def load_only_dependencies(self) -> list[str]:
         """Get a list of dataset IDs that are "load only" dependents of this TimeSeriesContainer. Only includes

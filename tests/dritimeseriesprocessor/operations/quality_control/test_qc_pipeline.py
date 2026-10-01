@@ -78,8 +78,8 @@ class Test1minTsExtent:
 
     Reproduces a bug (FPM-1188) where a precip dataset built by aggregating 1-minute data to 30 minutes can end up one
     row longer than a 30-minute dependent dataset, if the 1-minute data extends past the last complete 30-minute step.
-    `QCPipeline.apply` attaches the `dep_ts` QC result onto the frame being processed with a positional `with_columns`,
-    so any row count mismatch raises a `ShapeError` instead of aligning the two frames by time.
+    A QC result from another dataset (e.g. the `battv` input) attached by position rather than by time would raise a
+    `ShapeError` on any row count mismatch, instead of aligning the two frames by time.
     """
 
     @staticmethod
@@ -93,8 +93,8 @@ class Test1minTsExtent:
             .pad()
         )
 
-    def test_dep_ts_frame_one_row_shorter(self) -> None:
-        """Tests that a 1-minute aggregation extending past the dep_ts frame's extent does not cause an error."""
+    def test_input_frame_one_row_shorter(self) -> None:
+        """Tests that a 1-minute aggregation extending past the battv input frame's extent does not cause an error."""
         start = datetime(2025, 1, 1)
 
         # 1-minute data: 30 complete half-hour buckets, plus 5 minutes of a 31st (partial) bucket
@@ -122,10 +122,12 @@ class Test1minTsExtent:
         dep_container = MagicMock(spec=TimeSeriesContainer)
         dep_container.data = battery_30min
 
-        config = DataProcessingMethodConfig(method="battery_v", params={"lt": 11.0, "dep_ts": "battery-ts-id"})
+        config = DataProcessingMethodConfig(method="battery_v", params={"lt": 11.0}, inputs={"battv": "battery-ts-id"})
         pipeline = QCPipeline({})
 
-        pipeline.apply(precip_30min, config, {"battery-ts-id": dep_container})
+        result = pipeline.apply(precip_30min, config, {"battery-ts-id": dep_container})
+
+        assert result.df.height == precip_30min.df.height
 
 
 class TestRun:

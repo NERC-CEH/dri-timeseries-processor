@@ -14,13 +14,14 @@ from dritimeseriesprocessor.operations.quality_control.qc_methods import (
     ManualRemoval,
     Nr01Temp,
     PluvioDiagnostic,
+    QcMethod,
     Range,
     Samples,
     SnowDaySignal,
     Spike,
     TdtTSoil,
 )
-from utils.data_creation import create_timeframe
+from utils.data_creation import create_timeframe, dataframe_to_timeframe
 
 MANUAL_FLAGS_HEADER = '"SITE_ID","VARIABLES_AFFECTED","START_DATETIME","END_DATETIME"'
 
@@ -81,18 +82,21 @@ class TestRange:
 class TestBatteryVoltage:
     def test_battv_simple(self) -> None:
         """Test that the BatteryVoltage function works across the full DataFrame."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-        config = create_method_config(lt=4)
+        tf = create_timeframe([0.0] * 7)
+        battv_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "BATTV")
+        config = create_method_config(battv=battv_tf, lt=4)
 
         result = BatteryVoltage().run(tf, config)
 
         expected = pl.Series([True, True, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
     def test_battv_with_date_filter(self) -> None:
         """Test that the BatteryVoltage function works with a date filter."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        tf = create_timeframe([0.0] * 7)
+        battv_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "BATTV")
         config = create_method_config(
+            battv=battv_tf,
             lt=4,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
@@ -101,24 +105,27 @@ class TestBatteryVoltage:
         result = BatteryVoltage().run(tf, config)
 
         expected = pl.Series([False, False, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
 
 class TestSamples:
     def test_samples_simple(self) -> None:
         """Test that the samples function works across the full DataFrame."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-        config = create_method_config(lt=4)
+        tf = create_timeframe([0.0] * 7)
+        scans_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SCANS")
+        config = create_method_config(scans=scans_tf, lt=4)
 
         result = Samples().run(tf, config)
 
         expected = pl.Series([True, True, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
     def test_samples_with_date_filter(self) -> None:
         """Test that the samples function works with a date filter."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        tf = create_timeframe([0.0] * 7)
+        scans_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SCANS")
         config = create_method_config(
+            scans=scans_tf,
             lt=4,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
@@ -127,7 +134,7 @@ class TestSamples:
         result = Samples().run(tf, config)
 
         expected = pl.Series([False, False, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
 
 class TestErrorCode:
@@ -185,18 +192,21 @@ class TestSpike:
 class TestNr01Temp:
     def test_nr01_simple(self) -> None:
         """Test that the nr01 function works across the full DataFrame."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-        config = create_method_config(lt=3, gt=5)
+        tf = create_timeframe([0.0] * 7)
+        sensor_ta_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SENSOR_TA")
+        config = create_method_config(sensor_ta=sensor_ta_tf, lt=3, gt=5)
 
         result = Nr01Temp().run(tf, config)
 
         expected = pl.Series([True, True, False, False, False, True, True])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
     def test_nr01_with_date_filter(self) -> None:
         """Test that the nr01 function works with a date filter."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        tf = create_timeframe([0.0] * 7)
+        sensor_ta_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SENSOR_TA")
         config = create_method_config(
+            sensor_ta=sensor_ta_tf,
             lt=3,
             gt=5,
             start_date=datetime(2025, 1, 1, 2),
@@ -206,7 +216,7 @@ class TestNr01Temp:
         result = Nr01Temp().run(tf, config)
 
         expected = pl.Series([False, False, False, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
 
 class TestHeatFluxPlateRemoval:
@@ -239,18 +249,21 @@ class TestHeatFluxPlateRemoval:
 class TestPluvioDiagnostic:
     def test_pluvio_diagnostic_simple(self) -> None:
         """Test that the pluvio_diagnostic function works across the full DataFrame."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-        config = create_method_config(gt=4)
+        tf = create_timeframe([0.0] * 7)
+        sensor_diag_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SENSOR_DIAG")
+        config = create_method_config(sensor_diag=sensor_diag_tf, gt=4)
 
         result = PluvioDiagnostic().run(tf, config)
 
         expected = pl.Series([False, False, False, False, True, True, True])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
     def test_pluvio_diagnostic_with_date_filter(self) -> None:
         """Test that the pluvio_diagnostic function works with a date filter."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        tf = create_timeframe([0.0] * 7)
+        sensor_diag_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SENSOR_DIAG")
         config = create_method_config(
+            sensor_diag=sensor_diag_tf,
             gt=4,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
@@ -259,24 +272,27 @@ class TestPluvioDiagnostic:
         result = PluvioDiagnostic().run(tf, config)
 
         expected = pl.Series([False, False, False, False, True, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
 
 class TestSnowDaySignal:
     def test_snowday_simple(self) -> None:
         """Test that the snowday function works across the full DataFrame."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-        config = create_method_config(lt=4)
+        tf = create_timeframe([0.0] * 7)
+        signal_quality_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SIGNAL_QUALITY")
+        config = create_method_config(signal_quality=signal_quality_tf, lt=4)
 
         result = SnowDaySignal().run(tf, config)
 
         expected = pl.Series([True, True, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
     def test_snowday_with_date_filter(self) -> None:
         """Test that the snowday function works with a date filter."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        tf = create_timeframe([0.0] * 7)
+        signal_quality_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SIGNAL_QUALITY")
         config = create_method_config(
+            signal_quality=signal_quality_tf,
             lt=4,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
@@ -285,24 +301,27 @@ class TestSnowDaySignal:
         result = SnowDaySignal().run(tf, config)
 
         expected = pl.Series([False, False, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
 
 class TestTdtTSoil:
     def test_tdt_soil_simple(self) -> None:
         """Test that the tdt_soil function works across the full DataFrame."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
-        config = create_method_config(lt=4)
+        tf = create_timeframe([0.0] * 7)
+        soil_ta_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SOIL_TA")
+        config = create_method_config(soil_ta=soil_ta_tf, lt=4)
 
         result = TdtTSoil().run(tf, config)
 
         expected = pl.Series([True, True, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
     def test_tdt_soil_with_date_filter(self) -> None:
         """Test that the tdt_soil function works with a date filter."""
-        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        tf = create_timeframe([0.0] * 7)
+        soil_ta_tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], "SOIL_TA")
         config = create_method_config(
+            soil_ta=soil_ta_tf,
             lt=4,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
@@ -311,14 +330,15 @@ class TestTdtTSoil:
         result = TdtTSoil().run(tf, config)
 
         expected = pl.Series([False, False, True, False, False, False, False])
-        assert_series_equal(result, expected)
+        assert_series_equal(result, expected, check_names=False)
 
 
 class TestFluxQcFlag:
     def test_flags_poor_quality_rows(self) -> None:
-        """Flag value 2 (poor quality) is rejected; 0 and 1 are not."""
-        tf = create_timeframe([0.0, 1.0, 2.0, 0.0, 2.0])
-        config = create_method_config()
+        """Tests that qc_flag value 2 (poor quality) is rejected, and 0 and 1 are not."""
+        tf = create_timeframe([0.0] * 5)
+        qc_flag_tf = create_timeframe([0.0, 1.0, 2.0, 0.0, 2.0], "QC_FLAG")
+        config = create_method_config(qc_flag=qc_flag_tf)
 
         result = FluxQcFlag().run(tf, config)
 
@@ -326,14 +346,58 @@ class TestFluxQcFlag:
         assert_series_equal(result, expected, check_names=False)
 
     def test_no_poor_quality_rows(self) -> None:
-        """No flag value 2 → all False."""
-        tf = create_timeframe([0.0, 1.0, 0.0, 1.0])
-        config = create_method_config()
+        """Tests that no rows are rejected when no qc_flag value is 2."""
+        tf = create_timeframe([0.0] * 4)
+        qc_flag_tf = create_timeframe([0.0, 1.0, 0.0, 1.0], "QC_FLAG")
+        config = create_method_config(qc_flag=qc_flag_tf)
 
         result = FluxQcFlag().run(tf, config)
 
         expected = pl.Series([False, False, False, False])
         assert_series_equal(result, expected, check_names=False)
+
+
+class TestAlignTo:
+    def test_result_on_same_time_values_is_unchanged(self) -> None:
+        """Tests that a result from a dataset with the same time values as tf comes back unchanged."""
+        tf = create_timeframe([0.0] * 3)
+        checked_tf = create_timeframe([1.0, 2.0, 3.0], "BATTV")
+
+        result = QcMethod.align_to(tf, checked_tf, pl.Series([True, False, True]))
+
+        assert_series_equal(result, pl.Series([True, False, True]), check_names=False)
+
+    def test_rows_missing_from_checked_dataset_get_null(self) -> None:
+        """Tests that rows of tf with no matching time in the checked dataset get a null result."""
+        tf = create_timeframe([0.0] * 4)
+        checked_tf = dataframe_to_timeframe(
+            pl.DataFrame({"BATTV": [1.0, 2.0]}), metadata={"column_name": "BATTV"}, time_shift=1
+        )
+
+        result = QcMethod.align_to(tf, checked_tf, pl.Series([True, False]))
+
+        assert_series_equal(result, pl.Series([None, True, False, None], dtype=pl.Boolean), check_names=False)
+
+    def test_time_values_only_in_checked_dataset_are_dropped(self) -> None:
+        """Tests that results for time values that tf does not have are left out."""
+        tf = create_timeframe([0.0] * 2)
+        checked_tf = create_timeframe([1.0, 2.0, 3.0, 4.0], "BATTV")
+
+        result = QcMethod.align_to(tf, checked_tf, pl.Series([True, False, True, True]))
+
+        assert_series_equal(result, pl.Series([True, False]), check_names=False)
+
+    def test_method_result_is_lined_up_with_tf(self) -> None:
+        """Tests that a check on another dataset returns one result per row of tf, matched by time."""
+        tf = create_timeframe([0.0] * 4)
+        battv_tf = dataframe_to_timeframe(
+            pl.DataFrame({"BATTV": [3.0, 5.0, 3.0]}), metadata={"column_name": "BATTV"}, time_shift=1
+        )
+        config = create_method_config(battv=battv_tf, lt=4)
+
+        result = BatteryVoltage().run(tf, config)
+
+        assert_series_equal(result, pl.Series([None, True, False, True], dtype=pl.Boolean), check_names=False)
 
 
 class TestManualRemoval:
