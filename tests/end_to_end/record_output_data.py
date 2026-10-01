@@ -23,8 +23,20 @@ Review requirement
 Regenerating these outputs is a high-impact change. After running this script, developers must manually review the
 updated Parquet outputs to ensure the values and structure are sensible and represent the intended behaviour of the
 processor. Only then should the outputs be committed and used for E2E testing.
+
+Recording selected test cases
+-----------------------------
+By default every test case is re-recorded and the whole fixture directory is rebuilt from scratch. To re-record only
+some test cases, pass their ids from ``test_cases.json``::
+
+    python -m tests.end_to_end.record_output_data --test-case lw-correction pa-correction
+
+Several test cases write to the same expected output file (one file per network, resolution, site and date), so the
+selected cases' outputs are merged into the existing files rather than replacing them. Columns from other test cases
+are left as they are.
 """
 
+import argparse
 import os
 import shutil
 from pathlib import Path
@@ -39,6 +51,8 @@ from tests.utils.s3_test_helpers import get_s3_storage_client
 
 from dritimeseriesprocessor.__main__ import main as pipeline_main
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
+from dritimeseriesprocessor.storage.storage_client import S3StorageClient
+from dritimeseriesprocessor.utils.polars_utils import merge_dataframes
 
 
 def reset_output_data_fixture_dir(path: Path) -> None:
@@ -51,50 +65,138 @@ def reset_output_data_fixture_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
+def run_test_case(test_case: dict) -> None:
+    """Run the processing pipeline for one test case, writing its outputs to the E2E output bucket.
+
+    Args:
+        test_case: A test case from `test_cases.json`.
+    """
+    all_variables = test_case["measured_variables"] + test_case["derived_variables"] + test_case["aggregated_variables"]
+
+    cli_args = [
+        "from-cross-product",
+        "--sites",
+        *test_case["sites"],
+        "--variables",
+        *all_variables,
+        "--periodicities",
+        *test_case["periodicities"],
+        "--network",
+        test_case["network"],
+        "--start-date",
+        test_case["start_date"],
+        "--end-date",
+        test_case["end_date"],
+    ]
+
+    with (
+        patch.object(EddyProRunner, "__init__", eddypro_mock_init),
+        patch.object(EddyProRunner, "run", eddypro_mock_run),
+    ):
+        pipeline_main(cli_args)
+
+
+def snapshot_output_bucket(storage_client: S3StorageClient) -> dict[str, bytes]:
+    """Read every file in the E2E output bucket.
+
+    Args:
+        storage_client: S3 client wrapper for the E2E buckets.
+
+    Returns:
+        The contents of each file, keyed by its S3 key.
+    """
+    all_keys = storage_client.list_keys(E2E_OUTPUT_BUCKET)
+    return {key: storage_client.get_bytes(E2E_OUTPUT_BUCKET, key) for key in all_keys}
+
+
+def write_expected_output(frame: pl.DataFrame, expected_path: Path) -> None:
+    """Save an expected output file, with its columns sorted by name.
+
+    The processor doesn't write columns in a fixed order, so sorting them means recording the same output again gives
+    a file that is byte for byte the same.
+
+    Args:
+        frame: The output data to save.
+        expected_path: Where to save it.
+    """
+    expected_path.parent.mkdir(parents=True, exist_ok=True)
+    frame.select(sorted(frame.columns)).write_parquet(expected_path)
+
+
+def record_all_test_cases(test_cases: list[dict], expected_output_dir: Path) -> None:
+    """Rebuild the whole fixture directory from a run of every test case.
+
+    Args:
+        test_cases: All test cases from `test_cases.json`.
+        expected_output_dir: Directory the expected outputs are saved to.
+    """
+    with get_s3_storage_client() as storage_client:
+        reset_output_data_fixture_dir(expected_output_dir)
+
+        for test_case in test_cases:
+            run_test_case(test_case)
+
+        for key, contents in snapshot_output_bucket(storage_client).items():
+            write_expected_output(pl.read_parquet(contents), expected_output_dir / key)
+
+
+def record_selected_test_cases(test_cases: list[dict], expected_output_dir: Path) -> None:
+    """Re-record the given test cases, merging their outputs into the existing expected output files.
+
+    Each test case runs against freshly set up buckets, as it does in the E2E test, so that one test case's outputs
+    can't feed into another's.
+
+    Args:
+        test_cases: The test cases to re-record.
+        expected_output_dir: Directory the expected outputs are saved to.
+    """
+    for test_case in test_cases:
+        with get_s3_storage_client() as storage_client:
+            files_before_run = snapshot_output_bucket(storage_client)
+            run_test_case(test_case)
+
+            for key, contents in snapshot_output_bucket(storage_client).items():
+                # Skip the files that were uploaded to the bucket before the run and left untouched by it
+                if files_before_run.get(key) == contents:
+                    continue
+
+                result = pl.read_parquet(contents)
+                expected_path = expected_output_dir / key
+                time_column = "timestamp" if test_case["network"] == "nmdb" else "time"
+                if expected_path.exists():
+                    result = merge_dataframes(pl.read_parquet(expected_path), result, time_column)
+
+                write_expected_output(result, expected_path)
+                print(f"Recorded {test_case['id']}: {key}")
+
+
 def main() -> None:
-    # run the processing pipeline for each test case and intercept the results to save as cached test output data
+    parser = argparse.ArgumentParser(description="Record expected output data for the E2E tests.")
+    parser.add_argument(
+        "--test-case",
+        nargs="+",
+        metavar="ID",
+        help="Only re-record these test cases, by id. Records every test case when left out.",
+    )
+    args = parser.parse_args()
+
+    test_cases = load_json_file(END_TO_END / "test_cases.json")["test_cases"]
+    expected_output_dir = TEST_DATA_OUTPUT_DIR / "end_to_end"
+
     with mock_metadata_api() as metadata_api_url:
         os.environ["metadata_api_url"] = metadata_api_url
 
-        with get_s3_storage_client() as storage_client:
-            expected_output_dir = TEST_DATA_OUTPUT_DIR / "end_to_end"
-            reset_output_data_fixture_dir(expected_output_dir)
+        if args.test_case is None:
+            record_all_test_cases(test_cases, expected_output_dir)
+            return
 
-            test_cases = load_json_file(END_TO_END / "test_cases.json")["test_cases"]
-            for test_case in test_cases:
-                all_variables = (
-                    test_case["measured_variables"] + test_case["derived_variables"] + test_case["aggregated_variables"]
-                )
+        test_cases_by_id = {test_case["id"]: test_case for test_case in test_cases}
+        unknown_ids = [test_case_id for test_case_id in args.test_case if test_case_id not in test_cases_by_id]
+        if unknown_ids:
+            parser.error(f"Unknown test case ids: {unknown_ids}. Choose from: {list(test_cases_by_id)}")
 
-                cli_args = [
-                    "from-cross-product",
-                    "--sites",
-                    *test_case["sites"],
-                    "--variables",
-                    *all_variables,
-                    "--periodicities",
-                    *test_case["periodicities"],
-                    "--network",
-                    test_case["network"],
-                    "--start-date",
-                    test_case["start_date"],
-                    "--end-date",
-                    test_case["end_date"],
-                ]
-
-                with (
-                    patch.object(EddyProRunner, "__init__", eddypro_mock_init),
-                    patch.object(EddyProRunner, "run", eddypro_mock_run),
-                ):
-                    pipeline_main(cli_args)
-
-            # get the outputs and save to disk
-            all_keys = storage_client.list_keys(E2E_OUTPUT_BUCKET)
-            for key in all_keys:
-                expected_path = expected_output_dir / key
-                result = pl.read_parquet(storage_client.get_bytes(E2E_OUTPUT_BUCKET, key))
-                expected_path.parent.mkdir(parents=True, exist_ok=True)
-                result.write_parquet(expected_path)
+        selected_test_cases = [test_cases_by_id[test_case_id] for test_case_id in args.test_case]
+        record_selected_test_cases(selected_test_cases, expected_output_dir)
 
 
 if __name__ == "__main__":
