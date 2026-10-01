@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import polars as pl
 import pytest
-from hydrometlib import flux, meteorology
+from hydrometlib import evapotranspiration, meteorology
 from isoperiod import Period
 from polars.testing import assert_frame_equal
 
@@ -332,7 +332,7 @@ class TestFluxDerivations:
         result = method.run(config)
 
         expected = pl.DataFrame({"rn": [400.0, 350.0], "g": [20.0, 15.0], "h": [100.0, 120.0]}).select(
-            flux.latent_heat_flux(rn=pl.col("rn"), shf=pl.col("g"), h=pl.col("h")).alias("LE")
+            evapotranspiration.latent_heat_flux(rn=pl.col("rn"), g=pl.col("g"), h=pl.col("h")).alias("LE")
         )
         assert result.df["LE"].to_list() == pytest.approx(expected["LE"].to_list())
 
@@ -344,7 +344,7 @@ class TestFluxDerivations:
         result = method.run(config)
 
         expected = pl.DataFrame({"le": [280.0, 215.0], "ta": [15.0, 17.5]}).select(
-            flux.evapotranspiration_from_latent_heat_flux(le=pl.col("le"), ta=pl.col("ta")).alias("ET")
+            evapotranspiration.evapotranspiration_from_latent_heat_flux(le=pl.col("le"), ta=pl.col("ta")).alias("ET")
         )
         assert result.df["ET"].to_list() == pytest.approx(expected["ET"].to_list())
 
