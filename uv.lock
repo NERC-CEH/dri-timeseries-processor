@@ -494,7 +494,7 @@ wheels = [
 
 [[package]]
 name = "dri-timeseries-processor"
-version = "0.8.15"
+version = "0.8.16"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
@@ -739,8 +739,8 @@ wheels = [
 
 [[package]]
 name = "hydrometlib"
-version = "1.0.0"
-source = { git = "https://github.com/NERC-CEH/hydrometlib.git#4fd3d19c47468e4f0b5f77e1011d5159f8da1f4e" }
+version = "1.1.0"
+source = { git = "https://github.com/NERC-CEH/hydrometlib.git#6831026f5546623ef6b0b70d53d22299c74167ed" }
 dependencies = [
     { name = "polars" },
 ]
