@@ -117,17 +117,17 @@
         "rawConfiguration": "[\"flux-plynl-h-load\",\"flux-plynl-h-qc-flag\"]",
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h-plan#step-1",
-            "index": 1,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-qc-flag"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h-plan#step-0",
             "index": 0,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-load"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-qc-flag"
             }
           }
         ]

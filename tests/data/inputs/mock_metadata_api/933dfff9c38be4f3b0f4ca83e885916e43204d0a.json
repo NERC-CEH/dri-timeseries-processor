@@ -33,28 +33,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-1",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-1#argument.max_threshold",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-1#argument.max_threshold.value",
-                "value": [
-                  48
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-1#argument.min_threshold",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-1#argument.min_threshold.value",
@@ -69,6 +47,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/min_threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-1#argument.max_threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-1#argument.max_threshold.value",
+                "value": [
+                  48
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_threshold"
               },
               "@type": [
                 {
@@ -229,6 +229,28 @@
               ]
             },
             {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-2#argument.window",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-2#argument.window.value",
+                "value": [
+                  "P7D"
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-2#argument.alt_data_source",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-2#argument.alt_data_source.value",
@@ -251,28 +273,6 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/alt_data_source"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-2#argument.window",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-2#argument.window.value",
-                "value": [
-                  "P7D"
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
               },
               "@type": [
                 {
@@ -337,50 +337,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.min_threshold",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.min_threshold.value",
-                "value": [
-                  12
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/min_threshold"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.window",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.window.value",
-                "value": [
-                  "P7D"
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.max_threshold",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.max_threshold.value",
@@ -395,6 +351,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_threshold"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.min_threshold",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.min_threshold.value",
+                "value": [
+                  12
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/min_threshold"
               },
               "@type": [
                 {
@@ -425,6 +403,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/alt_data_source"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.window",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/nmdb-jung-neutron_cts_1hour-infill-3#argument.window.value",
+                "value": [
+                  "P7D"
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
               },
               "@type": [
                 {

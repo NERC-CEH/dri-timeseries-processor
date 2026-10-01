@@ -51,31 +51,17 @@
         ],
         "hasPart": [
           {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-2",
+            "index": 2,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-error_code"
+            }
+          },
+          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-3",
             "index": 3,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-samples"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-load_raw"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-6",
-            "index": 6,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-infill"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-1",
-            "index": 1,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-battery_v"
             }
           },
           {
@@ -93,10 +79,24 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-2",
-            "index": 2,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-6",
+            "index": 6,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-error_code"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-infill"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-battery_v"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-alic1-wd_30min-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-wd_30min-load_raw"
             }
           }
         ]
@@ -162,15 +162,6 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
-          "label": [
-            "Number of logger scans"
-          ],
-          "identifier": [
-            "COSMOS-ALIC1-SCANS_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
           "label": [
             "Battery voltage"
@@ -186,6 +177,15 @@
           ],
           "identifier": [
             "COSMOS-ALIC1-WD_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+          "label": [
+            "Number of logger scans"
+          ],
+          "identifier": [
+            "COSMOS-ALIC1-SCANS_30MIN_RAW"
           ]
         }
       ],
@@ -200,21 +200,21 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
-          "label": [
-            "Battery voltage"
-          ],
-          "identifier": [
-            "COSMOS-ALIC1-BATTV_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-wd_30min_raw",
           "label": [
             "Wind direction"
           ],
           "identifier": [
             "COSMOS-ALIC1-WD_30MIN_RAW"
+          ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
+          "identifier": [
+            "COSMOS-ALIC1-BATTV_30MIN_RAW"
           ]
         }
       ],
@@ -227,10 +227,10 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-wd_30min_processed#flag_column.wd_infill_flag",
-          "columnName": "WD_INFILL_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-wd_30min_processed#flag_column.wd_core_flag",
+          "columnName": "WD_CORE_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
           }
         },
         {
@@ -241,10 +241,10 @@
           }
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-wd_30min_processed#flag_column.wd_core_flag",
-          "columnName": "WD_CORE_FLAG",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-wd_30min_processed#flag_column.wd_infill_flag",
+          "columnName": "WD_INFILL_FLAG",
           "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/core_flag_scheme"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         }
       ]
@@ -283,34 +283,6 @@
         ],
         "hasPart": [
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-4",
-            "index": 4,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-samples"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-5",
-            "index": 5,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-range"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-3",
-            "index": 3,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-error_code"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-load_raw"
-            }
-          },
-          {
             "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-1",
             "index": 1,
             "configuration": {
@@ -325,10 +297,10 @@
             }
           },
           {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-2",
-            "index": 2,
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-4",
+            "index": 4,
             "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-battery_v"
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-samples"
             }
           },
           {
@@ -336,6 +308,34 @@
             "index": 7,
             "configuration": {
               "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-infill"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-5",
+            "index": 5,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-range"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-2",
+            "index": 2,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-battery_v"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-load_raw"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/cosmos-holln-wd_30min-plan#step-3",
+            "index": 3,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-holln-wd_30min-error_code"
             }
           }
         ]
@@ -401,15 +401,6 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed",
-          "label": [
-            "Y component of wind speed"
-          ],
-          "identifier": [
-            "COSMOS-HOLLN-UY_30MIN_PROCESSED"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_raw",
           "label": [
             "X component of wind speed"
@@ -428,12 +419,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_processed",
           "label": [
-            "Wind direction"
+            "Y component of wind speed"
           ],
           "identifier": [
-            "COSMOS-HOLLN-WD_30MIN_RAW"
+            "COSMOS-HOLLN-UY_30MIN_PROCESSED"
           ]
         },
         {
@@ -446,6 +437,15 @@
           ]
         },
         {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
+          "identifier": [
+            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+          ]
+        },
+        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-uy_30min_raw",
           "label": [
             "Y component of wind speed"
@@ -455,12 +455,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_raw",
           "label": [
-            "Battery voltage"
+            "Wind direction"
           ],
           "identifier": [
-            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+            "COSMOS-HOLLN-WD_30MIN_RAW"
           ]
         }
       ],
@@ -475,15 +475,6 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_raw",
-          "label": [
-            "Wind direction"
-          ],
-          "identifier": [
-            "COSMOS-HOLLN-WD_30MIN_RAW"
-          ]
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-ux_30min_processed",
           "label": [
             "X component of wind speed"
@@ -493,12 +484,12 @@
           ]
         },
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_raw",
           "label": [
-            "Battery voltage"
+            "Wind direction"
           ],
           "identifier": [
-            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+            "COSMOS-HOLLN-WD_30MIN_RAW"
           ]
         },
         {
@@ -509,9 +500,25 @@
           "identifier": [
             "COSMOS-HOLLN-SCANS_30MIN_RAW"
           ]
+        },
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-battv_30min_raw",
+          "label": [
+            "Battery voltage"
+          ],
+          "identifier": [
+            "COSMOS-HOLLN-BATTV_30MIN_RAW"
+          ]
         }
       ],
       "hasFlagColumn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_processed#flag_column.wd_infill_flag",
+          "columnName": "WD_INFILL_FLAG",
+          "valueScheme": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
+          }
+        },
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_processed#flag_column.wd_core_flag",
           "columnName": "WD_CORE_FLAG",
@@ -524,13 +531,6 @@
           "columnName": "WD_CORRS_FLAG",
           "valueScheme": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_correction_flag_scheme"
-          }
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-holln-wd_30min_processed#flag_column.wd_infill_flag",
-          "columnName": "WD_INFILL_FLAG",
-          "valueScheme": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cosmos_infill_flag_scheme"
           }
         },
         {
