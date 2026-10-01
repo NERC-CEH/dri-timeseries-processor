@@ -53,14 +53,20 @@ class LWCorrection(CorrectionMethod):
     name = "lw_corr"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        lw_unc_tf = self._get_lw_unc(tf, config)
+        lw_unc_tf = config.params["lw_unc"]
         ta_tf = config.params["ta"]
-
         col_name = tf.metadata["column_name"]
+
         lw_unc_col = lw_unc_tf.metadata["column_name"]
         ta_col = ta_tf.metadata["column_name"]
 
-        # Join the dependencies on time
+        if lw_unc_col == col_name:
+            # The lw_unc input can be the raw version of the dataset being corrected, so might share its column name.
+            # in which case we need to rename before merging timeframes
+            lw_unc_col_mod = f"__{lw_unc_col}__"
+            lw_unc_tf = lw_unc_tf.with_df(lw_unc_tf.df.rename({lw_unc_col: lw_unc_col_mod}))
+            lw_unc_col = lw_unc_col_mod
+
         merged = merge_multiple_timeframes([tf, lw_unc_tf, ta_tf], "left").df
 
         # First correct the uncalibrated values.
@@ -84,24 +90,6 @@ class LWCorrection(CorrectionMethod):
         # Recalculate LW value
         corrected = self.apply_within_dates(merged, tf.time_name, col_name, lw_unc_corr + sb_adj, config)
         return tf.with_df(corrected.select(tf.df.columns))
-
-    @staticmethod
-    def _get_lw_unc(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        """Retrieve the uncorrected longwave radiation (lw_unc) TimeFrame to correct.
-
-        Some networks log uncorrected longwave radiation as a separate time series, given as the `lw_unc` input.
-        Others log it in the dataset being corrected, so with no `lw_unc` input the data is corrected in place.
-
-        Args:
-            tf: Time series frame being corrected.
-            config: Configuration of the correction method.
-
-        Returns:
-            The lw_unc TimeFrame.
-        """
-        if "lw_unc" in config.inputs:
-            return config.params["lw_unc"]
-        return tf.copy()
 
 
 @CorrectionMethod.register
