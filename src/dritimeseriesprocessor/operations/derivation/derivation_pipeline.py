@@ -62,7 +62,7 @@ class DerivationPipeline(OperationPipeline):
         """
         config.params["dataset_repository"] = dataset_repository
 
-        self._inject_dependency_timeframes(config, dataset_repository, ("dep_ts", "load_dep_ts"))
+        self._inject_dependency_timeframes(config, dataset_repository, ("load_dep_ts",))
 
         method = DerivationMethod.get(config.method)
         return method.run(config)

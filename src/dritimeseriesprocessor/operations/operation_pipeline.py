@@ -186,7 +186,7 @@ class OperationPipeline(ABC):
     def _inject_dependency_timeframes(
         config: DataProcessingMethodConfig,
         dataset_repository: dict[str, TimeSeriesContainer],
-        keys: tuple[str, ...],
+        keys: tuple[str, ...] = (),
     ) -> None:
         """Inject each dependency's TimeFrame into `config.params`.
 
@@ -200,7 +200,7 @@ class OperationPipeline(ABC):
             config: Configuration whose inputs and params supply dependency ids, and whose params receive the
                 injected TimeFrames.
             dataset_repository: Repository for accessing dependency containers.
-            keys: Names of the `config.params` entries that hold dependency dataset ids.
+            keys: Names of the `config.params` entries that hold dependency dataset ids, if any.
         """
         dep_ids: list[str] = []
         for key in keys:

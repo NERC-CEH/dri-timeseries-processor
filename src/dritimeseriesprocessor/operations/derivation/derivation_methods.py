@@ -32,8 +32,8 @@ class DerivationMethod(GenerativeMethod, ABC):
         self.config = config
 
         # Extract and merge input data.
-        # Named inputs are keyed by the method's input name. Inputs given via "dep_ts" or "load_dep_ts" are keyed by
-        # their lowercased column name instead, so collect every TimeFrame in params.
+        # Named inputs are keyed by the method's input name. Inputs given via "load_dep_ts" (calc_factor_inten) are
+        # keyed by their lowercased column name instead, so collect every TimeFrame in params.
         tf_map = {key: val for key, val in config.params.items() if isinstance(val, ts.TimeFrame)}
 
         # Get column references for calculation
@@ -570,7 +570,7 @@ class CalcFluxMeanShf(DerivationMethod):
     name = "calc_flux_mean_shf"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return meteorology.mean_soil_heat_flux(g1=columns["g_plate_1_1_1"], g2=columns["g_plate_1_1_2"])
+        return meteorology.mean_soil_heat_flux(g1=columns["g1"], g2=columns["g2"])
 
 
 @DerivationMethod.register
@@ -583,7 +583,7 @@ class CalcFluxLeL1(DerivationMethod):
     name = "calc_flux_le_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["t_nr_avg"], shf=columns["shf"], h=columns["h"])
+        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
@@ -596,7 +596,7 @@ class CalcFluxEtL1(DerivationMethod):
     name = "calc_flux_et_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["le_l1"], ta=columns["airtemp_c"])
+        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])
 
 
 @DerivationMethod.register
@@ -609,7 +609,7 @@ class CalcFluxLeL2(DerivationMethod):
     name = "calc_flux_le_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["t_nr_avg"], shf=columns["shf"], h=columns["h_l2"])
+        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
@@ -622,4 +622,4 @@ class CalcFluxEtL2(DerivationMethod):
     name = "calc_flux_et_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["le_l2"], ta=columns["airtemp_c"])
+        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])
