@@ -1,23 +1,23 @@
 {
   "meta": {
-    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed",
+    "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed",
     "publisher": "UK Centre for Ecology & Hydrology",
     "license": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     "licenseName": "OGL 3",
     "comment": "",
     "version": "1.0.0",
     "hasFormat": [
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed",
-      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed"
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.json?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.ttl?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.csv?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.rdf?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.geojson?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed",
+      "http://fdri.ceh.ac.uk/id/data-processing-configuration.html?appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwin_30min_processed&appliesToDataset=http%3A%2F%2Ffdri.ceh.ac.uk%2Fid%2Fdataset%2Fcosmos-alic1-lwout_30min_processed"
     ]
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-samples",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-battery_v",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
@@ -30,14 +30,44 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.lt",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.battv",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.lt.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.battv.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+                    "label": [
+                      "Battery voltage"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/battv"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.lt.value",
                 "value": [
-                  60.0
+                  10.5
                 ],
                 "@type": [
                   {
@@ -53,43 +83,16 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
-                    "label": [
-                      "Number of logger scans"
-                    ]
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/samples",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
             "parameter": [
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/battv"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
@@ -101,7 +104,7 @@
               }
             ],
             "label": [
-              "Samples"
+              "Battery"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
@@ -110,10 +113,10 @@
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
             "prefLabel": [
-              "Samples"
+              "Battery"
             ],
             "scopeNote": [
-              "Number of samples taken in measruring period too low"
+              "Battery voltage too low"
             ]
           }
         }
@@ -128,7 +131,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-nr01_temp",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-correction-lw_corr",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
@@ -141,39 +144,20 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.lt",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.lw_unc",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.lt.value",
-                "value": [
-                  -35.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.depts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.lw_unc.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed",
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_unc_30min_raw",
                     "label": [
-                      "Sensor temperature"
+                      "Incoming longwave radiation (uncorrected)"
                     ]
                   }
                 ],
@@ -184,7 +168,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lw_unc"
               },
               "@type": [
                 {
@@ -193,11 +177,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.gt",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.correction_factor",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.gt.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.correction_factor.value",
                 "value": [
-                  45.0
+                  0.02559
                 ],
                 "@type": [
                   {
@@ -206,7 +190,37 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.ta",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.ta.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+                    "label": [
+                      "Air temperature"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/ta"
               },
               "@type": [
                 {
@@ -216,19 +230,19 @@
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/nr01_temp",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/lw_corr",
             "parameter": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lw_unc"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/ta"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
               }
             ],
             "@type": [
@@ -236,26 +250,27 @@
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
-            "label": [
-              "Radiometer temperture"
-            ],
             "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/cosmos-specific"
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
             },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            },
-            "prefLabel": [
-              "Radiometer temperture"
+            }
+          },
+          "observationInterval": {
+            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#observationInterval",
+            "@type": [
+              {
+                "@id": "http://purl.org/dc/terms/PeriodOfTime"
+              }
             ],
-            "scopeNote": [
-              "Removes LWIN and LWOUT where radiometer tempurature out of range"
-            ]
+            "endDate": "2018-12-20T12:30:00",
+            "startDate": "2016-07-28T15:00:00"
           }
         }
       ],
       "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction"
       },
       "@type": [
         {
@@ -346,7 +361,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-battery_v",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-infill",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
@@ -359,14 +374,14 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.lt",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.max_gap_size",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.lt.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.max_gap_size.value",
                 "value": [
-                  10.5
+                  6
                 ],
                 "@type": [
                   {
@@ -375,7 +390,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"
               },
               "@type": [
                 {
@@ -384,14 +399,89 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.depts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.window",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-battery_v#argument.depts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.window.value",
+                "value": [
+                  1
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_interp",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/infill"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-load_raw",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-load_raw",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-load_raw#argument.depts",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-load_raw#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
                     "label": [
-                      "Battery voltage"
+                      "Incoming longwave radiation"
                     ]
                   }
                 ],
@@ -412,13 +502,132 @@
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            }
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-nr01_temp",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.sensor_ta",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.sensor_ta.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed",
+                    "label": [
+                      "Sensor temperature"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/sensor_ta"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.lt.value",
+                "value": [
+                  -35.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.gt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-nr01_temp#argument.gt.value",
+                "value": [
+                  45.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/nr01_temp",
             "parameter": [
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/sensor_ta"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
@@ -430,19 +639,19 @@
               }
             ],
             "label": [
-              "Battery"
+              "Radiometer temperture"
             ],
             "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/cosmos-specific"
             },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
             },
             "prefLabel": [
-              "Battery"
+              "Radiometer temperture"
             ],
             "scopeNote": [
-              "Battery voltage too low"
+              "Removes LWIN and LWOUT where radiometer tempurature out of range"
             ]
           }
         }
@@ -473,28 +682,6 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-range",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-range#argument.gt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-range#argument.gt.value",
-                "value": [
-                  700.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-range#argument.lt",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-range#argument.lt.value",
@@ -509,6 +696,28 @@
               },
               "parameter": {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-range#argument.gt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-range#argument.gt.value",
+                "value": [
+                  700.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
               },
               "@type": [
                 {
@@ -563,7 +772,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-correction-lw_corr",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-samples",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
@@ -576,14 +785,242 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.correction_factor",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.lt",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.correction_factor.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.lt.value",
                 "value": [
-                  0.02559
+                  60.0
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.scans",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-samples#argument.scans.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+                    "label": [
+                      "Number of logger scans"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/scans"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/samples",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/scans"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "label": [
+              "Samples"
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Samples"
+            ],
+            "scopeNote": [
+              "Number of samples taken in measruring period too low"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-battery_v",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.lt",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.lt.value",
+                "value": [
+                  10.5
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.battv",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.battv.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
+                    "label": [
+                      "Battery voltage"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/battv"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/battv"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "label": [
+              "Battery"
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Battery"
+            ],
+            "scopeNote": [
+              "Battery voltage too low"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-correction-lw_corr",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr",
+          "argument": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.correction_factor",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.correction_factor.value",
+                "value": [
+                  1.0337
                 ],
                 "@type": [
                   {
@@ -601,20 +1038,17 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.depts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.lw_unc",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#argument.depts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.lw_unc.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw",
                     "label": [
-                      "Air temperature"
-                    ]
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_unc_30min_raw",
-                    "label": [
-                      "Incoming longwave radiation (uncorrected)"
+                      "Outgoing longwave radiation (uncorrected)"
                     ]
                   }
                 ],
@@ -625,7 +1059,37 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lw_unc"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.ta",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.ta.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
+                    "label": [
+                      "Air temperature"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/ta"
               },
               "@type": [
                 {
@@ -638,10 +1102,13 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/lw_corr",
             "parameter": [
               {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lw_unc"
+              },
+              {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/ta"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
@@ -660,7 +1127,7 @@
             }
           },
           "observationInterval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-correction-lw_corr#observationInterval",
+            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#observationInterval",
             "@type": [
               {
                 "@id": "http://purl.org/dc/terms/PeriodOfTime"
@@ -681,10 +1148,10 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-load_raw",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-error_code",
       "appliesToDataset": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
           "originatingSite": [
             {
               "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -694,19 +1161,15 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-load_raw",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-error_code",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-load_raw#argument.depts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-error_code#argument.value",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-load_raw#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_raw",
-                    "label": [
-                      "Incoming longwave radiation"
-                    ]
-                  }
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-error_code#argument.value.value",
+                "value": [
+                  7999.0,
+                  8999.0
                 ],
                 "@type": [
                   {
@@ -715,7 +1178,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
               },
               "@type": [
                 {
@@ -725,23 +1188,40 @@
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/load",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/error_code",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
+              }
+            ],
             "@type": [
               {
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
+            ],
+            "label": [
+              "Error code"
             ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
             },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
+            },
+            "prefLabel": [
+              "Error code"
+            ],
+            "scopeNote": [
+              "Find and remove known error codes"
+            ]
           }
         }
       ],
       "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/load"
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
       },
       "@type": [
         {
@@ -750,10 +1230,10 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-infill",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-infill",
       "appliesToDataset": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
           "originatingSite": [
             {
               "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
@@ -763,12 +1243,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.window",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.window",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.window.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.window.value",
                 "value": [
                   1
                 ],
@@ -788,9 +1268,9 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.max_gap_size",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.max_gap_size",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-infill#argument.max_gap_size.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.max_gap_size.value",
                 "value": [
                   6
                 ],
@@ -863,6 +1343,9 @@
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-load_raw#argument.depts",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-load_raw#argument.depts.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
                     "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_raw",
@@ -913,7 +1396,7 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-correction-lw_corr",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-nr01_temp",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
@@ -926,25 +1409,14 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr",
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp",
           "argument": [
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.depts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.lt",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-ta_30min_processed",
-                    "label": [
-                      "Air temperature"
-                    ]
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_unc_30min_raw",
-                    "label": [
-                      "Outgoing longwave radiation (uncorrected)"
-                    ]
-                  }
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.lt.value",
+                "value": [
+                  -35.0
                 ],
                 "@type": [
                   {
@@ -953,7 +1425,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               "@type": [
                 {
@@ -962,11 +1434,11 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.correction_factor",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.gt",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#argument.correction_factor.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.gt.value",
                 "value": [
-                  1.0337
+                  45.0
                 ],
                 "@type": [
                   {
@@ -975,7 +1447,37 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.sensor_ta",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.sensor_ta.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed",
+                    "label": [
+                      "Sensor temperature"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/sensor_ta"
               },
               "@type": [
                 {
@@ -985,16 +1487,19 @@
             }
           ],
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/lw_corr",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/nr01_temp",
             "parameter": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/sensor_ta"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
+              },
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               }
             ],
             "@type": [
@@ -1002,27 +1507,26 @@
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "label": [
+              "Radiometer temperture"
+            ],
             "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/cosmos-specific"
             },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
-          },
-          "observationInterval": {
-            "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-correction-lw_corr#observationInterval",
-            "@type": [
-              {
-                "@id": "http://purl.org/dc/terms/PeriodOfTime"
-              }
+            },
+            "prefLabel": [
+              "Radiometer temperture"
             ],
-            "endDate": "2018-12-20T12:30:00",
-            "startDate": "2016-07-28T15:00:00"
+            "scopeNote": [
+              "Removes LWIN and LWOUT where radiometer tempurature out of range"
+            ]
           }
         }
       ],
       "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/correction"
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
       },
       "@type": [
         {
@@ -1137,335 +1641,6 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-battery_v",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-battv_30min_raw",
-                    "label": [
-                      "Battery voltage"
-                    ]
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-battery_v#argument.lt.value",
-                "value": [
-                  10.5
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/battery_v",
-            "parameter": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              }
-            ],
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "label": [
-              "Battery"
-            ],
-            "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
-            },
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            },
-            "prefLabel": [
-              "Battery"
-            ],
-            "scopeNote": [
-              "Battery voltage too low"
-            ]
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-error_code",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-error_code",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-error_code#argument.value",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-error_code#argument.value.value",
-                "value": [
-                  7999.0,
-                  8999.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/error_code",
-            "parameter": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/value"
-              }
-            ],
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "label": [
-              "Error code"
-            ],
-            "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
-            },
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            },
-            "prefLabel": [
-              "Error code"
-            ],
-            "scopeNote": [
-              "Find and remove known error codes"
-            ]
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-nr01_temp",
-      "appliesToDataset": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
-          "originatingSite": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
-            }
-          ]
-        }
-      ],
-      "hasCurrentValue": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.lt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.lt.value",
-                "value": [
-                  -35.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-tnr01c_30min_processed",
-                    "label": [
-                      "Sensor temperature"
-                    ]
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.gt",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-nr01_temp#argument.gt.value",
-                "value": [
-                  45.0
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
-          "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/nr01_temp",
-            "parameter": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/gt"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
-              }
-            ],
-            "@type": [
-              {
-                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
-              }
-            ],
-            "label": [
-              "Radiometer temperture"
-            ],
-            "broader": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method/cosmos-specific"
-            },
-            "inScheme": {
-              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            },
-            "prefLabel": [
-              "Radiometer temperture"
-            ],
-            "scopeNote": [
-              "Removes LWIN and LWOUT where radiometer tempurature out of range"
-            ]
-          }
-        }
-      ],
-      "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
-      },
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-samples",
       "appliesToDataset": [
         {
@@ -1481,33 +1656,6 @@
         {
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-samples",
           "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-samples#argument.depts",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-samples#argument.depts.value",
-                "valueReference": [
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
-                    "label": [
-                      "Number of logger scans"
-                    ]
-                  }
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
             {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-samples#argument.lt",
               "hasValue": {
@@ -1529,6 +1677,36 @@
                   "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
                 }
               ]
+            },
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-samples#argument.scans",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-samples#argument.scans.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-scans_30min_raw",
+                    "label": [
+                      "Number of logger scans"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/scans"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
             }
           ],
           "method": {
@@ -1538,10 +1716,10 @@
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lt"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/scans"
               }
             ],
             "@type": [
@@ -1577,7 +1755,61 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-infill",
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwin_30min-manual_removal",
+      "appliesToDataset": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwin_30min_processed",
+          "originatingSite": [
+            {
+              "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-alic1"
+            }
+          ]
+        }
+      ],
+      "hasCurrentValue": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwin_30min-manual_removal",
+          "method": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/manual_removal",
+            "parameter": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
+              }
+            ],
+            "@type": [
+              {
+                "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
+              }
+            ],
+            "label": [
+              "Manual Removal"
+            ],
+            "broader": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
+            },
+            "inScheme": {
+              "@id": "http://fdri.ceh.ac.uk/ref/common/method"
+            },
+            "prefLabel": [
+              "Manual Removal"
+            ],
+            "scopeNote": [
+              "Data associated with a sensor that has a known fault. These are registered manually by the operations team"
+            ]
+          }
+        }
+      ],
+      "type": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
+      },
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/InternalDataProcessingConfiguration"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-alic1-lwout_30min-manual_removal",
       "appliesToDataset": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-alic1-lwout_30min_processed",
@@ -1590,61 +1822,12 @@
       ],
       "hasCurrentValue": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill",
-          "argument": [
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.window",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.window.value",
-                "value": [
-                  1
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            },
-            {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.max_gap_size",
-              "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-infill#argument.max_gap_size.value",
-                "value": [
-                  6
-                ],
-                "@type": [
-                  {
-                    "@id": "http://schema.org/PropertyValue"
-                  }
-                ]
-              },
-              "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"
-              },
-              "@type": [
-                {
-                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
-                }
-              ]
-            }
-          ],
+          "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-alic1-lwout_30min-manual_removal",
           "method": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/method/linear_interp",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/method/manual_removal",
             "parameter": [
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/max_gap_size"
-              },
-              {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/window"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/flag_ts"
               }
             ],
             "@type": [
@@ -1652,17 +1835,26 @@
                 "@id": "http://fdri.ceh.ac.uk/vocab/metadata/DataProcessingMethod"
               }
             ],
+            "label": [
+              "Manual Removal"
+            ],
             "broader": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method/generic"
             },
             "inScheme": {
               "@id": "http://fdri.ceh.ac.uk/ref/common/method"
-            }
+            },
+            "prefLabel": [
+              "Manual Removal"
+            ],
+            "scopeNote": [
+              "Data associated with a sensor that has a known fault. These are registered manually by the operations team"
+            ]
           }
         }
       ],
       "type": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/infill"
+        "@id": "http://fdri.ceh.ac.uk/ref/common/configuration-type/qc"
       },
       "@type": [
         {

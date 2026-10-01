@@ -4,7 +4,10 @@ import polars as pl
 import pytest
 import time_stream as ts
 
-from dritimeseriesprocessor.utils.time_stream_utils import map_time_anchor, merge_multiple_timeframes
+from dritimeseriesprocessor.utils.time_stream_utils import (
+    map_time_anchor,
+    merge_multiple_timeframes,
+)
 from utils.data_creation import dataframe_to_timeframe
 
 

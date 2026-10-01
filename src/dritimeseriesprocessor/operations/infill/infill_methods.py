@@ -29,11 +29,12 @@ class AltData(InfillMethod):
     name = "alt_data"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        alt_tf = config.params["alt_data_source"]
         return tf.infill(
             "alt_data",
             tf.metadata["column_name"],
-            alt_df=config.params["alt_df"],
-            alt_data_column=config.params["alt_data_column"],
+            alt_df=alt_tf.df,
+            alt_data_column=alt_tf.metadata["column_name"],
             observation_interval=observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
             correction_factor=config.params.get("correction_factor", 1),
@@ -45,11 +46,12 @@ class AltDataDynamic(InfillMethod):
     name = "alt_data_dynamic"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        alt_tf = config.params["alt_data_source"]
         return tf.infill(
             "alt_data_dynamic",
             tf.metadata["column_name"],
-            alt_df=config.params["alt_df"],
-            alt_data_column=config.params["alt_data_column"],
+            alt_df=alt_tf.df,
+            alt_data_column=alt_tf.metadata["column_name"],
             observation_interval=observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
             min_threshold=config.params.get("min_threshold", 0),

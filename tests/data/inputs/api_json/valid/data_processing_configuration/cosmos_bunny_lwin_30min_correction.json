@@ -33,6 +33,36 @@
           "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr",
           "argument": [
             {
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.lw_unc",
+              "hasValue": {
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.lw_unc.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
+                "valueReference": [
+                  {
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw",
+                    "label": [
+                      "Incoming longwave radiation (uncorrected)"
+                    ]
+                  }
+                ],
+                "@type": [
+                  {
+                    "@id": "http://schema.org/PropertyValue"
+                  }
+                ]
+              },
+              "parameter": {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lw_unc"
+              },
+              "@type": [
+                {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"
+                }
+              ]
+            },
+            {
               "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.correction_factor",
               "hasValue": {
                 "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.correction_factor.value",
@@ -55,15 +85,18 @@
               ]
             },
             {
-              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.depts",
+              "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.ta",
               "hasValue": {
-                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.depts.value",
+                "@id": "http://fdri.ceh.ac.uk/id/configuration-item/cosmos-bunny-lwin_30min-correction-lw_corr#argument.ta.value",
+                "valueType": {
+                  "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+                },
                 "valueReference": [
                   {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed"
-                  },
-                  {
-                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-lwin_unc_30min_raw"
+                    "@id": "http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_processed",
+                    "label": [
+                      "Air temperature"
+                    ]
                   }
                 ],
                 "@type": [
@@ -73,7 +106,7 @@
                 ]
               },
               "parameter": {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/ta"
               },
               "@type": [
                 {
@@ -86,10 +119,13 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/method/lw_corr",
             "parameter": [
               {
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/lw_unc"
+              },
+              {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correct_ts"
               },
               {
-                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/dep_ts"
+                "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/ta"
               },
               {
                 "@id": "http://fdri.ceh.ac.uk/ref/common/parameter/correction_factor"

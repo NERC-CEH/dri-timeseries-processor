@@ -59,6 +59,7 @@ class TestApply:
         config = MagicMock(spec=DataProcessingMethodConfig)
         config.method = "add"
         config.params = {"correction_factor": 10}
+        config.inputs = {}
 
         expected_result = mock_timeframe
         with patch.object(CorrectionMethod, "get") as mock_get:
