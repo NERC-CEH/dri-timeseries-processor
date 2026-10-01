@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import polars as pl
 import time_stream as ts
-from hydrometlib import cosmos, evapotranspiration, flux, hydrology, meteorology
+from hydrometlib import cosmos, evapotranspiration, meteorology
 from isoperiod import Period
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -562,17 +562,12 @@ class D86(DerivationMethod):
 
 @DerivationMethod.register
 class DistanceToWaterLevel(DerivationMethod):
-    """
-
-    See `hydrometlib.hydrology.distance_to_water_level_conversion` for the science.
-    """
+    """Calculate the Water Level based on the measured distance from the sensor"""
 
     name = "distance_to_level"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return hydrology.distance_to_water_level_conversion(
-            dist_to_water=columns["Distance_m_Avg"], sensor_height=self.config.params["sensor_height"]
-        )
+        return self.config.params["sensor_height"] - columns["dist_to_water"]
 
 
 @DerivationMethod.register
@@ -598,7 +593,7 @@ class CalcFluxLeL1(DerivationMethod):
     name = "calc_flux_le_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
+        return evapotranspiration.latent_heat_flux(rn=columns["rn"], g=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
@@ -611,7 +606,9 @@ class CalcFluxEtL1(DerivationMethod):
     name = "calc_flux_et_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])
+        return evapotranspiration.evapotranspiration_from_latent_heat_flux(
+            le=columns["latent_heat_flux"], ta=columns["ta"]
+        )
 
 
 @DerivationMethod.register
@@ -624,7 +621,7 @@ class CalcFluxLeL2(DerivationMethod):
     name = "calc_flux_le_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
+        return evapotranspiration.latent_heat_flux(rn=columns["rn"], g=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
@@ -637,4 +634,6 @@ class CalcFluxEtL2(DerivationMethod):
     name = "calc_flux_et_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])
+        return evapotranspiration.evapotranspiration_from_latent_heat_flux(
+            le=columns["latent_heat_flux"], ta=columns["ta"]
+        )
