@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import polars as pl
 import time_stream as ts
-from hydrometlib import cosmos, evapotranspiration, flux, meteorology
+from hydrometlib import cosmos, evapotranspiration, meteorology
 from isoperiod import Period
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
@@ -223,9 +223,9 @@ class LatentHeatFluxToEvapotranspiration(DerivationMethod):
     name = "latent_heat_to_et"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return evapotranspiration.latent_heat_to_evapotranspiration(
-            le=columns["LE"],
-            ta=columns["AirTemp_C"],
+        return evapotranspiration.evapotranspiration_from_latent_heat_flux(
+            le=columns["le"],
+            ta=columns["ta"],
         )
 
 
@@ -593,49 +593,53 @@ class CalcFluxMeanShf(DerivationMethod):
 class CalcFluxLeL1(DerivationMethod):
     """Calculate latent heat flux LE_L1 = Rn - SHF - H [W m-2].
 
-    See `hydrometlib.flux.latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.latent_heat_flux` for the science.
     """
 
     name = "calc_flux_le_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
+        return evapotranspiration.latent_heat_flux(rn=columns["rn"], g=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
 class CalcFluxEtL1(DerivationMethod):
     """Calculate evapotranspiration ET_L1 = LE_L1 / lambda / 1000 [mm 30min-1].
 
-    See `hydrometlib.flux.evapotranspiration_from_latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.evapotranspiration_from_latent_heat_flux` for the science.
     """
 
     name = "calc_flux_et_l1"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])
+        return evapotranspiration.evapotranspiration_from_latent_heat_flux(
+            le=columns["latent_heat_flux"], ta=columns["ta"]
+        )
 
 
 @DerivationMethod.register
 class CalcFluxLeL2(DerivationMethod):
     """Calculate latent heat flux LE_L2 = Rn - SHF - H_L2 [W m-2], using despiked H.
 
-    See `hydrometlib.flux.latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.latent_heat_flux` for the science.
     """
 
     name = "calc_flux_le_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.latent_heat_flux(rn=columns["rn"], shf=columns["g"], h=columns["h"])
+        return evapotranspiration.latent_heat_flux(rn=columns["rn"], g=columns["g"], h=columns["h"])
 
 
 @DerivationMethod.register
 class CalcFluxEtL2(DerivationMethod):
     """Calculate evapotranspiration ET_L2 = LE_L2 / lambda / 1000 [mm 30min-1], using despiked LE.
 
-    See `hydrometlib.flux.evapotranspiration_from_latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.evapotranspiration_from_latent_heat_flux` for the science.
     """
 
     name = "calc_flux_et_l2"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        return flux.evapotranspiration_from_latent_heat_flux(le=columns["latent_heat_flux"], ta=columns["ta"])
+        return evapotranspiration.evapotranspiration_from_latent_heat_flux(
+            le=columns["latent_heat_flux"], ta=columns["ta"]
+        )
