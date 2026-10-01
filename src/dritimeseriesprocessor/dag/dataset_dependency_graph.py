@@ -204,7 +204,7 @@ class DatasetDependencyGraph:
             else:
                 self._dep_ts_ids.add(dep_id)
 
-            # If we already resolved this dep as load-only in an earlier batch but now have a full dep_ts
+            # If we already resolved this dep as load-only in an earlier batch but now have a full dependency
             # reference to it, we need to redo it properly. Pull it back out and re-queue it - it will go
             # through config fetching and dependency resolution in the next iteration like any normal dep.
             if dep_id in self.datasets and self.datasets[dep_id].load_only and not self._is_load_only(dep_id):

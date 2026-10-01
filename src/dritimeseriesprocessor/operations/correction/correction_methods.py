@@ -54,7 +54,7 @@ class LWCorrection(CorrectionMethod):
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
         lw_unc_tf = self._get_lw_unc(tf, config)
-        ta_tf = self._get_temp(config)
+        ta_tf = config.params["ta"]
 
         col_name = tf.metadata["column_name"]
         lw_unc_col = lw_unc_tf.metadata["column_name"]
@@ -87,56 +87,21 @@ class LWCorrection(CorrectionMethod):
 
     @staticmethod
     def _get_lw_unc(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        """Retrieve the longwave radiation uncorrected (lw_unc) TimeFrame from processing configuration.
+        """Retrieve the uncorrected longwave radiation (lw_unc) TimeFrame to correct.
 
-        This supports processing methods that operate on either LWIN or LWOUT datasets, each of which depends on
-        a corresponding uncorrected time series (LWIN_UNC or LWOUT_UNC). To keep downstream logic generic,
-        this function resolves exactly one of these parameters and returns it as the longwave uncertainty input.
-
-        NOTE: This is a temporary solution to a wider problem that we want to solve via metadata.
-            See derivation_methods.py:_get_crns_column for more detailed 'note' tag.
+        Some networks log uncorrected longwave radiation as a separate time series, given as the `lw_unc` input.
+        Others log it in the dataset being corrected, so with no `lw_unc` input the data is corrected in place.
 
         Args:
+            tf: Time series frame being corrected.
             config: Configuration of the correction method.
 
         Returns:
-            The lw_unc TimeFrame corresponding to either LWIN_UNC or LWOUT_UNC
+            The lw_unc TimeFrame.
         """
-        if tf.metadata["column_name"] in ["R_LW_in_Avg", "R_LW_out_Avg"]:
-            # There is no dependant LW uncorrected TS, we correct the LW data in place
-            return tf.copy()
-        else:
-            possible_keys = {"lwin_unc", "lwout_unc"}
-            found_keys = possible_keys & config.params.keys()
-
-            if len(found_keys) != 1:
-                raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
-
-            return config.params[found_keys.pop()]
-
-    @staticmethod
-    def _get_temp(config: DataProcessingMethodConfig) -> ts.TimeFrame:
-        """Retrieve the temperature TimeFrame from processing configuration.
-
-        This supports processing methods that operate using either air temperature (TA) or NR01 sensor temperature
-        (T_nr_Avg)
-
-        NOTE: This is a temporary solution to a wider problem that we want to solve via metadata.
-            See derivation_methods.py:_get_crns_column for more detailed 'note' tag.
-
-        Args:
-            config: Configuration of the correction method.
-
-        Returns:
-            The temp TimeFrame corresponding to either TA or TNR01
-        """
-        possible_keys = {"ta", "t_nr_avg"}
-        found_keys = possible_keys & config.params.keys()
-
-        if len(found_keys) != 1:
-            raise KeyError(f"Expected exactly one of {possible_keys}, found {found_keys}")
-
-        return config.params[found_keys.pop()]
+        if "lw_unc" in config.inputs:
+            return config.params["lw_unc"]
+        return tf.copy()
 
 
 @CorrectionMethod.register
