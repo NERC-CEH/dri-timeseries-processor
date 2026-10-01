@@ -174,7 +174,7 @@ class TestLWCorrection:
             [20.33, 21.74, 22.79, 22.91, 24.3, 25.72, 27.27], "ta", "http://fdri.ceh.ac.uk/ref/common/unit/degc"
         )
         factor = 1.00924
-        config = create_method_config(correction_factor=factor, lwin_unc=lw_unc, ta=ta)
+        config = create_method_config(correction_factor=factor, lw_unc=lw_unc, ta=ta)
 
         result = LWCorrection().run(lw, config)
 
@@ -200,7 +200,7 @@ class TestLWCorrection:
             [293.48, 294.89, 295.94, 296.06, 297.45, 298.87, 300.42], "ta", "http://fdri.ceh.ac.uk/ref/common/unit/kel"
         )
         factor = 1.00924
-        config = create_method_config(correction_factor=factor, lwin_unc=lw_unc, ta=ta)
+        config = create_method_config(correction_factor=factor, lw_unc=lw_unc, ta=ta)
 
         result = LWCorrection().run(lw, config)
 
@@ -229,7 +229,7 @@ class TestLWCorrection:
 
         config = create_method_config(
             correction_factor=factor,
-            lwin_unc=lw_unc,
+            lw_unc=lw_unc,
             ta=ta,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
@@ -241,9 +241,10 @@ class TestLWCorrection:
         ).df
         assert_frame_equal(result.df, expected_df)
 
-    def test_lw_correction_no_unc_dependant(self) -> None:
-        """Test that the lw correction function works across the full DataFrame."""
-        lw = create_timeframe(
+    def test_lw_unc_sharing_column_name_with_lw(self) -> None:
+        """Tests that an lw_unc input with the same column name as the data being corrected is used to correct it."""
+        lw = create_timeframe([-1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0], "R_LW_out_Avg")
+        lw_unc = create_timeframe(
             [-38.14216, -38.28978, -40.08758, -40.57142, -41.9975, -43.12814, -44.89819], "R_LW_out_Avg"
         )
         ta = create_timeframe(
@@ -251,19 +252,32 @@ class TestLWCorrection:
             "T_nr_Avg",
             "http://fdri.ceh.ac.uk/ref/common/unit/kel",
         )
-        factor = 1.0
         config = create_method_config(
-            correction_factor=factor,
+            correction_factor=1.0,
+            lw_unc=lw_unc,
             ta=ta,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
         )
 
         result = LWCorrection().run(lw, config)
+
+        # Rows inside the date range are corrected from lw_unc, the others keep lw's values
         expected_df = create_timeframe(
-            [-38.14216, -38.28978, 346.2400728, 345.5873711, 343.5964913, -43.12814, -44.89819], "R_LW_out_Avg"
+            [-1.0, -2.0, 346.2400728, 345.5873711, 343.5964913, -6.0, -7.0], "R_LW_out_Avg"
         ).df
         assert_frame_equal(result.df, expected_df)
+
+    def test_lw_unc_input_is_not_renamed(self) -> None:
+        """Tests that renaming a clashing lw_unc column does not change the lw_unc input itself."""
+        lw = create_timeframe([1.0, 2.0, 3.0], "R_LW_out_Avg")
+        lw_unc = create_timeframe([-38.0, -39.0, -40.0], "R_LW_out_Avg")
+        ta = create_timeframe([287.0, 287.0, 287.0], "T_nr_Avg", "http://fdri.ceh.ac.uk/ref/common/unit/kel")
+        config = create_method_config(correction_factor=1.0, lw_unc=lw_unc, ta=ta)
+
+        LWCorrection().run(lw, config)
+
+        assert lw_unc.df.columns == ["time", "R_LW_out_Avg"]
 
 
 class TestLWCorrectionDependencyAlignment:
@@ -272,7 +286,7 @@ class TestLWCorrectionDependencyAlignment:
         lw = create_timeframe([373.9, 381.5, 386.9], "lw")
         lw_unc = create_timeframe([-53.24, -56.31, -56.64], "lw_unc")
         ta = create_timeframe([20.33, 21.74], "ta", unit="http://fdri.ceh.ac.uk/ref/common/unit/degc")
-        config = create_method_config(correction_factor=1.00924, lwin_unc=lw_unc, ta=ta)
+        config = create_method_config(correction_factor=1.00924, lw_unc=lw_unc, ta=ta)
 
         result = LWCorrection().run(lw, config)
 

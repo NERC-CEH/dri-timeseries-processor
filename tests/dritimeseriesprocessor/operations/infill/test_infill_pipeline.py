@@ -6,8 +6,10 @@ import time_stream as ts
 from polars.testing import assert_series_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
+from utils.data_creation import create_timeframe
 
 
 @pytest.fixture
@@ -57,6 +59,7 @@ class TestApply:
         config = MagicMock(spec=DataProcessingMethodConfig)
         config.method = "add"
         config.params = {"correction_factor": 10}
+        config.inputs = {}
 
         expected_result = mock_timeframe
         with patch.object(InfillMethod, "get") as mock_get:
@@ -67,6 +70,18 @@ class TestApply:
             pipeline = InfillPipeline({})
             result = pipeline.apply(mock_timeframe, config, {})
             assert isinstance(result, ts.TimeFrame)
+
+    def test_alt_data_source_input_is_used_to_infill(self) -> None:
+        """Tests that the alt_data_source input's data is passed to the method and used to fill the gaps."""
+        tf = create_timeframe([1.0, None, 3.0])
+        alt_container = MagicMock(spec=TimeSeriesContainer)
+        alt_container.source_column = "alt"
+        alt_container.data = create_timeframe([10.0, 20.0, 30.0], "alt")
+        config = DataProcessingMethodConfig(method="alt_data", inputs={"alt_data_source": "alt_ts"})
+
+        result = InfillPipeline({}).apply(tf, config, {"alt_ts": alt_container})
+
+        assert result.df["value"].to_list() == [1.0, 20.0, 3.0]
 
 
 class TestCoreFlagUpdater:

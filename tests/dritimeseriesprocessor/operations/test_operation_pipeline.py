@@ -317,3 +317,33 @@ class TestInjectDependencyTimeframes:
         OperationPipeline._inject_dependency_timeframes(config, {}, ("dep_ts",))
 
         assert config.params == params
+
+    def test_named_input_is_injected_under_its_input_name(self) -> None:
+        """Tests that a named input's data is added under the input name, not the dependency's column name."""
+        config = DataProcessingMethodConfig(method="test", inputs={"temperature": "ts_1"})
+        repository = {"ts_1": self.dependency("TA")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository)
+
+        assert config.params == {"temperature": repository["ts_1"].data}
+
+    def test_named_inputs_keep_their_dataset_ids(self) -> None:
+        """Tests that injecting named inputs leaves the dataset ids in the config's inputs unchanged."""
+        config = DataProcessingMethodConfig(method="test", inputs={"swin": "ts_1", "swout": "ts_2"})
+        repository = {"ts_1": self.dependency("SWIN"), "ts_2": self.dependency("SWOUT")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository)
+
+        assert config.inputs == {"swin": "ts_1", "swout": "ts_2"}
+        assert config.params["swin"] is repository["ts_1"].data
+        assert config.params["swout"] is repository["ts_2"].data
+
+    def test_named_inputs_and_dependency_keys_are_both_injected(self) -> None:
+        """Tests that named inputs and dependencies from the given param names are injected together."""
+        config = DataProcessingMethodConfig(method="test", params={"load_dep_ts": "ts_1"}, inputs={"pa": "ts_2"})
+        repository = {"ts_1": self.dependency("CRNS-COUNT"), "ts_2": self.dependency("PA")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository, ("load_dep_ts",))
+
+        assert config.params["crns-count"] is repository["ts_1"].data
+        assert config.params["pa"] is repository["ts_2"].data
