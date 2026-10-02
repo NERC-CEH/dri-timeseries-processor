@@ -18,6 +18,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     CalcFluxLeL2,
     CalcFluxMeanShf,
     DerivationMethod,
+    DistanceToWaterLevel,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
     NetRadiation,
@@ -300,6 +301,16 @@ class TestGetPrecipTipping:
         )
         result = GetPrecipTipping().run(config)
         assert result.df["precip_tipping"][0] is None
+
+
+class TestDistanceToWaterLevel:
+    def test_water_level_is_sensor_height_minus_distance(self) -> None:
+        """Tests that the water level is the sensor height minus the measured distance to the water."""
+        config = create_method_config({"dist_to_water": [1.5, 2.0, 3.0]}, "water_level")
+        config.params["sensor_height"] = 5.0
+
+        result = DistanceToWaterLevel().run(config)
+        assert result.df["water_level"].to_list() == [3.5, 3.0, 2.0]
 
 
 def _make_eddypro_config(

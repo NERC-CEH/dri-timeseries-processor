@@ -577,6 +577,16 @@ class D86(DerivationMethod):
 
 
 @DerivationMethod.register
+class DistanceToWaterLevel(DerivationMethod):
+    """Calculate the Water Level based on the measured distance from the sensor"""
+
+    name = "distance_to_level"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return self.config.params["sensor_height"] - columns["dist_to_water"]
+
+
+@DerivationMethod.register
 class CalcFluxMeanShf(DerivationMethod):
     """Calculate mean soil heat flux from two SHF plate measurements.
 
