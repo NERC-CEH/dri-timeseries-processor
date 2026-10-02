@@ -214,6 +214,22 @@ class PotentialEvapotranspiration30Min(DerivationMethod):
 
 
 @DerivationMethod.register
+class LatentHeatFluxToEvapotranspiration(DerivationMethod):
+    """Calculate Evapotranspiration (ET) from latent heat and tempertaure.
+
+    See `hydrometlib.evapotranspiration.latent_heat_to_evapotranspiration` for the science.
+    """
+
+    name = "latent_heat_to_et"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        return evapotranspiration.evapotranspiration_from_latent_heat_flux(
+            le=columns["le"],
+            ta=columns["ta"],
+        )
+
+
+@DerivationMethod.register
 class AbsoluteHumidity(DerivationMethod):
     """Calculate absolute humidity (Q) - a measure of the actual amount of water vapor in the air.
 
@@ -587,7 +603,7 @@ class CalcFluxMeanShf(DerivationMethod):
 class CalcFluxLeL1(DerivationMethod):
     """Calculate latent heat flux LE_L1 = Rn - SHF - H [W m-2].
 
-    See `hydrometlib.flux.latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.latent_heat_flux` for the science.
     """
 
     name = "calc_flux_le_l1"
@@ -600,7 +616,7 @@ class CalcFluxLeL1(DerivationMethod):
 class CalcFluxEtL1(DerivationMethod):
     """Calculate evapotranspiration ET_L1 = LE_L1 / lambda / 1000 [mm 30min-1].
 
-    See `hydrometlib.flux.evapotranspiration_from_latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.evapotranspiration_from_latent_heat_flux` for the science.
     """
 
     name = "calc_flux_et_l1"
@@ -615,7 +631,7 @@ class CalcFluxEtL1(DerivationMethod):
 class CalcFluxLeL2(DerivationMethod):
     """Calculate latent heat flux LE_L2 = Rn - SHF - H_L2 [W m-2], using despiked H.
 
-    See `hydrometlib.flux.latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.latent_heat_flux` for the science.
     """
 
     name = "calc_flux_le_l2"
@@ -628,7 +644,7 @@ class CalcFluxLeL2(DerivationMethod):
 class CalcFluxEtL2(DerivationMethod):
     """Calculate evapotranspiration ET_L2 = LE_L2 / lambda / 1000 [mm 30min-1], using despiked LE.
 
-    See `hydrometlib.flux.evapotranspiration_from_latent_heat_flux` for the science.
+    See `hydrometlib.evapotranspiration.evapotranspiration_from_latent_heat_flux` for the science.
     """
 
     name = "calc_flux_et_l2"
