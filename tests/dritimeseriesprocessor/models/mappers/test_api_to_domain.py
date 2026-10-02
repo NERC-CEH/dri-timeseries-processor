@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
+import pytest
 from tests.utils.fixture_helpers import TEST_DATA_API_VALID, load_json_file
 from tests.utils.validation_helpers import valid_parses
 
@@ -19,12 +20,79 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.models.mappers.api_to_domain import (
     extract_annotations,
     extract_arguments,
+    extract_inputs,
     map_dataset_item,
     map_processing_config_item,
     map_processing_method_config,
     map_site_metadata,
 )
 from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
+
+DATASET_URI = "http://fdri.ceh.ac.uk/id/dataset"
+PARAMETER_URI = "http://fdri.ceh.ac.uk/ref/common/parameter"
+
+
+def reference_argument(parameter: str, dataset_ids: list[str]) -> dict:
+    """Build an API argument whose value references one or more datasets.
+
+    Args:
+        parameter: Name of the argument's parameter, e.g. "swin" or "dep_ts".
+        dataset_ids: Ids of the datasets the argument references.
+
+    Returns:
+        The argument as it appears in the metadata API response.
+    """
+    return {
+        "@id": f"argument.{parameter}",
+        "hasValue": {
+            "@id": f"argument.{parameter}.value",
+            "valueReference": [{"@id": f"{DATASET_URI}/{dataset_id}"} for dataset_id in dataset_ids],
+            "@type": [{"@id": "http://schema.org/PropertyValue"}],
+        },
+        "parameter": {"@id": f"{PARAMETER_URI}/{parameter}"},
+        "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
+    }
+
+
+def literal_argument(parameter: str, value: float) -> dict:
+    """Build an API argument with a literal value.
+
+    Args:
+        parameter: Name of the argument's parameter, e.g. "lt".
+        value: The argument's value.
+
+    Returns:
+        The argument as it appears in the metadata API response.
+    """
+    return {
+        "@id": f"argument.{parameter}",
+        "hasValue": {
+            "@id": f"argument.{parameter}.value",
+            "value": [value],
+            "@type": [{"@id": "http://schema.org/PropertyValue"}],
+        },
+        "parameter": {"@id": f"{PARAMETER_URI}/{parameter}"},
+        "@type": [{"@id": "http://fdri.ceh.ac.uk/vocab/metadata/ConfigurationArgument"}],
+    }
+
+
+def make_container() -> TimeSeriesContainer:
+    """Create a TimeSeriesContainer to attach configs to."""
+    return TimeSeriesContainer(
+        ts_id="test_id",
+        network="network",
+        source_bucket="bucket",
+        source_dataset="dataset",
+        source_column="col",
+        source_site="a-site",
+        source_site_identifier="BUNNY",
+        time_column_name="time",
+        unit=None,
+        resolution="PT30M",
+        periodicity="PT30M",
+        time_anchor="end",
+        processing_level=ProcessingLevel.RAW,
+    )
 
 
 class TestMapDatasetItem:
@@ -249,6 +317,59 @@ class TestMapDatasetItem:
         item.attach_configs([method_config, qc_config, correction_config, infill_config])
         assert item.all_dependencies() == ["dep1", "dep2", "dep3", "dep4", "dep5"]
 
+    def test_all_dependencies_includes_named_inputs(self) -> None:
+        """Tests that all_dependencies includes named inputs alongside dep_ts and load_dep_ts references."""
+        derivation_config = DataProcessingConfig(
+            ts_id="test_id",
+            site_id="test_id_site",
+            config_id="derivation_cfg",
+            config_type=ConfigurationType.DERIVATION,
+            method_configs=[
+                DataProcessingMethodConfig(method="m", params={"load_dep_ts": "dep1"}, inputs={"swin": "dep2"})
+            ],
+            annotations={},
+        )
+        qc_config = DataProcessingConfig(
+            ts_id="test_id",
+            site_id="test_id_site",
+            config_id="qc_cfg",
+            config_type=ConfigurationType.QUALITY_CONTROL,
+            method_configs=[DataProcessingMethodConfig(method="m", inputs={"battv": "dep3"})],
+            annotations={},
+        )
+        aggregation_config = DataProcessingConfig(
+            ts_id="test_id",
+            site_id="test_id_site",
+            config_id="aggregation_cfg",
+            config_type=ConfigurationType.AGGREGATION,
+            method_configs=[DataProcessingMethodConfig(method="m", params={"dep_ts": "dep2"})],
+            annotations={},
+        )
+
+        item = make_container()
+        item.attach_configs([derivation_config, qc_config, aggregation_config])
+
+        assert item.all_dependencies() == ["dep1", "dep2", "dep3"]
+        assert item.load_only_dependencies() == ["dep1"]
+
+    def test_all_dependencies_after_inputs_are_injected(self) -> None:
+        """Tests that all_dependencies still returns dataset ids once input data has been put into the params."""
+        method_config = DataProcessingMethodConfig(method="m", inputs={"swin": "dep1"})
+        config = DataProcessingConfig(
+            ts_id="test_id",
+            site_id="test_id_site",
+            config_id="derivation_cfg",
+            config_type=ConfigurationType.DERIVATION,
+            method_configs=[method_config],
+            annotations={},
+        )
+        item = make_container()
+        item.attach_configs([config])
+
+        method_config.params["swin"] = MagicMock()
+
+        assert item.all_dependencies() == ["dep1"]
+
 
 class TestExtractArguments:
     def test_extract_arguments(self) -> None:
@@ -404,6 +525,72 @@ class TestExtractArguments:
         result = extract_arguments(api_model, site_metadata)
 
         assert result == {"saturation": series}
+
+    def test_named_inputs_are_left_out(self) -> None:
+        """Tests that named inputs are not extracted as params, while dep_ts and load_dep_ts still are."""
+        data = [
+            reference_argument("swin", ["swin-dataset"]),
+            reference_argument("dep_ts", ["dep-dataset"]),
+            reference_argument("load_dep_ts", ["load-dataset"]),
+            literal_argument("round", 3),
+        ]
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+        result = extract_arguments(api_model, MagicMock())
+
+        assert result == {
+            "dep_ts": f"{DATASET_URI}/dep-dataset",
+            "load_dep_ts": f"{DATASET_URI}/load-dataset",
+            "round": 3,
+        }
+
+
+class TestExtractInputs:
+    def test_extracts_named_inputs(self) -> None:
+        """Tests that each named input maps its input name to the dataset it references."""
+        data = [
+            reference_argument("swin", ["swin-dataset"]),
+            reference_argument("swout", ["swout-dataset"]),
+            literal_argument("round", 3),
+        ]
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+        result = extract_inputs(api_model)
+
+        assert result == {"swin": f"{DATASET_URI}/swin-dataset", "swout": f"{DATASET_URI}/swout-dataset"}
+
+    def test_dependency_params_are_not_inputs(self) -> None:
+        """Tests that dep_ts and load_dep_ts references are not treated as named inputs."""
+        data = [
+            reference_argument("dep_ts", ["dep-dataset"]),
+            reference_argument("load_dep_ts", ["load-dataset"]),
+        ]
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+
+        assert extract_inputs(api_model) == {}
+
+    def test_input_name_hyphens_are_replaced(self) -> None:
+        """Tests that hyphens in an input name are replaced with underscores, as for other params."""
+        api_model = [ArgumentItem.model_validate(reference_argument("cts-smo", ["cts-dataset"]))]
+
+        assert extract_inputs(api_model) == {"cts_smo": f"{DATASET_URI}/cts-dataset"}
+
+    def test_input_referencing_several_datasets_raises(self) -> None:
+        """Tests that a named input referencing more than one dataset raises a ValueError."""
+        api_model = [ArgumentItem.model_validate(reference_argument("swin", ["first", "second"]))]
+
+        with pytest.raises(ValueError, match="exactly one dataset"):
+            extract_inputs(api_model)
+
+    def test_repeated_input_name_raises(self) -> None:
+        """Tests that the same input name appearing twice raises a ValueError."""
+        data = [reference_argument("swin", ["first"]), reference_argument("swin", ["second"])]
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+
+        with pytest.raises(ValueError, match="more than once"):
+            extract_inputs(api_model)
 
 
 class TestMapProcessingMethodConfig:
@@ -628,7 +815,7 @@ class TestMapProcessingConfigItem:
         """Tests that a QC configuration item maps to a DataProcessingConfig with its method and parameters."""
         filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_qc.json"
         api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
-        item = api_model.items[0]
+        item = next(item for item in api_model.items if item.id.endswith("-range"))
 
         result = map_processing_config_item(item, item.applies_to_dataset[0], MagicMock())
 
@@ -697,6 +884,39 @@ class TestMapProcessingConfigItem:
         )
 
         assert result == expected
+
+
+class TestMapProcessingConfigItemInputs:
+    def test_qc_config_with_named_input(self) -> None:
+        """Tests that a QC check on another dataset maps that dataset to its named input, not to a param."""
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_swin_30min_qc.json"
+        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
+        item = next(item for item in api_model.items if item.id.endswith("-battery_v"))
+
+        result = map_processing_config_item(item, item.applies_to_dataset[0], MagicMock())
+
+        assert result.method_configs == [
+            DataProcessingMethodConfig(
+                method="battery_v",
+                params={"lt": 10.5},
+                inputs={"battv": f"{DATASET_URI}/cosmos-bunny-battv_30min_raw"},
+            )
+        ]
+
+    def test_correction_config_with_named_inputs(self) -> None:
+        """Tests that a correction with several input datasets maps each one to its named input."""
+        filename = TEST_DATA_API_VALID / "data_processing_configuration" / "cosmos_bunny_lwin_30min_correction.json"
+        api_model = valid_parses(load_json_file, filename, DataProcessingConfiguration)
+        item = api_model.items[0]
+
+        result = map_processing_config_item(item, item.applies_to_dataset[0], MagicMock())
+
+        assert result.method_configs[0].method == "lw_corr"
+        assert result.method_configs[0].params == {"correction_factor": 1.00924}
+        assert result.method_configs[0].inputs == {
+            "lw_unc": f"{DATASET_URI}/cosmos-bunny-lwin_unc_30min_raw",
+            "ta": f"{DATASET_URI}/cosmos-bunny-ta_30min_processed",
+        }
 
 
 class TestMapSiteMetadata:

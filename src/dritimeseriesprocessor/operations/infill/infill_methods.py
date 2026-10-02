@@ -1,25 +1,14 @@
-from abc import ABC, abstractmethod
-from datetime import datetime
+from abc import ABC
 
 import time_stream as ts
-from time_stream.operation import Operation
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.operations.operation_method import TransformMethod, observation_interval
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 
-def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime, datetime | None] | None:
-    if config.start_date is None:
-        return None
-    return config.start_date, config.end_date
-
-
-class InfillMethod(Operation, ABC):
+class InfillMethod(TransformMethod[ts.TimeFrame], ABC):
     operation_type = ConfigurationType.INFILLING
-
-    @abstractmethod
-    def run(self, *args, **kwargs) -> ts.TimeFrame:
-        pass
 
 
 @InfillMethod.register
@@ -30,7 +19,7 @@ class Linear(InfillMethod):
         return tf.infill(
             "linear",
             tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
         )
 
@@ -40,12 +29,13 @@ class AltData(InfillMethod):
     name = "alt_data"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        alt_tf = config.params["alt_data_source"]
         return tf.infill(
             "alt_data",
             tf.metadata["column_name"],
-            alt_df=config.params["alt_df"],
-            alt_data_column=config.params["alt_data_column"],
-            observation_interval=_observation_interval(config),
+            alt_df=alt_tf.df,
+            alt_data_column=alt_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
             correction_factor=config.params.get("correction_factor", 1),
         )
@@ -56,12 +46,13 @@ class AltDataDynamic(InfillMethod):
     name = "alt_data_dynamic"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
+        alt_tf = config.params["alt_data_source"]
         return tf.infill(
             "alt_data_dynamic",
             tf.metadata["column_name"],
-            alt_df=config.params["alt_df"],
-            alt_data_column=config.params["alt_data_column"],
-            observation_interval=_observation_interval(config),
+            alt_df=alt_tf.df,
+            alt_data_column=alt_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
             max_gap_size=config.params.get("max_gap_size"),
             min_threshold=config.params.get("min_threshold", 0),
             max_threshold=config.params.get("max_threshold"),

@@ -25,7 +25,7 @@ EddyPro flux processing runs through the standard pipeline as a derivation step,
 - CLI parsing: `src/dritimeseriesprocessor/cli/cli.py` (`from-datasets` mode)
 - App entrypoint: `src/dritimeseriesprocessor/app/run.py`
 - Raw file staging: `src/dritimeseriesprocessor/routers/data/data_router.py` (`S3DataRouter.stage_locally`)
-- EddyPro derivation method: `src/dritimeseriesprocessor/operations/derivation/derivation_methods.py` (`EddyProRun`)
+- EddyPro derivation method: `src/dritimeseriesprocessor/operations/eddypro/eddypro_run_method.py` (`EddyProRun`)
 - EddyPro config builder and runner: `src/dritimeseriesprocessor/operations/eddypro/`
 - EddyPro config templates: `src/dritimeseriesprocessor/__assets__/eddypro_templates/`
 

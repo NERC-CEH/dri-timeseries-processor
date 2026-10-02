@@ -68,12 +68,9 @@ class TestAltData:
     def test_alt_data_simple(self) -> None:
         """Test that the alt_data function works across the full DataFrame."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
-        alt_df = pl.DataFrame(
-            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
-        )
+        alt_data_source = create_timeframe([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0], "alt")
         config = create_method_config(
-            alt_df=alt_df,
-            alt_data_column="alt",
+            alt_data_source=alt_data_source,
         )
 
         result = AltData().run(tf, config)
@@ -86,12 +83,9 @@ class TestAltData:
     def test_alt_data_with_date_filter(self) -> None:
         """Test that the alt_data function works with a date filter."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
-        alt_df = pl.DataFrame(
-            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
-        )
+        alt_data_source = create_timeframe([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0], "alt")
         config = create_method_config(
-            alt_df=alt_df,
-            alt_data_column="alt",
+            alt_data_source=alt_data_source,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
         )
@@ -103,17 +97,27 @@ class TestAltData:
 
         assert_frame_equal(result.df, expected_df)
 
+    def test_alt_data_source_sharing_column_name_with_tf(self) -> None:
+        """Tests that an alternative dataset with the same column name as the data being infilled is used to fill it."""
+        tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
+        alt_data_source = create_timeframe([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0])
+        config = create_method_config(alt_data_source=alt_data_source)
+
+        result = AltData().run(tf, config)
+
+        expected = [1.0, 20.0, 3.0, 40.0, 5.0, 60.0, 7.0]
+        expected_df = pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(7)], "value": expected})
+
+        assert_frame_equal(result.df, expected_df)
+
 
 class TestAltDataDynamic:
     def test_alt_data_simple(self) -> None:
         """Test that the alt_data_dynamic function works across the full DataFrame."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
-        alt_df = pl.DataFrame(
-            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
-        )
+        alt_data_source = create_timeframe([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0], "alt")
         config = create_method_config(
-            alt_df=alt_df,
-            alt_data_column="alt",
+            alt_data_source=alt_data_source,
             max_threshold=2,
             window="PT1H",
         )
@@ -128,12 +132,9 @@ class TestAltDataDynamic:
     def test_alt_data_with_date_filter(self) -> None:
         """Test that the alt_data function works with a date filter."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
-        alt_df = pl.DataFrame(
-            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
-        )
+        alt_data_source = create_timeframe([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0], "alt")
         config = create_method_config(
-            alt_df=alt_df,
-            alt_data_column="alt",
+            alt_data_source=alt_data_source,
             start_date=datetime(2025, 1, 1, 2),
             end_date=datetime(2025, 1, 1, 4, 59),
             min_threshold=2,
@@ -151,12 +152,9 @@ class TestAltDataDynamic:
     def test_alt_data_missing_window_raises(self) -> None:
         """Test that the alt_data_dynamic function raises a KeyError when window is not given in config."""
         tf = create_timeframe([1.0, None, 3.0, None, 5.0, None, 7.0])
-        alt_df = pl.DataFrame(
-            {"time": [datetime(2025, 1, 1, h) for h in range(7)], "alt": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0]}
-        )
+        alt_data_source = create_timeframe([10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0], "alt")
         config = create_method_config(
-            alt_df=alt_df,
-            alt_data_column="alt",
+            alt_data_source=alt_data_source,
         )
 
         with pytest.raises(KeyError):

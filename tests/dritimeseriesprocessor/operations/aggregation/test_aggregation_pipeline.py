@@ -93,6 +93,8 @@ class TestAggregationThreshold:
         container.time_column_name = "time"
         container.source_column = "value"
         container.periodicity = "P1D"
+        # Time-Stream checks this against its allowed values, so a MagicMock attribute will not do.
+        container.time_anchor = "start"
         # Aggregation builds a fresh TimeFrame in apply, so the container starts without data.
         container.data = None
         container.has_flags.return_value = True

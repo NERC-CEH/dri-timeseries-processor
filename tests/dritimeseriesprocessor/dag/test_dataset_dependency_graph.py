@@ -19,6 +19,7 @@ def make_time_series_container(
     ts_id: str,
     depends_on: list[str] | None = None,
     load_only_deps: list[str] | None = None,
+    inputs: dict[str, str] | None = None,
 ) -> TimeSeriesContainer:
     """Create a lightweight fake TimeSeriesContainer for use in tests.
 
@@ -26,15 +27,17 @@ def make_time_series_container(
         ts_id: The time series ID.
         depends_on: Optional list of dataset IDs this container depends on via dep_ts.
         load_only_deps: Optional list of dataset IDs this container depends on via load_dep_ts.
+        inputs: Optional named inputs, mapping input name to the dataset ID this container depends on.
 
     Returns:
         A TimeSeriesContainer instance
     """
     depends_on = depends_on or []
     load_only_deps = load_only_deps or []
+    inputs = inputs or {}
 
     configs = []
-    if depends_on or load_only_deps:
+    if depends_on or load_only_deps or inputs:
         params: dict = {}
         if depends_on:
             params["dep_ts"] = depends_on
@@ -46,7 +49,7 @@ def make_time_series_container(
                 site_id=ts_id + "_site",
                 config_id=ts_id + "_cfg",
                 config_type=ConfigurationType.DERIVATION,
-                method_configs=[DataProcessingMethodConfig(method="m", params=params)],
+                method_configs=[DataProcessingMethodConfig(method="m", params=params, inputs=inputs)],
                 annotations={},
             )
         )
@@ -400,6 +403,17 @@ class TestBuild:
         }
         assert mock_router.fetch_dataset_by_ids.call_count == 1
         assert mock_router.fetch_processing_configs.call_count == 1
+
+    def test_named_input_is_resolved_as_a_dependency(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that a dataset referenced by a named input is added to the graph and fully processed."""
+        container_a = make_time_series_container("A", inputs={"swin": "S"})
+        mock_router = setup_mocks(["A", "S"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
+
+        assert "S" in builder.datasets
+        assert builder.datasets["S"].load_only is False
 
     def test_build_records_root_dataset_and_site_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that build records the IDs and sites of the root datasets, and not those of resolved dependencies."""
@@ -838,6 +852,18 @@ class TestLoadOnlyDependencies:
         """
         container_a = make_time_series_container("A", load_only_deps=["L"])
         container_b = make_time_series_container("B", depends_on=["L"])
+        mock_router = setup_mocks(["A", "B", "L"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a, container_b])
+        builder.build()
+
+        assert "L" in builder.datasets
+        assert builder.datasets["L"].load_only is False
+
+    def test_named_input_vs_load_dep_ts_conflict(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that a dataset referenced by both load_dep_ts and a named input is fully processed, not load-only."""
+        container_a = make_time_series_container("A", load_only_deps=["L"])
+        container_b = make_time_series_container("B", inputs={"ta": "L"})
         mock_router = setup_mocks(["A", "B", "L"], monkeypatch)
         builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
         builder._resolve_root_datasets = MagicMock(return_value=[container_a, container_b])

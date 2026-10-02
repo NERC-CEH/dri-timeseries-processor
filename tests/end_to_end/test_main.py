@@ -24,18 +24,12 @@ import pytest
 from polars.testing import assert_frame_equal
 from tests.end_to_end.mock_metadata_api.mock_api import mock_metadata_api
 from tests.utils.eddypro_test_helpers import eddypro_mock_init, eddypro_mock_run
-from tests.utils.fixture_helpers import TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases
+from tests.utils.fixture_helpers import TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases, load_declared_flag_columns
 from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
 from tests.utils.s3_test_helpers import get_s3_storage_client
 
 from dritimeseriesprocessor.__main__ import main
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
-from dritimeseriesprocessor.operations.flags.flag_names import (
-    core_flag_column_name,
-    corrs_flag_column_name,
-    infill_flag_column_name,
-    qc_flag_column_name,
-)
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient
 
 
@@ -123,21 +117,7 @@ class TestMain:
         else:
             time_col = ["time"]
 
-        # Flux/EddyPro datasets encode quality as integer data columns (qc_H, qc_Tau) rather
-        # than the standard FDRI _CORE/_QC/_CORRS/_INFILL flag scheme, so the auto-derived
-        # flag column list would look for columns that don't exist. check_variables overrides it.
-        if check_variables is not None:
-            check_cols = check_variables + time_col
-        else:
-            # Build list of expected flag columns to validate alongside data variables.
-            flag_cols = []
-            for var in all_variables:
-                flag_cols.append(core_flag_column_name(var))
-            for var in measured_variables:
-                flag_cols.append(corrs_flag_column_name(var))
-                flag_cols.append(infill_flag_column_name(var))
-                flag_cols.append(qc_flag_column_name(var))
-            check_cols = all_variables + flag_cols + time_col
+        declared_flag_columns = load_declared_flag_columns()
 
         start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
         end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -147,6 +127,19 @@ class TestMain:
             for site in sites:
                 s3_site_id = site.split("-")[1].upper()
                 for resolution in periodicities:
+                    # Flux/EddyPro datasets encode quality as integer data columns (qc_H, qc_Tau) rather than flag
+                    # columns, so check_variables lists the columns to compare instead.
+                    if check_variables is not None:
+                        check_cols = check_variables + time_col
+                    else:
+                        # Every flag column each dataset declares in its metadata should be in the output.
+                        flag_cols = [
+                            flag_col
+                            for var in all_variables
+                            for flag_col in declared_flag_columns[(site, var, resolution)]
+                        ]
+                        check_cols = all_variables + flag_cols + time_col
+
                     expected_path = (
                         expected_output_dir
                         / f"{network}/resolution={resolution}/site={s3_site_id}/date={date}/data.parquet"

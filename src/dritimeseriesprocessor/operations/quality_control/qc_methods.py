@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
@@ -6,26 +6,44 @@ from pathlib import Path
 
 import polars as pl
 import time_stream as ts
-from time_stream.operation import Operation
 from time_stream.utils import get_date_filter
 
 from dritimeseriesprocessor import PACKAGE_ROOT
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
+from dritimeseriesprocessor.operations.operation_method import TransformMethod, observation_interval
 from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 
-def _observation_interval(config: DataProcessingMethodConfig) -> tuple[datetime, datetime | None] | None:
-    if config.start_date is None:
-        return None
-    return config.start_date, config.end_date
+class QcMethod(TransformMethod[pl.Series], ABC):
+    """A QC check. `run` returns a pass/fail result for each row of the TimeFrame it is given.
 
+    Checks against another dataset (e.g. battery voltage) read it from `config.params` by its input name, and use
+    `align_to` to line their result up with the rows of the TimeFrame being checked.
+    """
 
-class QcMethod(Operation, ABC):
     operation_type = ConfigurationType.QUALITY_CONTROL
 
-    @abstractmethod
-    def run(self, *args, **kwargs) -> pl.Series:
-        pass
+    @staticmethod
+    def align_to(tf: ts.TimeFrame, checked_tf: ts.TimeFrame, result: pl.Series) -> pl.Series:
+        """Line up the result of a check on another dataset with the rows of `tf`, by time.
+
+        The other dataset can cover a different set of time values to `tf`. Rows that `tf` has but the other dataset
+        doesn't get a null result, and time values only in the other dataset are dropped.
+
+        Args:
+            tf: The TimeFrame being flagged.
+            checked_tf: The other dataset the check ran against.
+            result: The result of the check, one value per row of `checked_tf`.
+
+        Returns:
+            The result, one value per row of `tf`.
+        """
+        result_column = "__qc_result"
+        result_tf = checked_tf.with_df(
+            checked_tf.df.select(checked_tf.time_name).with_columns(result.alias(result_column))
+        )
+        return merge_multiple_timeframes([tf, result_tf], "left").df[result_column]
 
 
 @QcMethod.register
@@ -39,7 +57,7 @@ class Range(QcMethod):
             min_value=config.params["lt"],
             within=False,
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -48,13 +66,15 @@ class BatteryVoltage(QcMethod):
     name = "battery_v"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
-        return tf.qc_check(
+        battv_tf = config.params["battv"]
+        result = battv_tf.qc_check(
             "comparison",
             operator="<",
             compare_to=config.params["lt"],
-            column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            column_name=battv_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
         )
+        return self.align_to(tf, battv_tf, result)
 
 
 @QcMethod.register
@@ -62,13 +82,15 @@ class Samples(QcMethod):
     name = "samples"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
-        return tf.qc_check(
+        scans_tf = config.params["scans"]
+        result = scans_tf.qc_check(
             "comparison",
             operator="<",
             compare_to=config.params["lt"],
-            column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            column_name=scans_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
         )
+        return self.align_to(tf, scans_tf, result)
 
 
 @QcMethod.register
@@ -81,7 +103,7 @@ class ErrorCode(QcMethod):
             operator="is_in",
             compare_to=config.params["value"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -94,7 +116,7 @@ class Spike(QcMethod):
             "spike",
             threshold=config.params["gt"],
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -103,14 +125,16 @@ class Nr01Temp(QcMethod):
     name = "nr01_temp"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
-        return tf.qc_check(
+        sensor_ta_tf = config.params["sensor_ta"]
+        result = sensor_ta_tf.qc_check(
             "range",
             max_value=config.params["gt"],
             min_value=config.params["lt"],
             within=False,
-            column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            column_name=sensor_ta_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
         )
+        return self.align_to(tf, sensor_ta_tf, result)
 
 
 @QcMethod.register
@@ -125,7 +149,7 @@ class HeatFluxPlateRemoval(QcMethod):
             within=True,
             closed="both",
             column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            observation_interval=observation_interval(config),
         )
 
 
@@ -134,13 +158,15 @@ class PluvioDiagnostic(QcMethod):
     name = "pluvio_diag"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
-        return tf.qc_check(
+        sensor_diag_tf = config.params["sensor_diag"]
+        result = sensor_diag_tf.qc_check(
             "comparison",
             operator=">",
             compare_to=config.params["gt"],
-            column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            column_name=sensor_diag_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
         )
+        return self.align_to(tf, sensor_diag_tf, result)
 
 
 @QcMethod.register
@@ -148,13 +174,15 @@ class SnowDaySignal(QcMethod):
     name = "snowd_signal"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
-        return tf.qc_check(
+        signal_quality_tf = config.params["signal_quality"]
+        result = signal_quality_tf.qc_check(
             "comparison",
             operator="<",
             compare_to=config.params["lt"],
-            column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            column_name=signal_quality_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
         )
+        return self.align_to(tf, signal_quality_tf, result)
 
 
 @QcMethod.register
@@ -162,28 +190,30 @@ class TdtTSoil(QcMethod):
     name = "tdt_tsoil"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
-        return tf.qc_check(
+        soil_ta_tf = config.params["soil_ta"]
+        result = soil_ta_tf.qc_check(
             "comparison",
             operator="<",
             compare_to=config.params["lt"],
-            column_name=tf.metadata["column_name"],
-            observation_interval=_observation_interval(config),
+            column_name=soil_ta_tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
         )
+        return self.align_to(tf, soil_ta_tf, result)
 
 
 @QcMethod.register
 class FluxQcFlag(QcMethod):
     """Apply EddyPro's internal quality flag to a flux variable.
 
-    Receives the qc-flag container's TimeFrame via dep_ts, so tf.df[col]
-    is e.g. qc_H. Flag value 2 (poor quality) is always rejected.
+    The flag comes from the `qc_flag` input (e.g. qc_H). Flag value 2 (poor quality) is always rejected.
     """
 
     name = "flux_qc_flag"
 
     def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
-        col = tf.metadata["column_name"]
-        return tf.df[col] == 2
+        qc_flag_tf = config.params["qc_flag"]
+        result = qc_flag_tf.df[qc_flag_tf.metadata["column_name"]] == 2
+        return self.align_to(tf, qc_flag_tf, result)
 
 
 @QcMethod.register
@@ -203,9 +233,10 @@ class ManualRemoval(QcMethod):
         # The network and site code are put into the params by QCPipeline, taken from the container.
         periods = self.flag_periods(config.params["network"], config.params["site_id"], tf.metadata["column_name"])
 
+        time_dtype = tf.df.schema[tf.time_name]
         flagged = pl.repeat(False, pl.len())
         for period in periods:
-            flagged = flagged | get_date_filter(tf.time_name, period)
+            flagged = flagged | get_date_filter(tf.time_name, period, time_dtype)
 
         return tf.df.select(flagged).to_series()
 

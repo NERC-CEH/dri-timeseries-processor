@@ -18,147 +18,6 @@
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h2o-flux",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
-        }
-      ],
-      "processingLevel": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
-        "prefLabel": [
-          "Processed"
-        ]
-      },
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h2o-flux-plan",
-        "@type": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
-          }
-        ],
-        "rawConfiguration": "[\"flux-plynl-h2o-flux-load\"]",
-        "hasPart": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h2o-flux-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h2o-flux-load"
-            }
-          }
-        ]
-      },
-      "measure": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/h2o_flux-mean_prec-mmolm-2s-1-pt30m-pt30m",
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/h2o_flux",
-            "prefLabel": [
-              "H2O flux"
-            ]
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/mmolm-2s-1",
-            "prefLabel": [
-              "mmol m-2 s-1"
-            ]
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
-            "prefLabel": [
-              "Mean"
-            ]
-          },
-          "periodicity": "PT30M",
-          "resolution": "PT30M",
-          "valueTimeAnchor": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
-            "prefLabel": [
-              "Preceding period"
-            ]
-          }
-        }
-      ],
-      "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_PROCESSED",
-      "sourceColumnName": "h2o_flux",
-      "sourceTimeColumnName": "time",
-      "originatingSite": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
-        }
-      ],
-      "originatingProgramme": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
-        }
-      ],
-      "dependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-canopy"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-measurement"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-sonic-azimuth"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
-        }
-      ],
-      "directDependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-co2-flux",
       "@type": [
         {
@@ -191,7 +50,7 @@
       },
       "measure": [
         {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/co2_flux-mean_prec-umolm-2s-1-pt30m-pt30m",
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/co2_flux-mean_prec-micromol-per-m2-sec-pt30m-pt30m",
           "variable": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/cop/co2_flux",
             "prefLabel": [
@@ -199,7 +58,7 @@
             ]
           },
           "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/umolm-2s-1",
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/micromol-per-m2-sec",
             "prefLabel": [
               "\u00b5mol m-2 s-1"
             ]
@@ -232,365 +91,6 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
-        }
-      ],
-      "dependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-measurement"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-canopy"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-sonic-azimuth"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
-        }
-      ],
-      "directDependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-tau",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
-        }
-      ],
-      "processingLevel": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
-        "prefLabel": [
-          "Processed"
-        ]
-      },
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-tau-plan",
-        "@type": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
-          }
-        ],
-        "rawConfiguration": "[\"flux-plynl-tau-load\",\"flux-plynl-tau-qc-flag\"]",
-        "hasPart": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-tau-plan#step-1",
-            "index": 1,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-tau-qc-flag"
-            }
-          },
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-tau-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-tau-load"
-            }
-          }
-        ]
-      },
-      "measure": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/flux_mom-mean_prec-kgm-1s-2-pt30m-pt30m",
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/flux_mom",
-            "prefLabel": [
-              "Momentum flux"
-            ]
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/kgm-1s-2",
-            "prefLabel": [
-              "kgm-1s-2"
-            ]
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
-            "prefLabel": [
-              "Mean"
-            ]
-          },
-          "periodicity": "PT30M",
-          "resolution": "PT30M",
-          "valueTimeAnchor": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
-            "prefLabel": [
-              "Preceding period"
-            ]
-          }
-        }
-      ],
-      "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_PROCESSED",
-      "sourceColumnName": "Tau",
-      "sourceTimeColumnName": "time",
-      "originatingSite": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
-        }
-      ],
-      "originatingProgramme": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
-        }
-      ],
-      "dependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-sonic-azimuth"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-tau"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-measurement"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-canopy"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
-        }
-      ],
-      "directDependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-tau"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h-l2",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
-        }
-      ],
-      "processingLevel": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
-        "prefLabel": [
-          "Processed"
-        ]
-      },
-      "methodology": {
-        "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h-l2-plan",
-        "@type": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
-          }
-        ],
-        "rawConfiguration": "[\"flux-plynl-h-l2-load\"]",
-        "hasPart": [
-          {
-            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h-l2-plan#step-0",
-            "index": 0,
-            "configuration": {
-              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-l2-load"
-            }
-          }
-        ]
-      },
-      "measure": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/heatflux_sensible-mean_prec-wm-2-pt30m-pt30m",
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/heatflux_sensible",
-            "prefLabel": [
-              "Sensible heat flux"
-            ]
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
-            "prefLabel": [
-              "Wm-2"
-            ]
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
-            "prefLabel": [
-              "Mean"
-            ]
-          },
-          "periodicity": "PT30M",
-          "resolution": "PT30M",
-          "valueTimeAnchor": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
-            "prefLabel": [
-              "Preceding period"
-            ]
-          }
-        }
-      ],
-      "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_PROCESSED",
-      "sourceColumnName": "H_L2",
-      "sourceTimeColumnName": "time",
-      "originatingSite": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
-        }
-      ],
-      "originatingProgramme": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
-        }
-      ],
-      "dependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-sonic-azimuth"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-measurement"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-canopy"
-        }
-      ],
-      "directDependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
         }
       ]
     },
@@ -679,72 +179,260 @@
       ],
       "dependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-canopy"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-sonic-azimuth"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min"
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-h"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-measurement"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
         }
       ],
       "directDependsOn": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-h"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h-l2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
+        "prefLabel": [
+          "Processed"
+        ]
+      },
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h-l2-plan",
+        "@type": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
+          }
+        ],
+        "rawConfiguration": "[\"flux-plynl-h-l2-load\"]",
+        "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h-l2-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h-l2-load"
+            }
+          }
+        ]
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/heatflux_sensible-mean_prec-wm-2-pt30m-pt30m",
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/heatflux_sensible",
+            "prefLabel": [
+              "Sensible heat flux"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/wm-2",
+            "prefLabel": [
+              "Wm-2"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "FLUX_PROCESSED",
+      "sourceColumnName": "H_L2",
+      "sourceTimeColumnName": "time",
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-h2o-flux",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
+        "prefLabel": [
+          "Processed"
+        ]
+      },
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h2o-flux-plan",
+        "@type": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
+          }
+        ],
+        "rawConfiguration": "[\"flux-plynl-h2o-flux-load\"]",
+        "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-h2o-flux-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-h2o-flux-load"
+            }
+          }
+        ]
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/h2o_flux-mean_prec-micromol-per-m2-sec-pt30m-pt30m",
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/h2o_flux",
+            "prefLabel": [
+              "H2O flux"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/micromol-per-m2-sec",
+            "prefLabel": [
+              "\u00b5mol m-2 s-1"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "FLUX_PROCESSED",
+      "sourceColumnName": "h2o_flux",
+      "sourceTimeColumnName": "time",
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-tau",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/processed",
+        "prefLabel": [
+          "Processed"
+        ]
+      },
+      "methodology": {
+        "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-tau-plan",
+        "@type": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesPlan"
+          }
+        ],
+        "rawConfiguration": "[\"flux-plynl-tau-load\",\"flux-plynl-tau-qc-flag\"]",
+        "hasPart": [
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-tau-plan#step-1",
+            "index": 1,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-tau-qc-flag"
+            }
+          },
+          {
+            "@id": "http://fdri.ceh.ac.uk/id/plan/flux-plynl-tau-plan#step-0",
+            "index": 0,
+            "configuration": {
+              "@id": "http://fdri.ceh.ac.uk/id/data-processing-configuration/flux-plynl-tau-load"
+            }
+          }
+        ]
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/flux_mom-mean_prec-kgm-1s-2-pt30m-pt30m",
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/flux_mom",
+            "prefLabel": [
+              "Momentum flux"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/kgm-1s-2",
+            "prefLabel": [
+              "kgm-1s-2"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT30M",
+          "resolution": "PT30M",
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
+            "prefLabel": [
+              "Preceding period"
+            ]
+          }
+        }
+      ],
+      "sourceBucket": "e2e-output",
+      "sourceDataset": "FLUX_PROCESSED",
+      "sourceColumnName": "Tau",
+      "sourceTimeColumnName": "time",
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/flux-plynl"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ],
+      "dependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-tau"
+        }
+      ],
+      "directDependsOn": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-qc-tau"
         }
       ]
     },
@@ -822,70 +510,6 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
-        }
-      ],
-      "dependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-measurement"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1-30min"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-sonic-azimuth"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-dynamic-height-canopy"
-        },
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2-30min"
-        }
-      ],
-      "directDependsOn": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-processed"
         }
       ]
     }

@@ -342,15 +342,16 @@ the next step is also QC, removal is deferred; if it is anything else (or the pl
 means a run of consecutive QC checks all contribute their flags first, and the data is only cut once at the end of that
 run - rather than removing data between each individual check.
 
-#### Flag columns and backfilling
+#### Flag columns
 
-Each operation that flags data creates a flag column - but the flag column is only added when that operation actually
-runs. A dataset whose plan has no correction step, for example, would never get a corrections flag column.
+Every saved dataset has every flag column defined in its metadata (`flag_column_schemes`), whatever steps its plan
+contains. A derived dataset whose plan has no infill step, for example, still gets an infill flag column if it is
+defined in that dataset's metadata.
 
-To keep the flag columns consistent across all datasets, the pipeline runs a **backfill** step after the plan completes
-(`_backfill_flag_columns`). This initialises any flag systems and flag columns that were not created during the run, so
-every saved dataset ends up with the same set of flag columns regardless of which steps its plan contained. Operations
-that do not flag data (aggregation, derivation) are a no-op here. Core flags are already present from loading.
+The `LOAD` step creates the declared flag columns on the raw data (`initialise_flag_systems`). Generative operations
+(aggregation, derivation) build a fresh `TimeFrame` with no flag columns, so `OperationPipeline._init_flag_columns`
+creates every declared flag column on each operation's result as well. Flag columns that already exist are left
+untouched, so flags written by earlier steps are kept.
 
 #### Saving strategy - pooling and concurrent saves
 

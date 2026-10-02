@@ -19,7 +19,9 @@ class InfillPipeline(OperationPipeline):
     def __init__(self, flag_systems: dict[str, dict[str, int]]):
         super().__init__(ConfigurationType.INFILLING, flag_systems)
 
-    def apply(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig, dataset_repository: dict) -> ts.TimeFrame:
+    def apply(
+        self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig, dataset_repository: dict
+    ) -> ts.TimeFrame:
         """Apply the given infill method to the TimeFrame data.
 
         Args:
@@ -30,12 +32,10 @@ class InfillPipeline(OperationPipeline):
         Returns:
             Result of applying the infill method.
         """
+        if tf is None:
+            raise ValueError(f"Infill method {config.method} requires existing data, but none was provided.")
 
-        # Collect any dependency TimeFrame to run infill with
-        if "dep_ts" in config.params:
-            dep_tf = dataset_repository[config.params["dep_ts"]].data
-            config.params["alt_df"] = dep_tf.df
-            config.params["alt_data_column"] = dep_tf.metadata["column_name"]
+        self._inject_dependency_timeframes(config, dataset_repository)
 
         method = InfillMethod.get(config.method)
         result = method.run(tf, config)

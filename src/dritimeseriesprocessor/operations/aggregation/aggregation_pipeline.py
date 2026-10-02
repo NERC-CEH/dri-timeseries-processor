@@ -47,10 +47,13 @@ class AggregationPipeline(OperationPipeline):
         tf = self._select_columns(tf)
         return tf
 
-    def apply(self, config: DataProcessingMethodConfig, dataset_repository: dict, *_, **__) -> ts.TimeFrame:
+    def apply(
+        self, tf: ts.TimeFrame | None, config: DataProcessingMethodConfig, dataset_repository: dict
+    ) -> ts.TimeFrame:
         """Apply the given aggregation method to the TimeFrame data.
 
         Args:
+            tf: Unused - aggregation reads its dependency container instead.
             config: Configuration of the aggregation method.
             dataset_repository: Repository for accessing additional datasets.
 
@@ -145,7 +148,8 @@ class AggregationPipeline(OperationPipeline):
 
     @staticmethod
     def _select_columns(tf: ts.TimeFrame) -> ts.TimeFrame:
-        """Final selection of the required aggregation column from the TimeFrame
+        """Final selection of the aggregated data column and its flag columns, dropping the helper columns used for
+        the threshold check.
 
         Args:
             tf: TimeFrame to select columns from
@@ -154,8 +158,4 @@ class AggregationPipeline(OperationPipeline):
             TimeFrame with selected columns
         """
         col_name = tf.metadata["column_name"]
-        core_col = core_flag_column_name(col_name)
-        cols = [col_name]
-        if core_col in tf.flag_columns:
-            cols.append(core_col)
-        return tf.select(cols)
+        return tf.select([col_name, *tf.flag_columns])
