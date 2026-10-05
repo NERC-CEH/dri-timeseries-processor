@@ -15,19 +15,27 @@ import json
 import logging
 from datetime import datetime
 
-from dritimeseriesprocessor.cli.selection import DimensionSelection, ListSitesSelection, RunConfig, Selection
+from dritimeseriesprocessor.cli.selection import (
+    DimensionSelection,
+    HistoricSelection,
+    ListSitesSelection,
+    RunConfig,
+    Selection,
+)
 from dritimeseriesprocessor.configuration.app_config import AppConfig, app_config
 from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
 from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_factory
 from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader, RawFileReader
 from dritimeseriesprocessor.io_backend.writer import ByteParquetWriter
 from dritimeseriesprocessor.metrics.metrics import Metrics
+from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.mappers.api_to_domain import map_site_metadata
 from dritimeseriesprocessor.processing.time_series_processor import TimeSeriesProcessor
 from dritimeseriesprocessor.routers.data.data_router import S3DataRouter
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
+from dritimeseriesprocessor.utils.time_utils import split_into_calendar_years
 from dritimeseriesprocessor.utils.timer import log_duration
 from dritimeseriesprocessor.utils.urls import PROGRAMME_URI, SITE_URI
 
@@ -44,38 +52,47 @@ def run_from_config(run_config: RunConfig) -> None:
     Args:
         run_config: Runtime configuration describing the dataset selection constraints and temporal window.
     """
-    if run_config.mode == CliSelectionMode.LIST_SITES:
-        list_sites_selection = run_config.selection[0]
-        if not isinstance(list_sites_selection, ListSitesSelection):
-            raise TypeError(f"Expected ListSitesSelection, got {type(list_sites_selection).__name__}")
-        list_sites(list_sites_selection.network, run_config.start_date, run_config.end_date, list_sites_selection.sites)
-        return
+    cfg = app_config()
 
-    processor = _build_processor(
-        run_config.selection,
-        run_config.start_date,
-        run_config.end_date,
-    )
-    processor.run()
+    match run_config.mode:
+        case CliSelectionMode.LIST_SITES:
+            if run_config.start_date is None or run_config.end_date is None:
+                raise ValueError(f"Mode [{CliSelectionMode.LIST_SITES}] requires a start and end date")
+
+            list_sites_selection = run_config.selection[0]
+            if not isinstance(list_sites_selection, ListSitesSelection):
+                raise TypeError(f"Expected ListSitesSelection, got {type(list_sites_selection).__name__}")
+
+            run_list_sites(
+                list_sites_selection.network,
+                run_config.start_date,
+                run_config.end_date,
+                cfg,
+                list_sites_selection.sites,
+            )
+
+        case CliSelectionMode.HISTORIC:
+            historic_selection = run_config.selection[0]
+            if not isinstance(historic_selection, HistoricSelection):
+                raise TypeError(f"Expected HistoricSelection, got {type(historic_selection).__name__}")
+
+            run_historic(historic_selection, cfg)
+
+        case _:
+            if run_config.start_date is None or run_config.end_date is None:
+                raise ValueError(f"Mode [{run_config.mode}] requires a start and end date")
+
+            run_standard(run_config.selection, run_config.start_date, run_config.end_date, cfg)
 
 
-def _build_processor(
-    selection: list[Selection],
-    start_date: datetime,
-    end_date: datetime,
-) -> TimeSeriesProcessor:
-    """Build a TimeSeriesProcessor object.
-
-    Assembles all required runtime dependencies, including metadata access, data routing, storage backends, and the
-    dataset dependency graph, into a ready-to-run TimeSeriesProcessor instance.
+def run_standard(selection: list[Selection], start_date: datetime, end_date: datetime, cfg: AppConfig) -> None:
+    """Process the selected datasets over a single date range.
 
     Args:
         selection: Selection specification for which datasets should be processed.
         start_date: Start of the date range to process (inclusive).
         end_date: End of the date range to process (inclusive).
-
-    Returns:
-        A TimeSeriesProcessor ready for running.
+        cfg: Application configuration.
     """
     network = next((s.network for s in selection if isinstance(s, DimensionSelection)), None)
 
@@ -84,17 +101,127 @@ def _build_processor(
         f"network={network or 'n/a'}, selections={[str(s) for s in selection]}"
     )
 
-    cfg = app_config()
+    graph = _build_dependency_graph(selection, MetadataRouter(cfg.metadata_api_url), start_date, end_date)
+    processor = _build_processor_from_graph(graph, start_date, end_date, cfg)
+    processor.run()
 
-    metadata_router = MetadataRouter(cfg.metadata_api_url)
+
+def run_historic(selection: HistoricSelection, cfg: AppConfig) -> None:
+    """Process every dataset for the selected sites over each site's full operating dates, one calendar year at a time.
+
+    The dependency graph is built once per site and reused for each year. A failed year or site does not stop the rest
+    of the run; all failures are reported together at the end.
+
+    Args:
+        selection: The network, and optionally the sites, to process.
+        cfg: Application configuration.
+
+    Raises:
+        RuntimeError: If any site or year failed to process.
+    """
+    today = datetime.today()
+    router = MetadataRouter(cfg.metadata_api_url)
+    failures: list[str] = []
+
+    site_list = _fetch_network_sites(router, selection.network, selection.sites)
+    for site in site_list:
+        site_name = site.site_id.removeprefix(f"{SITE_URI}/")
+        if site.start_date is None:
+            logger.error(f"Site [{site_name}] has no start date in its metadata, skipping.")
+            failures.append(f"{site_name} (no start date)")
+            continue
+
+        site_start = site.start_date
+        site_end = min(site.end_date, today) if site.end_date else today
+        year_ranges = split_into_calendar_years(site_start, site_end)
+
+        historic_selection = [DimensionSelection(network=selection.network, sites=[site.site_id])]
+        logger.info(
+            f"Setting up historic processor: start_date={site_start}, end_date={site_end}, "
+            f"network={selection.network}, selections={[str(s) for s in historic_selection]}"
+        )
+
+        for chunk_start, chunk_end in year_ranges:
+            logger.info(f"Processing chunk: start_date={chunk_start.date()}, end_date={chunk_end.date()}")
+            try:
+                graph = _build_dependency_graph(historic_selection, router, site_start, site_end)
+                processor = _build_processor_from_graph(
+                    graph, chunk_start, chunk_end, cfg, job_name_suffix=str(chunk_start.year)
+                )
+                processor.run()
+
+            except Exception:
+                logger.exception(f"Failed processing site [{site_name}]: {chunk_start.date()} to {chunk_end.date()}")
+                failures.append(f"{site_name} ({chunk_start.date()} to {chunk_end.date()})")
+
+    if failures:
+        raise RuntimeError(f"Historic run had {len(failures)} failure(s): {failures}")
+
+
+def run_list_sites(
+    network: str, start_date: datetime, end_date: datetime, cfg: AppConfig, sites: list[str] | None = None
+) -> None:
+    """Save a JSON array of site IDs for the given network to a temporary file. Option to specify start and end dates
+    to limit the listed sites to ones that were open during that date range, and/or a list of sites to limit the
+    result to (still checked for network membership and open dates).
+
+    Argo Workflows can capture it as the step result to pass to further workflow steps.
+
+    Args:
+        network: The network identifier (e.g. "cosmos").
+        start_date: Start of the date range to find open sites for (inclusive).
+        end_date: End of the date range to find open sites for (inclusive).
+        cfg: Application configuration.
+        sites: Site IDs to limit the result to. If omitted, all sites for the network are listed.
+    """
+    logger.info(f"Listing sites: start_date={start_date}, end_date={end_date}, network={network}")
+
+    router = MetadataRouter(cfg.metadata_api_url)
+    site_list = _fetch_network_sites(router, network, sites)
+
+    site_ids = [
+        meta.site_id.removeprefix(f"{SITE_URI}/")
+        for meta in site_list
+        if meta.is_active(window_start=start_date, window_end=end_date)
+    ]
+
+    logger.info(f"Found [{len(site_ids)}] sites: {site_ids}")
+
+    output_path = "/tmp/sites.json"
+    with open(output_path, "w") as f:
+        json.dump(site_ids, f)
+
+
+def _build_processor_from_graph(
+    graph: DatasetDependencyGraph,
+    start_date: datetime,
+    end_date: datetime,
+    cfg: AppConfig,
+    job_name_suffix: str | None = None,
+) -> TimeSeriesProcessor:
+    """Build a TimeSeriesProcessor around an already-built dependency graph.
+
+    Each processor gets its own data router, because running a processor closes the router's DuckDB connection.
+
+    Args:
+        graph: The built dependency graph.
+        start_date: Start of the date range to process (inclusive).
+        end_date: End of the date range to process (inclusive).
+        cfg: Application configuration.
+        job_name_suffix: Added to the pushgateway job name, so that several runs for the same site in one process
+            do not overwrite each other's metrics.
+
+    Returns:
+        A TimeSeriesProcessor ready for running.
+    """
     storage = _build_storage(cfg)
     reader = DuckDBParquetReader(create_duckdb_factory())
     raw_reader = RawFileReader(storage)
     writer = ByteParquetWriter(storage)
     data_router = S3DataRouter(reader, raw_reader, storage)
 
-    graph = _build_dependency_graph(selection, metadata_router, start_date, end_date)
-    metrics = Metrics(cfg.pushgateway_url, cfg.pushgateway_job_name, site=_resolve_site_label(graph))
+    job_name = f"{cfg.pushgateway_job_name}-{job_name_suffix}" if job_name_suffix else cfg.pushgateway_job_name
+    metrics = Metrics(cfg.pushgateway_url, job_name, site=_resolve_site_label(graph))
 
     return TimeSeriesProcessor(
         graph=graph,
@@ -141,16 +268,16 @@ def _build_storage(cfg: AppConfig) -> StorageClient:
 def _build_dependency_graph(
     selection: list[Selection],
     metadata_router: MetadataRouter,
-    start_date: datetime,
-    end_date: datetime,
+    start_date: datetime | None,
+    end_date: datetime | None,
 ) -> DatasetDependencyGraph:
     """Build the dataset dependency graph for a processing run.
 
     Args:
         selection: Selection specification for which datasets should be processed.
         metadata_router: A router object that handles metadata API calls.
-        start_date: Start of the date range to process (inclusive).
-        end_date: End of the date range to process (inclusive).
+        start_date: Start of the date range to process (inclusive). If None, sites are not filtered by date.
+        end_date: End of the date range to process (inclusive). If None, sites are not filtered by date.
 
     Returns:
         A DatasetDependencyGraph ready for execution.
@@ -164,37 +291,26 @@ def _build_dependency_graph(
     return graph
 
 
-def list_sites(network: str, start_date: datetime, end_date: datetime, sites: list[str] | None = None) -> None:
-    """Save a JSON array of site IDs for the given network to a temporary file. Option to specify start and end dates
-    to limit the listed sites to ones that were open during that date range, and/or a list of sites to limit the
-    result to (still checked for network membership and open dates).
+def _fetch_network_sites(router: MetadataRouter, network: str, sites: list[str] | None = None) -> list[SiteMetadata]:
+    """Fetch metadata for the given sites, or for every site in the network if none are given.
 
-    Argo Workflows can capture it as the step result to pass to further workflow steps.
+    Sites that were asked for by name but belong to a different network are left out.
 
     Args:
+        router: A router object that handles metadata API calls.
         network: The network identifier (e.g. "cosmos").
-        start_date: Start of the date range to find open sites for (inclusive).
-        end_date: End of the date range to find open sites for (inclusive).
-        sites: Site IDs to limit the result to. If omitted, all sites for the network are listed.
+        sites: Site IDs to fetch. If omitted, all sites for the network are fetched.
+
+    Returns:
+        Metadata for each site found.
     """
-    logger.info(f"Listing sites: start_date={start_date}, end_date={end_date}, network={network}")
-
-    cfg = app_config()
-    router = MetadataRouter(cfg.metadata_api_url)
-
     network_uri = f"{PROGRAMME_URI}/{network}"
     sites_response = router.fetch_sites(sites) if sites else router.fetch_sites_by_network(network)
-    site_ids = []
+    site_metadata = []
     for item in sites_response.items:
         meta = map_site_metadata(item)
         if sites and meta.network != network_uri:
             logger.warning(f"Site [{meta.site_id}] is not in network [{network}], excluding.")
             continue
-        if meta.is_active(window_start=start_date, window_end=end_date):
-            site_ids.append(meta.site_id.removeprefix(f"{SITE_URI}/"))
-
-    logger.info(f"Found [{len(site_ids)}] sites: {site_ids}")
-
-    output_path = "/tmp/sites.json"
-    with open(output_path, "w") as f:
-        json.dump(site_ids, f)
+        site_metadata.append(meta)
+    return site_metadata

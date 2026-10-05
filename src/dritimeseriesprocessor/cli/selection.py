@@ -71,16 +71,33 @@ class ListSitesSelection:
         return hash(f"{self.network}{sites_str}")
 
 
-Selection = DimensionSelection | DatasetIdSelection | ListSitesSelection
+@dataclass(frozen=True)
+class HistoricSelection:
+    """Represents a request to process everything for a network's sites over each site's full operating dates."""
+
+    network: str
+    sites: list[str] | None = None
+
+    def __repr__(self) -> str:
+        return f"network={self.network} | sites={', '.join(self.sites) if self.sites else 'ALL'}"
+
+    def __hash__(self) -> int:
+        sites_str = "/".join(self.sites or [""])
+        return hash(f"{self.network}{sites_str}")
+
+
+Selection = DimensionSelection | DatasetIdSelection | ListSitesSelection | HistoricSelection
 
 
 @dataclass(frozen=True)
 class RunConfig:
     """Runtime configuration object for a processing run. This collects user intent, including dataset selection
     constraints and the temporal processing window. It serves as the boundary between CLI parsing and runtime execution.
+
+    The dates are None in historic mode, where each site's own operating dates are used instead.
     """
 
     selection: list[Selection]
-    start_date: datetime
-    end_date: datetime
+    start_date: datetime | None
+    end_date: datetime | None
     mode: CliSelectionMode

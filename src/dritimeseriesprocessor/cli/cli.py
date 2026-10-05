@@ -3,8 +3,8 @@ Command-line interface parsing for time series processing runs.
 
 This module is responsible for parsing CLI arguments to capture user intent regarding:
 - which network to process (for dimension-based modes)
-- the temporal processing window
-- dataset selection mode (explicit, cross-product, or from-datasets), with specific arguments
+- the temporal processing window (not used in historic mode, which works out each site's own dates)
+- dataset selection mode (explicit, cross-product, from-datasets or historic), with specific arguments
 """
 
 import argparse
@@ -17,6 +17,7 @@ import isodate
 from dritimeseriesprocessor.cli.selection import (
     DatasetIdSelection,
     DimensionSelection,
+    HistoricSelection,
     ListSitesSelection,
     RunConfig,
     Selection,
@@ -38,11 +39,14 @@ def parse_args(argv: list[str]) -> RunConfig:
     parser = _build_parser()
     args = parser.parse_args(argv)
 
-    start_date, end_date = _parse_date_range(
-        start_date=args.start_date,
-        end_date=args.end_date,
-        lookback=args.lookback,
-    )
+    # Historic mode has no date arguments: each site's own operating dates are used.
+    start_date, end_date = None, None
+    if CliSelectionMode(args.mode) != CliSelectionMode.HISTORIC:
+        start_date, end_date = _parse_date_range(
+            start_date=args.start_date,
+            end_date=args.end_date,
+            lookback=args.lookback,
+        )
 
     selection = _parse_selection_mode(args, parser)
 
@@ -91,7 +95,9 @@ def _build_parser() -> argparse.ArgumentParser:
         CliSelectionMode.CROSS_PRODUCT.value, parents=[date_range_parent, network_parent]
     )
     cross_parser.add_argument(
-        "--sites", nargs="+", help="Space-separated list, e.g. ALIC1 BUNNY. If omitted, find all sites for network."
+        "--sites",
+        nargs="+",
+        help="Space-separated list, e.g. cosmos-alic1 cosmos-bunny. If omitted, find all sites for network.",
     )
     cross_parser.add_argument(
         "--variables", nargs="+", help="Space-separated list, e.g. TA PA. If omitted, find all variables for all sites."
@@ -120,6 +126,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "--sites",
         nargs="+",
         help="Space-separated list, e.g. cosmos-alic1 cosmos-bunny. If omitted, list all sites for network.",
+    )
+
+    # Historic mode: process every dataset for the sites, over each site's full operating dates.
+    historic_parser = subparsers.add_parser(CliSelectionMode.HISTORIC.value, parents=[network_parent])
+    historic_parser.add_argument(
+        "--sites",
+        nargs="+",
+        help="Space-separated list, e.g. cosmos-alic1 cosmos-bunny. If omitted, process all sites for the network.",
     )
 
     return parser
@@ -238,6 +252,10 @@ def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentPar
     if mode == CliSelectionMode.LIST_SITES:
         sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
         return [ListSitesSelection(network=args.network, sites=sites)]
+
+    if mode == CliSelectionMode.HISTORIC:
+        sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
+        return [HistoricSelection(network=args.network, sites=sites)]
 
     parser.error(f"Invalid selection mode: {mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
 

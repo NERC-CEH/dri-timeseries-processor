@@ -6,6 +6,7 @@ class CliSelectionMode(Enum):
     CROSS_PRODUCT = "from-cross-product"
     FROM_DATASETS = "from-datasets"
     LIST_SITES = "list-sites"
+    HISTORIC = "historic"
 
 
 class ConfigurationType(Enum):
