@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import polars as pl
 import pytest
@@ -15,6 +15,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import ensure_flag_column
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
+from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 
@@ -227,6 +228,25 @@ class TestRunCoreFlags:
         # Row 1 keeps corrected (1) and gets removed (8). Row 2 keeps corrected. Unchecked (32) is cleared everywhere.
         assert result.df["value_CORE_FLAG"].to_list() == [0, 9, 1, 8]
         assert result.df["value_CORRS_FLAG"].to_list() == [0, 1, 1, 0]
+
+    def test_value_already_null_is_not_given_removed_flag(self) -> None:
+        """Tests that a QC check flagging a value that was already null does not give it the 'removed' core flag."""
+        container = make_time_series_container("test")
+        container.flag_column_schemes = {"value_CORE_FLAG": "core_flags", "value_QC_FLAG": "qc_flags"}
+        tf = create_timeframe([10.0, None, 30.0], column_name="value")
+        ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
+        # Loading marks the value that was already null as missing.
+        tf.add_flag("value_CORE_FLAG", "missing", pl.Series([False, True, False]))
+        container.data = tf
+
+        # A stand-in for a check that flags rows whatever their value, like samples or manual_removal.
+        with patch.object(QcMethod, "get") as mock_get:
+            mock_get.return_value.run.return_value = pl.Series([True, True, True])
+            result = QCPipeline(self.FLAG_SYSTEMS).run(container, {}, self._make_config(), remove_flagged=True)
+
+        assert result.df["value"].to_list() == [None, None, None]
+        # Rows 0 and 2 had values that QC removed (8). Row 1 was already null, so it is only missing (4).
+        assert result.df["value_CORE_FLAG"].to_list() == [8, 4, 8]
 
     def test_no_removed_flag_when_remove_flagged_false(self) -> None:
         """Tests that no values are removed or given the 'removed' core flag when remove_flagged is False."""
