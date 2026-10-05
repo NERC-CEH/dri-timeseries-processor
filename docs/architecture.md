@@ -378,8 +378,14 @@ passes through this layer.
 
 The reader component loads dataset data from storage into memory. There are two reader types:
 
-- **`DuckDBParquetReader`**: reads parquet data for a time series dataset by querying a hive-partitioned S3 path
-  with DuckDB. Used for batch loading and for `load` steps.
+- **`DuckDBParquetReader`**: reads parquet data for a time series dataset with DuckDB. Used for batch loading and
+  for `load` steps.
+  - The data router first lists the site's daily `data.parquet` files in the date range, and DuckDB is given that
+    exact list, so only those files are opened. The `date=` folders can sit directly under the site, or one folder
+    level below it (e.g. `serial_no=`).
+  - Columns are matched by name, so files whose columns differ (e.g. a variable added partway through) are read
+    together, with nulls where a file doesn't have a column.
+  - One DuckDB connection is reused for every read in a run, and closed when the run finishes.
 - **`RawFileReader`**: downloads raw files (e.g. `.dat` files) from an S3 prefix into a local temporary directory.
   Used for `load-local-copy` steps, where a subsequent derivation step (such as `EddyProRun`) needs the files on disk.
 

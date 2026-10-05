@@ -499,6 +499,12 @@ class TestCleanup:
         tmp1.cleanup.assert_called_once()
         tmp2.cleanup.assert_called_once()
 
+    def test_cleanup_closes_the_reader_connection(self, router: S3DataRouter, mock_reader: MagicMock) -> None:
+        """Tests that cleanup closes the parquet reader's DuckDB connection."""
+        router.cleanup()
+
+        mock_reader.close.assert_called_once()
+
     def test_cleanup_empties_staged_list(self, router: S3DataRouter) -> None:
         """Tests that the staged list is empty after cleanup."""
         router._staged = [MagicMock(), MagicMock()]
