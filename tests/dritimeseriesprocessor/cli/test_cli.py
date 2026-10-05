@@ -6,8 +6,39 @@ import pytest
 from freezegun import freeze_time
 
 from dritimeseriesprocessor.cli.cli import _parse_date_range, _parse_lookback, parse_args
-from dritimeseriesprocessor.cli.selection import DatasetIdSelection, DimensionSelection, ListSitesSelection
+from dritimeseriesprocessor.cli.selection import (
+    DatasetIdSelection,
+    DimensionSelection,
+    HistoricSelection,
+    ListSitesSelection,
+)
 from dritimeseriesprocessor.utils.urls import DATASET_URI, SITE_URI
+
+
+class TestParseHistoricArgs:
+    def test_historic_with_sites(self) -> None:
+        """Tests that historic mode builds a selection from the network and sites, with no dates."""
+        run_config = parse_args(["historic", "--network", "a_network", "--sites", "SITE1", "SITE2"])
+
+        assert run_config.selection == [
+            HistoricSelection(network="a_network", sites=[f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"])
+        ]
+        assert run_config.start_date is None
+        assert run_config.end_date is None
+
+    def test_historic_sites_are_optional(self) -> None:
+        """Tests that historic mode selects all sites in the network when no sites are given."""
+        run_config = parse_args(["historic", "--network", "a_network"])
+
+        assert run_config.selection == [HistoricSelection(network="a_network", sites=None)]
+
+    @pytest.mark.parametrize(
+        "date_args", [["--start-date", "2024-01-01"], ["--end-date", "2024-06-30"], ["--lookback", "P1D"]]
+    )
+    def test_historic_rejects_date_options(self, date_args: list[str]) -> None:
+        """Tests that historic mode refuses date options, as it works out each site's dates itself."""
+        with pytest.raises(SystemExit):
+            parse_args(["historic", "--network", "a_network", *date_args])
 
 
 class TestParseArgs:

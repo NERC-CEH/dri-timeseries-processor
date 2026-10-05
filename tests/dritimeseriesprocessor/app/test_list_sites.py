@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from dritimeseriesprocessor.app.run import list_sites
+from dritimeseriesprocessor.app.run import run_list_sites
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.utils.urls import PROGRAMME_URI, SITE_URI
 
@@ -27,14 +27,12 @@ def make_site_metadata(
     )
 
 
-class TestListSites:
-    def _setup_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("APP_ENVIRONMENT", "staging")
-        monkeypatch.setenv("metadata_api_url", "http://fake-api")
-        monkeypatch.setenv("pushgateway_url", "http://fake-pushgateway")
+CONFIG = MagicMock(metadata_api_url="http://fake-api")
 
+
+class TestListSites:
     def test_writes_site_ids_to_json_file(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        self._setup_env(monkeypatch)
+        """Tests that the IDs of all sites found for the network are written to the JSON file."""
         monkeypatch.setattr(
             "dritimeseriesprocessor.app.run.MetadataRouter.fetch_sites_by_network",
             lambda _self, _network: make_sites_response(["cosmos-alic1", "cosmos-bunny"]),
@@ -44,14 +42,13 @@ class TestListSites:
             lambda item: make_site_metadata(item.id.removeprefix(f"{SITE_URI}/"), datetime(2000, 1, 1)),
         )
 
-        list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1))
+        run_list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1), CONFIG)
 
         with open("/tmp/sites.json") as f:
             assert json.load(f) == ["cosmos-alic1", "cosmos-bunny"]
 
     def test_filters_out_inactive_sites(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Sites whose end_date falls before window_start are excluded."""
-        self._setup_env(monkeypatch)
+        """Tests that sites whose end date falls before the start of the window are excluded."""
         monkeypatch.setattr(
             "dritimeseriesprocessor.app.run.MetadataRouter.fetch_sites_by_network",
             lambda _self, _network: make_sites_response(["cosmos-alic1", "cosmos-bunny"]),
@@ -66,26 +63,25 @@ class TestListSites:
             lambda item: site_metas[item.id.removeprefix(f"{SITE_URI}/")],
         )
 
-        list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1))
+        run_list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1), CONFIG)
 
         with open("/tmp/sites.json") as f:
             assert json.load(f) == ["cosmos-bunny"]
 
     def test_empty_network_writes_empty_list(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        self._setup_env(monkeypatch)
+        """Tests that a network with no sites writes an empty list."""
         monkeypatch.setattr(
             "dritimeseriesprocessor.app.run.MetadataRouter.fetch_sites_by_network",
             lambda _self, _network: make_sites_response([]),
         )
 
-        list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1))
+        run_list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1), CONFIG)
 
         with open("/tmp/sites.json") as f:
             assert json.load(f) == []
 
     def test_sites_filter_uses_fetch_sites(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """When sites are given, list_sites should fetch by site ID rather than by network."""
-        self._setup_env(monkeypatch)
+        """Tests that when sites are given, they are fetched by site ID rather than by network."""
         fetch_sites_mock = MagicMock(return_value=make_sites_response(["cosmos-alic1"]))
         monkeypatch.setattr("dritimeseriesprocessor.app.run.MetadataRouter.fetch_sites", fetch_sites_mock)
         monkeypatch.setattr(
@@ -93,15 +89,14 @@ class TestListSites:
             lambda item: make_site_metadata(item.id.removeprefix(f"{SITE_URI}/"), datetime(2000, 1, 1)),
         )
 
-        list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1), sites=[f"{SITE_URI}/cosmos-alic1"])
+        run_list_sites("cosmos", datetime(2024, 1, 1), datetime(2025, 1, 1), CONFIG, sites=[f"{SITE_URI}/cosmos-alic1"])
 
         assert fetch_sites_mock.call_args[0][0] == [f"{SITE_URI}/cosmos-alic1"]
         with open("/tmp/sites.json") as f:
             assert json.load(f) == ["cosmos-alic1"]
 
     def test_sites_filter_excludes_sites_not_in_network(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Sites returned by fetch_sites that don't belong to the requested network are excluded."""
-        self._setup_env(monkeypatch)
+        """Tests that sites returned for the given IDs that belong to a different network are excluded."""
         monkeypatch.setattr(
             "dritimeseriesprocessor.app.run.MetadataRouter.fetch_sites",
             lambda _self, _site_ids: make_sites_response(["cosmos-alic1", "other-network-site"]),
@@ -117,10 +112,11 @@ class TestListSites:
             lambda item: site_metas[item.id.removeprefix(f"{SITE_URI}/")],
         )
 
-        list_sites(
+        run_list_sites(
             "cosmos",
             datetime(2024, 1, 1),
             datetime(2025, 1, 1),
+            CONFIG,
             sites=[f"{SITE_URI}/cosmos-alic1", f"{SITE_URI}/other-network-site"],
         )
 

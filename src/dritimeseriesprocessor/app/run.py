@@ -109,9 +109,6 @@ def run_standard(selection: list[Selection], start_date: datetime, end_date: dat
 def run_historic(selection: HistoricSelection, cfg: AppConfig) -> None:
     """Process every dataset for the selected sites over each site's full operating dates, one calendar year at a time.
 
-    The dependency graph is built once per site and reused for each year. A failed year or site does not stop the rest
-    of the run; all failures are reported together at the end.
-
     Args:
         selection: The network, and optionally the sites, to process.
         cfg: Application configuration.
