@@ -36,6 +36,9 @@ COPY --from=builder --chown=app:app /app /app
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH" VIRTUAL_ENV="/app/.venv"
 
+# Install DuckDB's httpfs extension now, so each pod doesn't download it on its first S3 query
+RUN python -c "import duckdb; duckdb.connect().install_extension('httpfs')"
+
 
 # Build production container (with EddyPro)
 FROM prod-base AS prod-eddypro

@@ -27,12 +27,7 @@ class DuckDBConnectionFactory(ABC):
     def _configure_duckdb_base() -> duckdb.DuckDBPyConnection:
         """Apply core DuckDB configuration required for all environments."""
         conn = duckdb.connect()
-        # `force_download` fetches each file whole in one request, which suits our small daily files. It also skips
-        # DuckDB's file cache, so a connection that is reused never reads an old copy of a file rewritten in the run.
-        # `httpfs_connection_caching` reuses HTTPS connections between queries on the same DuckDB connection.
         conn.execute("""
-            INSTALL httpfs;
-            LOAD httpfs;
             SET force_download=true;
             SET httpfs_connection_caching=true;
             SET THREADS=64;
