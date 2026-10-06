@@ -9,28 +9,37 @@ from dritimeseriesprocessor.cli.cli import _parse_date_range, _parse_lookback, p
 from dritimeseriesprocessor.cli.selection import (
     DatasetIdSelection,
     DimensionSelection,
+    HistoricRunConfig,
     HistoricSelection,
+    ListSitesRunConfig,
     ListSitesSelection,
+    RunConfig,
+    StandardRunConfig,
 )
 from dritimeseriesprocessor.utils.urls import DATASET_URI, SITE_URI
 
 
+def parse_standard_args(argv: list[str]) -> StandardRunConfig:
+    """Parse CLI arguments for a standard mode, checking they give a StandardRunConfig."""
+    run_config: RunConfig = parse_args(argv)
+    assert isinstance(run_config, StandardRunConfig)
+    return run_config
+
+
 class TestParseHistoricArgs:
     def test_historic_with_sites(self) -> None:
-        """Tests that historic mode builds a selection from the network and sites, with no dates."""
+        """Tests that historic mode gives a historic run config with the network and sites, and no dates."""
         run_config = parse_args(["historic", "--network", "a_network", "--sites", "SITE1", "SITE2"])
 
-        assert run_config.selection == [
+        assert run_config == HistoricRunConfig(
             HistoricSelection(network="a_network", sites=[f"{SITE_URI}/SITE1", f"{SITE_URI}/SITE2"])
-        ]
-        assert run_config.start_date is None
-        assert run_config.end_date is None
+        )
 
     def test_historic_sites_are_optional(self) -> None:
         """Tests that historic mode selects all sites in the network when no sites are given."""
         run_config = parse_args(["historic", "--network", "a_network"])
 
-        assert run_config.selection == [HistoricSelection(network="a_network", sites=None)]
+        assert run_config == HistoricRunConfig(HistoricSelection(network="a_network", sites=None))
 
     @pytest.mark.parametrize(
         "date_args", [["--start-date", "2024-01-01"], ["--end-date", "2024-06-30"], ["--lookback", "P1D"]]
@@ -67,11 +76,12 @@ class TestParseArgs:
         ],
     )
     def test_explicit_selection(self, selections: list, expected_queries: list) -> None:
+        """Tests that each explicit selection becomes a dimension selection for its site, variable and periodicity."""
         args = ["from-selection", "--network", "a_network"]
         for site_id, variable, periodicity in selections:
             args.extend(["--selection", site_id, variable, periodicity])
 
-        cfg = parse_args(args)
+        cfg = parse_standard_args(args)
 
         queries = cfg.selection
         assert Counter(queries) == Counter(expected_queries)
@@ -111,7 +121,7 @@ class TestParseArgs:
 
     def test_cross_product_all_specified(self) -> None:
         """Test that a cross product selection is created, when all dimensions are specified"""
-        cfg = parse_args(
+        cfg = parse_standard_args(
             [
                 "from-cross-product",
                 "--network",
@@ -159,7 +169,8 @@ class TestParseArgs:
         ],
     )
     def test_cross_product_with_missing_dimensions(self, args: list, expected_queries: list) -> None:
-        cfg = parse_args(["from-cross-product", "--network", "a_network"] + args)
+        """Tests that dimensions left out of a cross product selection are None, meaning all of them."""
+        cfg = parse_standard_args(["from-cross-product", "--network", "a_network"] + args)
         assert cfg.selection == expected_queries
 
     def test_no_network_error(self) -> None:
@@ -170,14 +181,14 @@ class TestParseArgs:
     @freeze_time("2025-01-01")
     def test_lookback_from_default(self) -> None:
         """Test that lookback works from the default end date"""
-        cfg = parse_args(["from-cross-product", "--network", "a_network", "--lookback", "P2D"])
+        cfg = parse_standard_args(["from-cross-product", "--network", "a_network", "--lookback", "P2D"])
         assert cfg.end_date == datetime(2025, 1, 1)
         assert cfg.start_date == datetime(2024, 12, 30)
 
     @freeze_time("2025-01-01")
     def test_lookback_from_specified(self) -> None:
         """Test that lookback works from a specified end date"""
-        cfg = parse_args(
+        cfg = parse_standard_args(
             ["from-cross-product", "--network", "a_network", "--end-date", "2025-03-31", "--lookback", "P2D"]
         )
         assert cfg.end_date == datetime(2025, 3, 31)
@@ -203,12 +214,12 @@ class TestParseArgs:
 class TestFromDatasetsMode:
     def test_single_dataset_id_produces_dataset_id_selection(self) -> None:
         """Tests that a single dataset ID is parsed into a DatasetIdSelection."""
-        cfg = parse_args(["from-datasets", "--datasets", "flux-plynl-processed"])
+        cfg = parse_standard_args(["from-datasets", "--datasets", "flux-plynl-processed"])
         assert cfg.selection == [DatasetIdSelection(dataset_ids=[f"{DATASET_URI}/flux-plynl-processed"])]
 
     def test_multiple_dataset_ids_included_in_one_selection(self) -> None:
         """Tests that multiple dataset IDs are all included in a single DatasetIdSelection."""
-        cfg = parse_args(["from-datasets", "--datasets", "ds-1", "ds-2", "ds-3"])
+        cfg = parse_standard_args(["from-datasets", "--datasets", "ds-1", "ds-2", "ds-3"])
         assert cfg.selection == [
             DatasetIdSelection(
                 dataset_ids=[
@@ -221,7 +232,7 @@ class TestFromDatasetsMode:
 
     def test_qualifies_ids_with_dataset_uri(self) -> None:
         """Tests that short dataset IDs are prefixed with the full dataset base URI."""
-        cfg = parse_args(["from-datasets", "--datasets", "my-dataset"])
+        cfg = parse_standard_args(["from-datasets", "--datasets", "my-dataset"])
         assert isinstance(cfg.selection[0], DatasetIdSelection)
         assert cfg.selection[0].dataset_ids[0] == f"{DATASET_URI}/my-dataset"
 
@@ -232,15 +243,24 @@ class TestFromDatasetsMode:
 
     def test_does_not_require_network(self) -> None:
         """Tests that from-datasets mode succeeds without a --network argument."""
-        cfg = parse_args(["from-datasets", "--datasets", "ds-1"])
+        cfg = parse_standard_args(["from-datasets", "--datasets", "ds-1"])
         assert isinstance(cfg.selection[0], DatasetIdSelection)
 
 
 class TestListSitesMode:
     def test_produces_list_sites_selection(self) -> None:
-        """Tests that list-sites mode produces a ListSitesSelection with the given network."""
+        """Tests that list-sites mode gives a list-sites run config with a selection for the given network."""
         cfg = parse_args(["list-sites", "--network", "cosmos"])
-        assert cfg.selection == [ListSitesSelection(network="cosmos")]
+        assert isinstance(cfg, ListSitesRunConfig)
+        assert cfg.selection == ListSitesSelection(network="cosmos")
+
+    def test_dates_are_parsed(self) -> None:
+        """Tests that list-sites mode gives a run config with the parsed start and end dates."""
+        cfg = parse_args(
+            ["list-sites", "--network", "cosmos", "--start-date", "2024-01-01", "--end-date", "2024-01-05"]
+        )
+        assert isinstance(cfg, ListSitesRunConfig)
+        assert (cfg.start_date, cfg.end_date) == (datetime(2024, 1, 1), datetime(2024, 1, 5))
 
     def test_requires_network(self) -> None:
         """Tests that list-sites raises a SystemExit when --network is missing."""
@@ -250,16 +270,16 @@ class TestListSitesMode:
     def test_produces_list_sites_selection_with_sites(self) -> None:
         """Tests that list-sites mode produces a ListSitesSelection with the given network and site IDs."""
         cfg = parse_args(["list-sites", "--network", "cosmos", "--sites", "cosmos-alic1", "cosmos-bunny"])
-        assert cfg.selection == [
-            ListSitesSelection(network="cosmos", sites=[f"{SITE_URI}/cosmos-alic1", f"{SITE_URI}/cosmos-bunny"])
-        ]
+        assert isinstance(cfg, ListSitesRunConfig)
+        assert cfg.selection == ListSitesSelection(
+            network="cosmos", sites=[f"{SITE_URI}/cosmos-alic1", f"{SITE_URI}/cosmos-bunny"]
+        )
 
     def test_omitting_sites_defaults_to_none(self) -> None:
         """Tests that omitting --sites leaves ListSitesSelection.sites as None."""
         cfg = parse_args(["list-sites", "--network", "cosmos"])
-        selection = cfg.selection[0]
-        assert isinstance(selection, ListSitesSelection)
-        assert selection.sites is None
+        assert isinstance(cfg, ListSitesRunConfig)
+        assert cfg.selection.sites is None
 
 
 class TestParseLookback:
