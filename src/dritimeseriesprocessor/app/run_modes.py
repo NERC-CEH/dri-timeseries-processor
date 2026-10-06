@@ -154,7 +154,12 @@ class ProcessingRun(RunMode):
         """Process each planned chunk in turn."""
 
         chunks = self.plan()
-        logger.info(f"Planned {len(chunks)} chunk(s) to process.")
+        if chunks:
+            first_day = min(chunk.start_date for chunk in chunks).date()
+            last_day = max(chunk.end_date for chunk in chunks).date()
+            logger.info(f"Planned {len(chunks)} chunk(s) to process, covering {first_day} to {last_day}.")
+        else:
+            logger.info("Planned no chunks to process.")
         for chunk in chunks:
             self._process(chunk)
 
@@ -277,6 +282,10 @@ class StandardRun(ProcessingRun):
         Raises:
             RuntimeError: If a selection made by site has no site open during the date range.
         """
+        logger.info(
+            f"Planning standard run: start_date={self.start_date.date()}, end_date={self.end_date.date()}, "
+            f"selections={[str(item) for item in self.selection]}"
+        )
         selection_sites = [self._fetch_selection_sites(item) for item in self.selection]
         if not all(self._any_open(sites, self.start_date, self.end_date) for _, sites in selection_sites):
             raise RuntimeError("no active sites found during requested processing window")
@@ -288,6 +297,8 @@ class StandardRun(ProcessingRun):
                 all_sites.extend(sites)
 
         start_date = self._clamp_start_to_sites(all_sites)
+        if start_date != self.start_date:
+            logger.info(f"Start date moved forward to {start_date.date()}, when the first selected site opened.")
         date_ranges = self._split_date_range(start_date, self.end_date)
         label = ", ".join(str(item) for item in self.selection)
 
@@ -392,6 +403,7 @@ class HistoricRun(ProcessingRun):
         Returns:
             The chunks to process, site by site and oldest first.
         """
+        logger.info(f"Planning historic run: {self.selection}")
         today = date.today()
         chunks = []
         for site in self.fetch_sites(self.selection.network, self.selection.sites):
@@ -403,9 +415,11 @@ class HistoricRun(ProcessingRun):
 
             site_end = min(site.end_date.date(), today) if site.end_date else today
             site_selection: list[Selection] = [DimensionSelection(network=self.selection.network, sites=[site.site_id])]
-            chunks += [
+            site_chunks = [
                 Chunk(site_selection, year_start, year_end, site_name, job_name_suffix=str(year_start.year))
                 for year_start, year_end in split_into_calendar_years(site.start_date, site_end)
                 if site.is_active(year_start, year_end)
             ]
+            logger.info(f"Site [{site_name}]: {site.start_date.date()} to {site_end}, {len(site_chunks)} year(s).")
+            chunks += site_chunks
         return chunks
