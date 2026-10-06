@@ -1,12 +1,10 @@
 """
 Models for resolving dataset selection intent for processing runs, originating from the CLI (or potentially
-other entry points)
+other entry points), and the run configuration for each run mode.
 """
 
 from dataclasses import dataclass
 from datetime import datetime
-
-from dritimeseriesprocessor.utils.enums import CliSelectionMode
 
 
 @dataclass(frozen=True)
@@ -56,48 +54,58 @@ class DatasetIdSelection:
 
 
 @dataclass(frozen=True)
-class ListSitesSelection:
+class NetworkSitesSelection:
+    """A network, and optionally some of its sites by name. If no sites are given, all sites in the network are used."""
+
+    network: str
+    sites: list[str] | None = None
+
+    def __repr__(self) -> str:
+        return f"network={self.network} | sites={', '.join(self.sites) if self.sites else 'ALL'}"
+
+    def __hash__(self) -> int:
+        sites_str = "/".join(self.sites or [""])
+        return hash(f"{self.network}{sites_str}")
+
+
+class ListSitesSelection(NetworkSitesSelection):
     """Represents a request to list sites for a network. If `sites` is given, only those sites are considered
     (still checked for network membership); otherwise all sites for the network are listed."""
 
-    network: str
-    sites: list[str] | None = None
 
-    def __repr__(self) -> str:
-        return f"network={self.network} | sites={', '.join(self.sites) if self.sites else 'ALL'}"
-
-    def __hash__(self) -> int:
-        sites_str = "/".join(self.sites or [""])
-        return hash(f"{self.network}{sites_str}")
-
-
-@dataclass(frozen=True)
-class HistoricSelection:
+class HistoricSelection(NetworkSitesSelection):
     """Represents a request to process everything for a network's sites over each site's full operating dates."""
 
-    network: str
-    sites: list[str] | None = None
 
-    def __repr__(self) -> str:
-        return f"network={self.network} | sites={', '.join(self.sites) if self.sites else 'ALL'}"
-
-    def __hash__(self) -> int:
-        sites_str = "/".join(self.sites or [""])
-        return hash(f"{self.network}{sites_str}")
-
-
-Selection = DimensionSelection | DatasetIdSelection | ListSitesSelection | HistoricSelection
+# A selection of datasets to process, as accepted by the dependency graph.
+# ListSitesSelection and HistoricSelection are left out as they never reach the dependency graph.
+Selection = DimensionSelection | DatasetIdSelection
 
 
 @dataclass(frozen=True)
-class RunConfig:
-    """Runtime configuration object for a processing run. This collects user intent, including dataset selection
-    constraints and the temporal processing window. It serves as the boundary between CLI parsing and runtime execution.
-
-    The dates are None in historic mode, where each site's own operating dates are used instead.
-    """
+class StandardRunConfig:
+    """Runtime configuration for processing the selected datasets over a date range."""
 
     selection: list[Selection]
-    start_date: datetime | None
-    end_date: datetime | None
-    mode: CliSelectionMode
+    start_date: datetime
+    end_date: datetime
+
+
+@dataclass(frozen=True)
+class HistoricRunConfig:
+    """Runtime configuration for processing a network's sites over each site's full operating dates."""
+
+    selection: HistoricSelection
+
+
+@dataclass(frozen=True)
+class ListSitesRunConfig:
+    """Runtime configuration for listing a network's sites that were open during a date range."""
+
+    selection: ListSitesSelection
+    start_date: datetime
+    end_date: datetime
+
+
+# Collects user intent for a run. Each mode has its own type, holding only what that mode needs.
+RunConfig = StandardRunConfig | HistoricRunConfig | ListSitesRunConfig

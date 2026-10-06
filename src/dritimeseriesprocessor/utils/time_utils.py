@@ -31,8 +31,8 @@ def split_into_calendar_years(start: date | datetime, end: date | datetime) -> l
     """Split a date range into calendar-year chunks, oldest first.
 
     Args:
-        start: First day of the range (inclusive). Any time of day is ignored.
-        end: Last day of the range (inclusive). Any time of day is ignored.
+        start: First day of the range (inclusive)
+        end: Last day of the range (inclusive)
 
     Returns:
         A list of (start, end) datetimes, one per calendar year touched by the range. Empty if `end` is before `start`.
