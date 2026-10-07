@@ -153,20 +153,56 @@ class TestDerivationMethod:
         """Tests that the name in a processing config resolves to the matching derivation class."""
         assert isinstance(DerivationMethod.get("calculate_rn"), NetRadiation)
 
+    def test_no_input_datasets_raises_error(self) -> None:
+        """Tests that a derivation given no input datasets raises an error naming the method."""
+        config = create_method_config({}, "out")
+
+        with pytest.raises(ValueError, match="Derivation method 'add' was given no input datasets"):
+            SimpleAddition().run(config)
+
 
 class TestSolarZenith:
-    def test_time_values_come_from_the_swin_input(self) -> None:
-        """Tests that the angle is calculated per time step, using the time column of the swin input."""
-        config = create_method_config({"swin": [0.0] * 24}, "solar_zenith")
-        config.params["lat"] = 54.110665
+    LATITUDE = 54.110665
+    LOAD_START = datetime(2026, 1, 1)
+    LOAD_END = datetime(2026, 1, 2)
 
-        result = SolarZenith().run(config)
-        angles = result.df["solar_zenith"].to_list()
+    def create_config(self, data: Mapping[str, Sequence[float | None]] | None = None) -> DataProcessingMethodConfig:
+        """Create a solar zenith config covering one day of hourly time steps, with no input datasets by default.
 
-        # swin itself is constant, so any variation can only have come from the time column.
-        assert len(angles) == 24
-        assert None not in angles
-        assert len(set(angles)) > 1
+        Args:
+            data: Input datasets to add to the config, if any.
+
+        Returns:
+            MethodConfig for testing
+        """
+        config = create_method_config(data or {}, "solar_zenith")
+        config.params["lat"] = self.LATITUDE
+        config.params["container"] = MagicMock(time_column_name="time")
+        config.params["load_start_date"] = self.LOAD_START
+        config.params["load_end_date"] = self.LOAD_END
+        return config
+
+    def test_time_steps_cover_the_load_window(self) -> None:
+        """Tests that there is a time step for every hour from the start to the end of the load window, inclusive."""
+        result = SolarZenith().run(self.create_config())
+
+        expected_times = pl.datetime_range(self.LOAD_START, self.LOAD_END, interval="1h", eager=True)
+        assert result.df["time"].to_list() == expected_times.to_list()
+
+    def test_angles_match_hydrometlib(self) -> None:
+        """Tests that the angle at each time step is the one hydrometlib calculates for that time and latitude."""
+        result = SolarZenith().run(self.create_config())
+
+        expected = meteorology.solar_zenith(time=result.df["time"], latitude=self.LATITUDE)
+        assert result.df["solar_zenith"].to_list() == expected.to_list()
+        assert result.df["solar_zenith"].null_count() == 0
+
+    def test_input_datasets_are_ignored(self) -> None:
+        """Tests that an input dataset (e.g. swin) does not change the time steps or the angles."""
+        without_inputs = SolarZenith().run(self.create_config())
+        with_swin = SolarZenith().run(self.create_config({"swin": [0.0] * 3}))
+
+        assert_frame_equal(with_swin.df, without_inputs.df)
 
 
 class TestVolumetricWaterContentWithSnow:

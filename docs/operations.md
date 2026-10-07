@@ -195,5 +195,9 @@ class MyDerivation(DerivationMethod):
 A calculation that is specific to this service, rather than one of general use, is written directly in the method's
 `expr` instead of being added to `hydrometlib` (e.g. tipping bucket averaging).
 
+A derivation that only depends on the time, such as `SolarZenith`, takes no input datasets. It overrides
+`merge_inputs` to build its own time steps instead of merging inputs. The time steps cover the window data is loaded
+for (`load_start_date` to `load_end_date`).
+
 `EddyProRun` is registered in `operations/eddypro/eddypro_run_method.py`, as it runs the EddyPro flux pipeline rather
 than a calculation. See [EddyPro flux processing](flux_eddypro.md).
