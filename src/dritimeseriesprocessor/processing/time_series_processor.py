@@ -72,9 +72,15 @@ class TimeSeriesProcessor:
         self.graph = graph
         self.data_router = data_router
         self.data_writer = data_writer
-        self.start_date = start_date
-        self.end_date = end_date
         self.metrics = metrics
+
+        # Two sets of start/end dates are held, each doing different jobs:
+        # 1. The requested start_date and end_date is what the run is meant to produce and save out.
+        self.start_date, self.end_date = start_date, end_date
+
+        # 2. The load window is that plus a day either side. It only exists so calculations near the edges have all
+        # the data they need. The extra rows are trimmed back off again when the results are saved.
+        self.load_start_date, self.load_end_date = extend_date_range(start_date, end_date)
 
     def run(self) -> None:
         """Execute the processing pipeline by iterating through the dependency graph.
@@ -129,7 +135,7 @@ class TimeSeriesProcessor:
                 continue
             try:
                 self.process_dataset(dataset_id)
-            except Exception:
+            except Exception:  # noqa
                 self.metrics.failed.labels(dataset=extract_uri_id(dataset_id)).inc()
                 self.graph.datasets[dataset_id].failed = True
                 logger.exception(f"Processing failed. Failed status added to container: {dataset_id}")
@@ -203,6 +209,8 @@ class TimeSeriesProcessor:
                     for cfg in config.method_configs:
                         cfg.params["processing_start_date"] = self.start_date.date()
                         cfg.params["processing_end_date"] = self.end_date.date()
+                        cfg.params["load_start_date"] = self.load_start_date
+                        cfg.params["load_end_date"] = self.load_end_date
                         cfg.params["data_router"] = self.data_router
                     container.data = DerivationPipeline(site_metadata, self.graph.flagging_systems).run(
                         container, self.graph.datasets, config
@@ -264,21 +272,17 @@ class TimeSeriesProcessor:
         common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
         groupings = group_containers(containers, common_keys)
 
-        # Read wider than the requested window so aggregation buckets on the window edges get all of their source
-        # data. The extra rows are trimmed back off again when the results are saved.
-        load_start_date, load_end_date = extend_date_range(self.start_date, self.end_date)
-
         with self.metrics.time_load.time():
             for dataset_group, containers_in_group in groupings.items():
                 try:
                     combined_df = self.data_router.query_by_date_range(
-                        *containers_in_group, start_date=load_start_date, end_date=load_end_date
+                        *containers_in_group, start_date=self.load_start_date, end_date=self.load_end_date
                     )
 
                     if combined_df.is_empty():
                         raise ValueError(f"No data returned for group: {dataset_group}")
 
-                except Exception:
+                except Exception:  # noqa
                     for container in containers_in_group:
                         self.metrics.no_data.labels(dataset=extract_uri_id(container.ts_id)).inc()
                         container.failed = True
@@ -294,7 +298,7 @@ class TimeSeriesProcessor:
                         if container.data is None:
                             raise ValueError(f"No data returned for dataset: {container.ts_id}")
 
-                    except Exception:
+                    except Exception:  # noqa
                         self.metrics.no_data.labels(dataset=extract_uri_id(container.ts_id)).inc()
                         container.failed = True
                         logger.exception(f"Failed to select columns for dataset: {container.ts_id}")

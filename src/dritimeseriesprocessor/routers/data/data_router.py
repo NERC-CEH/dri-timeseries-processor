@@ -198,8 +198,9 @@ class S3DataRouter(DataRouter):
         """Find the folder(s) that hold a site's `date=` folders.
 
         The `date=` folders are either directly under the site, or one level below it in folders such as
-        `serial_no=`. The first key under the site shows which. This assumes all of a site's files follow the same
-        layout, and that there is never more than one level between the site and the dates.
+        `serial_no=`. If any key starts with `<site>/date=`, the dates are directly under the site. Otherwise, each
+        `<key>=<value>` sub-folder is searched, and anything else is ignored. This assumes all of a site's files follow
+        the same layout, and that there is never more than one level between the site and the dates.
 
         Args:
             bucket: Bucket holding the parquet files.
@@ -208,12 +209,10 @@ class S3DataRouter(DataRouter):
         Returns:
             Folders without a trailing slash, or an empty list if the site has no files.
         """
-        sample_key = self._storage.first_key_with_prefix(bucket, f"{site_prefix}/")
-        if sample_key is None:
-            return []
-        if sample_key.startswith(f"{site_prefix}/date="):
+        if self._storage.first_key_with_prefix(bucket, f"{site_prefix}/date=") is not None:
             return [site_prefix]
-        return self._storage.list_subfolders(bucket, site_prefix)
+        subfolders = self._storage.list_subfolders(bucket, site_prefix)
+        return [subfolder for subfolder in subfolders if "=" in subfolder.removeprefix(f"{site_prefix}/")]
 
     @staticmethod
     def _site_partition_prefix(network: str, partition_key: str, partition_value: str, site: str) -> str:

@@ -389,6 +389,29 @@ class TestDateParentFolders:
         assert result == [LISTING_SITE_PREFIX]
         storage.list_subfolders.assert_not_called()
 
+    def test_returns_site_when_other_keys_sort_before_the_dates(self) -> None:
+        """Tests that metadata files and folders that sort before `date=` don't hide dates directly under the site."""
+        router = router_with_keys(
+            [
+                day_key("2023-01-01"),
+                f"{LISTING_SITE_PREFIX}/_metadata/info.json",
+                f"{LISTING_SITE_PREFIX}/_metadata.json",
+            ]
+        )
+
+        result = router._date_parent_folders(LISTING_BUCKET, LISTING_SITE_PREFIX)
+
+        assert result == [LISTING_SITE_PREFIX]
+
+    def test_ignores_non_partition_folders_when_dates_are_one_level_down(self) -> None:
+        """Tests that a folder without `=` in its name is not searched when the dates are one level down."""
+        serial = f"{LISTING_SITE_PREFIX}/serial_no=1"
+        router = router_with_keys([day_key("2023-01-01", serial), f"{LISTING_SITE_PREFIX}/_metadata/info.json"])
+
+        result = router._date_parent_folders(LISTING_BUCKET, LISTING_SITE_PREFIX)
+
+        assert result == [serial]
+
     def test_returns_subfolders_when_dates_are_one_level_down(self) -> None:
         """Tests that the folders between the site and the dates are returned when there is an extra level."""
         first_serial = f"{LISTING_SITE_PREFIX}/serial_no=1"
