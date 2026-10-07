@@ -91,7 +91,7 @@ def _build_processor(
     reader = DuckDBParquetReader(create_duckdb_factory())
     raw_reader = RawFileReader(storage)
     writer = ByteParquetWriter(storage)
-    data_router = S3DataRouter(reader, raw_reader)
+    data_router = S3DataRouter(reader, raw_reader, storage)
 
     graph = _build_dependency_graph(selection, metadata_router, start_date, end_date)
     metrics = Metrics(cfg.pushgateway_url, cfg.pushgateway_job_name, site=_resolve_site_label(graph))

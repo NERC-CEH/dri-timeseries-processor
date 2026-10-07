@@ -42,6 +42,19 @@ class StorageClient(ABC):
         pass
 
     @abstractmethod
+    def list_subfolders(self, bucket: str, folder: str) -> list[str]:
+        """List the "folders" directly inside a folder, without listing every key inside them.
+
+        For example, the folder `site=X` returns `["site=X/a=1", "site=X/a=2"]`.
+        """
+        pass
+
+    @abstractmethod
+    def first_key_with_prefix(self, bucket: str, prefix: str) -> str | None:
+        """Return the first key, in key order, that starts with the prefix, or `None` if there isn't one."""
+        pass
+
+    @abstractmethod
     def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
         """Upload a local file to storage."""
         pass
@@ -139,6 +152,19 @@ class S3StorageClient(StorageClient):
             for obj in page.get("Contents", []):
                 keys.append(obj["Key"])  # type: ignore[typeddict-item]
         return keys
+
+    def list_subfolders(self, bucket: str, folder: str) -> list[str]:
+        paginator = self.client.get_paginator("list_objects_v2")
+        subfolders = []
+        for page in paginator.paginate(Bucket=bucket, Prefix=f"{folder}/", Delimiter="/"):
+            for common_prefix in page.get("CommonPrefixes", []):
+                subfolders.append(common_prefix["Prefix"].rstrip("/"))  # type: ignore[typeddict-item]
+        return subfolders
+
+    def first_key_with_prefix(self, bucket: str, prefix: str) -> str | None:
+        response = self.client.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
+        contents = response.get("Contents", [])
+        return contents[0]["Key"] if contents else None  # type: ignore[typeddict-item]
 
     def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
         self.client.upload_file(str(local_path), bucket, key)

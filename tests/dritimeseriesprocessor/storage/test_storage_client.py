@@ -65,6 +65,26 @@ class TestS3StorageClient:
         expected = ["dir/file2.txt", "dir/nested/file3.txt"]
         assert sorted(result) == sorted(expected)
 
+    def test_list_subfolders(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that only the folders directly inside a folder are listed, without trailing slashes."""
+        result = storage_client_with_files.list_subfolders(LOCALSTACK_TEST_BUCKET, "dir")
+        assert result == ["dir/nested"]
+
+    def test_list_subfolders_when_folder_has_none(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that a folder holding only files gives an empty list."""
+        result = storage_client_with_files.list_subfolders(LOCALSTACK_TEST_BUCKET, "dir/nested")
+        assert result == []
+
+    def test_first_key_with_prefix(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that the first key in key order under the prefix is returned."""
+        result = storage_client_with_files.first_key_with_prefix(LOCALSTACK_TEST_BUCKET, "dir/")
+        assert result == "dir/file2.txt"
+
+    def test_first_key_with_prefix_when_no_keys_match(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that None is returned when no key starts with the prefix."""
+        result = storage_client_with_files.first_key_with_prefix(LOCALSTACK_TEST_BUCKET, "missing/")
+        assert result is None
+
     @pytest.mark.parametrize("file_name", ["file1.txt", "dir/file2.txt", "dir/nested/file3.txt"])
     def test_delete_key(self, file_name: str, storage_client_with_files: S3StorageClient) -> None:
         # check the key exists to start with
