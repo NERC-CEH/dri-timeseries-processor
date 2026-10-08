@@ -253,13 +253,14 @@ class DatasetDependencyGraph:
         containers: set[TimeSeriesContainer] = set()
 
         for query in self.selection:
-            if isinstance(query, DatasetIdSelection):
-                containers.update(self._fetch_root_datasets_by_ids(query.dataset_ids))
-            elif isinstance(query, DimensionSelection):
-                sites = self._fetch_site_metadata(query.sites or [], network=query.network)
-                containers.update(self._fetch_root_datasets(sites, query.variables or [], query.periodicities or []))
-            else:
-                raise ValueError(f"Unsupported selection type in dependency graph: {type(query).__name__}")
+            match query:
+                case DatasetIdSelection():
+                    containers.update(self._fetch_root_datasets_by_ids(query.dataset_ids))
+                case DimensionSelection():
+                    sites = self._fetch_site_metadata(query.sites or [], network=query.network)
+                    containers.update(
+                        self._fetch_root_datasets(sites, query.variables or [], query.periodicities or [])
+                    )
 
         return list(containers)
 
@@ -341,7 +342,7 @@ class DatasetDependencyGraph:
             meta = map_site_metadata(item)
             # Filter sites to only those that are "active".  By default, if start and end date not provide, all sites
             # are considered active.
-            if meta.is_active(window_start=self.start_date, window_end=self.end_date):
+            if meta.is_active(self.start_date, self.end_date):
                 self.site_metadata[meta.site_id] = meta
                 fetched_site_ids.append(meta.site_id)
 

@@ -3,7 +3,7 @@ Domain model representing site metadata for an observation site in the FDRI syst
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, time, timedelta
 
 
 @dataclass
@@ -35,10 +35,16 @@ class SiteMetadata:
         Returns:
             Boolean of whether site is active during the given window
         """
-        if window_end and self.start_date is not None and self.start_date >= window_end:
-            return False
-        if window_start and self.end_date is not None and self.end_date <= window_start:
-            return False
+        if window_end is not None and self.start_date is not None:
+            day_after_last_day = datetime.combine(window_end.date() + timedelta(days=1), time.min)
+            if self.start_date >= day_after_last_day:
+                return False
+
+        if window_start is not None and self.end_date is not None:
+            first_day_start = datetime.combine(window_start.date(), time.min)
+            if self.end_date <= first_day_start:
+                return False
+
         return True
 
     def __hash__(self) -> int:

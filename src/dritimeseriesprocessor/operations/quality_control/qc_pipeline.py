@@ -9,10 +9,11 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import qc_flag_column_name
+from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name, qc_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.polars_utils import not_missing_expr
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +43,6 @@ class QCPipeline(OperationPipeline):
         if remove_flagged and container.has_flags():
             logger.info("Removing data that has failed QC checks")
             tf = self.remove_flagged_data(tf)  # type: ignore[arg-type]
-            # Need to update the core flags now. This adds the "removed" flag for those values removed by QC.
-            tf = self.core_flag_updater(tf)
         return tf
 
     def apply(
@@ -125,7 +124,10 @@ class QCPipeline(OperationPipeline):
 
     @staticmethod
     def remove_flagged_data(tf: ts.TimeFrame) -> ts.TimeFrame:
-        """Remove data that has failed any QC check.
+        """Remove data that has failed any QC check, and add the "removed" core flag to the values that were removed.
+
+        Only values that were present get the "removed" flag. A value that was already null had nothing to remove,
+        even if a check flagged it (e.g. `samples` or `manual_removal`, which flag rows whatever their value).
 
         Args:
             tf: TimeFrame to remove bad data from.
@@ -135,5 +137,18 @@ class QCPipeline(OperationPipeline):
         """
         col_name = tf.metadata["column_name"]
         flag_col = qc_flag_column_name(col_name)
-        df_qc = tf.df.with_columns(pl.when(pl.col(flag_col) > 0).then(None).otherwise(pl.col(col_name)).alias(col_name))
-        return tf.with_df(df_qc)
+        failed_qc = pl.col(flag_col) > 0
+
+        # Take into account values that were already NULL
+        removed = (
+            tf.df.select(failed_qc & not_missing_expr(col_name, tf.df[col_name].dtype)).to_series().fill_null(False)
+        )
+        df_qc = tf.df.with_columns(pl.when(failed_qc).then(None).otherwise(pl.col(col_name)).alias(col_name))
+        tf = tf.with_df(df_qc)
+
+        # Set the removed flag - this is the only point we can tell whether the data was removed by us, or was null to
+        # start with
+        core_flag_col = core_flag_column_name(col_name)
+        if core_flag_col in tf.flag_columns:
+            tf.add_flag(core_flag_col, "removed", removed)
+        return tf

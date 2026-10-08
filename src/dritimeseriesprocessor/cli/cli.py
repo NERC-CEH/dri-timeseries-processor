@@ -3,8 +3,8 @@ Command-line interface parsing for time series processing runs.
 
 This module is responsible for parsing CLI arguments to capture user intent regarding:
 - which network to process (for dimension-based modes)
-- the temporal processing window
-- dataset selection mode (explicit, cross-product, or from-datasets), with specific arguments
+- the temporal processing window (not used in historic mode, which works out each site's own dates)
+- dataset selection mode (explicit, cross-product, from-datasets or historic), with specific arguments
 """
 
 import argparse
@@ -17,9 +17,13 @@ import isodate
 from dritimeseriesprocessor.cli.selection import (
     DatasetIdSelection,
     DimensionSelection,
+    HistoricRunConfig,
+    HistoricSelection,
+    ListSitesRunConfig,
     ListSitesSelection,
     RunConfig,
     Selection,
+    StandardRunConfig,
 )
 from dritimeseriesprocessor.utils.enums import CliSelectionMode
 from dritimeseriesprocessor.utils.time_utils import to_datetime
@@ -27,31 +31,35 @@ from dritimeseriesprocessor.utils.urls import DATASET_URI, SITE_URI
 
 
 def parse_args(argv: list[str]) -> RunConfig:
-    """Parse CLI arguments and construct a validated RunConfig.
+    """Parse CLI arguments and construct a validated run configuration for the chosen mode.
 
     Args:
         argv: List of command-line arguments.
 
     Returns:
-        A validated RunConfig representing user intent for the processing run.
+        A validated run configuration representing user intent for the processing run.
     """
-    parser = _build_parser()
-    args = parser.parse_args(argv)
+    args = _build_parser().parse_args(argv)
+    mode = CliSelectionMode(args.mode)
 
-    start_date, end_date = _parse_date_range(
-        start_date=args.start_date,
-        end_date=args.end_date,
-        lookback=args.lookback,
-    )
+    # Historic mode has no date arguments: each site's own operating dates are used
+    if mode == CliSelectionMode.HISTORIC:
+        return HistoricRunConfig(HistoricSelection(network=args.network, sites=_site_uris(args.sites)))
 
-    selection = _parse_selection_mode(args, parser)
+    start_date, end_date = _parse_date_range(start_date=args.start_date, end_date=args.end_date, lookback=args.lookback)
+    match mode:
+        case CliSelectionMode.LIST_SITES:
+            list_sites_selection = ListSitesSelection(network=args.network, sites=_site_uris(args.sites))
+            return ListSitesRunConfig(list_sites_selection, start_date, end_date)
 
-    return RunConfig(
-        mode=CliSelectionMode(args.mode),
-        selection=selection,
-        start_date=start_date,
-        end_date=end_date,
-    )
+        case CliSelectionMode.EXPLICIT:
+            return StandardRunConfig(_parse_explicit_selection(args), start_date, end_date)
+
+        case CliSelectionMode.CROSS_PRODUCT:
+            return StandardRunConfig(_parse_cross_product_selection(args), start_date, end_date)
+
+        case CliSelectionMode.FROM_DATASETS:
+            return StandardRunConfig(_parse_dataset_id_selection(args), start_date, end_date)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -91,7 +99,9 @@ def _build_parser() -> argparse.ArgumentParser:
         CliSelectionMode.CROSS_PRODUCT.value, parents=[date_range_parent, network_parent]
     )
     cross_parser.add_argument(
-        "--sites", nargs="+", help="Space-separated list, e.g. ALIC1 BUNNY. If omitted, find all sites for network."
+        "--sites",
+        nargs="+",
+        help="Space-separated list, e.g. cosmos-alic1 cosmos-bunny. If omitted, find all sites for network.",
     )
     cross_parser.add_argument(
         "--variables", nargs="+", help="Space-separated list, e.g. TA PA. If omitted, find all variables for all sites."
@@ -109,6 +119,15 @@ def _build_parser() -> argparse.ArgumentParser:
         nargs="+",
         required=True,
         help="Space-separated dataset IDs, e.g. flux-plynl-processed.",
+    )
+
+    # Mode D: Historic mode
+    # Process every dataset for the sites, over each site's full operating dates.
+    historic_parser = subparsers.add_parser(CliSelectionMode.HISTORIC.value, parents=[network_parent])
+    historic_parser.add_argument(
+        "--sites",
+        nargs="+",
+        help="Space-separated list, e.g. cosmos-alic1 cosmos-bunny. If omitted, process all sites for the network.",
     )
 
     # Utility command: list site IDs for a network as a JSON array.
@@ -215,31 +234,16 @@ def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_d
     return to_datetime(start_date), to_datetime(end_date)
 
 
-def _parse_selection_mode(args: argparse.Namespace, parser: argparse.ArgumentParser) -> list[Selection]:
-    """Determine the dataset selection mode and construct the appropriate selection objects.
+def _site_uris(sites: list[str] | None) -> list[str] | None:
+    """Turn site IDs from the CLI into full metadata API site URIs.
 
     Args:
-        args: Parsed CLI arguments.
-        parser: ArgumentParser instance used to report validation errors.
+        sites: Site IDs, e.g. cosmos-alic1, or None if no sites were given.
 
     Returns:
-        A list of Selection objects representing user selection intent.
+        The site URIs, or None if no sites were given.
     """
-    mode = CliSelectionMode(args.mode)
-    if mode == CliSelectionMode.EXPLICIT:
-        return _parse_explicit_selection(args)
-
-    if mode == CliSelectionMode.CROSS_PRODUCT:
-        return _parse_cross_product_selection(args)
-
-    if mode == CliSelectionMode.FROM_DATASETS:
-        return _parse_dataset_id_selection(args)
-
-    if mode == CliSelectionMode.LIST_SITES:
-        sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
-        return [ListSitesSelection(network=args.network, sites=sites)]
-
-    parser.error(f"Invalid selection mode: {mode}. Expected one of: {[m.value for m in CliSelectionMode]}")
+    return [f"{SITE_URI}/{site}" for site in sites] if sites else None
 
 
 def _parse_explicit_selection(args: argparse.Namespace) -> list[Selection]:
@@ -284,10 +288,12 @@ def _parse_cross_product_selection(args: argparse.Namespace) -> list[Selection]:
     Returns:
        A list of DimensionSelection objects representing user selection intent.
     """
-    sites = [f"{SITE_URI}/{site}" for site in args.sites] if args.sites else None
     return [
         DimensionSelection(
-            network=args.network, sites=sites, variables=args.variables, periodicities=args.periodicities
+            network=args.network,
+            sites=_site_uris(args.sites),
+            variables=args.variables,
+            periodicities=args.periodicities,
         )
     ]
 

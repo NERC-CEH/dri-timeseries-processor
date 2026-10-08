@@ -76,7 +76,12 @@ class DerivationMethod(GenerativeMethod, ABC):
                 - columns: The input `columns` dict, with an added entry for each time-bound
                   attribute (e.g. anemometer sensor height) found in `config.params`
                 - merged_tf: The merged TimeFrame, with any time-bound attribute columns joined in
+
+        Raises:
+            ValueError: If there are no input TimeFrames to merge.
         """
+        if not tf_map:
+            raise ValueError(f"Derivation method '{self.name}' was given no input datasets")
         merged_tf = merge_multiple_timeframes(list(tf_map.values()))
         columns, merged_tf = self.join_deployment_attributes(config, columns, merged_tf)
         columns, merged_tf = self.join_annotation_attributes(config, columns, merged_tf)
@@ -248,16 +253,36 @@ class SolarZenith(DerivationMethod):
 
     See `hydrometlib.meteorology.solar_zenith` for the science.
 
+    Needs no input datasets - the angle only depends on the time and the site's latitude, so it is calculated for every
+    time step in the processing window.
+
     Uses:
         Site attribute: latitude [degrees]
-        NOTE: Also accesses "swin" from config params - only uses this as a placeholder to get datetime values.
     """
 
     name = "solar_zenith"
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
-        swin_tf = self.config.params["swin"]
-        return meteorology.solar_zenith(time=pl.col(swin_tf.time_name), latitude=self.config.params["lat"])
+        return meteorology.solar_zenith(time=columns["time"], latitude=self.config.params["lat"])
+
+    def merge_inputs(self, config: DataProcessingMethodConfig, tf_map: dict, columns: dict) -> tuple:
+        """Build the time steps to calculate for, instead of merging input datasets.
+
+        Overrides the base `merge_inputs` because there are no input datasets to take the time steps from. Any inputs
+        that are given are ignored.
+        """
+        time_name = config.params["container"].time_column_name
+        tf = ts.TimeFrame(
+            pl.DataFrame(schema={time_name: pl.Datetime}),
+            time_name,
+            resolution=config.params["resolution"],
+            periodicity=config.params["periodicity"],
+            time_anchor=config.params["time_anchor"],
+        ).pad(start=config.params["load_start_date"], end=config.params["load_end_date"])
+
+        columns["time"] = pl.col(time_name)
+
+        return columns, tf
 
 
 @DerivationMethod.register
@@ -393,16 +418,6 @@ class GetSnowEstimatedCounts(DerivationMethod):
 
         Overrides the base `merge_inputs` because `snow` and `cts_smo` have different
         periodicities (eg. daily vs. hourly), so `merge_multiple_timeframes` cannot be used directly.
-
-        Args:
-            config: Configuration parameters including input TimeFrames and output specs. Unused.
-            tf_map: Mapping of input name to its TimeFrame.
-            columns: Mapping of input name to its Polars column expression.
-
-        Returns:
-            Tuple of:
-                - columns: The input `columns` dict, with a "time" entry added.
-                - merged_tf: The TimeFrame with the lower resolution values joined onto each row.
         """
         snow_daily_tf = tf_map["snow"]
         cts_smo_tf = tf_map["cts_smo"]

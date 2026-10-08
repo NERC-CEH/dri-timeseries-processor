@@ -1,3 +1,4 @@
+import io
 from datetime import datetime
 from pathlib import Path
 from typing import Iterator
@@ -100,6 +101,52 @@ class TestDuckDBParquetReader:
         stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 1
         assert stats["idle_for"] == 0
+
+    def test_reuses_one_connection_for_every_read(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
+        """Tests that only one connection is made, however many queries are read."""
+        reader = DuckDBParquetReader(connection_factory=mock_factory)
+
+        for _ in range(3):
+            reader.read("SELECT 1")
+
+        mock_factory.create.assert_called_once()
+        assert mock_conn.execute.call_count == 3
+
+    def test_connection_stays_open_between_reads(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
+        """Tests that the connection isn't closed after a read."""
+        reader = DuckDBParquetReader(connection_factory=mock_factory)
+
+        reader.read("SELECT 1")
+
+        mock_conn.close.assert_not_called()
+
+    def test_close_closes_the_connection(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
+        """Tests that close closes the shared connection."""
+        reader = DuckDBParquetReader(connection_factory=mock_factory)
+        reader.read("SELECT 1")
+
+        reader.close()
+
+        mock_conn.close.assert_called_once()
+
+    def test_read_after_close_makes_a_new_connection(self, mock_factory: MagicMock) -> None:
+        """Tests that reading again after close makes a new connection."""
+        reader = DuckDBParquetReader(connection_factory=mock_factory)
+        reader.read("SELECT 1")
+        reader.close()
+
+        reader.read("SELECT 1")
+
+        assert mock_factory.create.call_count == 2
+
+    def test_close_before_any_read_does_nothing(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
+        """Tests that close doesn't make or close a connection when nothing has been read."""
+        reader = DuckDBParquetReader(connection_factory=mock_factory)
+
+        reader.close()
+
+        mock_factory.create.assert_not_called()
+        mock_conn.close.assert_not_called()
 
 
 class TestRawFileReader:
@@ -257,3 +304,23 @@ class TestDuckDBParquetReaderIntegration:
         stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 3  # Should have tried 3 times
         assert stats["idle_for"] == 4  # Should have waited 2 seconds between each try
+
+    def test_reused_connection_reads_a_rewritten_file(
+        self, reader: DuckDBParquetReader, s3_storage_client: S3StorageClient
+    ) -> None:
+        """Tests that a file rewritten between two reads on the same connection is read again, not from a cache."""
+        key = "rewritten/date=2024-01-01/data.parquet"
+        query = f"SELECT count(*) AS row_count FROM read_parquet('s3://{BUCKET_NAME}/{key}')"
+
+        def write_rows(row_count: int) -> None:
+            buffer = io.BytesIO()
+            pl.DataFrame({"value": list(range(row_count))}).write_parquet(buffer)
+            s3_storage_client.put_bytes(BUCKET_NAME, key, buffer.getvalue())
+
+        write_rows(1)
+        first_read = reader.read(query)
+        write_rows(5)
+        second_read = reader.read(query)
+
+        assert first_read["row_count"].item() == 1
+        assert second_read["row_count"].item() == 5

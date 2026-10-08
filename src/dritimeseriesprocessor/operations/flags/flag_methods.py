@@ -138,7 +138,7 @@ def update_corrections_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
 
 
 def update_quality_control_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
-    """Remove 'unchecked' flag and add 'removed' flag where data has been removed.
+    """Remove the 'unchecked' flag where QC has checked the data.
 
     Args:
         tf: The input ts.TimeFrame object.
@@ -160,10 +160,6 @@ def update_quality_control_core_flags(tf: ts.TimeFrame) -> ts.TimeFrame:
         # Remove unchecked flag where there is a non-null QC flag.
         expr = not_missing_expr(qc_flag_col_name, tf.df[qc_flag_col_name].dtype)
         tf.remove_flag(core_flag_col_name, "unchecked", expr)
-
-        # Add removed flag where the data value is missing and QC flag is not 0
-        expr = (missing_expr(data_col_name, tf.df[data_col_name].dtype)) & (pl.col(qc_flag_col_name) != 0)
-        tf.add_flag(core_flag_col_name, "removed", expr)
 
     return tf
 

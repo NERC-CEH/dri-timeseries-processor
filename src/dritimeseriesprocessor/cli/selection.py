@@ -1,12 +1,10 @@
 """
 Models for resolving dataset selection intent for processing runs, originating from the CLI (or potentially
-other entry points)
+other entry points), and the run configuration for each run mode.
 """
 
 from dataclasses import dataclass
 from datetime import datetime
-
-from dritimeseriesprocessor.utils.enums import CliSelectionMode
 
 
 @dataclass(frozen=True)
@@ -56,9 +54,8 @@ class DatasetIdSelection:
 
 
 @dataclass(frozen=True)
-class ListSitesSelection:
-    """Represents a request to list sites for a network. If `sites` is given, only those sites are considered
-    (still checked for network membership); otherwise all sites for the network are listed."""
+class NetworkSitesSelection:
+    """A network, and optionally some of its sites by name. If no sites are given, all sites in the network are used."""
 
     network: str
     sites: list[str] | None = None
@@ -71,16 +68,44 @@ class ListSitesSelection:
         return hash(f"{self.network}{sites_str}")
 
 
-Selection = DimensionSelection | DatasetIdSelection | ListSitesSelection
+class ListSitesSelection(NetworkSitesSelection):
+    """Represents a request to list sites for a network. If `sites` is given, only those sites are considered
+    (still checked for network membership); otherwise all sites for the network are listed."""
+
+
+class HistoricSelection(NetworkSitesSelection):
+    """Represents a request to process everything for a network's sites over each site's full operating dates."""
+
+
+# A selection of datasets to process, as accepted by the dependency graph.
+# ListSitesSelection and HistoricSelection are left out as they never reach the dependency graph.
+Selection = DimensionSelection | DatasetIdSelection
 
 
 @dataclass(frozen=True)
-class RunConfig:
-    """Runtime configuration object for a processing run. This collects user intent, including dataset selection
-    constraints and the temporal processing window. It serves as the boundary between CLI parsing and runtime execution.
-    """
+class StandardRunConfig:
+    """Runtime configuration for processing the selected datasets over a date range."""
 
     selection: list[Selection]
     start_date: datetime
     end_date: datetime
-    mode: CliSelectionMode
+
+
+@dataclass(frozen=True)
+class HistoricRunConfig:
+    """Runtime configuration for processing a network's sites over each site's full operating dates."""
+
+    selection: HistoricSelection
+
+
+@dataclass(frozen=True)
+class ListSitesRunConfig:
+    """Runtime configuration for listing a network's sites that were open during a date range."""
+
+    selection: ListSitesSelection
+    start_date: datetime
+    end_date: datetime
+
+
+# Collects user intent for a run. Each mode has its own type, holding only what that mode needs.
+RunConfig = StandardRunConfig | HistoricRunConfig | ListSitesRunConfig

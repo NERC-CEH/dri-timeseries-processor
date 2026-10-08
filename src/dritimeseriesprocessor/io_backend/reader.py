@@ -27,7 +27,8 @@ class DuckDBParquetReader(ParquetReaderInterface):
     """DuckDB implementation of the parquet reader.
 
     DuckDB is configured via an injected DuckDBConnectionFactory, which encapsulates all environment-specific
-    behaviour (local / staging / production).
+    behaviour (local / staging / production). One connection is made on the first query and reused for the rest,
+    so its setup and HTTPS connections aren't repeated.
     """
 
     def __init__(self, connection_factory: DuckDBConnectionFactory) -> None:
@@ -37,6 +38,19 @@ class DuckDBParquetReader(ParquetReaderInterface):
             connection_factory: Object responsible for creating correctly configured DuckDB connections.
         """
         self._connection_factory = connection_factory
+        self._connection: duckdb.DuckDBPyConnection | None = None
+
+    def _get_connection(self) -> duckdb.DuckDBPyConnection:
+        """Return the shared connection, making it on first use."""
+        if self._connection is None:
+            self._connection = self._connection_factory.create()
+        return self._connection
+
+    def close(self) -> None:
+        """Close the shared connection, if there is one."""
+        if self._connection is not None:
+            self._connection.close()
+            self._connection = None
 
     @retry(
         retry=retry_if_exception_type(duckdb.InvalidInputException),
@@ -58,7 +72,7 @@ class DuckDBParquetReader(ParquetReaderInterface):
             duckdb.HTTPException: If there's any error in finding objects
             duckdb.InvalidInputException: If corrupt data found in an object
         """
-        conn = self._connection_factory.create()
+        conn = self._get_connection()
 
         try:
             df = conn.execute(query, params).pl()
@@ -75,9 +89,6 @@ class DuckDBParquetReader(ParquetReaderInterface):
         except duckdb.IOException:
             # No parquet file found, so return an empty dataframe
             return pl.DataFrame()
-
-        finally:
-            conn.close()
 
 
 class RawFileReader:

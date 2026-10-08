@@ -28,9 +28,8 @@ class DuckDBConnectionFactory(ABC):
         """Apply core DuckDB configuration required for all environments."""
         conn = duckdb.connect()
         conn.execute("""
-            INSTALL httpfs;
-            LOAD httpfs;
             SET force_download=true;
+            SET httpfs_connection_caching=true;
             SET THREADS=64;
         """)
         return conn

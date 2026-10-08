@@ -21,12 +21,13 @@ The CLI accepts arguments defining:
 
 ## Processing Modes
 
-The CLI supports three dataset selection modes and one utility command:
+The CLI supports four processing modes and one utility command:
 
 1. **explicit** (`from-selection`): Request datasets by site, variable, and periodicity.
 2. **cross-product** (`from-cross-product`): Build dataset combinations across dimensions.
 3. **from-datasets** (`from-datasets`): Request datasets directly by their metadata API ID.
-4. **list-sites**: List all active sites for a network.
+4. **historic** (`historic`): Process everything for sites over their full operating dates.
+5. **list-sites**: List all active sites for a network.
 
 The processing modes are **mutually exclusive**.
 
@@ -166,7 +167,7 @@ Outputs a JSON array of active site IDs for a given network to `/tmp/sites.json`
 not overlap the requested date window are excluded.
 
 By default, all sites for the network are listed. Pass `--sites` to limit the result to a specific set of sites -
-any listed site that isn't in the network is excluded too.
+any listed site from another network is excluded too (see [Site Names](#site-names)).
 
 Intended for use in Argo Workflows fan-out steps, where the output is captured as a step result and passed as input
 to downstream processing steps.
@@ -202,10 +203,50 @@ python -m dritimeseriesprocessor list-sites --network cosmos --sites cosmos-alic
 This limits the result to just `cosmos-alic1` and `cosmos-bunny` (still subject to network membership and the
 date window).
 
+### Historic Mode
+
+Processes everything for a network's sites over each site's full operating dates, in one call.
+
+**Use when you need**:
+
+* A full rerun of all datasets and periodicities for one or more sites
+* To avoid choosing a start date, or looping over date ranges in the calling process
+
+For each site, processing runs from the site's start date in the metadata to its end date (or today, if the site is
+still open). The range is processed one calendar year at a time, oldest first, so years before a site opened are never
+attempted. A failed year or site does not stop the rest of the run; all failures are reported at the end and the exit
+code is non-zero.
+
+There are no `--variables`, `--periodicities`, `--start-date`, `--end-date` or `--lookback` options. A site with no
+start date in the metadata is skipped and reported as a failure.
+
+**Syntax**:
+
+```bash
+python -m dritimeseriesprocessor historic
+  --network NETWORK
+  [--sites SITE [SITE ...]]
+```
+
+By default, all sites for the network are processed. Pass `--sites` to limit the run to specific sites - any listed
+site from another network is excluded (see [Site Names](#site-names)).
+
+**Example**:
+
+```bash
+python -m dritimeseriesprocessor historic --network cosmos --sites cosmos-alic1 cosmos-bunny
+```
+
+Sites are processed one after another. To process sites in parallel, use `list-sites` to fan out, and run
+`historic --sites <site>` for each one.
+
 ### Site Names
 
 Uses the site IDs as found in the FDRI metadata API.  These are typically in the form `<network>-<site-id>`, but
 theoretically could be anything.
+
+Any site named with `--sites` or `--selection` whose metadata puts it in a different network from `--network` is left
+out, with a warning in the log. A site with no network in its metadata is kept.
 
 **Examples:**
 
@@ -296,6 +337,10 @@ Optional. Defaults to today:
 --end-date YYYY-MM-DD
 ```
 
+Date ranges longer than a year are processed one calendar year at a time, and for selections made by site the start
+date is moved forward to when the first selected site opened. See
+[Date range and yearly chunks](architecture.md#date-range-and-yearly-chunks).
+
 ## Error Handling
 
 #### Invalid Arguments
@@ -304,14 +349,17 @@ The CLI validates all arguments before processing. Examples include:
 
 ```bash
 # Invalid: Missing required network
-python -m dritimeseriesprocessor cross-product --lookback P2D
+python -m dritimeseriesprocessor from-cross-product --lookback P2D
 
 # Invalid: Time component in lookback
-python -m dritimeseriesprocessor cross-product --network cosmos --lookback PT6H
+python -m dritimeseriesprocessor from-cross-product --network cosmos --lookback PT6H
 
 # Invalid: Both lookback and start-date
-python -m dritimeseriesprocessor cross-product
-  --network cosmos 
-  --lookback P2D 
+python -m dritimeseriesprocessor from-cross-product
+  --network cosmos
+  --lookback P2D
   --start-date 2024-01-01
+
+# Invalid: Date options in historic mode
+python -m dritimeseriesprocessor historic --network cosmos --start-date 2024-01-01
 ```
