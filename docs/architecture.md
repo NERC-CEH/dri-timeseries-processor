@@ -11,8 +11,11 @@ flowchart TD
 Start([Command Line Interface]) --> Parse[Parse Arguments]
 Parse --> LoadConfig[Load Environment<br />Configuration]
 
-LoadConfig --> BuildDAG[Build Dependency Graph]
-BuildDAG --> MetaAPI[(Metadata Store API)]
+LoadConfig --> Plan[Plan date ranges<br/>one per calendar year if over a year]
+Plan --> MetaAPI[(Metadata Store API)]
+Plan --> StartRange{{For each date range}}
+StartRange --> BuildDAG[Build Dependency Graph]
+BuildDAG --> MetaAPI
 MetaAPI --> BuildDAG
 BuildDAG --> TopoSort[Topological Sort<br/>Determine execution order]
 
@@ -56,7 +59,8 @@ NextLayer -->|All layers done| SaveDatasets[Collect datasets and<br />write to S
 SaveDatasets --> S3Writer[(S3 Storage Writer)]
 SaveDatasets --> ExportMetrics[Export Metrics to<br />Prometheus]
 ExportMetrics --> PrometheusGW[(Prometheus<br/>Pushgateway)]
-ExportMetrics --> Done([Processing Complete])
+ExportMetrics --> NextRange([Next date range])
+NextRange -->|All date ranges done| Done([Processing Complete])
 
 classDef setup fill:#A8D5E2,stroke:#7CA9B8,stroke-width:2px
 classDef orchestration fill:#D4B5E8,stroke:#A78BBD,stroke-width:2px
@@ -65,7 +69,7 @@ classDef storage fill:#C9C9C9,stroke:#9A9A9A,stroke-width:2px
 classDef completion fill:#C8E6C9,stroke:#9AB89C,stroke-width:2px
 
 class Start,Parse,LoadConfig setup
-class BuildDAG,TopoSort orchestration
+class Plan,StartRange,NextRange,BuildDAG,TopoSort orchestration
 class Pipeline,CheckType,StartLayer,StartProc,StartStep,BatchLoad,RunLoad,RunCorr,RunQC,RunInfill,Resample,Compute,NextStep,NextDataset,NextLayer processing
 class MetaAPI,S3Reader,S3Writer,PrometheusGW storage
 class ExportMetrics,Done completion
@@ -75,12 +79,14 @@ class ExportMetrics,Done completion
 
 ### 1. Command line interface (CLI)
 
-Command line interface supporting three processing modes and one utility command:
+Command line interface supporting four processing modes and one utility command:
 
 - **Explicit mode** (`from-selection`): Fine-grained control over specific site/variable/periodicity combinations
 - **Cross-product mode** (`from-cross-product`): Bulk processing across dimensions
 - **From-datasets mode** (`from-datasets`): Request datasets directly by metadata API ID - works for both
   `TimeSeriesDataset` and `ObservationDataset` records, and does not require a network argument
+- **Historic mode** (`historic`): Process everything for a network's sites over each site's full operating dates, one
+  calendar year at a time
 - **List-sites**: Output active site IDs for a network as a JSON array
 
 See [CLI Usage](cli_usage.md).
@@ -198,6 +204,8 @@ Constructs a complete directed acyclic graph (DAG) of dataset dependencies by:
      variable, and periodicity. If no sites are specified, all sites for the network are fetched first.
      Sites whose operating period does not overlap the requested date window are excluded.
    - **`from-datasets` mode**: fetch datasets directly by ID, with no site pre-filtering.
+   - **`historic` mode**: finds each site's operating dates from its metadata, then runs one calendar year at a time.
+     A new graph is built for each year, for a single site and with all variables and periodicities.
 2. Fetching all relevant data processing configurations (QC, Infill, Correction, Aggregation, Derivation).
 3. Resolving dependencies of these data processing configurations.
 4. Repeating for any new datasets introduced by these dependencies.
@@ -288,6 +296,19 @@ Each dataset is provided as a `TimeSeriesContainer`, which encapsulates:
 
 The pipeline iterates over all the nodes (datasets) in topological order, ensuring each dataset is processed only
 after all its upstream dependencies have been completed and are available in memory.
+
+#### Date range and yearly chunks
+
+A date range longer than a year is split into calendar years and run oldest first, so that less data is loaded and
+held in memory at once. Shorter ranges, such as the default two day lookback, are run in one go.
+
+Each year gets its own dependency graph and pipeline, built with that year's dates. The graph leaves out sites that
+were not open during the year, and a year in which none of the selected sites were open is skipped. A failed year does
+not stop the later ones - all failures are reported once the run has finished, and the run exits with an error.
+
+For selections made by site (`from-selection`, `from-cross-product`), the start date is first moved forward to when the
+earliest of the selected sites opened. `from-datasets` runs are split by year but their start date is not moved, as
+their sites are only known once the datasets have been fetched.
 
 #### The processing plan
 
@@ -407,5 +428,9 @@ The processor exports metrics to a Pushgateway:
 - **Pipeline timing**: Total runtime, per-operation timings
 - **Success/failure counts**: Datasets processed successfully or failed
 - **Data availability**: Datasets with no data available
+
+When a run is split into calendar years (see [Date range and yearly chunks](#date-range-and-yearly-chunks)), each year
+is pushed under its own job name (the configured job name with `-<year>` added), so that one year's metrics do not
+overwrite another's.
 
 Locally accessible at `http://localhost:9091`

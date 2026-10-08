@@ -20,7 +20,7 @@ The processor CLI is invoked using:
 python -m dritimeseriesprocessor ...
 ```
 
-Use one of three (mutually exclusive) processing modes, or the utility command:
+Use one of four (mutually exclusive) processing modes, or the utility command:
 
 1. Explicit: `from-selection`
     - Individual sets of processing arguments
@@ -90,7 +90,24 @@ Use one of three (mutually exclusive) processing modes, or the utility command:
      --end-date 2024-08-15
     ```
 
-4. List sites: `list-sites`
+4. Historic: `historic`
+    - Processes everything for a network's sites over each site's full operating dates, one calendar year at a time
+    - No dataset or date options: start and end dates come from each site's metadata (end date is today if still open)
+    - Optionally pass `--sites` to limit the run to a specific set of sites
+
+    ```bash
+    python -m dritimeseriesprocessor historic
+     --network NETWORK
+     [--sites SITE [SITE ...]]
+    ```
+
+   **Example**:
+
+    ```bash
+    python -m dritimeseriesprocessor historic --network cosmos --sites cosmos-alic1
+    ```
+
+5. List sites: `list-sites`
     - Writes a JSON array of active site IDs for a network to `/tmp/sites.json`
     - Sites not open during the requested date window are excluded
     - Optionally pass `--sites` to limit the result to a specific set of sites (still checked against the network

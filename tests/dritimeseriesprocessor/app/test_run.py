@@ -1,38 +1,74 @@
+from datetime import datetime
 from unittest.mock import MagicMock
 
-from dritimeseriesprocessor.app.run import _resolve_site_label
-from dritimeseriesprocessor.dag.dataset_dependency_graph import DatasetDependencyGraph
+import pytest
+
+from dritimeseriesprocessor.app.run import create_run_mode, run_from_config
+from dritimeseriesprocessor.app.run_modes import HistoricRun, ListSitesRun, StandardRun
+from dritimeseriesprocessor.cli.selection import (
+    DimensionSelection,
+    HistoricRunConfig,
+    HistoricSelection,
+    ListSitesRunConfig,
+    ListSitesSelection,
+    Selection,
+    StandardRunConfig,
+)
+
+CONFIG = MagicMock(metadata_api_url="http://fake-api")
+START = datetime(2024, 1, 1)
+END = datetime(2024, 1, 31)
 
 
-def make_graph_with_root_sites(root_site_ids: list[str]) -> DatasetDependencyGraph:
-    """Create a dependency graph carrying the given root site IDs.
+class TestCreateRunMode:
+    def test_standard_config_creates_a_standard_run(self) -> None:
+        """Tests that a standard run config creates a StandardRun with its selection, dates and the app config."""
+        selection: list[Selection] = [DimensionSelection(network="cosmos")]
 
-    Args:
-        root_site_ids: The site IDs to record as the roots of the graph.
+        run_mode = create_run_mode(StandardRunConfig(selection, START, END), CONFIG)
 
-    Returns:
-        A DatasetDependencyGraph with its root site IDs populated.
-    """
-    graph = DatasetDependencyGraph(MagicMock(), MagicMock(), MagicMock(), MagicMock())
-    graph.root_site_ids = root_site_ids
-    return graph
+        assert isinstance(run_mode, StandardRun)
+        assert (run_mode.cfg, run_mode.selection, run_mode.start_date, run_mode.end_date) == (
+            CONFIG,
+            selection,
+            START,
+            END,
+        )
+
+    def test_historic_config_creates_a_historic_run(self) -> None:
+        """Tests that a historic run config creates a HistoricRun with its selection and the app config."""
+        selection = HistoricSelection(network="cosmos")
+
+        run_mode = create_run_mode(HistoricRunConfig(selection), CONFIG)
+
+        assert isinstance(run_mode, HistoricRun)
+        assert (run_mode.cfg, run_mode.selection) == (CONFIG, selection)
+
+    def test_list_sites_config_creates_a_list_sites_run(self) -> None:
+        """Tests that a list-sites run config creates a ListSitesRun with its selection, dates and the app config."""
+        selection = ListSitesSelection(network="cosmos")
+
+        run_mode = create_run_mode(ListSitesRunConfig(selection, START, END), CONFIG)
+
+        assert isinstance(run_mode, ListSitesRun)
+        assert (run_mode.cfg, run_mode.selection, run_mode.start_date, run_mode.end_date) == (
+            CONFIG,
+            selection,
+            START,
+            END,
+        )
 
 
-class TestResolveSiteLabel:
-    def test_single_site(self) -> None:
-        """Test that a single root site is returned as the label on its own."""
-        graph = make_graph_with_root_sites(["site-a"])
+class TestRunFromConfig:
+    def test_runs_the_run_mode_for_the_config(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that the run mode is created from the config and the loaded app config, and then run."""
+        app_config = MagicMock()
+        create_mode = MagicMock()
+        monkeypatch.setattr("dritimeseriesprocessor.app.run.app_config", lambda: app_config)
+        monkeypatch.setattr("dritimeseriesprocessor.app.run.create_run_mode", create_mode)
+        run_config = HistoricRunConfig(HistoricSelection(network="cosmos"))
 
-        assert _resolve_site_label(graph) == "site-a"
+        run_from_config(run_config)
 
-    def test_multiple_sites_are_sorted_and_comma_joined(self) -> None:
-        """Test that several root sites are sorted and joined into a single comma-separated label."""
-        graph = make_graph_with_root_sites(["site-c", "site-a", "site-b"])
-
-        assert _resolve_site_label(graph) == "site-a,site-b,site-c"
-
-    def test_unknown_placeholder_is_kept(self) -> None:
-        """Test that the "unknown" placeholder for a root dataset with no site is kept in the label."""
-        graph = make_graph_with_root_sites(["site-a", "unknown"])
-
-        assert _resolve_site_label(graph) == "site-a,unknown"
+        create_mode.assert_called_once_with(run_config, app_config)
+        create_mode.return_value.run.assert_called_once_with()
