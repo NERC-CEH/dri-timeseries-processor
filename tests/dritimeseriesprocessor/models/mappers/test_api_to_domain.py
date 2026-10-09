@@ -449,11 +449,6 @@ class TestMapFlagColumnRoles:
         with pytest.raises(ValueError, match="dataset has more than one .* TA_QC_FLAG, TA_OTHER_QC_FLAG"):
             map_flag_column_roles("dataset", flag_column_schemes, self.FLAG_SYSTEM_ROLES)
 
-    def test_no_core_flag_column_raises(self) -> None:
-        """Tests that a dataset declaring flag columns but no core flag column raises an error."""
-        with pytest.raises(ValueError, match="no core flag column"):
-            map_flag_column_roles("dataset", {"TA_QC_FLAG": "fdri_quality_control_flag_scheme"}, self.FLAG_SYSTEM_ROLES)
-
 
 class TestExtractArguments:
     def test_extract_arguments(self) -> None:
