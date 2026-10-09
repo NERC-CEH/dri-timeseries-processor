@@ -100,11 +100,14 @@ class HistoricRunConfig:
 
 @dataclass(frozen=True)
 class ListSitesRunConfig:
-    """Runtime configuration for listing a network's sites that were open during a date range."""
+    """Runtime configuration for listing a network's sites that were open during a date range.
+
+    With no dates, every site the network has ever had is listed.
+    """
 
     selection: ListSitesSelection
-    start_date: datetime
-    end_date: datetime
+    start_date: datetime | None
+    end_date: datetime | None
 
 
 # Collects user intent for a run. Each mode has its own type, holding only what that mode needs.
