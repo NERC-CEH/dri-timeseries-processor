@@ -6,15 +6,16 @@ import time_stream as ts
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
 from dritimeseriesprocessor.operations.flags.flag_methods import update_corrections_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import corrs_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
 
 logger = logging.getLogger(__name__)
 
 
 class CorrectionPipeline(OperationPipeline):
     """Processor for running corrections on a TimeSeriesContainer."""
+
+    flag_role = FlagRole.CORRECTION
 
     def __init__(self, flag_systems: dict[str, dict[str, int]]):
         super().__init__(ConfigurationType.CORRECTION, flag_systems)
@@ -41,17 +42,6 @@ class CorrectionPipeline(OperationPipeline):
         result = method.run(tf, config)
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         return result
-
-    def get_flag_column(self, column: str) -> str:
-        """Determine the correction flag column name for a given data column.
-
-        Args:
-            column: Name of the data column.
-
-        Returns:
-            Name of the corresponding correction flag column.
-        """
-        return corrs_flag_column_name(column)
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Return an object that can be used to determine the mask for adding a flag to the flag column.
@@ -90,4 +80,4 @@ class CorrectionPipeline(OperationPipeline):
         Returns:
             Timeframe with updated core flags
         """
-        return update_corrections_core_flags(tf)
+        return update_corrections_core_flags(tf, self.get_core_flag_column(), self.get_flag_column())

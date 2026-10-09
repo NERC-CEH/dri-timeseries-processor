@@ -174,7 +174,7 @@ def monkeypatch_mappers(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     monkeypatch.setattr(
         "dritimeseriesprocessor.dag.dataset_dependency_graph.map_dataset_item",
-        lambda item, _site_metadata, _flag_column_schemes: make_time_series_container(item["@id"]),
+        lambda item, _site_metadata, _flag_column_schemes, _flag_system_roles: make_time_series_container(item["@id"]),
     )
 
     monkeypatch.setattr(

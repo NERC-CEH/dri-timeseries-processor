@@ -10,6 +10,7 @@ from polars.testing import assert_frame_equal
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import Sum
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
+from dritimeseriesprocessor.utils.enums import FlagRole
 
 
 def create_mock_timeframe(col_name: str) -> ts.TimeFrame:
@@ -43,7 +44,7 @@ class TestRenameAggregationColumns:
 
 class TestAggregationThreshold:
     def test_aggregation_threshold_invalid(self) -> None:
-        """Check handling of data where the aggregation threshold is not met."""
+        """Tests that periods below the aggregation threshold are removed and given the 'removed' core flag."""
 
         df = pl.DataFrame(
             {
@@ -70,7 +71,7 @@ class TestAggregationThreshold:
                     datetime(2025, 1, 3),
                 ],
                 "value": [10, None, None],
-                "value_CORE_FLAG": [2, 8, 8],  # estimated, removed, removed
+                "daily_CORE_FLAG": [2, 8, 8],  # estimated, removed, removed
             }
         )
         dep_container = MagicMock()
@@ -98,7 +99,9 @@ class TestAggregationThreshold:
         # Aggregation builds a fresh TimeFrame in apply, so the container starts without data.
         container.data = None
         container.has_flags.return_value = True
-        container.flag_column_schemes = {"value_CORE_FLAG": "core_flags"}
+        # The flag column name deliberately doesn't start with the data column name.
+        container.flag_column_schemes = {"daily_CORE_FLAG": "core_flags"}
+        container.flag_column_roles = {FlagRole.CORE: "daily_CORE_FLAG"}
 
         # Core flag values, as supplied by the metadata service.
         flag_systems = {"core_flags": {"estimated": 2, "removed": 8, "missing": 4}}
