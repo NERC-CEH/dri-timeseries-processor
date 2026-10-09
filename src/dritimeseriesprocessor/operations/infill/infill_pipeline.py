@@ -73,4 +73,4 @@ class InfillPipeline(OperationPipeline):
         Returns:
             Timeframe with updated core flags
         """
-        return update_infill_core_flags(tf, self.flag_column_roles[FlagRole.CORE], self.get_flag_column())
+        return update_infill_core_flags(tf, self.get_core_flag_column(), self.get_flag_column())

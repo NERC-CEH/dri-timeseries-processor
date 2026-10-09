@@ -73,6 +73,14 @@ class OperationPipeline(ABC):
             return None
         return self.flag_column_roles.get(self.flag_role)
 
+    def get_core_flag_column(self) -> str | None:
+        """Get the name of the dataset's core flag column.
+
+        Returns:
+            Name of the core flag column, or None if the dataset does not declare one.
+        """
+        return self.flag_column_roles.get(FlagRole.CORE)
+
     @abstractmethod
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series | pl.Expr:
         """Compute a boolean mask indicating which values should be flagged.

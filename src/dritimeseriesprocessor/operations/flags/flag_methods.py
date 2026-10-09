@@ -97,20 +97,20 @@ def add_initial_core_flags(
 
 
 def update_corrections_core_flags(
-    tf: ts.TimeFrame, core_flag_col_name: str, corrs_flag_col_name: str | None
+    tf: ts.TimeFrame, core_flag_col_name: str | None, corrs_flag_col_name: str | None
 ) -> ts.TimeFrame:
     """Add 'corrected' flag where data has been corrected. This is determined by where there is a corrections flag.
 
     Args:
         tf: The input ts.TimeFrame object.
-        core_flag_col_name: Name of the core flag column to update.
+        core_flag_col_name: Name of the core flag column to update, or None if the dataset does not have one.
         corrs_flag_col_name: Name of the corrections flag column, or None if the dataset does not have one.
 
     Returns:
         The ts.TimeFrame with the core flags updated
     """
-    # Do nothing if there is no corrections flag column.
-    if corrs_flag_col_name is None:
+    # Do nothing if there is no core or corrections flag column.
+    if core_flag_col_name is None or corrs_flag_col_name is None:
         return tf
 
     data_col_name = tf.metadata["column_name"]
@@ -129,20 +129,20 @@ def update_corrections_core_flags(
 
 
 def update_quality_control_core_flags(
-    tf: ts.TimeFrame, core_flag_col_name: str, qc_flag_col_name: str | None
+    tf: ts.TimeFrame, core_flag_col_name: str | None, qc_flag_col_name: str | None
 ) -> ts.TimeFrame:
     """Remove the 'unchecked' flag where QC has checked the data.
 
     Args:
         tf: The input ts.TimeFrame object.
-        core_flag_col_name: Name of the core flag column to update.
+        core_flag_col_name: Name of the core flag column to update, or None if the dataset does not have one.
         qc_flag_col_name: Name of the QC flag column, or None if the dataset does not have one.
 
     Returns:
         The ts.TimeFrame with the core flags updated
     """
-    # Do nothing if there is no QC flag column.
-    if qc_flag_col_name is None:
+    # Do nothing if there is no core or QC flag column.
+    if core_flag_col_name is None or qc_flag_col_name is None:
         return tf
 
     # Remove unchecked flag where there is a non-null QC flag.
@@ -153,21 +153,21 @@ def update_quality_control_core_flags(
 
 
 def update_infill_core_flags(
-    tf: ts.TimeFrame, core_flag_col_name: str, infill_flag_col_name: str | None
+    tf: ts.TimeFrame, core_flag_col_name: str | None, infill_flag_col_name: str | None
 ) -> ts.TimeFrame:
     """Add 'estimated' flag where data has been infilled. This is
     determined by where there is an infill flag.
 
     Args:
         tf: The input ts.TimeFrame object.
-        core_flag_col_name: Name of the core flag column to update.
+        core_flag_col_name: Name of the core flag column to update, or None if the dataset does not have one.
         infill_flag_col_name: Name of the infill flag column, or None if the dataset does not have one.
 
     Returns:
         The ts.TimeFrame with the core flags updated
     """
-    # Do nothing if there is no infilling flag column.
-    if infill_flag_col_name is None:
+    # Do nothing if there is no core or infilling flag column.
+    if core_flag_col_name is None or infill_flag_col_name is None:
         return tf
 
     # Add estimated core flag where infill flag is not 0.

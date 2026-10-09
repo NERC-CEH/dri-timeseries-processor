@@ -16,7 +16,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.eddypro import eddypro_run_method  # noqa: F401  (registers EddyProRun)
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.polars_utils import missing_expr
 
 logger = logging.getLogger(__name__)
@@ -79,8 +79,10 @@ class DerivationPipeline(OperationPipeline):
         Returns:
             TimeFrame with the 'missing' core flag applied.
         """
+        core_flag_col_name = self.get_core_flag_column()
+        if core_flag_col_name is None:
+            return tf
+
         data_column = tf.metadata["column_name"]
-        tf.add_flag(
-            self.flag_column_roles[FlagRole.CORE], "missing", missing_expr(data_column, tf.df[data_column].dtype)
-        )
+        tf.add_flag(core_flag_col_name, "missing", missing_expr(data_column, tf.df[data_column].dtype))
         return tf

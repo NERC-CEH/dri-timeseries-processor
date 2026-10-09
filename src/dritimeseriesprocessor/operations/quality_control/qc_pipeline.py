@@ -98,7 +98,7 @@ class QCPipeline(OperationPipeline):
         Returns:
             Timeframe with updated core flags
         """
-        return update_quality_control_core_flags(tf, self.flag_column_roles[FlagRole.CORE], self.get_flag_column())
+        return update_quality_control_core_flags(tf, self.get_core_flag_column(), self.get_flag_column())
 
     @staticmethod
     def get_qc_result_column(column: str) -> str:
@@ -141,5 +141,7 @@ class QCPipeline(OperationPipeline):
 
         # Set the removed flag - this is the only point we can tell whether the data was removed by us, or was null to
         # start with
-        tf.add_flag(self.flag_column_roles[FlagRole.CORE], "removed", removed)
+        core_flag_col = self.get_core_flag_column()
+        if core_flag_col is not None:
+            tf.add_flag(core_flag_col, "removed", removed)
         return tf

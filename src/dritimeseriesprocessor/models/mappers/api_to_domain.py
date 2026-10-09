@@ -136,9 +136,6 @@ def map_flag_column_roles(
             )
         flag_column_roles[role] = flag_column_name
 
-    if flag_column_roles and FlagRole.CORE not in flag_column_roles:
-        raise ValueError(f"Dataset {ts_id} declares flag columns but no core flag column: {list(flag_column_schemes)}")
-
     return flag_column_roles
 
 

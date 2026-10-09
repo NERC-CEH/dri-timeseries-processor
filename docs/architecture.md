@@ -384,7 +384,9 @@ run if they fail:
 
 - every flag scheme has a known `flagType`
 - a dataset has at most one flag column per role
-- a dataset that declares any flag columns has a core flag column
+
+A dataset doesn't have to declare a core flag column. Without one, operations still write their own flag columns
+(e.g. QC still flags and removes data), but no core flags are set.
 
 #### Saving strategy - pooling and concurrent saves
 

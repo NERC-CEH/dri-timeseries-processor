@@ -15,7 +15,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
+from dritimeseriesprocessor.utils.enums import ConfigurationType
 
 logger = logging.getLogger(__name__)
 
@@ -82,8 +82,11 @@ class AggregationPipeline(OperationPipeline):
         Returns:
             Timeframe with updated core flags
         """
+        core_flag_col_name = self.get_core_flag_column()
+        if core_flag_col_name is None:
+            return tf
+
         col_name = tf.metadata["column_name"]
-        core_flag_col_name = self.flag_column_roles[FlagRole.CORE]
         actual_count_col_name = f"count_{col_name}"
         expected_count_col_name = f"expected_count_{tf.time_name}"
         valid_col_name = f"valid_{col_name}"
