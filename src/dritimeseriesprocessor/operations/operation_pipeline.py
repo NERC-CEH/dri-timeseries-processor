@@ -14,7 +14,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import ensure_flag_column
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +22,13 @@ logger = logging.getLogger(__name__)
 class OperationPipeline(ABC):
     """A base class to define the workflow of operations such as corrections, QC, and infilling.
 
-    Subclasses implement the operation specific components such as applying a method, computing flag masks,
-    sorting configuration blocks, and constructing flag column names.
+    Subclasses implement the operation specific components such as applying a method, computing flag masks and
+    updating core flags.
     """
+
+    # Role of the flag column this operation writes during processing (e.g. the QC flag column for quality control).
+    # Operations that do not produce their own flags (aggregation, derivation) leave this as None.
+    flag_role: FlagRole | None = None
 
     def __init__(self, operation_type: ConfigurationType, flag_systems: dict[str, dict[str, int]]):
         """Initialise the operation processor.
@@ -35,6 +39,8 @@ class OperationPipeline(ABC):
         """
         self.operation_type = operation_type
         self.flag_systems = flag_systems
+        # Flag column names of the dataset being processed, keyed by role. Set at the start of `run`.
+        self.flag_column_roles: dict[FlagRole, str] = {}
 
     @abstractmethod
     def apply(
@@ -56,21 +62,16 @@ class OperationPipeline(ABC):
         """
         pass
 
-    @abstractmethod
-    def get_flag_column(self, column: str) -> str | None:
-        """Determine the operation-specific flag column name for a given data column.
-
-        This is the flag column the operation writes during processing (e.g. the QC flag column for
-        quality control). Operations that do not produce their own flags (aggregation, derivation)
-        return None.
-
-        Args:
-            column: Name of the data column.
+    def get_flag_column(self) -> str | None:
+        """Get the name of the flag column this operation writes during processing.
 
         Returns:
-            Name of the corresponding flag column, or None if this operation does not produce flags.
+            Name of the flag column, or None if this operation does not produce flags or the dataset does not declare
+            a flag column for it.
         """
-        pass
+        if self.flag_role is None:
+            return None
+        return self.flag_column_roles.get(self.flag_role)
 
     @abstractmethod
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series | pl.Expr:
@@ -115,6 +116,7 @@ class OperationPipeline(ABC):
             The updated TimeFrame after all operations and flag updates.
         """
         tf = container.data
+        self.flag_column_roles = container.flag_column_roles
 
         # Operations that process existing data write their flags onto it during ``apply`` (e.g. a correction writes
         # the corrections flag column), so make sure those flag columns exist first.
@@ -174,7 +176,7 @@ class OperationPipeline(ABC):
             col_name: Name of the parent column.
             flag_name: Type of flag to apply (must exist in the associated flag system).
         """
-        flag_column = self.get_flag_column(col_name)
+        flag_column = self.get_flag_column()
         if flag_column is None or flag_column not in tf.flag_columns:
             return
 

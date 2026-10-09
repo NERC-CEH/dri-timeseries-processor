@@ -9,6 +9,7 @@ from dritimeseriesprocessor.models.api_models.annotation import HasAnnotationIte
 from dritimeseriesprocessor.models.api_models.data_processing_configuration import DataProcessingConfiguration
 from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
 from dritimeseriesprocessor.models.api_models.dataset_timeseries import TimeSeriesDatasetItem, TimeSeriesDatasetResponse
+from dritimeseriesprocessor.models.api_models.flags import FlagScheme
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.processing_config import (
@@ -22,11 +23,13 @@ from dritimeseriesprocessor.models.mappers.api_to_domain import (
     extract_arguments,
     extract_inputs,
     map_dataset_item,
+    map_flag_column_roles,
+    map_flag_scheme_role,
     map_processing_config_item,
     map_processing_method_config,
     map_site_metadata,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, FlagRole, ProcessingLevel
 
 DATASET_URI = "http://fdri.ceh.ac.uk/id/dataset"
 PARAMETER_URI = "http://fdri.ceh.ac.uk/ref/common/parameter"
@@ -97,6 +100,7 @@ def make_container() -> TimeSeriesContainer:
 
 class TestMapDatasetItem:
     def test_dataset_with_method(self) -> None:
+        """Tests that a time series dataset with a processing plan is mapped to a container."""
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_rn_1day_processed.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
@@ -104,7 +108,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata, {})  # type: ignore[arg-type]
+        result = map_dataset_item(api_model.items[0], site_metadata, {}, {})  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
@@ -129,6 +133,7 @@ class TestMapDatasetItem:
         assert result == expected
 
     def test_dataset_no_method(self) -> None:
+        """Tests that a time series dataset with no processing plan is mapped to a container."""
         filename = TEST_DATA_API_VALID / "dataset_timeseries" / "cosmos_bunny_ta_30min_raw.json"
         api_model = valid_parses(load_json_file, filename, TimeSeriesDatasetResponse)
 
@@ -136,7 +141,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "BUNNY"
         site_metadata = {"http://fdri.ceh.ac.uk/id/site/cosmos-bunny": site_metadata}
 
-        result = map_dataset_item(api_model.items[0], site_metadata, {})  # type: ignore[arg-type]
+        result = map_dataset_item(api_model.items[0], site_metadata, {}, {})  # type: ignore[arg-type]
 
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
@@ -160,6 +165,7 @@ class TestMapDatasetItem:
         assert result == expected
 
     def test_observation_dataset_item_source_fields_are_none(self) -> None:
+        """Tests that an observation dataset is mapped with no source bucket, dataset or column."""
         item = ObservationDatasetItem.model_validate(
             {
                 "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
@@ -186,7 +192,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, all_site_metadata, {})  # type: ignore[arg-type]
+        result = map_dataset_item(item, all_site_metadata, {}, {})  # type: ignore[arg-type]
 
         assert result.source_bucket is None
         assert result.source_dataset is None
@@ -194,6 +200,7 @@ class TestMapDatasetItem:
         assert result.time_column_name is None
 
     def test_observation_dataset_populates_dataset_type_and_distribution_url(self) -> None:
+        """Tests that an observation dataset gets its dataset type and S3 location from the distribution URL."""
         item = TimeSeriesDatasetItem.model_validate(
             {
                 "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
@@ -226,7 +233,7 @@ class TestMapDatasetItem:
         site_metadata.alt_id = "flux-plynl"
         all_site_metadata = {"http://fdri.ceh.ac.uk/id/site/flux-plynl": site_metadata}
 
-        result = map_dataset_item(item, all_site_metadata, {})  # type: ignore[arg-type]
+        result = map_dataset_item(item, all_site_metadata, {}, {})  # type: ignore[arg-type]
 
         assert result.dataset_type == DatasetType.OBSERVATION_DATASET
         assert result.distribution_url == "s3://ukceh-dri-staging-ingested/Flux/"
@@ -369,6 +376,83 @@ class TestMapDatasetItem:
         method_config.params["swin"] = MagicMock()
 
         assert item.all_dependencies() == ["dep1"]
+
+
+def make_flag_scheme(flag_type: str) -> FlagScheme:
+    """Build a flag scheme API model with the given flag type."""
+    return FlagScheme.model_validate(
+        {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/fdri_quality_control_flag_scheme",
+            "title": ["FDRI Quality Control Flag Scheme"],
+            "hasTopConcept": [],
+            "flagType": {"@id": f"http://fdri.ceh.ac.uk/ref/common/flag_type/{flag_type}"},
+        }
+    )
+
+
+class TestMapFlagSchemeRole:
+    @pytest.mark.parametrize(
+        "flag_type,expected",
+        [
+            ("core_flags", FlagRole.CORE),
+            ("quality_control_flags", FlagRole.QUALITY_CONTROL),
+            ("correction_flags", FlagRole.CORRECTION),
+            ("infill_flags", FlagRole.INFILL),
+        ],
+    )
+    def test_known_flag_type(self, flag_type: str, expected: FlagRole) -> None:
+        """Tests that each flag type in the metadata vocabulary maps to its role."""
+        assert map_flag_scheme_role(make_flag_scheme(flag_type)) == expected
+
+    def test_unknown_flag_type_raises(self) -> None:
+        """Tests that a flag type the processor doesn't know about raises an error naming the scheme."""
+        with pytest.raises(ValueError, match="fdri_quality_control_flag_scheme has an unknown flag type: mystery"):
+            map_flag_scheme_role(make_flag_scheme("mystery"))
+
+
+class TestMapFlagColumnRoles:
+    FLAG_SYSTEM_ROLES = {
+        "core_flag_scheme": FlagRole.CORE,
+        "fdri_quality_control_flag_scheme": FlagRole.QUALITY_CONTROL,
+        "cosmos_quality_control_flag_scheme": FlagRole.QUALITY_CONTROL,
+        "fdri_infill_flag_scheme": FlagRole.INFILL,
+    }
+
+    def test_flag_columns_keyed_by_role(self) -> None:
+        """Tests that each declared flag column is keyed by its scheme's role, whatever the column is called."""
+        flag_column_schemes = {
+            "Stage_Avg_CORE_FLAG": "core_flag_scheme",
+            "Stage_Avg_QC_FLAG": "fdri_quality_control_flag_scheme",
+            "Stage_Avg_INFILL_FLAG": "fdri_infill_flag_scheme",
+        }
+
+        result = map_flag_column_roles("dataset", flag_column_schemes, self.FLAG_SYSTEM_ROLES)
+
+        assert result == {
+            FlagRole.CORE: "Stage_Avg_CORE_FLAG",
+            FlagRole.QUALITY_CONTROL: "Stage_Avg_QC_FLAG",
+            FlagRole.INFILL: "Stage_Avg_INFILL_FLAG",
+        }
+
+    def test_no_flag_columns(self) -> None:
+        """Tests that a dataset with no flag columns gets no roles."""
+        assert map_flag_column_roles("dataset", {}, self.FLAG_SYSTEM_ROLES) == {}
+
+    def test_two_columns_with_the_same_role_raises(self) -> None:
+        """Tests that a dataset with two flag columns of the same role raises an error naming both columns."""
+        flag_column_schemes = {
+            "TA_CORE_FLAG": "core_flag_scheme",
+            "TA_QC_FLAG": "fdri_quality_control_flag_scheme",
+            "TA_OTHER_QC_FLAG": "cosmos_quality_control_flag_scheme",
+        }
+
+        with pytest.raises(ValueError, match="dataset has more than one .* TA_QC_FLAG, TA_OTHER_QC_FLAG"):
+            map_flag_column_roles("dataset", flag_column_schemes, self.FLAG_SYSTEM_ROLES)
+
+    def test_no_core_flag_column_raises(self) -> None:
+        """Tests that a dataset declaring flag columns but no core flag column raises an error."""
+        with pytest.raises(ValueError, match="no core flag column"):
+            map_flag_column_roles("dataset", {"TA_QC_FLAG": "fdri_quality_control_flag_scheme"}, self.FLAG_SYSTEM_ROLES)
 
 
 class TestExtractArguments:

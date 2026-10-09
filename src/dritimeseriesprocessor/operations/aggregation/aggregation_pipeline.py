@@ -14,9 +14,8 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.aggregation.aggregation_methods import AggregationMethod
-from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +69,6 @@ class AggregationPipeline(OperationPipeline):
         agg_tf = method.run(agg_tf, config)
         return agg_tf
 
-    def get_flag_column(self, column: str) -> str | None:
-        """Aggregation does not produce its own flag column."""
-        return None
-
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Not used by aggregation - flags are not applied."""
         raise NotImplementedError
@@ -88,7 +83,7 @@ class AggregationPipeline(OperationPipeline):
             Timeframe with updated core flags
         """
         col_name = tf.metadata["column_name"]
-        core_flag_col_name = core_flag_column_name(col_name)
+        core_flag_col_name = self.flag_column_roles[FlagRole.CORE]
         actual_count_col_name = f"count_{col_name}"
         expected_count_col_name = f"expected_count_{tf.time_name}"
         valid_col_name = f"valid_{col_name}"

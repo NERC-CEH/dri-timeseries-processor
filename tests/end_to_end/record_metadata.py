@@ -23,11 +23,12 @@ This script is not used during normal test execution. Instead, it should be run 
 
 Once generated, the JSON files are treated as static test inputs and are loaded by the test suite in place of real API
 calls.
+
+Test cases listed in ``SKIPPED_TEST_CASES`` are not recorded, and their existing fixtures are kept. See the note there.
 """
 
 import json
 import logging
-import shutil
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +48,14 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# Test cases whose metadata no longer exists in the metadata API, so can't be recorded again. Their fixtures are kept
+# as they are, and recording them is skipped.
+#
+# NOTE: flux-plynl-eddypro - the flux sites and datasets were test records used while the system was being built, and
+#   have since been removed from the metadata API. There are no live flux sites yet. Remove this entry and re-record
+#   once real flux metadata is available.
+SKIPPED_TEST_CASES = {"flux-plynl-eddypro"}
 
 
 class MetadataCacheSession(requests.Session):
@@ -123,14 +132,33 @@ def rewrite_buckets(obj: Any) -> Any:
     return obj
 
 
-def reset_metadata_fixture_dir(path: Path) -> None:
-    """Delete and recreate the metadata fixture directory.
+def is_fixture_for_sites(fixture_path: Path, site_ids: set[str]) -> bool:
+    """Check whether a recorded fixture belongs to any of the given sites, using the request URL it was recorded from.
+
+    Args:
+        fixture_path: Path to a recorded metadata fixture.
+        site_ids: Site ids, e.g. `flux-plynl`.
+
+    Returns:
+        True if the fixture's request URL mentions one of the sites.
+    """
+    request_url = load_json_file(fixture_path).get("meta", {}).get("@id", "")
+    return any(site_id in request_url for site_id in site_ids)
+
+
+def reset_metadata_fixture_dir(path: Path, kept_site_ids: set[str]) -> None:
+    """Delete the recorded fixtures in the metadata fixture directory, apart from those for the kept sites.
 
     Args:
         path: Directory path to reset.
+        kept_site_ids: Sites whose fixtures are kept, because their test cases are not being recorded.
     """
-    shutil.rmtree(path, ignore_errors=True)
     path.mkdir(parents=True, exist_ok=True)
+    for fixture_path in path.glob("*.json"):
+        if is_fixture_for_sites(fixture_path, kept_site_ids):
+            logger.info(f"Keeping fixture for a skipped test case: {fixture_path.name}")
+        else:
+            fixture_path.unlink()
 
 
 def main() -> None:
@@ -138,9 +166,10 @@ def main() -> None:
 
     This function:
     1. Creates a metadata API client that uses MetadataCacheSession to intercept outgoing metadata API requests
-    2. Clears and recreates the TEST_DATA_MOCK_METADATA directory.
-    3. Loads E2E test cases from test_cases.json.
-    4. For each test case, builds a DatasetDependencyGraph, which triggers the metadata lookups that need to be cached.
+    2. Loads E2E test cases from test_cases.json.
+    3. Clears the TEST_DATA_MOCK_METADATA directory, apart from the fixtures for the sites of skipped test cases.
+    4. For each test case that is not skipped, builds a DatasetDependencyGraph, which triggers the metadata lookups that
+       need to be cached.
 
     After this completes, the E2E test suite can be configured to use the recorded JSON fixtures instead of calling
     the live metadata API.
@@ -151,30 +180,42 @@ def main() -> None:
     api_manager = MetadataAPIManager(cfg.metadata_api_url, session)
     metadata_router = MetadataRouter(cfg.metadata_api_url, api_manager)
 
+    test_cases = load_json_file(END_TO_END / "test_cases.json")["test_cases"]
+    skipped_site_ids = {
+        site_id for test_case in test_cases if test_case["id"] in SKIPPED_TEST_CASES for site_id in test_case["sites"]
+    }
+
     # reset metadata json
-    reset_metadata_fixture_dir(TEST_DATA_MOCK_METADATA)
+    reset_metadata_fixture_dir(TEST_DATA_MOCK_METADATA, skipped_site_ids)
 
     # for each test case, build dependency graph to trigger the metadata caching
-    test_cases = load_json_file(END_TO_END / "test_cases.json")["test_cases"]
     for test_case in test_cases:
-        logger.info(f"Recording metadata for test_case: {test_case['id']}")
-        # the downstream processes requires full site uris rather than standalone IDs
-        site_uris = [SITE_URI + "/" + site for site in test_case["sites"]]
+        if test_case["id"] in SKIPPED_TEST_CASES:
+            logger.info(f"Skipping recording for test_case: {test_case['id']} - see SKIPPED_TEST_CASES")
+            continue
+        try:
+            logger.info(f"Recording metadata for test_case: {test_case['id']}")
+            # the downstream processes requires full site uris rather than standalone IDs
+            site_uris = [SITE_URI + "/" + site for site in test_case["sites"]]
 
-        # discover all the variables that are needed for this test case
-        variables = test_case["measured_variables"] + test_case["derived_variables"] + test_case["aggregated_variables"]
-
-        # build the graph!
-        selection: list[Selection] = [
-            DimensionSelection(
-                network=test_case["network"],
-                sites=site_uris,
-                variables=variables,
-                periodicities=test_case["periodicities"],
+            # discover all the variables that are needed for this test case
+            variables = (
+                test_case["measured_variables"] + test_case["derived_variables"] + test_case["aggregated_variables"]
             )
-        ]
-        graph = DatasetDependencyGraph(metadata_router, selection)
-        graph.build()
+
+            # build the graph!
+            selection: list[Selection] = [
+                DimensionSelection(
+                    network=test_case["network"],
+                    sites=site_uris,
+                    variables=variables,
+                    periodicities=test_case["periodicities"],
+                )
+            ]
+            graph = DatasetDependencyGraph(metadata_router, selection)
+            graph.build()
+        except Exception:
+            logger.exception(f"Metadata recording failed for test_case: {test_case['id']}")
 
 
 if __name__ == "__main__":
