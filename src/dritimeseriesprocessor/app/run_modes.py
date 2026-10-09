@@ -93,21 +93,28 @@ class RunMode(ABC):
 
 
 class ListSitesRun(RunMode):
-    """Write the IDs of a network's sites that were open during a date range to a JSON file.
+    """Write the IDs of a network's sites that were open during a date range to a JSON file. With no date range,
+    every site the network has ever had is written, including closed ones.
 
     Argo Workflows captures the file as the step result, to pass to later workflow steps.
     """
 
     OUTPUT_PATH = "/tmp/sites.json"
 
-    def __init__(self, cfg: AppConfig, selection: ListSitesSelection, start_date: datetime, end_date: datetime):
+    def __init__(
+        self,
+        cfg: AppConfig,
+        selection: ListSitesSelection,
+        start_date: datetime | None,
+        end_date: datetime | None,
+    ):
         """Initialise the run.
 
         Args:
             cfg: Application configuration.
             selection: The network, and optionally the sites (still checked for network membership), to list.
-            start_date: Start of the date range to find open sites for (inclusive).
-            end_date: End of the date range to find open sites for (inclusive).
+            start_date: Start of the date range to find open sites for (inclusive), or None to skip the date check.
+            end_date: End of the date range to find open sites for (inclusive), or None to skip the date check.
         """
         super().__init__(cfg)
         self.selection = selection
@@ -115,7 +122,10 @@ class ListSitesRun(RunMode):
         self.end_date = end_date
 
     def run(self) -> None:
-        """List the open sites and write their IDs to `OUTPUT_PATH`."""
+        """List the open sites and write their IDs to `OUTPUT_PATH`.
+
+        `SiteMetadata.is_active` treats a missing date as no limit, so with no dates every site is kept.
+        """
         logger.info(
             f"Listing sites: start_date={self.start_date}, end_date={self.end_date}, network={self.selection.network}"
         )
