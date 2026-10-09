@@ -374,6 +374,20 @@ The `LOAD` step creates the declared flag columns on the raw data (`initialise_f
 creates every declared flag column on each operation's result as well. Flag columns that already exist are left
 untouched, so flags written by earlier steps are kept.
 
+Flag column names come from the metadata. Each flag column's role (`FlagRole`: core, quality control, correction or
+infill) is the `flagType` of its flag scheme (e.g. `http://fdri.ceh.ac.uk/ref/common/flag_type/quality_control_flags`).
+The roles are stored on the container as `flag_column_roles`, and each operation looks up the column it writes, and
+the core flag column, by role.
+
+These checks run when the dependency graph is built (`map_flag_scheme_role`, `map_flag_column_roles`), and stop the
+run if they fail:
+
+- every flag scheme has a known `flagType`
+- a dataset has at most one flag column per role
+
+A dataset doesn't have to declare a core flag column. Without one, operations still write their own flag columns
+(e.g. QC still flags and removes data), but no core flags are set.
+
 #### Saving strategy - pooling and concurrent saves
 
 To improve performance while processing multiple datasets, instead of saving each dataset individually after it's

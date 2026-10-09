@@ -9,10 +9,9 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.flags.flag_methods import update_quality_control_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name, qc_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
 from dritimeseriesprocessor.utils.polars_utils import not_missing_expr
 
 logger = logging.getLogger(__name__)
@@ -20,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 class QCPipeline(OperationPipeline):
     """Pipeline for running Quality Control (QC) checks on a TimeSeriesContainer."""
+
+    flag_role = FlagRole.QUALITY_CONTROL
 
     def __init__(self, flag_systems: dict[str, dict[str, int]]):
         super().__init__(ConfigurationType.QUALITY_CONTROL, flag_systems)
@@ -73,17 +74,6 @@ class QCPipeline(OperationPipeline):
 
         return result
 
-    def get_flag_column(self, column: str) -> str:
-        """Determine the QC flag column name for a given data column.
-
-        Args:
-            column: Name of the data column.
-
-        Returns:
-            Name of the corresponding QC flag column.
-        """
-        return qc_flag_column_name(column)
-
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Return an object that can be used to determine the mask for adding a flag to the flag column.
 
@@ -108,7 +98,7 @@ class QCPipeline(OperationPipeline):
         Returns:
             Timeframe with updated core flags
         """
-        return update_quality_control_core_flags(tf)
+        return update_quality_control_core_flags(tf, self.get_core_flag_column(), self.get_flag_column())
 
     @staticmethod
     def get_qc_result_column(column: str) -> str:
@@ -122,8 +112,7 @@ class QCPipeline(OperationPipeline):
         """
         return f"__qc_result_{column}"
 
-    @staticmethod
-    def remove_flagged_data(tf: ts.TimeFrame) -> ts.TimeFrame:
+    def remove_flagged_data(self, tf: ts.TimeFrame) -> ts.TimeFrame:
         """Remove data that has failed any QC check, and add the "removed" core flag to the values that were removed.
 
         Only values that were present get the "removed" flag. A value that was already null had nothing to remove,
@@ -133,10 +122,14 @@ class QCPipeline(OperationPipeline):
             tf: TimeFrame to remove bad data from.
 
         Returns:
-            TimeFrame with flagged data removed.
+            TimeFrame with flagged data removed, or unchanged if the dataset has no QC flag column.
         """
+        flag_col = self.get_flag_column()
+        if flag_col is None:
+            logger.warning("Dataset has no QC flag column, so no data has been removed")
+            return tf
+
         col_name = tf.metadata["column_name"]
-        flag_col = qc_flag_column_name(col_name)
         failed_qc = pl.col(flag_col) > 0
 
         # Take into account values that were already NULL
@@ -148,7 +141,7 @@ class QCPipeline(OperationPipeline):
 
         # Set the removed flag - this is the only point we can tell whether the data was removed by us, or was null to
         # start with
-        core_flag_col = core_flag_column_name(col_name)
-        if core_flag_col in tf.flag_columns:
+        core_flag_col = self.get_core_flag_column()
+        if core_flag_col is not None:
             tf.add_flag(core_flag_col, "removed", removed)
         return tf

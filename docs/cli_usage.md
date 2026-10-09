@@ -27,7 +27,7 @@ The CLI supports four processing modes and one utility command:
 2. **cross-product** (`from-cross-product`): Build dataset combinations across dimensions.
 3. **from-datasets** (`from-datasets`): Request datasets directly by their metadata API ID.
 4. **historic** (`historic`): Process everything for sites over their full operating dates.
-5. **list-sites**: List all active sites for a network.
+5. **list-sites**: List all active sites for a network, or with `--historic`, every site it has ever had.
 
 The processing modes are **mutually exclusive**.
 
@@ -56,8 +56,8 @@ python -m dritimeseriesprocessor from-selection
 
 ```bash
 python -m dritimeseriesprocessor from-selection
-  --network cosmos 
-  --lookback P2D 
+  --network cosmos
+  --lookback P2D
   --selection cosmos-alic1 TA PT30M
   --selection cosmos-bunny PA PT30M
   --selection cosmos-bunny PRECIP P1D
@@ -83,11 +83,11 @@ Bulk processing across dimensions. Omitted dimensions process all available valu
 
 ```bash
 python -m dritimeseriesprocessor from-cross-product
-  --network NETWORK 
-  [--lookback DURATION | --start-date YYYY-MM-DD] 
-  [--end-date YYYY-MM-DD] 
-  [--sites SITE1 SITE2 ...] 
-  [--variables VAR1 VAR2 ...] 
+  --network NETWORK
+  [--lookback DURATION | --start-date YYYY-MM-DD]
+  [--end-date YYYY-MM-DD]
+  [--sites SITE1 SITE2 ...]
+  [--variables VAR1 VAR2 ...]
   [--periodicities PER1 PER2 ...]
 ```
 
@@ -95,14 +95,14 @@ python -m dritimeseriesprocessor from-cross-product
 
 ```bash
 python -m dritimeseriesprocessor from-cross-product
-  --network cosmos 
-  --lookback P2D 
+  --network cosmos
+  --lookback P2D
   --sites cosmos-alic1 cosmos-bunny
-  --variables TA PA 
+  --variables TA PA
   --periodicities PT30M
 ```
 
-This processes **all combinations**: 
+This processes **all combinations**:
 
 * cosmos-alic1 + TA + PT30M
 * cosmos-alic1 + PA + PT30M
@@ -117,8 +117,8 @@ python -m dritimeseriesprocessor cross-product --network cosmos --lookback P7D
 
 # Process ALL sites for specific variables
 python -m dritimeseriesprocessor cross-product
-  --network cosmos 
-  --lookback P7D 
+  --network cosmos
+  --lookback P7D
   --variables TA PA
 ```
 
@@ -169,6 +169,10 @@ not overlap the requested date window are excluded.
 By default, all sites for the network are listed. Pass `--sites` to limit the result to a specific set of sites -
 any listed site from another network is excluded too (see [Site Names](#site-names)).
 
+Pass `--historic` to skip the date check and list every site the network has ever had, including closed ones. It
+cannot be used together with `--lookback`, `--start-date` or `--end-date`. Without `--historic` or any date
+arguments, a default `P2D` lookback from today's date applies.
+
 Intended for use in Argo Workflows fan-out steps, where the output is captured as a step result and passed as input
 to downstream processing steps.
 
@@ -178,8 +182,7 @@ to downstream processing steps.
 python -m dritimeseriesprocessor list-sites
   --network NETWORK
   [--sites SITE [SITE ...]]
-  [--lookback DURATION | --start-date YYYY-MM-DD]
-  [--end-date YYYY-MM-DD]
+  [--historic | [--lookback DURATION | --start-date YYYY-MM-DD] [--end-date YYYY-MM-DD]]
 ```
 
 **Example**:
@@ -202,6 +205,14 @@ python -m dritimeseriesprocessor list-sites --network cosmos --sites cosmos-alic
 
 This limits the result to just `cosmos-alic1` and `cosmos-bunny` (still subject to network membership and the
 date window).
+
+**Example with `--historic`**:
+
+```bash
+python -m dritimeseriesprocessor list-sites --network cosmos --historic
+```
+
+This lists every `cosmos` site, open or closed, for example to fan out [historic mode](#historic-mode) runs.
 
 ### Historic Mode
 

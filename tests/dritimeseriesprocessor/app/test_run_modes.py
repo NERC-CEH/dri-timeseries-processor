@@ -121,9 +121,16 @@ class TestListSitesRun:
         monkeypatch.setattr(ListSitesRun, "OUTPUT_PATH", str(output_path))
         return output_path
 
-    def _run(self, sites: list[SiteMetadata], selection: ListSitesSelection | None = None) -> MagicMock:
-        """Run list-sites for January 2024 against the given site metadata, and return the site lookup used."""
-        run = ListSitesRun(CONFIG, selection or ListSitesSelection(network="cosmos"), START, END)
+    def _run(
+        self,
+        sites: list[SiteMetadata],
+        selection: ListSitesSelection | None = None,
+        start_date: datetime | None = START,
+        end_date: datetime | None = END,
+    ) -> MagicMock:
+        """Run list-sites (for January 2024 by default) against the given site metadata, and return the site lookup
+        used."""
+        run = ListSitesRun(CONFIG, selection or ListSitesSelection(network="cosmos"), start_date, end_date)
         fetch_sites = fake_fetch_sites(sites)
         run.fetch_sites = fetch_sites
         run.run()
@@ -152,6 +159,26 @@ class TestListSitesRun:
         self._run([make_site("cosmos-alic1", datetime(2024, 1, 31, 10, 30))])
 
         assert json.loads(output_path.read_text()) == ["cosmos-alic1"]
+
+    def test_no_dates_lists_every_site(self, output_path: Path) -> None:
+        """Tests that with no dates, every site is listed, including ones that have closed or not yet opened."""
+        self._run(
+            [
+                make_site("cosmos-closed", datetime(2000, 1, 1), datetime(2023, 6, 1)),
+                make_site("cosmos-alic1", datetime(2000, 1, 1)),
+                make_site("cosmos-future", datetime(2099, 1, 1)),
+                make_site("cosmos-undated"),
+            ],
+            start_date=None,
+            end_date=None,
+        )
+
+        assert json.loads(output_path.read_text()) == [
+            "cosmos-closed",
+            "cosmos-alic1",
+            "cosmos-future",
+            "cosmos-undated",
+        ]
 
     def test_no_sites_writes_an_empty_list(self, output_path: Path) -> None:
         """Tests that a network with no sites writes an empty list."""

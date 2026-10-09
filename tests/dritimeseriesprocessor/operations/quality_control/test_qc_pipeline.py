@@ -17,7 +17,7 @@ from dritimeseriesprocessor.operations.flags.flag_methods import ensure_flag_col
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_methods import QcMethod
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
 
 
 @pytest.fixture
@@ -31,10 +31,10 @@ def mock_timeframe() -> MagicMock:
 
 class TestGetFlagColumn:
     def test_get_qc_flag_column(self) -> None:
-        """Test that correct flag column name is returned."""
+        """Tests that the dataset's quality control flag column is returned, whatever it is called."""
         pipeline = QCPipeline({})
-        result = pipeline.get_flag_column("temperature")
-        assert result == "temperature_QC_FLAG"
+        pipeline.flag_column_roles = {FlagRole.CORE: "Stage_CORE_FLAG", FlagRole.QUALITY_CONTROL: "Stage_QC_FLAG"}
+        assert pipeline.get_flag_column() == "Stage_QC_FLAG"
 
 
 class TestComputeFlagMask:
@@ -199,6 +199,11 @@ class TestRunCoreFlags:
             "value_QC_FLAG": "qc_flags",
             "value_CORRS_FLAG": "corrs_flags",
         }
+        container.flag_column_roles = {
+            FlagRole.CORE: "value_CORE_FLAG",
+            FlagRole.QUALITY_CONTROL: "value_QC_FLAG",
+            FlagRole.CORRECTION: "value_CORRS_FLAG",
+        }
 
         tf = create_timeframe([10.0, 200.0, 30.0, 300.0], column_name="value")
         ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
@@ -233,6 +238,7 @@ class TestRunCoreFlags:
         """Tests that a QC check flagging a value that was already null does not give it the 'removed' core flag."""
         container = make_time_series_container("test")
         container.flag_column_schemes = {"value_CORE_FLAG": "core_flags", "value_QC_FLAG": "qc_flags"}
+        container.flag_column_roles = {FlagRole.CORE: "value_CORE_FLAG", FlagRole.QUALITY_CONTROL: "value_QC_FLAG"}
         tf = create_timeframe([10.0, None, 30.0], column_name="value")
         ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
         # Loading marks the value that was already null as missing.
@@ -262,7 +268,7 @@ class TestRunCoreFlags:
 
 class TestCoreFlagUpdater:
     def test_calls_update_qc_core_flags(self, mock_timeframe: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that update_quality_control_core_flags is called."""
+        """Tests that update_quality_control_core_flags is called with the dataset's core and QC flag columns."""
         mock_method = MagicMock(return_value=MagicMock(spec=ts.TimeFrame))
         monkeypatch.setattr(
             "dritimeseriesprocessor.operations.quality_control.qc_pipeline.update_quality_control_core_flags",
@@ -270,45 +276,64 @@ class TestCoreFlagUpdater:
         )
 
         pipeline = QCPipeline({})
+        pipeline.flag_column_roles = {FlagRole.CORE: "value_CORE_FLAG", FlagRole.QUALITY_CONTROL: "value_QC_FLAG"}
         pipeline.core_flag_updater(mock_timeframe)
-        mock_method.assert_called_once_with(mock_timeframe)
+        mock_method.assert_called_once_with(mock_timeframe, "value_CORE_FLAG", "value_QC_FLAG")
 
 
 class TestRemoveFlaggedData:
-    def _make_qc_timeframe(self, values: list, flags: list, col: str = "value") -> ts.TimeFrame:
-        tf = create_timeframe(values, column_name=col)
-        tf = tf.with_metadata({"column_name": col})
+    CORE_FLAG_COL = "level_CORE_FLAG"
+    QC_FLAG_COL = "level_QC_FLAG"
+
+    def _make_pipeline(self) -> QCPipeline:
+        """Create a QC pipeline for a dataset whose flag column names don't start with the data column name."""
+        pipeline = QCPipeline({})
+        pipeline.flag_column_roles = {FlagRole.CORE: self.CORE_FLAG_COL, FlagRole.QUALITY_CONTROL: self.QC_FLAG_COL}
+        return pipeline
+
+    def _make_qc_timeframe(self, values: list, flags: list) -> ts.TimeFrame:
+        """Create a TimeFrame with core and QC flag columns, where rows with a non-zero entry in `flags` failed QC."""
+        tf = create_timeframe(values, column_name="value")
+        tf = tf.with_metadata({"column_name": "value"})
+        tf.register_flag_system("core_flags", {"removed": 8})
+        tf.init_flag_column("core_flags", self.CORE_FLAG_COL)
         tf.register_flag_system("qc_flags", {"range": 1})
-        tf.init_flag_column("qc_flags", f"{col}_QC_FLAG")
-        flag_col = f"{col}_QC_FLAG"
-        for i, val in enumerate(flags):
-            if val > 0:
-                tf.add_flag(flag_col, "range", pl.Series([j == i for j in range(len(flags))]))
+        tf.init_flag_column("qc_flags", self.QC_FLAG_COL)
+        tf.add_flag(self.QC_FLAG_COL, "range", pl.Series([flag > 0 for flag in flags]))
         return tf
 
     def test_nulls_values_where_flag_is_nonzero(self) -> None:
-        """Tests that values are set to null where the QC flag is greater than zero."""
+        """Tests that values are set to null, and given the 'removed' core flag, where the QC flag is above zero."""
         tf = self._make_qc_timeframe(values=[1.0, 2.0, 3.0], flags=[0, 1, 0])
 
-        result = QCPipeline.remove_flagged_data(tf)
+        result = self._make_pipeline().remove_flagged_data(tf)
 
-        col = result.df["value"].to_list()
-        assert col[0] == 1.0
-        assert col[1] is None
-        assert col[2] == 3.0
+        assert result.df["value"].to_list() == [1.0, None, 3.0]
+        assert result.df[self.CORE_FLAG_COL].to_list() == [0, 8, 0]
 
     def test_leaves_values_untouched_when_all_flags_zero(self) -> None:
         """Tests that no values are removed when all QC flags are zero."""
         tf = self._make_qc_timeframe(values=[1.0, 2.0, 3.0], flags=[0, 0, 0])
 
-        result = QCPipeline.remove_flagged_data(tf)
+        result = self._make_pipeline().remove_flagged_data(tf)
 
         assert result.df["value"].to_list() == [1.0, 2.0, 3.0]
+        assert result.df[self.CORE_FLAG_COL].to_list() == [0, 0, 0]
 
     def test_nulls_all_values_when_all_flags_nonzero(self) -> None:
         """Tests that all values are set to null when every row has a QC flag."""
         tf = self._make_qc_timeframe(values=[1.0, 2.0, 3.0], flags=[1, 1, 1])
 
-        result = QCPipeline.remove_flagged_data(tf)
+        result = self._make_pipeline().remove_flagged_data(tf)
 
-        assert all(v is None for v in result.df["value"].to_list())
+        assert result.df["value"].to_list() == [None, None, None]
+
+    def test_leaves_data_unchanged_when_dataset_has_no_qc_flag_column(self) -> None:
+        """Tests that no data is removed when the dataset declares no QC flag column."""
+        tf = self._make_qc_timeframe(values=[1.0, 2.0, 3.0], flags=[1, 1, 1])
+        pipeline = self._make_pipeline()
+        pipeline.flag_column_roles = {FlagRole.CORE: self.CORE_FLAG_COL}
+
+        result = pipeline.remove_flagged_data(tf)
+
+        assert result.df["value"].to_list() == [1.0, 2.0, 3.0]

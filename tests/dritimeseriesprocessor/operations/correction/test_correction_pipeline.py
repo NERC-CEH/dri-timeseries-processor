@@ -9,6 +9,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.operations.correction.correction_methods import CorrectionMethod
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
 from dritimeseriesprocessor.operations.flags.flag_methods import update_corrections_core_flags
+from dritimeseriesprocessor.utils.enums import FlagRole
 from utils.data_creation import create_timeframe
 
 
@@ -23,10 +24,10 @@ def mock_timeframe() -> MagicMock:
 
 class TestGetFlagColumn:
     def test_get_correction_flag_column(self) -> None:
-        """Test that correct flag column name is returned."""
+        """Tests that the dataset's corrections flag column is returned, whatever it is called."""
         pipeline = CorrectionPipeline({})
-        result = pipeline.get_flag_column("temperature")
-        assert result == "temperature_CORRS_FLAG"
+        pipeline.flag_column_roles = {FlagRole.CORE: "Stage_CORE_FLAG", FlagRole.CORRECTION: "Stage_CORRS_FLAG"}
+        assert pipeline.get_flag_column() == "Stage_CORRS_FLAG"
 
 
 class TestComputeFlagMask:
@@ -90,7 +91,8 @@ class TestUncoveredTimeValues:
         )
 
         pipeline = CorrectionPipeline({"core": core_flags})
-        result = update_corrections_core_flags(pipeline.apply(pa, config, {}))
+        pipeline.flag_column_roles = {FlagRole.CORE: "pa_CORE_FLAG", FlagRole.CORRECTION: "pa_CORRS_FLAG"}
+        result = update_corrections_core_flags(pipeline.apply(pa, config, {}), "pa_CORE_FLAG", "pa_CORRS_FLAG")
 
         # The correction was attempted on every row, so all three carry the corrections flag
         assert result.df["pa_CORRS_FLAG"].to_list() == [2, 2, 2]
@@ -101,7 +103,7 @@ class TestCoreFlagUpdater:
     def test_calls_update_corrections_core_flags(
         self, mock_timeframe: MagicMock, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """Test that update_corrections_core_flags is called."""
+        """Tests that update_corrections_core_flags is called with the dataset's core and corrections flag columns."""
         mock_method = MagicMock(return_value=MagicMock(spec=ts.TimeFrame))
         monkeypatch.setattr(
             "dritimeseriesprocessor.operations.correction.correction_pipeline.update_corrections_core_flags",
@@ -109,5 +111,6 @@ class TestCoreFlagUpdater:
         )
 
         pipeline = CorrectionPipeline({})
+        pipeline.flag_column_roles = {FlagRole.CORE: "value_CORE_FLAG", FlagRole.CORRECTION: "value_CORRS_FLAG"}
         pipeline.core_flag_updater(mock_timeframe)
-        mock_method.assert_called_once_with(mock_timeframe)
+        mock_method.assert_called_once_with(mock_timeframe, "value_CORE_FLAG", "value_CORRS_FLAG")

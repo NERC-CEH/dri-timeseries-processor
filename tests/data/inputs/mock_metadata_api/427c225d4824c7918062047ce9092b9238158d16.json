@@ -59,6 +59,7 @@
           },
           "periodicity": "PT30M",
           "resolution": "PT30M",
+          "minValue": 0.0,
           "valueTimeAnchor": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/prec",
             "prefLabel": [
