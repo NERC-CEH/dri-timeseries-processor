@@ -9,6 +9,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import DataPr
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
+from dritimeseriesprocessor.utils.enums import FlagRole
 from utils.data_creation import create_timeframe
 
 
@@ -23,10 +24,10 @@ def mock_timeframe() -> MagicMock:
 
 class TestGetFlagColumn:
     def test_get_infill_flag_column(self) -> None:
-        """Test that correct flag column name is returned."""
+        """Tests that the dataset's infill flag column is returned, whatever it is called."""
         pipeline = InfillPipeline({})
-        result = pipeline.get_flag_column("temperature")
-        assert result == "temperature_INFILL_FLAG"
+        pipeline.flag_column_roles = {FlagRole.CORE: "Stage_CORE_FLAG", FlagRole.INFILL: "Stage_INFILL_FLAG"}
+        assert pipeline.get_flag_column() == "Stage_INFILL_FLAG"
 
 
 class TestComputeFlagMask:
@@ -86,12 +87,13 @@ class TestApply:
 
 class TestCoreFlagUpdater:
     def test_calls_update_infill_core_flags(self, mock_timeframe: MagicMock, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that update_infill_core_flags is called."""
+        """Tests that update_infill_core_flags is called with the dataset's core and infill flag columns."""
         mock_method = MagicMock(return_value=MagicMock(spec=ts.TimeFrame))
         monkeypatch.setattr(
             "dritimeseriesprocessor.operations.infill.infill_pipeline.update_infill_core_flags", mock_method
         )
 
         pipeline = InfillPipeline({})
+        pipeline.flag_column_roles = {FlagRole.CORE: "value_CORE_FLAG", FlagRole.INFILL: "value_INFILL_FLAG"}
         pipeline.core_flag_updater(mock_timeframe)
-        mock_method.assert_called_once_with(mock_timeframe)
+        mock_method.assert_called_once_with(mock_timeframe, "value_CORE_FLAG", "value_INFILL_FLAG")

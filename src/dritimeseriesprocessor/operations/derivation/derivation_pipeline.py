@@ -15,7 +15,6 @@ from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetada
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.eddypro import eddypro_run_method  # noqa: F401  (registers EddyProRun)
-from dritimeseriesprocessor.operations.flags.flag_names import core_flag_column_name
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.utils.enums import ConfigurationType
 from dritimeseriesprocessor.utils.polars_utils import missing_expr
@@ -67,10 +66,6 @@ class DerivationPipeline(OperationPipeline):
         method = DerivationMethod.get(config.method)
         return method.run(config)
 
-    def get_flag_column(self, column: str) -> str | None:
-        """Derivation does not produce its own flag column."""
-        return None
-
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Not used by derivation - flags are not applied."""
         raise NotImplementedError
@@ -84,8 +79,10 @@ class DerivationPipeline(OperationPipeline):
         Returns:
             TimeFrame with the 'missing' core flag applied.
         """
-        for data_column in tf.data_columns:
-            core_flag_col_name = core_flag_column_name(data_column)
-            if core_flag_col_name in tf.flag_columns:
-                tf.add_flag(core_flag_col_name, "missing", missing_expr(data_column, tf.df[data_column].dtype))
+        core_flag_col_name = self.get_core_flag_column()
+        if core_flag_col_name is None:
+            return tf
+
+        data_column = tf.metadata["column_name"]
+        tf.add_flag(core_flag_col_name, "missing", missing_expr(data_column, tf.df[data_column].dtype))
         return tf
