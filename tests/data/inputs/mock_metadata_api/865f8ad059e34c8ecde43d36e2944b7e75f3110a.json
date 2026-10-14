@@ -59,6 +59,7 @@
           },
           "periodicity": "PT1H",
           "resolution": "PT1H",
+          "minValue": 0.0,
           "valueTimeAnchor": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
             "prefLabel": [
@@ -88,85 +89,6 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-apty"
-        }
-      ],
-      "originatingProgramme": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/programme/nmdb"
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
-      "title": [
-        "Neutron count"
-      ],
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
-        }
-      ],
-      "identifier": [
-        "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
-      ],
-      "processingLevel": {
-        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw",
-        "prefLabel": [
-          "Raw"
-        ]
-      },
-      "measure": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-mean_proc-cts-s-1-pt1h-pt1h",
-          "variable": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
-            "prefLabel": [
-              "Neutron count"
-            ]
-          },
-          "hasUnit": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts-s-1",
-            "prefLabel": [
-              "Counts s-1"
-            ]
-          },
-          "aggregation": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
-            "prefLabel": [
-              "Mean"
-            ]
-          },
-          "periodicity": "PT1H",
-          "resolution": "PT1H",
-          "valueTimeAnchor": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
-            "prefLabel": [
-              "Proceeding period"
-            ]
-          }
-        }
-      ],
-      "distribution": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/distribution/nmdb-jung-neutron_cts_1hour_raw",
-          "format": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
-            "label": [
-              "Apache Parquet"
-            ]
-          },
-          "accessUrl": [
-            "s3://e2e-input/nmdb/dataset=LIVE_NMDB_1HOUR/site=JUNG/"
-          ]
-        }
-      ],
-      "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_NMDB_1HOUR",
-      "sourceColumnName": "CRNS-COUNT",
-      "sourceTimeColumnName": "timestamp",
-      "originatingSite": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung"
         }
       ],
       "originatingProgramme": [
@@ -217,6 +139,7 @@
           },
           "periodicity": "PT1H",
           "resolution": "PT1H",
+          "minValue": 0.0,
           "valueTimeAnchor": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
             "prefLabel": [
@@ -296,6 +219,7 @@
           },
           "periodicity": "PT1H",
           "resolution": "PT1H",
+          "minValue": 0.0,
           "valueTimeAnchor": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
             "prefLabel": [
@@ -325,6 +249,86 @@
       "originatingSite": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-newk"
+        }
+      ],
+      "originatingProgramme": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/programme/nmdb"
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/dataset/nmdb-jung-neutron_cts_1hour_raw",
+      "title": [
+        "Neutron count"
+      ],
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/TimeSeriesDataset"
+        }
+      ],
+      "identifier": [
+        "NMDB-JUNG-NEUTRON_CTS_1HOUR_RAW"
+      ],
+      "processingLevel": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/processing-level/raw",
+        "prefLabel": [
+          "Raw"
+        ]
+      },
+      "measure": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/ref/common/measure/neutron_count-mean_proc-cts-s-1-pt1h-pt1h",
+          "variable": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/cop/neutron_count",
+            "prefLabel": [
+              "Neutron count"
+            ]
+          },
+          "hasUnit": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/unit/cts-s-1",
+            "prefLabel": [
+              "Counts s-1"
+            ]
+          },
+          "aggregation": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/aggregation/mean",
+            "prefLabel": [
+              "Mean"
+            ]
+          },
+          "periodicity": "PT1H",
+          "resolution": "PT1H",
+          "minValue": 0.0,
+          "valueTimeAnchor": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/time-anchor/proc",
+            "prefLabel": [
+              "Proceeding period"
+            ]
+          }
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/nmdb-jung-neutron_cts_1hour_raw",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-input/nmdb/dataset=LIVE_NMDB_1HOUR/site=JUNG/"
+          ]
+        }
+      ],
+      "sourceBucket": "e2e-input",
+      "sourceDataset": "LIVE_NMDB_1HOUR",
+      "sourceColumnName": "CRNS-COUNT",
+      "sourceTimeColumnName": "timestamp",
+      "originatingSite": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/site/nmdb-jung"
         }
       ],
       "originatingProgramme": [

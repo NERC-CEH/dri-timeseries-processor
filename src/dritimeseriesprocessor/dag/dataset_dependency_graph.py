@@ -22,11 +22,12 @@ from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetada
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
 from dritimeseriesprocessor.models.mappers.api_to_domain import (
     map_dataset_item,
+    map_flag_scheme_role,
     map_processing_config_item,
     map_site_metadata,
 )
 from dritimeseriesprocessor.routers.metadata.metadata_router import MetadataRouter
-from dritimeseriesprocessor.utils.enums import ProcessingLevel
+from dritimeseriesprocessor.utils.enums import FlagRole, ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 from dritimeseriesprocessor.utils.urls import PROCESSING_LEVEL_URI
 
@@ -73,6 +74,7 @@ class DatasetDependencyGraph:
         self.datasets: dict[str, TimeSeriesContainer] = {}
         self.site_metadata: dict[str, SiteMetadata] = {}
         self.flagging_systems: dict[str, dict[str, int]] = {}
+        self.flag_system_roles: dict[str, FlagRole] = {}
 
         self.root_dataset_ids: list[str] = []
         self.root_site_ids: list[str] = []
@@ -408,11 +410,12 @@ class DatasetDependencyGraph:
                             member.pref_label[0]: member.value for member in flag_scheme.has_top_concept
                         }
                         self.flagging_systems[flag_system_name] = flag_scheme_members
+                        self.flag_system_roles[flag_system_name] = map_flag_scheme_role(flag_scheme)
                     # Indicate which flag columns relate to which flag systems
                     flag_column_schemes[flag_column.column_name] = flag_system_name
 
             # Map dataset information to domain model
-            container = map_dataset_item(item, self.site_metadata, flag_column_schemes)
+            container = map_dataset_item(item, self.site_metadata, flag_column_schemes, self.flag_system_roles)
             self._dataset_cache[container.ts_id] = container
             all_containers.append(container)
 

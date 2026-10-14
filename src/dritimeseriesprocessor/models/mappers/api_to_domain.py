@@ -15,6 +15,7 @@ from dritimeseriesprocessor.models.api_models.data_processing_configuration impo
     DataProcessingConfigurationItem,
 )
 from dritimeseriesprocessor.models.api_models.dataset_observation import ObservationDatasetItem
+from dritimeseriesprocessor.models.api_models.flags import FlagScheme
 from dritimeseriesprocessor.models.api_models.shared import ArgumentItem, HasCurrentValue, IDModel
 from dritimeseriesprocessor.models.api_models.site import SiteItem
 from dritimeseriesprocessor.models.domain_models.processing_config import (
@@ -23,13 +24,16 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.site_metadata import SiteMetadata
 from dritimeseriesprocessor.models.domain_models.time_series_container import TimeSeriesContainer
-from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, FlagRole, ProcessingLevel
 from dritimeseriesprocessor.utils.strings import extract_uri_id
 from dritimeseriesprocessor.utils.time_stream_utils import map_time_anchor
 
 
 def map_dataset_item(
-    item: ObservationDatasetItem, all_site_metadata: dict[str, SiteMetadata], flag_column_schemes: dict[str, str]
+    item: ObservationDatasetItem,
+    all_site_metadata: dict[str, SiteMetadata],
+    flag_column_schemes: dict[str, str],
+    flag_system_roles: dict[str, FlagRole],
 ) -> TimeSeriesContainer:
     """Map a Pydantic ObservationDatasetItem (or subclass) to a domain-level TimeSeriesContainer.
 
@@ -37,6 +41,7 @@ def map_dataset_item(
         item: The validated Pydantic model representing a single dataset record.
         all_site_metadata: Metadata for sites.
         flag_column_schemes: Information about the flag schemes associated with this dataset record.
+        flag_system_roles: Flag scheme names mapped to their role. Must include every scheme in `flag_column_schemes`.
 
     Returns:
         A simplified TimeSeriesContainer domain model containing only the fields required for DAG construction and
@@ -67,6 +72,8 @@ def map_dataset_item(
         ordered_steps = sorted(steps, key=lambda s: s.index)
         plan_order = [step.configuration.id for step in ordered_steps]
 
+    flag_column_roles = map_flag_column_roles(item.id, flag_column_schemes, flag_system_roles)
+
     return TimeSeriesContainer(
         ts_id=item.id,
         network=source_network,
@@ -86,7 +93,50 @@ def map_dataset_item(
         plan_order=plan_order,
         base_dependency=base_dependency,
         flag_column_schemes=flag_column_schemes,
+        flag_column_roles=flag_column_roles,
     )
+
+
+def map_flag_scheme_role(flag_scheme: FlagScheme) -> FlagRole:
+    """Get what a flag scheme is for, from its `flagType`.
+
+    Args:
+        flag_scheme: The flag scheme from the metadata API.
+
+    Returns:
+        The role of flag columns that use this scheme.
+    """
+    flag_type = extract_uri_id(flag_scheme.flag_type.id)
+    try:
+        return FlagRole(flag_type)
+    except ValueError as error:
+        raise ValueError(f"Flag scheme {flag_scheme.id} has an unknown flag type: {flag_type}") from error
+
+
+def map_flag_column_roles(
+    ts_id: str, flag_column_schemes: dict[str, str], flag_system_roles: dict[str, FlagRole]
+) -> dict[FlagRole, str]:
+    """Find the flag column for each role, from the flag columns declared in a dataset's metadata.
+
+    Args:
+        ts_id: The dataset id, used in error messages.
+        flag_column_schemes: Flag column names mapped to the flag scheme that they use.
+        flag_system_roles: Flag scheme names mapped to their role.
+
+    Returns:
+        Flag column names keyed by their role.
+    """
+    flag_column_roles: dict[FlagRole, str] = {}
+    for flag_column_name, flag_system_name in flag_column_schemes.items():
+        role = flag_system_roles[flag_system_name]
+        if role in flag_column_roles:
+            raise ValueError(
+                f"Dataset {ts_id} has more than one flag column with flag type {role.value}: "
+                f"{flag_column_roles[role]}, {flag_column_name}"
+            )
+        flag_column_roles[role] = flag_column_name
+
+    return flag_column_roles
 
 
 def map_processing_config_item(

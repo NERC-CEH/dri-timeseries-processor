@@ -17,7 +17,7 @@ import time_stream as ts
 from time_stream.types import TimeAnchor
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingConfig
-from dritimeseriesprocessor.utils.enums import DatasetType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import DatasetType, FlagRole, ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,7 @@ class TimeSeriesContainer:
     base_dependency: list[str] = field(default_factory=list)
 
     flag_column_schemes: dict[str, str] = field(default_factory=dict)
+    flag_column_roles: dict[FlagRole, str] = field(default_factory=dict)
 
     data: ts.TimeFrame | None = None
     staged_dir: Path | None = None  # Local directory of raw files staged from storage (e.g. for EddyPro)

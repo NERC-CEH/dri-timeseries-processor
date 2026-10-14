@@ -39,27 +39,24 @@ def parse_args(argv: list[str]) -> RunConfig:
     Returns:
         A validated run configuration representing user intent for the processing run.
     """
-    args = _build_parser().parse_args(argv)
-    mode = CliSelectionMode(args.mode)
+    parser = _build_parser()
+    args = parser.parse_args(argv)
 
-    # Historic mode has no date arguments: each site's own operating dates are used
-    if mode == CliSelectionMode.HISTORIC:
-        return HistoricRunConfig(HistoricSelection(network=args.network, sites=_site_uris(args.sites)))
+    match CliSelectionMode(args.mode):
+        case CliSelectionMode.HISTORIC:
+            return create_historic_run_config(args)
 
-    start_date, end_date = _parse_date_range(start_date=args.start_date, end_date=args.end_date, lookback=args.lookback)
-    match mode:
         case CliSelectionMode.LIST_SITES:
-            list_sites_selection = ListSitesSelection(network=args.network, sites=_site_uris(args.sites))
-            return ListSitesRunConfig(list_sites_selection, start_date, end_date)
+            return create_list_sites_run_config(parser, args)
 
         case CliSelectionMode.EXPLICIT:
-            return StandardRunConfig(_parse_explicit_selection(args), start_date, end_date)
+            return create_explicit_run_config(args)
 
         case CliSelectionMode.CROSS_PRODUCT:
-            return StandardRunConfig(_parse_cross_product_selection(args), start_date, end_date)
+            return create_cross_product_run_config(args)
 
         case CliSelectionMode.FROM_DATASETS:
-            return StandardRunConfig(_parse_dataset_id_selection(args), start_date, end_date)
+            return create_from_datasets_run_config(args)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -140,12 +137,23 @@ def _build_parser() -> argparse.ArgumentParser:
         nargs="+",
         help="Space-separated list, e.g. cosmos-alic1 cosmos-bunny. If omitted, list all sites for network.",
     )
+    list_sites_parser.add_argument(
+        "--historic",
+        action="store_true",
+        help=(
+            "List every site the network has ever had, including closed ones, with no date check. "
+            "Cannot be used together with --lookback, --start-date or --end-date."
+        ),
+    )
 
     return parser
 
 
 def _build_date_range_parent() -> argparse.ArgumentParser:
     """Build a parent parser containing only date-range arguments, shared by all subcommands.
+
+    The arguments default to None so that `list-sites --historic` can tell whether any were given. The defaults
+    (a `P2D` lookback, ending today) are applied in `_parse_date_range`.
 
     Returns:
         Parent argument parser with date-range args.
@@ -156,10 +164,9 @@ def _build_date_range_parent() -> argparse.ArgumentParser:
     start_date_group.add_argument(
         "--lookback",
         type=_parse_lookback,
-        default="P2D",
         help=(
-            "ISO8601 duration defining how far back from end-date to process. Should be a combination of "
-            "days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours. "
+            "ISO8601 duration defining how far back from end-date to process (default: P2D). Should be a combination "
+            "of days, weeks, months or years:\nP1D: previous day\nP1Y: previous year\nPT6H: invalid as using hours. "
             "Cannot be used together with --start-date."
         ),
     )
@@ -172,7 +179,6 @@ def _build_date_range_parent() -> argparse.ArgumentParser:
     parser.add_argument(
         "--end-date",
         type=date.fromisoformat,
-        default=date.today(),
         help="End date (YYYY-MM-DD, default: today)",
     )
     return parser
@@ -211,27 +217,45 @@ def _parse_lookback(value: str) -> timedelta:
     return lookback
 
 
-def _parse_date_range(start_date: date | None, lookback: timedelta | None, end_date: date) -> tuple[datetime, datetime]:
+def _parse_date_range(
+    start_date: date | None, lookback: timedelta | None, end_date: date | None
+) -> tuple[datetime, datetime]:
     """Derive the start and end dates for processing, normalising both to datetime objects
 
     Args:
         start_date: Start date for the processing window (mutually exclusive of lookback).
-        end_date: End date for the processing window.
-        lookback: How far back from the end date to process (mutually exclusive of start_date).
+        lookback: How far back from the end date to process (mutually exclusive of start_date). Defaults to P2D when
+            neither this or start_date is given.
+        end_date: End date for the processing window. Defaults to today.
 
     Returns:
         Tuple of (start_date, end_date).
     """
+    if end_date is None:
+        end_date = date.today()
+
     if start_date is not None:
         if start_date > end_date:
             raise argparse.ArgumentTypeError("--start-date must be earlier than --end-date")
         return to_datetime(start_date), to_datetime(end_date)
 
     if lookback is None:
-        raise argparse.ArgumentTypeError("Either --start-date or --lookback must be provided")
+        lookback = timedelta(days=2)
 
     start_date = end_date - lookback
     return to_datetime(start_date), to_datetime(end_date)
+
+
+def _parse_date_args(args: argparse.Namespace) -> tuple[datetime, datetime]:
+    """Derive the start and end dates for processing from the parsed date range arguments.
+
+    Args:
+        args: Parsed CLI arguments containing the date range values.
+
+    Returns:
+        Tuple of (start_date, end_date).
+    """
+    return _parse_date_range(start_date=args.start_date, lookback=args.lookback, end_date=args.end_date)
 
 
 def _site_uris(sites: list[str] | None) -> list[str] | None:
@@ -244,58 +268,6 @@ def _site_uris(sites: list[str] | None) -> list[str] | None:
         The site URIs, or None if no sites were given.
     """
     return [f"{SITE_URI}/{site}" for site in sites] if sites else None
-
-
-def _parse_explicit_selection(args: argparse.Namespace) -> list[Selection]:
-    """Parse explicit dataset selection arguments.
-
-    Args:
-        args: Parsed CLI arguments containing explicit selection values.
-
-    Returns:
-        A list of DimensionSelection objects representing user selection intent.
-    """
-    return [
-        DimensionSelection(
-            network=args.network,
-            sites=[f"{SITE_URI}/{site}"],
-            variables=[variable],
-            periodicities=[periodicity],
-        )
-        for site, variable, periodicity in args.selection
-    ]
-
-
-def _parse_dataset_id_selection(args: argparse.Namespace) -> list[Selection]:
-    """Parse explicit dataset ID selection arguments.
-
-    Args:
-        args: Parsed CLI arguments containing dataset ID values.
-
-    Returns:
-        A list containing a single DatasetIdSelection with fully-qualified dataset URIs.
-    """
-    dataset_ids = [f"{DATASET_URI}/{ds_id}" for ds_id in args.datasets]
-    return [DatasetIdSelection(dataset_ids=dataset_ids)]
-
-
-def _parse_cross_product_selection(args: argparse.Namespace) -> list[Selection]:
-    """Parse cross-product dataset selection arguments.
-
-    Args:
-       args: Parsed CLI arguments containing cross-product selection values.
-
-    Returns:
-       A list of DimensionSelection objects representing user selection intent.
-    """
-    return [
-        DimensionSelection(
-            network=args.network,
-            sites=_site_uris(args.sites),
-            variables=args.variables,
-            periodicities=args.periodicities,
-        )
-    ]
 
 
 class SelectionAction(argparse.Action):
@@ -327,3 +299,95 @@ class SelectionAction(argparse.Action):
             setattr(namespace, self.dest, selections)
 
         selections.append(values)
+
+
+def create_historic_run_config(args: argparse.Namespace) -> HistoricRunConfig:
+    """Create the historic run config.
+
+    Args:
+        args: Parsed CLI arguments containing the historic run options.
+
+    Returns:
+        A historic run configuration.
+    """
+    site_list = _site_uris(args.sites)
+    selection = HistoricSelection(network=args.network, sites=site_list)
+    return HistoricRunConfig(selection)
+
+
+def create_list_sites_run_config(parser: argparse.ArgumentParser, args: argparse.Namespace) -> ListSitesRunConfig:
+    """Create the list sites run config
+
+    Args:
+        parser: The parser, to report `--historic` given together with a date argument.
+        args: Parsed CLI arguments containing the list-sites values.
+
+    Returns:
+        A list-sites run configuration, with no dates if `--historic` was given.
+    """
+    selection = ListSitesSelection(network=args.network, sites=_site_uris(args.sites))
+    if not args.historic:
+        return ListSitesRunConfig(selection, *_parse_date_args(args))
+
+    if any(date_arg is not None for date_arg in (args.lookback, args.start_date, args.end_date)):
+        parser.error("--historic cannot be used together with --lookback, --start-date or --end-date")
+    return ListSitesRunConfig(selection, start_date=None, end_date=None)
+
+
+def create_explicit_run_config(args: argparse.Namespace) -> StandardRunConfig:
+    """Create the run config for explicit selections.
+
+    Args:
+        args: Parsed CLI arguments containing explicit selection values and the date range.
+
+    Returns:
+        A standard run configuration, with one selection per --selection given.
+    """
+    selection: list[Selection] = [
+        DimensionSelection(
+            network=args.network,
+            sites=[f"{SITE_URI}/{site}"],
+            variables=[variable],
+            periodicities=[periodicity],
+        )
+        for site, variable, periodicity in args.selection
+    ]
+    start_date, end_date = _parse_date_args(args)
+    return StandardRunConfig(selection, start_date, end_date)
+
+
+def create_cross_product_run_config(args: argparse.Namespace) -> StandardRunConfig:
+    """Create the run config for cross-product selections.
+
+    Args:
+        args: Parsed CLI arguments containing cross-product selection values and the date range.
+
+    Returns:
+        A standard run configuration, with one selection covering every combination of the given sites, variables
+        and periodicities.
+    """
+    selection: list[Selection] = [
+        DimensionSelection(
+            network=args.network,
+            sites=_site_uris(args.sites),
+            variables=args.variables,
+            periodicities=args.periodicities,
+        )
+    ]
+    start_date, end_date = _parse_date_args(args)
+    return StandardRunConfig(selection, start_date, end_date)
+
+
+def create_from_datasets_run_config(args: argparse.Namespace) -> StandardRunConfig:
+    """Create the run config for datasets requested by ID.
+
+    Args:
+        args: Parsed CLI arguments containing dataset ID values and the date range.
+
+    Returns:
+        A standard run configuration, with one selection holding the full dataset URIs.
+    """
+    dataset_ids = [f"{DATASET_URI}/{dataset_id}" for dataset_id in args.datasets]
+    selection: list[Selection] = [DatasetIdSelection(dataset_ids=dataset_ids)]
+    start_date, end_date = _parse_date_args(args)
+    return StandardRunConfig(selection, start_date, end_date)

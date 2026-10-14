@@ -12,7 +12,8 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.operations.derivation.derivation_methods import DerivationMethod
 from dritimeseriesprocessor.operations.derivation.derivation_pipeline import DerivationPipeline
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from utils.data_creation import create_timeframe
+from dritimeseriesprocessor.utils.enums import FlagRole
+from utils.data_creation import create_timeframe, make_time_series_container
 
 
 @pytest.fixture
@@ -101,7 +102,9 @@ class TestApply:
 class TestFlags:
     def test_derivation_has_no_flag_column_of_its_own(self, site_metadata: SiteMetadata) -> None:
         """Tests that no operation-specific flag column is requested, unlike QC or corrections."""
-        assert DerivationPipeline(site_metadata, {}).get_flag_column("vwc") is None
+        pipeline = DerivationPipeline(site_metadata, {})
+        pipeline.flag_column_roles = {FlagRole.CORE: "vwc_CORE_FLAG", FlagRole.QUALITY_CONTROL: "vwc_QC_FLAG"}
+        assert pipeline.get_flag_column() is None
 
     def test_flag_mask_is_not_supported(self, site_metadata: SiteMetadata) -> None:
         """Tests that asking for a flag mask fails, as derivation does not flag its own results."""
@@ -113,17 +116,26 @@ class TestFlags:
         """Tests that the 'missing' core flag is stamped on the rows where the derivation produced no value."""
         tf = create_timeframe([1.0, None, 3.0], "vwc")
         tf.register_flag_system("core", {"missing": 4})
-        tf.init_flag_column("core", "vwc_CORE_FLAG")
+        tf.init_flag_column("core", "soil_moisture_CORE_FLAG")
+        pipeline = DerivationPipeline(site_metadata, {})
+        pipeline.flag_column_roles = {FlagRole.CORE: "soil_moisture_CORE_FLAG"}
 
-        result = DerivationPipeline(site_metadata, {}).core_flag_updater(tf)
+        result = pipeline.core_flag_updater(tf)
 
-        assert result.df["vwc_CORE_FLAG"].to_list() == [0, 4, 0]
+        assert result.df["soil_moisture_CORE_FLAG"].to_list() == [0, 4, 0]
 
-    def test_missing_flag_is_skipped_when_there_is_no_core_flag_column(self, site_metadata: SiteMetadata) -> None:
-        """Tests that a dataset without a core flag column passes through untouched."""
-        tf = create_timeframe([1.0, None, 3.0], "vwc")
+    def test_dataset_with_no_flag_columns_is_not_flagged(self, site_metadata: SiteMetadata) -> None:
+        """Tests that a derived dataset that declares no flag columns passes through untouched."""
+        container = make_time_series_container("derived")
+        container.source_column = "vwc"
+        container.resolution = "PT1H"
+        container.periodicity = "PT1H"
+        config = MagicMock(spec=DataProcessingConfig)
+        config.method_configs = [DataProcessingMethodConfig(method="test", params={})]
 
-        result = DerivationPipeline(site_metadata, {}).core_flag_updater(tf)
+        with patch.object(DerivationMethod, "get") as mock_get:
+            mock_get.return_value.run.return_value = create_timeframe([1.0, None, 3.0], "vwc")
+            result = DerivationPipeline(site_metadata, {}).run(container, {}, config)
 
-        assert result.df.columns == ["time", "vwc"]
+        assert result.flag_columns == []
         assert result.df["vwc"].to_list() == [1.0, None, 3.0]

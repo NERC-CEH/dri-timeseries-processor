@@ -19,7 +19,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_pipeline import Der
 from dritimeseriesprocessor.operations.infill.infill_pipeline import InfillPipeline
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
 from dritimeseriesprocessor.operations.quality_control.qc_pipeline import QCPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole, ProcessingLevel
 
 
 class MockOperationPipeline(OperationPipeline):
@@ -27,9 +27,6 @@ class MockOperationPipeline(OperationPipeline):
 
     def apply(self, tf: ts.TimeFrame, *_, **__) -> ts.TimeFrame:
         return tf
-
-    def get_flag_column(self, column: str) -> str:
-        return f"{column}_TEST_FLAG"
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: Any, column_name: str) -> MagicMock:
         return MagicMock()
@@ -56,6 +53,7 @@ def mock_container(mock_timeframe: MagicMock) -> MagicMock:
     container.time_column_name = "time"
     container.data = mock_timeframe
     container.flag_column_schemes = {}
+    container.flag_column_roles = {}
     return container
 
 
@@ -101,11 +99,34 @@ class TestInitFlagColumns:
         mock_timeframe.init_flag_column.assert_not_called()
 
 
+class TestGetFlagColumn:
+    def test_returns_column_for_the_operation_role(self) -> None:
+        """Tests that the flag column for the pipeline's own role is returned."""
+        pipeline = QCPipeline({})
+        pipeline.flag_column_roles = dict(DECLARED_FLAG_COLUMN_ROLES)
+
+        assert pipeline.get_flag_column() == "level_QC_FLAG"
+
+    def test_none_when_dataset_has_no_column_for_the_role(self) -> None:
+        """Tests that None is returned when the dataset declares no flag column for the pipeline's role."""
+        pipeline = QCPipeline({})
+        pipeline.flag_column_roles = {FlagRole.CORE: "level_CORE_FLAG"}
+
+        assert pipeline.get_flag_column() is None
+
+    def test_none_when_operation_has_no_role(self) -> None:
+        """Tests that None is returned for an operation that does not write its own flags."""
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
+        pipeline.flag_column_roles = dict(DECLARED_FLAG_COLUMN_ROLES)
+
+        assert pipeline.get_flag_column() is None
+
+
 class TestRun:
     def test_returns_updated_timeframe(
         self, mock_container: MagicMock, mock_timeframe: MagicMock, proc_config: MagicMock
     ) -> None:
-        """Test that updated TimeFrame is returned."""
+        """Tests that the TimeFrame from the core flag update is returned."""
         pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
         updated_tf = MagicMock()
         pipeline.core_flag_updater = MagicMock(return_value=updated_tf)
@@ -114,12 +135,19 @@ class TestRun:
         assert result is updated_tf.rename_time_column()
 
 
-# Every flag column a processed dataset can declare in its metadata, and the flag systems behind them.
+# Every flag column a processed dataset can declare in its metadata, and the flag systems behind them. The names
+# deliberately don't start with the data column name ("value"), as the metadata is free to name them anything.
 DECLARED_FLAG_COLUMNS = {
-    "value_CORE_FLAG": "core_flags",
-    "value_QC_FLAG": "qc_flags",
-    "value_CORRS_FLAG": "corrs_flags",
-    "value_INFILL_FLAG": "infill_flags",
+    "level_CORE_FLAG": "core_flags",
+    "level_QC_FLAG": "qc_flags",
+    "level_CORRS_FLAG": "corrs_flags",
+    "level_INFILL_FLAG": "infill_flags",
+}
+DECLARED_FLAG_COLUMN_ROLES = {
+    FlagRole.CORE: "level_CORE_FLAG",
+    FlagRole.QUALITY_CONTROL: "level_QC_FLAG",
+    FlagRole.CORRECTION: "level_CORRS_FLAG",
+    FlagRole.INFILL: "level_INFILL_FLAG",
 }
 FLAG_SYSTEMS = {
     "core_flags": {
@@ -194,6 +222,7 @@ class TestDeclaredFlagColumnsAreCreated:
         container = make_time_series_container("processed", ProcessingLevel.PROCESSED)
         container.source_column = "value"
         container.flag_column_schemes = dict(DECLARED_FLAG_COLUMNS)
+        container.flag_column_roles = dict(DECLARED_FLAG_COLUMN_ROLES)
         container.data = create_timeframe([1.0, None, 3.0]) if has_existing_data else None
 
         result = run_operation(container)
@@ -212,7 +241,7 @@ class TestApplyRounding:
         ],
     )
     def test_apply_rounding(self, mock_container: MagicMock, decimals: int, expected: list) -> None:
-        """Test that updated TimeFrame is returned."""
+        """Tests that values are rounded to the configured number of decimal places."""
         tf = create_timeframe([1.234, 2.345, 3.456])
 
         config = MagicMock(spec=DataProcessingMethodConfig)
@@ -232,7 +261,7 @@ class TestApplyRounding:
 
     @pytest.mark.parametrize("decimals", [-1, 0.5, -1.5])
     def test_apply_rounding_invalid(self, mock_container: MagicMock, decimals: int) -> None:
-        """Test that updated TimeFrame is returned."""
+        """Tests that an invalid number of decimal places raises an error."""
         tf = create_timeframe([1.234, 2.345, 3.456])
 
         config = MagicMock(spec=DataProcessingMethodConfig)

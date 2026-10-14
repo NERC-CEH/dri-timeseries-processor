@@ -25,6 +25,21 @@ class ConfigurationType(Enum):
     LOAD = "load"
 
 
+class FlagRole(Enum):
+    """What a flag column is for. Each dataset has at most one flag column per role.
+
+    The role comes from the `flagType` of the flag column's scheme in the metadata store.
+
+    See:
+    - https://dri-metadata-api.dri.ceh.ac.uk/ref/common/flag_type
+    """
+
+    CORE = "core_flags"
+    QUALITY_CONTROL = "quality_control_flags"
+    CORRECTION = "correction_flags"
+    INFILL = "infill_flags"
+
+
 class DatasetType(Enum):
     """The metadata `@type` of a dataset record.
 

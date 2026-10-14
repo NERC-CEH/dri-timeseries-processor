@@ -281,6 +281,44 @@ class TestListSitesMode:
         assert isinstance(cfg, ListSitesRunConfig)
         assert cfg.selection.sites is None
 
+    @freeze_time("2025-01-01")
+    def test_no_date_arguments_defaults_to_two_day_lookback(self) -> None:
+        """Tests that list-sites without --historic or any date arguments uses a two day lookback ending today."""
+        cfg = parse_args(["list-sites", "--network", "cosmos"])
+        assert isinstance(cfg, ListSitesRunConfig)
+        assert (cfg.start_date, cfg.end_date) == (datetime(2024, 12, 30), datetime(2025, 1, 1))
+
+    def test_historic_has_no_dates(self) -> None:
+        """Tests that list-sites with --historic gives a run config with no start or end date."""
+        cfg = parse_args(["list-sites", "--network", "cosmos", "--historic"])
+        assert isinstance(cfg, ListSitesRunConfig)
+        assert (cfg.start_date, cfg.end_date) == (None, None)
+
+    @pytest.mark.parametrize(
+        "date_args",
+        [
+            ["--lookback", "P7D"],
+            ["--start-date", "2024-01-01"],
+            ["--end-date", "2024-01-05"],
+            ["--start-date", "2024-01-01", "--end-date", "2024-01-05"],
+        ],
+    )
+    def test_historic_with_date_arguments_raises(self, date_args: list[str]) -> None:
+        """Tests that list-sites raises a SystemExit when --historic is given with any date argument."""
+        with pytest.raises(SystemExit):
+            parse_args(["list-sites", "--network", "cosmos", "--historic", *date_args])
+
+    def test_historic_keeps_network_and_sites(self) -> None:
+        """Tests that --historic still gives a selection with the given network and site IDs."""
+        cfg = parse_args(["list-sites", "--network", "cosmos", "--historic", "--sites", "cosmos-alic1"])
+        assert isinstance(cfg, ListSitesRunConfig)
+        assert cfg.selection == ListSitesSelection(network="cosmos", sites=[f"{SITE_URI}/cosmos-alic1"])
+
+    def test_historic_is_only_accepted_by_list_sites(self) -> None:
+        """Tests that a processing mode raises a SystemExit when given --historic."""
+        with pytest.raises(SystemExit):
+            parse_args(["from-cross-product", "--network", "cosmos", "--historic"])
+
 
 class TestParseLookback:
     def test_valid_days(self) -> None:
@@ -302,6 +340,20 @@ class TestParseLookback:
 
 
 class TestParseDateRange:
+    @freeze_time("2025-01-01")
+    def test_no_arguments_defaults_to_two_day_lookback_ending_today(self) -> None:
+        """Tests that with no start date, lookback or end date, the range is the two days up to today."""
+        assert _parse_date_range(None, None, None) == (datetime(2024, 12, 30), datetime(2025, 1, 1))
+
+    @freeze_time("2025-01-01")
+    def test_lookback_with_no_end_date_ends_today(self) -> None:
+        """Tests that a lookback with no end date counts back from today."""
+        assert _parse_date_range(None, timedelta(days=5), None) == (datetime(2024, 12, 27), datetime(2025, 1, 1))
+
+    def test_end_date_with_no_lookback_uses_two_day_lookback(self) -> None:
+        """Tests that an end date with no start date or lookback uses a two day lookback from that end date."""
+        assert _parse_date_range(None, None, date(2024, 3, 10)) == (datetime(2024, 3, 8), datetime(2024, 3, 10))
+
     def test_date_range_computation_with_lookback(self) -> None:
         """Test that the lookback option generates expected date range"""
         end_date = date(2024, 3, 10)

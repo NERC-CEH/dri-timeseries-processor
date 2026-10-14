@@ -58,6 +58,13 @@ class TestCreateRunMode:
             END,
         )
 
+    def test_list_sites_config_with_no_dates_creates_a_list_sites_run_with_no_dates(self) -> None:
+        """Tests that a list-sites run config with no dates creates a ListSitesRun with no dates."""
+        run_mode = create_run_mode(ListSitesRunConfig(ListSitesSelection(network="cosmos"), None, None), CONFIG)
+
+        assert isinstance(run_mode, ListSitesRun)
+        assert (run_mode.start_date, run_mode.end_date) == (None, None)
+
 
 class TestRunFromConfig:
     def test_runs_the_run_mode_for_the_config(self, monkeypatch: pytest.MonkeyPatch) -> None:

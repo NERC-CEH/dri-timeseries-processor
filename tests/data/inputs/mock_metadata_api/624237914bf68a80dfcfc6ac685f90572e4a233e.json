@@ -17,16 +17,16 @@
   },
   "items": [
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-1940-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-aws-metpak-13210004-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of NR01 1940 to 4CR at CHIMN"
+        "Deployment of METPAK 13210004 to AWS at CHIMN"
       ],
-      "endedAtTime": "2018-10-05T09:00:00",
+      "endedAtTime": "2014-02-25T12:00:00",
       "startedAtTime": "2013-10-02T13:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
@@ -36,28 +36,28 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-1940",
-          "serialNumber": "1940",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-metpak-13210004",
+          "serialNumber": "13210004",
           "label": [
-            "NR01 1940"
+            "METPAK 13210004"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/metpak"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-2131-4",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tbr-tbr-195045-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of NR01 2131 to 4CR at CHIMN"
+        "Deployment of TBR 195045 to TBR at CHIMN"
       ],
-      "startedAtTime": "2022-09-07T00:00:00",
+      "startedAtTime": "2020-02-12T00:00:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
         "label": [
@@ -66,75 +66,13 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2131",
-          "serialNumber": "2131",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tbr-195045",
+          "serialNumber": "195045",
           "label": [
-            "NR01 2131"
+            "TBR 195045"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-2154-3",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of NR01 2154 to 4CR at CHIMN"
-      ],
-      "endedAtTime": "2022-09-07T00:00:00",
-      "startedAtTime": "2020-08-18T08:45:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2154",
-          "serialNumber": "2154",
-          "label": [
-            "NR01 2154"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-2311-2",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of NR01 2311 to 4CR at CHIMN"
-      ],
-      "endedAtTime": "2020-08-18T08:45:00",
-      "startedAtTime": "2018-10-05T14:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2311",
-          "serialNumber": "2311",
-          "label": [
-            "NR01 2311"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tbr"
           }
         }
       ]
@@ -171,467 +109,6 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-aws-metpak-13210004-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of METPAK 13210004 to AWS at CHIMN"
-      ],
-      "endedAtTime": "2014-02-25T12:00:00",
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-metpak-13210004",
-          "serialNumber": "13210004",
-          "label": [
-            "METPAK 13210004"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/metpak"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-aws_anem-wind_anem-140318-1",
-      "deployedHeight": 2.6,
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of WIND_ANEM 140318 to AWS_ANEM at CHIMN"
-      ],
-      "startedAtTime": "2020-02-12T00:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-wind_anem-140318",
-          "serialNumber": "140318",
-          "label": [
-            "WIND_ANEM 140318"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/wind_anem"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_1000b-hi-tc01-1002-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of CRNS_1000B HI-TC01-1002 to CRNS at CHIMN"
-      ],
-      "endedAtTime": "2019-12-17T12:00:00",
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1002",
-          "serialNumber": "HI-TC01-1002",
-          "label": [
-            "CRNS_1000B HI-TC01-1002"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_1000b-hi-tc01-1002-3",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of CRNS_1000B HI-TC01-1002 to CRNS at CHIMN"
-      ],
-      "endedAtTime": "2021-09-07T09:00:00",
-      "startedAtTime": "2020-01-22T13:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1002",
-          "serialNumber": "HI-TC01-1002",
-          "label": [
-            "CRNS_1000B HI-TC01-1002"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_1000b-hi-tc01-1004-2",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of CRNS_1000B HI-TC01-1004 to CRNS at CHIMN"
-      ],
-      "endedAtTime": "2020-01-22T13:00:00",
-      "startedAtTime": "2019-12-17T12:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1004",
-          "serialNumber": "HI-TC01-1004",
-          "label": [
-            "CRNS_1000B HI-TC01-1004"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_2000-hi-tc02-2008-4",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of CRNS_2000 HI-TC02-2008 to CRNS at CHIMN"
-      ],
-      "startedAtTime": "2021-09-07T09:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_2000-hi-tc02-2008",
-          "serialNumber": "HI-TC02-2008",
-          "label": [
-            "CRNS_2000 HI-TC02-2008"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_2000"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns2-crns_1000b-hi-tc01-1004-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of CRNS_1000B HI-TC01-1004 to CRNS2 at CHIMN"
-      ],
-      "endedAtTime": "2020-02-12T12:00:00",
-      "startedAtTime": "2020-01-22T13:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1004",
-          "serialNumber": "HI-TC01-1004",
-          "label": [
-            "CRNS_1000B HI-TC01-1004"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns2-crns_2000-hi-tc02-2008-2",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of CRNS_2000 HI-TC02-2008 to CRNS2 at CHIMN"
-      ],
-      "endedAtTime": "2021-09-07T09:00:00",
-      "startedAtTime": "2020-02-12T12:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_2000-hi-tc02-2008",
-          "serialNumber": "HI-TC02-2008",
-          "label": [
-            "CRNS_2000 HI-TC02-2008"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_2000"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns_bare-crns_1000b_bare-hi-tc01-1005-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of CRNS_1000B_BARE HI-TC01-1005 to CRNS_BARE at CHIMN"
-      ],
-      "endedAtTime": "2019-12-17T12:00:00",
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b_bare-hi-tc01-1005",
-          "serialNumber": "HI-TC01-1005",
-          "label": [
-            "CRNS_1000B_BARE HI-TC01-1005"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b_bare"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hfp1-hfp01sc-3236-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of HFP01SC 3236 to HFP1 at CHIMN"
-      ],
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hfp01sc-3236",
-          "serialNumber": "3236",
-          "label": [
-            "HFP01SC 3236"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hfp01sc"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hfp2-hfp01sc-3237-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of HFP01SC 3237 to HFP2 at CHIMN"
-      ],
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hfp01sc-3237",
-          "serialNumber": "3237",
-          "label": [
-            "HFP01SC 3237"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hfp01sc"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-l1320545-4",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of HMP155 L1320545 to HMP at CHIMN"
-      ],
-      "startedAtTime": "2022-09-07T00:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-l1320545",
-          "serialNumber": "L1320545",
-          "label": [
-            "HMP155 L1320545"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-p4020591-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of HMP155 P4020591 to HMP at CHIMN"
-      ],
-      "endedAtTime": "2020-08-18T08:45:00",
-      "startedAtTime": "2020-02-12T00:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-p4020591",
-          "serialNumber": "P4020591",
-          "label": [
-            "HMP155 P4020591"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-p4020596-2",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of HMP155 P4020596 to HMP at CHIMN"
-      ],
-      "endedAtTime": "2021-09-07T09:00:00",
-      "startedAtTime": "2020-08-18T08:45:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-p4020596",
-          "serialNumber": "P4020596",
-          "label": [
-            "HMP155 P4020596"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-t2650700-3",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of HMP155 T2650700 to HMP at CHIMN"
-      ],
-      "endedAtTime": "2022-09-07T00:00:00",
-      "startedAtTime": "2021-09-07T09:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-t2650700",
-          "serialNumber": "T2650700",
-          "label": [
-            "HMP155 T2650700"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
-          }
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hygroclip-hygroclip_hc2-60835464-2",
       "@type": [
         {
@@ -658,6 +135,187 @@
           ],
           "type": {
             "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hygroclip_hc2"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt3-tdt-6503276-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6503276 to TDT3 at CHIMN"
+      ],
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503276",
+          "serialNumber": "6503276",
+          "label": [
+            "TDT 6503276"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-pluvio-pluvio2-328999-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of PLUVIO2 328999 to PLUVIO at CHIMN"
+      ],
+      "endedAtTime": "2020-02-12T00:00:00",
+      "startedAtTime": "2013-10-02T13:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-pluvio2-328999",
+          "serialNumber": "328999",
+          "label": [
+            "PLUVIO2 328999"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/pluvio2"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt7-tdt-6504136-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6504136 to TDT7 at CHIMN"
+      ],
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6504136",
+          "serialNumber": "6504136",
+          "label": [
+            "TDT 6504136"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt2-tdt-6501038-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6501038 to TDT2 at CHIMN"
+      ],
+      "startedAtTime": "2013-10-02T13:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6501038",
+          "serialNumber": "6501038",
+          "label": [
+            "TDT 6501038"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-10065-6",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of LOGGER_CR3000 10065 to LOGGER at CHIMN"
+      ],
+      "startedAtTime": "2021-10-06T11:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-10065",
+          "serialNumber": "10065",
+          "label": [
+            "LOGGER_CR3000 10065"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-stp-stp-2214-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of STP 2214 to STP at CHIMN"
+      ],
+      "startedAtTime": "2013-10-02T13:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-stp-2214",
+          "serialNumber": "2214",
+          "label": [
+            "STP 2214"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/stp"
           }
         }
       ]
@@ -725,160 +383,6 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-imko1-imko-35489-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of IMKO 35489 to IMKO1 at CHIMN"
-      ],
-      "endedAtTime": "2020-02-12T08:30:00",
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-35489",
-          "serialNumber": "35489",
-          "label": [
-            "IMKO 35489"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-imko2-imko-35490-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of IMKO 35490 to IMKO2 at CHIMN"
-      ],
-      "endedAtTime": "2020-02-12T08:30:00",
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-35490",
-          "serialNumber": "35490",
-          "label": [
-            "IMKO 35490"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-imko3-imko-35491-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of IMKO 35491 to IMKO3 at CHIMN"
-      ],
-      "endedAtTime": "2020-02-12T08:30:00",
-      "startedAtTime": "2013-10-02T13:30:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-35491",
-          "serialNumber": "35491",
-          "label": [
-            "IMKO 35491"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-10065-6",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of LOGGER_CR3000 10065 to LOGGER at CHIMN"
-      ],
-      "startedAtTime": "2021-10-06T11:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-10065",
-          "serialNumber": "10065",
-          "label": [
-            "LOGGER_CR3000 10065"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-11012-4",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of LOGGER_CR3000 11012 to LOGGER at CHIMN"
-      ],
-      "endedAtTime": "2021-09-07T09:00:00",
-      "startedAtTime": "2020-02-12T00:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-11012",
-          "serialNumber": "11012",
-          "label": [
-            "LOGGER_CR3000 11012"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
-          }
-        }
-      ]
-    },
-    {
       "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-12804-3",
       "@type": [
         {
@@ -910,16 +414,137 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-8470-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-p4020596-2",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of LOGGER_CR3000 8470 to LOGGER at CHIMN"
+        "Deployment of HMP155 P4020596 to HMP at CHIMN"
       ],
-      "endedAtTime": "2018-10-05T13:00:00",
+      "endedAtTime": "2021-09-07T09:00:00",
+      "startedAtTime": "2020-08-18T08:45:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-p4020596",
+          "serialNumber": "P4020596",
+          "label": [
+            "HMP155 P4020596"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-raine-raine-881821.0053-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of RAINE 881821.0053 to RAINE at CHIMN"
+      ],
+      "startedAtTime": "2022-09-07T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-raine-881821.0053",
+          "serialNumber": "881821.0053",
+          "label": [
+            "RAINE 881821.0053"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/raine"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-2131-4",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2131 to 4CR at CHIMN"
+      ],
+      "startedAtTime": "2022-09-07T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2131",
+          "serialNumber": "2131",
+          "label": [
+            "NR01 2131"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt4-tdt-6503279-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6503279 to TDT4 at CHIMN"
+      ],
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503279",
+          "serialNumber": "6503279",
+          "label": [
+            "TDT 6503279"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns_bare-crns_1000b_bare-hi-tc01-1005-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_1000B_BARE HI-TC01-1005 to CRNS_BARE at CHIMN"
+      ],
+      "endedAtTime": "2019-12-17T12:00:00",
       "startedAtTime": "2013-10-02T13:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
@@ -929,29 +554,28 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-8470",
-          "serialNumber": "8470",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b_bare-hi-tc01-1005",
+          "serialNumber": "HI-TC01-1005",
           "label": [
-            "LOGGER_CR3000 8470"
+            "CRNS_1000B_BARE HI-TC01-1005"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b_bare"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-9476-2",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt10-tdt-6503270-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of LOGGER_CR3000 9476 to LOGGER at CHIMN"
+        "Deployment of TDT 6503270 to TDT10 at CHIMN"
       ],
-      "endedAtTime": "2020-01-22T13:30:00",
-      "startedAtTime": "2018-10-05T13:30:00",
+      "startedAtTime": "2020-02-12T00:00:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
         "label": [
@@ -960,28 +584,29 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-9476",
-          "serialNumber": "9476",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503270",
+          "serialNumber": "6503270",
           "label": [
-            "LOGGER_CR3000 9476"
+            "TDT 6503270"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-9898-5",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-1940-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of LOGGER_CR3000 9898 to LOGGER at CHIMN"
+        "Deployment of NR01 1940 to 4CR at CHIMN"
       ],
-      "startedAtTime": "2021-09-07T09:00:00",
+      "endedAtTime": "2018-10-05T09:00:00",
+      "startedAtTime": "2013-10-02T13:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
         "label": [
@@ -990,13 +615,166 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-9898",
-          "serialNumber": "9898",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-1940",
+          "serialNumber": "1940",
           "label": [
-            "LOGGER_CR3000 9898"
+            "NR01 1940"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt9-tdt-6504273-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of TDT 6504273 to TDT9 at CHIMN"
+      ],
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6504273",
+          "serialNumber": "6504273",
+          "label": [
+            "TDT 6504273"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_1000b-hi-tc01-1002-3",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_1000B HI-TC01-1002 to CRNS at CHIMN"
+      ],
+      "endedAtTime": "2021-09-07T09:00:00",
+      "startedAtTime": "2020-01-22T13:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1002",
+          "serialNumber": "HI-TC01-1002",
+          "label": [
+            "CRNS_1000B HI-TC01-1002"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-2311-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2311 to 4CR at CHIMN"
+      ],
+      "endedAtTime": "2020-08-18T08:45:00",
+      "startedAtTime": "2018-10-05T14:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2311",
+          "serialNumber": "2311",
+          "label": [
+            "NR01 2311"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_1000b-hi-tc01-1002-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_1000B HI-TC01-1002 to CRNS at CHIMN"
+      ],
+      "endedAtTime": "2019-12-17T12:00:00",
+      "startedAtTime": "2013-10-02T13:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1002",
+          "serialNumber": "HI-TC01-1002",
+          "label": [
+            "CRNS_1000B HI-TC01-1002"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-pluvio-pluvio2-451586-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of PLUVIO2 451586 to PLUVIO at CHIMN"
+      ],
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-pluvio2-451586",
+          "serialNumber": "451586",
+          "label": [
+            "PLUVIO2 451586"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/pluvio2"
           }
         }
       ]
@@ -1033,46 +811,16 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-pa-cs106-p0710631-2",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-imko1-imko-35489-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of CS106 P0710631 to PA at CHIMN"
+        "Deployment of IMKO 35489 to IMKO1 at CHIMN"
       ],
-      "startedAtTime": "2021-09-07T09:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-cs106-p0710631",
-          "serialNumber": "P0710631",
-          "label": [
-            "CS106 P0710631"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/cs106"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-pluvio-pluvio2-328999-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of PLUVIO2 328999 to PLUVIO at CHIMN"
-      ],
-      "endedAtTime": "2020-02-12T00:00:00",
+      "endedAtTime": "2020-02-12T08:30:00",
       "startedAtTime": "2013-10-02T13:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
@@ -1082,28 +830,28 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-pluvio2-328999",
-          "serialNumber": "328999",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-35489",
+          "serialNumber": "35489",
           "label": [
-            "PLUVIO2 328999"
+            "IMKO 35489"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/pluvio2"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-pluvio-pluvio2-451586-2",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hfp2-hfp01sc-3237-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of PLUVIO2 451586 to PLUVIO at CHIMN"
+        "Deployment of HFP01SC 3237 to HFP2 at CHIMN"
       ],
-      "startedAtTime": "2020-02-12T00:00:00",
+      "startedAtTime": "2013-10-02T13:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
         "label": [
@@ -1112,26 +860,26 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-pluvio2-451586",
-          "serialNumber": "451586",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hfp01sc-3237",
+          "serialNumber": "3237",
           "label": [
-            "PLUVIO2 451586"
+            "HFP01SC 3237"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/pluvio2"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hfp01sc"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-raine-raine-881821.0053-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-l1320545-4",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of RAINE 881821.0053 to RAINE at CHIMN"
+        "Deployment of HMP155 L1320545 to HMP at CHIMN"
       ],
       "startedAtTime": "2022-09-07T00:00:00",
       "deployedOnPlatform": {
@@ -1142,27 +890,28 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-raine-881821.0053",
-          "serialNumber": "881821.0053",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-l1320545",
+          "serialNumber": "L1320545",
           "label": [
-            "RAINE 881821.0053"
+            "HMP155 L1320545"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/raine"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-stp-stp-2214-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-8470-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of STP 2214 to STP at CHIMN"
+        "Deployment of LOGGER_CR3000 8470 to LOGGER at CHIMN"
       ],
+      "endedAtTime": "2018-10-05T13:00:00",
       "startedAtTime": "2013-10-02T13:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
@@ -1172,28 +921,29 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-stp-2214",
-          "serialNumber": "2214",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-8470",
+          "serialNumber": "8470",
           "label": [
-            "STP 2214"
+            "LOGGER_CR3000 8470"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/stp"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tbr-tbr-195045-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns2-crns_1000b-hi-tc01-1004-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of TBR 195045 to TBR at CHIMN"
+        "Deployment of CRNS_1000B HI-TC01-1004 to CRNS2 at CHIMN"
       ],
-      "startedAtTime": "2020-02-12T00:00:00",
+      "endedAtTime": "2020-02-12T12:00:00",
+      "startedAtTime": "2020-01-22T13:00:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
         "label": [
@@ -1202,13 +952,43 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tbr-195045",
-          "serialNumber": "195045",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1004",
+          "serialNumber": "HI-TC01-1004",
           "label": [
-            "TBR 195045"
+            "CRNS_1000B HI-TC01-1004"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tbr"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-9898-5",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of LOGGER_CR3000 9898 to LOGGER at CHIMN"
+      ],
+      "startedAtTime": "2021-09-07T09:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-9898",
+          "serialNumber": "9898",
+          "label": [
+            "LOGGER_CR3000 9898"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
           }
         }
       ]
@@ -1244,45 +1024,16 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt10-tdt-6503270-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-imko3-imko-35491-1",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of TDT 6503270 to TDT10 at CHIMN"
+        "Deployment of IMKO 35491 to IMKO3 at CHIMN"
       ],
-      "startedAtTime": "2020-02-12T00:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503270",
-          "serialNumber": "6503270",
-          "label": [
-            "TDT 6503270"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt2-tdt-6501038-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of TDT 6501038 to TDT2 at CHIMN"
-      ],
+      "endedAtTime": "2020-02-12T08:30:00",
       "startedAtTime": "2013-10-02T13:30:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
@@ -1292,28 +1043,28 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6501038",
-          "serialNumber": "6501038",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-35491",
+          "serialNumber": "35491",
           "label": [
-            "TDT 6501038"
+            "IMKO 35491"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
           }
         }
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt3-tdt-6503276-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_2000-hi-tc02-2008-4",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of TDT 6503276 to TDT3 at CHIMN"
+        "Deployment of CRNS_2000 HI-TC02-2008 to CRNS at CHIMN"
       ],
-      "startedAtTime": "2020-02-12T00:00:00",
+      "startedAtTime": "2021-09-07T09:00:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
         "label": [
@@ -1322,43 +1073,13 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503276",
-          "serialNumber": "6503276",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_2000-hi-tc02-2008",
+          "serialNumber": "HI-TC02-2008",
           "label": [
-            "TDT 6503276"
+            "CRNS_2000 HI-TC02-2008"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
-          }
-        }
-      ]
-    },
-    {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt4-tdt-6503279-1",
-      "@type": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
-        }
-      ],
-      "label": [
-        "Deployment of TDT 6503279 to TDT4 at CHIMN"
-      ],
-      "startedAtTime": "2020-02-12T00:00:00",
-      "deployedOnPlatform": {
-        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
-        "label": [
-          "Chimney Meadows"
-        ]
-      },
-      "deployedSystem": [
-        {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6503279",
-          "serialNumber": "6503279",
-          "label": [
-            "TDT 6503279"
-          ],
-          "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_2000"
           }
         }
       ]
@@ -1394,6 +1115,68 @@
       ]
     },
     {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-11012-4",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of LOGGER_CR3000 11012 to LOGGER at CHIMN"
+      ],
+      "endedAtTime": "2021-09-07T09:00:00",
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-11012",
+          "serialNumber": "11012",
+          "label": [
+            "LOGGER_CR3000 11012"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns2-crns_2000-hi-tc02-2008-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_2000 HI-TC02-2008 to CRNS2 at CHIMN"
+      ],
+      "endedAtTime": "2021-09-07T09:00:00",
+      "startedAtTime": "2020-02-12T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_2000-hi-tc02-2008",
+          "serialNumber": "HI-TC02-2008",
+          "label": [
+            "CRNS_2000 HI-TC02-2008"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_2000"
+          }
+        }
+      ]
+    },
+    {
       "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt6-tdt-6503278-1",
       "@type": [
         {
@@ -1424,14 +1207,46 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt7-tdt-6504136-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-logger-logger_cr3000-9476-2",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of TDT 6504136 to TDT7 at CHIMN"
+        "Deployment of LOGGER_CR3000 9476 to LOGGER at CHIMN"
+      ],
+      "endedAtTime": "2020-01-22T13:30:00",
+      "startedAtTime": "2018-10-05T13:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-logger_cr3000-9476",
+          "serialNumber": "9476",
+          "label": [
+            "LOGGER_CR3000 9476"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/logger_cr3000"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-aws_anem-wind_anem-140318-1",
+      "deployedHeight": 2.6,
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of WIND_ANEM 140318 to AWS_ANEM at CHIMN"
       ],
       "startedAtTime": "2020-02-12T00:00:00",
       "deployedOnPlatform": {
@@ -1442,13 +1257,136 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6504136",
-          "serialNumber": "6504136",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-wind_anem-140318",
+          "serialNumber": "140318",
           "label": [
-            "TDT 6504136"
+            "WIND_ANEM 140318"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/wind_anem"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hfp1-hfp01sc-3236-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HFP01SC 3236 to HFP1 at CHIMN"
+      ],
+      "startedAtTime": "2013-10-02T13:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hfp01sc-3236",
+          "serialNumber": "3236",
+          "label": [
+            "HFP01SC 3236"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hfp01sc"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-p4020591-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of HMP155 P4020591 to HMP at CHIMN"
+      ],
+      "endedAtTime": "2020-08-18T08:45:00",
+      "startedAtTime": "2020-02-12T00:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-p4020591",
+          "serialNumber": "P4020591",
+          "label": [
+            "HMP155 P4020591"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-crns-crns_1000b-hi-tc01-1004-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CRNS_1000B HI-TC01-1004 to CRNS at CHIMN"
+      ],
+      "endedAtTime": "2020-01-22T13:00:00",
+      "startedAtTime": "2019-12-17T12:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-crns_1000b-hi-tc01-1004",
+          "serialNumber": "HI-TC01-1004",
+          "label": [
+            "CRNS_1000B HI-TC01-1004"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/crns_1000b"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-4cr-nr01-2154-3",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of NR01 2154 to 4CR at CHIMN"
+      ],
+      "endedAtTime": "2022-09-07T00:00:00",
+      "startedAtTime": "2020-08-18T08:45:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-nr01-2154",
+          "serialNumber": "2154",
+          "label": [
+            "NR01 2154"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/nr01"
           }
         }
       ]
@@ -1484,16 +1422,17 @@
       ]
     },
     {
-      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-tdt9-tdt-6504273-1",
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-hmp-hmp155-t2650700-3",
       "@type": [
         {
           "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
         }
       ],
       "label": [
-        "Deployment of TDT 6504273 to TDT9 at CHIMN"
+        "Deployment of HMP155 T2650700 to HMP at CHIMN"
       ],
-      "startedAtTime": "2020-02-12T00:00:00",
+      "endedAtTime": "2022-09-07T00:00:00",
+      "startedAtTime": "2021-09-07T09:00:00",
       "deployedOnPlatform": {
         "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
         "label": [
@@ -1502,13 +1441,74 @@
       },
       "deployedSystem": [
         {
-          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-tdt-6504273",
-          "serialNumber": "6504273",
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-hmp155-t2650700",
+          "serialNumber": "T2650700",
           "label": [
-            "TDT 6504273"
+            "HMP155 T2650700"
           ],
           "type": {
-            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/tdt"
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/hmp155"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-imko2-imko-35490-1",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of IMKO 35490 to IMKO2 at CHIMN"
+      ],
+      "endedAtTime": "2020-02-12T08:30:00",
+      "startedAtTime": "2013-10-02T13:30:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-imko-35490",
+          "serialNumber": "35490",
+          "label": [
+            "IMKO 35490"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/imko"
+          }
+        }
+      ]
+    },
+    {
+      "@id": "http://fdri.ceh.ac.uk/id/deployment/cosmos-chimn-pa-cs106-p0710631-2",
+      "@type": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/vocab/metadata/StaticDeployment"
+        }
+      ],
+      "label": [
+        "Deployment of CS106 P0710631 to PA at CHIMN"
+      ],
+      "startedAtTime": "2021-09-07T09:00:00",
+      "deployedOnPlatform": {
+        "@id": "http://fdri.ceh.ac.uk/id/site/cosmos-chimn",
+        "label": [
+          "Chimney Meadows"
+        ]
+      },
+      "deployedSystem": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/system/cosmos-cs106-p0710631",
+          "serialNumber": "P0710631",
+          "label": [
+            "CS106 P0710631"
+          ],
+          "type": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/monitoring-system-type/cs106"
           }
         }
       ]

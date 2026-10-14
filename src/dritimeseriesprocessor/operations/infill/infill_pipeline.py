@@ -5,16 +5,17 @@ import time_stream as ts
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.flags.flag_methods import update_infill_core_flags
-from dritimeseriesprocessor.operations.flags.flag_names import infill_flag_column_name
 from dritimeseriesprocessor.operations.infill.infill_methods import InfillMethod
 from dritimeseriesprocessor.operations.operation_pipeline import OperationPipeline
-from dritimeseriesprocessor.utils.enums import ConfigurationType
+from dritimeseriesprocessor.utils.enums import ConfigurationType, FlagRole
 
 logger = logging.getLogger(__name__)
 
 
 class InfillPipeline(OperationPipeline):
     """Processor for running infilling on a TimeSeriesContainer."""
+
+    flag_role = FlagRole.INFILL
 
     def __init__(self, flag_systems: dict[str, dict[str, int]]):
         super().__init__(ConfigurationType.INFILLING, flag_systems)
@@ -41,17 +42,6 @@ class InfillPipeline(OperationPipeline):
         result = method.run(tf, config)
         self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         return result
-
-    def get_flag_column(self, column: str) -> str:
-        """Determine the infill flag column name for a given data column.
-
-        Args:
-            column: Name of the data column.
-
-        Returns:
-            Name of the corresponding infill flag column.
-        """
-        return infill_flag_column_name(column)
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
         """Return an object that can be used to determine the mask for adding a flag to the flag column.
@@ -83,4 +73,4 @@ class InfillPipeline(OperationPipeline):
         Returns:
             Timeframe with updated core flags
         """
-        return update_infill_core_flags(tf)
+        return update_infill_core_flags(tf, self.get_core_flag_column(), self.get_flag_column())

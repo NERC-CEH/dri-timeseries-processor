@@ -29,7 +29,10 @@
           ],
           "value": 4
         }
-      ]
+      ],
+      "flagType": {
+        "@id": "http://fdri.ceh.ac.uk/ref/common/flag_type/infill_flags"
+      }
     }
   ]
 }

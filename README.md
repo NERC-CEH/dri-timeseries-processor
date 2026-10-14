@@ -110,6 +110,7 @@ Use one of four (mutually exclusive) processing modes, or the utility command:
 5. List sites: `list-sites`
     - Writes a JSON array of active site IDs for a network to `/tmp/sites.json`
     - Sites not open during the requested date window are excluded
+    - Pass `--historic` instead of any date arguments to list every site the network has ever had
     - Optionally pass `--sites` to limit the result to a specific set of sites (still checked against the network
       and date window)
 
@@ -117,8 +118,7 @@ Use one of four (mutually exclusive) processing modes, or the utility command:
     python -m dritimeseriesprocessor list-sites
      --network NETWORK
      [--sites SITE [SITE ...]]
-     [--lookback DURATION | --start-date YYYY-MM-DD]
-     [--end-date YYYY-MM-DD]
+     [--historic | [--lookback DURATION | --start-date YYYY-MM-DD] [--end-date YYYY-MM-DD]]
     ```
 
    **Example**:
