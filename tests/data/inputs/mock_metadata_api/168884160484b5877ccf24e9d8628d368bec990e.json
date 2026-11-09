@@ -150,12 +150,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -389,12 +389,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -623,12 +623,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "RH",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -863,12 +863,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "SWIN",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1096,12 +1096,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "SWOUT",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1336,12 +1336,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "LWIN",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1603,12 +1603,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "LWOUT",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1863,12 +1863,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -2055,12 +2055,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "G",
       "sourceTimeColumnName": "time",
       "originatingSite": [

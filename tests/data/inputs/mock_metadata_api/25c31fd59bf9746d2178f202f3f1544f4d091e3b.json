@@ -149,12 +149,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=ALIC1/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [

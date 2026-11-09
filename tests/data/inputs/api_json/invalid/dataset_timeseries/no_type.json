@@ -25,7 +25,7 @@
       ],
       "type": [],
       "sourceBucket": "ukceh-dri-staging-processed",
-      "sourceDataset": "EMPTY",
+      "sourceCollection": "EMPTY",
       "sourceColumnName": "E",
       "originatingSite": [
         {

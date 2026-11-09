@@ -77,12 +77,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -158,12 +158,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -239,12 +239,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -318,12 +318,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -398,12 +398,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -478,12 +478,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -557,12 +557,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -637,12 +637,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -718,12 +718,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "RH",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -798,12 +798,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -878,12 +878,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -958,12 +958,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CHIMN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1038,12 +1038,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1118,12 +1118,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1198,12 +1198,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=ALIC1/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
       "sourceTimeColumnName": "time",
       "originatingSite": [

@@ -54,7 +54,7 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/format/ghg"
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/network=fdri/collection=flux/site=flux-plynl/"
+            "s3://ukceh-dri-staging-ingested/network=FDRI/collection=FLUX_20HZ/site=flux-plynl/"
           ]
         }
       ],
