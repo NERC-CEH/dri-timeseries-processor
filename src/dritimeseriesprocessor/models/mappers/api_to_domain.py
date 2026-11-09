@@ -81,8 +81,6 @@ def map_dataset_item(
         periodicity=periodicity,
         time_anchor=time_anchor,
         processing_level=processing_level,
-        source_bucket=getattr(item, "source_bucket", None),
-        source_dataset=getattr(item, "source_dataset", None),
         source_column=getattr(item, "source_column_name", None),
         source_site=source_site,
         source_site_identifier=source_site_identifier,

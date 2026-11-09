@@ -34,6 +34,9 @@ def mock_writer() -> MagicMock:
     return writer
 
 
+SAVE_URL = "s3://my_bucket/network=MY_NETWORK/collection=PROCESSED_30MIN/site=SITE_A/"
+
+
 def create_mock_dag(topo_layers: list) -> MagicMock:
     """Create a mock DAG for use in tests"""
     graph = MagicMock(spec=DatasetDependencyGraph)
@@ -325,8 +328,7 @@ class TestTimeSeriesProcessor:
         container.network = "my_network"
         container.source_site_identifier = "SITE_A"
         container.resolution = "PT30M"
-        container.source_bucket = "my_bucket"
-        container.source_dataset = "my_dataset"
+        container.distribution_url = SAVE_URL
         container.source_column = "value"
 
         # Half-hourly data covering a day either side of the requested window
@@ -571,7 +573,7 @@ class TestTimeSeriesProcessor:
             container.network = "my_network"
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
-            container.source_bucket = "my_bucket"
+            container.distribution_url = SAVE_URL
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
         mock_graph.datasets["ds2"].load_only = True
@@ -602,7 +604,7 @@ class TestTimeSeriesProcessor:
             container.network = "my_network"
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
-            container.source_bucket = "my_bucket"
+            container.distribution_url = SAVE_URL
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
         # Mark ds2 as failed
@@ -658,8 +660,7 @@ class TestTimeSeriesProcessor:
             container.network = "my_network"
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
-            container.source_bucket = "my_bucket"
-            container.source_dataset = "my_dataset"
+            container.distribution_url = SAVE_URL
             container.source_column = f"{ds_id}-col"
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
@@ -679,13 +680,13 @@ class TestTimeSeriesProcessor:
         expected = [
             (
                 "my_bucket",
-                "my_network/resolution=PT30M/site=SITE_A/date=2025-01-01/data.parquet",
+                "network=MY_NETWORK/collection=PROCESSED_30MIN/site=SITE_A/date=2025-01-01/data.parquet",
                 expected_df.filter(pl.col("time").cast(pl.Date) == pl.date(2025, 1, 1)),
                 "time",
             ),
             (
                 "my_bucket",
-                "my_network/resolution=PT30M/site=SITE_A/date=2025-01-02/data.parquet",
+                "network=MY_NETWORK/collection=PROCESSED_30MIN/site=SITE_A/date=2025-01-02/data.parquet",
                 expected_df.filter(pl.col("time").cast(pl.Date) == pl.date(2025, 1, 2)),
                 "time",
             ),

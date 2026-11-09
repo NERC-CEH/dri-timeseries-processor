@@ -32,6 +32,9 @@ from dritimeseriesprocessor.__main__ import main
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient
 
+# Matches the processed collection names in the metadata access URLs (and dri-data-api)
+PROCESSED_COLLECTION_SUFFIXES = {"PT1M": "1MIN", "PT15M": "15MIN", "PT30M": "30MIN", "PT1H": "1HOUR", "P1D": "1DAY"}
+
 
 @pytest.fixture
 def metadata_api_url() -> Iterator[str]:
@@ -140,10 +143,10 @@ class TestMain:
                         ]
                         check_cols = all_variables + flag_cols + time_col
 
-                    expected_path = (
-                        expected_output_dir
-                        / f"{network}/resolution={resolution}/site={s3_site_id}/date={date}/data.parquet"
+                    collection = (
+                        f"network={network.upper()}/collection=PROCESSED_{PROCESSED_COLLECTION_SUFFIXES[resolution]}"
                     )
+                    expected_path = expected_output_dir / f"{collection}/site={s3_site_id}/date={date}/data.parquet"
                     expected_s3_key = str(expected_path.relative_to(expected_output_dir))
                     result = pl.read_parquet(s3_storage_client.get_bytes(E2E_OUTPUT_BUCKET, expected_s3_key))
                     expected = pl.read_parquet(expected_path)

@@ -263,13 +263,20 @@ class TimeSeriesProcessor:
     def _batch_load(self) -> None:
         """Load time-series data for multiple datasets in grouped batches.
 
-        Containers are grouped by network, site, resolution, and source dataset so that a single query
+        Containers are grouped by network, site, resolution, and access URL so that a single query
         can retrieve all columns for each group in one read. Each container's data is then extracted from
         the combined result and initialised into a TimeFrame.
         """
         containers = self._collect_load_containers()
         logger.info(f"Collecting and loading [{len(containers)}] datasets.")
-        common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
+        common_keys = [
+            "network",
+            "source_site_identifier",
+            "resolution",
+            "s3_bucket",
+            "s3_dataset_path",
+            "processing_level",
+        ]
         groupings = group_containers(containers, common_keys)
 
         with self.metrics.time_load.time():
@@ -333,7 +340,7 @@ class TimeSeriesProcessor:
 
         Using Yield to produce a generator so that we're not holding all dataframes in memory simultaneously.
         """
-        common_keys = ["network", "source_site_identifier", "resolution", "source_bucket"]
+        common_keys = ["network", "source_site_identifier", "resolution", "s3_bucket", "s3_dataset_path"]
         processed = tuple(
             c
             for c in self.graph.datasets.values()
@@ -351,7 +358,7 @@ class TimeSeriesProcessor:
 
         for _, containers in groupings.items():
             # Double check all containers have the same properties
-            network, site_id, resolution, bucket = check_common_attributes(containers, common_keys)
+            _, _, _, bucket, dataset_path = check_common_attributes(containers, common_keys)
 
             # Merge the data for all containers
             group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])
@@ -367,5 +374,5 @@ class TimeSeriesProcessor:
 
             # Yield specific save tasks
             for data_date, df in data_to_write:
-                key = f"{network}/resolution={resolution}/site={site_id}/date={data_date:%Y-%m-%d}/data.parquet"
+                key = f"{dataset_path}/date={data_date:%Y-%m-%d}/data.parquet"
                 yield bucket, key, df, group_tf.time_name

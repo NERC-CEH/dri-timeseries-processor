@@ -40,17 +40,22 @@ host still needs access to them.
 
 ## Expected S3 layout
 
-Raw `.dat` files are read from the ingested bucket, partitioned by date:
+Every location comes from the dataset's distribution access URL in the metadata. Raw `.dat` files are read from the
+ingested bucket, partitioned by date, under the raw ObservationDataset's access URL:
 
 ```
-<network>/dataset=<RAW_DATASET>/site=<SITE>/date=YYYY-MM-DD/
+network=<NETWORK>/collection=<RAW_COLLECTION>/site=<SITE>/date=YYYY-MM-DD/
 ```
 
-Outputs are written to the processed bucket under the same partition scheme:
+Outputs are written to the processed bucket under each output timeseries dataset's access URL, using the same partition
+scheme:
 
 ```
-<network>/dataset=<PROCESSED_DATASET>/site=<SITE>/date=YYYY-MM-DD/
+network=<NETWORK>/collection=<PROCESSED_COLLECTION>/site=<SITE>/date=YYYY-MM-DD/data.parquet
 ```
+
+The despiking history (`H`, `Tau` and `R_SW_in_Avg`) is read from the access URL of a processed timeseries dataset in
+the run, so those columns need to be saved to the same collection.
 
 ## Running it
 

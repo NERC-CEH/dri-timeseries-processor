@@ -131,13 +131,17 @@ class TestDespikeDf:
 # ---------------------------------------------------------------------------
 
 
-def _make_container(site: str = "flux-plynl", source_bucket: str = "source-bucket") -> TimeSeriesContainer:
+PROCESSED_URL = "s3://ukceh-dri-staging-processed/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+
+
+def _make_container(
+    site: str = "flux-plynl",
+    distribution_url: str = "s3://source-bucket/network=FDRI/collection=PROCESSED_FLUX/site=PLYNL/",
+) -> TimeSeriesContainer:
     """Real container so dataclasses.replace works inside _run_despiking."""
     return TimeSeriesContainer(
         ts_id="flux-plynl-processed",
         network="fdri",
-        source_bucket=source_bucket,
-        source_dataset="PROCESSED",
         source_column=None,
         source_site=None,
         source_site_identifier=site,
@@ -147,6 +151,7 @@ def _make_container(site: str = "flux-plynl", source_bucket: str = "source-bucke
         periodicity="PT30M",
         time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
+        distribution_url=distribution_url,
     )
 
 
@@ -229,7 +234,7 @@ class TestRunDespiking:
         assert call_kwargs["end_date"] == expected_end
 
     def test_history_containers_built_from_metadata(self) -> None:
-        """The per-column history containers carry the network, bucket and columns to despike."""
+        """The per-column history containers carry the network, access URL and columns to despike."""
         mock_router = MagicMock()
         mock_router.query_by_date_range.return_value = pl.DataFrame()
 
@@ -239,12 +244,13 @@ class TestRunDespiking:
             start_date=date(2026, 1, 20),
             resolution="PT30M",
             data_router=mock_router,
-            processed_container=_make_container(source_bucket="ukceh-dri-staging-processed"),
+            processed_container=_make_container(distribution_url=PROCESSED_URL),
         )
 
         containers = mock_router.query_by_date_range.call_args.args
         assert all(c.network == "fdri" for c in containers)
-        assert all(c.source_bucket == "ukceh-dri-staging-processed" for c in containers)
+        assert all(c.s3_bucket == "ukceh-dri-staging-processed" for c in containers)
+        assert all(c.s3_dataset_path == "network=FDRI/collection=PROCESSED_30MIN/site=PLYNL" for c in containers)
         assert all(c.processing_level is ProcessingLevel.PROCESSED for c in containers)
         assert all(c.resolution == "PT30M" for c in containers)
         assert {c.source_column for c in containers} == {"H", "Tau", "R_SW_in_Avg"}

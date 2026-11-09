@@ -16,7 +16,6 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import (
     check_common_attributes,
 )
 from dritimeseriesprocessor.storage.storage_client import StorageClient
-from dritimeseriesprocessor.utils.enums import ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -96,23 +95,17 @@ class S3DataRouter(DataRouter):
             A Polars DataFrame containing the data.
         """
 
-        # source_dataset only needed for raw datasets — don't fetch it upfront
-        # since despiking history containers don't have a meaningful source_dataset.
-        network, site_id, resolution, bucket, time_column_name = check_common_attributes(
+        _, _, _, bucket, base, time_column_name = check_common_attributes(
             list(containers),
-            ["network", "source_site_identifier", "resolution", "source_bucket", "time_column_name"],
+            ["network", "source_site_identifier", "resolution", "s3_bucket", "s3_dataset_path", "time_column_name"],
         )
+        if not bucket or not base:
+            raise ValueError(f"No distribution access URL for datasets: {[c.ts_id for c in containers]}")
 
         # Select via COLUMNS(lambda) rather than naming columns directly: a source_column that doesn't exist in the
         # parquet files is then silently omitted from the result instead of failing the whole query, so the caller
         # can fail that one dataset without losing the rest of the group.
         requested_columns = ", ".join([f"'{c.source_column}'" for c in containers])
-
-        if any(c.processing_level is ProcessingLevel.PROCESSED for c in containers):
-            base = self._site_partition_prefix(network, "resolution", resolution, site_id)
-        else:
-            source_dataset = str(check_common_attributes(list(containers), "source_dataset"))
-            base = self._site_partition_prefix(network, "dataset", source_dataset, site_id)
 
         file_paths = self._list_files(bucket, base, start_date, end_date)
         if not file_paths:
@@ -172,7 +165,7 @@ class S3DataRouter(DataRouter):
 
         Args:
             bucket: Bucket holding the parquet files.
-            site_prefix: The `network/<key>=<value>/site=<site>` prefix.
+            site_prefix: The dataset's access URL prefix, e.g. `network=<NETWORK>/collection=<COLLECTION>/site=<SITE>`.
             start_date: First day to include.
             end_date: Last day to include.
 
@@ -185,36 +178,10 @@ class S3DataRouter(DataRouter):
         months = pl.date_range(first_day.replace(day=1), last_day, "1mo", eager=True).dt.strftime("%Y-%m")
 
         file_paths = []
-        for folder in self._date_parent_folders(bucket, site_prefix):
-            date_prefix = f"{folder}/date="
-            for month in months:
-                for key in self._storage.list_keys_with_prefix(bucket, f"{date_prefix}{month}"):
-                    day = key.removeprefix(date_prefix).split("/")[0]
-                    if first_day.isoformat() <= day <= last_day.isoformat() and key.endswith("/data.parquet"):
-                        file_paths.append(f"s3://{bucket}/{key}")
+        date_prefix = f"{site_prefix}/date="
+        for month in months:
+            for key in self._storage.list_keys_with_prefix(bucket, f"{date_prefix}{month}"):
+                day = key.removeprefix(date_prefix).split("/")[0]
+                if first_day.isoformat() <= day <= last_day.isoformat() and key.endswith("/data.parquet"):
+                    file_paths.append(f"s3://{bucket}/{key}")
         return file_paths
-
-    def _date_parent_folders(self, bucket: str, site_prefix: str) -> list[str]:
-        """Find the folder(s) that hold a site's `date=` folders.
-
-        The `date=` folders are either directly under the site, or one level below it in folders such as
-        `serial_no=`. If any key starts with `<site>/date=`, the dates are directly under the site. Otherwise, each
-        `<key>=<value>` sub-folder is searched, and anything else is ignored. This assumes all of a site's files follow
-        the same layout, and that there is never more than one level between the site and the dates.
-
-        Args:
-            bucket: Bucket holding the parquet files.
-            site_prefix: The `network/<key>=<value>/site=<site>` prefix.
-
-        Returns:
-            Folders without a trailing slash, or an empty list if the site has no files.
-        """
-        if self._storage.first_key_with_prefix(bucket, f"{site_prefix}/date=") is not None:
-            return [site_prefix]
-        subfolders = self._storage.list_subfolders(bucket, site_prefix)
-        return [subfolder for subfolder in subfolders if "=" in subfolder.removeprefix(f"{site_prefix}/")]
-
-    @staticmethod
-    def _site_partition_prefix(network: str, partition_key: str, partition_value: str, site: str) -> str:
-        """Build the leading `network/<key>=<value>/site=<site>` hive-partition segments."""
-        return f"{network}/{partition_key}={partition_value}/site={site}"

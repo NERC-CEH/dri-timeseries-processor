@@ -415,9 +415,11 @@ The reader component loads dataset data from storage into memory. There are two 
 
 - **`DuckDBParquetReader`**: reads parquet data for a time series dataset with DuckDB. Used for batch loading and
   for `load` steps.
-  - The data router first lists the site's daily `data.parquet` files in the date range, and DuckDB is given that
-    exact list, so only those files are opened. The `date=` folders can sit directly under the site, or one folder
-    level below it (e.g. `serial_no=`).
+  - A dataset's location is the bucket and prefix of its distribution access URL in the metadata, e.g.
+    `s3://<bucket>/network=<NETWORK>/collection=<COLLECTION>/site=<SITE>/`. A dataset with no access URL is marked as
+    failed.
+  - The data router first lists the daily `data.parquet` files in the date range, from the `date=` folders directly
+    under that prefix, and DuckDB is given that exact list, so only those files are opened.
   - Columns are matched by name, so files whose columns differ (e.g. a variable added partway through) are read
     together, with nulls where a file doesn't have a column.
   - One DuckDB connection is reused for every read in a run, and closed when the run finishes.
@@ -430,8 +432,8 @@ Both readers are environment-aware. Bucket selection and credentials come from t
 
 The writer component saves completed `TimeFrame` objects back to storage:
 
-- selecting output bucket and prefix (according to environment)
-- partitioning data by date, network, site and resolution
+- taking the output bucket and prefix from each processed dataset's distribution access URL
+- grouping datasets that share an access URL into one file per day (`<prefix>/date=YYYY-MM-DD/data.parquet`)
 - merging new results with existing data when appropriate
 - writing parquet files
 

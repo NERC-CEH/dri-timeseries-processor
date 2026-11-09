@@ -57,10 +57,8 @@ def make_time_series_container(
     container = TimeSeriesContainer(
         ts_id=ts_id,
         network="network",
-        source_bucket=ts_id + "_bucket",
         source_site=ts_id + "_site",
         source_column=ts_id + "_column",
-        source_dataset=ts_id + "_dataset",
         source_site_identifier=ts_id + "site_identifier",
         time_column_name=ts_id + "time_column_name",
         unit=None,

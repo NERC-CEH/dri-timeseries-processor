@@ -22,49 +22,37 @@ def make_daily_df(n_rows: int = 3, col_name: str = "value") -> pl.DataFrame:
 
 
 class TestS3Bucket:
-    def test_parses_bucket_from_distribution_url(self) -> None:
+    @pytest.mark.parametrize("dataset_type", [DatasetType.TIMESERIES_DATASET, DatasetType.OBSERVATION_DATASET])
+    def test_parses_bucket_from_distribution_url(self, dataset_type: DatasetType) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = "s3://my-bucket/some/path/"
+        c.dataset_type = dataset_type
+        c.distribution_url = "s3://my-bucket/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/"
         assert c.s3_bucket == "my-bucket"
 
-    def test_falls_back_to_source_bucket_for_timeseries(self) -> None:
+    def test_none_when_no_distribution_url(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = DatasetType.TIMESERIES_DATASET
-        c.distribution_url = "s3://ignored-bucket/path/"
-        assert c.s3_bucket == c.source_bucket
-
-    def test_falls_back_to_source_bucket_when_no_distribution_url(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = None
-        assert c.s3_bucket == c.source_bucket
+        assert c.s3_bucket is None
 
 
 class TestS3DatasetPath:
-    def test_parses_path_from_distribution_url(self) -> None:
+    @pytest.mark.parametrize("dataset_type", [DatasetType.TIMESERIES_DATASET, DatasetType.OBSERVATION_DATASET])
+    def test_parses_path_from_distribution_url(self, dataset_type: DatasetType) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = "s3://my-bucket/Flux/"
-        assert c.s3_dataset_path == "Flux"
+        c.dataset_type = dataset_type
+        c.distribution_url = "s3://my-bucket/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/"
+        assert c.s3_dataset_path == "network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1"
 
     def test_strips_trailing_slash(self) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
         c.distribution_url = "s3://my-bucket/deep/nested/path/"
         assert c.s3_dataset_path == "deep/nested/path"
 
-    def test_falls_back_to_source_dataset_for_timeseries(self) -> None:
+    @pytest.mark.parametrize("url", [None, "s3://my-bucket", "s3://my-bucket/"])
+    def test_none_when_no_path(self, url: str | None) -> None:
         c = make_time_series_container("a")
-        c.dataset_type = DatasetType.TIMESERIES_DATASET
-        c.distribution_url = "s3://ignored/path/"
-        assert c.s3_dataset_path == c.source_dataset
-
-    def test_falls_back_to_source_dataset_when_no_distribution_url(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = None
-        assert c.s3_dataset_path == c.source_dataset
+        c.distribution_url = url
+        assert c.s3_dataset_path is None
 
 
 class TestCheckCommonAttributes:
