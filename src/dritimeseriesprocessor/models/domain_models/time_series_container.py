@@ -39,7 +39,7 @@ class TimeSeriesContainer:
     processing_level: ProcessingLevel
 
     dataset_type: DatasetType | None = None
-    distribution_url: str | None = None
+    distribution_url: str | None = None  # Where the dataset is stored
 
     plan_order: list[str] = field(default_factory=list)
     data_processing_configs: dict[str, DataProcessingConfig] = field(default_factory=dict)
@@ -108,25 +108,6 @@ class TimeSeriesContainer:
         flagging operations
         """
         return bool(self.flag_column_schemes)
-
-    @property
-    def s3_bucket(self) -> str | None:
-        """The bucket from the distribution access URL, e.g. `bucket` from `s3://bucket/network=X/...`."""
-        if not self.distribution_url:
-            return None
-        return self.distribution_url.split("://")[1].split("/")[0]
-
-    @property
-    def s3_dataset_path(self) -> str | None:
-        """The key prefix from the distribution access URL, without a trailing slash.
-
-        E.g. `network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1` from
-        `s3://bucket/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=ALIC1/`.
-        """
-        if not self.distribution_url:
-            return None
-        parts = self.distribution_url.split("://")[1].split("/", 1)
-        return parts[1].rstrip("/") if len(parts) > 1 and parts[1].strip("/") else None
 
     def init_timeframe(self, df: pl.DataFrame) -> None:
         """Wrap a DataFrame in a TimeFrame, apply initial flags, and store it on the container.

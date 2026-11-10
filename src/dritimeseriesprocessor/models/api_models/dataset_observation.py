@@ -85,9 +85,9 @@ class ObservationDatasetItem(IDModel):
 
     @property
     def distribution_url(self) -> str | None:
-        """Return the first access URL from the first distribution, or None."""
+        """Return the first access URL from the first distribution (with trailing slash removed), or None."""
         if self.distribution and self.distribution[0].access_url:
-            return self.distribution[0].access_url[0]
+            return self.distribution[0].access_url[0].rstrip("/")
         return None
 
 
