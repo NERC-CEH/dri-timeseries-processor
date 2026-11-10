@@ -67,8 +67,8 @@ class S3DataRouter(DataRouter):
     """Routes dataset loads to S3-backed storage.
 
     Parquet datasets are queried via a `DuckDBParquetReader`; raw file datasets are staged locally via a
-    `RawFileReader`. Both share the same S3 hive-partition layout. The storage client lists which daily parquet
-    files fall inside a date range, so DuckDB only opens those.
+    `RawFileReader`. Both find a dataset's files under its access URL, in daily `date=YYYY-MM-DD` folders. The
+    storage client lists which daily parquet files fall inside a date range, so DuckDB only opens those.
     """
 
     def __init__(self, reader: DuckDBParquetReader, raw_reader: RawFileReader, storage: StorageClient):
@@ -80,7 +80,7 @@ class S3DataRouter(DataRouter):
     def query_by_date_range(
         self, *containers: TimeSeriesContainer, start_date: datetime, end_date: datetime
     ) -> pl.DataFrame:
-        """Retrieve data for data range using DuckDB SQL query.
+        """Retrieve data for date range using DuckDB SQL query.
 
         The daily files inside the date range are listed first and DuckDB is given that exact list. Matching columns
         by name (`union_by_name`) handles files whose columns differ, and only costs a read of each listed file's
@@ -95,11 +95,10 @@ class S3DataRouter(DataRouter):
             A Polars DataFrame containing the data.
         """
 
-        _, _, _, bucket, base, time_column_name = check_common_attributes(
-            list(containers),
-            ["network", "source_site_identifier", "resolution", "s3_bucket", "s3_dataset_path", "time_column_name"],
+        dataset_url, time_column_name = check_common_attributes(
+            list(containers), ["distribution_url", "time_column_name"]
         )
-        if not bucket or not base:
+        if not dataset_url:
             raise ValueError(f"No distribution access URL for datasets: {[c.ts_id for c in containers]}")
 
         # Select via COLUMNS(lambda) rather than naming columns directly: a source_column that doesn't exist in the
@@ -107,16 +106,16 @@ class S3DataRouter(DataRouter):
         # can fail that one dataset without losing the rest of the group.
         requested_columns = ", ".join([f"'{c.source_column}'" for c in containers])
 
-        file_paths = self._list_files(bucket, base, start_date, end_date)
-        if not file_paths:
-            logger.warning(f"No parquet files found under s3://{bucket}/{base} between {start_date} and {end_date}")
+        file_urls = self._list_files(dataset_url, start_date, end_date)
+        if not file_urls:
+            logger.warning(f"No parquet files found under {dataset_url} between {start_date} and {end_date}")
             return pl.DataFrame()
 
         query = f"""
             SELECT {time_column_name}, COLUMNS(c -> c IN ({requested_columns}))
             FROM read_parquet(?, union_by_name=true);
         """
-        return self.reader.read(query, [file_paths])
+        return self.reader.read(query, [file_urls])
 
     def stage_locally(self, container: TimeSeriesContainer, start_date: datetime, end_date: datetime) -> Path:
         """Download a container's raw files for the date range into a new temp directory.
@@ -129,6 +128,9 @@ class S3DataRouter(DataRouter):
         Returns:
             Path to the local directory containing the downloaded files.
         """
+        if not container.distribution_url:
+            raise ValueError(f"No distribution access URL for dataset: {container.ts_id}")
+
         tmp = tempfile.TemporaryDirectory(prefix=f"raw_{container.source_site_identifier}_")
         self._staged.append(tmp)
         local_dir = Path(tmp.name)
@@ -137,13 +139,9 @@ class S3DataRouter(DataRouter):
         last = end_date.date()
         total_downloaded = 0
         while current <= last:
-            prefix = f"{container.s3_dataset_path}/date={current.isoformat()}/"
-            logger.info("Downloading raw files from s3://%s/%s", container.s3_bucket, prefix)
-            downloaded = self._raw_reader.download(
-                container.s3_bucket,  # type: ignore[arg-type]
-                prefix,
-                local_dir,
-            )
+            prefix_url = f"{container.distribution_url}/date={current.isoformat()}/"
+            logger.info("Downloading raw files from %s", prefix_url)
+            downloaded = self._raw_reader.download(prefix_url, local_dir)
             total_downloaded += len(downloaded)
             current += timedelta(days=1)
 
@@ -160,28 +158,27 @@ class S3DataRouter(DataRouter):
                 logger.exception("Failed to clean up temporary directory.")
         self._staged.clear()
 
-    def _list_files(self, bucket: str, site_prefix: str, start_date: datetime, end_date: datetime) -> list[str]:
-        """List the S3 paths of the site's `data.parquet` files from `start_date` to `end_date`, inclusive.
+    def _list_files(self, dataset_url: str, start_date: datetime, end_date: datetime) -> list[str]:
+        """List the URLs of the dataset's `data.parquet` files from `start_date` to `end_date`, inclusive.
 
         Args:
-            bucket: Bucket holding the parquet files.
-            site_prefix: The dataset's access URL prefix, e.g. `network=<NETWORK>/collection=<COLLECTION>/site=<SITE>`.
+            dataset_url: The dataset's access URL, e.g. `s3://bucket/network=X/collection=Y/site=Z`.
             start_date: First day to include.
             end_date: Last day to include.
 
         Returns:
-            `s3://` paths, one per day that has a file.
+            File URLs, one per day that has a file.
         """
         first_day = start_date.date()
         last_day = end_date.date()
         # One listing per month in the range, e.g. `date=2026-09` then `date=2026-10`
         months = pl.date_range(first_day.replace(day=1), last_day, "1mo", eager=True).dt.strftime("%Y-%m")
 
-        file_paths = []
-        date_prefix = f"{site_prefix}/date="
+        file_urls = []
+        date_prefix = f"{dataset_url}/date="
         for month in months:
-            for key in self._storage.list_keys_with_prefix(bucket, f"{date_prefix}{month}"):
-                day = key.removeprefix(date_prefix).split("/")[0]
-                if first_day.isoformat() <= day <= last_day.isoformat() and key.endswith("/data.parquet"):
-                    file_paths.append(f"s3://{bucket}/{key}")
-        return file_paths
+            for file_url in self._storage.list_urls(f"{date_prefix}{month}"):
+                day = file_url.removeprefix(date_prefix).split("/")[0]
+                if first_day.isoformat() <= day <= last_day.isoformat() and file_url.endswith("/data.parquet"):
+                    file_urls.append(file_url)
+        return file_urls
