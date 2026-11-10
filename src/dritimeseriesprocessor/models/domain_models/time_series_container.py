@@ -138,22 +138,21 @@ class TimeSeriesContainer:
         return hash(self.ts_id)
 
 
-def group_containers(
-    containers: Sequence[TimeSeriesContainer], attributes: list[str]
-) -> dict[tuple, list[TimeSeriesContainer]]:
-    """Group containers by a composite key derived from the given attributes.
+def group_by_distribution_url(
+    containers: Sequence[TimeSeriesContainer],
+) -> dict[str | None, list[TimeSeriesContainer]]:
+    """Group containers by access URL, as datasets with the same URL are stored in the same files.
 
     Args:
         containers: The containers to group.
-        attributes: Container attribute names to form the grouping key.
 
     Returns:
-        A dictionary mapping attribute tuples to lists of containers sharing those attribute values.
+        A dictionary mapping each access URL to the containers that have it. Containers with no access URL are
+        grouped under `None`.
     """
-    groupings: dict[tuple, list[TimeSeriesContainer]] = defaultdict(list)
+    groupings: dict[str | None, list[TimeSeriesContainer]] = defaultdict(list)
     for container in containers:
-        key = tuple(getattr(container, attr) for attr in attributes)
-        groupings[key].append(container)
+        groupings[container.distribution_url].append(container)
     return groupings
 
 

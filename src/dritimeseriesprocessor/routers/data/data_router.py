@@ -95,10 +95,10 @@ class S3DataRouter(DataRouter):
             A Polars DataFrame containing the data.
         """
 
-        dataset_url, time_column_name = check_common_attributes(
+        distribution_url, time_column_name = check_common_attributes(
             list(containers), ["distribution_url", "time_column_name"]
         )
-        if not dataset_url:
+        if not distribution_url:
             raise ValueError(f"No distribution access URL for datasets: {[c.ts_id for c in containers]}")
 
         # Select via COLUMNS(lambda) rather than naming columns directly: a source_column that doesn't exist in the
@@ -106,9 +106,9 @@ class S3DataRouter(DataRouter):
         # can fail that one dataset without losing the rest of the group.
         requested_columns = ", ".join([f"'{c.source_column}'" for c in containers])
 
-        file_urls = self._list_files(dataset_url, start_date, end_date)
+        file_urls = self._list_files(distribution_url, start_date, end_date)
         if not file_urls:
-            logger.warning(f"No parquet files found under {dataset_url} between {start_date} and {end_date}")
+            logger.warning(f"No parquet files found under {distribution_url} between {start_date} and {end_date}")
             return pl.DataFrame()
 
         query = f"""
@@ -158,11 +158,11 @@ class S3DataRouter(DataRouter):
                 logger.exception("Failed to clean up temporary directory.")
         self._staged.clear()
 
-    def _list_files(self, dataset_url: str, start_date: datetime, end_date: datetime) -> list[str]:
+    def _list_files(self, distribution_url: str, start_date: datetime, end_date: datetime) -> list[str]:
         """List the URLs of the dataset's `data.parquet` files from `start_date` to `end_date`, inclusive.
 
         Args:
-            dataset_url: The dataset's access URL, e.g. `s3://bucket/network=X/collection=Y/site=Z`.
+            distribution_url: The dataset's access URL, e.g. `s3://bucket/network=X/collection=Y/site=Z`.
             start_date: First day to include.
             end_date: Last day to include.
 
@@ -175,7 +175,7 @@ class S3DataRouter(DataRouter):
         months = pl.date_range(first_day.replace(day=1), last_day, "1mo", eager=True).dt.strftime("%Y-%m")
 
         file_urls = []
-        date_prefix = f"{dataset_url}/date="
+        date_prefix = f"{distribution_url}/date="
         for month in months:
             for file_url in self._storage.list_urls(f"{date_prefix}{month}"):
                 day = file_url.removeprefix(date_prefix).split("/")[0]
