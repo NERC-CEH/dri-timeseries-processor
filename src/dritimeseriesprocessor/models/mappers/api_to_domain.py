@@ -87,7 +87,7 @@ def map_dataset_item(
         time_column_name=getattr(item, "time_column_name", None),
         unit=unit.id if unit else None,
         dataset_type=dataset_type,
-        distribution_url=item.distribution_url,
+        access_url=item.access_url,
         plan_order=plan_order,
         base_dependency=base_dependency,
         flag_column_schemes=flag_column_schemes,

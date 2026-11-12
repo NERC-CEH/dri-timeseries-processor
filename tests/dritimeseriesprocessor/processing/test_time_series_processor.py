@@ -329,7 +329,7 @@ class TestTimeSeriesProcessor:
         container.network = "my_network"
         container.source_site_identifier = "SITE_A"
         container.resolution = "PT30M"
-        container.distribution_url = SAVE_URL
+        container.access_url = SAVE_URL
         container.source_column = "value"
 
         # Half-hourly data covering a day either side of the requested window
@@ -574,7 +574,7 @@ class TestTimeSeriesProcessor:
             container.network = "my_network"
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
-            container.distribution_url = SAVE_URL
+            container.access_url = SAVE_URL
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
         mock_graph.datasets["ds2"].load_only = True
@@ -605,7 +605,7 @@ class TestTimeSeriesProcessor:
             container.network = "my_network"
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
-            container.distribution_url = SAVE_URL
+            container.access_url = SAVE_URL
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
         # Mark ds2 as failed
@@ -662,7 +662,7 @@ class TestTimeSeriesProcessor:
             container.network = "my_network"
             container.source_site_identifier = "SITE_A"
             container.resolution = "PT30M"
-            container.distribution_url = SAVE_URL
+            container.access_url = SAVE_URL
             container.source_column = f"{ds_id}-col"
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
@@ -707,10 +707,10 @@ class TestTimeSeriesProcessor:
     ) -> None:
         """Tests that datasets with different access URLs are saved to separate files, each under its own URL."""
         mock_graph = create_mock_dag([["ds1", "ds2"]])
-        for ds_id, distribution_url in [("ds1", SAVE_URL), ("ds2", OTHER_SAVE_URL)]:
+        for ds_id, access_url in [("ds1", SAVE_URL), ("ds2", OTHER_SAVE_URL)]:
             container = mock_graph.datasets[ds_id]
             container.processing_level = ProcessingLevel.PROCESSED
-            container.distribution_url = distribution_url
+            container.access_url = access_url
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
         processor = TimeSeriesProcessor(
@@ -734,10 +734,10 @@ class TestTimeSeriesProcessor:
     ) -> None:
         """Tests that datasets with no access URL are marked as failed and not saved, while the others still are."""
         mock_graph = create_mock_dag([["ds1", "ds2"]])
-        for ds_id, distribution_url in [("ds1", SAVE_URL), ("ds2", None)]:
+        for ds_id, access_url in [("ds1", SAVE_URL), ("ds2", None)]:
             container = mock_graph.datasets[ds_id]
             container.processing_level = ProcessingLevel.PROCESSED
-            container.distribution_url = distribution_url
+            container.access_url = access_url
             container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
 
         processor = TimeSeriesProcessor(
@@ -767,14 +767,14 @@ class TestTimeSeriesProcessor:
             {"time": [datetime(2025, 1, 1) + timedelta(minutes=30 * step) for step in range(48)], "ds2-col": range(48)}
         )
         half_hourly = dataframe_to_timeframe(half_hourly_df, resolution="PT30M", metadata={"column_name": "ds2-col"})
-        for ds_id, distribution_url, timeframe in [
+        for ds_id, access_url, timeframe in [
             ("ds1", SAVE_URL, hourly),
             ("ds2", SAVE_URL, half_hourly),
             ("ds3", OTHER_SAVE_URL, create_timeframe(values=[i for i in range(48)], column_name="ds3-col")),
         ]:
             container = mock_graph.datasets[ds_id]
             container.processing_level = ProcessingLevel.PROCESSED
-            container.distribution_url = distribution_url
+            container.access_url = access_url
             container.data = timeframe
 
         processor = TimeSeriesProcessor(

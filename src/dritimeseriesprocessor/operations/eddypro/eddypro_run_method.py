@@ -79,17 +79,17 @@ class EddyProRun(DerivationMethod):
         if data_router is not None:
             # The bundle's own access URL is not where the despiking history is saved; find it from a sibling
             # processed timeseries dataset in the repository.
-            distribution_url = next(
+            access_url = next(
                 (
-                    c.distribution_url
+                    c.access_url
                     for c in dataset_repository.values()
-                    if c.distribution_url is not None
+                    if c.access_url is not None
                     and c.processing_level is ProcessingLevel.PROCESSED
                     and c.dataset_type is DatasetType.TIMESERIES_DATASET
                 ),
                 None,
             )
-            df = self._run_despiking(df, container, start_date, data_router, distribution_url)
+            df = self._run_despiking(df, container, start_date, data_router, access_url)
         else:
             logger.warning("data_router not available in EddyProRun params; despiking skipped.")
 
@@ -105,7 +105,7 @@ class EddyProRun(DerivationMethod):
         container: TimeSeriesContainer,
         start_date: date,
         data_router: DataRouter,
-        distribution_url: str | None,
+        access_url: str | None,
     ) -> pl.DataFrame:
         """Load prior history and apply MAD despiking to H and Tau in the EddyPro output.
 
@@ -114,11 +114,11 @@ class EddyProRun(DerivationMethod):
             container: The EddyPro bundle container (provides site identifier).
             start_date: Start of the current processing window (used to calculate lookback range).
             data_router: Router used to load historical processed data from storage.
-            distribution_url: Access URL of the processed collection that holds the history, or None if there isn't
+            access_url: Access URL of the processed collection that holds the history, or None if there isn't
                 one.
         """
         site = container.source_site_identifier
-        if distribution_url is None:
+        if access_url is None:
             logger.warning("Despiking skipped: no processed timeseries dataset to read history from for site %s.", site)
             return df
 
@@ -130,7 +130,7 @@ class EddyProRun(DerivationMethod):
         # One container per history column, all read from the sibling's access URL
         history_columns = [*EddyProRun._DESPIKE_COLUMNS, EddyProRun._DESPIKE_REFERENCE_COLUMN]
         history_containers = [
-            replace(container, distribution_url=distribution_url, time_column_name="time", source_column=column)
+            replace(container, access_url=access_url, time_column_name="time", source_column=column)
             for column in history_columns
         ]
 

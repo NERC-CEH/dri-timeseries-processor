@@ -136,7 +136,7 @@ PROCESSED_URL = "s3://ukceh-dri-staging-processed/network=FDRI/collection=PROCES
 
 def _make_container(
     site: str = "flux-plynl",
-    distribution_url: str = "s3://source-bucket/network=FDRI/collection=PROCESSED_FLUX/site=PLYNL",
+    access_url: str = "s3://source-bucket/network=FDRI/collection=PROCESSED_FLUX/site=PLYNL",
 ) -> TimeSeriesContainer:
     """Real container so dataclasses.replace works inside _run_despiking."""
     return TimeSeriesContainer(
@@ -151,7 +151,7 @@ def _make_container(
         periodicity="PT30M",
         time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
-        distribution_url=distribution_url,
+        access_url=access_url,
     )
 
 
@@ -173,7 +173,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            distribution_url=PROCESSED_URL,
+            access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
@@ -189,7 +189,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            distribution_url=PROCESSED_URL,
+            access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
@@ -205,7 +205,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            distribution_url=PROCESSED_URL,
+            access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
@@ -220,7 +220,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            distribution_url=None,
+            access_url=None,
         )
 
         assert_frame_equal(result, current)
@@ -239,7 +239,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            distribution_url=PROCESSED_URL,
+            access_url=PROCESSED_URL,
         )
 
         assert "H_despiked" in result.columns
@@ -256,7 +256,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            distribution_url=PROCESSED_URL,
+            access_url=PROCESSED_URL,
         )
 
         call_kwargs = mock_router.query_by_date_range.call_args.kwargs
@@ -275,10 +275,10 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            distribution_url=PROCESSED_URL,
+            access_url=PROCESSED_URL,
         )
 
         containers = mock_router.query_by_date_range.call_args.args
-        assert all(container.distribution_url == PROCESSED_URL for container in containers)
+        assert all(container.access_url == PROCESSED_URL for container in containers)
         assert all(container.time_column_name == "time" for container in containers)
         assert {container.source_column for container in containers} == {"H", "Tau", "R_SW_in_Avg"}

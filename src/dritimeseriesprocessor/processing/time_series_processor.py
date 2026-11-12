@@ -17,7 +17,7 @@ from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
     TimeSeriesContainer,
-    group_by_distribution_url,
+    group_by_access_url,
 )
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
@@ -268,23 +268,23 @@ class TimeSeriesProcessor:
         """
         containers = self._collect_load_containers()
         logger.info(f"Collecting and loading [{len(containers)}] datasets.")
-        groupings = group_by_distribution_url(containers)
+        groupings = group_by_access_url(containers)
 
         with self.metrics.time_load.time():
-            for distribution_url, containers_in_group in groupings.items():
+            for access_url, containers_in_group in groupings.items():
                 try:
                     combined_df = self.data_router.query_by_date_range(
                         *containers_in_group, start_date=self.load_start_date, end_date=self.load_end_date
                     )
 
                     if combined_df.is_empty():
-                        raise ValueError(f"No data returned for group: {distribution_url}")
+                        raise ValueError(f"No data returned for group: {access_url}")
 
                 except Exception:  # noqa
                     for container in containers_in_group:
                         self.metrics.no_data.labels(dataset=extract_uri_id(container.ts_id)).inc()
                         container.failed = True
-                    logger.exception(f"Failed to load data for group: {distribution_url}")
+                    logger.exception(f"Failed to load data for group: {access_url}")
                     continue
 
                 for container in containers_in_group:
@@ -346,12 +346,12 @@ class TimeSeriesProcessor:
             logger.warning("No datasets available to be saved.")
             return
 
-        groupings = group_by_distribution_url(processed)
+        groupings = group_by_access_url(processed)
 
-        for distribution_url, containers in groupings.items():
+        for access_url, containers in groupings.items():
             try:
-                if not distribution_url:
-                    raise ValueError(f"No distribution access URL for containers: {[c.ts_id for c in containers]}")
+                if not access_url:
+                    raise ValueError(f"No access URL for containers: {[c.ts_id for c in containers]}")
 
                 # Merge the data for all containers
                 group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])
@@ -374,4 +374,4 @@ class TimeSeriesProcessor:
 
             # Yield specific save tasks
             for data_date, df in data_to_write:
-                yield f"{distribution_url}/date={data_date:%Y-%m-%d}/data.parquet", df, group_tf.time_name
+                yield f"{access_url}/date={data_date:%Y-%m-%d}/data.parquet", df, group_tf.time_name

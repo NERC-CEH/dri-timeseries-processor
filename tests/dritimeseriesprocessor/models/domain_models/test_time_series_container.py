@@ -10,7 +10,7 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
     check_common_attributes,
-    group_by_distribution_url,
+    group_by_access_url,
 )
 from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from utils.data_creation import make_time_series_container
@@ -58,18 +58,18 @@ class TestCheckCommonAttributes:
             check_common_attributes(self.containers, ["ts_id", "source_site", "source_column"])
 
 
-class TestGroupByDistributionUrl:
+class TestGroupByAccessUrl:
     def test_empty_containers_returns_empty_dict(self) -> None:
         """Tests that grouping no containers gives an empty dictionary."""
-        assert group_by_distribution_url(()) == {}
+        assert group_by_access_url(()) == {}
 
     def test_containers_with_same_url_are_grouped_together(self) -> None:
         """Tests that containers sharing an access URL end up in one group, keyed by that URL."""
         container_a = make_time_series_container("a")
         container_b = make_time_series_container("b")
-        container_a.distribution_url = container_b.distribution_url = "s3://bucket/network=X/collection=Y/site=Z"
+        container_a.access_url = container_b.access_url = "s3://bucket/network=X/collection=Y/site=Z"
 
-        result = group_by_distribution_url((container_a, container_b))
+        result = group_by_access_url((container_a, container_b))
 
         assert result == {"s3://bucket/network=X/collection=Y/site=Z": [container_a, container_b]}
 
@@ -78,10 +78,10 @@ class TestGroupByDistributionUrl:
         container_a1 = make_time_series_container("a1")
         container_b = make_time_series_container("b")
         container_a2 = make_time_series_container("a2")
-        container_a1.distribution_url = container_a2.distribution_url = "s3://bucket/collection=A"
-        container_b.distribution_url = "s3://bucket/collection=B"
+        container_a1.access_url = container_a2.access_url = "s3://bucket/collection=A"
+        container_b.access_url = "s3://bucket/collection=B"
 
-        result = group_by_distribution_url((container_a1, container_b, container_a2))
+        result = group_by_access_url((container_a1, container_b, container_a2))
 
         assert result == {
             "s3://bucket/collection=A": [container_a1, container_a2],
@@ -92,10 +92,10 @@ class TestGroupByDistributionUrl:
         """Tests that containers with no access URL are grouped together under None."""
         container_a = make_time_series_container("a")
         container_b = make_time_series_container("b")
-        container_a.distribution_url = None
-        container_b.distribution_url = None
+        container_a.access_url = None
+        container_b.access_url = None
 
-        assert group_by_distribution_url((container_a, container_b)) == {None: [container_a, container_b]}
+        assert group_by_access_url((container_a, container_b)) == {None: [container_a, container_b]}
 
 
 class TestTimeColumnName:

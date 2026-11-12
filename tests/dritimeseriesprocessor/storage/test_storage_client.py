@@ -11,7 +11,7 @@ LOCALSTACK_TEST_BUCKET = "test-bucket"
 BUCKET_URL = f"s3://{LOCALSTACK_TEST_BUCKET}"
 
 
-class TestSplitDistributionUrl:
+class TestSplitAccessUrl:
     @pytest.mark.parametrize(
         "url, expected",
         [
@@ -27,19 +27,19 @@ class TestSplitDistributionUrl:
     )
     def test_splits_url_into_bucket_and_key(self, url: str, expected: tuple[str, str]) -> None:
         """Tests that an s3:// URL is split into its bucket and the rest of the path as the key."""
-        assert S3StorageClient._split_distribution_url(url) == expected
+        assert S3StorageClient._split_access_url(url) == expected
 
     @pytest.mark.parametrize("url", ["bucket/key", "https://bucket/key", "/local/path/data.parquet"])
     def test_raises_for_non_s3_url(self, url: str) -> None:
         """Tests that a URL that doesn't start with s3:// is rejected."""
         with pytest.raises(ValueError, match="Expected an s3:// URL"):
-            S3StorageClient._split_distribution_url(url)
+            S3StorageClient._split_access_url(url)
 
     @pytest.mark.parametrize("url", ["s3://", "s3:///key"])
     def test_raises_when_url_has_no_bucket(self, url: str) -> None:
         """Tests that an s3:// URL with no bucket name is rejected."""
         with pytest.raises(ValueError, match="No bucket in URL"):
-            S3StorageClient._split_distribution_url(url)
+            S3StorageClient._split_access_url(url)
 
 
 class TestS3StorageClient:

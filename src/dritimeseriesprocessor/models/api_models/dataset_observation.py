@@ -84,7 +84,7 @@ class ObservationDatasetItem(IDModel):
     direct_depends_on: list[IDModel] | None = Field(None, alias="directDependsOn")
 
     @property
-    def distribution_url(self) -> str | None:
+    def access_url(self) -> str | None:
         """Return the first access URL from the first distribution (with trailing slash removed), or None."""
         if self.distribution and self.distribution[0].access_url:
             return self.distribution[0].access_url[0].rstrip("/")

@@ -39,7 +39,7 @@ class TimeSeriesContainer:
     processing_level: ProcessingLevel
 
     dataset_type: DatasetType | None = None
-    distribution_url: str | None = None  # Where the dataset is stored
+    access_url: str | None = None  # Where the dataset is stored
 
     plan_order: list[str] = field(default_factory=list)
     data_processing_configs: dict[str, DataProcessingConfig] = field(default_factory=dict)
@@ -138,7 +138,7 @@ class TimeSeriesContainer:
         return hash(self.ts_id)
 
 
-def group_by_distribution_url(
+def group_by_access_url(
     containers: Sequence[TimeSeriesContainer],
 ) -> dict[str | None, list[TimeSeriesContainer]]:
     """Group containers by access URL, as datasets with the same URL are stored in the same files.
@@ -152,7 +152,7 @@ def group_by_distribution_url(
     """
     groupings: dict[str | None, list[TimeSeriesContainer]] = defaultdict(list)
     for container in containers:
-        groupings[container.distribution_url].append(container)
+        groupings[container.access_url].append(container)
     return groupings
 
 

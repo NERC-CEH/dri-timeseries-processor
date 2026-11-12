@@ -46,14 +46,14 @@ def router_with_urls(urls: list[str]) -> S3DataRouter:
 
 def make_container(
     source_column: str = "a_column_name",
-    distribution_url: str | None = TEST_DATASET_URL,
+    access_url: str | None = TEST_DATASET_URL,
     time_column_name: str = "a_time",
     ts_id: str = "ds-1",
 ) -> MagicMock:
     """Build a mock container with just the attributes the router reads."""
     return MagicMock(
         ts_id=ts_id,
-        distribution_url=distribution_url,
+        access_url=access_url,
         source_column=source_column,
         source_site_identifier="A_SITE",
         time_column_name=time_column_name,
@@ -120,9 +120,9 @@ class TestS3DataRouter:
 
     def test_query_raises_when_no_access_url(self, router: S3DataRouter, mock_reader: MagicMock) -> None:
         """Tests that a container with no access URL fails the query rather than reading from a guessed location."""
-        container = make_container(distribution_url=None)
+        container = make_container(access_url=None)
 
-        with pytest.raises(ValueError, match="No distribution access URL"):
+        with pytest.raises(ValueError, match="No access URL"):
             router.query_by_date_range(container, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2))
         mock_reader.read.assert_not_called()
 
@@ -131,9 +131,9 @@ class TestS3DataRouter:
     ) -> None:
         """Tests that containers stored in different places can't be read together in one query."""
         container_1 = make_container(source_column="col_one")
-        container_2 = make_container(source_column="col_two", distribution_url=LISTING_DATASET_URL)
+        container_2 = make_container(source_column="col_two", access_url=LISTING_DATASET_URL)
 
-        with pytest.raises(ValueError, match="distribution_url"):
+        with pytest.raises(ValueError, match="access_url"):
             router.query_by_date_range(
                 container_1, container_2, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2)
             )
@@ -171,7 +171,7 @@ class TestS3DataRouter:
         router = S3DataRouter(DuckDBParquetReader(create_duckdb_factory()), MagicMock(), s3_storage_client)
         container = make_container(
             source_column="value",
-            distribution_url=f"s3://{E2E_INPUT_BUCKET}/{TEST_DATASET_PATH}",
+            access_url=f"s3://{E2E_INPUT_BUCKET}/{TEST_DATASET_PATH}",
             time_column_name="time",
         )
 
@@ -326,7 +326,7 @@ class TestStageLocally:
         mock_raw_reader.download.return_value = []
 
         router.stage_locally(
-            make_container(distribution_url=FLUX_DATASET_URL),
+            make_container(access_url=FLUX_DATASET_URL),
             start_date=datetime(2024, 1, 1),
             end_date=datetime(2024, 1, 3),
         )
@@ -338,7 +338,7 @@ class TestStageLocally:
         mock_raw_reader.download.return_value = []
 
         router.stage_locally(
-            make_container(distribution_url=FLUX_DATASET_URL),
+            make_container(access_url=FLUX_DATASET_URL),
             start_date=datetime(2024, 1, 1),
             end_date=datetime(2024, 1, 1),
         )
@@ -350,7 +350,7 @@ class TestStageLocally:
         mock_raw_reader.download.return_value = []
 
         router.stage_locally(
-            make_container(distribution_url=FLUX_DATASET_URL),
+            make_container(access_url=FLUX_DATASET_URL),
             start_date=datetime(2024, 1, 1),
             end_date=datetime(2024, 1, 2),
         )
@@ -360,9 +360,9 @@ class TestStageLocally:
 
     def test_raises_when_no_access_url(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
         """Tests that staging a dataset with no access URL fails before anything is downloaded."""
-        with pytest.raises(ValueError, match="No distribution access URL"):
+        with pytest.raises(ValueError, match="No access URL"):
             router.stage_locally(
-                make_container(distribution_url=None), start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1)
+                make_container(access_url=None), start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1)
             )
 
         mock_raw_reader.download.assert_not_called()
@@ -373,7 +373,7 @@ class TestStageLocally:
         mock_raw_reader.download.return_value = []
 
         result = router.stage_locally(
-            make_container(distribution_url=FLUX_DATASET_URL),
+            make_container(access_url=FLUX_DATASET_URL),
             start_date=datetime(2024, 1, 1),
             end_date=datetime(2024, 1, 1),
         )
@@ -386,7 +386,7 @@ class TestStageLocally:
         mock_raw_reader.download.return_value = []
 
         router.stage_locally(
-            make_container(distribution_url=FLUX_DATASET_URL),
+            make_container(access_url=FLUX_DATASET_URL),
             start_date=datetime(2024, 1, 1),
             end_date=datetime(2024, 1, 1),
         )

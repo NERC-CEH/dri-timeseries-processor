@@ -111,7 +111,7 @@ class S3StorageClient(StorageClient):
         self.client = session.client("s3", **kwargs)
 
     @staticmethod
-    def _split_distribution_url(url: str) -> tuple[str, str]:
+    def _split_access_url(url: str) -> tuple[str, str]:
         """Split an `s3://` URL into the bucket and key that boto3 needs.
 
         E.g. `s3://bucket/network=X/site=Y/date=2026-01-26/data.parquet` gives
@@ -134,25 +134,25 @@ class S3StorageClient(StorageClient):
         return bucket, key
 
     def get_bytes(self, url: str) -> bytes:
-        bucket, key = self._split_distribution_url(url)
+        bucket, key = self._split_access_url(url)
         obj = self.client.get_object(Bucket=bucket, Key=key)
         return obj["Body"].read()
 
     def put_bytes(self, url: str, data: bytes) -> None:
-        bucket, key = self._split_distribution_url(url)
+        bucket, key = self._split_access_url(url)
         self.client.put_object(Bucket=bucket, Key=key, Body=data)
 
     def download_file(self, url: str, local_path: Path) -> None:
-        bucket, key = self._split_distribution_url(url)
+        bucket, key = self._split_access_url(url)
         local_path.parent.mkdir(parents=True, exist_ok=True)
         self.client.download_file(bucket, key, str(local_path))
 
     def upload_file(self, url: str, local_path: Path) -> None:
-        bucket, key = self._split_distribution_url(url)
+        bucket, key = self._split_access_url(url)
         self.client.upload_file(str(local_path), bucket, key)
 
     def list_urls(self, prefix_url: str) -> list[str]:
-        bucket, prefix = self._split_distribution_url(prefix_url)
+        bucket, prefix = self._split_access_url(prefix_url)
         paginator = self.client.get_paginator("list_objects_v2")
         urls = []
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
@@ -161,5 +161,5 @@ class S3StorageClient(StorageClient):
         return urls
 
     def delete(self, url: str) -> None:
-        bucket, key = self._split_distribution_url(url)
+        bucket, key = self._split_access_url(url)
         self.client.delete_object(Bucket=bucket, Key=key)
