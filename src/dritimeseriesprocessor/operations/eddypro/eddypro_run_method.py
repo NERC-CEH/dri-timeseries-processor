@@ -79,9 +79,9 @@ class EddyProRun(DerivationMethod):
         if data_router is not None:
             # The bundle's own access URL is not where the despiking history is saved; find it from a sibling
             # processed timeseries dataset in the repository.
-            processed_container = next(
+            distribution_url = next(
                 (
-                    c
+                    c.distribution_url
                     for c in dataset_repository.values()
                     if c.distribution_url is not None
                     and c.processing_level is ProcessingLevel.PROCESSED
@@ -89,7 +89,7 @@ class EddyProRun(DerivationMethod):
                 ),
                 None,
             )
-            df = self._run_despiking(df, container, start_date, resolution, data_router, processed_container)
+            df = self._run_despiking(df, container, start_date, data_router, distribution_url)
         else:
             logger.warning("data_router not available in EddyProRun params; despiking skipped.")
 
@@ -104,9 +104,8 @@ class EddyProRun(DerivationMethod):
         df: pl.DataFrame,
         container: TimeSeriesContainer,
         start_date: date,
-        resolution: str,
         data_router: DataRouter,
-        processed_container: TimeSeriesContainer | None = None,
+        distribution_url: str | None,
     ) -> pl.DataFrame:
         """Load prior history and apply MAD despiking to H and Tau in the EddyPro output.
 
@@ -114,36 +113,25 @@ class EddyProRun(DerivationMethod):
             df: EddyPro output DataFrame for the current processing window.
             container: The EddyPro bundle container (provides site identifier).
             start_date: Start of the current processing window (used to calculate lookback range).
-            resolution: ISO-8601 resolution string (e.g. "PT30M") of the EddyPro output.
-            data_router: Router used to load historical processed data from S3.
-            processed_container: A sibling processed timeseries container providing network and the access URL that
-                locates the history.
+            data_router: Router used to load historical processed data from storage.
+            distribution_url: Access URL of the processed collection that holds the history, or None if there isn't
+                one.
         """
         site = container.source_site_identifier
-        # ObservationDataset bundles don't carry network. Borrow it and the access URL from a sibling processed
-        # container.
-        network = processed_container.network if processed_container is not None else None
-        distribution_url = processed_container.distribution_url if processed_container is not None else None
+        if distribution_url is None:
+            logger.warning("Despiking skipped: no processed timeseries dataset to read history from for site %s.", site)
+            return df
 
         history_start = datetime.combine(
             start_date - timedelta(days=EddyProRun._DESPIKE_LOOKBACK_DAYS), datetime.min.time()
         )
         history_end = datetime.combine(start_date - timedelta(days=1), datetime.min.time())
 
-        # Derive a per-column container from the bundle, located by the sibling's access URL
+        # One container per history column, all read from the sibling's access URL
         history_columns = [*EddyProRun._DESPIKE_COLUMNS, EddyProRun._DESPIKE_REFERENCE_COLUMN]
         history_containers = [
-            replace(
-                container,
-                network=network,
-                distribution_url=distribution_url,
-                source_site_identifier=site,
-                resolution=resolution,
-                time_column_name="time",
-                source_column=col,
-                processing_level=ProcessingLevel.PROCESSED,
-            )
-            for col in history_columns
+            replace(container, distribution_url=distribution_url, time_column_name="time", source_column=column)
+            for column in history_columns
         ]
 
         try:
