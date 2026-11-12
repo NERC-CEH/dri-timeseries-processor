@@ -123,8 +123,6 @@ The runtime environment is determined from the `environment` environment variabl
 | AWS_DEFAULT_REGION    | AWS region for S3 access                      | All                |
 | AWS_ACCESS_KEY_ID     | AWS access key (local only uses dummy values) | All                |
 | AWS_SECRET_ACCESS_KEY | AWS secret key (local only uses dummy values) | All                |
-| level_0_bucket        | S3 bucket containing raw (Level 0) data       | All                |
-| processed_bucket      | S3 bucket for processed output data           | All                |
 | metadata_api_url      | FDRI metadata API endpoint                    | All                |
 | endpoint_url          | S3 endpoint override (LocalStack)             | Local only         |
 | pushgateway_url       | Prometheus Pushgateway for metrics            | Staging/Production |
@@ -290,7 +288,7 @@ The processing pipeline is the core execution engine responsible for transformin
 The pipeline takes in a dependency graph, representing the datasets to be produced, along with their dependent datasets.
 Each dataset is provided as a `TimeSeriesContainer`, which encapsulates:
 
-- dataset loading metadata (e.g. source bucket, column names, etc.)
+- dataset loading metadata (e.g. access URL, column names, etc.)
 - its processing **plan** - an ordered list of data processing configurations to apply
 - A `TimeFrame` object that holds the actual data for the dataset
 
@@ -409,31 +407,37 @@ The I/O backend provides a unified interface for reading and writing datasets, i
 storage formats, storage locations, credential handling, and access protocols. All interaction with object storage
 passes through this layer.
 
+A dataset's location is the distribution access URL in its metadata, e.g.
+`s3://<bucket>/network=<NETWORK>/collection=<COLLECTION>/site=<SITE>/`, with any trailing slash removed. Datasets with
+the same access URL are stored in the same files, one per day, at `<access URL>/date=YYYY-MM-DD/data.parquet`. Every
+read and write works with these full URLs - only the S3 storage client splits them into a bucket and key.
+
 #### Reader
 
 The reader component loads dataset data from storage into memory. There are two reader types:
 
 - **`DuckDBParquetReader`**: reads parquet data for a time series dataset with DuckDB. Used for batch loading and
   for `load` steps.
-  - A dataset's location is the bucket and prefix of its distribution access URL in the metadata, e.g.
-    `s3://<bucket>/network=<NETWORK>/collection=<COLLECTION>/site=<SITE>/`. A dataset with no access URL is marked as
-    failed.
+  - Datasets are loaded in groups that share an access URL, so all their columns come from one query. A group with no
+    access URL is marked as failed.
   - The data router first lists the daily `data.parquet` files in the date range, from the `date=` folders directly
-    under that prefix, and DuckDB is given that exact list, so only those files are opened.
+    under the access URL, and DuckDB is given that exact list, so only those files are opened.
   - Columns are matched by name, so files whose columns differ (e.g. a variable added partway through) are read
     together, with nulls where a file doesn't have a column.
   - One DuckDB connection is reused for every read in a run, and closed when the run finishes.
-- **`RawFileReader`**: downloads raw files (e.g. `.dat` files) from an S3 prefix into a local temporary directory.
-  Used for `load-local-copy` steps, where a subsequent derivation step (such as `EddyProRun`) needs the files on disk.
+- **`RawFileReader`**: downloads raw files (e.g. `.dat` files) from the `date=` folders under a dataset's access URL
+  into a local temporary directory. Used for `load-local-copy` steps, where a subsequent derivation step (such as
+  `EddyProRun`) needs the files on disk.
 
-Both readers are environment-aware. Bucket selection and credentials come from the configuration layer.
+Both readers are environment-aware. Credentials and the S3 endpoint come from the configuration layer.
 
 #### Writer
 
 The writer component saves completed `TimeFrame` objects back to storage:
 
-- taking the output bucket and prefix from each processed dataset's distribution access URL
-- grouping datasets that share an access URL into one file per day (`<prefix>/date=YYYY-MM-DD/data.parquet`)
+- grouping processed datasets that share an access URL, and merging them into one file per day
+- marking a group as failed, while still saving the others, if it has no access URL or its datasets can't be merged
+  (e.g. different resolutions)
 - merging new results with existing data when appropriate
 - writing parquet files
 
