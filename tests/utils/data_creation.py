@@ -92,5 +92,5 @@ def make_time_series_container(
         periodicity="P1D",
         time_anchor="start",
         processing_level=processing_level,
-        distribution_url=f"s3://{ts_id}_bucket/network=NETWORK/collection={ts_id}_collection/site={ts_id}_site/",
+        distribution_url=f"s3://{ts_id}_bucket/network=NETWORK/collection={ts_id}_collection/site={ts_id}_site",
     )

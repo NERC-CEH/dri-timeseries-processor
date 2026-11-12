@@ -34,7 +34,8 @@ def mock_writer() -> MagicMock:
     return writer
 
 
-SAVE_URL = "s3://my_bucket/network=MY_NETWORK/collection=PROCESSED_30MIN/site=SITE_A/"
+SAVE_URL = "s3://my_bucket/network=MY_NETWORK/collection=PROCESSED_30MIN/site=SITE_A"
+OTHER_SAVE_URL = "s3://my_bucket/network=MY_NETWORK/collection=PROCESSED_1HOUR/site=SITE_A"
 
 
 def create_mock_dag(topo_layers: list) -> MagicMock:
@@ -345,7 +346,7 @@ class TestTimeSeriesProcessor:
             metrics=MagicMock(),
         )
 
-        written_dates = [key.split("date=")[1].split("/")[0] for _, key, _, _ in processor._build_save_tasks()]
+        written_dates = [url.split("date=")[1].split("/")[0] for url, _, _ in processor._build_save_tasks()]
         assert written_dates == ["2025-01-02", "2025-01-03"]
 
     def test_processing_failure_of_dependency(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
@@ -564,7 +565,7 @@ class TestTimeSeriesProcessor:
     def test_build_save_tasks_excludes_load_only_containers(
         self, mock_router: MagicMock, mock_writer: MagicMock
     ) -> None:
-        """Load-only containers must not appear in save tasks even when processing_level is PROCESSED."""
+        """Tests that load-only containers are not saved, even when their processing level is PROCESSED."""
         ds_ids = ["ds1", "ds2"]
         mock_graph = create_mock_dag([[ds_id] for ds_id in ds_ids])
 
@@ -590,12 +591,12 @@ class TestTimeSeriesProcessor:
         tasks = list(processor._build_save_tasks())
 
         assert len(tasks) == 2
-        for _, _, df, _ in tasks:
+        for _, df, _ in tasks:
             assert "ds1-col" in df.columns
             assert "ds2-col" not in df.columns
 
     def test_build_save_tasks_excludes_failed_containers(self, mock_router: MagicMock, mock_writer: MagicMock) -> None:
-        """Failed containers should be excluded from save tasks."""
+        """Tests that failed containers are not saved."""
         ds_ids = ["ds1", "ds2"]
         mock_graph = create_mock_dag([[ds_id] for ds_id in ds_ids])
 
@@ -623,7 +624,7 @@ class TestTimeSeriesProcessor:
 
         # Only ds1 data should be present - 2 tasks for 2 days
         assert len(tasks) == 2
-        for _, _, df, _ in tasks:
+        for _, df, _ in tasks:
             assert "ds1-col" in df.columns
             assert "ds2-col" not in df.columns
 
@@ -651,10 +652,11 @@ class TestTimeSeriesProcessor:
     def test_build_save_tasks(
         self, mock_router: MagicMock, mock_writer: MagicMock, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Tests that datasets sharing an access URL are merged and saved as one file per day under that URL."""
         ds_ids = ["ds1", "ds2", "ds3"]
         mock_graph = create_mock_dag([[ds_id] for ds_id in ds_ids])
 
-        # ensure all the containers have the required attributes for saving / key building
+        # ensure all the containers have the required attributes for saving
         for ds_id, container in mock_graph.datasets.items():
             container.processing_level = ProcessingLevel.PROCESSED
             container.network = "my_network"
@@ -679,27 +681,117 @@ class TestTimeSeriesProcessor:
 
         expected = [
             (
-                "my_bucket",
-                "network=MY_NETWORK/collection=PROCESSED_30MIN/site=SITE_A/date=2025-01-01/data.parquet",
+                f"{SAVE_URL}/date=2025-01-01/data.parquet",
                 expected_df.filter(pl.col("time").cast(pl.Date) == pl.date(2025, 1, 1)),
                 "time",
             ),
             (
-                "my_bucket",
-                "network=MY_NETWORK/collection=PROCESSED_30MIN/site=SITE_A/date=2025-01-02/data.parquet",
+                f"{SAVE_URL}/date=2025-01-02/data.parquet",
                 expected_df.filter(pl.col("time").cast(pl.Date) == pl.date(2025, 1, 2)),
                 "time",
             ),
         ]
 
-        for idx, result in enumerate(processor._build_save_tasks()):
-            result_bucket, result_key, result_df, result_time_name = result
-            expected_bucket, expected_key, expected_df, expected_time_name = expected[idx]
+        results = list(processor._build_save_tasks())
+        assert len(results) == len(expected)
+        for result, expected_task in zip(results, expected):
+            result_url, result_df, result_time_name = result
+            expected_url, expected_df, expected_time_name = expected_task
 
-            assert result_bucket == expected_bucket
-            assert result_key == expected_key
+            assert result_url == expected_url
             assert_frame_equal(result_df, expected_df)
             assert result_time_name == expected_time_name
+
+    def test_build_save_tasks_writes_each_access_url_separately(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that datasets with different access URLs are saved to separate files, each under its own URL."""
+        mock_graph = create_mock_dag([["ds1", "ds2"]])
+        for ds_id, distribution_url in [("ds1", SAVE_URL), ("ds2", OTHER_SAVE_URL)]:
+            container = mock_graph.datasets[ds_id]
+            container.processing_level = ProcessingLevel.PROCESSED
+            container.distribution_url = distribution_url
+            container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 1),
+            metrics=MagicMock(),
+        )
+
+        columns_by_url = {url: df.columns for url, df, _ in processor._build_save_tasks()}
+
+        assert columns_by_url == {
+            f"{SAVE_URL}/date=2025-01-01/data.parquet": ["time", "ds1-col"],
+            f"{OTHER_SAVE_URL}/date=2025-01-01/data.parquet": ["time", "ds2-col"],
+        }
+
+    def test_build_save_tasks_fails_datasets_with_no_access_url(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that datasets with no access URL are marked as failed and not saved, while the others still are."""
+        mock_graph = create_mock_dag([["ds1", "ds2"]])
+        for ds_id, distribution_url in [("ds1", SAVE_URL), ("ds2", None)]:
+            container = mock_graph.datasets[ds_id]
+            container.processing_level = ProcessingLevel.PROCESSED
+            container.distribution_url = distribution_url
+            container.data = create_timeframe(values=[i for i in range(48)], column_name=f"{ds_id}-col")
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 1),
+            metrics=MagicMock(),
+        )
+
+        tasks = list(processor._build_save_tasks())
+
+        assert [url for url, _, _ in tasks] == [f"{SAVE_URL}/date=2025-01-01/data.parquet"]
+        assert not mock_graph.datasets["ds1"].failed
+        assert mock_graph.datasets["ds2"].failed
+
+    def test_build_save_tasks_fails_group_that_cannot_be_merged(
+        self, mock_router: MagicMock, mock_writer: MagicMock
+    ) -> None:
+        """Tests that a group sharing an access URL but with different resolutions is marked as failed, while other
+        groups are still saved.
+        """
+        mock_graph = create_mock_dag([["ds1", "ds2", "ds3"]])
+        hourly = create_timeframe(values=[i for i in range(48)], column_name="ds1-col")
+        half_hourly_df = pl.DataFrame(
+            {"time": [datetime(2025, 1, 1) + timedelta(minutes=30 * step) for step in range(48)], "ds2-col": range(48)}
+        )
+        half_hourly = dataframe_to_timeframe(half_hourly_df, resolution="PT30M", metadata={"column_name": "ds2-col"})
+        for ds_id, distribution_url, timeframe in [
+            ("ds1", SAVE_URL, hourly),
+            ("ds2", SAVE_URL, half_hourly),
+            ("ds3", OTHER_SAVE_URL, create_timeframe(values=[i for i in range(48)], column_name="ds3-col")),
+        ]:
+            container = mock_graph.datasets[ds_id]
+            container.processing_level = ProcessingLevel.PROCESSED
+            container.distribution_url = distribution_url
+            container.data = timeframe
+
+        processor = TimeSeriesProcessor(
+            graph=mock_graph,
+            data_router=mock_router,
+            data_writer=mock_writer,
+            start_date=datetime(2025, 1, 1),
+            end_date=datetime(2025, 1, 1),
+            metrics=MagicMock(),
+        )
+
+        tasks = list(processor._build_save_tasks())
+
+        assert [url for url, _, _ in tasks] == [f"{OTHER_SAVE_URL}/date=2025-01-01/data.parquet"]
+        assert mock_graph.datasets["ds1"].failed
+        assert mock_graph.datasets["ds2"].failed
+        assert not mock_graph.datasets["ds3"].failed
 
 
 class TestProcessDatasetQCRemoval:

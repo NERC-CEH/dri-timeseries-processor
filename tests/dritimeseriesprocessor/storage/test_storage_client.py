@@ -8,6 +8,38 @@ from dritimeseriesprocessor.storage.storage_client import S3StorageClient
 LOCALSTACK_ENDPOINT_URL = "http://localhost:4566"
 LOCALSTACK_REGION = "eu-west-2"
 LOCALSTACK_TEST_BUCKET = "test-bucket"
+BUCKET_URL = f"s3://{LOCALSTACK_TEST_BUCKET}"
+
+
+class TestSplitDistributionUrl:
+    @pytest.mark.parametrize(
+        "url, expected",
+        [
+            (
+                "s3://bucket/network=X/site=Y/date=2026-01-26/data.parquet",
+                ("bucket", "network=X/site=Y/date=2026-01-26/data.parquet"),
+            ),
+            ("s3://bucket/network=X/site=Y/", ("bucket", "network=X/site=Y/")),
+            ("s3://bucket/network=X/site=Y/date=2026-01", ("bucket", "network=X/site=Y/date=2026-01")),
+            ("s3://bucket", ("bucket", "")),
+            ("s3://bucket/", ("bucket", "")),
+        ],
+    )
+    def test_splits_url_into_bucket_and_key(self, url: str, expected: tuple[str, str]) -> None:
+        """Tests that an s3:// URL is split into its bucket and the rest of the path as the key."""
+        assert S3StorageClient._split_distribution_url(url) == expected
+
+    @pytest.mark.parametrize("url", ["bucket/key", "https://bucket/key", "/local/path/data.parquet"])
+    def test_raises_for_non_s3_url(self, url: str) -> None:
+        """Tests that a URL that doesn't start with s3:// is rejected."""
+        with pytest.raises(ValueError, match="Expected an s3:// URL"):
+            S3StorageClient._split_distribution_url(url)
+
+    @pytest.mark.parametrize("url", ["s3://", "s3:///key"])
+    def test_raises_when_url_has_no_bucket(self, url: str) -> None:
+        """Tests that an s3:// URL with no bucket name is rejected."""
+        with pytest.raises(ValueError, match="No bucket in URL"):
+            S3StorageClient._split_distribution_url(url)
 
 
 class TestS3StorageClient:
@@ -22,7 +54,7 @@ class TestS3StorageClient:
         yield storage_client
 
         # teardown
-        storage_client.clear_bucket(LOCALSTACK_TEST_BUCKET)
+        storage_client.delete_all(BUCKET_URL)
         storage_client.client.delete_bucket(Bucket=LOCALSTACK_TEST_BUCKET)
 
     @pytest.fixture
@@ -41,85 +73,79 @@ class TestS3StorageClient:
         ],
     )
     def test_get_bytes(self, file_name: str, file_data: str, storage_client_with_files: S3StorageClient) -> None:
-        result = storage_client_with_files.get_bytes(LOCALSTACK_TEST_BUCKET, file_name)
+        """Tests that a file's contents are read back from its URL."""
+        result = storage_client_with_files.get_bytes(f"{BUCKET_URL}/{file_name}")
         assert result == file_data
 
     def test_put_bytes(self, storage_client: S3StorageClient) -> None:
-        file_name = "file.txt"
-        file_data = b"data"
-        storage_client.put_bytes(LOCALSTACK_TEST_BUCKET, file_name, file_data)
-        result = storage_client.get_bytes(LOCALSTACK_TEST_BUCKET, file_name)
-        assert result == file_data
+        """Tests that bytes written to a URL can be read back from the same URL."""
+        url = f"{BUCKET_URL}/file.txt"
+        storage_client.put_bytes(url, b"data")
+        assert storage_client.get_bytes(url) == b"data"
 
-    def test_list_keys(self, storage_client_with_files: S3StorageClient) -> None:
-        result = storage_client_with_files.list_keys(LOCALSTACK_TEST_BUCKET)
-        expected = ["file1.txt", "dir/file2.txt", "dir/nested/file3.txt"]
-        assert sorted(result) == sorted(expected)
+    def test_list_urls_with_prefix(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that only files under the prefix are listed, as full URLs."""
+        result = storage_client_with_files.list_urls(f"{BUCKET_URL}/dir/")
+        assert sorted(result) == [f"{BUCKET_URL}/dir/file2.txt", f"{BUCKET_URL}/dir/nested/file3.txt"]
 
-    def test_list_keys_empty_bucket(self, storage_client: S3StorageClient) -> None:
-        result = storage_client.list_keys(LOCALSTACK_TEST_BUCKET)
-        assert result == []
+    def test_list_urls_with_partial_name_prefix(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that the prefix can end part way through a name, as used for `date=YYYY-MM` listings."""
+        result = storage_client_with_files.list_urls(f"{BUCKET_URL}/fi")
+        assert result == [f"{BUCKET_URL}/file1.txt"]
 
-    def test_list_keys_with_prefix(self, storage_client_with_files: S3StorageClient) -> None:
-        result = storage_client_with_files.list_keys_with_prefix(LOCALSTACK_TEST_BUCKET, "dir/")
-        expected = ["dir/file2.txt", "dir/nested/file3.txt"]
-        assert sorted(result) == sorted(expected)
+    def test_list_urls_for_whole_bucket(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that a bucket-only URL lists every file in the bucket."""
+        result = storage_client_with_files.list_urls(BUCKET_URL)
+        assert sorted(result) == [
+            f"{BUCKET_URL}/dir/file2.txt",
+            f"{BUCKET_URL}/dir/nested/file3.txt",
+            f"{BUCKET_URL}/file1.txt",
+        ]
 
-    def test_list_subfolders(self, storage_client_with_files: S3StorageClient) -> None:
-        """Tests that only the folders directly inside a folder are listed, without trailing slashes."""
-        result = storage_client_with_files.list_subfolders(LOCALSTACK_TEST_BUCKET, "dir")
-        assert result == ["dir/nested"]
-
-    def test_list_subfolders_when_folder_has_none(self, storage_client_with_files: S3StorageClient) -> None:
-        """Tests that a folder holding only files gives an empty list."""
-        result = storage_client_with_files.list_subfolders(LOCALSTACK_TEST_BUCKET, "dir/nested")
-        assert result == []
-
-    def test_first_key_with_prefix(self, storage_client_with_files: S3StorageClient) -> None:
-        """Tests that the first key in key order under the prefix is returned."""
-        result = storage_client_with_files.first_key_with_prefix(LOCALSTACK_TEST_BUCKET, "dir/")
-        assert result == "dir/file2.txt"
-
-    def test_first_key_with_prefix_when_no_keys_match(self, storage_client_with_files: S3StorageClient) -> None:
-        """Tests that None is returned when no key starts with the prefix."""
-        result = storage_client_with_files.first_key_with_prefix(LOCALSTACK_TEST_BUCKET, "missing/")
-        assert result is None
+    def test_list_urls_when_nothing_matches(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that an empty list is returned when no file starts with the prefix."""
+        assert storage_client_with_files.list_urls(f"{BUCKET_URL}/missing/") == []
 
     @pytest.mark.parametrize("file_name", ["file1.txt", "dir/file2.txt", "dir/nested/file3.txt"])
-    def test_delete_key(self, file_name: str, storage_client_with_files: S3StorageClient) -> None:
-        # check the key exists to start with
-        storage_client_with_files.get_bytes(LOCALSTACK_TEST_BUCKET, file_name)
+    def test_delete(self, file_name: str, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that a file deleted by URL can no longer be read."""
+        url = f"{BUCKET_URL}/{file_name}"
+        # check the file exists to start with
+        storage_client_with_files.get_bytes(url)
 
-        # delete the key
-        storage_client_with_files.delete_key(LOCALSTACK_TEST_BUCKET, file_name)
+        storage_client_with_files.delete(url)
 
-        # now the key shouldn't exist
         with pytest.raises(storage_client_with_files.client.exceptions.NoSuchKey):
-            storage_client_with_files.get_bytes(LOCALSTACK_TEST_BUCKET, file_name)
+            storage_client_with_files.get_bytes(url)
 
-    def test_clear_bucket(self, storage_client_with_files: S3StorageClient) -> None:
-        # check we have the 3 initial files
-        initial = storage_client_with_files.list_keys(LOCALSTACK_TEST_BUCKET)
-        assert len(initial) == 3
+    def test_delete_all_for_whole_bucket(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that deleting everything under a bucket-only URL empties the bucket."""
+        assert len(storage_client_with_files.list_urls(BUCKET_URL)) == 3
 
-        storage_client_with_files.clear_bucket(LOCALSTACK_TEST_BUCKET)
-        result = storage_client_with_files.list_keys(LOCALSTACK_TEST_BUCKET)
-        # now should have 0 files
-        assert result == []
+        storage_client_with_files.delete_all(BUCKET_URL)
+
+        assert storage_client_with_files.list_urls(BUCKET_URL) == []
+
+    def test_delete_all_only_removes_files_under_prefix(self, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that deleting everything under a prefix leaves files outside it alone."""
+        storage_client_with_files.delete_all(f"{BUCKET_URL}/dir/")
+
+        assert storage_client_with_files.list_urls(BUCKET_URL) == [f"{BUCKET_URL}/file1.txt"]
 
     def test_upload_file(self, tmp_path: Path, storage_client: S3StorageClient) -> None:
+        """Tests that a local file uploaded to a URL can be read back from that URL."""
         local_file = tmp_path / "upload.txt"
         local_file.write_bytes(b"uploaded")
+        url = f"{BUCKET_URL}/uploaded/upload.txt"
 
-        storage_client.upload_file(LOCALSTACK_TEST_BUCKET, "uploaded/upload.txt", local_file)
+        storage_client.upload_file(url, local_file)
 
-        result = storage_client.get_bytes(LOCALSTACK_TEST_BUCKET, "uploaded/upload.txt")
-        assert result == b"uploaded"
+        assert storage_client.get_bytes(url) == b"uploaded"
 
     def test_download_file(self, tmp_path: Path, storage_client_with_files: S3StorageClient) -> None:
+        """Tests that a file is downloaded from its URL to a local path, creating missing folders."""
         local_path = tmp_path / "downloads" / "file2.txt"
 
-        storage_client_with_files.download_file(LOCALSTACK_TEST_BUCKET, "dir/file2.txt", local_path)
+        storage_client_with_files.download_file(f"{BUCKET_URL}/dir/file2.txt", local_path)
 
-        assert local_path.exists()
         assert local_path.read_bytes() == b"file2"

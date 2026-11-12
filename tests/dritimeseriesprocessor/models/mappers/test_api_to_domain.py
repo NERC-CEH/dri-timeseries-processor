@@ -121,7 +121,7 @@ class TestMapDatasetItem:
             time_anchor="start",
             processing_level=ProcessingLevel.PROCESSED,
             dataset_type=DatasetType.TIMESERIES_DATASET,
-            distribution_url="s3://ukceh-dri-staging-processed/network=COSMOS/collection=PROCESSED_1DAY/site=BUNNY/",
+            distribution_url="s3://ukceh-dri-staging-processed/network=COSMOS/collection=PROCESSED_1DAY/site=BUNNY",
             plan_order=["http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-rn_1day-mean_rad"],
             data=None,
         )
@@ -152,7 +152,7 @@ class TestMapDatasetItem:
             time_anchor="end",
             processing_level=ProcessingLevel.RAW,
             dataset_type=DatasetType.TIMESERIES_DATASET,
-            distribution_url="s3://ukceh-dri-staging-ingested/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=BUNNY/",
+            distribution_url="s3://ukceh-dri-staging-ingested/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=BUNNY",
             data=None,
         )
 
@@ -193,7 +193,7 @@ class TestMapDatasetItem:
         assert result.distribution_url is None
 
     def test_observation_dataset_populates_dataset_type_and_distribution_url(self) -> None:
-        """Tests that an observation dataset gets its dataset type and S3 location from the distribution URL."""
+        """Tests that an observation dataset gets its dataset type, and its access URL without the trailing slash."""
         item = TimeSeriesDatasetItem.model_validate(
             {
                 "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
@@ -229,9 +229,7 @@ class TestMapDatasetItem:
         result = map_dataset_item(item, all_site_metadata, {}, {})  # type: ignore[arg-type]
 
         assert result.dataset_type == DatasetType.OBSERVATION_DATASET
-        assert result.distribution_url == "s3://ukceh-dri-staging-ingested/Flux/"
-        assert result.s3_bucket == "ukceh-dri-staging-ingested"
-        assert result.s3_dataset_path == "Flux"
+        assert result.distribution_url == "s3://ukceh-dri-staging-ingested/Flux"
 
     def test_all_dependencies(self) -> None:
         """Test that the all_dependencies method returns a valid list from a single attached config."""
