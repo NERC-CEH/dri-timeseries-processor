@@ -50,7 +50,7 @@ dependencies = [
     "pyarrow>=25.0.0",
     "pydantic>=2.8.2",
     "tenacity",
-    "time-stream",
+    "ukceh-time-stream>=4.0.0",
 ]
 
 [project.urls]
@@ -159,8 +159,3 @@ strict = true
 [tool.uv]
 package = true
 default-groups = ["dev"]
-
-[tool.uv.sources]
-time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
-hydrometlib = { git = "https://github.com/NERC-CEH/hydrometlib.git" }
-isoperiod = { git = "https://github.com/NERC-CEH/isoperiod.git" }

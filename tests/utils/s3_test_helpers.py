@@ -35,10 +35,7 @@ def get_s3_storage_client() -> Iterator[S3StorageClient]:
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, PARQUET_DATA_INPUT_DIR)
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "partitioned")
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, FLUX_DATA_DIR)
-    # Pre-processed data from external systems (e.g. NMDB) and flux despiking history both
-    # live in the same real S3 bucket as our processor's outputs. Upload them to the output
-    # bucket so they can be resolved as load-only dependencies during tests.
-    upload_folder_to_s3(storage_client, E2E_OUTPUT_BUCKET, PARQUET_DATA_PROCESSED_DIR)
+    reset_output_bucket(storage_client)
 
     try:
         yield storage_client
@@ -46,6 +43,20 @@ def get_s3_storage_client() -> Iterator[S3StorageClient]:
         # teardown
         remove_test_s3_bucket(E2E_INPUT_BUCKET, storage_client)
         remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
+
+
+def reset_output_bucket(storage_client: S3StorageClient) -> None:
+    """Empty the E2E output bucket and upload the pre-processed data again.
+
+    Pre-processed data from external systems (e.g. NMDB) and flux despiking history both live in the same real S3
+    bucket as our processor's outputs. They go in the output bucket so they can be resolved as load-only dependencies
+    during tests.
+
+    Args:
+        storage_client: S3 client wrapper used for bucket operations.
+    """
+    storage_client.delete_all(f"s3://{E2E_OUTPUT_BUCKET}")
+    upload_folder_to_s3(storage_client, E2E_OUTPUT_BUCKET, PARQUET_DATA_PROCESSED_DIR)
 
 
 def remove_test_s3_bucket(bucket: str, storage_client: S3StorageClient) -> None:

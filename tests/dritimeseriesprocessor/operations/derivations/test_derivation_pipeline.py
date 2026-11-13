@@ -115,8 +115,8 @@ class TestFlags:
     def test_rows_without_a_derived_value_get_the_missing_core_flag(self, site_metadata: SiteMetadata) -> None:
         """Tests that the 'missing' core flag is stamped on the rows where the derivation produced no value."""
         tf = create_timeframe([1.0, None, 3.0], "vwc")
-        tf.register_flag_system("core", {"missing": 4})
-        tf.init_flag_column("core", "soil_moisture_CORE_FLAG")
+        tf = tf.with_flag_system("core", {"missing": 4})
+        tf = tf.with_flag_column("soil_moisture_CORE_FLAG", "core")
         pipeline = DerivationPipeline(site_metadata, {})
         pipeline.flag_column_roles = {FlagRole.CORE: "soil_moisture_CORE_FLAG"}
 

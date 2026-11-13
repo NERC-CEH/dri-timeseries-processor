@@ -93,7 +93,7 @@ class AggregationPipeline(OperationPipeline):
 
         # Not all values present, but above threshold values present: Data stays, flagged as "estimate"
         expr = (pl.col(actual_count_col_name) != pl.col(expected_count_col_name)) & pl.col(valid_col_name)
-        tf.add_flag(core_flag_col_name, "estimated", expr)
+        tf = tf.add_flag(core_flag_col_name, "estimated", expr)
 
         # Not enough values present: Data removed, flagged as "removed".
         expr = (
@@ -101,11 +101,11 @@ class AggregationPipeline(OperationPipeline):
             & ~pl.col(valid_col_name)
             & (pl.col(actual_count_col_name) > 0)  # Only when there was actually some data in the first place
         )
-        tf.add_flag(core_flag_col_name, "removed", expr)
+        tf = tf.add_flag(core_flag_col_name, "removed", expr)
 
         # No values present: No data, flagged as "missing".
         expr = pl.col(actual_count_col_name) == 0
-        tf.add_flag(core_flag_col_name, "missing", expr)
+        tf = tf.add_flag(core_flag_col_name, "missing", expr)
 
         return tf
 

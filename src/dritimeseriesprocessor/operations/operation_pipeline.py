@@ -131,7 +131,7 @@ class OperationPipeline(ABC):
         # Generative operations (e.g. aggregation, derivation) start without data here and build a fresh TimeFrame
         # in apply, so there is nothing to set up yet.
         if tf is not None and container.has_flags():
-            self._init_flag_columns(tf, container.flag_column_schemes)
+            tf = self._init_flag_columns(tf, container.flag_column_schemes)
 
         # Apply configs
         for cfg in config.method_configs:
@@ -150,7 +150,7 @@ class OperationPipeline(ABC):
             # Generative operations (e.g. aggregation, derivation) built a new TimeFrame during ``apply`` with no
             # flagging, so set up its flag columns before updating core flags.
             # This is a "no-op" when this was already done before the loop.
-            self._init_flag_columns(tf, container.flag_column_schemes)
+            tf = self._init_flag_columns(tf, container.flag_column_schemes)
 
             # Update core flags
             tf = self.core_flag_updater(tf)
@@ -161,7 +161,7 @@ class OperationPipeline(ABC):
 
         return tf
 
-    def _init_flag_columns(self, tf: ts.TimeFrame, flag_column_schemes: dict[str, str]) -> None:
+    def _init_flag_columns(self, tf: ts.TimeFrame, flag_column_schemes: dict[str, str]) -> ts.TimeFrame:
         """Create every flag column the dataset defines on the result TimeFrame.
 
         This includes flag columns for operations that are not in the dataset's plan (e.g. a derived dataset with no
@@ -171,26 +171,34 @@ class OperationPipeline(ABC):
         Args:
             tf: The result TimeFrame to set up flag columns on.
             flag_column_schemes: Flag column names mapped to the flag system that they relate to.
+
+        Returns:
+            The TimeFrame with every declared flag column set up.
         """
         for flag_column in flag_column_schemes:
-            ensure_flag_column(tf, flag_column, self.flag_systems, flag_column_schemes)
+            tf = ensure_flag_column(tf, flag_column, self.flag_systems, flag_column_schemes)
+        return tf
 
-    def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> None:
-        """Apply a flag to the flag column
+    def _add_flag(self, tf: ts.TimeFrame, result: ts.TimeFrame, col_name: str, flag_name: str) -> ts.TimeFrame:
+        """Apply a flag to the result's flag column
 
         Args:
             tf: TimeFrame containing original data.
             result: The result of the operation.
             col_name: Name of the parent column.
             flag_name: Type of flag to apply (must exist in the associated flag system).
+
+        Returns:
+            The result with the flag applied, or unchanged if there is no flag column or nothing to flag.
         """
         flag_column = self.get_flag_column()
         if flag_column is None or flag_column not in tf.flag_columns:
-            return
+            return result
 
         mask = self.compute_flag_mask(tf, result, col_name)
         if mask is not None:
-            result.add_flag(flag_column, flag_name, mask)
+            result = result.add_flag(flag_column, flag_name, mask)
+        return result
 
     @staticmethod
     def _inject_dependency_timeframes(

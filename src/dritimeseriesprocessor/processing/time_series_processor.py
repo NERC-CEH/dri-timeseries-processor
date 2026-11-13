@@ -177,8 +177,8 @@ class TimeSeriesProcessor:
                     )
                     # LOAD brings in raw data: we need to register any flag systems, create the flag columns the
                     # dataset declares, and set every row's core flag as "unchecked"
-                    initialise_flag_systems(container, self.graph.flagging_systems)
-                    add_initial_core_flags(container)
+                    container = initialise_flag_systems(container, self.graph.flagging_systems)
+                    container = add_initial_core_flags(container)
 
                 case ConfigurationType.CORRECTION:
                     container.data = CorrectionPipeline(self.graph.flagging_systems).run(

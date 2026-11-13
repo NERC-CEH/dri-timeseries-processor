@@ -69,7 +69,7 @@ class QCPipeline(OperationPipeline):
         qc_result_column = self.get_qc_result_column(tf.metadata["column_name"])
 
         result = tf.with_df(tf.df.with_columns(qc_result.alias(qc_result_column)))
-        self._add_flag(tf, result, tf.metadata["column_name"], config.method)
+        result = self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         result = result.with_df(result.df.drop(qc_result_column))
 
         return result
@@ -143,5 +143,5 @@ class QCPipeline(OperationPipeline):
         # start with
         core_flag_col = self.get_core_flag_column()
         if core_flag_col is not None:
-            tf.add_flag(core_flag_col, "removed", removed)
+            tf = tf.add_flag(core_flag_col, "removed", removed)
         return tf

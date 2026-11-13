@@ -84,5 +84,5 @@ class DerivationPipeline(OperationPipeline):
             return tf
 
         data_column = tf.metadata["column_name"]
-        tf.add_flag(core_flag_col_name, "missing", missing_expr(data_column, tf.df[data_column].dtype))
+        tf = tf.add_flag(core_flag_col_name, "missing", missing_expr(data_column, tf.df[data_column].dtype))
         return tf

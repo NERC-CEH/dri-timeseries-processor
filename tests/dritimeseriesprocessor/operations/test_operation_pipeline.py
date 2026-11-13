@@ -70,33 +70,31 @@ def proc_config() -> MagicMock:
 
 
 class TestInitFlagColumns:
-    def test_creates_every_declared_flag_column(self, mock_timeframe: MagicMock) -> None:
+    def test_creates_every_declared_flag_column(self) -> None:
         """Tests that every declared flag column is set up, including ones for other operations."""
         pipeline = MockOperationPipeline(
             ConfigurationType.QUALITY_CONTROL,
             {"core_flags": {"unchecked": 32}, "test_flags": {"flag1": 1}, "infill_flags": {"linear_interp": 1}},
         )
-        mock_timeframe.flag_systems = {}
         flag_column_schemes = {
             "value_CORE_FLAG": "core_flags",
             "value_TEST_FLAG": "test_flags",
             "value_INFILL_FLAG": "infill_flags",
         }
 
-        pipeline._init_flag_columns(mock_timeframe, flag_column_schemes)
+        result = pipeline._init_flag_columns(create_timeframe([1.0, 2.0], "value"), flag_column_schemes)
 
-        mock_timeframe.init_flag_column.assert_any_call("core_flags", "value_CORE_FLAG")
-        mock_timeframe.init_flag_column.assert_any_call("test_flags", "value_TEST_FLAG")
-        mock_timeframe.init_flag_column.assert_any_call("infill_flags", "value_INFILL_FLAG")
+        assert sorted(result.flag_columns) == ["value_CORE_FLAG", "value_INFILL_FLAG", "value_TEST_FLAG"]
+        for flag_column_name, flag_system_name in flag_column_schemes.items():
+            assert result.get_flag_column(flag_column_name).flag_system.__name__ == flag_system_name
 
-    def test_skips_columns_not_in_schemes(self, mock_timeframe: MagicMock) -> None:
+    def test_skips_columns_not_in_schemes(self) -> None:
         """Tests that flag columns the dataset does not define are not created."""
-        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {})
-        mock_timeframe.flag_systems = {}
+        pipeline = MockOperationPipeline(ConfigurationType.QUALITY_CONTROL, {"core_flags": {"unchecked": 32}})
 
-        pipeline._init_flag_columns(mock_timeframe, {})
+        result = pipeline._init_flag_columns(create_timeframe([1.0, 2.0], "value"), {})
 
-        mock_timeframe.init_flag_column.assert_not_called()
+        assert result.flag_columns == []
 
 
 class TestGetFlagColumn:
