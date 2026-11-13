@@ -58,7 +58,7 @@ class DuckDBParquetReader(ParquetReaderInterface):
         stop=stop_after_attempt(3),
         reraise=True,
     )
-    def read(self, query: str, params: list | None = None) -> pl.DataFrame:
+    def read(self, query: str, params: list | None = None) -> pl.DataFrame:  # type: ignore[override]
         """Uses DuckDb to read parquet files using a prepared SQL query.
 
         Args:
@@ -75,7 +75,7 @@ class DuckDBParquetReader(ParquetReaderInterface):
         conn = self._get_connection()
 
         try:
-            df = conn.execute(query, params).pl()
+            df = conn.sql(query, params=params).pl()
             return df
 
         except duckdb.HTTPException:
