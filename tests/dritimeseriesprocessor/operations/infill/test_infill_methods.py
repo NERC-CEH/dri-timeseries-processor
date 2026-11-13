@@ -5,7 +5,7 @@ import pytest
 from polars.testing import assert_frame_equal
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
-from dritimeseriesprocessor.operations.infill.infill_methods import AltData, AltDataDynamic, Linear
+from dritimeseriesprocessor.operations.infill.infill_methods import AltData, AltDataDynamic, Linear, ZeroFill
 from utils.data_creation import create_timeframe
 
 
@@ -159,3 +159,37 @@ class TestAltDataDynamic:
 
         with pytest.raises(KeyError):
             AltDataDynamic().run(tf, config)
+
+
+class TestZeroFill:
+    @staticmethod
+    def expected_df(values: list[float | None]) -> pl.DataFrame:
+        return pl.DataFrame({"time": [datetime(2025, 1, 1, h) for h in range(len(values))], "value": values})
+
+    def test_zero_fill_simple(self) -> None:
+        """Test that null values are filled with 0 and present values are unchanged."""
+        tf = create_timeframe([None, 2.0, None, 4.0, None, 6.0, None])
+
+        result = ZeroFill().run(tf, create_method_config())
+
+        assert_frame_equal(result.df, self.expected_df([0.0, 2.0, 0.0, 4.0, 0.0, 6.0, 0.0]))
+
+    def test_zero_fill_nan(self) -> None:
+        """Test that NaN values are filled as well as null values."""
+        tf = create_timeframe([float("nan"), 2.0, None, 4.0, float("nan"), 6.0, 7.0])
+
+        result = ZeroFill().run(tf, create_method_config())
+
+        assert_frame_equal(result.df, self.expected_df([0.0, 2.0, 0.0, 4.0, 0.0, 6.0, 7.0]))
+
+    def test_zero_fill_with_date_filter(self) -> None:
+        """Test that only missing values within the date range are filled, inclusive at both ends."""
+        tf = create_timeframe([None, None, None, None, None, None, 7.0])
+        config = create_method_config(
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4),
+        )
+
+        result = ZeroFill().run(tf, config)
+
+        assert_frame_equal(result.df, self.expected_df([None, None, 0.0, 0.0, 0.0, None, 7.0]))
