@@ -131,22 +131,27 @@ class TestDespikeDf:
 # ---------------------------------------------------------------------------
 
 
-def _make_container(site: str = "flux-plynl", source_bucket: str = "source-bucket") -> TimeSeriesContainer:
+PROCESSED_URL = "s3://ukceh-dri-staging-processed/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL"
+
+
+def _make_container(
+    site: str = "flux-plynl",
+    access_url: str = "s3://source-bucket/network=FDRI/collection=PROCESSED_FLUX/site=PLYNL",
+) -> TimeSeriesContainer:
     """Real container so dataclasses.replace works inside _run_despiking."""
     return TimeSeriesContainer(
         ts_id="flux-plynl-processed",
         network="fdri",
-        source_bucket=source_bucket,
-        source_dataset="PROCESSED",
         source_column=None,
         source_site=None,
         source_site_identifier=site,
-        time_column_name="time",
+        time_column_name="TIMESTAMP",
         unit=None,
         resolution="PT30M",
         periodicity="PT30M",
         time_anchor="start",
         processing_level=ProcessingLevel.PROCESSED,
+        access_url=access_url,
     )
 
 
@@ -157,8 +162,8 @@ def _make_site_metadata(network: str = "fdri") -> MagicMock:
 
 
 class TestRunDespiking:
-    def test_skips_when_history_is_empty(self, caplog: pytest.LogCaptureFixture) -> None:
-        """_run_despiking returns the original df unchanged when no history is available."""
+    def test_skips_when_history_is_empty(self) -> None:
+        """Tests that the original data is returned unchanged when the history is empty."""
         mock_router = MagicMock()
         mock_router.query_by_date_range.return_value = pl.DataFrame()
 
@@ -167,14 +172,14 @@ class TestRunDespiking:
             df=current,
             container=_make_container(),
             start_date=date(2026, 1, 20),
-            resolution="PT30M",
             data_router=mock_router,
-            processed_container=_make_container(),
+            processed_access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
 
     def test_skips_when_history_is_none(self) -> None:
+        """Tests that the original data is returned unchanged when the router returns no history."""
         mock_router = MagicMock()
         mock_router.query_by_date_range.return_value = None
 
@@ -183,14 +188,47 @@ class TestRunDespiking:
             df=current,
             container=_make_container(),
             start_date=date(2026, 1, 20),
-            resolution="PT30M",
             data_router=mock_router,
-            processed_container=_make_container(),
+            processed_access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
 
+    def test_skips_when_history_fails_to_load(self) -> None:
+        """Tests that the original data is returned unchanged when reading the history raises an error."""
+        mock_router = MagicMock()
+        mock_router.query_by_date_range.side_effect = ValueError("read failed")
+
+        current = _make_eddypro_df()
+        result = EddyProRun._run_despiking(
+            df=current,
+            container=_make_container(),
+            start_date=date(2026, 1, 20),
+            data_router=mock_router,
+            processed_access_url=PROCESSED_URL,
+        )
+
+        assert_frame_equal(result, current)
+
+    def test_skips_without_reading_when_no_access_url(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Tests that despiking is skipped, with a warning and no read, when there is no access URL for the history."""
+        mock_router = MagicMock()
+
+        current = _make_eddypro_df()
+        result = EddyProRun._run_despiking(
+            df=current,
+            container=_make_container(),
+            start_date=date(2026, 1, 20),
+            data_router=mock_router,
+            processed_access_url=None,
+        )
+
+        assert_frame_equal(result, current)
+        mock_router.query_by_date_range.assert_not_called()
+        assert "no processed timeseries dataset to read history from" in caplog.text
+
     def test_happy_path_adds_despiked_columns(self) -> None:
+        """Tests that despiked columns are added when history is available."""
         history = _make_history_df(n_days=5)
         mock_router = MagicMock()
         mock_router.query_by_date_range.return_value = history
@@ -200,9 +238,8 @@ class TestRunDespiking:
             df=current,
             container=_make_container(),
             start_date=date(2026, 1, 20),
-            resolution="PT30M",
             data_router=mock_router,
-            processed_container=_make_container(),
+            processed_access_url=PROCESSED_URL,
         )
 
         assert "H_despiked" in result.columns
@@ -210,6 +247,7 @@ class TestRunDespiking:
         assert "H_L2" in result.columns
 
     def test_lookback_window_passed_to_router(self) -> None:
+        """Tests that the history is read for the lookback days before the processing window."""
         mock_router = MagicMock()
         mock_router.query_by_date_range.return_value = pl.DataFrame()
 
@@ -217,9 +255,8 @@ class TestRunDespiking:
             df=_make_eddypro_df(),
             container=_make_container(),
             start_date=date(2026, 1, 20),
-            resolution="PT30M",
             data_router=mock_router,
-            processed_container=_make_container(),
+            processed_access_url=PROCESSED_URL,
         )
 
         call_kwargs = mock_router.query_by_date_range.call_args.kwargs
@@ -228,8 +265,8 @@ class TestRunDespiking:
         assert call_kwargs["start_date"] == expected_start
         assert call_kwargs["end_date"] == expected_end
 
-    def test_history_containers_built_from_metadata(self) -> None:
-        """The per-column history containers carry the network, bucket and columns to despike."""
+    def test_history_containers_read_from_given_access_url(self) -> None:
+        """Tests that one history container is built per column to despike, all read from the given access URL."""
         mock_router = MagicMock()
         mock_router.query_by_date_range.return_value = pl.DataFrame()
 
@@ -237,14 +274,11 @@ class TestRunDespiking:
             df=_make_eddypro_df(),
             container=_make_container(),
             start_date=date(2026, 1, 20),
-            resolution="PT30M",
             data_router=mock_router,
-            processed_container=_make_container(source_bucket="ukceh-dri-staging-processed"),
+            processed_access_url=PROCESSED_URL,
         )
 
         containers = mock_router.query_by_date_range.call_args.args
-        assert all(c.network == "fdri" for c in containers)
-        assert all(c.source_bucket == "ukceh-dri-staging-processed" for c in containers)
-        assert all(c.processing_level is ProcessingLevel.PROCESSED for c in containers)
-        assert all(c.resolution == "PT30M" for c in containers)
-        assert {c.source_column for c in containers} == {"H", "Tau", "R_SW_in_Avg"}
+        assert all(container.access_url == PROCESSED_URL for container in containers)
+        assert all(container.time_column_name == "time" for container in containers)
+        assert {container.source_column for container in containers} == {"H", "Tau", "R_SW_in_Avg"}

@@ -14,43 +14,50 @@ from dritimeseriesprocessor.io_backend.duckdb_connection import create_duckdb_fa
 from dritimeseriesprocessor.io_backend.reader import DuckDBParquetReader, RawFileReader
 from dritimeseriesprocessor.routers.data.data_router import S3DataRouter
 from dritimeseriesprocessor.storage.storage_client import S3StorageClient, StorageClient
-from dritimeseriesprocessor.utils.enums import ProcessingLevel
 
 TEST_DF = pl.DataFrame({"time": [datetime(2023, 1, 1), datetime(2023, 1, 2)], "value": [10, 20]})
-TEST_SITE_PREFIX = "a_network/dataset=a_data/site=A_SITE"
-LISTING_BUCKET = "a_bucket"
-LISTING_SITE_PREFIX = "net/dataset=ds/site=S1"
+TEST_DATASET_PATH = "network=A_NETWORK/collection=a_data/site=A_SITE"
+TEST_DATASET_URL = f"s3://a_bucket/{TEST_DATASET_PATH}"
+LISTING_DATASET_URL = "s3://a_bucket/network=NET/collection=ds/site=S1"
+FLUX_DATASET_URL = "s3://my-bucket/network=FDRI/collection=FLUX_20HZ/site=SITE1"
 
 
-def day_key(day: str, folder: str = LISTING_SITE_PREFIX, file_name: str = "data.parquet") -> str:
-    """Build the key of one day's file inside a folder."""
-    return f"{folder}/date={day}/{file_name}"
+def day_url(day: str, dataset_url: str = LISTING_DATASET_URL, file_name: str = "data.parquet") -> str:
+    """Build the URL of one day's file under a dataset's access URL."""
+    return f"{dataset_url}/date={day}/{file_name}"
 
 
-def fake_storage(keys: list[str]) -> MagicMock:
-    """Build a mock storage client whose listing methods answer from `keys` the same way S3 does."""
-    sorted_keys = sorted(keys)
+def fake_storage(urls: list[str]) -> MagicMock:
+    """Build a mock storage client whose `list_urls` answers from `urls` the same way S3 does."""
+    sorted_urls = sorted(urls)
 
-    def list_keys_with_prefix(bucket: str, prefix: str) -> list[str]:
-        return [key for key in sorted_keys if key.startswith(prefix)]
-
-    def first_key_with_prefix(bucket: str, prefix: str) -> str | None:
-        return next(iter(list_keys_with_prefix(bucket, prefix)), None)
-
-    def list_subfolders(bucket: str, folder: str) -> list[str]:
-        names_below_folder = [key.removeprefix(f"{folder}/") for key in list_keys_with_prefix(bucket, f"{folder}/")]
-        return sorted({f"{folder}/{name.split('/')[0]}" for name in names_below_folder if "/" in name})
+    def list_urls(prefix_url: str) -> list[str]:
+        return [url for url in sorted_urls if url.startswith(prefix_url)]
 
     storage = MagicMock(spec=StorageClient)
-    storage.list_keys_with_prefix.side_effect = list_keys_with_prefix
-    storage.first_key_with_prefix.side_effect = first_key_with_prefix
-    storage.list_subfolders.side_effect = list_subfolders
+    storage.list_urls.side_effect = list_urls
     return storage
 
 
-def router_with_keys(keys: list[str]) -> S3DataRouter:
-    """Build a router whose storage holds `keys`, with the readers mocked out."""
-    return S3DataRouter(MagicMock(), MagicMock(spec=RawFileReader), fake_storage(keys))
+def router_with_urls(urls: list[str]) -> S3DataRouter:
+    """Build a router whose storage holds `urls`, with the readers mocked out."""
+    return S3DataRouter(MagicMock(), MagicMock(spec=RawFileReader), fake_storage(urls))
+
+
+def make_container(
+    source_column: str = "a_column_name",
+    access_url: str | None = TEST_DATASET_URL,
+    time_column_name: str = "a_time",
+    ts_id: str = "ds-1",
+) -> MagicMock:
+    """Build a mock container with just the attributes the router reads."""
+    return MagicMock(
+        ts_id=ts_id,
+        access_url=access_url,
+        source_column=source_column,
+        source_site_identifier="A_SITE",
+        time_column_name=time_column_name,
+    )
 
 
 @pytest.fixture
@@ -69,7 +76,7 @@ def mock_raw_reader() -> MagicMock:
 @pytest.fixture
 def mock_storage() -> MagicMock:
     """Storage holding two days of files for the `A_SITE` test containers."""
-    return fake_storage([day_key("2023-01-01", TEST_SITE_PREFIX), day_key("2023-01-02", TEST_SITE_PREFIX)])
+    return fake_storage([day_url("2023-01-01", TEST_DATASET_URL), day_url("2023-01-02", TEST_DATASET_URL)])
 
 
 @pytest.fixture
@@ -85,109 +92,86 @@ def s3_storage_client() -> Iterator[S3StorageClient]:
 
 class TestS3DataRouter:
     def test_query_by_date_range(self, router: S3DataRouter, mock_reader: MagicMock) -> None:
-        """Tests that the query reads the listed files for the date range, matching their columns by name."""
-        start = datetime(2023, 1, 1)
-        end = datetime(2023, 1, 2)
-
-        container = MagicMock(
-            source_bucket="a_bucket",
-            source_dataset="a_data",
-            network="a_network",
-            source_site="a_network-a_site",
-            source_column="a_column_name",
-            source_site_identifier="A_SITE",
-            resolution="PT30M",
-            time_column_name="a_time",
-            processing_level=ProcessingLevel.RAW,
-        )
-
+        """Tests that the query reads the listed file URLs for the date range, matching their columns by name."""
         expected_query = """
             SELECT a_time, COLUMNS(c -> c IN ('a_column_name'))
             FROM read_parquet(?, union_by_name=true);
         """
 
-        result = router.query_by_date_range(container, start_date=start, end_date=end)
+        result = router.query_by_date_range(
+            make_container(), start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2)
+        )
         call_query, call_params = mock_reader.read.call_args.args
 
         assert_frame_equal(result, TEST_DF)  # Return what the mock_reader returned
         assert " ".join(call_query.split()) == " ".join(expected_query.split())  # Collapse the whitespace for compare
-        assert call_params == [
-            [
-                f"s3://a_bucket/{day_key('2023-01-01', TEST_SITE_PREFIX)}",
-                f"s3://a_bucket/{day_key('2023-01-02', TEST_SITE_PREFIX)}",
-            ]
-        ]
+        assert call_params == [[day_url("2023-01-01", TEST_DATASET_URL), day_url("2023-01-02", TEST_DATASET_URL)]]
 
     def test_query_returns_empty_frame_without_reading_when_no_files_found(self, mock_reader: MagicMock) -> None:
         """Tests that an empty frame is returned, and DuckDB isn't queried, when no files are in the date range."""
         router = S3DataRouter(mock_reader, MagicMock(spec=RawFileReader), fake_storage([]))
-        container = MagicMock(
-            source_bucket="a_bucket",
-            source_dataset="a_data",
-            network="a_network",
-            source_column="a_column_name",
-            source_site_identifier="A_SITE",
-            resolution="PT30M",
-            time_column_name="a_time",
-            processing_level=ProcessingLevel.RAW,
+
+        result = router.query_by_date_range(
+            make_container(), start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2)
         )
 
-        result = router.query_by_date_range(container, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2))
-
         assert result.is_empty()
+        mock_reader.read.assert_not_called()
+
+    def test_query_raises_when_no_access_url(self, router: S3DataRouter, mock_reader: MagicMock) -> None:
+        """Tests that a container with no access URL fails the query rather than reading from a guessed location."""
+        container = make_container(access_url=None)
+
+        with pytest.raises(ValueError, match="No access URL"):
+            router.query_by_date_range(container, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2))
+        mock_reader.read.assert_not_called()
+
+    def test_query_raises_when_containers_have_different_access_urls(
+        self, router: S3DataRouter, mock_reader: MagicMock
+    ) -> None:
+        """Tests that containers stored in different places can't be read together in one query."""
+        container_1 = make_container(source_column="col_one")
+        container_2 = make_container(source_column="col_two", access_url=LISTING_DATASET_URL)
+
+        with pytest.raises(ValueError, match="access_url"):
+            router.query_by_date_range(
+                container_1, container_2, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2)
+            )
+        mock_reader.read.assert_not_called()
+
+    def test_query_raises_when_containers_have_different_time_columns(
+        self, router: S3DataRouter, mock_reader: MagicMock
+    ) -> None:
+        """Tests that containers with different time column names can't be read together in one query."""
+        container_1 = make_container(source_column="col_one", time_column_name="time")
+        container_2 = make_container(source_column="col_two", time_column_name="other_time")
+
+        with pytest.raises(ValueError, match="time_column_name"):
+            router.query_by_date_range(
+                container_1, container_2, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2)
+            )
         mock_reader.read.assert_not_called()
 
     def test_query_by_date_range_builds_columns_lambda_for_multiple_containers(
         self, router: S3DataRouter, mock_reader: MagicMock
     ) -> None:
         """Tests that every container's source column is included in the COLUMNS(...) predicate."""
-        start = datetime(2023, 1, 1)
-        end = datetime(2023, 1, 2)
+        container_1 = make_container(source_column="col_one")
+        container_2 = make_container(source_column="col_two")
 
-        container_1 = MagicMock(
-            source_bucket="a_bucket",
-            source_dataset="a_data",
-            network="a_network",
-            source_column="col_one",
-            source_site_identifier="A_SITE",
-            resolution="PT30M",
-            time_column_name="a_time",
-            processing_level=ProcessingLevel.RAW,
+        router.query_by_date_range(
+            container_1, container_2, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2)
         )
-        container_2 = MagicMock(
-            source_bucket="a_bucket",
-            source_dataset="a_data",
-            network="a_network",
-            source_column="col_two",
-            source_site_identifier="A_SITE",
-            resolution="PT30M",
-            time_column_name="a_time",
-            processing_level=ProcessingLevel.RAW,
-        )
-
-        router.query_by_date_range(container_1, container_2, start_date=start, end_date=end)
         call_query, _ = mock_reader.read.call_args.args
 
         assert "COLUMNS(c -> c IN ('col_one', 'col_two'))" in call_query
 
-    @pytest.mark.parametrize("prefix", ["a", "b"])
-    def test_read_from_partitioned_directory(self, prefix: str, s3_storage_client: S3StorageClient) -> None:
-        """Tests reading from different partition structures, e.g. extra partition between site and date"""
-
-        start = datetime(2023, 1, 1)
-        end = datetime(2023, 1, 1)
-
-        reader = DuckDBParquetReader(create_duckdb_factory())
-        raw_reader = MagicMock(spec=RawFileReader)
-        router = S3DataRouter(reader, raw_reader, s3_storage_client)
-
-        container = MagicMock(
-            source_bucket=E2E_INPUT_BUCKET,
-            source_dataset=f"{prefix}_data",
-            network=f"{prefix}_network",
+    def test_read_from_partitioned_directory(self, s3_storage_client: S3StorageClient) -> None:
+        """Tests reading the files under a dataset's access URL"""
+        router = S3DataRouter(DuckDBParquetReader(create_duckdb_factory()), MagicMock(), s3_storage_client)
+        container = make_container(
             source_column="value",
-            source_site_identifier=f"{prefix.upper()}_SITE",
-            resolution="PT30M",
+            access_url=f"s3://{E2E_INPUT_BUCKET}/{TEST_DATASET_PATH}",
             time_column_name="time",
         )
 
@@ -198,7 +182,7 @@ class TestS3DataRouter:
             }
         )
 
-        result = router.query_by_date_range(container, start_date=start, end_date=end)
+        result = router.query_by_date_range(container, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 1))
 
         assert_frame_equal(result, expected)
 
@@ -208,34 +192,16 @@ class TestS3DataRouter:
         """Tests that a source_column not present in the parquet files is silently omitted from the result,
         rather than raising and losing every other container queried in the same group.
         """
-        start = datetime(2023, 1, 1)
-        end = datetime(2023, 1, 1)
-
-        reader = DuckDBParquetReader(create_duckdb_factory())
-        raw_reader = MagicMock(spec=RawFileReader)
-        router = S3DataRouter(reader, raw_reader, s3_storage_client)
-
-        existing_column_container = MagicMock(
-            source_bucket=E2E_INPUT_BUCKET,
-            source_dataset="a_data",
-            network="a_network",
-            source_column="value",
-            source_site_identifier="A_SITE",
-            resolution="PT30M",
-            time_column_name="time",
-        )
-        missing_column_container = MagicMock(
-            source_bucket=E2E_INPUT_BUCKET,
-            source_dataset="a_data",
-            network="a_network",
-            source_column="does_not_exist",
-            source_site_identifier="A_SITE",
-            resolution="PT30M",
-            time_column_name="time",
-        )
+        router = S3DataRouter(DuckDBParquetReader(create_duckdb_factory()), MagicMock(), s3_storage_client)
+        dataset_url = f"s3://{E2E_INPUT_BUCKET}/{TEST_DATASET_PATH}"
+        existing_column_container = make_container("value", dataset_url, "time")
+        missing_column_container = make_container("does_not_exist", dataset_url, "time")
 
         result = router.query_by_date_range(
-            existing_column_container, missing_column_container, start_date=start, end_date=end
+            existing_column_container,
+            missing_column_container,
+            start_date=datetime(2023, 1, 1),
+            end_date=datetime(2023, 1, 1),
         )
 
         assert "value" in result.columns
@@ -274,34 +240,19 @@ class TestS3DataRouter:
         DuckDB takes the schema from the first file it reads, so a column that only one of the files has fails
         the whole read unless the query unions the files by name.
         """
-        start = datetime(2023, 1, 1)
-        end = datetime(2023, 1, 2)
-        site_prefix = f"evolving_network/dataset=evolving_data/site={site_identifier}"
+        dataset_url = (
+            f"s3://{E2E_INPUT_BUCKET}/network=EVOLVING_NETWORK/collection=evolving_data/site={site_identifier}"
+        )
 
         for date, frame in [("2023-01-01", first_file), ("2023-01-02", second_file)]:
             buffer = io.BytesIO()
             frame.write_parquet(buffer)
-            s3_storage_client.put_bytes(E2E_INPUT_BUCKET, f"{site_prefix}/date={date}/data.parquet", buffer.getvalue())
+            s3_storage_client.put_bytes(day_url(date, dataset_url), buffer.getvalue())
 
-        reader = DuckDBParquetReader(create_duckdb_factory())
-        raw_reader = MagicMock(spec=RawFileReader)
-        router = S3DataRouter(reader, raw_reader, s3_storage_client)
+        router = S3DataRouter(DuckDBParquetReader(create_duckdb_factory()), MagicMock(), s3_storage_client)
+        containers = [make_container(column, dataset_url, "time") for column in ("value", "extra_column")]
 
-        containers = [
-            MagicMock(
-                source_bucket=E2E_INPUT_BUCKET,
-                source_dataset="evolving_data",
-                network="evolving_network",
-                source_column=source_column,
-                source_site_identifier=site_identifier,
-                resolution="PT30M",
-                time_column_name="time",
-                processing_level=ProcessingLevel.RAW,
-            )
-            for source_column in ("value", "extra_column")
-        ]
-
-        result = router.query_by_date_range(*containers, start_date=start, end_date=end)
+        result = router.query_by_date_range(*containers, start_date=datetime(2023, 1, 1), end_date=datetime(2023, 1, 2))
 
         expected = pl.DataFrame(
             {
@@ -314,188 +265,118 @@ class TestS3DataRouter:
 
 
 class TestListFiles:
-    def test_lists_days_in_range_directly_under_site(self) -> None:
-        """Tests that only the files for days inside the date range are listed, as full S3 paths."""
+    def test_lists_days_in_range(self) -> None:
+        """Tests that only the files for days inside the date range are listed, as full URLs."""
         days = ["2023-01-01", "2023-01-02", "2023-01-03", "2023-01-04", "2023-01-05"]
-        router = router_with_keys([day_key(day) for day in days])
+        router = router_with_urls([day_url(day) for day in days])
 
-        result = router._list_files(LISTING_BUCKET, LISTING_SITE_PREFIX, datetime(2023, 1, 2), datetime(2023, 1, 4))
+        result = router._list_files(LISTING_DATASET_URL, datetime(2023, 1, 2), datetime(2023, 1, 4))
 
-        assert result == [f"s3://{LISTING_BUCKET}/{day_key(day)}" for day in ["2023-01-02", "2023-01-03", "2023-01-04"]]
-
-    def test_lists_days_in_every_subfolder(self) -> None:
-        """Tests that files are found in every folder between the site and the dates, e.g. one per serial number."""
-        first_serial = f"{LISTING_SITE_PREFIX}/serial_no=1"
-        second_serial = f"{LISTING_SITE_PREFIX}/serial_no=2"
-        keys = [
-            day_key("2023-01-01", first_serial),
-            day_key("2023-01-02", first_serial),
-            day_key("2023-01-03", second_serial),
-        ]
-        router = router_with_keys(keys)
-
-        result = router._list_files(LISTING_BUCKET, LISTING_SITE_PREFIX, datetime(2023, 1, 1), datetime(2023, 1, 3))
-
-        assert result == [f"s3://{LISTING_BUCKET}/{key}" for key in keys]
+        assert result == [day_url(day) for day in ["2023-01-02", "2023-01-03", "2023-01-04"]]
 
     def test_lists_each_month_separately_when_range_crosses_a_year(self) -> None:
         """Tests that a range crossing a year end lists each month on its own, not every year in between."""
         storage = fake_storage(
-            [day_key("2022-12-30"), day_key("2022-12-31"), day_key("2023-01-01"), day_key("2023-01-02")]
+            [day_url("2022-12-30"), day_url("2022-12-31"), day_url("2023-01-01"), day_url("2023-01-02")]
         )
         router = S3DataRouter(MagicMock(), MagicMock(spec=RawFileReader), storage)
 
-        result = router._list_files(LISTING_BUCKET, LISTING_SITE_PREFIX, datetime(2022, 12, 31), datetime(2023, 1, 1))
+        result = router._list_files(LISTING_DATASET_URL, datetime(2022, 12, 31), datetime(2023, 1, 1))
 
-        listed_prefixes = [call.args[1] for call in storage.list_keys_with_prefix.call_args_list]
-        assert listed_prefixes == [f"{LISTING_SITE_PREFIX}/date=2022-12", f"{LISTING_SITE_PREFIX}/date=2023-01"]
-        assert result == [f"s3://{LISTING_BUCKET}/{day_key(day)}" for day in ["2022-12-31", "2023-01-01"]]
+        listed_prefixes = [call.args[0] for call in storage.list_urls.call_args_list]
+        assert listed_prefixes == [f"{LISTING_DATASET_URL}/date=2022-12", f"{LISTING_DATASET_URL}/date=2023-01"]
+        assert result == [day_url(day) for day in ["2022-12-31", "2023-01-01"]]
 
     def test_includes_start_and_end_days_whatever_the_time_of_day(self) -> None:
         """Tests that the whole of the start and end days are included when the dates have a time of day."""
-        router = router_with_keys([day_key("2023-01-01"), day_key("2023-01-02"), day_key("2023-01-03")])
+        router = router_with_urls([day_url("2023-01-01"), day_url("2023-01-02"), day_url("2023-01-03")])
 
-        result = router._list_files(
-            LISTING_BUCKET, LISTING_SITE_PREFIX, datetime(2023, 1, 2, 12), datetime(2023, 1, 3, 6)
-        )
+        result = router._list_files(LISTING_DATASET_URL, datetime(2023, 1, 2, 12), datetime(2023, 1, 3, 6))
 
-        assert result == [f"s3://{LISTING_BUCKET}/{day_key(day)}" for day in ["2023-01-02", "2023-01-03"]]
+        assert result == [day_url(day) for day in ["2023-01-02", "2023-01-03"]]
 
     def test_ignores_files_that_are_not_data_parquet(self) -> None:
         """Tests that other files in a day's folder are not listed."""
-        router = router_with_keys([day_key("2023-01-01"), day_key("2023-01-01", file_name="notes.csv")])
+        router = router_with_urls([day_url("2023-01-01"), day_url("2023-01-01", file_name="notes.csv")])
 
-        result = router._list_files(LISTING_BUCKET, LISTING_SITE_PREFIX, datetime(2023, 1, 1), datetime(2023, 1, 1))
+        result = router._list_files(LISTING_DATASET_URL, datetime(2023, 1, 1), datetime(2023, 1, 1))
 
-        assert result == [f"s3://{LISTING_BUCKET}/{day_key('2023-01-01')}"]
+        assert result == [day_url("2023-01-01")]
 
-    def test_returns_empty_list_when_site_has_no_files(self) -> None:
-        """Tests that a site with no files gives an empty list."""
-        router = router_with_keys([day_key("2023-01-01", "net/dataset=ds/site=OTHER")])
+    def test_ignores_files_in_folders_below_the_access_url(self) -> None:
+        """Tests that files one folder further down (e.g. an old `serial_no=` folder) are not listed."""
+        router = router_with_urls([day_url("2023-01-01", f"{LISTING_DATASET_URL}/serial_no=1234")])
 
-        result = router._list_files(LISTING_BUCKET, LISTING_SITE_PREFIX, datetime(2023, 1, 1), datetime(2023, 1, 1))
-
-        assert result == []
-
-
-class TestDateParentFolders:
-    def test_returns_site_when_dates_are_directly_under_it(self) -> None:
-        """Tests that the site itself is returned, without listing its subfolders, when the dates sit directly in it."""
-        storage = fake_storage([day_key("2023-01-01"), day_key("2023-01-02")])
-        router = S3DataRouter(MagicMock(), MagicMock(spec=RawFileReader), storage)
-
-        result = router._date_parent_folders(LISTING_BUCKET, LISTING_SITE_PREFIX)
-
-        assert result == [LISTING_SITE_PREFIX]
-        storage.list_subfolders.assert_not_called()
-
-    def test_returns_site_when_other_keys_sort_before_the_dates(self) -> None:
-        """Tests that metadata files and folders that sort before `date=` don't hide dates directly under the site."""
-        router = router_with_keys(
-            [
-                day_key("2023-01-01"),
-                f"{LISTING_SITE_PREFIX}/_metadata/info.json",
-                f"{LISTING_SITE_PREFIX}/_metadata.json",
-            ]
-        )
-
-        result = router._date_parent_folders(LISTING_BUCKET, LISTING_SITE_PREFIX)
-
-        assert result == [LISTING_SITE_PREFIX]
-
-    def test_ignores_non_partition_folders_when_dates_are_one_level_down(self) -> None:
-        """Tests that a folder without `=` in its name is not searched when the dates are one level down."""
-        serial = f"{LISTING_SITE_PREFIX}/serial_no=1"
-        router = router_with_keys([day_key("2023-01-01", serial), f"{LISTING_SITE_PREFIX}/_metadata/info.json"])
-
-        result = router._date_parent_folders(LISTING_BUCKET, LISTING_SITE_PREFIX)
-
-        assert result == [serial]
-
-    def test_returns_subfolders_when_dates_are_one_level_down(self) -> None:
-        """Tests that the folders between the site and the dates are returned when there is an extra level."""
-        first_serial = f"{LISTING_SITE_PREFIX}/serial_no=1"
-        second_serial = f"{LISTING_SITE_PREFIX}/serial_no=2"
-        router = router_with_keys([day_key("2023-01-01", first_serial), day_key("2023-01-02", second_serial)])
-
-        result = router._date_parent_folders(LISTING_BUCKET, LISTING_SITE_PREFIX)
-
-        assert result == [first_serial, second_serial]
-
-    def test_returns_empty_list_when_site_has_no_files(self) -> None:
-        """Tests that a site with no files gives an empty list."""
-        router = router_with_keys([])
-
-        result = router._date_parent_folders(LISTING_BUCKET, LISTING_SITE_PREFIX)
+        result = router._list_files(LISTING_DATASET_URL, datetime(2023, 1, 1), datetime(2023, 1, 1))
 
         assert result == []
 
+    def test_returns_empty_list_when_dataset_has_no_files(self) -> None:
+        """Tests that a dataset with no files gives an empty list."""
+        router = router_with_urls([day_url("2023-01-01", "s3://a_bucket/network=NET/collection=ds/site=OTHER")])
 
-class TestSitePartitionPrefix:
-    def test_builds_raw_partition_path(self) -> None:
-        """Tests that the raw dataset hive-partition path is built correctly."""
-        result = S3DataRouter._site_partition_prefix("fdri", "dataset", "raw_flux", "SITE1")
-        assert result == "fdri/dataset=raw_flux/site=SITE1"
+        result = router._list_files(LISTING_DATASET_URL, datetime(2023, 1, 1), datetime(2023, 1, 1))
 
-    def test_builds_processed_partition_path(self) -> None:
-        """Tests that the processed dataset hive-partition path uses the resolution key."""
-        result = S3DataRouter._site_partition_prefix("fdri", "resolution", "P1D", "SITE1")
-        assert result == "fdri/resolution=P1D/site=SITE1"
+        assert result == []
 
 
 class TestStageLocally:
     def test_calls_download_once_per_day_in_range(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
         """Tests that download is called once for each day in the date range, inclusive."""
         mock_raw_reader.download.return_value = []
-        container = MagicMock(
-            s3_bucket="my-bucket",
-            s3_dataset_path="fdri/dataset=raw_flux/site=SITE1",
-            source_site_identifier="SITE1",
-            ts_id="ds-1",
-        )
 
-        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 3))
+        router.stage_locally(
+            make_container(access_url=FLUX_DATASET_URL),
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 1, 3),
+        )
 
         assert mock_raw_reader.download.call_count == 3
 
     def test_single_day_range_calls_download_once(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
         """Tests that a single-day range (start == end) results in exactly one download call."""
         mock_raw_reader.download.return_value = []
-        container = MagicMock(
-            s3_bucket="my-bucket",
-            s3_dataset_path="fdri/dataset=raw_flux/site=SITE1",
-            source_site_identifier="SITE1",
-            ts_id="ds-1",
-        )
 
-        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1))
+        router.stage_locally(
+            make_container(access_url=FLUX_DATASET_URL),
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 1, 1),
+        )
 
         assert mock_raw_reader.download.call_count == 1
 
     def test_builds_correct_date_prefix_per_day(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
-        """Tests that each download call uses the correct date-partitioned prefix."""
+        """Tests that each download call uses the day's folder under the access URL."""
         mock_raw_reader.download.return_value = []
-        container = MagicMock(
-            s3_bucket="my-bucket",
-            s3_dataset_path="fdri/dataset=raw_flux/site=SITE1",
-            source_site_identifier="SITE1",
-            ts_id="ds-1",
+
+        router.stage_locally(
+            make_container(access_url=FLUX_DATASET_URL),
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 1, 2),
         )
 
-        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 2))
+        call_prefixes = [call.args[0] for call in mock_raw_reader.download.call_args_list]
+        assert call_prefixes == [f"{FLUX_DATASET_URL}/date=2024-01-01/", f"{FLUX_DATASET_URL}/date=2024-01-02/"]
 
-        call_prefixes = [call.args[1] for call in mock_raw_reader.download.call_args_list]
-        assert call_prefixes == [
-            "fdri/dataset=raw_flux/site=SITE1/date=2024-01-01/",
-            "fdri/dataset=raw_flux/site=SITE1/date=2024-01-02/",
-        ]
+    def test_raises_when_no_access_url(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
+        """Tests that staging a dataset with no access URL fails before anything is downloaded."""
+        with pytest.raises(ValueError, match="No access URL"):
+            router.stage_locally(
+                make_container(access_url=None), start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1)
+            )
+
+        mock_raw_reader.download.assert_not_called()
+        assert router._staged == []
 
     def test_returns_path_to_existing_local_directory(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
         """Tests that the returned path is a real directory that exists on disk."""
         mock_raw_reader.download.return_value = []
-        container = MagicMock(source_site_identifier="SITE1", ts_id="ds-1")
 
-        result = router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1))
+        result = router.stage_locally(
+            make_container(access_url=FLUX_DATASET_URL),
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 1, 1),
+        )
 
         assert isinstance(result, Path)
         assert result.is_dir()
@@ -503,9 +384,12 @@ class TestStageLocally:
     def test_staged_directory_is_tracked_for_cleanup(self, router: S3DataRouter, mock_raw_reader: MagicMock) -> None:
         """Tests that the temp directory is added to the staged list so cleanup can remove it."""
         mock_raw_reader.download.return_value = []
-        container = MagicMock(source_site_identifier="SITE1", ts_id="ds-1")
 
-        router.stage_locally(container, start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 1))
+        router.stage_locally(
+            make_container(access_url=FLUX_DATASET_URL),
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 1, 1),
+        )
 
         assert len(router._staged) == 1
 

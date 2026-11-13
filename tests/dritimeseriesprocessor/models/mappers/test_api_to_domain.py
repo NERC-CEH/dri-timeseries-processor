@@ -84,8 +84,6 @@ def make_container() -> TimeSeriesContainer:
     return TimeSeriesContainer(
         ts_id="test_id",
         network="network",
-        source_bucket="bucket",
-        source_dataset="dataset",
         source_column="col",
         source_site="a-site",
         source_site_identifier="BUNNY",
@@ -113,8 +111,6 @@ class TestMapDatasetItem:
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-rn_1day_processed",
             network="cosmos",
-            source_bucket="ukceh-dri-staging-processed",
-            source_dataset="PROCESSED_DATA_1DAY",
             source_column="RN",
             source_site="cosmos-bunny",
             source_site_identifier="BUNNY",
@@ -125,7 +121,7 @@ class TestMapDatasetItem:
             time_anchor="start",
             processing_level=ProcessingLevel.PROCESSED,
             dataset_type=DatasetType.TIMESERIES_DATASET,
-            distribution_url="s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_1DAY/site=BUNNY/",
+            access_url="s3://ukceh-dri-staging-processed/network=COSMOS/collection=PROCESSED_1DAY/site=BUNNY",
             plan_order=["http://fdri.ceh.ac.uk/id/data-processing-configuration/cosmos-bunny-rn_1day-mean_rad"],
             data=None,
         )
@@ -146,8 +142,6 @@ class TestMapDatasetItem:
         expected = TimeSeriesContainer(
             ts_id="http://fdri.ceh.ac.uk/id/dataset/cosmos-bunny-ta_30min_raw",
             network="cosmos",
-            source_bucket="ukceh-dri-staging-ingested",
-            source_dataset="LIVE_SOILMET_30MIN",
             source_column="TA",
             source_site="cosmos-bunny",
             source_site_identifier="BUNNY",
@@ -158,14 +152,14 @@ class TestMapDatasetItem:
             time_anchor="end",
             processing_level=ProcessingLevel.RAW,
             dataset_type=DatasetType.TIMESERIES_DATASET,
-            distribution_url="s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=BUNNY/",
+            access_url="s3://ukceh-dri-staging-ingested/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=BUNNY",
             data=None,
         )
 
         assert result == expected
 
     def test_observation_dataset_item_source_fields_are_none(self) -> None:
-        """Tests that an observation dataset is mapped with no source bucket, dataset or column."""
+        """Tests that an observation dataset is mapped with no access URL or source column."""
         item = ObservationDatasetItem.model_validate(
             {
                 "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
@@ -194,13 +188,12 @@ class TestMapDatasetItem:
 
         result = map_dataset_item(item, all_site_metadata, {}, {})  # type: ignore[arg-type]
 
-        assert result.source_bucket is None
-        assert result.source_dataset is None
         assert result.source_column is None
         assert result.time_column_name is None
+        assert result.access_url is None
 
-    def test_observation_dataset_populates_dataset_type_and_distribution_url(self) -> None:
-        """Tests that an observation dataset gets its dataset type and S3 location from the distribution URL."""
+    def test_observation_dataset_populates_dataset_type_and_access_url(self) -> None:
+        """Tests that an observation dataset gets its dataset type, and its access URL without the trailing slash."""
         item = TimeSeriesDatasetItem.model_validate(
             {
                 "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-raw",
@@ -236,9 +229,7 @@ class TestMapDatasetItem:
         result = map_dataset_item(item, all_site_metadata, {}, {})  # type: ignore[arg-type]
 
         assert result.dataset_type == DatasetType.OBSERVATION_DATASET
-        assert result.distribution_url == "s3://ukceh-dri-staging-ingested/Flux/"
-        assert result.s3_bucket == "ukceh-dri-staging-ingested"
-        assert result.s3_dataset_path == "Flux"
+        assert result.access_url == "s3://ukceh-dri-staging-ingested/Flux"
 
     def test_all_dependencies(self) -> None:
         """Test that the all_dependencies method returns a valid list from a single attached config."""
@@ -255,8 +246,6 @@ class TestMapDatasetItem:
         item = TimeSeriesContainer(
             ts_id="test_id",
             network="network",
-            source_bucket="bucket",
-            source_dataset="dataset",
             source_column="col",
             source_site="a-site",
             source_site_identifier="BUNNY",
@@ -309,8 +298,6 @@ class TestMapDatasetItem:
         item = TimeSeriesContainer(
             ts_id="test_id",
             network="network",
-            source_bucket="bucket",
-            source_dataset="dataset",
             source_column="col",
             source_site="a-site",
             source_site_identifier="BUNNY",

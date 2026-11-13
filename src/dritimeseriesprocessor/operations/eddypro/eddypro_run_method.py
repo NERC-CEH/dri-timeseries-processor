@@ -19,7 +19,7 @@ from dritimeseriesprocessor.operations.eddypro.eddypro_pipeline import EddyProPi
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
 from dritimeseriesprocessor.operations.eddypro.flux_despike import despike_df
 from dritimeseriesprocessor.routers.data.data_router import DataRouter
-from dritimeseriesprocessor.utils.enums import ProcessingLevel
+from dritimeseriesprocessor.utils.enums import DatasetType, ProcessingLevel
 
 logger = logging.getLogger(__name__)
 
@@ -77,17 +77,19 @@ class EddyProRun(DerivationMethod):
         resolution = f"PT{config.params['file_duration']}M"
         data_router = config.params.get("data_router")
         if data_router is not None:
-            # ObservationDataset bundles have source_bucket=None; find it from a sibling
-            # processed dataset that does carry the bucket in the repository.
-            processed_container = next(
+            # The bundle's own access URL is not where the despiking history is saved; find it from a sibling
+            # processed timeseries dataset in the repository.
+            access_url = next(
                 (
-                    c
+                    c.access_url
                     for c in dataset_repository.values()
-                    if c.source_bucket is not None and c.processing_level is ProcessingLevel.PROCESSED
+                    if c.access_url is not None
+                    and c.processing_level is ProcessingLevel.PROCESSED
+                    and c.dataset_type is DatasetType.TIMESERIES_DATASET
                 ),
                 None,
             )
-            df = self._run_despiking(df, container, start_date, resolution, data_router, processed_container)
+            df = self._run_despiking(df, container, start_date, data_router, access_url)
         else:
             logger.warning("data_router not available in EddyProRun params; despiking skipped.")
 
@@ -102,9 +104,8 @@ class EddyProRun(DerivationMethod):
         df: pl.DataFrame,
         container: TimeSeriesContainer,
         start_date: date,
-        resolution: str,
         data_router: DataRouter,
-        processed_container: TimeSeriesContainer | None = None,
+        processed_access_url: str | None,
     ) -> pl.DataFrame:
         """Load prior history and apply MAD despiking to H and Tau in the EddyPro output.
 
@@ -112,38 +113,25 @@ class EddyProRun(DerivationMethod):
             df: EddyPro output DataFrame for the current processing window.
             container: The EddyPro bundle container (provides site identifier).
             start_date: Start of the current processing window (used to calculate lookback range).
-            resolution: ISO-8601 resolution string (e.g. "PT30M") for the hive partition path.
-            data_router: Router used to load historical processed data from S3.
-            processed_container: A sibling processed container providing network and source_bucket.
-                ObservationDataset bundles carry network=None and source_bucket=None, so the
-                caller resolves both from a sibling dataset.
+            data_router: Router used to load historical processed data from storage.
+            processed_access_url: Access URL of the processed collection that holds the history, or None if there isn't
+                one.
         """
         site = container.source_site_identifier
-        # ObservationDataset bundles don't carry network or source_bucket.
-        # Borrow both from a sibling processed container - same source _build_save_tasks uses.
-        network = processed_container.network if processed_container is not None else None
-        source_bucket = processed_container.source_bucket if processed_container is not None else None
+        if processed_access_url is None:
+            logger.warning("Despiking skipped: no processed timeseries dataset to read history from for site %s.", site)
+            return df
 
         history_start = datetime.combine(
             start_date - timedelta(days=EddyProRun._DESPIKE_LOOKBACK_DAYS), datetime.min.time()
         )
         history_end = datetime.combine(start_date - timedelta(days=1), datetime.min.time())
 
-        # Derive a per-column container from the bundle so query_by_date_range can build the
-        # hive path. processing_level=PROCESSED signals the resolution-keyed path.
+        # One container per history column, all read from the sibling's access URL
         history_columns = [*EddyProRun._DESPIKE_COLUMNS, EddyProRun._DESPIKE_REFERENCE_COLUMN]
         history_containers = [
-            replace(
-                container,
-                network=network,
-                source_bucket=source_bucket,
-                source_site_identifier=site,
-                resolution=resolution,
-                time_column_name="time",
-                source_column=col,
-                processing_level=ProcessingLevel.PROCESSED,
-            )
-            for col in history_columns
+            replace(container, access_url=processed_access_url, time_column_name="time", source_column=column)
+            for column in history_columns
         ]
 
         try:

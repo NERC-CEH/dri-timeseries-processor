@@ -78,12 +78,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CGARW/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -158,12 +158,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CGARW/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "BATTV",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -238,12 +238,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CGARW/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "SCANS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -336,12 +336,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT1H/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1HOUR/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT1H",
+      "sourceCollection": "PROCESSED_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_PA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -522,12 +522,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT1H/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1HOUR/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT1H",
+      "sourceCollection": "PROCESSED_1HOUR",
       "sourceColumnName": "CTS_MOD",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -699,12 +699,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT1H/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1HOUR/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT1H",
+      "sourceCollection": "PROCESSED_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_INTEN",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -885,12 +885,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT1H/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1HOUR/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT1H",
+      "sourceCollection": "PROCESSED_1HOUR",
       "sourceColumnName": "COSMOSFACTOR_Q",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1099,12 +1099,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "SNOW",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1321,12 +1321,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT1H/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1HOUR/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT1H",
+      "sourceCollection": "PROCESSED_1HOUR",
       "sourceColumnName": "CTS_SNOWFOX_CORR",
       "sourceTimeColumnName": "time",
       "originatingSite": [

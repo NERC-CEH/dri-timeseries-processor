@@ -150,44 +150,45 @@ class TestDuckDBParquetReader:
 
 
 class TestRawFileReader:
-    def test_returns_empty_list_when_no_keys(self, tmp_path: Path) -> None:
-        """Tests that an empty list is returned and no downloads are attempted when no keys are found."""
+    def test_returns_empty_list_when_no_files(self, tmp_path: Path) -> None:
+        """Tests that an empty list is returned and no downloads are attempted when no files are found."""
         storage = MagicMock(spec=StorageClient)
-        storage.list_keys_with_prefix.return_value = []
+        storage.list_urls.return_value = []
         reader = RawFileReader(storage)
 
-        result = reader.download("my-bucket", "some/prefix/", tmp_path)
+        result = reader.download("s3://my-bucket/some/prefix/", tmp_path)
 
         assert result == []
         storage.download_file.assert_not_called()
 
-    def test_downloads_each_key_and_returns_local_paths(self, tmp_path: Path) -> None:
-        """Tests that each key is downloaded and the returned paths match the local filenames."""
+    def test_downloads_each_file_and_returns_local_paths(self, tmp_path: Path) -> None:
+        """Tests that each listed file is downloaded by URL and the returned paths match the local filenames."""
         storage = MagicMock(spec=StorageClient)
-        storage.list_keys_with_prefix.return_value = [
-            "some/prefix/date=2024-01-01/file_a.dat",
-            "some/prefix/date=2024-01-01/file_b.dat",
+        storage.list_urls.return_value = [
+            "s3://my-bucket/some/prefix/date=2024-01-01/file_a.dat",
+            "s3://my-bucket/some/prefix/date=2024-01-01/file_b.dat",
         ]
         reader = RawFileReader(storage)
 
-        result = reader.download("my-bucket", "some/prefix/", tmp_path)
+        result = reader.download("s3://my-bucket/some/prefix/date=2024-01-01/", tmp_path)
 
+        storage.list_urls.assert_called_once_with("s3://my-bucket/some/prefix/date=2024-01-01/")
         assert result == [tmp_path / "file_a.dat", tmp_path / "file_b.dat"]
         assert storage.download_file.call_count == 2
         storage.download_file.assert_any_call(
-            "my-bucket", "some/prefix/date=2024-01-01/file_a.dat", tmp_path / "file_a.dat"
+            "s3://my-bucket/some/prefix/date=2024-01-01/file_a.dat", tmp_path / "file_a.dat"
         )
         storage.download_file.assert_any_call(
-            "my-bucket", "some/prefix/date=2024-01-01/file_b.dat", tmp_path / "file_b.dat"
+            "s3://my-bucket/some/prefix/date=2024-01-01/file_b.dat", tmp_path / "file_b.dat"
         )
 
-    def test_strips_key_prefix_to_get_filename(self, tmp_path: Path) -> None:
-        """Tests that only the final path segment of each key is used as the local filename."""
+    def test_uses_last_part_of_url_as_filename(self, tmp_path: Path) -> None:
+        """Tests that only the final part of each file URL is used as the local filename."""
         storage = MagicMock(spec=StorageClient)
-        storage.list_keys_with_prefix.return_value = ["deep/nested/path/TOA5_25623.dat"]
+        storage.list_urls.return_value = ["s3://my-bucket/deep/nested/path/TOA5_25623.dat"]
         reader = RawFileReader(storage)
 
-        result = reader.download("my-bucket", "deep/nested/path/", tmp_path)
+        result = reader.download("s3://my-bucket/deep/nested/path/", tmp_path)
 
         assert result == [tmp_path / "TOA5_25623.dat"]
 
@@ -204,7 +205,7 @@ def reader() -> DuckDBParquetReader:
 @pytest.fixture
 def setup_test_data(s3_storage_client: S3StorageClient) -> Iterator:
     # setup
-    s3_storage_client.clear_bucket(BUCKET_NAME)
+    s3_storage_client.delete_all(f"s3://{BUCKET_NAME}")
     create_hourly_test_data(
         start=datetime(2024, 1, 1),
         end=datetime(2024, 1, 10),
@@ -212,12 +213,12 @@ def setup_test_data(s3_storage_client: S3StorageClient) -> Iterator:
         upload=True,
         storage_client=s3_storage_client,
     )
-    s3_storage_client.put_bytes(BUCKET_NAME, "corrupted.parquet", b"corrupted data")
+    s3_storage_client.put_bytes(f"s3://{BUCKET_NAME}/corrupted.parquet", b"corrupted data")
 
     yield
 
     # teardown
-    s3_storage_client.clear_bucket(BUCKET_NAME)
+    s3_storage_client.delete_all(f"s3://{BUCKET_NAME}")
 
 
 @pytest.mark.usefixtures("setup_test_data")
@@ -227,11 +228,11 @@ class TestDuckDBParquetReaderIntegration:
     @pytest.mark.parametrize(
         "keys, expected",
         [
-            (("cosmos/dataset=test_dataset/site=site1/date=2024-01-01/data.parquet",), ["2024-01-01"]),
+            (("network=COSMOS/collection=TEST_COLLECTION/site=site1/date=2024-01-01/data.parquet",), ["2024-01-01"]),
             (
                 (
-                    "cosmos/dataset=test_dataset/site=site1/date=2024-01-01/data.parquet",
-                    "cosmos/dataset=test_dataset/site=site1/date=2024-01-02/data.parquet",
+                    "network=COSMOS/collection=TEST_COLLECTION/site=site1/date=2024-01-01/data.parquet",
+                    "network=COSMOS/collection=TEST_COLLECTION/site=site1/date=2024-01-02/data.parquet",
                 ),
                 ["2024-01-01", "2024-01-02"],
             ),
@@ -248,9 +249,8 @@ class TestDuckDBParquetReaderIntegration:
 
     def test_read_parquet_by_query_glob_keys(self, reader: DuckDBParquetReader) -> None:
         """Test that a valid query using glob style key matching returns the expected results"""
-        query = (
-            f"SELECT * FROM read_parquet('s3://{BUCKET_NAME}/cosmos/dataset=test_dataset/site=*/date=*/data.parquet')"
-        )
+        key = "network=COSMOS/collection=TEST_COLLECTION/site=*/date=*/data.parquet"
+        query = f"SELECT * FROM read_parquet('s3://{BUCKET_NAME}/{key}')"
         result = reader.read(query)
         expected = [
             "2024-01-01",
@@ -269,7 +269,7 @@ class TestDuckDBParquetReaderIntegration:
 
     def test_read_parquet_by_query_with_single_param(self, reader: DuckDBParquetReader) -> None:
         """Test that a valid query including a parameterized WHERE clause returns the expected results"""
-        key = "cosmos/dataset=test_dataset/site=*/date=2024-01-01/data.parquet"
+        key = "network=COSMOS/collection=TEST_COLLECTION/site=*/date=2024-01-01/data.parquet"
         query = f"SELECT * FROM read_parquet('s3://{BUCKET_NAME}/{key}') WHERE SITE_ID = ?"
         params = ["site1"]
         result = reader.read(query, params)
@@ -315,7 +315,7 @@ class TestDuckDBParquetReaderIntegration:
         def write_rows(row_count: int) -> None:
             buffer = io.BytesIO()
             pl.DataFrame({"value": list(range(row_count))}).write_parquet(buffer)
-            s3_storage_client.put_bytes(BUCKET_NAME, key, buffer.getvalue())
+            s3_storage_client.put_bytes(f"s3://{BUCKET_NAME}/{key}", buffer.getvalue())
 
         write_rows(1)
         first_read = reader.read(query)

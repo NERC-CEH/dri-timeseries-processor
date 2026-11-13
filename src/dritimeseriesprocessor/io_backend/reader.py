@@ -94,36 +94,35 @@ class DuckDBParquetReader(ParquetReaderInterface):
 class RawFileReader:
     """Downloads raw files from storage to a local directory.
 
-    A thin counterpart to `DuckDBParquetReader`: it executes a prepared download
-    (a bucket and prefix) just as the parquet reader executes a prepared query.
-    Building prefixes from dataset metadata and managing the destination directory
-    are the router's responsibility.
+    A thin counterpart to `DuckDBParquetReader`: it executes a prepared download (a URL prefix) just as the parquet
+    reader executes a prepared query.
+
+    Getting the URL prefix from dataset metadata and managing the destination directory are the router's responsibility.
     """
 
     def __init__(self, storage: StorageClient) -> None:
         self._storage = storage
 
-    def download(self, bucket: str, prefix: str, local_dir: Path) -> list[Path]:
-        """Download every object under `prefix` in `bucket` into `local_dir`.
+    def download(self, prefix_url: str, local_dir: Path) -> list[Path]:
+        """Download every file whose URL starts with `prefix_url` into `local_dir`.
 
         Args:
-            bucket: Storage bucket to read from.
-            prefix: Key prefix identifying the objects to download.
-            local_dir: Local directory to download the objects into.
+            prefix_url: The start of the URLs to download, e.g. `s3://bucket/.../site=X/date=2026-01-20/`.
+            local_dir: Local directory to download the files into.
 
         Returns:
             The local paths of the downloaded files.
         """
-        keys = self._storage.list_keys_with_prefix(bucket, prefix)
-        if not keys:
-            logger.warning("No raw files found under s3://%s/%s", bucket, prefix)
+        urls = self._storage.list_urls(prefix_url)
+        if not urls:
+            logger.warning("No raw files found under %s", prefix_url)
             return []
 
         downloaded: list[Path] = []
-        for key in keys:
-            local_path = local_dir / key.rsplit("/", 1)[-1]
-            self._storage.download_file(bucket, key, local_path)
+        for url in urls:
+            local_path = local_dir / url.rsplit("/", 1)[-1]
+            self._storage.download_file(url, local_path)
             downloaded.append(local_path)
-            logger.debug("Downloaded: %s -> %s", key, local_path)
+            logger.debug("Downloaded: %s -> %s", url, local_path)
 
         return downloaded
