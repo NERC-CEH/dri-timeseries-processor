@@ -173,7 +173,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            access_url=PROCESSED_URL,
+            processed_access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
@@ -189,7 +189,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            access_url=PROCESSED_URL,
+            processed_access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
@@ -205,7 +205,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            access_url=PROCESSED_URL,
+            processed_access_url=PROCESSED_URL,
         )
 
         assert_frame_equal(result, current)
@@ -220,7 +220,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            access_url=None,
+            processed_access_url=None,
         )
 
         assert_frame_equal(result, current)
@@ -239,7 +239,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            access_url=PROCESSED_URL,
+            processed_access_url=PROCESSED_URL,
         )
 
         assert "H_despiked" in result.columns
@@ -256,7 +256,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            access_url=PROCESSED_URL,
+            processed_access_url=PROCESSED_URL,
         )
 
         call_kwargs = mock_router.query_by_date_range.call_args.kwargs
@@ -275,7 +275,7 @@ class TestRunDespiking:
             container=_make_container(),
             start_date=date(2026, 1, 20),
             data_router=mock_router,
-            access_url=PROCESSED_URL,
+            processed_access_url=PROCESSED_URL,
         )
 
         containers = mock_router.query_by_date_range.call_args.args

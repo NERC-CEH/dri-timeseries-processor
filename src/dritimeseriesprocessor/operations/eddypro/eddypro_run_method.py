@@ -105,7 +105,7 @@ class EddyProRun(DerivationMethod):
         container: TimeSeriesContainer,
         start_date: date,
         data_router: DataRouter,
-        access_url: str | None,
+        processed_access_url: str | None,
     ) -> pl.DataFrame:
         """Load prior history and apply MAD despiking to H and Tau in the EddyPro output.
 
@@ -114,11 +114,11 @@ class EddyProRun(DerivationMethod):
             container: The EddyPro bundle container (provides site identifier).
             start_date: Start of the current processing window (used to calculate lookback range).
             data_router: Router used to load historical processed data from storage.
-            access_url: Access URL of the processed collection that holds the history, or None if there isn't
+            processed_access_url: Access URL of the processed collection that holds the history, or None if there isn't
                 one.
         """
         site = container.source_site_identifier
-        if access_url is None:
+        if processed_access_url is None:
             logger.warning("Despiking skipped: no processed timeseries dataset to read history from for site %s.", site)
             return df
 
@@ -130,7 +130,7 @@ class EddyProRun(DerivationMethod):
         # One container per history column, all read from the sibling's access URL
         history_columns = [*EddyProRun._DESPIKE_COLUMNS, EddyProRun._DESPIKE_REFERENCE_COLUMN]
         history_containers = [
-            replace(container, access_url=access_url, time_column_name="time", source_column=column)
+            replace(container, access_url=processed_access_url, time_column_name="time", source_column=column)
             for column in history_columns
         ]
 
