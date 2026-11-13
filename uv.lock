@@ -1542,7 +1542,7 @@ wheels = [
 
 [[package]]
 name = "ukceh-time-stream"
-version = "4.0.1"
+version = "4.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "isoperiod" },
@@ -1550,9 +1550,9 @@ dependencies = [
     { name = "polars" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c5/31/c3854481053a0866c39bf476aa3c16d5ffc67ba6c9af29df04cac6b4fc80/ukceh_time_stream-4.0.1.tar.gz", hash = "sha256:094661cd6d03f3410624568956b304a4c918bd138de68f2bb78bb76bef85bcb0", size = 862790, upload-time = "2026-11-02T11:32:21.009Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dc/c4/46e18001c98cfceaf4a320e5fcfc5cb1e280d7a954a9035162c680f916d6/ukceh_time_stream-4.0.2.tar.gz", hash = "sha256:de3eda879f87bee19bfeee51d2129eebb7e8149a700ef10cd3e935fd460d9d5e", size = 871281, upload-time = "2026-11-13T14:29:12.384Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6e/5d/ecb00cf560dc4b4bc58d91a3630098864797283d979abcf7d7e4f882744a/ukceh_time_stream-4.0.1-py3-none-any.whl", hash = "sha256:34ab145cd29c08c71c43e4a4a226858a695506e572d2ee4cd443ba1a75b132b0", size = 74096, upload-time = "2026-11-02T11:32:19.782Z" },
+    { url = "https://files.pythonhosted.org/packages/34/e2/040ed273cee823607cbf6fe15ec922d23b9fb3a2544abe630d7cda7bca35/ukceh_time_stream-4.0.2-py3-none-any.whl", hash = "sha256:bb8c788594a373858e44e4e3da3b4a0363a1da04a4bebb34e0f4a74fd8325bb4", size = 74130, upload-time = "2026-11-13T14:29:10.742Z" },
 ]
 
 [[package]]
