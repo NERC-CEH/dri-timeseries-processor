@@ -110,7 +110,7 @@ class S3DataRouter(DataRouter):
             return pl.DataFrame()
 
         query = f"""
-            SELECT {time_column_name}, COLUMNS(c -> c IN ({requested_columns}))
+            SELECT {time_column_name}, COLUMNS(lambda c: c IN ({requested_columns}))
             FROM read_parquet(?, union_by_name=true);
         """
         return self.reader.read(query, [file_urls])

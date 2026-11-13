@@ -30,7 +30,7 @@ def s3_storage_client() -> S3StorageClient:
 def mock_conn() -> MagicMock:
     conn = MagicMock()
     # Return a dummy Polars DataFrame
-    conn.execute.return_value.pl.return_value = DUMMY_DF.clone()
+    conn.sql.return_value.pl.return_value = DUMMY_DF.clone()
     return conn
 
 
@@ -46,6 +46,7 @@ class TestDuckDBParquetReader:
     """Simple tests that check the core functionality of the class"""
 
     def test_read_calls_factory_create(self, mock_factory: MagicMock) -> None:
+        """Tests that the first read makes a connection from the factory."""
         reader = DuckDBParquetReader(connection_factory=mock_factory)
         result = reader.read("SELECT 1")
 
@@ -53,21 +54,21 @@ class TestDuckDBParquetReader:
         assert_frame_equal(result, DUMMY_DF)
 
     def test_read_executes_query(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
+        """Tests that the query and its parameters are passed to the connection."""
         reader = DuckDBParquetReader(connection_factory=mock_factory)
         result = reader.read("SELECT * FROM tbl", params=[123])
 
-        mock_conn.execute.assert_called_once()
-        mock_conn.execute.assert_called_with("SELECT * FROM tbl", [123])
+        mock_conn.sql.assert_called_once_with("SELECT * FROM tbl", params=[123])
         assert_frame_equal(result, DUMMY_DF)
 
     def test_retry_on_invalid_input_second_passes(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
-        """Test that the second retry is a success"""
-        mock_conn.execute.side_effect = [duckdb.InvalidInputException(), MagicMock(pl=lambda: DUMMY_DF)]
+        """Tests that a read succeeds when the second attempt works."""
+        mock_conn.sql.side_effect = [duckdb.InvalidInputException(), MagicMock(pl=lambda: DUMMY_DF)]
 
         reader = DuckDBParquetReader(connection_factory=mock_factory)
         result = reader.read("SELECT * FROM tbl")
 
-        assert mock_conn.execute.call_count == 2
+        assert mock_conn.sql.call_count == 2
         assert_frame_equal(result, DUMMY_DF)
 
         stats = reader.read.statistics  # type: ignore[attr-defined]
@@ -75,28 +76,28 @@ class TestDuckDBParquetReader:
         assert stats["idle_for"] == 2
 
     def test_retry_on_invalid_input_all_fail(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
-        """Test that max number of retries occurs on raising a InvalidInputException"""
-        mock_conn.execute.side_effect = duckdb.InvalidInputException()
+        """Tests that a read is tried the maximum number of times when every attempt raises InvalidInputException."""
+        mock_conn.sql.side_effect = duckdb.InvalidInputException()
         reader = DuckDBParquetReader(connection_factory=mock_factory)
 
         with pytest.raises(duckdb.InvalidInputException):
             reader.read("SELECT * FROM tbl")
 
-        assert mock_conn.execute.call_count == 3
+        assert mock_conn.sql.call_count == 3
 
         stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 3
         assert stats["idle_for"] == 4
 
     def test_retry_on_http_exception(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
-        """Test that retry doesn't occur on raising a HTTPException"""
-        mock_conn.execute.side_effect = duckdb.HTTPException()
+        """Tests that a read isn't retried when it raises HTTPException."""
+        mock_conn.sql.side_effect = duckdb.HTTPException()
         reader = DuckDBParquetReader(connection_factory=mock_factory)
 
         with pytest.raises(duckdb.HTTPException):
             reader.read("SELECT * FROM tbl")
 
-        assert mock_conn.execute.call_count == 1
+        assert mock_conn.sql.call_count == 1
 
         stats = reader.read.statistics  # type: ignore[attr-defined]
         assert stats["attempt_number"] == 1
@@ -110,7 +111,7 @@ class TestDuckDBParquetReader:
             reader.read("SELECT 1")
 
         mock_factory.create.assert_called_once()
-        assert mock_conn.execute.call_count == 3
+        assert mock_conn.sql.call_count == 3
 
     def test_connection_stays_open_between_reads(self, mock_factory: MagicMock, mock_conn: MagicMock) -> None:
         """Tests that the connection isn't closed after a read."""

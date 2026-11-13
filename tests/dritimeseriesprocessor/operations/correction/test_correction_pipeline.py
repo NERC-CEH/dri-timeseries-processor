@@ -79,10 +79,10 @@ class TestUncoveredTimeValues:
         core_flags = {"unchecked": 1, "corrected": 4, "unsuccessful_correction": 64}
 
         pa = create_timeframe([1007.504, 1007.391, 1007.359], "pa")
-        pa.register_flag_system("core", core_flags)
-        pa.init_flag_column("core", "pa_CORE_FLAG")
-        pa.register_flag_system("corrs", {"pa_corr": 2})
-        pa.init_flag_column("corrs", "pa_CORRS_FLAG")
+        pa = pa.with_flag_system("core", core_flags)
+        pa = pa.with_flag_column("pa_CORE_FLAG", "core")
+        pa = pa.with_flag_system("corrs", {"pa_corr": 2})
+        pa = pa.with_flag_column("pa_CORRS_FLAG", "corrs")
 
         # ta covers one time value fewer than pa, so pa's last row has nothing to correct against
         ta = create_timeframe([12.25, 12.49], "ta")

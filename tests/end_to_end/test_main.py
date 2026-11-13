@@ -6,8 +6,8 @@ versions:
 
 - **Metadata API** is replaced by a mock HTTP server (``MockMetadataApi``) - injected via the `metadata_api_url`
   environment variable. This uses the cached metadata response JSONs as recorded by the `record_metadata.py` script.
-- **S3 storage** is provided by LocalStack (via ``S3StorageClient``), with isolated input and output buckets created
-  per test run.
+- **S3 storage** is provided by LocalStack (via ``S3StorageClient``). The input and output buckets are created and
+  filled once for this module, and the output bucket is reset before each test so no test sees another's outputs.
 
 Test cases are discovered from `test_cases.json` - this is so that the `record_metadata.py` script can also have
 knowledge of which test cases are being considered and what metadata is required.
@@ -26,7 +26,7 @@ from tests.end_to_end.mock_metadata_api.mock_api import mock_metadata_api
 from tests.utils.eddypro_test_helpers import eddypro_mock_init, eddypro_mock_run
 from tests.utils.fixture_helpers import TEST_DATA_OUTPUT_DIR, discover_e2e_test_cases, load_declared_flag_columns
 from tests.utils.metadata_helpers import E2E_OUTPUT_BUCKET
-from tests.utils.s3_test_helpers import get_s3_storage_client
+from tests.utils.s3_test_helpers import get_s3_storage_client, reset_output_bucket
 
 from dritimeseriesprocessor.__main__ import main
 from dritimeseriesprocessor.operations.eddypro.eddypro_runner import EddyProRunner
@@ -47,10 +47,28 @@ def metadata_api_url() -> Iterator[str]:
         yield url
 
 
-@pytest.fixture
-def s3_storage_client() -> Iterator[S3StorageClient]:
+@pytest.fixture(scope="module")
+def e2e_buckets() -> Iterator[S3StorageClient]:
+    """Create the E2E buckets and upload the input data, once for every test in this module.
+
+    The processor only reads from the input bucket, so its contents can be shared between tests.
+
+    Yields:
+        S3 client wrapper for the E2E buckets.
+    """
     with get_s3_storage_client() as storage_client:
         yield storage_client
+
+
+@pytest.fixture
+def s3_storage_client(e2e_buckets: S3StorageClient) -> S3StorageClient:
+    """Reset the output bucket so the test only sees its own outputs.
+
+    Returns:
+        S3 client wrapper for the E2E buckets.
+    """
+    reset_output_bucket(e2e_buckets)
+    return e2e_buckets
 
 
 @pytest.fixture

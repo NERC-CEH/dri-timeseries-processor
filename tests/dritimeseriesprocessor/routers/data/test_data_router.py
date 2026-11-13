@@ -94,7 +94,7 @@ class TestS3DataRouter:
     def test_query_by_date_range(self, router: S3DataRouter, mock_reader: MagicMock) -> None:
         """Tests that the query reads the listed file URLs for the date range, matching their columns by name."""
         expected_query = """
-            SELECT a_time, COLUMNS(c -> c IN ('a_column_name'))
+            SELECT a_time, COLUMNS(lambda c: c IN ('a_column_name'))
             FROM read_parquet(?, union_by_name=true);
         """
 
@@ -164,7 +164,7 @@ class TestS3DataRouter:
         )
         call_query, _ = mock_reader.read.call_args.args
 
-        assert "COLUMNS(c -> c IN ('col_one', 'col_two'))" in call_query
+        assert "COLUMNS(lambda c: c IN ('col_one', 'col_two'))" in call_query
 
     def test_read_from_partitioned_directory(self, s3_storage_client: S3StorageClient) -> None:
         """Tests reading the files under a dataset's access URL"""
