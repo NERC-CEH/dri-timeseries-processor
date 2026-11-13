@@ -286,8 +286,6 @@ class TestInjectDependencyTimeframes:
         return TimeSeriesContainer(
             ts_id=f"ts-{source_column}",
             network="cosmos",
-            source_bucket=None,
-            source_dataset=None,
             source_column=source_column,
             source_site=None,
             source_site_identifier=None,

@@ -122,12 +122,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/nmdb/resolution=PT1H/site=JUNG/"
+            "s3://e2e-output/network=NMDB/collection=PROCESSED_1HOUR/site=JUNG/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT1H",
+      "sourceCollection": "PROCESSED_1HOUR",
       "sourceColumnName": "CRNS-COUNT",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [

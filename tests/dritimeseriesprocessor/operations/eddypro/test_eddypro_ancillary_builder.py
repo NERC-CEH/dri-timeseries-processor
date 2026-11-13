@@ -23,8 +23,6 @@ def make_container(
     container = TimeSeriesContainer(
         ts_id=ts_id,
         network="fdri",
-        source_bucket="bucket",
-        source_dataset="dataset",
         source_column=source_column,
         source_site="PLYNL",
         source_site_identifier="PLYNL",

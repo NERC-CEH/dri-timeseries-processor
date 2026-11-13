@@ -10,61 +10,15 @@ from dritimeseriesprocessor.models.domain_models.processing_config import (
 )
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
     check_common_attributes,
-    group_containers,
+    group_by_access_url,
 )
-from dritimeseriesprocessor.utils.enums import ConfigurationType, DatasetType, ProcessingLevel
+from dritimeseriesprocessor.utils.enums import ConfigurationType, ProcessingLevel
 from utils.data_creation import make_time_series_container
 
 
 def make_daily_df(n_rows: int = 3, col_name: str = "value") -> pl.DataFrame:
     dates = [datetime(2025, 1, 1) + timedelta(days=i) for i in range(n_rows)]
     return pl.DataFrame({"time": dates, col_name: list(range(n_rows))})
-
-
-class TestS3Bucket:
-    def test_parses_bucket_from_distribution_url(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = "s3://my-bucket/some/path/"
-        assert c.s3_bucket == "my-bucket"
-
-    def test_falls_back_to_source_bucket_for_timeseries(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.TIMESERIES_DATASET
-        c.distribution_url = "s3://ignored-bucket/path/"
-        assert c.s3_bucket == c.source_bucket
-
-    def test_falls_back_to_source_bucket_when_no_distribution_url(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = None
-        assert c.s3_bucket == c.source_bucket
-
-
-class TestS3DatasetPath:
-    def test_parses_path_from_distribution_url(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = "s3://my-bucket/Flux/"
-        assert c.s3_dataset_path == "Flux"
-
-    def test_strips_trailing_slash(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = "s3://my-bucket/deep/nested/path/"
-        assert c.s3_dataset_path == "deep/nested/path"
-
-    def test_falls_back_to_source_dataset_for_timeseries(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.TIMESERIES_DATASET
-        c.distribution_url = "s3://ignored/path/"
-        assert c.s3_dataset_path == c.source_dataset
-
-    def test_falls_back_to_source_dataset_when_no_distribution_url(self) -> None:
-        c = make_time_series_container("a")
-        c.dataset_type = DatasetType.OBSERVATION_DATASET
-        c.distribution_url = None
-        assert c.s3_dataset_path == c.source_dataset
 
 
 class TestCheckCommonAttributes:
@@ -104,40 +58,44 @@ class TestCheckCommonAttributes:
             check_common_attributes(self.containers, ["ts_id", "source_site", "source_column"])
 
 
-class TestGroupContainers:
+class TestGroupByAccessUrl:
     def test_empty_containers_returns_empty_dict(self) -> None:
-        assert group_containers((), ["network"]) == {}
+        """Tests that grouping no containers gives an empty dictionary."""
+        assert group_by_access_url(()) == {}
 
-    def test_single_attribute_all_same(self) -> None:
-        a = make_time_series_container("a")
-        b = make_time_series_container("b")
-        c = make_time_series_container("c")
-        # All containers share the same network value
-        result = group_containers((a, b, c), ["network"])
-        assert result == {("network",): [a, b, c]}
+    def test_containers_with_same_url_are_grouped_together(self) -> None:
+        """Tests that containers sharing an access URL end up in one group, keyed by that URL."""
+        container_a = make_time_series_container("a")
+        container_b = make_time_series_container("b")
+        container_a.access_url = container_b.access_url = "s3://bucket/network=X/collection=Y/site=Z"
 
-    def test_single_attribute_all_different(self) -> None:
-        a = make_time_series_container("a")
-        b = make_time_series_container("b")
-        c = make_time_series_container("c")
-        # ts_id is unique per container
-        result = group_containers((a, b, c), ["ts_id"])
-        assert result == {("a",): [a], ("b",): [b], ("c",): [c]}
+        result = group_by_access_url((container_a, container_b))
 
-    def test_multiple_attributes_composite_key(self) -> None:
-        a = make_time_series_container("a")
-        b = make_time_series_container("b")
-        # Both share network and resolution - one group
-        result = group_containers((a, b), ["network", "resolution"])
-        assert result == {("network", "P1D"): [a, b]}
+        assert result == {"s3://bucket/network=X/collection=Y/site=Z": [container_a, container_b]}
 
-    def test_mixed_grouping(self) -> None:
-        a1 = make_time_series_container("a")
-        a2 = make_time_series_container("a")
-        b = make_time_series_container("b")
-        # Two containers share ts_id "a", one has ts_id "b"
-        result = group_containers((a1, a2, b), ["ts_id"])
-        assert result == {("a",): [a1, a2], ("b",): [b]}
+    def test_containers_with_different_urls_are_grouped_separately(self) -> None:
+        """Tests that each access URL gets its own group, keeping the containers in their original order."""
+        container_a1 = make_time_series_container("a1")
+        container_b = make_time_series_container("b")
+        container_a2 = make_time_series_container("a2")
+        container_a1.access_url = container_a2.access_url = "s3://bucket/collection=A"
+        container_b.access_url = "s3://bucket/collection=B"
+
+        result = group_by_access_url((container_a1, container_b, container_a2))
+
+        assert result == {
+            "s3://bucket/collection=A": [container_a1, container_a2],
+            "s3://bucket/collection=B": [container_b],
+        }
+
+    def test_containers_with_no_url_are_grouped_under_none(self) -> None:
+        """Tests that containers with no access URL are grouped together under None."""
+        container_a = make_time_series_container("a")
+        container_b = make_time_series_container("b")
+        container_a.access_url = None
+        container_b.access_url = None
+
+        assert group_by_access_url((container_a, container_b)) == {None: [container_a, container_b]}
 
 
 class TestTimeColumnName:
