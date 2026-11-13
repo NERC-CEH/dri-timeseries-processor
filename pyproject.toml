@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dri-timeseries-processor"
-version = "0.10.5"
+version = "0.10.10"
 description = "Timeseries processor service."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -50,7 +50,7 @@ dependencies = [
     "pyarrow>=25.0.0",
     "pydantic>=2.8.2",
     "tenacity",
-    "time-stream",
+    "ukceh-time-stream>=4.0.0",
 ]
 
 [project.urls]
@@ -60,7 +60,7 @@ homepage = "https://github.com/NERC-CEH/dri-timeseries-processor"
 
 [dependency-groups]
 test = [
-    "awscli-local==0.22.2",
+    "awscli-local==0.23.0",
     "coverage",
     "freezegun",
     "moto>=5.2.2",
@@ -159,8 +159,3 @@ strict = true
 [tool.uv]
 package = true
 default-groups = ["dev"]
-
-[tool.uv.sources]
-time-stream = { git = "https://github.com/NERC-CEH/time-stream.git" }
-hydrometlib = { git = "https://github.com/NERC-CEH/hydrometlib.git" }
-isoperiod = { git = "https://github.com/NERC-CEH/isoperiod.git" }

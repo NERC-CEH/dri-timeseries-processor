@@ -206,12 +206,12 @@ class TestRunCoreFlags:
         }
 
         tf = create_timeframe([10.0, 200.0, 30.0, 300.0], column_name="value")
-        ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
-        ensure_flag_column(tf, "value_CORRS_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
+        tf = ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
+        tf = ensure_flag_column(tf, "value_CORRS_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
         corrected = pl.Series([False, True, True, False])
-        tf.add_flag("value_CORE_FLAG", "unchecked", pl.lit(True))
-        tf.add_flag("value_CORE_FLAG", "corrected", corrected)
-        tf.add_flag("value_CORRS_FLAG", "ADD", corrected)
+        tf = tf.add_flag("value_CORE_FLAG", "unchecked", pl.lit(True))
+        tf = tf.add_flag("value_CORE_FLAG", "corrected", corrected)
+        tf = tf.add_flag("value_CORRS_FLAG", "ADD", corrected)
         container.data = tf
         return container
 
@@ -240,9 +240,9 @@ class TestRunCoreFlags:
         container.flag_column_schemes = {"value_CORE_FLAG": "core_flags", "value_QC_FLAG": "qc_flags"}
         container.flag_column_roles = {FlagRole.CORE: "value_CORE_FLAG", FlagRole.QUALITY_CONTROL: "value_QC_FLAG"}
         tf = create_timeframe([10.0, None, 30.0], column_name="value")
-        ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
+        tf = ensure_flag_column(tf, "value_CORE_FLAG", self.FLAG_SYSTEMS, container.flag_column_schemes)
         # Loading marks the value that was already null as missing.
-        tf.add_flag("value_CORE_FLAG", "missing", pl.Series([False, True, False]))
+        tf = tf.add_flag("value_CORE_FLAG", "missing", pl.Series([False, True, False]))
         container.data = tf
 
         # A stand-in for a check that flags rows whatever their value, like samples or manual_removal.
@@ -295,12 +295,11 @@ class TestRemoveFlaggedData:
         """Create a TimeFrame with core and QC flag columns, where rows with a non-zero entry in `flags` failed QC."""
         tf = create_timeframe(values, column_name="value")
         tf = tf.with_metadata({"column_name": "value"})
-        tf.register_flag_system("core_flags", {"removed": 8})
-        tf.init_flag_column("core_flags", self.CORE_FLAG_COL)
-        tf.register_flag_system("qc_flags", {"range": 1})
-        tf.init_flag_column("qc_flags", self.QC_FLAG_COL)
-        tf.add_flag(self.QC_FLAG_COL, "range", pl.Series([flag > 0 for flag in flags]))
-        return tf
+        tf = tf.with_flag_system("core_flags", {"removed": 8})
+        tf = tf.with_flag_column(self.CORE_FLAG_COL, "core_flags")
+        tf = tf.with_flag_system("qc_flags", {"range": 1})
+        tf = tf.with_flag_column(self.QC_FLAG_COL, "qc_flags")
+        return tf.add_flag(self.QC_FLAG_COL, "range", pl.Series([flag > 0 for flag in flags]))
 
     def test_nulls_values_where_flag_is_nonzero(self) -> None:
         """Tests that values are set to null, and given the 'removed' core flag, where the QC flag is above zero."""

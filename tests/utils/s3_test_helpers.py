@@ -35,10 +35,7 @@ def get_s3_storage_client() -> Iterator[S3StorageClient]:
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, PARQUET_DATA_INPUT_DIR)
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, TEST_DATA_INPUT_DIR / "partitioned")
     upload_folder_to_s3(storage_client, E2E_INPUT_BUCKET, FLUX_DATA_DIR)
-    # Pre-processed data from external systems (e.g. NMDB) and flux despiking history both
-    # live in the same real S3 bucket as our processor's outputs. Upload them to the output
-    # bucket so they can be resolved as load-only dependencies during tests.
-    upload_folder_to_s3(storage_client, E2E_OUTPUT_BUCKET, PARQUET_DATA_PROCESSED_DIR)
+    reset_output_bucket(storage_client)
 
     try:
         yield storage_client
@@ -48,6 +45,20 @@ def get_s3_storage_client() -> Iterator[S3StorageClient]:
         remove_test_s3_bucket(E2E_OUTPUT_BUCKET, storage_client)
 
 
+def reset_output_bucket(storage_client: S3StorageClient) -> None:
+    """Empty the E2E output bucket and upload the pre-processed data again.
+
+    Pre-processed data from external systems (e.g. NMDB) and flux despiking history both live in the same real S3
+    bucket as our processor's outputs. They go in the output bucket so they can be resolved as load-only dependencies
+    during tests.
+
+    Args:
+        storage_client: S3 client wrapper used for bucket operations.
+    """
+    storage_client.delete_all(f"s3://{E2E_OUTPUT_BUCKET}")
+    upload_folder_to_s3(storage_client, E2E_OUTPUT_BUCKET, PARQUET_DATA_PROCESSED_DIR)
+
+
 def remove_test_s3_bucket(bucket: str, storage_client: S3StorageClient) -> None:
     """Clear and delete a test S3 bucket.
 
@@ -55,7 +66,7 @@ def remove_test_s3_bucket(bucket: str, storage_client: S3StorageClient) -> None:
         bucket: Bucket name to remove.
         storage_client: S3 client wrapper used for bucket operations.
     """
-    storage_client.clear_bucket(bucket)
+    storage_client.delete_all(f"s3://{bucket}")
     storage_client.client.delete_bucket(Bucket=bucket)
 
 
@@ -92,7 +103,7 @@ def upload_folder_to_s3(
     for file in folder.rglob("*"):
         if file.is_file():
             key = str(file.relative_to(key_base))
-            storage_client.put_bytes(bucket, key, file.read_bytes())
+            storage_client.put_bytes(f"s3://{bucket}/{key}", file.read_bytes())
 
 
 def create_hourly_test_data(
@@ -122,7 +133,7 @@ def create_hourly_test_data(
                 buf = io.BytesIO()
                 df.write_parquet(buf)
 
-                key = f"cosmos/dataset=test_dataset/site={site}/date={day.strftime('%Y-%m-%d')}/data.parquet"
-                storage_client.put_bytes(bucket_name, key, buf.getvalue())
+                key = f"network=COSMOS/collection=TEST_COLLECTION/site={site}/date={day:%Y-%m-%d}/data.parquet"
+                storage_client.put_bytes(f"s3://{bucket_name}/{key}", buf.getvalue())
 
     return pl.concat(frames)

@@ -17,7 +17,7 @@ def ensure_flag_column(
     flag_column_name: str,
     flag_systems: dict[str, dict[str, int]],
     flag_column_schemes: dict[str, str],
-) -> None:
+) -> ts.TimeFrame:
     """Register the flag system and create a single flag column on a TimeFrame, if needed.
 
     Does nothing when the dataset does not define this flag column in its metadata, or when the flag
@@ -30,17 +30,22 @@ def ensure_flag_column(
         flag_column_name: The flag column to create (e.g. a core or QC flag column).
         flag_systems: All flag system definitions, keyed by system name.
         flag_column_schemes: Flag column names mapped to the flag system that governs them.
+
+    Returns:
+        The TimeFrame with the flag system and column set up.
     """
     flag_system_name = flag_column_schemes.get(flag_column_name)
     if flag_system_name is None:
         # The dataset does not define this flag column - nothing to set up.
-        return
+        return tf
 
     if flag_system_name not in tf.flag_systems:
-        tf.register_flag_system(flag_system_name, flag_systems[flag_system_name])
+        tf = tf.with_flag_system(flag_system_name, flag_systems[flag_system_name])
 
     if flag_column_name not in tf.flag_columns:
-        tf.init_flag_column(flag_system_name, flag_column_name)
+        tf = tf.with_flag_column(flag_column_name, flag_system_name)
+
+    return tf
 
 
 def initialise_flag_systems(
@@ -59,7 +64,9 @@ def initialise_flag_systems(
         return container
 
     for flag_column_name in container.flag_column_schemes:
-        ensure_flag_column(container.data, flag_column_name, flag_systems, container.flag_column_schemes)
+        container.data = ensure_flag_column(
+            container.data, flag_column_name, flag_systems, container.flag_column_schemes
+        )
 
     return container
 
@@ -85,11 +92,11 @@ def add_initial_core_flags(
 
     if init_unchecked:
         # Set all as unchecked
-        container.data.add_flag(core_flag_col_name, "unchecked", pl.lit(True))
+        container.data = container.data.add_flag(core_flag_col_name, "unchecked", pl.lit(True))
 
     if init_missing:
         # Flag missing values
-        container.data.add_flag(
+        container.data = container.data.add_flag(
             core_flag_col_name, "missing", missing_expr(data_col_name, container.data.df[data_col_name].dtype)
         )
 
@@ -119,11 +126,11 @@ def update_corrections_core_flags(
 
     # Add corrected core flag where corrections flag is not 0 and the correction was successful.
     expr = expr_has_flag & expr_has_value
-    tf.add_flag(core_flag_col_name, "corrected", expr)
+    tf = tf.add_flag(core_flag_col_name, "corrected", expr)
 
     # Add unsuccessful_correction core flag where corrections flag is not 0 and the correction was NOT successful.
     expr = expr_has_flag & ~expr_has_value
-    tf.add_flag(core_flag_col_name, "unsuccessful_correction", expr)
+    tf = tf.add_flag(core_flag_col_name, "unsuccessful_correction", expr)
 
     return tf
 
@@ -147,7 +154,7 @@ def update_quality_control_core_flags(
 
     # Remove unchecked flag where there is a non-null QC flag.
     expr = not_missing_expr(qc_flag_col_name, tf.df[qc_flag_col_name].dtype)
-    tf.remove_flag(core_flag_col_name, "unchecked", expr)
+    tf = tf.remove_flag(core_flag_col_name, "unchecked", expr)
 
     return tf
 
@@ -172,6 +179,6 @@ def update_infill_core_flags(
 
     # Add estimated core flag where infill flag is not 0.
     expr = pl.col(infill_flag_col_name) != 0
-    tf.add_flag(core_flag_col_name, "estimated", expr)
+    tf = tf.add_flag(core_flag_col_name, "estimated", expr)
 
     return tf

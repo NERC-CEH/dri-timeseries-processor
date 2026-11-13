@@ -17,8 +17,7 @@ from dritimeseriesprocessor.io_backend.writer import ParquetWriterInterface
 from dritimeseriesprocessor.metrics.metrics import Metrics
 from dritimeseriesprocessor.models.domain_models.time_series_container import (
     TimeSeriesContainer,
-    check_common_attributes,
-    group_containers,
+    group_by_access_url,
 )
 from dritimeseriesprocessor.operations.aggregation.aggregation_pipeline import AggregationPipeline
 from dritimeseriesprocessor.operations.correction.correction_pipeline import CorrectionPipeline
@@ -178,8 +177,8 @@ class TimeSeriesProcessor:
                     )
                     # LOAD brings in raw data: we need to register any flag systems, create the flag columns the
                     # dataset declares, and set every row's core flag as "unchecked"
-                    initialise_flag_systems(container, self.graph.flagging_systems)
-                    add_initial_core_flags(container)
+                    container = initialise_flag_systems(container, self.graph.flagging_systems)
+                    container = add_initial_core_flags(container)
 
                 case ConfigurationType.CORRECTION:
                     container.data = CorrectionPipeline(self.graph.flagging_systems).run(
@@ -263,36 +262,34 @@ class TimeSeriesProcessor:
     def _batch_load(self) -> None:
         """Load time-series data for multiple datasets in grouped batches.
 
-        Containers are grouped by network, site, resolution, and source dataset so that a single query
-        can retrieve all columns for each group in one read. Each container's data is then extracted from
-        the combined result and initialised into a TimeFrame.
+        Containers are grouped by access URL, as datasets with the same URL are stored in the same files, so a single
+        query can retrieve all columns for each group in one read. Each container's data is then extracted from the
+        combined result and initialised into a TimeFrame.
         """
         containers = self._collect_load_containers()
         logger.info(f"Collecting and loading [{len(containers)}] datasets.")
-        common_keys = ["network", "source_site_identifier", "resolution", "source_dataset", "processing_level"]
-        groupings = group_containers(containers, common_keys)
+        groupings = group_by_access_url(containers)
 
         with self.metrics.time_load.time():
-            for dataset_group, containers_in_group in groupings.items():
+            for access_url, containers_in_group in groupings.items():
                 try:
                     combined_df = self.data_router.query_by_date_range(
                         *containers_in_group, start_date=self.load_start_date, end_date=self.load_end_date
                     )
 
                     if combined_df.is_empty():
-                        raise ValueError(f"No data returned for group: {dataset_group}")
+                        raise ValueError(f"No data returned for group: {access_url}")
 
                 except Exception:  # noqa
                     for container in containers_in_group:
                         self.metrics.no_data.labels(dataset=extract_uri_id(container.ts_id)).inc()
                         container.failed = True
-                    logger.exception(f"Failed to load data for group: {dataset_group}")
+                    logger.exception(f"Failed to load data for group: {access_url}")
                     continue
 
                 for container in containers_in_group:
-                    col = container.source_column
                     try:
-                        df = combined_df.select([container.time_column_name, col])
+                        df = combined_df.select([container.time_column_name, container.source_column])
                         container.init_timeframe(df)
 
                         if container.data is None:
@@ -313,11 +310,15 @@ class TimeSeriesProcessor:
             tasks = self._build_save_tasks()
             run_threaded_tasks(tasks, self.data_writer.write)
 
-    def _build_save_tasks(self) -> Iterator[tuple[str, str, pl.DataFrame, str]]:
+    def _build_save_tasks(self) -> Iterator[tuple[str, pl.DataFrame, str]]:
         """Build save tasks for processed datasets.
 
-        This method groups processed datasets that are written to the same Parquet output, merges their timeframes,
-        splits the merged data by day, and yields arguments needed for the actual save tasks.
+        This method groups processed datasets by access URL, as datasets with the same URL are written to the same
+        parquet files. It merges each group's timeframes, splits the merged data by day, and yields arguments needed
+        for the actual save tasks.
+
+        A group that can't be saved - because it has no access URL, or its datasets can't be merged into one file (e.g.
+        different resolutions) - is marked as failed, and the other groups are still saved.
 
         Each yielded task contains all information required to perform a single write operation, but doesn't do
         the actual saving. This separation allows the caller to execute the tasks synchronously or concurrently.
@@ -325,15 +326,13 @@ class TimeSeriesProcessor:
         Yields:
             Tuples of the form:
                 (
-                    bucket (str) : The S3 bucket to write to
-                    key (str) : The full S3 object key for the parquet file
+                    url (str) : The full URL of the parquet file
                     df (pl.DataFrame) : The dataframe to be written
                     time_column_name (str) : The name of the time column in df
                 )
 
         Using Yield to produce a generator so that we're not holding all dataframes in memory simultaneously.
         """
-        common_keys = ["network", "source_site_identifier", "resolution", "source_bucket"]
         processed = tuple(
             c
             for c in self.graph.datasets.values()
@@ -347,14 +346,22 @@ class TimeSeriesProcessor:
             logger.warning("No datasets available to be saved.")
             return
 
-        groupings = group_containers(processed, common_keys)
+        groupings = group_by_access_url(processed)
 
-        for _, containers in groupings.items():
-            # Double check all containers have the same properties
-            network, site_id, resolution, bucket = check_common_attributes(containers, common_keys)
+        for access_url, containers in groupings.items():
+            try:
+                if not access_url:
+                    raise ValueError(f"No access URL for containers: {[c.ts_id for c in containers]}")
 
-            # Merge the data for all containers
-            group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])
+                # Merge the data for all containers
+                group_tf = merge_multiple_timeframes([c.data for c in containers if c.data is not None])
+
+            except ValueError:
+                for container in containers:
+                    self.metrics.failed.labels(dataset=extract_uri_id(container.ts_id)).inc()
+                    container.failed = True
+                logger.exception(f"Failed to save datasets: {[c.ts_id for c in containers]}")
+                continue
 
             # Drop the rows that were only read to complete the aggregation buckets on the window edges, so a run
             # only ever writes days it was asked to process.
@@ -367,5 +374,4 @@ class TimeSeriesProcessor:
 
             # Yield specific save tasks
             for data_date, df in data_to_write:
-                key = f"{network}/resolution={resolution}/site={site_id}/date={data_date:%Y-%m-%d}/data.parquet"
-                yield bucket, key, df, group_tf.time_name
+                yield f"{access_url}/date={data_date:%Y-%m-%d}/data.parquet", df, group_tf.time_name
