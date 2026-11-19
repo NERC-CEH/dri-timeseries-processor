@@ -19,8 +19,6 @@ from dritimeseriesprocessor.models.api_models.shared import BaseAPIResponse
 class TimeSeriesDatasetItem(ObservationDatasetItem):
     """Time series dataset item - extends ObservationDatasetItem"""
 
-    source_bucket: str | None = Field(None, alias="sourceBucket")
-    source_dataset: str | None = Field(None, alias="sourceDataset")
     source_column_name: str | None = Field(None, alias="sourceColumnName")
     time_column_name: str | None = Field(None, alias="sourceTimeColumnName")
     has_flag_column: list[FlagColumn] | None = Field(default_factory=list, alias="hasFlagColumn")

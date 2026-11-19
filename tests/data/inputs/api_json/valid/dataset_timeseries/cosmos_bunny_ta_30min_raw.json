@@ -73,12 +73,12 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-ingested/cosmos/dataset=LIVE_SOILMET_30MIN/site=BUNNY/"
+            "s3://ukceh-dri-staging-ingested/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=BUNNY/"
           ]
         }
       ],
       "sourceBucket": "ukceh-dri-staging-ingested",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingFacility": [

@@ -77,12 +77,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=HOLLN/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [

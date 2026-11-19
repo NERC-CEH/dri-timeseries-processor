@@ -78,12 +78,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/cosmos/dataset=LIVE_SOILMET_30MIN/site=CGARW/"
+            "s3://e2e-input/network=COSMOS/collection=LIVE_SOILMET_30MIN/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_SOILMET_30MIN",
+      "sourceCollection": "LIVE_SOILMET_30MIN",
       "sourceColumnName": "CTS_MOD",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -183,12 +183,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "Q",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -395,12 +395,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "ALBEDO",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -664,12 +664,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=PT30M/site=CGARW/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_30MIN/site=CGARW/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "PT30M",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "CTS_SNOW",
       "sourceTimeColumnName": "time",
       "originatingSite": [

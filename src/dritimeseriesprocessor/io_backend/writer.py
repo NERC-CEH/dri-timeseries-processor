@@ -34,12 +34,11 @@ class ByteParquetWriter(ParquetWriterInterface):
     def __init__(self, storage: StorageClient):
         self.storage = storage
 
-    def write(self, bucket: str, key: str, df: pl.DataFrame, time_col: str) -> None:
+    def write(self, url: str, df: pl.DataFrame, time_col: str) -> None:
         """Write parquet data to storage.
 
         Args:
-            bucket: Where to store the data
-            key: The file name of the stored data
+            url: Full URL of the file to write, e.g. `s3://bucket/.../site=X/date=2026-01-20/data.parquet`
             df: The data to store
             time_col: Name of the time column in df
         """
@@ -48,10 +47,10 @@ class ByteParquetWriter(ParquetWriterInterface):
             exceptions_to_catch.extend([self.storage.client.exceptions.NoSuchKey, ClientError])
 
         try:
-            existing_bytes = self.storage.get_bytes(bucket, key)
+            existing_bytes = self.storage.get_bytes(url)
             existing_df = pl.read_parquet(existing_bytes)
             combined_df = merge_dataframes(existing_df, df, time_col)
-            logger.debug(f"Merging existing and new data for {bucket}/{key}")
+            logger.debug(f"Merging existing and new data for {url}")
         except tuple(exceptions_to_catch) as error:
             # ClientError is the base class for every botocore error, so only treat it as a missing file when the
             # error says so. Any other error must not be mistaken for an empty file, or this write replaces a
@@ -63,10 +62,10 @@ class ByteParquetWriter(ParquetWriterInterface):
                 raise
 
             combined_df = df
-            logger.debug(f"No existing parquet at {bucket}/{key}; writing new file")
+            logger.debug(f"No existing parquet at {url}; writing new file")
 
         buffer = BytesIO()
         combined_df.write_parquet(buffer)
         buffer.seek(0)
-        self.storage.put_bytes(bucket, key, buffer.getvalue())
-        logger.info(f"Wrote parquet to: {bucket}/{key}")
+        self.storage.put_bytes(url, buffer.getvalue())
+        logger.info(f"Wrote parquet to: {url}")

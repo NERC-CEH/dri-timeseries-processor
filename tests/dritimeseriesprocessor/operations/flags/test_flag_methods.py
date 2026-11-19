@@ -79,12 +79,12 @@ def sample_container() -> TimeSeriesContainer:
     """A container whose TimeFrame has the corrs, QC, infill and core flag columns set up."""
     tf = ts.TimeFrame(sample_dataframe(), time_name="timestamp")
     tf.metadata["column_name"] = "value"
-    tf.register_flag_system("corrs_flags", {"ADD": 1})
-    tf.init_flag_column("corrs_flags", CORRS_FLAG_COL, [1, 0, 0, 0, 1])
-    tf.register_flag_system("qc_flags", {"RANGE": 1})
-    tf.init_flag_column("qc_flags", QC_FLAG_COL, [0, 1, 0, 1, 0])
-    tf.register_flag_system("infill_flags", {"INTERP": 1})
-    tf.init_flag_column("infill_flags", INFILL_FLAG_COL, [0, 0, 1, 0, 0])
+    tf = tf.with_flag_system("corrs_flags", {"ADD": 1})
+    tf = tf.with_flag_column(CORRS_FLAG_COL, "corrs_flags", [1, 0, 0, 0, 1])
+    tf = tf.with_flag_system("qc_flags", {"RANGE": 1})
+    tf = tf.with_flag_column(QC_FLAG_COL, "qc_flags", [0, 1, 0, 1, 0])
+    tf = tf.with_flag_system("infill_flags", {"INTERP": 1})
+    tf = tf.with_flag_column(INFILL_FLAG_COL, "infill_flags", [0, 0, 1, 0, 0])
 
     container = make_time_series_container("test")
     container.data = tf
@@ -92,9 +92,7 @@ def sample_container() -> TimeSeriesContainer:
     container.flag_column_roles = dict(FLAG_COLUMN_ROLES)
 
     # Set up the core flag system and column, as the processor does before applying core flags.
-    initialise_flag_systems(container, FLAG_SYSTEMS)
-
-    return container
+    return initialise_flag_systems(container, FLAG_SYSTEMS)
 
 
 @pytest.fixture
@@ -152,8 +150,8 @@ class TestUpdateQualityControlCoreFlags:
     def test_other_core_flags_kept(self, sample_timeframe: ts.TimeFrame) -> None:
         """Tests that other core flags, such as 'corrected' (1), are kept when 'unchecked' is cleared."""
         # Mark a value that failed QC, and a value that passed, as corrected.
-        sample_timeframe.add_flag(CORE_FLAG_COL, "corrected", pl.Series([False, True, True, False, False]))
-        tf = update_quality_control_core_flags(sample_timeframe, CORE_FLAG_COL, QC_FLAG_COL)
+        tf = sample_timeframe.add_flag(CORE_FLAG_COL, "corrected", pl.Series([False, True, True, False, False]))
+        tf = update_quality_control_core_flags(tf, CORE_FLAG_COL, QC_FLAG_COL)
         # Row 1 keeps corrected (1) alongside missing (4). Row 2 keeps corrected (1).
         assert list(tf.df[CORE_FLAG_COL]) == [0, 5, 1, 4, 0]
 
@@ -180,26 +178,30 @@ class TestEnsureFlagColumn:
         """Tests that nothing is set up when the dataset does not declare the flag column."""
         tf = ts.TimeFrame(sample_dataframe(), time_name="timestamp")
 
-        ensure_flag_column(tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {})
+        result = ensure_flag_column(tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {})
 
-        assert "value_CORE_FLAG" not in tf.flag_columns
-        assert "core_flags" not in tf.flag_systems
+        assert "value_CORE_FLAG" not in result.flag_columns
+        assert "core_flags" not in result.flag_systems
 
     def test_registers_system_and_inits_column(self) -> None:
         """Tests that the flag system is registered and the flag column created when neither exists."""
         tf = ts.TimeFrame(sample_dataframe(), time_name="timestamp")
 
-        ensure_flag_column(tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {"value_CORE_FLAG": "core_flags"})
+        result = ensure_flag_column(
+            tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {"value_CORE_FLAG": "core_flags"}
+        )
 
-        assert "core_flags" in tf.flag_systems
-        assert "value_CORE_FLAG" in tf.flag_columns
+        assert "core_flags" in result.flag_systems
+        assert "value_CORE_FLAG" in result.flag_columns
 
     def test_leaves_existing_flag_column_untouched(self) -> None:
         """Tests that an existing flag column keeps its values and is not re-initialised."""
         tf = ts.TimeFrame(sample_dataframe(), time_name="timestamp")
-        tf.register_flag_system("core_flags", {"unchecked": 32})
-        tf.init_flag_column("core_flags", "value_CORE_FLAG", [32, 0, 0, 0, 0])
+        tf = tf.with_flag_system("core_flags", {"unchecked": 32})
+        tf = tf.with_flag_column("value_CORE_FLAG", "core_flags", [32, 0, 0, 0, 0])
 
-        ensure_flag_column(tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {"value_CORE_FLAG": "core_flags"})
+        result = ensure_flag_column(
+            tf, "value_CORE_FLAG", {"core_flags": {"unchecked": 32}}, {"value_CORE_FLAG": "core_flags"}
+        )
 
-        assert list(tf.df["value_CORE_FLAG"]) == [32, 0, 0, 0, 0]
+        assert list(result.df["value_CORE_FLAG"]) == [32, 0, 0, 0, 0]

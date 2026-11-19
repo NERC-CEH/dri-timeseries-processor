@@ -83,10 +83,8 @@ def make_time_series_container(
     return TimeSeriesContainer(
         ts_id=ts_id,
         network="network",
-        source_bucket=ts_id + "_bucket",
         source_site=ts_id + "_site",
         source_column=ts_id + "_column",
-        source_dataset=ts_id + "_dataset",
         source_site_identifier=ts_id + "_site_identifier",
         time_column_name="time",
         unit=None,
@@ -94,4 +92,5 @@ def make_time_series_container(
         periodicity="P1D",
         time_anchor="start",
         processing_level=processing_level,
+        access_url=f"s3://{ts_id}_bucket/network=NETWORK/collection={ts_id}_collection/site={ts_id}_site",
     )

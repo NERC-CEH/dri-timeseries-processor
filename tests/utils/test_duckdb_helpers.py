@@ -1,45 +1,40 @@
 import duckdb
 import pytest
 
-from dritimeseriesprocessor.utils.duckdb_utils import (
-    get_duck_db_extensions,
-    get_duck_db_secrets,
-    get_duck_db_settings,
-    parse_secret_string,
-)
+from utils.duckdb_helpers import get_duck_db_extensions, get_duck_db_secrets, get_duck_db_setting, parse_secret_string
 
 
-class TestGetDuckDbSettings:
-    @pytest.mark.parametrize("key", ["Calendar", "TimeZone", "access_mode"])
-    def test_get_settings_default(self, key: str) -> None:
-        """Test that we get default settings. A basic selection of the settings taken from:
-        https://duckdb.org/docs/stable/configuration/overview#global-configuration-options
-        """
+class TestGetDuckDbSetting:
+    @pytest.mark.parametrize("name", ["Calendar", "TimeZone", "access_mode"])
+    def test_get_default_setting(self, name: str) -> None:
+        """Tests that a default setting can be read from a new connection."""
         conn = duckdb.connect()
-        settings = get_duck_db_settings(conn)
-        assert key in settings
+        assert get_duck_db_setting(conn, name) is not None
 
-    def test_settings_reflects_changes(self) -> None:
+    def test_setting_reflects_changes(self) -> None:
+        """Tests that a changed setting is returned with its new value."""
         conn = duckdb.connect()
-        settings = get_duck_db_settings(conn)
-        assert "force_download" not in settings
+        assert get_duck_db_setting(conn, "force_download") is False
 
         conn.execute("SET force_download=true;")
-        settings = get_duck_db_settings(conn)
-        assert settings["force_download"] == "true"
+        assert get_duck_db_setting(conn, "force_download") is True
+
+    def test_reads_s3_setting(self) -> None:
+        """Tests that an S3 setting can be read, even though `duckdb_settings()` doesn't list it."""
+        conn = duckdb.connect()
+        conn.execute("SET s3_endpoint='some:url';")
+        assert get_duck_db_setting(conn, "s3_endpoint") == "some:url"
 
 
 class TestGetDuckDbExtensions:
     def test_get_extensions_default(self) -> None:
-        """Test the status of core extensions. A basic selection taken from:
-        https://duckdb.org/docs/stable/core_extensions/overview
-        """
+        """Tests that core extensions are loaded on a new connection."""
         conn = duckdb.connect()
         extensions = get_duck_db_extensions(conn)
         assert extensions["core_functions"]["loaded"]
 
     def test_get_extensions_after_install(self) -> None:
-        """Test the status of extension after installation."""
+        """Tests that an extension shows as loaded after it is installed and loaded."""
         conn = duckdb.connect()
         extensions = get_duck_db_extensions(conn)
         assert not extensions["httpfs"]["loaded"]
@@ -51,12 +46,13 @@ class TestGetDuckDbExtensions:
 
 class TestGetDuckDbSecrets:
     def test_get_duck_db_secrets_default(self) -> None:
-        """Test default is for no secrets."""
+        """Tests that a new connection has no secrets."""
         conn = duckdb.connect()
         secrets = get_duck_db_secrets(conn)
         assert secrets == {}
 
     def test_get_duck_db_secrets_after_adding(self) -> None:
+        """Tests that a created secret is returned with its properties."""
         conn = duckdb.connect()
         conn.execute("""
             CREATE SECRET my_secret (
@@ -68,6 +64,7 @@ class TestGetDuckDbSecrets:
         assert secrets["my_secret"]["region"] == "eu-west-1"
 
     def test_get_duck_db_secrets_redacted(self) -> None:
+        """Tests that a secret's private values are redacted."""
         conn = duckdb.connect()
         conn.execute("""
             CREATE SECRET my_secret (
@@ -93,5 +90,6 @@ class TestParseSecretString:
             ("no equals", {}),  # no valid pairs
         ],
     )
-    def test_parse_secret_string(self, secret_str: str, expected: str) -> None:
+    def test_parse_secret_string(self, secret_str: str, expected: dict[str, str]) -> None:
+        """Tests that a secret string is split into its named parts."""
         assert parse_secret_string(secret_str) == expected

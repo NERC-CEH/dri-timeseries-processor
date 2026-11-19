@@ -78,12 +78,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/nmdb/dataset=LIVE_NMDB_1HOUR/site=APTY/"
+            "s3://e2e-input/network=NMDB/collection=LIVE_NMDB_1HOUR/site=APTY/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_NMDB_1HOUR",
+      "sourceCollection": "LIVE_NMDB_1HOUR",
       "sourceColumnName": "CRNS-COUNT",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [
@@ -158,12 +158,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/nmdb/dataset=LIVE_NMDB_1HOUR/site=JUNG1/"
+            "s3://e2e-input/network=NMDB/collection=LIVE_NMDB_1HOUR/site=JUNG1/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_NMDB_1HOUR",
+      "sourceCollection": "LIVE_NMDB_1HOUR",
       "sourceColumnName": "CRNS-COUNT",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [
@@ -238,12 +238,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/nmdb/dataset=LIVE_NMDB_1HOUR/site=NEWK/"
+            "s3://e2e-input/network=NMDB/collection=LIVE_NMDB_1HOUR/site=NEWK/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_NMDB_1HOUR",
+      "sourceCollection": "LIVE_NMDB_1HOUR",
       "sourceColumnName": "CRNS-COUNT",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [
@@ -318,12 +318,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-input/nmdb/dataset=LIVE_NMDB_1HOUR/site=JUNG/"
+            "s3://e2e-input/network=NMDB/collection=LIVE_NMDB_1HOUR/site=JUNG/"
           ]
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "LIVE_NMDB_1HOUR",
+      "sourceCollection": "LIVE_NMDB_1HOUR",
       "sourceColumnName": "CRNS-COUNT",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [

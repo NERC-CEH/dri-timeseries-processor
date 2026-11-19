@@ -105,8 +105,9 @@ def snapshot_output_bucket(storage_client: S3StorageClient) -> dict[str, bytes]:
     Returns:
         The contents of each file, keyed by its S3 key.
     """
-    all_keys = storage_client.list_keys(E2E_OUTPUT_BUCKET)
-    return {key: storage_client.get_bytes(E2E_OUTPUT_BUCKET, key) for key in all_keys}
+    bucket_url = f"s3://{E2E_OUTPUT_BUCKET}"
+    file_urls = storage_client.list_urls(bucket_url)
+    return {url.removeprefix(f"{bucket_url}/"): storage_client.get_bytes(url) for url in file_urls}
 
 
 def write_expected_output(frame: pl.DataFrame, expected_path: Path) -> None:

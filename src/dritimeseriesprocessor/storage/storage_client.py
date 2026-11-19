@@ -8,12 +8,11 @@ class StorageClient(ABC):
     """Abstract base class defining methods for retrieving and writing data."""
 
     @abstractmethod
-    def get_bytes(self, bucket: str, key: str) -> bytes:
+    def get_bytes(self, url: str) -> bytes:
         """Retrieve data from the underlying storage.
 
         Args:
-            bucket: Where data should be found.
-            key: Name of object containing the data.
+            url: Full URL of the file.
 
         Returns:
             The full contents of the data as a bytestring.
@@ -21,71 +20,64 @@ class StorageClient(ABC):
         pass
 
     @abstractmethod
-    def put_bytes(self, bucket: str, key: str, data: bytes) -> None:
+    def put_bytes(self, url: str, data: bytes) -> None:
         """Write data to the underlying storage.
 
         Args:
-            bucket: Where data should be stored.
-            key: Name of object containing the data.
+            url: Full URL of the file.
             data: The bytes to be written.
         """
         pass
 
     @abstractmethod
-    def download_file(self, bucket: str, key: str, local_path: Path) -> None:
-        """Download a single object from storage to a local file path."""
-        pass
-
-    @abstractmethod
-    def list_keys_with_prefix(self, bucket: str, prefix: str) -> list[str]:
-        """List all object keys in a bucket that start with the given prefix."""
-        pass
-
-    @abstractmethod
-    def list_subfolders(self, bucket: str, folder: str) -> list[str]:
-        """List the "folders" directly inside a folder, without listing every key inside them.
-
-        For example, the folder `site=X` returns `["site=X/a=1", "site=X/a=2"]`.
-        """
-        pass
-
-    @abstractmethod
-    def first_key_with_prefix(self, bucket: str, prefix: str) -> str | None:
-        """Return the first key, in key order, that starts with the prefix, or `None` if there isn't one."""
-        pass
-
-    @abstractmethod
-    def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
-        """Upload a local file to storage."""
-        pass
-
-    @abstractmethod
-    def list_keys(self, bucket: str) -> list[str]:
-        """List all the keys in storage.
+    def download_file(self, url: str, local_path: Path) -> None:
+        """Download a single file from storage to a local file path.
 
         Args:
-            bucket: Where to look for keys
+            url: Full URL of the file.
+            local_path: Where to save the file locally.
         """
         pass
 
     @abstractmethod
-    def delete_key(self, bucket: str, key: str) -> None:
-        """Delete from the underlying storage.
+    def upload_file(self, url: str, local_path: Path) -> None:
+        """Upload a local file to storage.
 
         Args:
-            bucket: Where data should be deleted from
-            key: Name of object to be deleted
+            url: Full URL to upload the file to.
+            local_path: The local file to upload.
         """
         pass
 
     @abstractmethod
-    def clear_bucket(self, bucket: str) -> None:
-        """Clear all files from a bucket
+    def list_urls(self, prefix_url: str) -> list[str]:
+        """List the full URLs of all files that start with the given URL.
 
         Args:
-            bucket: Where data should be deleted from
+            prefix_url: The start of the URLs to list, e.g. `s3://bucket/network=X/collection=Y/site=Z/date=2026-01`.
+
+        Returns:
+            Full URLs of the matching files.
         """
         pass
+
+    @abstractmethod
+    def delete(self, url: str) -> None:
+        """Delete a single file from storage.
+
+        Args:
+            url: Full URL of the file.
+        """
+        pass
+
+    def delete_all(self, prefix_url: str) -> None:
+        """Delete every file whose URL starts with the given URL.
+
+        Args:
+            prefix_url: The start of the URLs to delete, e.g. `s3://bucket` to empty a whole bucket.
+        """
+        for url in self.list_urls(prefix_url):
+            self.delete(url)
 
 
 class S3StorageClient(StorageClient):
@@ -118,81 +110,56 @@ class S3StorageClient(StorageClient):
 
         self.client = session.client("s3", **kwargs)
 
-    def get_bytes(self, bucket: str, key: str) -> bytes:
-        """Retrieve data from the S3 storage.
+    @staticmethod
+    def _split_access_url(url: str) -> tuple[str, str]:
+        """Split an `s3://` URL into the bucket and key that boto3 needs.
+
+        E.g. `s3://bucket/network=X/site=Y/date=2026-01-26/data.parquet` gives
+        `("bucket", "network=X/site=Y/date=2026-01-26/data.parquet")`.
 
         Args:
-            bucket: S3 bucket name.
-            key: Key identifying the object within the bucket.
+            url: An `s3://` URL.
 
         Returns:
-            The contents of the object as a bytestring.
+            The bucket and the key. The key is empty if the URL is just the bucket.
+
+        Raises:
+            ValueError: If the URL doesn't start with `s3://` or has no bucket.
         """
+        if not url.startswith("s3://"):
+            raise ValueError(f"Expected an s3:// URL, got: {url}")
+        bucket, _, key = url.removeprefix("s3://").partition("/")
+        if not bucket:
+            raise ValueError(f"No bucket in URL: {url}")
+        return bucket, key
+
+    def get_bytes(self, url: str) -> bytes:
+        bucket, key = self._split_access_url(url)
         obj = self.client.get_object(Bucket=bucket, Key=key)
         return obj["Body"].read()
 
-    def put_bytes(self, bucket: str, key: str, data: bytes) -> None:
-        """Write to the S3 storage.
-
-        Args:
-            bucket: S3 bucket name.
-            key: Target key for the uploaded object.
-            data: Data to write to S3.
-        """
+    def put_bytes(self, url: str, data: bytes) -> None:
+        bucket, key = self._split_access_url(url)
         self.client.put_object(Bucket=bucket, Key=key, Body=data)
 
-    def download_file(self, bucket: str, key: str, local_path: Path) -> None:
+    def download_file(self, url: str, local_path: Path) -> None:
+        bucket, key = self._split_access_url(url)
         local_path.parent.mkdir(parents=True, exist_ok=True)
         self.client.download_file(bucket, key, str(local_path))
 
-    def list_keys_with_prefix(self, bucket: str, prefix: str) -> list[str]:
-        paginator = self.client.get_paginator("list_objects_v2")
-        keys = []
-        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-            for obj in page.get("Contents", []):
-                keys.append(obj["Key"])  # type: ignore[typeddict-item]
-        return keys
-
-    def list_subfolders(self, bucket: str, folder: str) -> list[str]:
-        paginator = self.client.get_paginator("list_objects_v2")
-        subfolders = []
-        for page in paginator.paginate(Bucket=bucket, Prefix=f"{folder}/", Delimiter="/"):
-            for common_prefix in page.get("CommonPrefixes", []):
-                subfolders.append(common_prefix["Prefix"].rstrip("/"))  # type: ignore[typeddict-item]
-        return subfolders
-
-    def first_key_with_prefix(self, bucket: str, prefix: str) -> str | None:
-        response = self.client.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
-        contents = response.get("Contents", [])
-        return contents[0]["Key"] if contents else None  # type: ignore[typeddict-item]
-
-    def upload_file(self, bucket: str, key: str, local_path: Path) -> None:
+    def upload_file(self, url: str, local_path: Path) -> None:
+        bucket, key = self._split_access_url(url)
         self.client.upload_file(str(local_path), bucket, key)
 
-    def list_keys(self, bucket: str) -> list[str]:
-        """List all the keys in S3 bucket.
+    def list_urls(self, prefix_url: str) -> list[str]:
+        bucket, prefix = self._split_access_url(prefix_url)
+        paginator = self.client.get_paginator("list_objects_v2")
+        urls = []
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                urls.append(f"s3://{bucket}/{obj['Key']}")  # type: ignore[typeddict-item]
+        return urls
 
-        Args:
-            bucket: S3 bucket name.
-        """
-        resp = self.client.list_objects_v2(Bucket=bucket)
-        return [obj["Key"] for obj in resp.get("Contents", [])]  # type: ignore[typeddict-item]
-
-    def clear_bucket(self, bucket: str) -> None:
-        """Clear all from the S3 bucket.
-
-        Args:
-            bucket: S3 bucket name.
-        """
-        keys = self.list_keys(bucket)
-        for s3_key in keys:
-            self.delete_key(bucket, s3_key)
-
-    def delete_key(self, bucket: str, key: str) -> None:
-        """Delete single key from the S3 bucket.
-
-        Args:
-            bucket: S3 bucket name.
-            key: S3 key to delete.
-        """
+    def delete(self, url: str) -> None:
+        bucket, key = self._split_access_url(url)
         self.client.delete_object(Bucket=bucket, Key=key)

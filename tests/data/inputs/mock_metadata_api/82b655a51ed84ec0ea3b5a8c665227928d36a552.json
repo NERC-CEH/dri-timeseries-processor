@@ -55,7 +55,7 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/format/ghg"
           },
           "accessUrl": [
-            "s3://e2e-input/network=fdri/collection=flux/site=PLYNL/"
+            "s3://e2e-input/network=FDRI/collection=FLUX_20HZ/site=PLYNL/"
           ]
         }
       ],
@@ -133,7 +133,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_BIOMET_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "Pressure_Avg",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -154,6 +154,20 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-pa"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-biomet-pa-30min",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -225,7 +239,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_BIOMET_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "RH",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -246,6 +260,20 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rh"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-biomet-rh-30min",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -317,7 +345,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_BIOMET_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "T_nr_Avg",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -338,6 +366,20 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-rn"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-biomet-rn-30min",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -409,7 +451,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_BIOMET_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "G_PLATE_1_1_1",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -430,6 +472,20 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf1"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-biomet-shf1-30min",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -501,7 +557,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_BIOMET_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "G_PLATE_1_1_2",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -522,6 +578,20 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-shf2"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-biomet-shf2-30min",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -593,7 +663,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_BIOMET_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "R_SW_in_Avg",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -614,6 +684,20 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-swin"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-biomet-swin-30min",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -685,7 +769,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_BIOMET_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "AirTemp_C",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -706,6 +790,20 @@
       "directDependsOn": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/dataset/flux-plynl-biomet-ta"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-biomet-ta-30min",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -754,7 +852,7 @@
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "FLUX_METADATA",
+      "sourceCollection": "FLUX_METADATA",
       "sourceColumnName": "height_canopy",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [
@@ -765,6 +863,20 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-dynamic-height-canopy",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-input/network=FDRI/collection=FLUX_METADATA/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -813,7 +925,7 @@
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "FLUX_METADATA",
+      "sourceCollection": "FLUX_METADATA",
       "sourceColumnName": "height_measurement",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [
@@ -824,6 +936,20 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-dynamic-height-measurement",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-input/network=FDRI/collection=FLUX_METADATA/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -872,7 +998,7 @@
         }
       ],
       "sourceBucket": "e2e-input",
-      "sourceDataset": "FLUX_METADATA",
+      "sourceCollection": "FLUX_METADATA",
       "sourceColumnName": "sonic_azimuth",
       "sourceTimeColumnName": "timestamp",
       "originatingSite": [
@@ -883,6 +1009,20 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-dynamic-sonic-azimuth",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-input/network=FDRI/collection=FLUX_METADATA/site=PLYNL/"
+          ]
         }
       ]
     }

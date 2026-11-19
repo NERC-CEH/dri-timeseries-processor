@@ -96,12 +96,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=HOLLN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -290,12 +290,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=ALIC1/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -467,12 +467,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -644,12 +644,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=HOLLN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -821,12 +821,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=ALIC1/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "PA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -997,12 +997,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=HOLLN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=HOLLN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1174,12 +1174,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1350,12 +1350,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=CHIMN/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=CHIMN/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "TA",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -1527,12 +1527,12 @@
             ]
           },
           "accessUrl": [
-            "s3://e2e-output/cosmos/resolution=P1D/site=ALIC1/"
+            "s3://e2e-output/network=COSMOS/collection=PROCESSED_1DAY/site=ALIC1/"
           ]
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "P1D",
+      "sourceCollection": "PROCESSED_1DAY",
       "sourceColumnName": "WS",
       "sourceTimeColumnName": "time",
       "originatingSite": [

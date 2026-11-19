@@ -124,12 +124,12 @@
             ]
           },
           "accessUrl": [
-            "s3://ukceh-dri-staging-processed/cosmos/dataset=PROCESSED_DATA_30MIN/site=BUNNY/"
+            "s3://ukceh-dri-staging-processed/network=COSMOS/collection=PROCESSED_30MIN/site=BUNNY/"
           ]
         }
       ],
       "sourceBucket": "ukceh-dri-staging-processed",
-      "sourceDataset": "PROCESSED_DATA_30MIN",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "PRECIP",
       "sourceTimeColumnName": "time",
       "originatingFacility": [

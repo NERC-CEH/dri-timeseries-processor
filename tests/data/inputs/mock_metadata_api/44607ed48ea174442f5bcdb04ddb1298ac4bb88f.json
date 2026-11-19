@@ -60,7 +60,7 @@
             "@id": "http://fdri.ceh.ac.uk/ref/common/format/ghg"
           },
           "accessUrl": [
-            "s3://e2e-output/network=fdri/collection=flux/site=PLYNL/"
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_FLUX/site=PLYNL/"
           ]
         }
       ],
@@ -224,7 +224,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_PROCESSED",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "qc_H",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -235,6 +235,20 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-qc-h",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     },
@@ -301,7 +315,7 @@
         }
       ],
       "sourceBucket": "e2e-output",
-      "sourceDataset": "FLUX_PROCESSED",
+      "sourceCollection": "PROCESSED_30MIN",
       "sourceColumnName": "qc_Tau",
       "sourceTimeColumnName": "time",
       "originatingSite": [
@@ -312,6 +326,20 @@
       "originatingProgramme": [
         {
           "@id": "http://fdri.ceh.ac.uk/id/programme/fdri"
+        }
+      ],
+      "distribution": [
+        {
+          "@id": "http://fdri.ceh.ac.uk/id/distribution/flux-plynl-qc-tau",
+          "format": {
+            "@id": "http://fdri.ceh.ac.uk/ref/common/format/application_vnd.apache.parquet",
+            "label": [
+              "Apache Parquet"
+            ]
+          },
+          "accessUrl": [
+            "s3://e2e-output/network=FDRI/collection=PROCESSED_30MIN/site=PLYNL/"
+          ]
         }
       ]
     }

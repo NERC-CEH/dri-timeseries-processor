@@ -1,36 +1,37 @@
-"""Helpers related to duckdb"""
+"""Helpers for checking how a DuckDB connection has been set up."""
 
 import duckdb
 
 
-def get_duck_db_settings(conn: duckdb.DuckDBPyConnection) -> dict:
-    """Return all active DuckDB settings for the given connection.
+def get_duck_db_setting(conn: duckdb.DuckDBPyConnection, name: str) -> object:
+    """Return the current value of one DuckDB setting.
 
     Args:
         conn: An active DuckDB connection.
+        name: The name of the setting.
 
     Returns:
-        A dictionary mapping setting names to their current values.
+        The setting's value
     """
-    settings = conn.execute("SELECT name, value FROM duckdb_settings()").fetchall()
-    return {name: value for name, value in settings}
+    row = conn.execute("SELECT current_setting(?)", [name]).fetchone()
+    return row[0] if row else None
 
 
 def get_duck_db_extensions(conn: duckdb.DuckDBPyConnection) -> dict:
-    """Return all active DuckDB extensions for the given connection.
+    """Return all DuckDB extensions for the given connection.
 
     Args:
         conn: An active DuckDB connection.
 
     Returns:
-        A dictionary mapping extensions names to whether they are installed and loaded.
+        A dictionary mapping extension names to whether they are installed and loaded.
     """
     extensions = conn.execute("SELECT extension_name, installed, loaded FROM duckdb_extensions()").fetchall()
-    return {name: {"installed": inst, "loaded": loaded} for name, inst, loaded in extensions}
+    return {name: {"installed": installed, "loaded": loaded} for name, installed, loaded in extensions}
 
 
 def get_duck_db_secrets(conn: duckdb.DuckDBPyConnection) -> dict:
-    """Return all active DuckDB secrets for the given connection.
+    """Return all DuckDB secrets for the given connection.
 
     Args:
         conn: An active DuckDB connection.
@@ -43,13 +44,13 @@ def get_duck_db_secrets(conn: duckdb.DuckDBPyConnection) -> dict:
 
 
 def parse_secret_string(secret_string: str) -> dict[str, str]:
-    """Parse the given DuckDB secret string into its components.
+    """Parse the given DuckDB secret string into its parts.
 
     Args:
         secret_string: The string to parse.
 
     Returns:
-        A dictionary mapping secret component names to their values.
+        A dictionary mapping each part's name to its value.
     """
     items = {}
 

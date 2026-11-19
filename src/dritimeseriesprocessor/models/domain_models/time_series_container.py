@@ -27,8 +27,6 @@ class TimeSeriesContainer:
     ts_id: str
     network: str | None
 
-    source_bucket: str | None
-    source_dataset: str | None
     source_column: str | None
     source_site: str | None
     source_site_identifier: str | None
@@ -41,7 +39,7 @@ class TimeSeriesContainer:
     processing_level: ProcessingLevel
 
     dataset_type: DatasetType | None = None
-    distribution_url: str | None = None
+    access_url: str | None = None  # Where the dataset is stored
 
     plan_order: list[str] = field(default_factory=list)
     data_processing_configs: dict[str, DataProcessingConfig] = field(default_factory=dict)
@@ -111,19 +109,6 @@ class TimeSeriesContainer:
         """
         return bool(self.flag_column_schemes)
 
-    @property
-    def s3_bucket(self) -> str | None:
-        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
-            return self.distribution_url.split("://")[1].split("/")[0]
-        return self.source_bucket
-
-    @property
-    def s3_dataset_path(self) -> str | None:
-        if self.dataset_type == DatasetType.OBSERVATION_DATASET and self.distribution_url:
-            parts = self.distribution_url.split("://")[1].split("/", 1)
-            return parts[1].rstrip("/") if len(parts) > 1 else None
-        return self.source_dataset
-
     def init_timeframe(self, df: pl.DataFrame) -> None:
         """Wrap a DataFrame in a TimeFrame, apply initial flags, and store it on the container.
 
@@ -153,22 +138,21 @@ class TimeSeriesContainer:
         return hash(self.ts_id)
 
 
-def group_containers(
-    containers: Sequence[TimeSeriesContainer], attributes: list[str]
-) -> dict[tuple, list[TimeSeriesContainer]]:
-    """Group containers by a composite key derived from the given attributes.
+def group_by_access_url(
+    containers: Sequence[TimeSeriesContainer],
+) -> dict[str | None, list[TimeSeriesContainer]]:
+    """Group containers by access URL, as datasets with the same URL are stored in the same files.
 
     Args:
         containers: The containers to group.
-        attributes: Container attribute names to form the grouping key.
 
     Returns:
-        A dictionary mapping attribute tuples to lists of containers sharing those attribute values.
+        A dictionary mapping each access URL to the containers that have it. Containers with no access URL are
+        grouped under `None`.
     """
-    groupings: dict[tuple, list[TimeSeriesContainer]] = defaultdict(list)
+    groupings: dict[str | None, list[TimeSeriesContainer]] = defaultdict(list)
     for container in containers:
-        key = tuple(getattr(container, attr) for attr in attributes)
-        groupings[key].append(container)
+        groupings[container.access_url].append(container)
     return groupings
 
 

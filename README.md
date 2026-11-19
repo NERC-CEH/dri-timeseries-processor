@@ -221,7 +221,6 @@ Configuration is environment-aware, loading from different sources based on the 
 Required configuration keys:
 
 - `AWS_DEFAULT_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-- `level_0_bucket`, `processed_bucket`
 - `metadata_api_url`
 - `endpoint_url` (LocalStack only)
 

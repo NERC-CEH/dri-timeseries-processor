@@ -31,7 +31,7 @@ class TestByteParquetWriter:
 
     @pytest.mark.parametrize("err_type", [FileNotFoundError, FakeNoSuchKey])
     def test_write_new_file(self, err_type: Exception, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that no file found writes only the new data"""
+        """Tests that only the new data is written when there is no existing file."""
         if err_type is FakeNoSuchKey:
             mock_storage = MagicMock(spec=S3StorageClient)
             mock_storage.client = MagicMock()
@@ -48,13 +48,14 @@ class TestByteParquetWriter:
         mock_merge_dataframes = MagicMock()
         monkeypatch.setattr("dritimeseriesprocessor.io_backend.writer.merge_dataframes", mock_merge_dataframes)
 
-        writer.write("bucket", "file.parquet", df, time_col="t")
+        writer.write("s3://bucket/file.parquet", df, time_col="t")
 
         # Verify merge dataframes wasn't called
         mock_merge_dataframes.assert_not_called()
 
         # Verify written parquet is valid and contains df
-        bucket, key, data = mock_storage.put_bytes.call_args.args
+        url, data = mock_storage.put_bytes.call_args.args
+        assert url == "s3://bucket/file.parquet"
         out_df = pl.read_parquet(data)
         assert out_df.equals(df)
 
@@ -71,7 +72,7 @@ class TestByteParquetWriter:
         df = pl.DataFrame({"t": [1], "value": [10]})
 
         with pytest.raises(ClientError):
-            writer.write("bucket", "file.parquet", df, time_col="t")
+            writer.write("s3://bucket/file.parquet", df, time_col="t")
 
         # The existing object must be left alone, otherwise a whole day of data is replaced by a partial run
         mock_storage.put_bytes.assert_not_called()
@@ -88,13 +89,13 @@ class TestByteParquetWriter:
         writer = ByteParquetWriter(storage=mock_storage)
         df = pl.DataFrame({"t": [1], "value": [10]})
 
-        writer.write("bucket", "file.parquet", df, time_col="t")
+        writer.write("s3://bucket/file.parquet", df, time_col="t")
 
-        _, _, data = mock_storage.put_bytes.call_args.args
+        _, data = mock_storage.put_bytes.call_args.args
         assert_frame_equal(pl.read_parquet(data), df)
 
     def test_write_merge_with_existing(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that file found writes the new data merged with the previous data"""
+        """Tests that the new data is merged with the existing file before being written."""
         mock_storage_client = MagicMock()
         writer = ByteParquetWriter(storage=mock_storage_client)
 
@@ -112,13 +113,14 @@ class TestByteParquetWriter:
         mock_merge_dataframes = MagicMock(return_value=merged)
         monkeypatch.setattr("dritimeseriesprocessor.io_backend.writer.merge_dataframes", mock_merge_dataframes)
 
-        writer.write("bucket", "file.parquet", new_df, time_col="t")
+        writer.write("s3://bucket/file.parquet", new_df, time_col="t")
 
         # Verify merge dataframes was called
         mock_merge_dataframes.assert_called_once()
 
         # Verify written parquet is valid and contains df
-        bucket, key, data = mock_storage_client.put_bytes.call_args.args
+        url, data = mock_storage_client.put_bytes.call_args.args
+        assert url == "s3://bucket/file.parquet"
         out_df = pl.read_parquet(data)
         assert_frame_equal(out_df, merged)
 
@@ -136,10 +138,10 @@ def s3_storage_client() -> S3StorageClient:
 @pytest.fixture
 def setup_test_data(s3_storage_client: S3StorageClient) -> Iterator:
     # setup
-    s3_storage_client.clear_bucket(BUCKET_NAME)
+    s3_storage_client.delete_all(f"s3://{BUCKET_NAME}")
     yield
     # teardown
-    s3_storage_client.clear_bucket(BUCKET_NAME)
+    s3_storage_client.delete_all(f"s3://{BUCKET_NAME}")
 
 
 @pytest.fixture
@@ -152,23 +154,25 @@ class TestByteParquetWriterIntegration:
     """Integration tests that check specific usages of the class"""
 
     def test_write_new_file(self, writer: ByteParquetWriter, s3_storage_client: S3StorageClient) -> None:
+        """Tests that writing to a URL with no existing file creates it with just the new data."""
         df = pl.DataFrame({"t": [1], "value": [10]})
 
-        writer.write(BUCKET_NAME, "data.parquet", df, time_col="t")
+        writer.write(f"s3://{BUCKET_NAME}/data.parquet", df, time_col="t")
 
-        out_bytes = s3_storage_client.get_bytes(BUCKET_NAME, "data.parquet")
+        out_bytes = s3_storage_client.get_bytes(f"s3://{BUCKET_NAME}/data.parquet")
         result = pl.read_parquet(out_bytes)
 
         assert_frame_equal(result, df)
 
     def test_write_merge_existing(self, writer: ByteParquetWriter, s3_storage_client: S3StorageClient) -> None:
+        """Tests that a second write to the same URL is merged with the data already there."""
         df1 = pl.DataFrame({"t": [1], "value": [10]})
         df2 = pl.DataFrame({"t": [2], "value": [20]})
 
-        writer.write(BUCKET_NAME, "merged.parquet", df1, time_col="t")
-        writer.write(BUCKET_NAME, "merged.parquet", df2, time_col="t")
+        writer.write(f"s3://{BUCKET_NAME}/merged.parquet", df1, time_col="t")
+        writer.write(f"s3://{BUCKET_NAME}/merged.parquet", df2, time_col="t")
 
-        out_bytes = s3_storage_client.get_bytes(BUCKET_NAME, "merged.parquet")
+        out_bytes = s3_storage_client.get_bytes(f"s3://{BUCKET_NAME}/merged.parquet")
         result = pl.read_parquet(out_bytes)
         expected = pl.DataFrame({"t": [1, 2], "value": [10, 20]})
 
@@ -197,10 +201,11 @@ class TestByteParquetWriterIntegration:
         writer: ByteParquetWriter,
         s3_storage_client: S3StorageClient,
     ) -> None:
-        writer.write(BUCKET_NAME, "merged.parquet", df1, time_col="t")
-        writer.write(BUCKET_NAME, "merged.parquet", df2, time_col="t")
+        """Tests that merging files with different columns keeps every column, with nulls where data is missing."""
+        writer.write(f"s3://{BUCKET_NAME}/merged.parquet", df1, time_col="t")
+        writer.write(f"s3://{BUCKET_NAME}/merged.parquet", df2, time_col="t")
 
-        out_bytes = s3_storage_client.get_bytes(BUCKET_NAME, "merged.parquet")
+        out_bytes = s3_storage_client.get_bytes(f"s3://{BUCKET_NAME}/merged.parquet")
         result = pl.read_parquet(out_bytes)
 
         assert_frame_equal(result, expected, check_column_order=False)
@@ -208,27 +213,28 @@ class TestByteParquetWriterIntegration:
     def test_write_merge_different_time_cols(
         self, writer: ByteParquetWriter, s3_storage_client: S3StorageClient
     ) -> None:
+        """Tests that merging data with a different time column fails and leaves the existing file unchanged."""
         df1 = pl.DataFrame({"t": [1], "value": [10]})
         df2 = pl.DataFrame({"time": [2], "value": [20]})
 
-        writer.write(BUCKET_NAME, "merged.parquet", df1, time_col="t")
+        writer.write(f"s3://{BUCKET_NAME}/merged.parquet", df1, time_col="t")
 
         with pytest.raises(ValueError):
-            writer.write(BUCKET_NAME, "merged.parquet", df2, time_col="time")
+            writer.write(f"s3://{BUCKET_NAME}/merged.parquet", df2, time_col="time")
 
-        out_bytes = s3_storage_client.get_bytes(BUCKET_NAME, "merged.parquet")
+        out_bytes = s3_storage_client.get_bytes(f"s3://{BUCKET_NAME}/merged.parquet")
         result = pl.read_parquet(out_bytes)
         assert_frame_equal(result, df1)
 
     def test_overwrite_same_timestamp(self, writer: ByteParquetWriter, s3_storage_client: S3StorageClient) -> None:
-        """Ensures merge overwrites duplicate timestamps correctly."""
+        """Tests that new values replace existing ones at the same timestamp when merging."""
         df1 = pl.DataFrame({"t": [1], "value": [10]})
         df2 = pl.DataFrame({"t": [1], "value": [999]})
 
-        writer.write(BUCKET_NAME, "dupes.parquet", df1, time_col="t")
-        writer.write(BUCKET_NAME, "dupes.parquet", df2, time_col="t")
+        writer.write(f"s3://{BUCKET_NAME}/dupes.parquet", df1, time_col="t")
+        writer.write(f"s3://{BUCKET_NAME}/dupes.parquet", df2, time_col="t")
 
-        out_bytes = s3_storage_client.get_bytes(BUCKET_NAME, "dupes.parquet")
+        out_bytes = s3_storage_client.get_bytes(f"s3://{BUCKET_NAME}/dupes.parquet")
         result = pl.read_parquet(out_bytes)
         expected = pl.DataFrame({"t": [1], "value": [999]})
 

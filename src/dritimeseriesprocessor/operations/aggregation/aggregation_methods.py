@@ -63,6 +63,8 @@ class AggregationMethod(TransformMethod[ts.TimeFrame], ABC):
         alignment = config.params["alignment"]
 
         # Define number of datapoints in window from window_size and periodicity
+        if tf.periodicity is None:
+            raise ValueError("Rolling aggregation needs regular data, but this TimeFrame has no periodicity.")
         window_count = tf.periodicity.count(configure_period_object(window_size))
         if window_count is None:
             # count() returns None for month-based periodicities, which have no fixed number of rows

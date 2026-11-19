@@ -40,7 +40,7 @@ class InfillPipeline(OperationPipeline):
 
         method = InfillMethod.get(config.method)
         result = method.run(tf, config)
-        self._add_flag(tf, result, tf.metadata["column_name"], config.method)
+        result = self._add_flag(tf, result, tf.metadata["column_name"], config.method)
         return result
 
     def compute_flag_mask(self, tf: ts.TimeFrame, result: ts.TimeFrame, column_name: str) -> pl.Series:
