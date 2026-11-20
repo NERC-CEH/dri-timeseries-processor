@@ -55,7 +55,9 @@ class LoadPipeline:
                 dep = dataset_repository[config.params["dep_ts"]]
                 if dep.data is None:
                     raise RuntimeError(f"No data found for base dependency: {dep.ts_id}")
-                tf = dep.data.select(container.source_column)
+                if container.source_column is None:
+                    raise ValueError(f"No source column name for dataset: {container.ts_id}")
+                tf = self._select_dependency_column(dep.data, dep.source_column, container.source_column)
                 tf.metadata["column_name"] = container.source_column
                 tf.metadata["unit"] = container.unit
                 # The source bundle may have a different time_anchor than this container
@@ -80,3 +82,22 @@ class LoadPipeline:
                 raise ValueError(f"Unknown load method: {config.method}")
 
         return container
+
+    @staticmethod
+    def _select_dependency_column(dep_data: ts.TimeFrame, dep_column: str | None, target_column: str) -> ts.TimeFrame:
+        """Take the dependency's data column and rename it to the target dataset's column name.
+
+        A processed dataset can name its column differently from the raw dataset it loads from. A dependency with no
+        column of its own (e.g. in a multi-column bundle) is read by the target dataset's column name instead.
+
+        Args:
+            dep_data: The dependency's data.
+            dep_column: The dependency's column name, or None for a bundle.
+            target_column: The column name of the dataset being loaded into.
+
+        Returns:
+            A TimeFrame holding just the selected column, under the target dataset's column name.
+        """
+        column_to_read = dep_column or target_column
+        tf = dep_data.select(column_to_read)
+        return tf.with_df(tf.df.rename({column_to_read: target_column}))

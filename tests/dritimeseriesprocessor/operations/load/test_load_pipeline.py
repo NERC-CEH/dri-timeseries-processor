@@ -24,6 +24,7 @@ class TestLoadApply:
         container = make_time_series_container("target")
         container.source_column = "value"
         dep = make_time_series_container("dep")
+        dep.source_column = "value"
         dep.data = create_timeframe([1.0, 2.0, 3.0])
 
         pipeline = LoadPipeline(
@@ -37,6 +38,48 @@ class TestLoadApply:
 
         assert result.data is not None
         assert result.data.df["value"].to_list() == [1.0, 2.0, 3.0]
+
+    def test_load_renames_dep_column_to_container_column(self) -> None:
+        """Tests that load reads the dependency's own column and renames it to the container's column name."""
+        container = make_time_series_container("target")
+        container.source_column = "A"
+        dep = make_time_series_container("dep")
+        dep.source_column = "B"
+        dep.data = create_timeframe([1.0, 2.0, 3.0], column_name="B")
+
+        pipeline = LoadPipeline(
+            data_router=MagicMock(), start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 31)
+        )
+        result = pipeline.apply(
+            container=container,
+            config=DataProcessingMethodConfig(method="load", params={"dep_ts": "dep"}),
+            dataset_repository={"dep": dep},
+        )
+
+        assert result.data is not None
+        assert result.data.df["A"].to_list() == [1.0, 2.0, 3.0]
+        assert "B" not in result.data.df.columns
+        assert result.data.metadata["column_name"] == "A"
+
+    def test_load_reads_container_column_from_bundle_dep(self) -> None:
+        """Tests that load picks the container's column out of a dependency that has no column of its own."""
+        container = make_time_series_container("target")
+        container.source_column = "A"
+        dep = make_time_series_container("dep")
+        dep.source_column = None
+        dep.data = create_timeframe([4.0, 5.0], column_name="A")
+
+        pipeline = LoadPipeline(
+            data_router=MagicMock(), start_date=datetime(2024, 1, 1), end_date=datetime(2024, 1, 31)
+        )
+        result = pipeline.apply(
+            container=container,
+            config=DataProcessingMethodConfig(method="load", params={"dep_ts": "dep"}),
+            dataset_repository={"dep": dep},
+        )
+
+        assert result.data is not None
+        assert result.data.df["A"].to_list() == [4.0, 5.0]
 
     def test_load_raises_when_dep_data_is_none(self) -> None:
         """Tests that load raises RuntimeError when the dependency has no data."""
@@ -95,9 +138,11 @@ class TestLoadRun:
         container = make_time_series_container("target")
         container.source_column = "value"
         dep = make_time_series_container("dep")
+        dep.source_column = "value"
         dep.data = create_timeframe([5.0])
 
         dep2 = make_time_series_container("dep2")
+        dep2.source_column = "value"
         dep2.data = create_timeframe([9.0])
 
         method_cfg1 = DataProcessingMethodConfig(method="load", params={"dep_ts": "dep"})
