@@ -47,6 +47,20 @@ class QcMethod(TransformMethod[pl.Series], ABC):
 
 
 @QcMethod.register
+class Comparison(QcMethod):
+    name = "comparison"
+
+    def run(self, tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> pl.Series:
+        return tf.qc_check(
+            "comparison",
+            operator=config.params["operator"],
+            compare_to=config.params["value"],
+            column_name=tf.metadata["column_name"],
+            observation_interval=observation_interval(config),
+        )
+
+
+@QcMethod.register
 class Range(QcMethod):
     name = "range"
 

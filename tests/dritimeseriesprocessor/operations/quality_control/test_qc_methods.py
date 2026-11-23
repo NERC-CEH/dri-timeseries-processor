@@ -4,10 +4,12 @@ from pathlib import Path
 import polars as pl
 import pytest
 from polars.testing import assert_series_equal
+from time_stream.exceptions import QcUnknownOperatorError
 
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.quality_control.qc_methods import (
     BatteryVoltage,
+    Comparison,
     ErrorCode,
     FluxQcFlag,
     HeatFluxPlateRemoval,
@@ -50,6 +52,71 @@ def create_method_config(
         start_date=start_date,
         end_date=end_date,
     )
+
+
+class TestComparison:
+    @pytest.mark.parametrize(
+        "operator, expected",
+        [
+            (">", [False, False, False, False, True, True, True]),
+            (">=", [False, False, False, True, True, True, True]),
+            ("<", [True, True, True, False, False, False, False]),
+            ("<=", [True, True, True, True, False, False, False]),
+            ("==", [False, False, False, True, False, False, False]),
+            ("!=", [True, True, True, False, True, True, True]),
+        ],
+    )
+    def test_comparison_operators(self, operator: str, expected: list[bool]) -> None:
+        """Tests that each comparison operator flags the right values across the full DataFrame."""
+        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        config = create_method_config(operator=operator, value=4.0)
+
+        result = Comparison().run(tf, config)
+
+        assert_series_equal(result, pl.Series(expected))
+
+    def test_comparison_is_in_list(self) -> None:
+        """Tests that the "is_in" operator flags values that appear in a list."""
+        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        config = create_method_config(operator="is_in", value=[2.0, 5.0])
+
+        result = Comparison().run(tf, config)
+
+        expected = pl.Series([False, True, False, False, True, False, False])
+        assert_series_equal(result, expected)
+
+    def test_comparison_is_in_single_value(self) -> None:
+        """Tests that the "is_in" operator works with a single value rather than a list."""
+        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        config = create_method_config(operator="is_in", value=5.0)
+
+        result = Comparison().run(tf, config)
+
+        expected = pl.Series([False, False, False, False, True, False, False])
+        assert_series_equal(result, expected)
+
+    def test_comparison_with_date_filter(self) -> None:
+        """Tests that only values inside the observation interval are flagged."""
+        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        config = create_method_config(
+            operator=">",
+            value=4.0,
+            start_date=datetime(2025, 1, 1, 2),
+            end_date=datetime(2025, 1, 1, 4, 59),
+        )
+
+        result = Comparison().run(tf, config)
+
+        expected = pl.Series([False, False, False, False, True, False, False])
+        assert_series_equal(result, expected)
+
+    def test_comparison_unknown_operator(self) -> None:
+        """Tests that an operator the check does not recognise raises an error."""
+        tf = create_timeframe([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+        config = create_method_config(operator="=>", value=4.0)
+
+        with pytest.raises(QcUnknownOperatorError):
+            Comparison().run(tf, config)
 
 
 class TestRange:
