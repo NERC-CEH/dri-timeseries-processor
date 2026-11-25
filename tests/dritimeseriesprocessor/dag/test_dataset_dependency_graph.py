@@ -19,7 +19,7 @@ def make_time_series_container(
     ts_id: str,
     depends_on: list[str] | None = None,
     load_only_deps: list[str] | None = None,
-    inputs: dict[str, str] | None = None,
+    inputs: dict[str, str | list[str]] | None = None,
 ) -> TimeSeriesContainer:
     """Create a lightweight fake TimeSeriesContainer for use in tests.
 
@@ -27,7 +27,7 @@ def make_time_series_container(
         ts_id: The time series ID.
         depends_on: Optional list of dataset IDs this container depends on via dep_ts.
         load_only_deps: Optional list of dataset IDs this container depends on via load_dep_ts.
-        inputs: Optional named inputs, mapping input name to the dataset ID this container depends on.
+        inputs: Optional named inputs, mapping input name to the dataset ID (or IDs) this container depends on.
 
     Returns:
         A TimeSeriesContainer instance
