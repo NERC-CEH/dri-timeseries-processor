@@ -88,6 +88,18 @@ class TestInputIds:
         )
         assert config.input_ids() == ["A", "B", "C"]
 
+    def test_includes_every_dataset_of_a_list_input(self) -> None:
+        """Tests that each dataset of an input holding several datasets is returned, deduplicated with the rest."""
+        config = DataProcessingConfig(
+            ts_id="ts1",
+            site_id="site1",
+            config_id="cfg1",
+            config_type=ConfigurationType.DERIVATION,
+            method_configs=[DataProcessingMethodConfig(method="m", inputs={"input_list": ["C", "B"], "swin": "B"})],
+            annotations={},
+        )
+        assert config.input_ids() == ["B", "C"]
+
     def test_ignores_dependency_params(self) -> None:
         """Tests that dep_ts and load_dep_ts params are not counted as named inputs."""
         config = make_config({"dep_ts": "A", "load_dep_ts": "B"})

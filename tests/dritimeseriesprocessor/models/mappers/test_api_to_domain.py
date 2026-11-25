@@ -642,12 +642,11 @@ class TestExtractInputs:
 
         assert extract_inputs(api_model) == {"cts_smo": f"{DATASET_URI}/cts-dataset"}
 
-    def test_input_referencing_several_datasets_raises(self) -> None:
-        """Tests that a named input referencing more than one dataset raises a ValueError."""
-        api_model = [ArgumentItem.model_validate(reference_argument("swin", ["first", "second"]))]
+    def test_input_referencing_several_datasets_is_a_list(self) -> None:
+        """Tests that a named input referencing several datasets maps to a list of them."""
+        api_model = [ArgumentItem.model_validate(reference_argument("input_list", ["first", "second"]))]
 
-        with pytest.raises(ValueError, match="exactly one dataset"):
-            extract_inputs(api_model)
+        assert extract_inputs(api_model) == {"input_list": [f"{DATASET_URI}/first", f"{DATASET_URI}/second"]}
 
     def test_repeated_input_name_raises(self) -> None:
         """Tests that the same input name appearing twice raises a ValueError."""

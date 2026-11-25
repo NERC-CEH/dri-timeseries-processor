@@ -263,19 +263,19 @@ def _named_input_refs(argument: ArgumentItem) -> list[IDModel]:
     return [refs] if isinstance(refs, IDModel) else refs
 
 
-def extract_inputs(argument_items: list[ArgumentItem]) -> dict[str, str]:
+def extract_inputs(argument_items: list[ArgumentItem]) -> dict[str, str | list[str]]:
     """Extract the named method inputs from a configuration definition.
 
-    Each named input is its own argument, with the method input name as the parameter and exactly one dataset as
+    Each named input is its own argument, with the method input name as the parameter and one or more datasets as
     the value.
 
     Args:
         argument_items: List of ArgumentItems from a HasCurrentValue model.
 
     Returns:
-        A dictionary mapping method input names to dataset identifiers.
+        A dictionary mapping method input names to a dataset identifier, or a list of them if the input has several.
     """
-    inputs: dict[str, str] = {}
+    inputs: dict[str, str | list[str]] = {}
 
     for arg in argument_items:
         refs = _named_input_refs(arg)
@@ -283,11 +283,9 @@ def extract_inputs(argument_items: list[ArgumentItem]) -> dict[str, str]:
             continue
 
         input_name = extract_uri_id(arg.parameter.id).replace("-", "_")
-        if len(refs) != 1:
-            raise ValueError(f"Input '{input_name}' must reference exactly one dataset, got {len(refs)}")
         if input_name in inputs:
             raise ValueError(f"Input '{input_name}' is defined more than once")
-        inputs[input_name] = refs[0].id
+        inputs[input_name] = refs[0].id if len(refs) == 1 else [ref.id for ref in refs]
 
     return inputs
 

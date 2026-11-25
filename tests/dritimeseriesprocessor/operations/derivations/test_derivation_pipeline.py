@@ -99,6 +99,33 @@ class TestApply:
         assert result is expected
 
 
+class TestMeanOfInputs:
+    def test_listed_inputs_are_averaged(self, site_metadata: SiteMetadata) -> None:
+        """Tests that calc_mean_inputs averages the datasets in its input list, and rounds the result."""
+        repository = {}
+        for ts_id, values in {"swc_1_raw": [10.0, None], "swc_2_raw": [20.0, 41.0], "swc_3_raw": [31.0, 42.0]}.items():
+            container = make_time_series_container(ts_id)
+            container.source_column = f"{ts_id}_column"
+            container.data = create_timeframe(values, container.source_column)
+            repository[ts_id] = container
+        config = DataProcessingMethodConfig(
+            method="calc_mean_inputs",
+            params={
+                "round": 1,
+                "output_col": "swc",
+                "resolution": "PT1H",
+                "periodicity": "PT1H",
+                "time_anchor": "start",
+            },
+            inputs={"input_list": list(repository)},
+        )
+
+        pipeline = DerivationPipeline(site_metadata, {})
+        result = pipeline.apply_rounding(pipeline.apply(None, config, repository), config)
+
+        assert list(result.df["swc"]) == [20.3, 41.5]
+
+
 class TestFlags:
     def test_derivation_has_no_flag_column_of_its_own(self, site_metadata: SiteMetadata) -> None:
         """Tests that no operation-specific flag column is requested, unlike QC or corrections."""

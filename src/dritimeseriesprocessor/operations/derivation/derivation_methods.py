@@ -9,7 +9,7 @@ from isoperiod import Period
 from dritimeseriesprocessor.models.domain_models.processing_config import DataProcessingMethodConfig
 from dritimeseriesprocessor.operations.operation_method import GenerativeMethod
 from dritimeseriesprocessor.utils.enums import ConfigurationType
-from dritimeseriesprocessor.utils.polars_utils import join_time_intervals
+from dritimeseriesprocessor.utils.polars_utils import join_time_intervals, not_missing_expr
 from dritimeseriesprocessor.utils.time_stream_utils import merge_multiple_timeframes
 
 logger = logging.getLogger(__name__)
@@ -180,6 +180,29 @@ class MeanSoilHeatFlux(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         return meteorology.mean_soil_heat_flux(g1=columns["g1"], g2=columns["g2"])
+
+
+@DerivationMethod.register
+class MeanOfInputs(DerivationMethod):
+    """Calculate the mean of the datasets in the `input_list` input at each time step, e.g. one variable measured
+    by several sensors.
+
+    Missing values (null or NaN) are left out, so the mean is only missing when every input is missing.
+    """
+
+    name = "calc_mean_inputs"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        dataset_ids = self.config.inputs["input_list"]
+        if isinstance(dataset_ids, str):
+            dataset_ids = [dataset_ids]
+
+        values = []
+        for dataset_id in dataset_ids:
+            tf = self.config.params["dataset_repository"][dataset_id].data
+            col_name = tf.metadata["column_name"]
+            values.append(pl.when(not_missing_expr(col_name, tf.df.schema[col_name])).then(pl.col(col_name)))
+        return pl.mean_horizontal(values)
 
 
 @DerivationMethod.register

@@ -20,7 +20,7 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType
 class DataProcessingMethodConfig:
     method: str
     params: dict[str, Any] = field(default_factory=dict)
-    inputs: dict[str, str] = field(default_factory=dict)
+    inputs: dict[str, str | list[str]] = field(default_factory=dict)
     start_date: datetime | None = None
     end_date: datetime | None = None
 
@@ -62,7 +62,8 @@ class DataProcessingConfig:
         """
         dataset_ids: set[str] = set()
         for method_config in self.method_configs:
-            dataset_ids.update(method_config.inputs.values())
+            for value in method_config.inputs.values():
+                dataset_ids.update([value] if isinstance(value, str) else value)
         return sorted(dataset_ids)
 
     def __hash__(self) -> int:

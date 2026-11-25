@@ -21,6 +21,7 @@ from dritimeseriesprocessor.operations.derivation.derivation_methods import (
     DistanceToWaterLevel,
     GetPrecipTipping,
     GetSnowEstimatedCounts,
+    MeanOfInputs,
     NetRadiation,
     SolarZenith,
     VolumetricWaterContent,
@@ -299,6 +300,49 @@ class TestGetSnowEstimatedCounts:
 
         with pytest.raises(ValueError, match=expected_message):
             GetSnowEstimatedCounts().run(config)
+
+
+class TestMeanOfInputs:
+    @staticmethod
+    def run_mean(data: Mapping[str, Sequence[float | None]], output_col: str, as_list: bool = True) -> pl.Series:
+        """Run calc_mean_inputs with each column of `data` as a dataset in the `input_list` input."""
+        config = create_method_config(data, output_col)
+        repository = {}
+        for name in data:
+            dataset = MagicMock()
+            dataset.data = config.params[name]
+            repository[f"{name}_dataset"] = dataset
+        config.inputs = {"input_list": list(repository) if as_list else next(iter(repository))}
+        config.params["dataset_repository"] = repository
+        return MeanOfInputs().run(config).df[output_col]
+
+    def test_mean_of_every_input(self) -> None:
+        """Tests that the mean is taken across every input, however many there are."""
+        result = self.run_mean(
+            {
+                "swc_4_1_1": [10.0, 20.0],
+                "swc_4_2_1": [20.0, 40.0],
+                "swc_4_3_1": [30.0, 60.0],
+                "swc_4_4_1": [40.0, 80.0],
+            },
+            "swc",
+        )
+        assert list(result) == [25.0, 50.0]
+
+    def test_one_input_is_unchanged(self) -> None:
+        """Tests that the mean of a single input, given as a lone dataset id, is that input."""
+        assert list(self.run_mean({"wtd_4_1_1": [-2.5, 0.0]}, "wtd", as_list=False)) == [-2.5, 0.0]
+
+    @pytest.mark.parametrize("missing", [None, float("nan")], ids=["null", "nan"])
+    def test_missing_inputs_are_left_out(self, missing: float | None) -> None:
+        """Tests that a null or NaN input is left out of the mean rather than making it missing or NaN."""
+        result = self.run_mean({"g_4_1_1": [missing, 4.0], "g_4_1_2": [2.0, missing]}, "g")
+        assert list(result) == [2.0, 4.0]
+
+    def test_all_inputs_missing_is_null(self) -> None:
+        """Tests that the mean is null, not NaN, when every input is missing."""
+        result = self.run_mean({"g_4_1_1": [None, float("nan")], "g_4_1_2": [float("nan"), None]}, "g")
+        assert result.null_count() == 2
 
 
 class TestGetPrecipTipping:
