@@ -196,6 +196,7 @@ def map_processing_method_config(
     method = extract_uri_id(current_config.method.id)
     params = extract_arguments(current_config.argument, site_metadata)
     inputs = extract_inputs(current_config.argument)
+    input_list = extract_input_list(current_config.argument)
 
     start_date, end_date = None, None
     if current_config.observation_interval:
@@ -206,6 +207,7 @@ def map_processing_method_config(
         method=method,
         params=params,
         inputs=inputs,
+        input_list=input_list,
         start_date=start_date,
         end_date=end_date,
     )
@@ -263,31 +265,53 @@ def _named_input_refs(argument: ArgumentItem) -> list[IDModel]:
     return [refs] if isinstance(refs, IDModel) else refs
 
 
-def extract_inputs(argument_items: list[ArgumentItem]) -> dict[str, str | list[str]]:
+def _input_name(argument: ArgumentItem) -> str:
+    """Get the method input name an argument is given for."""
+    return extract_uri_id(argument.parameter.id).replace("-", "_")
+
+
+def extract_inputs(argument_items: list[ArgumentItem]) -> dict[str, str]:
     """Extract the named method inputs from a configuration definition.
 
-    Each named input is its own argument, with the method input name as the parameter and one or more datasets as
-    the value.
+    Each named input is its own argument, with the method input name as the parameter and one dataset as the value.
 
     Args:
         argument_items: List of ArgumentItems from a HasCurrentValue model.
 
     Returns:
-        A dictionary mapping method input names to a dataset identifier, or a list of them if the input has several.
+        A dictionary mapping method input names to dataset identifiers.
     """
-    inputs: dict[str, str | list[str]] = {}
+    inputs: dict[str, str] = {}
 
     for arg in argument_items:
         refs = _named_input_refs(arg)
-        if not refs:
+        input_name = _input_name(arg)
+        if not refs or input_name == "input_list":
             continue
 
-        input_name = extract_uri_id(arg.parameter.id).replace("-", "_")
+        if len(refs) != 1:
+            raise ValueError(f"Input '{input_name}' must reference exactly one dataset, got {len(refs)}")
         if input_name in inputs:
             raise ValueError(f"Input '{input_name}' is defined more than once")
-        inputs[input_name] = refs[0].id if len(refs) == 1 else [ref.id for ref in refs]
+        inputs[input_name] = refs[0].id
 
     return inputs
+
+
+def extract_input_list(argument_items: list[ArgumentItem]) -> list[str]:
+    """Extract the datasets given under the `input_list` input of a configuration definition.
+
+    Args:
+        argument_items: List of ArgumentItems from a HasCurrentValue model.
+
+    Returns:
+        The dataset identifiers in the input list, or an empty list if there is no input list.
+    """
+    list_arguments = [arg for arg in argument_items if _named_input_refs(arg) and _input_name(arg) == "input_list"]
+    if len(list_arguments) > 1:
+        raise ValueError("Input 'input_list' is defined more than once")
+
+    return [ref.id for arg in list_arguments for ref in _named_input_refs(arg)]
 
 
 def extract_arguments(argument_items: list[ArgumentItem], site_metadata: SiteMetadata | None) -> dict[str, Any]:

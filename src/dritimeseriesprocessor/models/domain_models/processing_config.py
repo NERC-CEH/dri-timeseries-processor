@@ -20,7 +20,8 @@ from dritimeseriesprocessor.utils.enums import ConfigurationType
 class DataProcessingMethodConfig:
     method: str
     params: dict[str, Any] = field(default_factory=dict)
-    inputs: dict[str, str | list[str]] = field(default_factory=dict)
+    inputs: dict[str, str] = field(default_factory=dict)
+    input_list: list[str] = field(default_factory=list)  # Datasets given under the `input_list` parameter
     start_date: datetime | None = None
     end_date: datetime | None = None
 
@@ -55,15 +56,15 @@ class DataProcessingConfig:
         return sorted(values)
 
     def input_ids(self) -> list[str]:
-        """Collect and deduplicate the dataset ids of the named inputs across all method configs.
+        """Collect and deduplicate the dataset ids of the named inputs and input lists across all method configs.
 
         Returns:
-            Sorted, deduplicated list of dataset ids used as named inputs.
+            Sorted, deduplicated list of dataset ids used as named inputs or in an input list.
         """
         dataset_ids: set[str] = set()
         for method_config in self.method_configs:
-            for value in method_config.inputs.values():
-                dataset_ids.update([value] if isinstance(value, str) else value)
+            dataset_ids.update(method_config.inputs.values())
+            dataset_ids.update(method_config.input_list)
         return sorted(dataset_ids)
 
     def __hash__(self) -> int:
