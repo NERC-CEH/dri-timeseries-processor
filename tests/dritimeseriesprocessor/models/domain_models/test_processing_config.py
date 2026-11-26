@@ -88,14 +88,14 @@ class TestInputIds:
         )
         assert config.input_ids() == ["A", "B", "C"]
 
-    def test_includes_every_dataset_of_a_list_input(self) -> None:
-        """Tests that each dataset of an input holding several datasets is returned, deduplicated with the rest."""
+    def test_includes_every_dataset_of_the_input_list(self) -> None:
+        """Tests that each dataset in the input list is returned, deduplicated with the named inputs."""
         config = DataProcessingConfig(
             ts_id="ts1",
             site_id="site1",
             config_id="cfg1",
             config_type=ConfigurationType.DERIVATION,
-            method_configs=[DataProcessingMethodConfig(method="m", inputs={"input_list": ["C", "B"], "swin": "B"})],
+            method_configs=[DataProcessingMethodConfig(method="m", inputs={"swin": "B"}, input_list=["C", "B"])],
             annotations={},
         )
         assert config.input_ids() == ["B", "C"]

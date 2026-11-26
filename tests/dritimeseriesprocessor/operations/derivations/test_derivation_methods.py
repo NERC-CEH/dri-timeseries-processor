@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 import polars as pl
 import pytest
+import time_stream as ts
 from hydrometlib import evapotranspiration, meteorology
 from isoperiod import Period
 from polars.testing import assert_frame_equal
@@ -53,6 +54,19 @@ class AddDeploymentAttribute(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         return columns["a"] + columns["sensor_height"]
+
+
+class SubtractListed(DerivationMethod):
+    name = "subtract_listed"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        first, second = self.dataset_list_columns(columns)
+        return first - second
+
+
+def make_timeframe(column_name: str, values: Sequence[float | None]) -> ts.TimeFrame:
+    """Create a test TimeFrame holding one data column."""
+    return dataframe_to_timeframe(df=pl.DataFrame({column_name: values}), metadata={"column_name": column_name})
 
 
 def create_method_config(
@@ -160,6 +174,45 @@ class TestDerivationMethod:
 
         with pytest.raises(ValueError, match="Derivation method 'add' was given no input datasets"):
             SimpleAddition().run(config)
+
+    def test_named_inputs_sharing_a_column_name_are_kept_apart(self) -> None:
+        """Tests that two named inputs whose datasets have the same column name are each used in the calculation."""
+        config = create_method_config({}, "out")
+        config.params["a"] = make_timeframe("G", [10.0, 20.0])
+        config.params["b"] = make_timeframe("G", [5.0, 10.0])
+
+        result = SimpleAddition().run(config)
+        assert result.df["out"].to_list() == [15.0, 30.0]
+
+    def test_only_the_data_column_of_each_input_is_merged(self) -> None:
+        """Tests that columns other than an input's data column, such as flag columns, are left out of the merge."""
+        config = create_method_config({}, "out")
+        config.params["a"] = dataframe_to_timeframe(
+            df=pl.DataFrame({"A": [10.0, 20.0], "A_FLAGS": [1, 2]}), metadata={"column_name": "A"}
+        )
+        config.params["b"] = dataframe_to_timeframe(
+            df=pl.DataFrame({"B": [5.0, 10.0], "A_FLAGS": [3, 4]}), metadata={"column_name": "B"}
+        )
+
+        result = SimpleAddition().run(config)
+        assert result.df["out"].to_list() == [15.0, 30.0]
+
+    def test_input_list_datasets_sharing_a_column_name_are_kept_apart(self) -> None:
+        """Tests that input_list datasets with the same column name are each used, in list order."""
+        config = create_method_config({}, "out")
+        config.params["input_list"] = [make_timeframe("TA", [10.0, 20.0]), make_timeframe("TA", [1.0, 2.0])]
+
+        result = SubtractListed().run(config)
+        assert result.df["out"].to_list() == [9.0, 18.0]
+
+    def test_input_list_is_merged_with_named_inputs(self) -> None:
+        """Tests that input_list datasets are merged alongside a named input with the same column name."""
+        config = create_method_config({}, "out")
+        config.params["a"] = make_timeframe("TA", [100.0, 200.0])
+        config.params["input_list"] = [make_timeframe("TA", [10.0, 20.0]), make_timeframe("TA", [1.0, 2.0])]
+
+        result = SubtractListed().run(config)
+        assert result.df["out"].to_list() == [9.0, 18.0]
 
 
 class TestSolarZenith:
@@ -304,44 +357,46 @@ class TestGetSnowEstimatedCounts:
 
 class TestMeanOfInputs:
     @staticmethod
-    def run_mean(data: Mapping[str, Sequence[float | None]], output_col: str, as_list: bool = True) -> pl.Series:
+    def run_mean(data: Mapping[str, Sequence[float | None]], output_col: str) -> pl.Series:
         """Run calc_mean_inputs with each column of `data` as a dataset in the `input_list` input."""
-        config = create_method_config(data, output_col)
-        repository = {}
-        for name in data:
-            dataset = MagicMock()
-            dataset.data = config.params[name]
-            repository[f"{name}_dataset"] = dataset
-        config.inputs = {"input_list": list(repository) if as_list else next(iter(repository))}
-        config.params["dataset_repository"] = repository
+        config = create_method_config({}, output_col)
+        config.params["input_list"] = [make_timeframe(name, values) for name, values in data.items()]
         return MeanOfInputs().run(config).df[output_col]
 
     def test_mean_of_every_input(self) -> None:
         """Tests that the mean is taken across every input, however many there are."""
         result = self.run_mean(
             {
-                "swc_4_1_1": [10.0, 20.0],
-                "swc_4_2_1": [20.0, 40.0],
-                "swc_4_3_1": [30.0, 60.0],
-                "swc_4_4_1": [40.0, 80.0],
+                "A": [10.0, 20.0],
+                "B": [20.0, 40.0],
+                "C": [30.0, 60.0],
+                "D": [40.0, 80.0],
             },
-            "swc",
+            "E",
         )
         assert list(result) == [25.0, 50.0]
 
     def test_one_input_is_unchanged(self) -> None:
-        """Tests that the mean of a single input, given as a lone dataset id, is that input."""
-        assert list(self.run_mean({"wtd_4_1_1": [-2.5, 0.0]}, "wtd", as_list=False)) == [-2.5, 0.0]
+        """Tests that the mean of a single input is that input."""
+        assert list(self.run_mean({"A": [-2.5, 0.0]}, "B")) == [-2.5, 0.0]
+
+    def test_inputs_sharing_a_column_name_are_all_used(self) -> None:
+        """Tests that the mean uses every input, even when the datasets have the same column name."""
+        config = create_method_config({}, "A")
+        config.params["input_list"] = [make_timeframe("B", [10.0, 20.0]), make_timeframe("B", [30.0, 40.0])]
+
+        result = MeanOfInputs().run(config).df["A"]
+        assert list(result) == [20.0, 30.0]
 
     @pytest.mark.parametrize("missing", [None, float("nan")], ids=["null", "nan"])
     def test_missing_inputs_are_left_out(self, missing: float | None) -> None:
         """Tests that a null or NaN input is left out of the mean rather than making it missing or NaN."""
-        result = self.run_mean({"g_4_1_1": [missing, 4.0], "g_4_1_2": [2.0, missing]}, "g")
+        result = self.run_mean({"A": [missing, 4.0], "B": [2.0, missing]}, "C")
         assert list(result) == [2.0, 4.0]
 
     def test_all_inputs_missing_is_null(self) -> None:
         """Tests that the mean is null, not NaN, when every input is missing."""
-        result = self.run_mean({"g_4_1_1": [None, float("nan")], "g_4_1_2": [float("nan"), None]}, "g")
+        result = self.run_mean({"A": [None, float("nan")], "B": [float("nan"), None]}, "C")
         assert result.null_count() == 2
 
 

@@ -101,11 +101,12 @@ class TestApply:
 
 class TestMeanOfInputs:
     def test_listed_inputs_are_averaged(self, site_metadata: SiteMetadata) -> None:
-        """Tests that calc_mean_inputs averages the datasets in its input list, and rounds the result."""
+        """Tests that calc_mean_inputs averages the datasets in its input list, which share a column name, and rounds
+        the result."""
         repository = {}
         for ts_id, values in {"swc_1_raw": [10.0, None], "swc_2_raw": [20.0, 41.0], "swc_3_raw": [31.0, 42.0]}.items():
             container = make_time_series_container(ts_id)
-            container.source_column = f"{ts_id}_column"
+            container.source_column = "SWC"
             container.data = create_timeframe(values, container.source_column)
             repository[ts_id] = container
         config = DataProcessingMethodConfig(
@@ -117,7 +118,7 @@ class TestMeanOfInputs:
                 "periodicity": "PT1H",
                 "time_anchor": "start",
             },
-            inputs={"input_list": list(repository)},
+            input_list=list(repository),
         )
 
         pipeline = DerivationPipeline(site_metadata, {})

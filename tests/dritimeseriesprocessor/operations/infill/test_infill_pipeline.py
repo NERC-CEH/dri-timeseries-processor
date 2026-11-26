@@ -56,11 +56,12 @@ class TestComputeFlagMask:
 
 class TestApply:
     def test_returns_method_result(self, mock_timeframe: MagicMock) -> None:
-        """Test that apply returns a TimeFrame"""
+        """Tests that apply returns the TimeFrame the method gives back."""
         config = MagicMock(spec=DataProcessingMethodConfig)
         config.method = "add"
         config.params = {"correction_factor": 10}
         config.inputs = {}
+        config.input_list = []
 
         expected_result = mock_timeframe
         with patch.object(InfillMethod, "get") as mock_get:

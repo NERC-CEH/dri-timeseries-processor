@@ -363,24 +363,33 @@ class TestInjectDependencyTimeframes:
         assert config.params["swin"] is repository["ts_1"].data
         assert config.params["swout"] is repository["ts_2"].data
 
-    def test_list_input_datasets_are_injected_under_their_column_names(self) -> None:
-        """Tests that each dataset of a list input is added under its lowercased column name, not the input name."""
-        config = DataProcessingMethodConfig(method="test", inputs={"input_list": ["ts_1", "ts_2"]})
+    def test_input_list_is_injected_as_a_list_in_order(self) -> None:
+        """Tests that the input_list datasets are added as one list under "input_list", in the order given."""
+        config = DataProcessingMethodConfig(method="test", input_list=["ts_2", "ts_1"])
         repository = {"ts_1": self.dependency("SWC_4_1_1"), "ts_2": self.dependency("SWC_4_2_1")}
 
         OperationPipeline._inject_dependency_timeframes(config, repository)
 
-        assert config.params == {"swc_4_1_1": repository["ts_1"].data, "swc_4_2_1": repository["ts_2"].data}
-        assert config.inputs == {"input_list": ["ts_1", "ts_2"]}
+        assert config.params == {"input_list": [repository["ts_2"].data, repository["ts_1"].data]}
+        assert config.input_list == ["ts_2", "ts_1"]
 
-    def test_list_input_dataset_without_a_column_raises(self) -> None:
-        """Tests that a list input dataset with no source column raises, rather than being left out silently."""
-        config = DataProcessingMethodConfig(method="test", inputs={"input_list": ["ts_1"]})
-        repository = {"ts_1": self.dependency("SWC_4_1_1")}
-        repository["ts_1"].source_column = None
+    def test_input_list_datasets_sharing_a_column_name_are_all_injected(self) -> None:
+        """Tests that input_list datasets with the same column name are all injected, not one overwriting another."""
+        config = DataProcessingMethodConfig(method="test", input_list=["ts_1", "ts_2"])
+        repository = {"ts_1": self.dependency("TA"), "ts_2": self.dependency("TA")}
 
-        with pytest.raises(ValueError, match="no source column"):
-            OperationPipeline._inject_dependency_timeframes(config, repository)
+        OperationPipeline._inject_dependency_timeframes(config, repository)
+
+        assert config.params["input_list"] == [repository["ts_1"].data, repository["ts_2"].data]
+
+    def test_nothing_is_injected_for_an_empty_input_list(self) -> None:
+        """Tests that no "input_list" param is added when the config has no input list."""
+        config = DataProcessingMethodConfig(method="test", inputs={"swin": "ts_1"})
+        repository = {"ts_1": self.dependency("SWIN")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository)
+
+        assert "input_list" not in config.params
 
     def test_named_inputs_and_dependency_keys_are_both_injected(self) -> None:
         """Tests that named inputs and dependencies from the given param names are injected together."""
