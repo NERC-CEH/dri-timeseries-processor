@@ -363,6 +363,34 @@ class TestInjectDependencyTimeframes:
         assert config.params["swin"] is repository["ts_1"].data
         assert config.params["swout"] is repository["ts_2"].data
 
+    def test_input_list_is_injected_as_a_list_in_order(self) -> None:
+        """Tests that the input_list datasets are added as one list under "input_list", in the order given."""
+        config = DataProcessingMethodConfig(method="test", input_list=["ts_2", "ts_1"])
+        repository = {"ts_1": self.dependency("SWC_4_1_1"), "ts_2": self.dependency("SWC_4_2_1")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository)
+
+        assert config.params == {"input_list": [repository["ts_2"].data, repository["ts_1"].data]}
+        assert config.input_list == ["ts_2", "ts_1"]
+
+    def test_input_list_datasets_sharing_a_column_name_are_all_injected(self) -> None:
+        """Tests that input_list datasets with the same column name are all injected, not one overwriting another."""
+        config = DataProcessingMethodConfig(method="test", input_list=["ts_1", "ts_2"])
+        repository = {"ts_1": self.dependency("TA"), "ts_2": self.dependency("TA")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository)
+
+        assert config.params["input_list"] == [repository["ts_1"].data, repository["ts_2"].data]
+
+    def test_nothing_is_injected_for_an_empty_input_list(self) -> None:
+        """Tests that no "input_list" param is added when the config has no input list."""
+        config = DataProcessingMethodConfig(method="test", inputs={"swin": "ts_1"})
+        repository = {"ts_1": self.dependency("SWIN")}
+
+        OperationPipeline._inject_dependency_timeframes(config, repository)
+
+        assert "input_list" not in config.params
+
     def test_named_inputs_and_dependency_keys_are_both_injected(self) -> None:
         """Tests that named inputs and dependencies from the given param names are injected together."""
         config = DataProcessingMethodConfig(method="test", params={"load_dep_ts": "ts_1"}, inputs={"pa": "ts_2"})

@@ -209,7 +209,8 @@ class OperationPipeline(ABC):
         """Inject each dependency's TimeFrame into `config.params`.
 
         Named inputs in `config.inputs` are added under their input name, so a method's `run`/`expr` can refer to
-        them by the names it expects, e.g. `config.params["swin"]`.
+        them by the names it expects, e.g. `config.params["swin"]`. Datasets in `config.input_list` (for methods that
+        work on an unordered list of datasets) are added as a list under `config.params["input_list"]`.
 
         Dependency ids in `config.params` under the given `keys` (each may hold a single id string or a list of ids)
         are added under the dependency's lowercased source column name.
@@ -235,6 +236,9 @@ class OperationPipeline(ABC):
 
         for input_name, dataset_id in config.inputs.items():
             config.params[input_name] = dataset_repository[dataset_id].data
+
+        if config.input_list:
+            config.params["input_list"] = [dataset_repository[dataset_id].data for dataset_id in config.input_list]
 
     @staticmethod
     def apply_rounding(tf: ts.TimeFrame, config: DataProcessingMethodConfig) -> ts.TimeFrame:
