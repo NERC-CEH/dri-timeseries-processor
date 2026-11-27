@@ -199,5 +199,12 @@ A derivation that only depends on the time, such as `SolarZenith`, takes no inpu
 `merge_inputs` to build its own time steps instead of merging inputs. The time steps cover the window data is loaded
 for (`load_start_date` to `load_end_date`).
 
+A derivation that works on any number of datasets, such as `calc_mean_inputs`, takes them from the `input_list` input
+(`"inputs": {"input_list": ["DATASET-A", "DATASET-B"]}` in the metadata). The base class merges them with any other
+inputs, and the method gets their columns, in list order, from `dataset_list_columns(columns)`. Datasets that share a
+column name (e.g. multiple "TA" columns representing temperature at different sites) are kept apart by renaming.
+The metadata store doesn't keep the order of the datasets, so don't use `input_list` for a calculation where the order
+matters.
+
 `EddyProRun` is registered in `operations/eddypro/eddypro_run_method.py`, as it runs the EddyPro flux pipeline rather
 than a calculation. See [EddyPro flux processing](flux_eddypro.md).

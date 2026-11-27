@@ -32,9 +32,13 @@ class DerivationMethod(GenerativeMethod, ABC):
         self.config = config
 
         # Extract and merge input data.
-        # Named inputs are keyed by the method's input name. Inputs given via "load_dep_ts" (calc_factor_inten) are
-        # keyed by their lowercased column name instead, so collect every TimeFrame in params.
-        tf_map = {key: val for key, val in config.params.items() if isinstance(val, ts.TimeFrame)}
+        # Named inputs are keyed by the method's input name. Inputs given via "load_dep_ts" are keyed by their
+        # lowercased column name instead, so collect every TimeFrame in params.
+        tf_map = {key: value for key, value in config.params.items() if isinstance(value, ts.TimeFrame)}
+        # The datasets in the "input_list" are keyed by "input_list_<position>"
+        tf_map.update(
+            {f"input_list_{index}": timeframe for index, timeframe in enumerate(config.params.get("input_list", []))}
+        )
 
         # Get column references for calculation
         columns = {name: pl.col(tf.metadata["column_name"]) for name, tf in tf_map.items()}
@@ -62,19 +66,22 @@ class DerivationMethod(GenerativeMethod, ABC):
         """Merge the input TimeFrames into one, and join in any time-bound attribute columns.
 
         Assumes all input TimeFrames share a common periodicity, so they can be merged directly with
-        `merge_multiple_timeframes`. Subclasses whose inputs have differing periodicities should
-        override this method with their own merge/join strategy, calling `join_deployment_attributes`
-        and `join_annotation_attributes` themselves if they also need time-bound attribute columns joined in.
+        `merge_multiple_timeframes`. Only each input's time and data column is merged, and a data column whose name is
+        already used by another input is renamed, with `columns` updated to match.
+
+        Subclasses whose inputs have differing periodicities should override this method with their own merge/join
+        strategy, calling `join_deployment_attributes` and `join_annotation_attributes` themselves if they also need
+        time-bound attribute columns joined in.
 
         Args:
             config: Configuration parameters including input TimeFrames and output specs
-            tf_map: Mapping of input name to its TimeFrame, one entry per name in `inputs`
-            columns: Mapping of input name to its Polars column expression, one entry per name in `inputs`
+            tf_map: Mapping of input name to its TimeFrame, one entry per input dataset
+            columns: Mapping of input name to its Polars column expression, one entry per input dataset
 
         Returns:
             Tuple of:
-                - columns: The input `columns` dict, with an added entry for each time-bound
-                  attribute (e.g. anemometer sensor height) found in `config.params`
+                - columns: The input `columns` dict, pointing at any renamed data columns, with an added entry for
+                  each time-bound attribute (e.g. anemometer sensor height) found in `config.params`
                 - merged_tf: The merged TimeFrame, with any time-bound attribute columns joined in
 
         Raises:
@@ -82,7 +89,19 @@ class DerivationMethod(GenerativeMethod, ABC):
         """
         if not tf_map:
             raise ValueError(f"Derivation method '{self.name}' was given no input datasets")
-        merged_tf = merge_multiple_timeframes(list(tf_map.values()))
+
+        used_names = set()
+        trimmed_inputs = []
+        for index, (input_name, timeframe) in enumerate(tf_map.items()):
+            column_name = timeframe.metadata["column_name"]
+            merged_name = column_name if column_name not in used_names else f"{column_name}__input_{index}"
+            used_names.add(merged_name)
+            trimmed_inputs.append(
+                timeframe.with_df(timeframe.df.select(timeframe.time_name, pl.col(column_name).alias(merged_name)))
+            )
+            columns[input_name] = pl.col(merged_name)
+        merged_tf = merge_multiple_timeframes(trimmed_inputs)
+
         columns, merged_tf = self.join_deployment_attributes(config, columns, merged_tf)
         columns, merged_tf = self.join_annotation_attributes(config, columns, merged_tf)
         return columns, merged_tf
@@ -141,6 +160,18 @@ class DerivationMethod(GenerativeMethod, ABC):
                 columns[param] = pl.col(param)
         return columns, merged_tf
 
+    def dataset_list_columns(self, columns: dict[str, pl.Expr]) -> list[pl.Expr]:
+        """Get the Polar expression column names of the datasets in the "input_list" input, in list order.
+
+        Args:
+            columns: Mapping of input name to its Polars column expression, as passed to `expr`
+
+        Returns:
+            The column of each dataset in the list, in the same order as the list.
+        """
+        dataset_count = len(self.config.params.get("input_list", []))
+        return [columns[f"input_list_{index}"] for index in range(dataset_count)]
+
     @abstractmethod
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         """Define the calculation expression for this derivation.
@@ -180,6 +211,21 @@ class MeanSoilHeatFlux(DerivationMethod):
 
     def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
         return meteorology.mean_soil_heat_flux(g1=columns["g1"], g2=columns["g2"])
+
+
+@DerivationMethod.register
+class MeanOfInputs(DerivationMethod):
+    """Calculate the mean of the datasets in the `input_list` parameter at each time step, e.g. one variable measured
+    by several sensors.
+
+    Missing values (null or NaN) are left out, so the mean is only missing when every input is missing.
+    """
+
+    name = "calc_mean_inputs"
+
+    def expr(self, columns: dict[str, pl.Expr]) -> pl.Expr:
+        input_columns = self.dataset_list_columns(columns)
+        return pl.mean_horizontal([column.cast(pl.Float64).fill_nan(None) for column in input_columns])
 
 
 @DerivationMethod.register

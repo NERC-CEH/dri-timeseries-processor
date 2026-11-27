@@ -20,6 +20,7 @@ def make_time_series_container(
     depends_on: list[str] | None = None,
     load_only_deps: list[str] | None = None,
     inputs: dict[str, str] | None = None,
+    input_list: list[str] | None = None,
 ) -> TimeSeriesContainer:
     """Create a lightweight fake TimeSeriesContainer for use in tests.
 
@@ -28,6 +29,7 @@ def make_time_series_container(
         depends_on: Optional list of dataset IDs this container depends on via dep_ts.
         load_only_deps: Optional list of dataset IDs this container depends on via load_dep_ts.
         inputs: Optional named inputs, mapping input name to the dataset ID this container depends on.
+        input_list: Optional dataset IDs given under the `input_list` input, which this container depends on.
 
     Returns:
         A TimeSeriesContainer instance
@@ -35,9 +37,10 @@ def make_time_series_container(
     depends_on = depends_on or []
     load_only_deps = load_only_deps or []
     inputs = inputs or {}
+    input_list = input_list or []
 
     configs = []
-    if depends_on or load_only_deps or inputs:
+    if depends_on or load_only_deps or inputs or input_list:
         params: dict = {}
         if depends_on:
             params["dep_ts"] = depends_on
@@ -49,7 +52,9 @@ def make_time_series_container(
                 site_id=ts_id + "_site",
                 config_id=ts_id + "_cfg",
                 config_type=ConfigurationType.DERIVATION,
-                method_configs=[DataProcessingMethodConfig(method="m", params=params, inputs=inputs)],
+                method_configs=[
+                    DataProcessingMethodConfig(method="m", params=params, inputs=inputs, input_list=input_list)
+                ],
                 annotations={},
             )
         )
@@ -412,6 +417,17 @@ class TestBuild:
 
         assert "S" in builder.datasets
         assert builder.datasets["S"].load_only is False
+
+    def test_input_list_datasets_are_resolved_as_dependencies(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Tests that every dataset in an input list is added to the graph and fully processed."""
+        container_a = make_time_series_container("A", input_list=["S1", "S2"])
+        mock_router = setup_mocks(["A", "S1", "S2"], monkeypatch)
+        builder = DatasetDependencyGraph(mock_router, MagicMock(), MagicMock(), MagicMock())
+        builder._resolve_root_datasets = MagicMock(return_value=[container_a])
+        builder.build()
+
+        assert builder.datasets["S1"].load_only is False
+        assert builder.datasets["S2"].load_only is False
 
     def test_build_records_root_dataset_and_site_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that build records the IDs and sites of the root datasets, and not those of resolved dependencies."""

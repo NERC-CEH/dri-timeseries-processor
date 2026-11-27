@@ -21,6 +21,7 @@ from dritimeseriesprocessor.models.domain_models.time_series_container import Ti
 from dritimeseriesprocessor.models.mappers.api_to_domain import (
     extract_annotations,
     extract_arguments,
+    extract_input_list,
     extract_inputs,
     map_dataset_item,
     map_flag_column_roles,
@@ -642,8 +643,19 @@ class TestExtractInputs:
 
         assert extract_inputs(api_model) == {"cts_smo": f"{DATASET_URI}/cts-dataset"}
 
-    def test_input_referencing_several_datasets_raises(self) -> None:
-        """Tests that a named input referencing more than one dataset raises a ValueError."""
+    def test_input_list_is_not_a_named_input(self) -> None:
+        """Tests that the input_list input is left out of the named inputs."""
+        data = [
+            reference_argument("input_list", ["first", "second"]),
+            reference_argument("swin", ["swin-dataset"]),
+        ]
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+
+        assert extract_inputs(api_model) == {"swin": f"{DATASET_URI}/swin-dataset"}
+
+    def test_named_input_referencing_several_datasets_raises(self) -> None:
+        """Tests that a named input other than input_list referencing several datasets raises a ValueError."""
         api_model = [ArgumentItem.model_validate(reference_argument("swin", ["first", "second"]))]
 
         with pytest.raises(ValueError, match="exactly one dataset"):
@@ -657,6 +669,44 @@ class TestExtractInputs:
 
         with pytest.raises(ValueError, match="more than once"):
             extract_inputs(api_model)
+
+
+class TestExtractInputList:
+    def test_extracts_every_dataset_in_order(self) -> None:
+        """Tests that every dataset referenced by the input_list input is returned, in the order given."""
+        data = [
+            reference_argument("input_list", ["first", "second", "third"]),
+            reference_argument("swin", ["swin-dataset"]),
+        ]
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+
+        assert extract_input_list(api_model) == [
+            f"{DATASET_URI}/first",
+            f"{DATASET_URI}/second",
+            f"{DATASET_URI}/third",
+        ]
+
+    def test_single_dataset_is_a_list(self) -> None:
+        """Tests that an input_list referencing one dataset still gives a list."""
+        api_model = [ArgumentItem.model_validate(reference_argument("input_list", ["only"]))]
+
+        assert extract_input_list(api_model) == [f"{DATASET_URI}/only"]
+
+    def test_no_input_list_gives_empty_list(self) -> None:
+        """Tests that an empty list is returned when there is no input_list input."""
+        api_model = [ArgumentItem.model_validate(reference_argument("swin", ["swin-dataset"]))]
+
+        assert extract_input_list(api_model) == []
+
+    def test_repeated_input_list_raises(self) -> None:
+        """Tests that the input_list input appearing twice raises a ValueError."""
+        data = [reference_argument("input_list", ["first"]), reference_argument("input_list", ["second"])]
+
+        api_model = [ArgumentItem.model_validate(arg) for arg in data]
+
+        with pytest.raises(ValueError):
+            extract_input_list(api_model)
 
 
 class TestMapProcessingMethodConfig:
